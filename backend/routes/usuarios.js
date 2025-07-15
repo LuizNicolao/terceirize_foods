@@ -12,43 +12,25 @@ router.use(authenticateToken);
 // Listar usuários
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '' } = req.query;
-    const offset = (page - 1) * limit;
+    const { search = '' } = req.query;
 
     let query = `
       SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status, criado_em, atualizado_em 
       FROM usuarios 
       WHERE 1=1
     `;
-    let countQuery = 'SELECT COUNT(*) as total FROM usuarios WHERE 1=1';
     let params = [];
 
     if (search) {
       query += ' AND (nome LIKE ? OR email LIKE ?)';
-      countQuery += ' AND (nome LIKE ? OR email LIKE ?)';
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY nome ASC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), offset);
+    query += ' ORDER BY nome ASC';
 
-    const [users, countResult] = await Promise.all([
-      executeQuery(query, params),
-      executeQuery(countQuery, search ? [`%${search}%`, `%${search}%`] : [])
-    ]);
+    const users = await executeQuery(query, params);
 
-    const total = countResult[0].total;
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      users,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        totalPages
-      }
-    });
+    res.json(users);
 
   } catch (error) {
     console.error('Erro ao listar usuários:', error);
