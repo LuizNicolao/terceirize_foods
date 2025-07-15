@@ -23,7 +23,7 @@ app.use(helmet());
 // Configuração de CORS
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['http://82.29.57.43', 'http://localhost:3000'] 
+    ? ['http://82.29.57.43:3000', 'http://82.29.57.43', 'http://localhost:3000'] 
     : ['http://localhost:3000'],
   credentials: true
 }));
