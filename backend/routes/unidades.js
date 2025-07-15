@@ -11,21 +11,41 @@ router.use(authenticateToken);
 // Listar unidades
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    const { search = '' } = req.query;
+    const { page = 1, limit = 10, search = '' } = req.query;
+    const offset = (page - 1) * limit;
 
     let query = 'SELECT * FROM unidades_medida WHERE 1=1';
+    let countQuery = 'SELECT COUNT(*) as total FROM unidades_medida WHERE 1=1';
     let params = [];
+    let countParams = [];
 
     if (search) {
       query += ' AND (nome LIKE ? OR sigla LIKE ?)';
+      countQuery += ' AND (nome LIKE ? OR sigla LIKE ?)';
       params.push(`%${search}%`, `%${search}%`);
+      countParams.push(`%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY nome ASC';
+    query += ' ORDER BY nome ASC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), offset);
 
-    const unidades = await executeQuery(query, params);
+    const [unidades, countResult] = await Promise.all([
+      executeQuery(query, params),
+      executeQuery(countQuery, countParams)
+    ]);
 
-    res.json(unidades);
+    const total = countResult[0].total;
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      unidades,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        totalPages
+      }
+    });
 
   } catch (error) {
     console.error('Erro ao listar unidades:', error);
