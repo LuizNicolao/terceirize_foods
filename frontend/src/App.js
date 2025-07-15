@@ -1,36 +1,68 @@
-import axios from 'axios';
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
+import Layout from './components/Layout';
+import LoadingSpinner from './components/LoadingSpinner';
+import Login from './pages/Login';
+import Dashboard from './pages/Dashboard';
 
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://82.29.57.43:3001/api',
-  timeout: 10000,
-});
+// Componente para rotas protegidas
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
 
-// Interceptor para adicionar token automaticamente
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
+  if (loading) {
+    return <LoadingSpinner />;
   }
-);
 
-// Interceptor para tratar erros de resposta
-api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    return Promise.reject(error);
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
   }
-);
 
-export default api; 
+  return <Layout>{children}</Layout>;
+};
+
+// Componente para rotas públicas
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
+const App = () => {
+  return (
+    <Routes>
+      {/* Rota pública */}
+      <Route 
+        path="/login" 
+        element={
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        } 
+      />
+
+      {/* Rotas protegidas */}
+      <Route 
+        path="/" 
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Redirecionar rotas não encontradas */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+};
+
+export default App; 
