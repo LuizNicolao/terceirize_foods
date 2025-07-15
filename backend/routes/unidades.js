@@ -27,12 +27,10 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     }
 
     query += ' ORDER BY nome ASC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), offset);
+    params.push(parseInt(limit), parseInt(offset));
 
-    const [unidades, countResult] = await Promise.all([
-      executeQuery(query, params),
-      executeQuery(countQuery, countParams)
-    ]);
+    const unidades = await executeQuery(query, params);
+    const countResult = await executeQuery(countQuery, countParams);
 
     const total = countResult[0].total;
     const totalPages = Math.ceil(total / limit);
