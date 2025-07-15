@@ -10,8 +10,8 @@ const usuariosRoutes = require('./routes/usuarios');
 const fornecedoresRoutes = require('./routes/fornecedores');
 const produtosRoutes = require('./routes/produtos');
 const gruposRoutes = require('./routes/grupos');
-const subgruposRoutes = require('./routes/subgrupos');
 const unidadesRoutes = require('./routes/unidades');
+const subgruposRoutes = require('./routes/subgrupos');
 const permissoesRoutes = require('./routes/permissoes');
 
 const app = express();
@@ -53,8 +53,8 @@ app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/fornecedores', fornecedoresRoutes);
 app.use('/api/produtos', produtosRoutes);
 app.use('/api/grupos', gruposRoutes);
-app.use('/api/subgrupos', subgruposRoutes);
 app.use('/api/unidades', unidadesRoutes);
+app.use('/api/subgrupos', subgruposRoutes);
 app.use('/api/permissoes', permissoesRoutes);
 
 // Rota de health check
