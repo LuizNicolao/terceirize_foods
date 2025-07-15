@@ -22,7 +22,7 @@ const SidebarContainer = styled.div`
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   z-index: 1000;
-  width: ${props => props.collapsed ? '60px' : '250px'};
+  width: ${props => props.$collapsed ? '60px' : '250px'};
 `;
 
 const SidebarHeader = styled.div`
@@ -33,7 +33,7 @@ const SidebarHeader = styled.div`
 
 const Logo = styled.h2`
   color: var(--primary-green);
-  font-size: ${props => props.collapsed ? '16px' : '24px'};
+  font-size: ${props => props.$collapsed ? '16px' : '24px'};
   font-weight: 700;
   margin: 0;
   white-space: nowrap;
@@ -68,7 +68,7 @@ const NavItem = styled(Link)`
 `;
 
 const NavIcon = styled.div`
-  margin-right: ${props => props.collapsed ? '0' : '12px'};
+  margin-right: ${props => props.$collapsed ? '0' : '12px'};
   font-size: 18px;
   min-width: 20px;
   text-align: center;
@@ -80,7 +80,7 @@ const NavText = styled.span`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: ${props => props.collapsed ? 'none' : 'block'};
+  display: ${props => props.$collapsed ? 'none' : 'block'};
 `;
 
 const LogoutButton = styled.button`
@@ -120,9 +120,9 @@ const Sidebar = ({ collapsed }) => {
   };
 
   return (
-    <SidebarContainer collapsed={collapsed}>
+    <SidebarContainer $collapsed={collapsed}>
       <SidebarHeader>
-        <Logo collapsed={collapsed}>
+        <Logo $collapsed={collapsed}>
           {collapsed ? 'F' : 'Foods'}
         </Logo>
       </SidebarHeader>
@@ -138,10 +138,10 @@ const Sidebar = ({ collapsed }) => {
               to={item.path}
               className={isActive ? 'active' : ''}
             >
-              <NavIcon collapsed={collapsed}>
+              <NavIcon $collapsed={collapsed}>
                 <Icon />
               </NavIcon>
-              <NavText collapsed={collapsed}>
+              <NavText $collapsed={collapsed}>
                 {item.label}
               </NavText>
             </NavItem>
@@ -151,10 +151,10 @@ const Sidebar = ({ collapsed }) => {
 
       <div style={{ marginTop: 'auto', padding: '20px 0' }}>
         <LogoutButton onClick={handleLogout}>
-          <NavIcon collapsed={collapsed}>
+          <NavIcon $collapsed={collapsed}>
             <FaSignOutAlt />
           </NavIcon>
-          <NavText collapsed={collapsed}>
+          <NavText $collapsed={collapsed}>
             Sair
           </NavText>
         </LogoutButton>

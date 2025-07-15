@@ -68,7 +68,7 @@ const StatLabel = styled.div`
 
 const StatChange = styled.div`
   font-size: 12px;
-  color: ${props => props.positive ? 'var(--success-green)' : 'var(--error-red)'};
+  color: ${props => props.$positive ? 'var(--success-green)' : 'var(--error-red)'};
   font-weight: 600;
 `;
 
@@ -226,7 +226,7 @@ const Dashboard = () => {
                 <StatIcon color={stat.color}>
                   <Icon />
                 </StatIcon>
-                <StatChange positive={stat.positive}>
+                <StatChange $positive={stat.positive}>
                   {stat.change}
                 </StatChange>
               </StatHeader>
