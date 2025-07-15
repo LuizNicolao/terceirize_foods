@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/Usuarios';
 import Fornecedores from './pages/Fornecedores';
+import Produtos from './pages/Produtos';
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {
@@ -75,6 +76,15 @@ const App = () => {
         element={
           <ProtectedRoute>
             <Fornecedores />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/produtos" 
+        element={
+          <ProtectedRoute>
+            <Produtos />
           </ProtectedRoute>
         } 
       />

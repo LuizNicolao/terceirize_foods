@@ -11,8 +11,7 @@ router.use(authenticateToken);
 // Listar produtos
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '', grupo_id, fornecedor_id } = req.query;
-    const offset = (page - 1) * limit;
+    const { search = '' } = req.query;
 
     let query = `
       SELECT p.*, f.razao_social as fornecedor_nome, g.nome as grupo_nome, sg.nome as subgrupo_nome
@@ -22,47 +21,18 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       WHERE 1=1
     `;
-    let countQuery = 'SELECT COUNT(*) as total FROM produtos p WHERE 1=1';
     let params = [];
 
     if (search) {
       query += ' AND (p.nome LIKE ? OR p.descricao LIKE ? OR p.codigo_barras LIKE ?)';
-      countQuery += ' AND (p.nome LIKE ? OR p.descricao LIKE ? OR p.codigo_barras LIKE ?)';
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
 
-    if (grupo_id) {
-      query += ' AND p.grupo_id = ?';
-      countQuery += ' AND p.grupo_id = ?';
-      params.push(grupo_id);
-    }
+    query += ' ORDER BY p.nome ASC';
 
-    if (fornecedor_id) {
-      query += ' AND p.id_fornecedor = ?';
-      countQuery += ' AND p.id_fornecedor = ?';
-      params.push(fornecedor_id);
-    }
+    const produtos = await executeQuery(query, params);
 
-    query += ' ORDER BY p.nome ASC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), offset);
-
-    const [produtos, countResult] = await Promise.all([
-      executeQuery(query, params),
-      executeQuery(countQuery, search ? [`%${search}%`, `%${search}%`, `%${search}%`] : [])
-    ]);
-
-    const total = countResult[0].total;
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      produtos,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        totalPages
-      }
-    });
+    res.json(produtos);
 
   } catch (error) {
     console.error('Erro ao listar produtos:', error);
