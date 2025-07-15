@@ -11,8 +11,7 @@ router.use(authenticateToken);
 // Listar grupos
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '' } = req.query;
-    const offset = (page - 1) * limit;
+    const { search = '' } = req.query;
 
     let query = `
       SELECT g.*, COUNT(sg.id) as total_subgrupos
@@ -20,35 +19,18 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
       WHERE 1=1
     `;
-    let countQuery = 'SELECT COUNT(*) as total FROM grupos WHERE 1=1';
     let params = [];
 
     if (search) {
       query += ' AND g.nome LIKE ?';
-      countQuery += ' AND nome LIKE ?';
       params.push(`%${search}%`);
     }
 
-    query += ' GROUP BY g.id ORDER BY g.nome ASC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), offset);
+    query += ' GROUP BY g.id ORDER BY g.nome ASC';
 
-    const [grupos, countResult] = await Promise.all([
-      executeQuery(query, params),
-      executeQuery(countQuery, search ? [`%${search}%`] : [])
-    ]);
+    const grupos = await executeQuery(query, params);
 
-    const total = countResult[0].total;
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      grupos,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        totalPages
-      }
-    });
+    res.json(grupos);
 
   } catch (error) {
     console.error('Erro ao listar grupos:', error);
