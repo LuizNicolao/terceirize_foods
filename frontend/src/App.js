@@ -6,6 +6,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/Usuarios';
+import Fornecedores from './pages/Fornecedores';
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {
@@ -65,6 +66,15 @@ const App = () => {
         element={
           <ProtectedRoute>
             <Usuarios />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/fornecedores" 
+        element={
+          <ProtectedRoute>
+            <Fornecedores />
           </ProtectedRoute>
         } 
       />

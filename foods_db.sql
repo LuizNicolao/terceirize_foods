@@ -2,9 +2,9 @@
 -- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Host: mysql
--- Tempo de geração: 15/07/2025 às 16:15
--- Versão do servidor: 5.7.44
+-- Host: mysql:3306
+-- Tempo de geração: 15/07/2025 às 19:53
+-- Versão do servidor: 8.0.42
 -- Versão do PHP: 8.2.27
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Banco de dados: `BANCO DE DADOS FOODS`
+-- Banco de dados: `foods_db`
 --
 
 -- --------------------------------------------------------
@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `fornecedores` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `cnpj` varchar(18) NOT NULL,
   `razao_social` varchar(150) NOT NULL,
   `nome_fantasia` varchar(150) DEFAULT NULL,
@@ -43,7 +43,7 @@ CREATE TABLE `fornecedores` (
   `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `status` tinyint(1) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -52,12 +52,12 @@ CREATE TABLE `fornecedores` (
 --
 
 CREATE TABLE `grupos` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `nome` varchar(100) NOT NULL,
   `status` tinyint(1) DEFAULT '1',
   `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -66,8 +66,8 @@ CREATE TABLE `grupos` (
 --
 
 CREATE TABLE `permissoes_usuario` (
-  `id` int(11) NOT NULL,
-  `usuario_id` int(11) NOT NULL,
+  `id` int NOT NULL,
+  `usuario_id` int NOT NULL,
   `tela` varchar(50) NOT NULL,
   `pode_visualizar` tinyint(1) DEFAULT '0',
   `pode_criar` tinyint(1) DEFAULT '0',
@@ -84,7 +84,7 @@ CREATE TABLE `permissoes_usuario` (
 --
 
 CREATE TABLE `produtos` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `nome` varchar(100) NOT NULL,
   `descricao` varchar(255) DEFAULT NULL,
   `codigo_barras` varchar(50) DEFAULT NULL,
@@ -92,13 +92,13 @@ CREATE TABLE `produtos` (
   `unidade_tributavel` varchar(10) DEFAULT NULL,
   `preco_custo` decimal(10,2) DEFAULT NULL,
   `preco_venda` decimal(10,2) DEFAULT NULL,
-  `estoque_atual` int(11) DEFAULT '0',
-  `estoque_minimo` int(11) DEFAULT '0',
-  `id_fornecedor` int(11) DEFAULT NULL,
+  `estoque_atual` int DEFAULT '0',
+  `estoque_minimo` int DEFAULT '0',
+  `id_fornecedor` int DEFAULT NULL,
   `peso_bruto` decimal(10,3) DEFAULT NULL,
   `peso_liquido` decimal(10,3) DEFAULT NULL,
-  `grupo_id` int(11) DEFAULT NULL,
-  `subgrupo_id` int(11) DEFAULT NULL,
+  `grupo_id` int DEFAULT NULL,
+  `subgrupo_id` int DEFAULT NULL,
   `grupo` varchar(50) DEFAULT NULL,
   `sub_grupo` varchar(50) DEFAULT NULL,
   `ncm` varchar(10) DEFAULT NULL,
@@ -112,14 +112,14 @@ CREATE TABLE `produtos` (
   `aliquota_pis` decimal(5,2) DEFAULT NULL,
   `aliquota_cofins` decimal(5,2) DEFAULT NULL,
   `referencia` varchar(50) DEFAULT NULL,
-  `unidade_id` int(11) DEFAULT NULL,
+  `unidade_id` int DEFAULT NULL,
   `ean_tributavel` varchar(50) DEFAULT NULL,
   `info_adicionais` varchar(255) DEFAULT NULL,
   `descricao_nfe` varchar(255) DEFAULT NULL,
   `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `status` tinyint(1) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -128,13 +128,13 @@ CREATE TABLE `produtos` (
 --
 
 CREATE TABLE `subgrupos` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `nome` varchar(100) NOT NULL,
-  `grupo_id` int(11) NOT NULL,
+  `grupo_id` int NOT NULL,
   `status` tinyint(1) DEFAULT '1',
   `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -143,13 +143,13 @@ CREATE TABLE `subgrupos` (
 --
 
 CREATE TABLE `unidades_medida` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `nome` varchar(100) NOT NULL,
   `sigla` varchar(10) NOT NULL,
   `status` tinyint(1) DEFAULT '1',
   `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -158,7 +158,7 @@ CREATE TABLE `unidades_medida` (
 --
 
 CREATE TABLE `usuarios` (
-  `id` int(11) NOT NULL,
+  `id` int NOT NULL,
   `nome` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `senha` varchar(255) NOT NULL,
@@ -168,6 +168,14 @@ CREATE TABLE `usuarios` (
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Despejando dados para a tabela `usuarios`
+--
+
+INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `nivel_de_acesso`, `tipo_de_acesso`, `status`, `criado_em`, `atualizado_em`) VALUES
+(4, 'Administrador', 'admin@foods.com', '$2a$12$u1cnSY01AS0ZAWFF7Ty2suxX0400o.5dYqo965VjIjerUoss6CEI.', 'III', 'administrador', 'ativo', '2025-07-15 19:30:52', '2025-07-15 19:49:01'),
+(5, 'teste', 'teste@teste.com', '$2a$12$/RBBrC6LzqjbPwd97kbJbOKzo.NGZVQLzXRjqk2GA6sAyi/SzrQd6', 'I', 'administrador', 'ativo', '2025-07-15 19:49:33', '2025-07-15 19:49:33');
 
 --
 -- Índices para tabelas despejadas
@@ -196,13 +204,13 @@ ALTER TABLE `usuarios`
 -- AUTO_INCREMENT de tabela `permissoes_usuario`
 --
 ALTER TABLE `permissoes_usuario`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Restrições para tabelas despejadas

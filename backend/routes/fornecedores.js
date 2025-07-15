@@ -11,8 +11,7 @@ router.use(authenticateToken);
 // Listar fornecedores
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '' } = req.query;
-    const offset = (page - 1) * limit;
+    const { search = '' } = req.query;
 
     let query = `
       SELECT id, cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
@@ -20,35 +19,18 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       FROM fornecedores 
       WHERE 1=1
     `;
-    let countQuery = 'SELECT COUNT(*) as total FROM fornecedores WHERE 1=1';
     let params = [];
 
     if (search) {
       query += ' AND (razao_social LIKE ? OR nome_fantasia LIKE ? OR cnpj LIKE ?)';
-      countQuery += ' AND (razao_social LIKE ? OR nome_fantasia LIKE ? OR cnpj LIKE ?)';
       params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY razao_social ASC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), offset);
+    query += ' ORDER BY razao_social ASC';
 
-    const [fornecedores, countResult] = await Promise.all([
-      executeQuery(query, params),
-      executeQuery(countQuery, search ? [`%${search}%`, `%${search}%`, `%${search}%`] : [])
-    ]);
+    const fornecedores = await executeQuery(query, params);
 
-    const total = countResult[0].total;
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      fornecedores,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        totalPages
-      }
-    });
+    res.json(fornecedores);
 
   } catch (error) {
     console.error('Erro ao listar fornecedores:', error);
