@@ -14,7 +14,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     const { search = '' } = req.query;
 
     let query = `
-      SELECT g.*, COUNT(sg.id) as total_subgrupos
+      SELECT g.id, g.nome, g.status, COUNT(sg.id) as total_subgrupos
       FROM grupos g
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
       WHERE 1=1
@@ -26,7 +26,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       params.push(`%${search}%`);
     }
 
-    query += ' GROUP BY g.id ORDER BY g.nome ASC';
+    query += ' GROUP BY g.id, g.nome, g.status ORDER BY g.nome ASC';
 
     const grupos = await executeQuery(query, params);
 
