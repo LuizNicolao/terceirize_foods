@@ -7,9 +7,6 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/Usuarios';
 import Fornecedores from './pages/Fornecedores';
-import Produtos from './pages/Produtos';
-import Grupos from './pages/Grupos';
-import Unidades from './pages/Unidades';
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {
@@ -78,33 +75,6 @@ const App = () => {
         element={
           <ProtectedRoute>
             <Fornecedores />
-          </ProtectedRoute>
-        } 
-      />
-
-      <Route 
-        path="/produtos" 
-        element={
-          <ProtectedRoute>
-            <Produtos />
-          </ProtectedRoute>
-        } 
-      />
-
-      <Route 
-        path="/grupos" 
-        element={
-          <ProtectedRoute>
-            <Grupos />
-          </ProtectedRoute>
-        } 
-      />
-
-      <Route 
-        path="/unidades" 
-        element={
-          <ProtectedRoute>
-            <Unidades />
           </ProtectedRoute>
         } 
       />
