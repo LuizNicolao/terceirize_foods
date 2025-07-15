@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import Usuarios from './pages/Usuarios';
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {
@@ -55,6 +56,15 @@ const App = () => {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/usuarios" 
+        element={
+          <ProtectedRoute>
+            <Usuarios />
           </ProtectedRoute>
         } 
       />
