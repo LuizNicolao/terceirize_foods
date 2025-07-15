@@ -11,8 +11,11 @@ router.use(authenticateToken);
 // Listar unidades
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '' } = req.query;
+    // Garante que page e limit são inteiros válidos
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.max(1, parseInt(req.query.limit) || 10);
     const offset = (page - 1) * limit;
+    const search = req.query.search || '';
 
     let query = 'SELECT * FROM unidades_medida WHERE 1=1';
     let countQuery = 'SELECT COUNT(*) as total FROM unidades_medida WHERE 1=1';
@@ -27,7 +30,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     }
 
     query += ' ORDER BY nome ASC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), parseInt(offset));
+    params.push(limit, offset);
 
     const unidades = await executeQuery(query, params);
     const countResult = await executeQuery(countQuery, countParams);
@@ -38,8 +41,8 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     res.json({
       unidades,
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page,
+        limit,
         total,
         totalPages
       }
