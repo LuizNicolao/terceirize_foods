@@ -8,9 +8,10 @@ import {
   FaBox, 
   FaLayerGroup, 
   FaRulerCombined,
-  FaCog,
   FaShieldAlt,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaChevronLeft,
+  FaChevronRight
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -24,12 +25,20 @@ const SidebarContainer = styled.div`
   transition: all 0.3s ease;
   z-index: 1000;
   width: ${props => props.$collapsed ? '60px' : '250px'};
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    width: ${props => props.$collapsed ? '0' : '250px'};
+    transform: ${props => props.$collapsed ? 'translateX(-100%)' : 'translateX(0)'};
+  }
 `;
 
 const SidebarHeader = styled.div`
   padding: 20px;
   border-bottom: 1px solid #e0e0e0;
   text-align: center;
+  position: relative;
 `;
 
 const Logo = styled.h2`
@@ -42,8 +51,40 @@ const Logo = styled.h2`
   text-overflow: ellipsis;
 `;
 
+const ToggleButton = styled.button`
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--primary-green);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 1001;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    background: var(--dark-green);
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  @media (max-width: 768px) {
+    right: -15px;
+    width: 30px;
+    height: 30px;
+  }
+`;
+
 const Nav = styled.nav`
   padding: 20px 0;
+  flex: 1;
 `;
 
 const NavItem = styled(Link)`
@@ -102,6 +143,21 @@ const LogoutButton = styled.button`
   }
 `;
 
+const Overlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: ${props => props.$visible ? 'block' : 'none'};
+
+  @media (min-width: 769px) {
+    display: none;
+  }
+`;
+
 const menuItems = [
   { path: '/', icon: FaHome, label: 'Dashboard' },
   { path: '/usuarios', icon: FaUsers, label: 'Usuários' },
@@ -110,10 +166,9 @@ const menuItems = [
   { path: '/grupos', icon: FaLayerGroup, label: 'Grupos' },
   { path: '/unidades', icon: FaRulerCombined, label: 'Unidades' },
   { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões' },
-  { path: '/configuracoes', icon: FaCog, label: 'Configurações' },
 ];
 
-const Sidebar = ({ collapsed }) => {
+const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
   const { logout } = useAuth();
 
@@ -122,46 +177,58 @@ const Sidebar = ({ collapsed }) => {
   };
 
   return (
-    <SidebarContainer $collapsed={collapsed}>
-      <SidebarHeader>
-        <Logo $collapsed={collapsed}>
-          {collapsed ? 'F' : 'Foods'}
-        </Logo>
-      </SidebarHeader>
-      
-      <Nav>
-        {menuItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location.pathname === item.path;
-          
-          return (
-            <NavItem 
-              key={item.path} 
-              to={item.path}
-              className={isActive ? 'active' : ''}
-            >
-              <NavIcon $collapsed={collapsed}>
-                <Icon />
-              </NavIcon>
-              <NavText $collapsed={collapsed}>
-                {item.label}
-              </NavText>
-            </NavItem>
-          );
-        })}
-      </Nav>
+    <>
+      <Overlay $visible={!collapsed} onClick={onToggle} />
+      <SidebarContainer $collapsed={collapsed}>
+        <SidebarHeader>
+          <Logo $collapsed={collapsed}>
+            {collapsed ? 'F' : 'Foods'}
+          </Logo>
+          <ToggleButton onClick={onToggle}>
+            {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
+          </ToggleButton>
+        </SidebarHeader>
+        
+        <Nav>
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+            
+            return (
+              <NavItem 
+                key={item.path} 
+                to={item.path}
+                className={isActive ? 'active' : ''}
+                onClick={() => {
+                  // Fechar sidebar no mobile quando clicar em um item
+                  if (window.innerWidth <= 768) {
+                    onToggle();
+                  }
+                }}
+              >
+                <NavIcon $collapsed={collapsed}>
+                  <Icon />
+                </NavIcon>
+                <NavText $collapsed={collapsed}>
+                  {item.label}
+                </NavText>
+              </NavItem>
+            );
+          })}
+        </Nav>
 
-      <div style={{ marginTop: 'auto', padding: '20px 0' }}>
-        <LogoutButton onClick={handleLogout}>
-          <NavIcon $collapsed={collapsed}>
-            <FaSignOutAlt />
-          </NavIcon>
-          <NavText $collapsed={collapsed}>
-            Sair
-          </NavText>
-        </LogoutButton>
-      </div>
-    </SidebarContainer>
+        <div style={{ marginTop: 'auto', padding: '20px 0' }}>
+          <LogoutButton onClick={handleLogout}>
+            <NavIcon $collapsed={collapsed}>
+              <FaSignOutAlt />
+            </NavIcon>
+            <NavText $collapsed={collapsed}>
+              Sair
+            </NavText>
+          </LogoutButton>
+        </div>
+      </SidebarContainer>
+    </>
   );
 };
 
