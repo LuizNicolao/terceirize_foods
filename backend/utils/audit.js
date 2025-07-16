@@ -184,7 +184,7 @@ const getAuditLogs = async (filters = {}) => {
     console.log('=== INÍCIO DA FUNÇÃO getAuditLogs ===');
     console.log('Filtros recebidos:', filters);
     
-    // Query com JOIN para nome do usuário
+    // Query com JOIN e filtros básicos
     let query = `
       SELECT 
         a.id,
@@ -198,9 +198,23 @@ const getAuditLogs = async (filters = {}) => {
         a.timestamp
       FROM auditoria_acoes a
       LEFT JOIN usuarios u ON a.usuario_id = u.id
-      ORDER BY a.timestamp DESC 
-      LIMIT 10
+      WHERE 1=1
     `;
+    
+    const params = [];
+    
+    if (filters.acao) {
+      query += ' AND a.acao = ?';
+      params.push(filters.acao);
+    }
+    
+    if (filters.recurso) {
+      query += ' AND a.recurso = ?';
+      params.push(filters.recurso);
+    }
+    
+    query += ' ORDER BY a.timestamp DESC LIMIT ? OFFSET ?';
+    params.push(filters.limit || 100, filters.offset || 0);
     
     console.log('Query simplificada:', query);
     
