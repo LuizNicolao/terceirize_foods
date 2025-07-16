@@ -184,66 +184,46 @@ const getAuditLogs = async (filters = {}) => {
     console.log('=== INÍCIO DA FUNÇÃO getAuditLogs ===');
     console.log('Filtros recebidos:', filters);
     
+    // Query simplificada para testar
     let query = `
       SELECT 
         a.id,
         a.usuario_id,
-        u.nome as usuario_nome,
-        u.email as usuario_email,
         a.acao,
         a.recurso,
         a.detalhes,
         a.ip_address,
         a.timestamp
       FROM auditoria_acoes a
-      LEFT JOIN usuarios u ON a.usuario_id = u.id
-      WHERE 1=1
+      ORDER BY a.timestamp DESC 
+      LIMIT 10
     `;
     
-    const params = [];
+    console.log('Query simplificada:', query);
     
-    if (filters.usuario_id) {
-      query += ' AND a.usuario_id = ?';
-      params.push(filters.usuario_id);
-    }
-    
-    if (filters.acao) {
-      query += ' AND a.acao = ?';
-      params.push(filters.acao);
-    }
-    
-    if (filters.recurso) {
-      query += ' AND a.recurso = ?';
-      params.push(filters.recurso);
-    }
-    
-    if (filters.data_inicio) {
-      query += ' AND DATE(a.timestamp) >= ?';
-      params.push(filters.data_inicio);
-    }
-    
-    if (filters.data_fim) {
-      query += ' AND DATE(a.timestamp) <= ?';
-      params.push(filters.data_fim);
-    }
-    
-    query += ' ORDER BY a.timestamp DESC LIMIT ? OFFSET ?';
-    params.push(filters.limit || 100, filters.offset || 0);
-    
-    console.log('Query final:', query);
-    console.log('Parâmetros:', params);
-    
-    const logs = await executeQuery(query, params);
+    const logs = await executeQuery(query);
     console.log('Logs brutos encontrados:', logs.length);
+    console.log('Primeiro log:', logs[0]);
     
-    const processedLogs = logs.map(log => {
+    // Processar logs com tratamento de erro mais robusto
+    const processedLogs = logs.map((log, index) => {
       try {
+        let detalhes = null;
+        if (log.detalhes) {
+          if (typeof log.detalhes === 'string') {
+            detalhes = JSON.parse(log.detalhes);
+          } else {
+            detalhes = log.detalhes;
+          }
+        }
+        
         return {
           ...log,
-          detalhes: log.detalhes ? JSON.parse(log.detalhes) : null
+          detalhes: detalhes
         };
       } catch (parseError) {
-        console.error('Erro ao fazer parse do JSON:', parseError);
+        console.error(`Erro ao processar log ${index}:`, parseError);
+        console.error('Log problemático:', log);
         return {
           ...log,
           detalhes: null
@@ -251,12 +231,13 @@ const getAuditLogs = async (filters = {}) => {
       }
     });
     
-    console.log('Logs processados:', processedLogs.length);
+    console.log('Logs processados com sucesso:', processedLogs.length);
     return processedLogs;
     
   } catch (error) {
     console.error('=== ERRO NA FUNÇÃO getAuditLogs ===');
     console.error('Erro ao buscar logs de auditoria:', error);
+    console.error('Stack trace:', error.stack);
     throw error;
   }
 };

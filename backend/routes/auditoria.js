@@ -67,34 +67,14 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     console.log('Total de registros na auditoria:', countResult[0].total);
 
     // Se chegou até aqui, vamos buscar os logs
-    const { 
-      usuario_id, 
-      acao, 
-      recurso, 
-      data_inicio, 
-      data_fim, 
-      limit = 100, 
-      offset = 0 
-    } = req.query;
-
-    const filters = {
-      usuario_id: usuario_id ? parseInt(usuario_id) : null,
-      acao,
-      recurso,
-      data_inicio,
-      data_fim,
-      limit: parseInt(limit),
-      offset: parseInt(offset)
-    };
-
-    console.log('Buscando logs de auditoria com filtros:', filters);
-    const logs = await getAuditLogs(filters);
+    console.log('Buscando logs de auditoria...');
+    const logs = await getAuditLogs({});
     console.log('Logs encontrados:', logs.length);
 
     res.json({
       logs,
       total: logs.length,
-      filters
+      filters: {}
     });
 
   } catch (error) {
