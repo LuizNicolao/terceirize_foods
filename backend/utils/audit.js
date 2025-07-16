@@ -184,21 +184,48 @@ const getAuditLogs = async (filters = {}) => {
     console.log('=== INÍCIO DA FUNÇÃO getAuditLogs ===');
     console.log('Filtros recebidos:', filters);
     
-    // Query com LIMIT e OFFSET usando template string
+    // Query com filtros e JOIN com usuários
     const limit = parseInt(filters.limit) || 100;
     const offset = parseInt(filters.offset) || 0;
     
+    let whereConditions = [];
+    
+    // Filtro por ação
+    if (filters.acao && filters.acao !== 'todas') {
+      whereConditions.push(`a.acao = '${filters.acao}'`);
+    }
+    
+    // Filtro por recurso
+    if (filters.recurso && filters.recurso !== 'todos') {
+      whereConditions.push(`a.recurso = '${filters.recurso}'`);
+    }
+    
+    // Filtro por período
+    if (filters.data_inicio) {
+      whereConditions.push(`DATE(a.timestamp) >= '${filters.data_inicio}'`);
+    }
+    
+    if (filters.data_fim) {
+      whereConditions.push(`DATE(a.timestamp) <= '${filters.data_fim}'`);
+    }
+    
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    
     const query = `
       SELECT 
-        id,
-        usuario_id,
-        acao,
-        recurso,
-        detalhes,
-        ip_address,
-        timestamp
-      FROM auditoria_acoes
-      ORDER BY timestamp DESC
+        a.id,
+        a.usuario_id,
+        u.nome as usuario_nome,
+        u.email as usuario_email,
+        a.acao,
+        a.recurso,
+        a.detalhes,
+        a.ip_address,
+        a.timestamp
+      FROM auditoria_acoes a
+      LEFT JOIN usuarios u ON a.usuario_id = u.id
+      ${whereClause}
+      ORDER BY a.timestamp DESC
       LIMIT ${limit} OFFSET ${offset}
     `;
     
