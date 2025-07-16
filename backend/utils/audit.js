@@ -184,7 +184,10 @@ const getAuditLogs = async (filters = {}) => {
     console.log('=== INÍCIO DA FUNÇÃO getAuditLogs ===');
     console.log('Filtros recebidos:', filters);
     
-    // Query com LIMIT fixo por enquanto
+    // Query com LIMIT e OFFSET usando template string
+    const limit = parseInt(filters.limit) || 100;
+    const offset = parseInt(filters.offset) || 0;
+    
     const query = `
       SELECT 
         id,
@@ -196,7 +199,7 @@ const getAuditLogs = async (filters = {}) => {
         timestamp
       FROM auditoria_acoes
       ORDER BY timestamp DESC
-      LIMIT 50
+      LIMIT ${limit} OFFSET ${offset}
     `;
     
     console.log('Query final:', query);
