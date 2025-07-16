@@ -215,12 +215,12 @@ const getAuditLogs = async (filters = {}) => {
     }
     
     if (filters.data_inicio) {
-      query += ' AND a.timestamp >= ?';
+      query += ' AND DATE(a.timestamp) >= ?';
       params.push(filters.data_inicio);
     }
     
     if (filters.data_fim) {
-      query += ' AND a.timestamp <= ?';
+      query += ' AND DATE(a.timestamp) <= ?';
       params.push(filters.data_fim);
     }
     
