@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { FaBars, FaUser, FaBell } from 'react-icons/fa';
+import { FaUser, FaBell } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 
 const HeaderContainer = styled.header`
@@ -16,22 +16,6 @@ const LeftSection = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
-`;
-
-const ToggleButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: var(--dark-gray);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background-color: var(--light-gray);
-    color: var(--primary-green);
-  }
 `;
 
 const Title = styled.h1`
@@ -128,9 +112,6 @@ const Header = ({ onToggleSidebar }) => {
   return (
     <HeaderContainer>
       <LeftSection>
-        <ToggleButton onClick={onToggleSidebar}>
-          <FaBars />
-        </ToggleButton>
         <Title>Sistema Foods</Title>
       </LeftSection>
 
