@@ -7,11 +7,9 @@ const router = express.Router();
 // Aplicar autenticação em todas as rotas
 router.use(authenticateToken);
 
-// Listar logs de auditoria (apenas administradores)
-router.get('/', checkPermission('visualizar'), async (req, res) => {
+// Listar logs de auditoria (apenas administradores e coordenadores)
+router.get('/', async (req, res) => {
   try {
-    console.log('🔍 Buscando logs de auditoria com query:', req.query);
-    
     const { 
       usuario_id, 
       acao, 
@@ -22,11 +20,9 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       offset = 0 
     } = req.query;
 
-    // Verificar se usuário é administrador
-    console.log('👤 Usuário atual:', req.user);
-    if (req.user.tipo_de_acesso !== 'administrador') {
-      console.log('❌ Usuário não é administrador:', req.user.tipo_de_acesso);
-      return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem visualizar logs de auditoria.' });
+    // Verificar se usuário é administrador ou coordenador
+    if (req.user.tipo_de_acesso !== 'administrador' && req.user.tipo_de_acesso !== 'coordenador') {
+      return res.status(403).json({ error: 'Acesso negado. Apenas administradores e coordenadores podem visualizar logs de auditoria.' });
     }
 
     const filters = {
@@ -39,11 +35,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       offset: parseInt(offset)
     };
 
-    console.log('🔍 Filtros aplicados:', filters);
-
     const logs = await getAuditLogs(filters);
-
-    console.log('✅ Logs encontrados:', logs.length);
 
     res.json({
       logs,
@@ -52,8 +44,9 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Erro ao buscar logs de auditoria:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Erro ao buscar logs de auditoria:', error);
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
   }
 });
 
@@ -91,9 +84,9 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
 // Estatísticas de auditoria (apenas administradores)
 router.get('/estatisticas', checkPermission('visualizar'), async (req, res) => {
   try {
-    // Verificar se usuário é administrador
-    if (req.user.tipo_de_acesso !== 'administrador') {
-      return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem visualizar estatísticas.' });
+    // Verificar se usuário é administrador ou coordenador
+    if (req.user.tipo_de_acesso !== 'administrador' && req.user.tipo_de_acesso !== 'coordenador') {
+      return res.status(403).json({ error: 'Acesso negado. Apenas administradores e coordenadores podem visualizar estatísticas.' });
     }
 
     const { executeQuery } = require('../config/database');
