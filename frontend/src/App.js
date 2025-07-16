@@ -9,6 +9,7 @@ import Usuarios from './pages/Usuarios';
 import Fornecedores from './pages/Fornecedores';
 import Produtos from './pages/Produtos';
 import Grupos from './pages/Grupos';
+import Subgrupos from './pages/Subgrupos';
 import Unidades from './pages/Unidades';
 import Permissoes from './pages/Permissoes';
 
@@ -97,6 +98,15 @@ const App = () => {
         element={
           <ProtectedRoute>
             <Grupos />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/subgrupos" 
+        element={
+          <ProtectedRoute>
+            <Subgrupos />
           </ProtectedRoute>
         } 
       />

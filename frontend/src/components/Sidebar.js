@@ -11,7 +11,8 @@ import {
   FaShieldAlt,
   FaSignOutAlt,
   FaChevronLeft,
-  FaChevronRight
+  FaChevronRight,
+  FaSitemap
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -164,6 +165,7 @@ const menuItems = [
   { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores' },
   { path: '/produtos', icon: FaBox, label: 'Produtos' },
   { path: '/grupos', icon: FaLayerGroup, label: 'Grupos' },
+  { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos' },
   { path: '/unidades', icon: FaRulerCombined, label: 'Unidades' },
   { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões' },
 ];
