@@ -10,6 +10,8 @@ router.use(authenticateToken);
 // Listar logs de auditoria (apenas administradores)
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
+    console.log('🔍 Buscando logs de auditoria com query:', req.query);
+    
     const { 
       usuario_id, 
       acao, 
@@ -21,7 +23,9 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     } = req.query;
 
     // Verificar se usuário é administrador
+    console.log('👤 Usuário atual:', req.user);
     if (req.user.tipo_de_acesso !== 'administrador') {
+      console.log('❌ Usuário não é administrador:', req.user.tipo_de_acesso);
       return res.status(403).json({ error: 'Acesso negado. Apenas administradores podem visualizar logs de auditoria.' });
     }
 
@@ -35,7 +39,11 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       offset: parseInt(offset)
     };
 
+    console.log('🔍 Filtros aplicados:', filters);
+
     const logs = await getAuditLogs(filters);
+
+    console.log('✅ Logs encontrados:', logs.length);
 
     res.json({
       logs,
@@ -44,7 +52,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Erro ao buscar logs de auditoria:', error);
+    console.error('❌ Erro ao buscar logs de auditoria:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });

@@ -338,12 +338,15 @@ const Usuarios = () => {
       setAuditLoading(true);
       const params = new URLSearchParams();
       
+      // Filtrar apenas logs relacionados a usuários
+      params.append('recurso', 'usuarios');
+      
       if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
       if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
       if (auditFilters.acao) params.append('acao', auditFilters.acao);
       if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
       
-      const response = await api.get(`/auditoria?${params.toString()}`);
+      const response = await api.get(`/api/auditoria?${params.toString()}`);
       setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);

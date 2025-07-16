@@ -180,6 +180,7 @@ const auditChangesMiddleware = (action, resource) => {
 // Função para buscar logs de auditoria
 const getAuditLogs = async (filters = {}) => {
   try {
+    const { executeQuery } = require('../config/database');
     let query = `
       SELECT 
         a.id,
