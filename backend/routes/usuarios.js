@@ -4,6 +4,7 @@ const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission, checkAccessType } = require('../middleware/auth');
 const { atualizarPermissoesPorTipoNivel } = require('./permissoes');
+const { auditMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -64,6 +65,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 // Criar usuário
 router.post('/', [
   checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'usuarios'),
   body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('email').isEmail().withMessage('Email inválido'),
   body('senha').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
@@ -128,6 +130,7 @@ router.post('/', [
 // Atualizar usuário
 router.put('/:id', [
   checkPermission('editar'),
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'usuarios'),
   body('nome').optional().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('email').optional().isEmail().withMessage('Email inválido'),
   body('senha').optional().isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
@@ -245,7 +248,10 @@ router.put('/:id', [
 });
 
 // Excluir usuário
-router.delete('/:id', checkPermission('excluir'), async (req, res) => {
+router.delete('/:id', [
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'usuarios')
+], async (req, res) => {
   try {
     const { id } = req.params;
 

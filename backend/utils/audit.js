@@ -54,7 +54,22 @@ const auditMiddleware = (action, resource) => {
         
         // Adicionar dados relevantes baseados na ação
         if (action === AUDIT_ACTIONS.CREATE || action === AUDIT_ACTIONS.UPDATE) {
-          details.requestBody = req.body;
+          // Remover senha dos logs por segurança
+          const sanitizedBody = { ...req.body };
+          if (sanitizedBody.senha) {
+            sanitizedBody.senha = '[REDACTED]';
+          }
+          details.requestBody = sanitizedBody;
+        }
+        
+        // Para DELETE, adicionar ID do recurso
+        if (action === AUDIT_ACTIONS.DELETE) {
+          details.resourceId = req.params.id;
+        }
+        
+        // Para UPDATE, adicionar ID do recurso
+        if (action === AUDIT_ACTIONS.UPDATE) {
+          details.resourceId = req.params.id;
         }
         
         logAction(
