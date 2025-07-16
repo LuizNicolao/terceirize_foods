@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog } from 'react-icons/fa';
+import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog, FaSearch } from 'react-icons/fa';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -28,6 +28,39 @@ const UserSelector = styled.div`
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 24px;
+`;
+
+const SearchContainer = styled.div`
+  position: relative;
+  margin-bottom: 16px;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--white);
+  color: var(--dark-gray);
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-green);
+  }
+
+  &::placeholder {
+    color: var(--gray);
+  }
+`;
+
+const SearchIcon = styled.div`
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray);
+  font-size: 14px;
 `;
 
 const UserSelect = styled.select`
@@ -224,22 +257,40 @@ const AccessBadge = styled.span`
 
 const Permissoes = () => {
   const [usuarios, setUsuarios] = useState([]);
+  const [filteredUsuarios, setFilteredUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [userPermissions, setUserPermissions] = useState({});
   const [editingPermissions, setEditingPermissions] = useState({});
   const [saving, setSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     loadUsuarios();
   }, []);
+
+  useEffect(() => {
+    // Filtrar usuários baseado no termo de busca
+    if (searchTerm.trim() === '') {
+      setFilteredUsuarios(usuarios);
+    } else {
+      const filtered = usuarios.filter(user => 
+        user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getAccessTypeLabel(user.tipo_de_acesso).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        getAccessLevelLabel(user.nivel_de_acesso).toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredUsuarios(filtered);
+    }
+  }, [searchTerm, usuarios]);
 
   const loadUsuarios = async () => {
     try {
       setLoading(true);
       const response = await api.get('/usuarios');
       setUsuarios(response.data);
+      setFilteredUsuarios(response.data);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       toast.error('Erro ao carregar usuários');
@@ -378,6 +429,17 @@ const Permissoes = () => {
     }
   };
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    // Limpar seleção se o usuário selecionado não estiver nos resultados filtrados
+    if (selectedUserId && !filteredUsuarios.find(u => u.id === parseInt(selectedUserId))) {
+      setSelectedUserId('');
+      setSelectedUser(null);
+      setUserPermissions({});
+      setEditingPermissions({});
+    }
+  };
+
   if (loading) {
     return (
       <Container>
@@ -397,17 +459,40 @@ const Permissoes = () => {
       ) : (
         <div>
           <UserSelector>
+            <SearchContainer>
+              <SearchIcon>
+                <FaSearch />
+              </SearchIcon>
+              <SearchInput
+                type="text"
+                placeholder="Buscar usuários por nome, email, tipo ou nível..."
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+            </SearchContainer>
+
             <UserSelect
               value={selectedUserId}
               onChange={(e) => handleUserSelect(e.target.value)}
             >
               <option value="">Selecione um usuário</option>
-              {usuarios.map(user => (
+              {filteredUsuarios.map(user => (
                 <option key={user.id} value={user.id}>
                   {user.nome} - {getAccessTypeLabel(user.tipo_de_acesso)} ({getAccessLevelLabel(user.nivel_de_acesso)})
                 </option>
               ))}
             </UserSelect>
+
+            {filteredUsuarios.length === 0 && searchTerm.trim() !== '' && (
+              <div style={{ 
+                marginTop: '8px', 
+                color: 'var(--gray)', 
+                fontSize: '14px',
+                textAlign: 'center'
+              }}>
+                Nenhum usuário encontrado para "{searchTerm}"
+              </div>
+            )}
 
             {selectedUser && (
               <UserInfo>
