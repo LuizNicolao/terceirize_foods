@@ -5,15 +5,19 @@ const JWT_SECRET = process.env.JWT_SECRET || 'foods_jwt_secret_key_2024';
 
 // Middleware para verificar token JWT
 const authenticateToken = async (req, res, next) => {
+  console.log('Verificando autenticação para:', req.path);
+  
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
+    console.log('Token não fornecido');
     return res.status(401).json({ error: 'Token de acesso não fornecido' });
   }
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    console.log('Token decodificado para usuário ID:', decoded.userId);
     
     // Verificar se o usuário ainda existe e está ativo
     const user = await executeQuery(
@@ -22,12 +26,15 @@ const authenticateToken = async (req, res, next) => {
     );
 
     if (user.length === 0) {
+      console.log('Usuário não encontrado ou inativo');
       return res.status(401).json({ error: 'Usuário não encontrado ou inativo' });
     }
 
+    console.log('Usuário autenticado:', user[0].nome);
     req.user = user[0];
     next();
   } catch (error) {
+    console.error('Erro na autenticação:', error.message);
     return res.status(403).json({ error: 'Token inválido' });
   }
 };
@@ -36,9 +43,12 @@ const authenticateToken = async (req, res, next) => {
 const checkPermission = (permission) => {
   return (req, res, next) => {
     const user = req.user;
+    console.log('Verificando permissão:', permission, 'para usuário:', user.nome);
+    console.log('Tipo de acesso:', user.tipo_de_acesso, 'Nível:', user.nivel_de_acesso);
     
     // Administradores têm todas as permissões
     if (user.tipo_de_acesso === 'administrador') {
+      console.log('Usuário é administrador, permissão concedida');
       return next();
     }
 
@@ -50,11 +60,14 @@ const checkPermission = (permission) => {
     };
 
     const userPermissions = accessLevels[user.nivel_de_acesso] || [];
+    console.log('Permissões do usuário:', userPermissions);
     
     if (userPermissions.includes(permission)) {
+      console.log('Permissão concedida');
       return next();
     }
 
+    console.log('Permissão negada');
     return res.status(403).json({ error: 'Permissão insuficiente' });
   };
 };

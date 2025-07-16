@@ -31,10 +31,15 @@ const testConnection = async () => {
 // Função para executar queries
 const executeQuery = async (query, params = []) => {
   try {
+    console.log('Executando query:', query);
+    console.log('Parâmetros:', params);
     const [rows] = await pool.execute(query, params);
+    console.log('Resultado:', rows.length, 'linhas');
     return rows;
   } catch (error) {
     console.error('Erro na execução da query:', error);
+    console.error('Query:', query);
+    console.error('Parâmetros:', params);
     throw error;
   }
 };

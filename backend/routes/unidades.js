@@ -11,6 +11,8 @@ router.use(authenticateToken);
 // Listar unidades
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
+    console.log('Iniciando listagem de unidades...');
+    
     // Garante que page e limit são inteiros válidos
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.max(1, parseInt(req.query.limit) || 10);
@@ -32,8 +34,14 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     query += ' ORDER BY nome ASC LIMIT ? OFFSET ?';
     params.push(limit, offset);
 
+    console.log('Executando query:', query);
+    console.log('Parâmetros:', params);
+
     const unidades = await executeQuery(query, params);
     const countResult = await executeQuery(countQuery, countParams);
+
+    console.log('Unidades encontradas:', unidades.length);
+    console.log('Total de unidades:', countResult[0].total);
 
     const total = countResult[0].total;
     const totalPages = Math.ceil(total / limit);
@@ -50,7 +58,8 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
 
   } catch (error) {
     console.error('Erro ao listar unidades:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
   }
 });
 
