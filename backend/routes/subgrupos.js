@@ -11,8 +11,7 @@ router.use(authenticateToken);
 // Listar subgrupos
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '', grupo_id } = req.query;
-    const offset = (page - 1) * limit;
+    const { search = '', grupo_id } = req.query;
 
     let query = `
       SELECT sg.*, g.nome as grupo_nome
@@ -20,41 +19,23 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       LEFT JOIN grupos g ON sg.grupo_id = g.id
       WHERE 1=1
     `;
-    let countQuery = 'SELECT COUNT(*) as total FROM subgrupos WHERE 1=1';
     let params = [];
 
     if (search) {
       query += ' AND sg.nome LIKE ?';
-      countQuery += ' AND nome LIKE ?';
       params.push(`%${search}%`);
     }
 
     if (grupo_id) {
       query += ' AND sg.grupo_id = ?';
-      countQuery += ' AND grupo_id = ?';
       params.push(grupo_id);
     }
 
-    query += ' ORDER BY sg.nome ASC LIMIT ? OFFSET ?';
-    params.push(parseInt(limit), offset);
+    query += ' ORDER BY sg.nome ASC';
 
-    const [subgrupos, countResult] = await Promise.all([
-      executeQuery(query, params),
-      executeQuery(countQuery, search ? [`%${search}%`] : [])
-    ]);
+    const subgrupos = await executeQuery(query, params);
 
-    const total = countResult[0].total;
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      subgrupos,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        totalPages
-      }
-    });
+    res.json(subgrupos);
 
   } catch (error) {
     console.error('Erro ao listar subgrupos:', error);
