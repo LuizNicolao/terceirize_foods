@@ -349,6 +349,11 @@ const Usuarios = () => {
   // Salvar usuário
   const onSubmit = async (data) => {
     try {
+      // Se estiver editando e a senha estiver vazia, remove o campo
+      if (editingUser && (!data.senha || data.senha.trim() === '')) {
+        delete data.senha;
+      }
+
       if (editingUser) {
         await api.put(`/usuarios/${editingUser.id}`, data);
         toast.success('Usuário atualizado com sucesso!');
@@ -545,23 +550,21 @@ const Usuarios = () => {
                 {errors.email && <span style={{ color: 'red', fontSize: '12px' }}>{errors.email.message}</span>}
               </FormGroup>
 
-              {!editingUser && (
-                <FormGroup>
-                  <Label>Senha</Label>
-                  <Input
-                    type="password"
-                    placeholder="Senha"
-                    {...register('senha', { 
-                      required: 'Senha é obrigatória',
-                      minLength: {
-                        value: 6,
-                        message: 'Senha deve ter pelo menos 6 caracteres'
-                      }
-                    })}
-                  />
-                  {errors.senha && <span style={{ color: 'red', fontSize: '12px' }}>{errors.senha.message}</span>}
-                </FormGroup>
-              )}
+              <FormGroup>
+                <Label>Senha {editingUser && '(deixe em branco para manter a atual)'}</Label>
+                <Input
+                  type="password"
+                  placeholder={editingUser ? "Nova senha (opcional)" : "Senha"}
+                  {...register('senha', { 
+                    required: !editingUser ? 'Senha é obrigatória' : false,
+                    minLength: {
+                      value: 6,
+                      message: 'Senha deve ter pelo menos 6 caracteres'
+                    }
+                  })}
+                />
+                {errors.senha && <span style={{ color: 'red', fontSize: '12px' }}>{errors.senha.message}</span>}
+              </FormGroup>
 
               <FormGroup>
                 <Label>Nível de Acesso</Label>

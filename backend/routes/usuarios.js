@@ -130,6 +130,7 @@ router.put('/:id', [
   checkPermission('editar'),
   body('nome').optional().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('email').optional().isEmail().withMessage('Email inválido'),
+  body('senha').optional().isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
   body('nivel_de_acesso').optional().isIn(['I', 'II', 'III']).withMessage('Nível de acesso inválido'),
   body('tipo_de_acesso').optional().isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor']).withMessage('Tipo de acesso inválido'),
   body('status').optional().isIn(['ativo', 'inativo']).withMessage('Status inválido')
@@ -144,7 +145,7 @@ router.put('/:id', [
     }
 
     const { id } = req.params;
-    const { nome, email, nivel_de_acesso, tipo_de_acesso, status } = req.body;
+    const { nome, email, senha, nivel_de_acesso, tipo_de_acesso, status } = req.body;
 
     // Verificar se usuário existe
     const existingUser = await executeQuery(
@@ -191,6 +192,13 @@ router.put('/:id', [
     if (status) {
       updateFields.push('status = ?');
       updateParams.push(status);
+    }
+
+    // Tratar senha se fornecida
+    if (senha && senha.trim() !== '') {
+      const hashedPassword = await bcrypt.hash(senha, 12);
+      updateFields.push('senha = ?');
+      updateParams.push(hashedPassword);
     }
 
     if (updateFields.length === 0) {
