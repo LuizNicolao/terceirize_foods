@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { generateToken } = require('../middleware/auth');
+const { logAction, AUDIT_ACTIONS } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -12,12 +13,9 @@ router.post('/login', [
   body('senha').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres')
 ], async (req, res) => {
   try {
-    console.log('🔐 Tentativa de login recebida:', { email: req.body.email });
-    
     // Verificar erros de validação
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('❌ Erros de validação:', errors.array());
       return res.status(400).json({ 
         error: 'Dados inválidos',
         details: errors.array() 
@@ -25,7 +23,6 @@ router.post('/login', [
     }
 
     const { email, senha } = req.body;
-    console.log('📧 Email recebido:', email);
 
     // Buscar usuário
     const users = await executeQuery(
@@ -33,13 +30,7 @@ router.post('/login', [
       [email]
     );
 
-    console.log('👥 Usuários encontrados:', users.length);
-    if (users.length > 0) {
-      console.log('✅ Usuário encontrado:', { id: users[0].id, nome: users[0].nome, status: users[0].status });
-    }
-
     if (users.length === 0) {
-      console.log('❌ Usuário não encontrado para email:', email);
       return res.status(401).json({ error: 'Email ou senha incorretos' });
     }
 
@@ -47,30 +38,31 @@ router.post('/login', [
 
     // Verificar se usuário está ativo
     if (user.status !== 'ativo') {
-      console.log('❌ Usuário inativo:', user.status);
       return res.status(401).json({ error: 'Usuário inativo' });
     }
 
-    console.log('🔑 Verificando senha...');
     // Verificar senha
     const isValidPassword = await bcrypt.compare(senha, user.senha);
-    console.log('🔐 Resultado da verificação de senha:', isValidPassword);
-    console.log('🔐 Senha fornecida:', senha);
-    console.log('🔐 Hash da senha no banco:', user.senha);
 
     if (!isValidPassword) {
-      console.log('❌ Senha incorreta');
       return res.status(401).json({ error: 'Email ou senha incorretos' });
     }
 
-    console.log('✅ Senha válida! Gerando token...');
     // Gerar token
     const token = generateToken(user.id);
 
     // Remover senha do objeto de resposta
     const { senha: _, ...userWithoutPassword } = user;
 
-    console.log('🎉 Login realizado com sucesso para:', user.nome);
+    // Registrar auditoria de login
+    await logAction(
+      user.id,
+      AUDIT_ACTIONS.LOGIN,
+      'auth',
+      { email: user.email, userAgent: req.get('User-Agent') },
+      req.ip
+    );
+
     res.json({
       message: 'Login realizado com sucesso',
       user: userWithoutPassword,
@@ -78,7 +70,7 @@ router.post('/login', [
     });
 
   } catch (error) {
-    console.error('💥 Erro no login:', error);
+    console.error('Erro no login:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
