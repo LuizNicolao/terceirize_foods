@@ -195,23 +195,13 @@ const getAuditLogs = async (filters = {}) => {
         a.ip_address,
         a.timestamp
       FROM auditoria_acoes a
-      WHERE 1=1
+      ORDER BY a.timestamp DESC
+      LIMIT ? OFFSET ?
     `;
     
-    const params = [];
-    
-    if (filters.acao) {
-      query += ' AND a.acao = ?';
-      params.push(filters.acao);
-    }
-    
-    if (filters.recurso) {
-      query += ' AND a.recurso = ?';
-      params.push(filters.recurso);
-    }
-    
-    query += ' ORDER BY a.timestamp DESC LIMIT ? OFFSET ?';
-    params.push(filters.limit || 100, filters.offset || 0);
+    const limit = parseInt(filters.limit) || 100;
+    const offset = parseInt(filters.offset) || 0;
+    const params = [limit, offset];
     
     console.log('Query final:', query);
     console.log('Parâmetros:', params);
