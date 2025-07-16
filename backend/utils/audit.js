@@ -184,17 +184,20 @@ const getAuditLogs = async (filters = {}) => {
     console.log('=== INÍCIO DA FUNÇÃO getAuditLogs ===');
     console.log('Filtros recebidos:', filters);
     
-    // Query simplificada para testar
+    // Query com JOIN para nome do usuário
     let query = `
       SELECT 
         a.id,
         a.usuario_id,
+        u.nome as usuario_nome,
+        u.email as usuario_email,
         a.acao,
         a.recurso,
         a.detalhes,
         a.ip_address,
         a.timestamp
       FROM auditoria_acoes a
+      LEFT JOIN usuarios u ON a.usuario_id = u.id
       ORDER BY a.timestamp DESC 
       LIMIT 10
     `;
