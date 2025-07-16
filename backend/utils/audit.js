@@ -181,6 +181,9 @@ const auditChangesMiddleware = (action, resource) => {
 const getAuditLogs = async (filters = {}) => {
   try {
     const { executeQuery } = require('../config/database');
+    console.log('=== INÍCIO DA FUNÇÃO getAuditLogs ===');
+    console.log('Filtros recebidos:', filters);
+    
     let query = `
       SELECT 
         a.id,
@@ -227,13 +230,32 @@ const getAuditLogs = async (filters = {}) => {
     query += ' ORDER BY a.timestamp DESC LIMIT ? OFFSET ?';
     params.push(filters.limit || 100, filters.offset || 0);
     
-    const logs = await executeQuery(query, params);
+    console.log('Query final:', query);
+    console.log('Parâmetros:', params);
     
-    return logs.map(log => ({
-      ...log,
-      detalhes: log.detalhes ? JSON.parse(log.detalhes) : null
-    }));
+    const logs = await executeQuery(query, params);
+    console.log('Logs brutos encontrados:', logs.length);
+    
+    const processedLogs = logs.map(log => {
+      try {
+        return {
+          ...log,
+          detalhes: log.detalhes ? JSON.parse(log.detalhes) : null
+        };
+      } catch (parseError) {
+        console.error('Erro ao fazer parse do JSON:', parseError);
+        return {
+          ...log,
+          detalhes: null
+        };
+      }
+    });
+    
+    console.log('Logs processados:', processedLogs.length);
+    return processedLogs;
+    
   } catch (error) {
+    console.error('=== ERRO NA FUNÇÃO getAuditLogs ===');
     console.error('Erro ao buscar logs de auditoria:', error);
     throw error;
   }

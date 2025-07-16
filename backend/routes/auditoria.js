@@ -28,6 +28,28 @@ router.get('/test', async (req, res) => {
 // Listar logs de auditoria
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
+    console.log('=== INÍCIO DA REQUISIÇÃO DE AUDITORIA ===');
+    console.log('Usuário atual:', {
+      id: req.user.id,
+      nome: req.user.nome,
+      tipo_de_acesso: req.user.tipo_de_acesso,
+      nivel_de_acesso: req.user.nivel_de_acesso
+    });
+
+    // Verificar se usuário tem permissão para visualizar auditoria
+    if (req.user.tipo_de_acesso !== 'administrador' && 
+        !(req.user.tipo_de_acesso === 'coordenador' && req.user.nivel_de_acesso === 'III')) {
+      return res.status(403).json({ error: 'Acesso negado. Apenas administradores e coordenadores nível III podem visualizar logs de auditoria.' });
+    }
+
+    // Teste simples primeiro - apenas contar registros
+    const { executeQuery } = require('../config/database');
+    console.log('Executando query de teste...');
+    
+    const countResult = await executeQuery('SELECT COUNT(*) as total FROM auditoria_acoes');
+    console.log('Total de registros na auditoria:', countResult[0].total);
+
+    // Se chegou até aqui, vamos buscar os logs
     const { 
       usuario_id, 
       acao, 
@@ -37,20 +59,6 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       limit = 100, 
       offset = 0 
     } = req.query;
-
-    // Verificar se usuário tem permissão para visualizar auditoria
-    // Permitir administradores e coordenadores com nível III
-    console.log('Usuário atual:', {
-      id: req.user.id,
-      nome: req.user.nome,
-      tipo_de_acesso: req.user.tipo_de_acesso,
-      nivel_de_acesso: req.user.nivel_de_acesso
-    });
-    
-    if (req.user.tipo_de_acesso !== 'administrador' && 
-        !(req.user.tipo_de_acesso === 'coordenador' && req.user.nivel_de_acesso === 'III')) {
-      return res.status(403).json({ error: 'Acesso negado. Apenas administradores e coordenadores nível III podem visualizar logs de auditoria.' });
-    }
 
     const filters = {
       usuario_id: usuario_id ? parseInt(usuario_id) : null,
@@ -73,6 +81,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     });
 
   } catch (error) {
+    console.error('=== ERRO NA AUDITORIA ===');
     console.error('Erro ao buscar logs de auditoria:', error);
     console.error('Stack trace:', error.stack);
     res.status(500).json({ 
