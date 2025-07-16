@@ -369,12 +369,12 @@ const Produtos = () => {
     setEditingProduto(produto);
     setValue('nome', produto.nome);
     setValue('descricao', produto.descricao);
-    setValue('codigo', produto.codigo);
+    setValue('codigo_barras', produto.codigo_barras);
     setValue('preco_custo', produto.preco_custo);
     setValue('preco_venda', produto.preco_venda);
     setValue('estoque_minimo', produto.estoque_minimo);
     setValue('estoque_atual', produto.estoque_atual);
-    setValue('fornecedor_id', produto.fornecedor_id);
+    setValue('id_fornecedor', produto.id_fornecedor);
     setValue('grupo_id', produto.grupo_id);
     setValue('unidade_id', produto.unidade_id);
     setValue('status', produto.status);
@@ -392,10 +392,68 @@ const Produtos = () => {
   const onSubmit = async (data) => {
     try {
       if (editingProduto) {
-        await api.put(`/produtos/${editingProduto.id}`, data);
+        // Para edição, enviar apenas os campos que foram alterados
+        const updateData = {};
+        
+        if (data.nome !== editingProduto.nome) {
+          updateData.nome = data.nome;
+        }
+        
+        if (data.codigo_barras !== editingProduto.codigo_barras) {
+          updateData.codigo_barras = data.codigo_barras;
+        }
+        
+        if (data.descricao !== editingProduto.descricao) {
+          updateData.descricao = data.descricao;
+        }
+        
+        if (data.preco_custo !== editingProduto.preco_custo) {
+          updateData.preco_custo = data.preco_custo;
+        }
+        
+        if (data.preco_venda !== editingProduto.preco_venda) {
+          updateData.preco_venda = data.preco_venda;
+        }
+        
+        if (data.estoque_atual !== editingProduto.estoque_atual) {
+          updateData.estoque_atual = data.estoque_atual;
+        }
+        
+        if (data.estoque_minimo !== editingProduto.estoque_minimo) {
+          updateData.estoque_minimo = data.estoque_minimo;
+        }
+        
+        if (data.id_fornecedor !== editingProduto.id_fornecedor) {
+          updateData.id_fornecedor = data.id_fornecedor;
+        }
+        
+        if (data.grupo_id !== editingProduto.grupo_id) {
+          updateData.grupo_id = data.grupo_id;
+        }
+        
+        if (data.unidade_id !== editingProduto.unidade_id) {
+          updateData.unidade_id = data.unidade_id;
+        }
+        
+        if (data.status !== editingProduto.status) {
+          updateData.status = parseInt(data.status);
+        }
+        
+        // Se não há campos para atualizar, mostrar erro
+        if (Object.keys(updateData).length === 0) {
+          toast.error('Nenhum campo foi alterado');
+          return;
+        }
+        
+        await api.put(`/produtos/${editingProduto.id}`, updateData);
         toast.success('Produto atualizado com sucesso!');
       } else {
-        await api.post('/produtos', data);
+        // Para criação, enviar todos os campos
+        const createData = { ...data };
+        if (createData.status) {
+          createData.status = parseInt(createData.status);
+        }
+        await api.post('/produtos', createData);
         toast.success('Produto criado com sucesso!');
       }
       
@@ -416,7 +474,7 @@ const Produtos = () => {
         loadData();
       } catch (error) {
         console.error('Erro ao excluir produto:', error);
-        toast.error('Erro ao excluir produto');
+        toast.error(error.response?.data?.error || 'Erro ao excluir produto');
       }
     }
   };
@@ -424,9 +482,9 @@ const Produtos = () => {
   // Filtrar produtos
   const filteredProdutos = produtos.filter(produto => {
     const matchesSearch = produto.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         produto.codigo?.includes(searchTerm) ||
+                         produto.codigo_barras?.includes(searchTerm) ||
                          produto.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || produto.status === statusFilter;
+    const matchesStatus = statusFilter === 'todos' || produto.status === parseInt(statusFilter);
     const matchesGrupo = grupoFilter === 'todos' || produto.grupo_id === parseInt(grupoFilter);
     return matchesSearch && matchesStatus && matchesGrupo;
   });
@@ -488,8 +546,8 @@ const Produtos = () => {
           onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="todos">Todos os status</option>
-          <option value="ativo">Ativo</option>
-          <option value="inativo">Inativo</option>
+          <option value="1">Ativo</option>
+          <option value="0">Inativo</option>
         </FilterSelect>
         <FilterSelect
           value={grupoFilter}
@@ -532,16 +590,16 @@ const Produtos = () => {
               filteredProdutos.map((produto) => (
                 <tr key={produto.id}>
                   <Td>{produto.nome}</Td>
-                  <Td>{produto.codigo}</Td>
+                  <Td>{produto.codigo_barras}</Td>
                   <Td>
                     <PriceDisplay>{formatPrice(produto.preco_venda)}</PriceDisplay>
                   </Td>
                   <Td>{produto.estoque_atual || 0}</Td>
                   <Td>{getGrupoName(produto.grupo_id)}</Td>
-                  <Td>{getFornecedorName(produto.fornecedor_id)}</Td>
+                  <Td>{getFornecedorName(produto.id_fornecedor)}</Td>
                   <Td>
-                    <StatusBadge status={produto.status}>
-                      {produto.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                    <StatusBadge status={produto.status === 1 ? 'ativo' : 'inativo'}>
+                      {produto.status === 1 ? 'Ativo' : 'Inativo'}
                     </StatusBadge>
                   </Td>
                   <Td>
@@ -596,13 +654,13 @@ const Produtos = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label>Código</Label>
+                <Label>Código de Barras</Label>
                 <Input
                   type="text"
-                  placeholder="Código do produto"
-                  {...register('codigo')}
+                  placeholder="Código de barras do produto"
+                  {...register('codigo_barras')}
                 />
-                {errors.codigo && <span style={{ color: 'red', fontSize: '12px' }}>{errors.codigo.message}</span>}
+                {errors.codigo_barras && <span style={{ color: 'red', fontSize: '12px' }}>{errors.codigo_barras.message}</span>}
               </FormGroup>
 
               <FormGroup>
@@ -666,7 +724,7 @@ const Produtos = () => {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
                 <FormGroup>
                   <Label>Fornecedor</Label>
-                  <Select {...register('fornecedor_id')}>
+                  <Select {...register('id_fornecedor')}>
                     <option value="">Selecione...</option>
                     {fornecedores.map(fornecedor => (
                       <option key={fornecedor.id} value={fornecedor.id}>
@@ -674,7 +732,7 @@ const Produtos = () => {
                       </option>
                     ))}
                   </Select>
-                  {errors.fornecedor_id && <span style={{ color: 'red', fontSize: '12px' }}>{errors.fornecedor_id.message}</span>}
+                  {errors.id_fornecedor && <span style={{ color: 'red', fontSize: '12px' }}>{errors.id_fornecedor.message}</span>}
                 </FormGroup>
 
                 <FormGroup>
@@ -708,8 +766,8 @@ const Produtos = () => {
                 <Label>Status</Label>
                 <Select {...register('status', { required: 'Status é obrigatório' })}>
                   <option value="">Selecione...</option>
-                  <option value="ativo">Ativo</option>
-                  <option value="inativo">Inativo</option>
+                  <option value="1">Ativo</option>
+                  <option value="0">Inativo</option>
                 </Select>
                 {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
               </FormGroup>

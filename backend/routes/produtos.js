@@ -86,12 +86,8 @@ router.post('/', [
     }
 
     const {
-      nome, descricao, codigo_barras, unidade, unidade_tributavel,
-      preco_custo, preco_venda, estoque_atual, estoque_minimo,
-      id_fornecedor, peso_bruto, peso_liquido, grupo_id, subgrupo_id,
-      grupo, sub_grupo, ncm, cest, cfop, origem, cst_icms, csosn,
-      aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins,
-      referencia, unidade_id, ean_tributavel, info_adicionais, descricao_nfe
+      nome, descricao, codigo_barras, preco_custo, preco_venda, estoque_atual, estoque_minimo,
+      id_fornecedor, grupo_id, unidade_id, status
     } = req.body;
 
     // Verificar se código de barras já existe
@@ -108,17 +104,11 @@ router.post('/', [
 
     // Inserir produto
     const result = await executeQuery(
-      `INSERT INTO produtos (nome, descricao, codigo_barras, unidade, unidade_tributavel,
-                            preco_custo, preco_venda, estoque_atual, estoque_minimo, id_fornecedor,
-                            peso_bruto, peso_liquido, grupo_id, subgrupo_id, grupo, sub_grupo,
-                            ncm, cest, cfop, origem, cst_icms, csosn, aliquota_icms, aliquota_ipi,
-                            aliquota_pis, aliquota_cofins, referencia, unidade_id, ean_tributavel,
-                            info_adicionais, descricao_nfe)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [nome, descricao, codigo_barras, unidade, unidade_tributavel, preco_custo, preco_venda,
-       estoque_atual, estoque_minimo, id_fornecedor, peso_bruto, peso_liquido, grupo_id, subgrupo_id,
-       grupo, sub_grupo, ncm, cest, cfop, origem, cst_icms, csosn, aliquota_icms, aliquota_ipi,
-       aliquota_pis, aliquota_cofins, referencia, unidade_id, ean_tributavel, info_adicionais, descricao_nfe]
+      `INSERT INTO produtos (nome, descricao, codigo_barras, preco_custo, preco_venda, 
+                            estoque_atual, estoque_minimo, id_fornecedor, grupo_id, unidade_id, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [nome, descricao, codigo_barras, preco_custo, preco_venda, estoque_atual, estoque_minimo, 
+       id_fornecedor, grupo_id, unidade_id, status]
     );
 
     const newProduto = await executeQuery(
