@@ -304,35 +304,7 @@ const EmptyState = styled.div`
   color: var(--gray);
 `;
 
-const StatsCard = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
-`;
 
-const StatsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-`;
-
-const StatItem = styled.div`
-  text-align: center;
-`;
-
-const StatValue = styled.div`
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--primary-green);
-  margin-bottom: 4px;
-`;
-
-const StatLabel = styled.div`
-  font-size: 14px;
-  color: var(--gray);
-`;
 
 const Grupos = () => {
   const [grupos, setGrupos] = useState([]);
@@ -434,12 +406,7 @@ const Grupos = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Calcular estatísticas
-  const stats = {
-    total: grupos.length,
-    ativos: grupos.filter(g => g.status === 'ativo').length,
-    inativos: grupos.filter(g => g.status === 'inativo').length
-  };
+
 
   if (loading) {
     return (
@@ -459,22 +426,7 @@ const Grupos = () => {
         </AddButton>
       </Header>
 
-      <StatsCard>
-        <StatsGrid>
-          <StatItem>
-            <StatValue>{stats.total}</StatValue>
-            <StatLabel>Total de Grupos</StatLabel>
-          </StatItem>
-          <StatItem>
-            <StatValue>{stats.ativos}</StatValue>
-            <StatLabel>Grupos Ativos</StatLabel>
-          </StatItem>
-          <StatItem>
-            <StatValue>{stats.inativos}</StatValue>
-            <StatLabel>Grupos Inativos</StatLabel>
-          </StatItem>
-        </StatsGrid>
-      </StatsCard>
+
 
       <SearchContainer>
         <SearchInput
