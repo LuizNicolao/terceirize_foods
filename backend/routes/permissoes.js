@@ -266,30 +266,14 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
 });
 
 // Atualizar permissões de um usuário
-router.put('/usuario/:usuarioId', [
-  checkPermission('editar'),
-  body('permissoes').isArray().withMessage('Permissões deve ser um array'),
-  body('permissoes.*.tela').isString().withMessage('Tela é obrigatória'),
-  body('permissoes.*.pode_visualizar').isBoolean().withMessage('pode_visualizar deve ser booleano'),
-  body('permissoes.*.pode_criar').isBoolean().withMessage('pode_criar deve ser booleano'),
-  body('permissoes.*.pode_editar').isBoolean().withMessage('pode_editar deve ser booleano'),
-  body('permissoes.*.pode_excluir').isBoolean().withMessage('pode_excluir deve ser booleano')
-], async (req, res) => {
+router.put('/usuario/:usuarioId', checkPermission('editar'), async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
-
     const { usuarioId } = req.params;
     const { permissoes } = req.body;
 
     // Verificar se usuário existe
     const usuario = await executeQuery(
-      'SELECT id FROM usuarios WHERE id = ?',
+      'SELECT id, nome, email, tipo_de_acesso, nivel_de_acesso FROM usuarios WHERE id = ?',
       [usuarioId]
     );
 
@@ -306,8 +290,7 @@ router.put('/usuario/:usuarioId', [
     // Inserir novas permissões
     for (const permissao of permissoes) {
       await executeQuery(
-        `INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        'INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir) VALUES (?, ?, ?, ?, ?, ?)',
         [
           usuarioId,
           permissao.tela,
@@ -319,22 +302,53 @@ router.put('/usuario/:usuarioId', [
       );
     }
 
-    // Buscar permissões atualizadas
-    const permissoesAtualizadas = await executeQuery(
-      'SELECT * FROM permissoes_usuario WHERE usuario_id = ? ORDER BY tela',
-      [usuarioId]
-    );
-
-    res.json({
-      message: 'Permissões atualizadas com sucesso',
-      permissoes: permissoesAtualizadas
-    });
+    res.json({ message: 'Permissões atualizadas com sucesso' });
 
   } catch (error) {
     console.error('Erro ao atualizar permissões:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
+
+// Função para atualizar permissões quando tipo/nível de acesso for alterado
+const atualizarPermissoesPorTipoNivel = async (usuarioId, tipoAcesso, nivelAcesso) => {
+  try {
+    const permissoes = PERMISSOES_PADRAO[tipoAcesso]?.[nivelAcesso];
+    
+    if (!permissoes) {
+      console.error('Combinação de tipo e nível de acesso não encontrada:', tipoAcesso, nivelAcesso);
+      return false;
+    }
+
+    // Deletar permissões existentes
+    await executeQuery(
+      'DELETE FROM permissoes_usuario WHERE usuario_id = ?',
+      [usuarioId]
+    );
+
+    // Inserir novas permissões padrão
+    for (const [tela, permissoesTela] of Object.entries(permissoes)) {
+      await executeQuery(
+        'INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir) VALUES (?, ?, ?, ?, ?, ?)',
+        [
+          usuarioId,
+          tela,
+          permissoesTela.visualizar ? 1 : 0,
+          permissoesTela.criar ? 1 : 0,
+          permissoesTela.editar ? 1 : 0,
+          permissoesTela.excluir ? 1 : 0
+        ]
+      );
+    }
+
+    console.log(`Permissões atualizadas para usuário ${usuarioId}: ${tipoAcesso} - ${nivelAcesso}`);
+    return true;
+
+  } catch (error) {
+    console.error('Erro ao atualizar permissões por tipo/nível:', error);
+    return false;
+  }
+};
 
 // Listar todas as telas disponíveis
 router.get('/telas', checkPermission('visualizar'), (req, res) => {
@@ -375,4 +389,5 @@ router.get('/niveis-acesso', checkPermission('visualizar'), (req, res) => {
   res.json(niveis);
 });
 
-module.exports = router; 
+// Exportar a função para ser usada em outras rotas
+module.exports = { router, atualizarPermissoesPorTipoNivel }; 

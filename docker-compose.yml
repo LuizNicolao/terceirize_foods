@@ -10,6 +10,13 @@ services:
       MYSQL_DATABASE: foods_db
       MYSQL_USER: foods_user
       MYSQL_PASSWORD: foods123456
+      # Configurações para otimizar uso de memória
+      MYSQL_INNODB_BUFFER_POOL_SIZE: 512M
+      MYSQL_INNODB_LOG_FILE_SIZE: 128M
+      MYSQL_INNODB_LOG_BUFFER_SIZE: 32M
+      MYSQL_QUERY_CACHE_SIZE: 64M
+      MYSQL_QUERY_CACHE_TYPE: 1
+      MYSQL_MAX_CONNECTIONS: 100
     ports:
       - "3306:3306"
     volumes:
@@ -17,6 +24,13 @@ services:
       - ./BANCO_DE_DADOS_FOODS.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - foods_network
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 512M
+    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=512M --innodb-log-file-size=128M --innodb-log-buffer-size=32M --query-cache-size=64M --query-cache-type=1 --max-connections=100
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -34,6 +48,12 @@ services:
       - mysql
     networks:
       - foods_network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
 
   backend:
     build: ./backend
@@ -49,6 +69,8 @@ services:
       DB_USER: foods_user
       DB_PASSWORD: foods123456
       JWT_SECRET: foods_jwt_secret_key_2024
+      # Configurações para otimizar uso de memória do Node.js
+      NODE_OPTIONS: "--max-old-space-size=512"
     depends_on:
       - mysql
     networks:
@@ -56,6 +78,12 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
   frontend:
     build: ./frontend
@@ -65,6 +93,9 @@ services:
       - "3000:3000"
     environment:
       REACT_APP_API_URL: http://82.29.57.43:3001/api
+      # Configurações para otimizar uso de memória do Node.js/React
+      NODE_OPTIONS: "--max-old-space-size=512"
+      GENERATE_SOURCEMAP: false
     depends_on:
       - backend
     networks:
@@ -72,6 +103,12 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
 
 volumes:
   mysql_data:
