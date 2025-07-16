@@ -110,6 +110,7 @@ router.post('/', [
     // Criar permissões padrão para o novo usuário
     try {
       await atualizarPermissoesPorTipoNivel(result.insertId, tipo_de_acesso, nivel_de_acesso);
+      console.log('Permissões padrão criadas para novo usuário');
     } catch (error) {
       console.error('Erro ao criar permissões padrão:', error);
       // Não falhar a criação do usuário se a criação de permissões falhar
@@ -224,8 +225,11 @@ router.put('/:id', [
       const finalTipo = tipo_de_acesso || updatedUser[0].tipo_de_acesso;
       const finalNivel = nivel_de_acesso || updatedUser[0].nivel_de_acesso;
       
+      console.log(`Atualizando permissões para usuário ${id}: ${finalTipo} - ${finalNivel}`);
+      
       try {
         await atualizarPermissoesPorTipoNivel(id, finalTipo, finalNivel);
+        console.log('Permissões atualizadas com sucesso');
       } catch (error) {
         console.error('Erro ao atualizar permissões:', error);
         // Não falhar a atualização do usuário se a atualização de permissões falhar

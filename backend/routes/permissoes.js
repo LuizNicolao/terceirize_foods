@@ -341,6 +341,7 @@ const atualizarPermissoesPorTipoNivel = async (usuarioId, tipoAcesso, nivelAcess
       );
     }
 
+    console.log(`Permissões atualizadas para usuário ${usuarioId}: ${tipoAcesso} - ${nivelAcesso}`);
     return true;
 
   } catch (error) {

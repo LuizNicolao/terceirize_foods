@@ -18,6 +18,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       return res.status(403).json({ error: 'Acesso negado. Apenas administradores e coordenadores nível III podem visualizar logs de auditoria.' });
     }
 
+    // Se chegou até aqui, vamos buscar os logs
     const { 
       usuario_id, 
       acao, 

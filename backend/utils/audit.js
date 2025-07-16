@@ -29,6 +29,8 @@ const logAction = async (userId, action, resource, details = null, ip = null) =>
       details ? JSON.stringify(details) : null,
       ip
     ]);
+    
+    console.log(`Auditoria: Usuário ${userId} executou ${action} em ${resource}`);
   } catch (error) {
     console.error('Erro ao registrar auditoria:', error);
     // Não falhar a operação principal se a auditoria falhar
@@ -228,19 +230,32 @@ const getAuditLogs = async (filters = {}) => {
     
     const logs = await executeQuery(query, params);
     
-    return logs.map(log => {
+    // Processar logs com tratamento de erro robusto
+    const processedLogs = logs.map((log, index) => {
       try {
+        let detalhes = null;
+        if (log.detalhes) {
+          if (typeof log.detalhes === 'string') {
+            detalhes = JSON.parse(log.detalhes);
+          } else {
+            detalhes = log.detalhes;
+          }
+        }
+        
         return {
           ...log,
-          detalhes: log.detalhes ? (typeof log.detalhes === 'string' ? JSON.parse(log.detalhes) : log.detalhes) : null
+          detalhes: detalhes
         };
       } catch (parseError) {
+        console.error(`Erro ao processar log ${index}:`, parseError);
         return {
           ...log,
           detalhes: null
         };
       }
     });
+    
+    return processedLogs;
     
   } catch (error) {
     console.error('Erro ao buscar logs de auditoria:', error);
