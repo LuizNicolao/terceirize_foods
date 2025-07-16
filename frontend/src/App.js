@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
+import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/Usuarios';
@@ -13,8 +14,8 @@ import Subgrupos from './pages/Subgrupos';
 import Unidades from './pages/Unidades';
 import Permissoes from './pages/Permissoes';
 
-// Componente para rotas protegidas
-const ProtectedRoute = ({ children }) => {
+// Componente para rotas protegidas com autenticação
+const AuthenticatedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
@@ -60,72 +61,86 @@ const App = () => {
       <Route 
         path="/" 
         element={
-          <ProtectedRoute>
+          <AuthenticatedRoute>
             <Dashboard />
-          </ProtectedRoute>
+          </AuthenticatedRoute>
         } 
       />
 
       <Route 
         path="/usuarios" 
         element={
-          <ProtectedRoute>
-            <Usuarios />
-          </ProtectedRoute>
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="usuarios">
+              <Usuarios />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
         } 
       />
 
       <Route 
         path="/fornecedores" 
         element={
-          <ProtectedRoute>
-            <Fornecedores />
-          </ProtectedRoute>
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="fornecedores">
+              <Fornecedores />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
         } 
       />
 
       <Route 
         path="/produtos" 
         element={
-          <ProtectedRoute>
-            <Produtos />
-          </ProtectedRoute>
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="produtos">
+              <Produtos />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
         } 
       />
 
       <Route 
         path="/grupos" 
         element={
-          <ProtectedRoute>
-            <Grupos />
-          </ProtectedRoute>
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="grupos">
+              <Grupos />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
         } 
       />
 
       <Route 
         path="/subgrupos" 
         element={
-          <ProtectedRoute>
-            <Subgrupos />
-          </ProtectedRoute>
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="subgrupos">
+              <Subgrupos />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
         } 
       />
 
       <Route 
         path="/unidades" 
         element={
-          <ProtectedRoute>
-            <Unidades />
-          </ProtectedRoute>
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="unidades">
+              <Unidades />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
         } 
       />
 
       <Route 
         path="/permissoes" 
         element={
-          <ProtectedRoute>
-            <Permissoes />
-          </ProtectedRoute>
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="permissoes">
+              <Permissoes />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
         } 
       />
 

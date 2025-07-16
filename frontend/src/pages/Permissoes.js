@@ -358,28 +358,8 @@ const Permissoes = () => {
     loadUsuarios();
   }, []);
 
-  // Detectar quando a janela ganha foco para recarregar dados
-  useEffect(() => {
-    const handleFocus = () => {
-      if (!loading) {
-        loadUsuarios();
-      }
-    };
-
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [loading]);
-
-  // Recarregar dados periodicamente para detectar mudanças
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (!loading) {
-        loadUsuarios();
-      }
-    }, 3000); // Recarregar a cada 3 segundos para ser mais responsivo
-
-    return () => clearInterval(interval);
-  }, [loading]);
+  // Removido recarregamento automático para melhorar a experiência do usuário
+  // Os dados são carregados apenas uma vez ao montar o componente
 
   useEffect(() => {
     // Filtrar usuários baseado no termo de busca

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 import { Toaster } from 'react-hot-toast';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
+import { PermissionsProvider } from './contexts/PermissionsContext';
 import './styles/global.css';
 
 const queryClient = new QueryClient({
@@ -22,17 +23,19 @@ root.render(
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <App />
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
-              },
-            }}
-          />
+          <PermissionsProvider>
+            <App />
+            <Toaster 
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+              }}
+            />
+          </PermissionsProvider>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>

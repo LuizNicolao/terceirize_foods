@@ -15,6 +15,7 @@ import {
   FaSitemap
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 const SidebarContainer = styled.div`
   position: fixed;
@@ -160,19 +161,20 @@ const Overlay = styled.div`
 `;
 
 const menuItems = [
-  { path: '/', icon: FaHome, label: 'Dashboard' },
-  { path: '/usuarios', icon: FaUsers, label: 'Usuários' },
-  { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores' },
-  { path: '/produtos', icon: FaBox, label: 'Produtos' },
-  { path: '/grupos', icon: FaLayerGroup, label: 'Grupos' },
-  { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos' },
-  { path: '/unidades', icon: FaRulerCombined, label: 'Unidades' },
-  { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões' },
+  { path: '/', icon: FaHome, label: 'Dashboard', screen: 'dashboard' },
+  { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
+  { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
+  { path: '/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
+  { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
+  { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
+  { path: '/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
+  { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
 ];
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
   const { logout } = useAuth();
+  const { canView, loading } = usePermissions();
 
   const handleLogout = () => {
     logout();
@@ -195,6 +197,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
+            
+            // Verificar se o usuário pode visualizar este item
+            // Dashboard sempre é visível, outros itens dependem das permissões
+            const canViewItem = item.screen === 'dashboard' || canView(item.screen);
+            
+            if (!canViewItem) {
+              return null; // Não renderizar o item se não tiver permissão
+            }
             
             return (
               <NavItem 
