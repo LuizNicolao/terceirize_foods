@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes } from 'react-icons/fa';
+import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog } from 'react-icons/fa';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -22,107 +22,93 @@ const Title = styled.h1`
   margin: 0;
 `;
 
-const UserCard = styled.div`
+const UserSelector = styled.div`
   background: var(--white);
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 24px;
 `;
 
-const UserInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-`;
-
-const UserDetails = styled.div`
-  flex: 1;
-`;
-
-const UserName = styled.h3`
-  color: var(--dark-gray);
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 4px 0;
-`;
-
-const UserEmail = styled.p`
-  color: var(--gray);
-  font-size: 14px;
-  margin: 0 0 8px 0;
-`;
-
-const UserAccess = styled.div`
-  display: flex;
-  gap: 16px;
-`;
-
-const AccessBadge = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props => props.type === 'administrador' ? 'var(--error-red)' : 
-                props.type === 'coordenador' ? 'var(--orange)' :
-                props.type === 'gerente' ? 'var(--blue)' :
-                props.type === 'supervisor' ? 'var(--success-green)' : 'var(--gray)'};
-  color: white;
-`;
-
-const PermissionsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-`;
-
-const PermissionCard = styled.div`
-  background: #f8f9fa;
+const UserSelect = styled.select`
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 16px;
-  border: 1px solid #e0e0e0;
-`;
-
-const PermissionTitle = styled.h4`
-  color: var(--dark-gray);
   font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  text-transform: capitalize;
-`;
-
-const CheckboxGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-`;
-
-const CheckboxItem = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  background: var(--white);
   color: var(--dark-gray);
-  cursor: pointer;
-  padding: 4px 0;
 
-  input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--primary-green);
+  &:focus {
+    outline: none;
+    border-color: var(--primary-green);
   }
+`;
+
+const PermissionsTable = styled.div`
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+`;
+
+const TableHeader = styled.div`
+  background: #f8f9fa;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  font-weight: 600;
+  color: var(--dark-gray);
+  font-size: 14px;
+`;
+
+const TableRow = styled.div`
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const ScreenName = styled.div`
+  font-weight: 600;
+  color: var(--dark-gray);
+  font-size: 14px;
+`;
+
+const PermissionCell = styled.div`
+  display: flex;
+  justify-content: center;
+`;
+
+const Checkbox = styled.input`
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-green);
+  cursor: pointer;
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
   gap: 12px;
-  margin-top: 20px;
+  margin-top: 24px;
+  justify-content: center;
 `;
 
 const Button = styled.button`
-  padding: 10px 20px;
+  padding: 12px 24px;
   border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
@@ -140,6 +126,11 @@ const Button = styled.button`
     &:hover {
       background: var(--dark-green);
     }
+
+    &:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
   }
 
   &.secondary {
@@ -148,6 +139,11 @@ const Button = styled.button`
 
     &:hover {
       background: #d0d0d0;
+    }
+
+    &:disabled {
+      background: #ccc;
+      cursor: not-allowed;
     }
   }
 
@@ -177,9 +173,59 @@ const EmptyState = styled.div`
   font-size: 16px;
 `;
 
+const UserInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+`;
+
+const UserAvatar = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+`;
+
+const UserDetails = styled.div`
+  flex: 1;
+`;
+
+const UserName = styled.h3`
+  color: var(--dark-gray);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+`;
+
+const UserEmail = styled.p`
+  color: var(--gray);
+  font-size: 14px;
+  margin: 0;
+`;
+
+const AccessBadge = styled.span`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: ${props => props.type === 'administrador' ? 'var(--error-red)' : 
+                props.type === 'coordenador' ? 'var(--orange)' :
+                props.type === 'gerente' ? 'var(--blue)' :
+                props.type === 'supervisor' ? 'var(--success-green)' : 'var(--gray)'};
+  color: white;
+`;
+
 const Permissoes = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [userPermissions, setUserPermissions] = useState({});
   const [editingPermissions, setEditingPermissions] = useState({});
@@ -225,9 +271,16 @@ const Permissoes = () => {
     }
   };
 
-  const handleUserSelect = (user) => {
+  const handleUserSelect = (userId) => {
+    const user = usuarios.find(u => u.id === parseInt(userId));
+    setSelectedUserId(userId);
     setSelectedUser(user);
-    loadUserPermissions(user.id);
+    if (userId) {
+      loadUserPermissions(userId);
+    } else {
+      setUserPermissions({});
+      setEditingPermissions({});
+    }
   };
 
   const handlePermissionChange = (tela, acao, value) => {
@@ -292,17 +345,6 @@ const Permissoes = () => {
     }
   };
 
-  const getAccessTypeColor = (type) => {
-    switch (type) {
-      case 'administrador': return 'var(--error-red)';
-      case 'coordenador': return 'var(--orange)';
-      case 'gerente': return 'var(--blue)';
-      case 'supervisor': return 'var(--success-green)';
-      case 'administrativo': return 'var(--gray)';
-      default: return 'var(--gray)';
-    }
-  };
-
   const getAccessTypeLabel = (type) => {
     switch (type) {
       case 'administrador': return 'Administrador';
@@ -316,10 +358,23 @@ const Permissoes = () => {
 
   const getAccessLevelLabel = (level) => {
     switch (level) {
-      case 'I': return 'Nível I - Básico';
-      case 'II': return 'Nível II - Intermediário';
-      case 'III': return 'Nível III - Avançado';
+      case 'I': return 'Nível I';
+      case 'II': return 'Nível II';
+      case 'III': return 'Nível III';
       default: return level;
+    }
+  };
+
+  const getScreenLabel = (screen) => {
+    switch (screen) {
+      case 'usuarios': return 'Usuários';
+      case 'fornecedores': return 'Fornecedores';
+      case 'produtos': return 'Produtos';
+      case 'grupos': return 'Grupos';
+      case 'subgrupos': return 'Subgrupos';
+      case 'unidades': return 'Unidades';
+      case 'permissoes': return 'Permissões';
+      default: return screen;
     }
   };
 
@@ -341,104 +396,106 @@ const Permissoes = () => {
         <EmptyState>Nenhum usuário encontrado</EmptyState>
       ) : (
         <div>
-          {usuarios.map(user => (
-            <UserCard key={user.id}>
+          <UserSelector>
+            <UserSelect
+              value={selectedUserId}
+              onChange={(e) => handleUserSelect(e.target.value)}
+            >
+              <option value="">Selecione um usuário</option>
+              {usuarios.map(user => (
+                <option key={user.id} value={user.id}>
+                  {user.nome} - {getAccessTypeLabel(user.tipo_de_acesso)} ({getAccessLevelLabel(user.nivel_de_acesso)})
+                </option>
+              ))}
+            </UserSelect>
+
+            {selectedUser && (
               <UserInfo>
+                <UserAvatar>
+                  {selectedUser.nome.charAt(0).toUpperCase()}
+                </UserAvatar>
                 <UserDetails>
-                  <UserName>{user.nome}</UserName>
-                  <UserEmail>{user.email}</UserEmail>
-                  <UserAccess>
-                    <AccessBadge type={user.tipo_de_acesso}>
-                      {getAccessTypeLabel(user.tipo_de_acesso)}
-                    </AccessBadge>
-                    <AccessBadge type="nivel">
-                      {getAccessLevelLabel(user.nivel_de_acesso)}
-                    </AccessBadge>
-                  </UserAccess>
+                  <UserName>{selectedUser.nome}</UserName>
+                  <UserEmail>{selectedUser.email}</UserEmail>
                 </UserDetails>
-                <Button
-                  className={selectedUser?.id === user.id ? 'primary' : 'secondary'}
-                  onClick={() => handleUserSelect(user)}
-                >
-                  {selectedUser?.id === user.id ? <FaEdit /> : <FaEye />}
-                  {selectedUser?.id === user.id ? 'Editando' : 'Gerenciar'}
-                </Button>
-              </UserInfo>
-
-              {selectedUser?.id === user.id && userPermissions.permissoes && (
-                <div>
-                  <PermissionsGrid>
-                    {userPermissions.permissoes.map(perm => (
-                      <PermissionCard key={perm.tela}>
-                        <PermissionTitle>
-                          {perm.tela === 'usuarios' ? 'Usuários' :
-                           perm.tela === 'fornecedores' ? 'Fornecedores' :
-                           perm.tela === 'produtos' ? 'Produtos' :
-                           perm.tela === 'grupos' ? 'Grupos' :
-                           perm.tela === 'subgrupos' ? 'Subgrupos' :
-                           perm.tela === 'unidades' ? 'Unidades' :
-                           perm.tela === 'permissoes' ? 'Permissões' : perm.tela}
-                        </PermissionTitle>
-                        <CheckboxGrid>
-                          <CheckboxItem>
-                            <input
-                              type="checkbox"
-                              checked={editingPermissions[perm.tela]?.pode_visualizar || false}
-                              onChange={(e) => handlePermissionChange(perm.tela, 'pode_visualizar', e.target.checked)}
-                            />
-                            Visualizar
-                          </CheckboxItem>
-                          <CheckboxItem>
-                            <input
-                              type="checkbox"
-                              checked={editingPermissions[perm.tela]?.pode_criar || false}
-                              onChange={(e) => handlePermissionChange(perm.tela, 'pode_criar', e.target.checked)}
-                            />
-                            Criar
-                          </CheckboxItem>
-                          <CheckboxItem>
-                            <input
-                              type="checkbox"
-                              checked={editingPermissions[perm.tela]?.pode_editar || false}
-                              onChange={(e) => handlePermissionChange(perm.tela, 'pode_editar', e.target.checked)}
-                            />
-                            Editar
-                          </CheckboxItem>
-                          <CheckboxItem>
-                            <input
-                              type="checkbox"
-                              checked={editingPermissions[perm.tela]?.pode_excluir || false}
-                              onChange={(e) => handlePermissionChange(perm.tela, 'pode_excluir', e.target.checked)}
-                            />
-                            Excluir
-                          </CheckboxItem>
-                        </CheckboxGrid>
-                      </PermissionCard>
-                    ))}
-                  </PermissionsGrid>
-
-                  <ButtonGroup>
-                    <Button
-                      className="primary"
-                      onClick={handleSavePermissions}
-                      disabled={saving}
-                    >
-                      <FaSave />
-                      {saving ? 'Salvando...' : 'Salvar Permissões'}
-                    </Button>
-                    <Button
-                      className="secondary"
-                      onClick={handleResetPermissions}
-                      disabled={saving}
-                    >
-                      <FaTimes />
-                      Resetar para Padrão
-                    </Button>
-                  </ButtonGroup>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <AccessBadge type={selectedUser.tipo_de_acesso}>
+                    {getAccessTypeLabel(selectedUser.tipo_de_acesso)}
+                  </AccessBadge>
+                  <AccessBadge type="nivel">
+                    {getAccessLevelLabel(selectedUser.nivel_de_acesso)}
+                  </AccessBadge>
                 </div>
-              )}
-            </UserCard>
-          ))}
+              </UserInfo>
+            )}
+          </UserSelector>
+
+          {selectedUser && userPermissions.permissoes && (
+            <PermissionsTable>
+              <TableHeader>
+                <div>Tela</div>
+                <div style={{ textAlign: 'center' }}>Visualizar</div>
+                <div style={{ textAlign: 'center' }}>Criar</div>
+                <div style={{ textAlign: 'center' }}>Editar</div>
+                <div style={{ textAlign: 'center' }}>Excluir</div>
+              </TableHeader>
+
+              {userPermissions.permissoes.map(perm => (
+                <TableRow key={perm.tela}>
+                  <ScreenName>{getScreenLabel(perm.tela)}</ScreenName>
+                  <PermissionCell>
+                    <Checkbox
+                      type="checkbox"
+                      checked={editingPermissions[perm.tela]?.pode_visualizar || false}
+                      onChange={(e) => handlePermissionChange(perm.tela, 'pode_visualizar', e.target.checked)}
+                    />
+                  </PermissionCell>
+                  <PermissionCell>
+                    <Checkbox
+                      type="checkbox"
+                      checked={editingPermissions[perm.tela]?.pode_criar || false}
+                      onChange={(e) => handlePermissionChange(perm.tela, 'pode_criar', e.target.checked)}
+                    />
+                  </PermissionCell>
+                  <PermissionCell>
+                    <Checkbox
+                      type="checkbox"
+                      checked={editingPermissions[perm.tela]?.pode_editar || false}
+                      onChange={(e) => handlePermissionChange(perm.tela, 'pode_editar', e.target.checked)}
+                    />
+                  </PermissionCell>
+                  <PermissionCell>
+                    <Checkbox
+                      type="checkbox"
+                      checked={editingPermissions[perm.tela]?.pode_excluir || false}
+                      onChange={(e) => handlePermissionChange(perm.tela, 'pode_excluir', e.target.checked)}
+                    />
+                  </PermissionCell>
+                </TableRow>
+              ))}
+            </PermissionsTable>
+          )}
+
+          {selectedUser && userPermissions.permissoes && (
+            <ButtonGroup>
+              <Button
+                className="primary"
+                onClick={handleSavePermissions}
+                disabled={saving}
+              >
+                <FaSave />
+                {saving ? 'Salvando...' : 'Salvar Permissões'}
+              </Button>
+              <Button
+                className="secondary"
+                onClick={handleResetPermissions}
+                disabled={saving}
+              >
+                <FaTimes />
+                Resetar para Padrão
+              </Button>
+            </ButtonGroup>
+          )}
         </div>
       )}
     </Container>
