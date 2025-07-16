@@ -336,6 +336,26 @@ const Usuarios = () => {
   const loadAuditLogs = async () => {
     try {
       setAuditLoading(true);
+      
+      // Primeiro, vamos testar se a autenticação está funcionando
+      console.log('Testando ping...');
+      try {
+        const pingResponse = await api.get('/auditoria/ping');
+        console.log('Ping funcionou:', pingResponse.data);
+      } catch (pingError) {
+        console.error('Erro no ping:', pingError);
+      }
+      
+      // Depois, vamos testar se a tabela existe
+      console.log('Testando tabela...');
+      try {
+        const testResponse = await api.get('/auditoria/test');
+        console.log('Teste da tabela:', testResponse.data);
+      } catch (testError) {
+        console.error('Erro no teste da tabela:', testError);
+      }
+      
+      // Agora vamos tentar a rota principal
       const params = new URLSearchParams();
       
       if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);

@@ -7,17 +7,34 @@ const router = express.Router();
 // Aplicar autenticação em todas as rotas
 router.use(authenticateToken);
 
+// Rota simples para testar se a autenticação está funcionando
+router.get('/ping', (req, res) => {
+  console.log('=== PING AUDITORIA ===');
+  console.log('Usuário autenticado:', req.user);
+  res.json({ 
+    message: 'Ping funcionando',
+    user: req.user 
+  });
+});
+
 // Rota de teste para verificar se a tabela existe
 router.get('/test', async (req, res) => {
   try {
+    console.log('=== TESTE DA TABELA AUDITORIA ===');
     const { executeQuery } = require('../config/database');
+    console.log('executeQuery importado com sucesso');
+    
     const result = await executeQuery('SELECT COUNT(*) as total FROM auditoria_acoes');
+    console.log('Resultado da query:', result);
+    
     res.json({ 
       message: 'Tabela auditoria_acoes existe',
       total: result[0].total 
     });
   } catch (error) {
+    console.error('=== ERRO NO TESTE ===');
     console.error('Erro ao testar tabela:', error);
+    console.error('Stack trace:', error.stack);
     res.status(500).json({ 
       error: 'Erro ao acessar tabela de auditoria',
       message: error.message 
