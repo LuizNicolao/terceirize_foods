@@ -374,10 +374,56 @@ const Fornecedores = () => {
   const onSubmit = async (data) => {
     try {
       if (editingFornecedor) {
-        await api.put(`/fornecedores/${editingFornecedor.id}`, data);
+        // Para edição, enviar apenas os campos que foram alterados
+        const updateData = {};
+        
+        if (data.razao_social !== editingFornecedor.razao_social) {
+          updateData.razao_social = data.razao_social;
+        }
+        
+        if (data.nome_fantasia !== editingFornecedor.nome_fantasia) {
+          updateData.nome_fantasia = data.nome_fantasia;
+        }
+        
+        if (data.cnpj !== editingFornecedor.cnpj) {
+          updateData.cnpj = data.cnpj;
+        }
+        
+        if (data.email !== editingFornecedor.email) {
+          updateData.email = data.email;
+        }
+        
+        if (data.telefone !== editingFornecedor.telefone) {
+          updateData.telefone = data.telefone;
+        }
+        
+        if (data.uf !== editingFornecedor.uf) {
+          updateData.uf = data.uf;
+        }
+        
+        if (data.municipio !== editingFornecedor.municipio) {
+          updateData.municipio = data.municipio;
+        }
+        
+        if (data.status !== editingFornecedor.status) {
+          updateData.status = parseInt(data.status);
+        }
+        
+        // Se não há campos para atualizar, mostrar erro
+        if (Object.keys(updateData).length === 0) {
+          toast.error('Nenhum campo foi alterado');
+          return;
+        }
+        
+        await api.put(`/fornecedores/${editingFornecedor.id}`, updateData);
         toast.success('Fornecedor atualizado com sucesso!');
       } else {
-        await api.post('/fornecedores', data);
+        // Para criação, enviar todos os campos
+        const createData = { ...data };
+        if (createData.status) {
+          createData.status = parseInt(createData.status);
+        }
+        await api.post('/fornecedores', createData);
         toast.success('Fornecedor criado com sucesso!');
       }
       
@@ -398,7 +444,7 @@ const Fornecedores = () => {
         loadFornecedores();
       } catch (error) {
         console.error('Erro ao excluir fornecedor:', error);
-        toast.error('Erro ao excluir fornecedor');
+        toast.error(error.response?.data?.error || 'Erro ao excluir fornecedor');
       }
     }
   };
@@ -409,7 +455,7 @@ const Fornecedores = () => {
                          fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          fornecedor.cnpj?.includes(searchTerm) ||
                          fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || fornecedor.status === statusFilter;
+    const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
     return matchesSearch && matchesStatus;
   });
 
@@ -455,8 +501,8 @@ const Fornecedores = () => {
           onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="todos">Todos os status</option>
-          <option value="ativo">Ativo</option>
-          <option value="inativo">Inativo</option>
+          <option value="1">Ativo</option>
+          <option value="0">Inativo</option>
         </FilterSelect>
       </SearchContainer>
 
@@ -494,8 +540,8 @@ const Fornecedores = () => {
                   <Td>{fornecedor.email}</Td>
                   <Td>{fornecedor.municipio}/{fornecedor.uf}</Td>
                   <Td>
-                    <StatusBadge status={fornecedor.status}>
-                      {fornecedor.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                    <StatusBadge status={fornecedor.status === 1 ? 'ativo' : 'inativo'}>
+                      {fornecedor.status === 1 ? 'Ativo' : 'Inativo'}
                     </StatusBadge>
                   </Td>
                   <Td>
@@ -687,8 +733,8 @@ const Fornecedores = () => {
                 <Label>Status</Label>
                 <Select {...register('status', { required: 'Status é obrigatório' })}>
                   <option value="">Selecione...</option>
-                  <option value="ativo">Ativo</option>
-                  <option value="inativo">Inativo</option>
+                  <option value="1">Ativo</option>
+                  <option value="0">Inativo</option>
                 </Select>
                 {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
               </FormGroup>
