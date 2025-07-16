@@ -9,6 +9,7 @@ import {
   FaLayerGroup, 
   FaRulerCombined,
   FaCog,
+  FaShieldAlt,
   FaSignOutAlt
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
@@ -108,6 +109,7 @@ const menuItems = [
   { path: '/produtos', icon: FaBox, label: 'Produtos' },
   { path: '/grupos', icon: FaLayerGroup, label: 'Grupos' },
   { path: '/unidades', icon: FaRulerCombined, label: 'Unidades' },
+  { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões' },
   { path: '/configuracoes', icon: FaCog, label: 'Configurações' },
 ];
 

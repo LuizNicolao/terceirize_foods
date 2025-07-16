@@ -10,6 +10,7 @@ import Fornecedores from './pages/Fornecedores';
 import Produtos from './pages/Produtos';
 import Grupos from './pages/Grupos';
 import Unidades from './pages/Unidades';
+import Permissoes from './pages/Permissoes';
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {
@@ -105,6 +106,15 @@ const App = () => {
         element={
           <ProtectedRoute>
             <Unidades />
+          </ProtectedRoute>
+        } 
+      />
+
+      <Route 
+        path="/permissoes" 
+        element={
+          <ProtectedRoute>
+            <Permissoes />
           </ProtectedRoute>
         } 
       />
