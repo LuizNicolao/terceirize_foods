@@ -217,32 +217,7 @@ const SuccessMessage = styled.div`
   margin-bottom: 20px;
 `;
 
-const Pagination = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  margin-top: 20px;
-`;
 
-const PageButton = styled.button`
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  background: ${props => props.$active ? '#007bff' : 'white'};
-  color: ${props => props.$active ? 'white' : '#333'};
-  cursor: pointer;
-  border-radius: 4px;
-  
-  &:hover {
-    background: ${props => props.$active ? '#0056b3' : '#f8f9fa'};
-  }
-  
-  &:disabled {
-    background: #f8f9fa;
-    color: #6c757d;
-    cursor: not-allowed;
-  }
-`;
 
 const LoadingSpinner = styled.div`
   text-align: center;
@@ -263,29 +238,21 @@ const Unidades = () => {
   });
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
-  const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
-    totalPages: 0
-  });
+
 
   useEffect(() => {
     fetchUnidades();
-  }, [pagination.page, search]);
+  }, [search]);
 
   const fetchUnidades = async () => {
     try {
       setLoading(true);
       const response = await api.get('/unidades', {
         params: {
-          page: pagination.page,
-          limit: pagination.limit,
           search
         }
       });
-      setUnidades(response.data.unidades);
-      setPagination(response.data.pagination);
+      setUnidades(response.data);
     } catch (error) {
       console.error('Erro ao buscar unidades:', error);
     } finally {
@@ -370,9 +337,7 @@ const Unidades = () => {
     setErrors({});
   };
 
-  const handlePageChange = (page) => {
-    setPagination(prev => ({ ...prev, page }));
-  };
+
 
   if (loading && unidades.length === 0) {
     return <LoadingSpinner>Carregando...</LoadingSpinner>;
@@ -436,33 +401,7 @@ const Unidades = () => {
         </div>
       )}
 
-      {pagination.totalPages > 1 && (
-        <Pagination>
-          <PageButton
-            onClick={() => handlePageChange(pagination.page - 1)}
-            disabled={pagination.page === 1}
-          >
-            Anterior
-          </PageButton>
-          
-          {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
-            <PageButton
-              key={page}
-              $active={page === pagination.page}
-              onClick={() => handlePageChange(page)}
-            >
-              {page}
-            </PageButton>
-          ))}
-          
-          <PageButton
-            onClick={() => handlePageChange(pagination.page + 1)}
-            disabled={pagination.page === pagination.totalPages}
-          >
-            Próxima
-          </PageButton>
-        </Pagination>
-      )}
+
 
       {showModal && (
         <Modal onClick={handleCloseModal}>

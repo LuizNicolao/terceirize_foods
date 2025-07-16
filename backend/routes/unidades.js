@@ -11,55 +11,25 @@ router.use(authenticateToken);
 // Listar unidades
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    console.log('Iniciando listagem de unidades...');
-    
-    // Garante que page e limit são inteiros válidos
-    const page = Math.max(1, parseInt(req.query.page) || 1);
-    const limit = Math.max(1, parseInt(req.query.limit) || 10);
-    const offset = (page - 1) * limit;
-    const search = req.query.search || '';
+    const { search = '' } = req.query;
 
     let query = 'SELECT * FROM unidades_medida WHERE 1=1';
-    let countQuery = 'SELECT COUNT(*) as total FROM unidades_medida WHERE 1=1';
     let params = [];
-    let countParams = [];
 
     if (search) {
       query += ' AND (nome LIKE ? OR sigla LIKE ?)';
-      countQuery += ' AND (nome LIKE ? OR sigla LIKE ?)';
       params.push(`%${search}%`, `%${search}%`);
-      countParams.push(`%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY nome ASC LIMIT ? OFFSET ?';
-    params.push(limit, offset);
-
-    console.log('Executando query:', query);
-    console.log('Parâmetros:', params);
+    query += ' ORDER BY nome ASC';
 
     const unidades = await executeQuery(query, params);
-    const countResult = await executeQuery(countQuery, countParams);
 
-    console.log('Unidades encontradas:', unidades.length);
-    console.log('Total de unidades:', countResult[0].total);
-
-    const total = countResult[0].total;
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      unidades,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages
-      }
-    });
+    res.json(unidades);
 
   } catch (error) {
     console.error('Erro ao listar unidades:', error);
-    console.error('Stack trace:', error.stack);
-    res.status(500).json({ error: 'Erro interno do servidor', details: error.message });
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
