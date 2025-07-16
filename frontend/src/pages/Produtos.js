@@ -344,7 +344,7 @@ const Produtos = () => {
       setProdutos(produtosRes.data);
       setFornecedores(fornecedoresRes.data);
       setGrupos(gruposRes.data);
-      setUnidades(unidadesRes.data.unidades || unidadesRes.data);
+      setUnidades(unidadesRes.data);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar dados');
