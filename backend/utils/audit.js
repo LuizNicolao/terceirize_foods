@@ -184,29 +184,24 @@ const getAuditLogs = async (filters = {}) => {
     console.log('=== INÍCIO DA FUNÇÃO getAuditLogs ===');
     console.log('Filtros recebidos:', filters);
     
-    // Query mais simples primeiro - apenas buscar dados básicos
-    let query = `
+    // Query mais simples possível - sem parâmetros
+    const query = `
       SELECT 
-        a.id,
-        a.usuario_id,
-        a.acao,
-        a.recurso,
-        a.detalhes,
-        a.ip_address,
-        a.timestamp
-      FROM auditoria_acoes a
-      ORDER BY a.timestamp DESC
-      LIMIT ? OFFSET ?
+        id,
+        usuario_id,
+        acao,
+        recurso,
+        detalhes,
+        ip_address,
+        timestamp
+      FROM auditoria_acoes
+      ORDER BY timestamp DESC
+      LIMIT 10
     `;
     
-    const limit = parseInt(filters.limit) || 100;
-    const offset = parseInt(filters.offset) || 0;
-    const params = [limit, offset];
-    
     console.log('Query final:', query);
-    console.log('Parâmetros:', params);
     
-    const logs = await executeQuery(query, params);
+    const logs = await executeQuery(query);
     console.log('Logs brutos encontrados:', logs.length);
     
     if (logs.length > 0) {
