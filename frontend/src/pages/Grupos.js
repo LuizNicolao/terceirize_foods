@@ -351,9 +351,7 @@ const Grupos = () => {
   const handleEditGrupo = (grupo) => {
     setEditingGrupo(grupo);
     setValue('nome', grupo.nome);
-    setValue('descricao', grupo.descricao);
-    setValue('codigo', grupo.codigo);
-    setValue('status', grupo.status);
+    setValue('status', grupo.status.toString());
     setShowModal(true);
   };
 
@@ -367,11 +365,17 @@ const Grupos = () => {
   // Salvar grupo
   const onSubmit = async (data) => {
     try {
+      // Converter status para número
+      const formData = {
+        ...data,
+        status: parseInt(data.status)
+      };
+
       if (editingGrupo) {
-        await api.put(`/grupos/${editingGrupo.id}`, data);
+        await api.put(`/grupos/${editingGrupo.id}`, formData);
         toast.success('Grupo atualizado com sucesso!');
       } else {
-        await api.post('/grupos', data);
+        await api.post('/grupos', formData);
         toast.success('Grupo criado com sucesso!');
       }
       
@@ -392,17 +396,15 @@ const Grupos = () => {
         loadGrupos();
       } catch (error) {
         console.error('Erro ao excluir grupo:', error);
-        toast.error('Erro ao excluir grupo');
+        toast.error(error.response?.data?.error || 'Erro ao excluir grupo');
       }
     }
   };
 
   // Filtrar grupos
   const filteredGrupos = grupos.filter(grupo => {
-    const matchesSearch = grupo.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         grupo.codigo?.includes(searchTerm) ||
-                         grupo.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || grupo.status === statusFilter;
+    const matchesSearch = grupo.nome?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'todos' || grupo.status === parseInt(statusFilter);
     return matchesSearch && matchesStatus;
   });
 
@@ -431,7 +433,7 @@ const Grupos = () => {
       <SearchContainer>
         <SearchInput
           type="text"
-          placeholder="Buscar por nome, código ou descrição..."
+          placeholder="Buscar por nome..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -440,72 +442,68 @@ const Grupos = () => {
           onChange={(e) => setStatusFilter(e.target.value)}
         >
           <option value="todos">Todos os status</option>
-          <option value="ativo">Ativo</option>
-          <option value="inativo">Inativo</option>
+          <option value="1">Ativo</option>
+          <option value="0">Inativo</option>
         </FilterSelect>
       </SearchContainer>
 
       <TableContainer>
         <Table>
-          <thead>
-            <tr>
-              <Th>Nome</Th>
-              <Th>Código</Th>
-              <Th>Descrição</Th>
-              <Th>Status</Th>
-              <Th>Ações</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredGrupos.length === 0 ? (
+                      <thead>
               <tr>
-                <Td colSpan="5">
-                  <EmptyState>
-                    {searchTerm || statusFilter !== 'todos' 
-                      ? 'Nenhum grupo encontrado com os filtros aplicados'
-                      : 'Nenhum grupo cadastrado'
-                    }
-                  </EmptyState>
-                </Td>
+                <Th>Nome</Th>
+                <Th>Status</Th>
+                <Th>Ações</Th>
               </tr>
-            ) : (
-              filteredGrupos.map((grupo) => (
-                <tr key={grupo.id}>
-                  <Td>{grupo.nome}</Td>
-                  <Td>{grupo.codigo}</Td>
-                  <Td>{grupo.descricao}</Td>
-                  <Td>
-                    <StatusBadge status={grupo.status}>
-                      {grupo.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                    </StatusBadge>
-                  </Td>
-                  <Td>
-                    <ActionButton
-                      className="view"
-                      title="Visualizar"
-                      onClick={() => handleEditGrupo(grupo)}
-                    >
-                      <FaEye />
-                    </ActionButton>
-                    <ActionButton
-                      className="edit"
-                      title="Editar"
-                      onClick={() => handleEditGrupo(grupo)}
-                    >
-                      <FaEdit />
-                    </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      title="Excluir"
-                      onClick={() => handleDeleteGrupo(grupo.id)}
-                    >
-                      <FaTrash />
-                    </ActionButton>
+            </thead>
+            <tbody>
+              {filteredGrupos.length === 0 ? (
+                <tr>
+                  <Td colSpan="3">
+                    <EmptyState>
+                      {searchTerm || statusFilter !== 'todos' 
+                        ? 'Nenhum grupo encontrado com os filtros aplicados'
+                        : 'Nenhum grupo cadastrado'
+                      }
+                    </EmptyState>
                   </Td>
                 </tr>
-              ))
-            )}
-          </tbody>
+              ) : (
+                filteredGrupos.map((grupo) => (
+                  <tr key={grupo.id}>
+                    <Td>{grupo.nome}</Td>
+                    <Td>
+                      <StatusBadge status={grupo.status === 1 ? 'ativo' : 'inativo'}>
+                        {grupo.status === 1 ? 'Ativo' : 'Inativo'}
+                      </StatusBadge>
+                    </Td>
+                    <Td>
+                      <ActionButton
+                        className="view"
+                        title="Visualizar"
+                        onClick={() => handleEditGrupo(grupo)}
+                      >
+                        <FaEye />
+                      </ActionButton>
+                      <ActionButton
+                        className="edit"
+                        title="Editar"
+                        onClick={() => handleEditGrupo(grupo)}
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                      <ActionButton
+                        className="delete"
+                        title="Excluir"
+                        onClick={() => handleDeleteGrupo(grupo.id)}
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    </Td>
+                  </tr>
+                ))
+              )}
+            </tbody>
         </Table>
       </TableContainer>
 
@@ -531,30 +529,11 @@ const Grupos = () => {
               </FormGroup>
 
               <FormGroup>
-                <Label>Código</Label>
-                <Input
-                  type="text"
-                  placeholder="Código do grupo"
-                  {...register('codigo')}
-                />
-                {errors.codigo && <span style={{ color: 'red', fontSize: '12px' }}>{errors.codigo.message}</span>}
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Descrição</Label>
-                <TextArea
-                  placeholder="Descrição do grupo..."
-                  {...register('descricao')}
-                />
-                {errors.descricao && <span style={{ color: 'red', fontSize: '12px' }}>{errors.descricao.message}</span>}
-              </FormGroup>
-
-              <FormGroup>
                 <Label>Status</Label>
                 <Select {...register('status', { required: 'Status é obrigatório' })}>
                   <option value="">Selecione...</option>
-                  <option value="ativo">Ativo</option>
-                  <option value="inativo">Inativo</option>
+                  <option value={1}>Ativo</option>
+                  <option value={0}>Inativo</option>
                 </Select>
                 {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
               </FormGroup>

@@ -63,7 +63,8 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 // Criar grupo
 router.post('/', [
   checkPermission('criar'),
-  body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres')
+  body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
+  body('status').optional().isIn([0, 1]).withMessage('Status deve ser 0 ou 1')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -74,7 +75,7 @@ router.post('/', [
       });
     }
 
-    const { nome } = req.body;
+    const { nome, status = 1 } = req.body;
 
     // Verificar se nome já existe
     const existingGrupo = await executeQuery(
@@ -88,8 +89,8 @@ router.post('/', [
 
     // Inserir grupo
     const result = await executeQuery(
-      'INSERT INTO grupos (nome) VALUES (?)',
-      [nome]
+      'INSERT INTO grupos (nome, status) VALUES (?, ?)',
+      [nome, status]
     );
 
     const newGrupo = await executeQuery(
