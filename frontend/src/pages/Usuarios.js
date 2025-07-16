@@ -337,59 +337,26 @@ const Usuarios = () => {
     try {
       setAuditLoading(true);
       
-      // Verificar se o token existe
-      const token = localStorage.getItem('token');
-      console.log('Token no localStorage:', token ? 'presente' : 'ausente');
-      if (token) {
-        console.log('Token (primeiros 20 chars):', token.substring(0, 20) + '...');
-      }
-      
-      // Primeiro, vamos testar se a autenticação está funcionando
-      console.log('Testando ping...');
-      try {
-        const pingResponse = await api.get('/auditoria/ping');
-        console.log('Ping funcionou:', pingResponse.data);
-      } catch (pingError) {
-        console.error('Erro no ping:', pingError.response?.data || pingError.message);
-      }
-      
-      // Depois, vamos testar se a tabela existe
-      console.log('Testando tabela...');
-      try {
-        const testResponse = await api.get('/auditoria/test');
-        console.log('Teste da tabela:', testResponse.data);
-      } catch (testError) {
-        console.error('Erro no teste da tabela:', testError.response?.data || testError.message);
-      }
-      
       // Agora vamos tentar a rota principal
       const params = new URLSearchParams();
       
-      console.log('Filtros de auditoria:', auditFilters);
-      
       if (auditFilters.dataInicio) {
         params.append('data_inicio', auditFilters.dataInicio);
-        console.log('Adicionando data_inicio:', auditFilters.dataInicio);
       }
       if (auditFilters.dataFim) {
         params.append('data_fim', auditFilters.dataFim);
-        console.log('Adicionando data_fim:', auditFilters.dataFim);
       }
       if (auditFilters.acao) {
         params.append('acao', auditFilters.acao);
-        console.log('Adicionando acao:', auditFilters.acao);
       }
       if (auditFilters.usuario_id) {
         params.append('usuario_id', auditFilters.usuario_id);
-        console.log('Adicionando usuario_id:', auditFilters.usuario_id);
       }
       
-      console.log('URL final:', `/auditoria?${params.toString()}`);
       const response = await api.get(`/auditoria?${params.toString()}`);
       setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
-      console.error('Response data:', error.response?.data);
       toast.error('Erro ao carregar logs de auditoria');
     } finally {
       setAuditLoading(false);

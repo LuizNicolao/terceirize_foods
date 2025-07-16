@@ -381,28 +381,11 @@ const Permissoes = () => {
     if (selectedUser && selectedUserId) {
       // Verificar se os dados do usuário mudaram (tipo ou nível de acesso)
       const currentUser = usuarios.find(u => u.id === selectedUser.id);
-      console.log('Verificando mudanças no usuário:', {
-        selectedUserId,
-        currentUser: currentUser ? {
-          id: currentUser.id,
-          tipo: currentUser.tipo_de_acesso,
-          nivel: currentUser.nivel_de_acesso
-        } : null,
-        selectedUser: {
-          id: selectedUser.id,
-          tipo: selectedUser.tipo_de_acesso,
-          nivel: selectedUser.nivel_de_acesso
-        }
-      });
       
       if (currentUser && (
         currentUser.tipo_de_acesso !== selectedUser.tipo_de_acesso ||
         currentUser.nivel_de_acesso !== selectedUser.nivel_de_acesso
       )) {
-        console.log('Mudança detectada no usuário:', {
-          old: { tipo: selectedUser.tipo_de_acesso, nivel: selectedUser.nivel_de_acesso },
-          new: { tipo: currentUser.tipo_de_acesso, nivel: currentUser.nivel_de_acesso }
-        });
         
         // Atualizar o usuário selecionado com os novos dados
         setSelectedUser(currentUser);
@@ -417,7 +400,6 @@ const Permissoes = () => {
     try {
       setLoading(true);
       const response = await api.get('/usuarios');
-      console.log('Usuários carregados:', response.data.length);
       setUsuarios(response.data);
       setFilteredUsuarios(response.data);
     } catch (error) {
@@ -430,9 +412,7 @@ const Permissoes = () => {
 
   const loadUserPermissions = async (userId) => {
     try {
-      console.log('Carregando permissões para usuário:', userId);
       const response = await api.get(`/permissoes/usuario/${userId}`);
-      console.log('Permissões carregadas:', response.data);
       setUserPermissions(response.data);
       setEditingPermissions({});
       
@@ -461,14 +441,12 @@ const Permissoes = () => {
 
   const handleUserSelect = (userId) => {
     const user = usuarios.find(u => u.id === parseInt(userId));
-    console.log('Usuário selecionado:', user);
     setSelectedUserId(userId);
     setSelectedUser(user);
     setSearchTerm(user ? `${user.nome} - ${getAccessTypeLabel(user.tipo_de_acesso)} (${getAccessLevelLabel(user.nivel_de_acesso)})` : '');
     setIsSelectOpen(false);
     if (userId) {
       // Sempre recarregar permissões para garantir dados atualizados
-      console.log('Recarregando permissões para usuário:', userId);
       loadUserPermissions(userId);
     } else {
       setUserPermissions({});
