@@ -9,12 +9,17 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
+    console.log('Interceptor - Token encontrado:', token ? 'sim' : 'não');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Interceptor - Authorization header adicionado');
+    } else {
+      console.log('Interceptor - Nenhum token encontrado no localStorage');
     }
     return config;
   },
   (error) => {
+    console.error('Interceptor - Erro na requisição:', error);
     return Promise.reject(error);
   }
 );

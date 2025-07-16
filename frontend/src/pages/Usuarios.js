@@ -337,13 +337,20 @@ const Usuarios = () => {
     try {
       setAuditLoading(true);
       
+      // Verificar se o token existe
+      const token = localStorage.getItem('token');
+      console.log('Token no localStorage:', token ? 'presente' : 'ausente');
+      if (token) {
+        console.log('Token (primeiros 20 chars):', token.substring(0, 20) + '...');
+      }
+      
       // Primeiro, vamos testar se a autenticação está funcionando
       console.log('Testando ping...');
       try {
         const pingResponse = await api.get('/auditoria/ping');
         console.log('Ping funcionou:', pingResponse.data);
       } catch (pingError) {
-        console.error('Erro no ping:', pingError);
+        console.error('Erro no ping:', pingError.response?.data || pingError.message);
       }
       
       // Depois, vamos testar se a tabela existe
@@ -352,7 +359,7 @@ const Usuarios = () => {
         const testResponse = await api.get('/auditoria/test');
         console.log('Teste da tabela:', testResponse.data);
       } catch (testError) {
-        console.error('Erro no teste da tabela:', testError);
+        console.error('Erro no teste da tabela:', testError.response?.data || testError.message);
       }
       
       // Agora vamos tentar a rota principal
@@ -367,6 +374,7 @@ const Usuarios = () => {
       setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
+      console.error('Response data:', error.response?.data);
       toast.error('Erro ao carregar logs de auditoria');
     } finally {
       setAuditLoading(false);
