@@ -4,16 +4,30 @@ const { getAuditLogs } = require('../utils/audit');
 
 const router = express.Router();
 
-// Aplicar autenticação em todas as rotas
+// Rota sem autenticação para teste
+router.get('/public-test', (req, res) => {
+  console.log('=== TESTE PÚBLICO ===');
+  res.json({ 
+    message: 'Rota pública funcionando',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Aplicar autenticação em todas as outras rotas
 router.use(authenticateToken);
 
 // Rota simples para testar se a autenticação está funcionando
 router.get('/ping', (req, res) => {
   console.log('=== PING AUDITORIA ===');
+  console.log('Headers:', req.headers);
+  console.log('Authorization:', req.headers.authorization);
   console.log('Usuário autenticado:', req.user);
   res.json({ 
     message: 'Ping funcionando',
-    user: req.user 
+    user: req.user,
+    headers: {
+      authorization: req.headers.authorization ? 'presente' : 'ausente'
+    }
   });
 });
 
@@ -74,7 +88,7 @@ router.get('/test-function', async (req, res) => {
 });
 
 // Listar logs de auditoria
-router.get('/', checkPermission('visualizar'), async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     console.log('=== INÍCIO DA REQUISIÇÃO DE AUDITORIA ===');
     console.log('Usuário atual:', {
