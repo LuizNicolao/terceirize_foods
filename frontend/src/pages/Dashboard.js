@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaUsers, FaTruck, FaBox, FaLayerGroup, FaChartLine } from 'react-icons/fa';
+import { FaUsers, FaTruck, FaBox, FaLayerGroup, FaChartLine, FaExclamationTriangle, FaDollarSign, FaRuler } from 'react-icons/fa';
+import api from '../services/api';
+import toast from 'react-hot-toast';
 
 const DashboardContainer = styled.div`
   padding: 24px;
@@ -66,10 +68,10 @@ const StatLabel = styled.div`
   font-weight: 500;
 `;
 
-const StatChange = styled.div`
+const StatSubtitle = styled.div`
   font-size: 12px;
-  color: ${props => props.$positive ? 'var(--success-green)' : 'var(--error-red)'};
-  font-weight: 600;
+  color: var(--gray);
+  margin-top: 4px;
 `;
 
 const ContentGrid = styled.div`
@@ -154,62 +156,142 @@ const ActivityTime = styled.div`
   margin-top: 4px;
 `;
 
+const LoadingSpinner = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--gray);
+  font-size: 16px;
+`;
+
 const Dashboard = () => {
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/dashboard/stats');
+      setDashboardData(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar dados da dashboard:', error);
+      toast.error('Erro ao carregar dados da dashboard');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Agora mesmo';
+    if (diffInMinutes < 60) return `${diffInMinutes} min atrás`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h atrás`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} dias atrás`;
+    
+    return date.toLocaleDateString('pt-BR');
+  };
+
+  const getActivityIcon = (tipo) => {
+    switch (tipo) {
+      case 'produto':
+        return FaBox;
+      case 'fornecedor':
+        return FaTruck;
+      case 'grupo':
+        return FaLayerGroup;
+      case 'usuario':
+        return FaUsers;
+      default:
+        return FaBox;
+    }
+  };
+
+  if (loading) {
+    return (
+      <DashboardContainer>
+        <Title>Dashboard</Title>
+        <LoadingSpinner>Carregando dados da dashboard...</LoadingSpinner>
+      </DashboardContainer>
+    );
+  }
+
+  if (!dashboardData) {
+    return (
+      <DashboardContainer>
+        <Title>Dashboard</Title>
+        <div>Erro ao carregar dados</div>
+      </DashboardContainer>
+    );
+  }
+
   const stats = [
     {
       icon: FaUsers,
       label: 'Usuários Ativos',
-      value: '24',
-      change: '+12%',
-      positive: true,
+      value: dashboardData.stats.usuarios,
+      subtitle: 'Usuários no sistema',
       color: 'var(--blue)'
     },
     {
       icon: FaTruck,
       label: 'Fornecedores',
-      value: '156',
-      change: '+8%',
-      positive: true,
+      value: dashboardData.stats.fornecedores,
+      subtitle: 'Fornecedores ativos',
       color: 'var(--primary-green)'
     },
     {
       icon: FaBox,
       label: 'Produtos',
-      value: '1,234',
-      change: '+15%',
-      positive: true,
+      value: dashboardData.stats.produtos,
+      subtitle: 'Produtos ativos',
       color: 'var(--orange)'
     },
     {
       icon: FaLayerGroup,
       label: 'Grupos',
-      value: '45',
-      change: '+3%',
-      positive: true,
+      value: dashboardData.stats.grupos,
+      subtitle: 'Grupos ativos',
       color: 'var(--success-green)'
-    }
-  ];
-
-  const recentActivities = [
-    {
-      icon: FaBox,
-      text: 'Novo produto "Arroz Integral" cadastrado',
-      time: '2 minutos atrás'
     },
     {
-      icon: FaTruck,
-      text: 'Fornecedor "Distribuidora ABC" atualizado',
-      time: '15 minutos atrás'
+      icon: FaRuler,
+      label: 'Unidades',
+      value: dashboardData.stats.unidades,
+      subtitle: 'Unidades de medida',
+      color: 'var(--purple)'
     },
     {
-      icon: FaUsers,
-      text: 'Usuário "João Silva" criado',
-      time: '1 hora atrás'
+      icon: FaDollarSign,
+      label: 'Valor Estoque',
+      value: formatCurrency(dashboardData.stats.valorEstoque),
+      subtitle: 'Valor total em estoque',
+      color: 'var(--success-green)'
     },
     {
-      icon: FaLayerGroup,
-      text: 'Grupo "Cereais" criado',
-      time: '2 horas atrás'
+      icon: FaExclamationTriangle,
+      label: 'Estoque Baixo',
+      value: dashboardData.stats.produtosEstoqueBaixo,
+      subtitle: 'Produtos com estoque baixo',
+      color: 'var(--error-red)'
     }
   ];
 
@@ -226,12 +308,10 @@ const Dashboard = () => {
                 <StatIcon color={stat.color}>
                   <Icon />
                 </StatIcon>
-                <StatChange $positive={stat.positive}>
-                  {stat.change}
-                </StatChange>
               </StatHeader>
               <StatValue>{stat.value}</StatValue>
               <StatLabel>{stat.label}</StatLabel>
+              <StatSubtitle>{stat.subtitle}</StatSubtitle>
             </StatCard>
           );
         })}
@@ -239,28 +319,52 @@ const Dashboard = () => {
 
       <ContentGrid>
         <ChartCard>
-          <ChartTitle>Vendas dos Últimos 7 Dias</ChartTitle>
-          <PlaceholderChart>
-            Gráfico de vendas será implementado aqui
-          </PlaceholderChart>
+          <ChartTitle>Últimos Produtos Cadastrados</ChartTitle>
+          {dashboardData.recentes.produtos.length === 0 ? (
+            <PlaceholderChart>
+              Nenhum produto cadastrado ainda
+            </PlaceholderChart>
+          ) : (
+            <div>
+              {dashboardData.recentes.produtos.map((produto, index) => (
+                <ActivityItem key={index}>
+                  <ActivityIcon>
+                    <FaBox />
+                  </ActivityIcon>
+                  <ActivityContent>
+                    <ActivityText>{produto.nome}</ActivityText>
+                    <ActivityTime>
+                      {produto.fornecedor ? `Fornecedor: ${produto.fornecedor}` : 'Sem fornecedor'} • {formatDate(produto.criado_em)}
+                    </ActivityTime>
+                  </ActivityContent>
+                </ActivityItem>
+              ))}
+            </div>
+          )}
         </ChartCard>
 
         <RecentActivity>
           <ChartTitle>Atividades Recentes</ChartTitle>
-          {recentActivities.map((activity, index) => {
-            const Icon = activity.icon;
-            return (
-              <ActivityItem key={index}>
-                <ActivityIcon>
-                  <Icon />
-                </ActivityIcon>
-                <ActivityContent>
-                  <ActivityText>{activity.text}</ActivityText>
-                  <ActivityTime>{activity.time}</ActivityTime>
-                </ActivityContent>
-              </ActivityItem>
-            );
-          })}
+          {dashboardData.atividades.length === 0 ? (
+            <div style={{ textAlign: 'center', color: 'var(--gray)', padding: '20px' }}>
+              Nenhuma atividade recente
+            </div>
+          ) : (
+            dashboardData.atividades.map((activity, index) => {
+              const Icon = getActivityIcon(activity.tipo);
+              return (
+                <ActivityItem key={index}>
+                  <ActivityIcon>
+                    <Icon />
+                  </ActivityIcon>
+                  <ActivityContent>
+                    <ActivityText>{activity.acao}: {activity.titulo}</ActivityText>
+                    <ActivityTime>{formatDate(activity.data)}</ActivityTime>
+                  </ActivityContent>
+                </ActivityItem>
+              );
+            })
+          )}
         </RecentActivity>
       </ContentGrid>
     </DashboardContainer>

@@ -13,6 +13,7 @@ const gruposRoutes = require('./routes/grupos');
 const subgruposRoutes = require('./routes/subgrupos');
 const unidadesRoutes = require('./routes/unidades');
 const permissoesRoutes = require('./routes/permissoes');
+const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -56,6 +57,7 @@ app.use('/api/grupos', gruposRoutes);
 app.use('/api/subgrupos', subgruposRoutes);
 app.use('/api/unidades', unidadesRoutes);
 app.use('/api/permissoes', permissoesRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Rota de health check
 app.get('/api/health', (req, res) => {
