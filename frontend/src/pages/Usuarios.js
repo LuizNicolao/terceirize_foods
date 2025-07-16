@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -204,6 +204,94 @@ const Form = styled.form`
   flex-direction: column;
 `;
 
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+`;
+
+const Label = styled.label`
+  color: var(--dark-gray);
+  font-weight: 600;
+  font-size: 14px;
+`;
+
+const Input = styled.input`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
+  }
+`;
+
+const Select = styled.select`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--white);
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    outline: none;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+`;
+
+const Button = styled.button`
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &.primary {
+    background: var(--primary-green);
+    color: var(--white);
+
+    &:hover {
+      background: var(--dark-green);
+    }
+  }
+
+  &.secondary {
+    background: var(--gray);
+    color: var(--white);
+
+    &:hover {
+      background: var(--dark-gray);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 48px;
+  color: var(--gray);
+`;
+
+// Componentes para o modal de auditoria
 const AuditModal = styled(Modal)`
   z-index: 1001;
 `;
@@ -288,92 +376,6 @@ const AuditEmptyState = styled.div`
   padding: 40px;
   color: var(--gray);
   font-size: 16px;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const Label = styled.label`
-  color: var(--dark-gray);
-  font-weight: 600;
-  font-size: 14px;
-`;
-
-const Input = styled.input`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const Select = styled.select`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white);
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-`;
-
-const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &.primary {
-    background: var(--primary-green);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-green);
-    }
-  }
-
-  &.secondary {
-    background: var(--gray);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-gray);
-    }
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px;
-  color: var(--gray);
 `;
 
 const Usuarios = () => {
@@ -792,8 +794,8 @@ const Usuarios = () => {
             </Form>
           </ModalContent>
         </Modal>
+      )}
 
-      {/* Modal de Auditoria */}
       {showAuditModal && (
         <AuditModal>
           <AuditModalContent>
