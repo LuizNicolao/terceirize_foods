@@ -12,7 +12,7 @@ const produtosRoutes = require('./routes/produtos');
 const gruposRoutes = require('./routes/grupos');
 const subgruposRoutes = require('./routes/subgrupos');
 const unidadesRoutes = require('./routes/unidades');
-const permissoesRoutes = require('./routes/permissoes');
+const { router: permissoesRoutes } = require('./routes/permissoes');
 const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
