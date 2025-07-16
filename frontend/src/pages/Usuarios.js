@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -143,6 +143,10 @@ const ActionButton = styled.button`
   &.view {
     color: var(--primary-green);
   }
+
+  &.audit {
+    color: var(--orange);
+  }
 `;
 
 const Modal = styled.div`
@@ -198,7 +202,92 @@ const CloseButton = styled.button`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+`;
+
+const AuditModal = styled(Modal)`
+  z-index: 1001;
+`;
+
+const AuditModalContent = styled(ModalContent)`
+  max-width: 800px;
+  max-height: 80vh;
+`;
+
+const AuditFilters = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+`;
+
+const FilterGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const FilterLabel = styled.label`
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--dark-gray);
+`;
+
+const FilterInput = styled.input`
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+`;
+
+const AuditFilterSelect = styled.select`
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+`;
+
+const AuditTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+`;
+
+const AuditTh = styled.th`
+  background-color: #f5f5f5;
+  padding: 8px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--dark-gray);
+  font-size: 12px;
+  border-bottom: 1px solid #e0e0e0;
+`;
+
+const AuditTd = styled.td`
+  padding: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: var(--dark-gray);
+  word-break: break-word;
+`;
+
+const ChangesBadge = styled.span`
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--primary-green);
+  color: white;
+`;
+
+const AuditEmptyState = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: var(--gray);
+  font-size: 16px;
 `;
 
 const FormGroup = styled.div`
@@ -294,6 +383,17 @@ const Usuarios = () => {
   const [editingUser, setEditingUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
+  
+  // Estados para auditoria
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditFilters, setAuditFilters] = useState({
+    data_inicio: '',
+    data_fim: '',
+    acao: '',
+    usuario_id: ''
+  });
 
   const {
     register,
@@ -384,6 +484,70 @@ const Usuarios = () => {
     }
   };
 
+  // Carregar logs de auditoria
+  const loadAuditLogs = async () => {
+    try {
+      setAuditLoading(true);
+      const params = new URLSearchParams();
+      
+      if (auditFilters.data_inicio) params.append('data_inicio', auditFilters.data_inicio);
+      if (auditFilters.data_fim) params.append('data_fim', auditFilters.data_fim);
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
+      
+      const response = await api.get(`/auditoria?${params.toString()}`);
+      setAuditLogs(response.data.logs || []);
+    } catch (error) {
+      console.error('Erro ao carregar logs de auditoria:', error);
+      toast.error('Erro ao carregar logs de auditoria');
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  // Abrir modal de auditoria
+  const handleOpenAuditModal = () => {
+    setShowAuditModal(true);
+    loadAuditLogs();
+  };
+
+  // Fechar modal de auditoria
+  const handleCloseAuditModal = () => {
+    setShowAuditModal(false);
+    setAuditLogs([]);
+    setAuditFilters({
+      data_inicio: '',
+      data_fim: '',
+      acao: '',
+      usuario_id: ''
+    });
+  };
+
+  // Aplicar filtros de auditoria
+  const handleAuditFilterChange = (field, value) => {
+    setAuditFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Formatar data para exibição
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
+
+  // Obter label da ação
+  const getActionLabel = (action) => {
+    const actions = {
+      'create': 'Criar',
+      'update': 'Editar',
+      'delete': 'Excluir',
+      'login': 'Login',
+      'logout': 'Logout'
+    };
+    return actions[action] || action;
+  };
+
   // Filtrar usuários
   const filteredUsuarios = usuarios.filter(user => {
     const matchesSearch = user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -424,10 +588,27 @@ const Usuarios = () => {
     <Container>
       <Header>
         <Title>Usuários</Title>
-        <AddButton onClick={handleAddUser}>
-          <FaPlus />
-          Adicionar Usuário
-        </AddButton>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <ActionButton
+            className="audit"
+            title="Histórico de Auditoria"
+            onClick={handleOpenAuditModal}
+            style={{ 
+              background: 'var(--orange)', 
+              color: 'white', 
+              padding: '12px 16px',
+              borderRadius: '8px',
+              border: 'none'
+            }}
+          >
+            <FaHistory />
+            Auditoria
+          </ActionButton>
+          <AddButton onClick={handleAddUser}>
+            <FaPlus />
+            Adicionar Usuário
+          </AddButton>
+        </div>
       </Header>
 
       <SearchContainer>
@@ -611,6 +792,128 @@ const Usuarios = () => {
             </Form>
           </ModalContent>
         </Modal>
+
+      {/* Modal de Auditoria */}
+      {showAuditModal && (
+        <AuditModal>
+          <AuditModalContent>
+            <ModalHeader>
+              <ModalTitle>Histórico de Auditoria - Usuários</ModalTitle>
+              <CloseButton onClick={handleCloseAuditModal}>×</CloseButton>
+            </ModalHeader>
+
+            <AuditFilters>
+              <FilterGroup>
+                <FilterLabel>Data Início</FilterLabel>
+                <FilterInput
+                  type="date"
+                  value={auditFilters.data_inicio}
+                  onChange={(e) => handleAuditFilterChange('data_inicio', e.target.value)}
+                />
+              </FilterGroup>
+              <FilterGroup>
+                <FilterLabel>Data Fim</FilterLabel>
+                <FilterInput
+                  type="date"
+                  value={auditFilters.data_fim}
+                  onChange={(e) => handleAuditFilterChange('data_fim', e.target.value)}
+                />
+              </FilterGroup>
+              <FilterGroup>
+                <FilterLabel>Ação</FilterLabel>
+                <AuditFilterSelect
+                  value={auditFilters.acao}
+                  onChange={(e) => handleAuditFilterChange('acao', e.target.value)}
+                >
+                  <option value="">Todas as ações</option>
+                  <option value="create">Criar</option>
+                  <option value="update">Editar</option>
+                  <option value="delete">Excluir</option>
+                  <option value="login">Login</option>
+                </AuditFilterSelect>
+              </FilterGroup>
+              <FilterGroup>
+                <FilterLabel>Usuário</FilterLabel>
+                <AuditFilterSelect
+                  value={auditFilters.usuario_id}
+                  onChange={(e) => handleAuditFilterChange('usuario_id', e.target.value)}
+                >
+                  <option value="">Todos os usuários</option>
+                  {usuarios.map(user => (
+                    <option key={user.id} value={user.id}>
+                      {user.nome} ({user.email})
+                    </option>
+                  ))}
+                </AuditFilterSelect>
+              </FilterGroup>
+              <FilterGroup>
+                <FilterLabel>&nbsp;</FilterLabel>
+                <Button 
+                  className="primary" 
+                  onClick={loadAuditLogs}
+                  disabled={auditLoading}
+                >
+                  {auditLoading ? 'Carregando...' : 'Filtrar'}
+                </Button>
+              </FilterGroup>
+            </AuditFilters>
+
+            {auditLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px' }}>
+                Carregando logs de auditoria...
+              </div>
+            ) : auditLogs.length === 0 ? (
+              <AuditEmptyState>
+                Nenhum log de auditoria encontrado para os filtros aplicados
+              </AuditEmptyState>
+            ) : (
+              <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                <AuditTable>
+                  <thead>
+                    <tr>
+                      <AuditTh>Data/Hora</AuditTh>
+                      <AuditTh>Usuário</AuditTh>
+                      <AuditTh>Ação</AuditTh>
+                      <AuditTh>Recurso</AuditTh>
+                      <AuditTh>IP</AuditTh>
+                      <AuditTh>Detalhes</AuditTh>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {auditLogs.map((log) => (
+                      <tr key={log.id}>
+                        <AuditTd>{formatDate(log.timestamp)}</AuditTd>
+                        <AuditTd>{log.usuario_nome || 'N/A'}</AuditTd>
+                        <AuditTd>
+                          <ChangesBadge>{getActionLabel(log.acao)}</ChangesBadge>
+                        </AuditTd>
+                        <AuditTd>{log.recurso}</AuditTd>
+                        <AuditTd>{log.ip_address}</AuditTd>
+                        <AuditTd>
+                          {log.detalhes && (
+                            <details>
+                              <summary style={{ cursor: 'pointer', color: 'var(--primary-green)' }}>
+                                Ver detalhes
+                              </summary>
+                              <pre style={{ 
+                                fontSize: '10px', 
+                                marginTop: '8px',
+                                whiteSpace: 'pre-wrap',
+                                wordBreak: 'break-word'
+                              }}>
+                                {JSON.stringify(log.detalhes, null, 2)}
+                              </pre>
+                            </details>
+                          )}
+                        </AuditTd>
+                      </tr>
+                    ))}
+                  </tbody>
+                </AuditTable>
+              </div>
+            )}
+          </AuditModalContent>
+        </AuditModal>
       )}
     </Container>
   );
