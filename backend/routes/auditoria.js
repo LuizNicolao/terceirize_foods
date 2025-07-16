@@ -12,6 +12,12 @@ router.use(authenticateToken);
 // Listar logs de auditoria
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
+    // Verificar se usuário tem permissão para visualizar auditoria
+    if (req.user.tipo_de_acesso !== 'administrador' && 
+        !(req.user.tipo_de_acesso === 'coordenador' && req.user.nivel_de_acesso === 'III')) {
+      return res.status(403).json({ error: 'Acesso negado. Apenas administradores e coordenadores nível III podem visualizar logs de auditoria.' });
+    }
+
     const { 
       usuario_id, 
       acao, 
@@ -21,12 +27,6 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       limit = 100, 
       offset = 0 
     } = req.query;
-
-    // Verificar se usuário tem permissão para visualizar auditoria
-    if (req.user.tipo_de_acesso !== 'administrador' && 
-        !(req.user.tipo_de_acesso === 'coordenador' && req.user.nivel_de_acesso === 'III')) {
-      return res.status(403).json({ error: 'Acesso negado. Apenas administradores e coordenadores nível III podem visualizar logs de auditoria.' });
-    }
 
     const filters = {
       usuario_id: usuario_id ? parseInt(usuario_id) : null,
@@ -48,7 +48,10 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
 
   } catch (error) {
     console.error('Erro ao buscar logs de auditoria:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      message: error.message 
+    });
   }
 });
 

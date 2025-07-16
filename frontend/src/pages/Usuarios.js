@@ -698,46 +698,103 @@ const Usuarios = () => {
       {/* Modal de Auditoria */}
       {showAuditModal && (
         <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', maxHeight: '80vh' }}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1000px', maxHeight: '85vh' }}>
             <ModalHeader>
-              <ModalTitle>Relatório de Auditoria - Usuários</ModalTitle>
+              <ModalTitle>📊 Relatório de Auditoria - Usuários</ModalTitle>
               <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
             </ModalHeader>
 
             {/* Filtros de Auditoria */}
-            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px' }}>
+            <div style={{ 
+              marginBottom: '24px', 
+              padding: '20px', 
+              background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)', 
+              borderRadius: '12px',
+              border: '1px solid #dee2e6'
+            }}>
+              <h3 style={{ 
+                margin: '0 0 20px 0', 
+                fontSize: '18px', 
+                color: 'var(--dark-gray)',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                🔍 Filtros de Pesquisa
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Início
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '6px', 
+                    fontSize: '13px', 
+                    color: 'var(--gray)',
+                    fontWeight: '500'
+                  }}>
+                    📅 Data Início
                   </label>
                   <input
                     type="date"
                     value={auditFilters.dataInicio}
                     onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '10px 12px', 
+                      border: '2px solid #e9ecef', 
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      transition: 'all 0.3s ease'
+                    }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Fim
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '6px', 
+                    fontSize: '13px', 
+                    color: 'var(--gray)',
+                    fontWeight: '500'
+                  }}>
+                    📅 Data Fim
                   </label>
                   <input
                     type="date"
                     value={auditFilters.dataFim}
                     onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '10px 12px', 
+                      border: '2px solid #e9ecef', 
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      transition: 'all 0.3s ease'
+                    }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Ação
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '6px', 
+                    fontSize: '13px', 
+                    color: 'var(--gray)',
+                    fontWeight: '500'
+                  }}>
+                    ⚡ Ação
                   </label>
                   <select
                     value={auditFilters.acao}
                     onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '10px 12px', 
+                      border: '2px solid #e9ecef', 
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      background: 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
                   >
                     <option value="">Todas as ações</option>
                     <option value="create">Criar</option>
@@ -747,13 +804,28 @@ const Usuarios = () => {
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Usuário
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '6px', 
+                    fontSize: '13px', 
+                    color: 'var(--gray)',
+                    fontWeight: '500'
+                  }}>
+                    👤 Usuário
                   </label>
                   <select
                     value={auditFilters.usuario_id}
                     onChange={(e) => setAuditFilters({...auditFilters, usuario_id: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                    style={{ 
+                      width: '100%', 
+                      padding: '10px 12px', 
+                      border: '2px solid #e9ecef', 
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      background: 'white',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
                   >
                     <option value="">Todos os usuários</option>
                     {usuarios.map(user => (
@@ -765,90 +837,173 @@ const Usuarios = () => {
               <button
                 onClick={handleApplyAuditFilters}
                 style={{
-                  marginTop: '12px',
-                  padding: '8px 16px',
-                  background: 'var(--primary-green)',
+                  marginTop: '16px',
+                  padding: '12px 24px',
+                  background: 'linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%)',
                   color: 'white',
                   border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                 }}
+                onMouseOver={(e) => e.target.style.transform = 'translateY(-1px)'}
+                onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
               >
-                Aplicar Filtros
+                🔍 Aplicar Filtros
               </button>
             </div>
 
             {/* Lista de Logs */}
-            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
               {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '40px',
+                  color: 'var(--gray)',
+                  fontSize: '16px'
+                }}>
+                  ⏳ Carregando logs...
+                </div>
               ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
-                  Nenhum log encontrado com os filtros aplicados
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '40px', 
+                  color: 'var(--gray)',
+                  fontSize: '16px'
+                }}>
+                  📭 Nenhum log encontrado com os filtros aplicados
                 </div>
               ) : (
                 <div>
-                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
-                    {auditLogs.length} log(s) encontrado(s)
+                  <div style={{ 
+                    marginBottom: '20px', 
+                    fontSize: '14px', 
+                    color: 'var(--gray)',
+                    padding: '12px 16px',
+                    background: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '1px solid #e9ecef'
+                  }}>
+                    📈 {auditLogs.length} log(s) encontrado(s)
                   </div>
                   {auditLogs.map((log, index) => (
                     <div
                       key={index}
                       style={{
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        marginBottom: '12px',
-                        background: 'white'
+                        border: '1px solid #e9ecef',
+                        borderRadius: '12px',
+                        padding: '20px',
+                        marginBottom: '16px',
+                        background: 'white',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                        transition: 'all 0.3s ease'
                       }}
+                      onMouseOver={(e) => e.target.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
+                      onMouseOut={(e) => e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'}
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        marginBottom: '12px' 
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
+                            padding: '6px 12px',
+                            borderRadius: '20px',
                             fontSize: '12px',
                             fontWeight: 'bold',
-                            background: log.acao === 'create' ? '#e8f5e8' : 
-                                       log.acao === 'update' ? '#fff3cd' : 
-                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
+                            background: log.acao === 'create' ? 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)' : 
+                                       log.acao === 'update' ? 'linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%)' : 
+                                       log.acao === 'delete' ? 'linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%)' : 
+                                       'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)',
                             color: log.acao === 'create' ? '#2e7d32' : 
                                    log.acao === 'update' ? '#856404' : 
-                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
+                                   log.acao === 'delete' ? '#721c24' : '#1976d2',
+                            border: '1px solid rgba(0,0,0,0.1)'
                           }}>
-                            {getActionLabel(log.acao)}
+                            {log.acao === 'create' ? '➕' : 
+                             log.acao === 'update' ? '✏️' : 
+                             log.acao === 'delete' ? '🗑️' : '🔐'} {getActionLabel(log.acao)}
                           </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                            por {log.usuario_nome || 'Usuário desconhecido'}
+                          <span style={{ 
+                            fontSize: '13px', 
+                            color: 'var(--gray)',
+                            fontWeight: '500'
+                          }}>
+                            por <strong>{log.usuario_nome || 'Usuário desconhecido'}</strong>
                           </span>
                         </div>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                          {formatDate(log.timestamp)}
+                        <span style={{ 
+                          fontSize: '12px', 
+                          color: 'var(--gray)',
+                          background: '#f8f9fa',
+                          padding: '4px 8px',
+                          borderRadius: '6px'
+                        }}>
+                          🕒 {formatDate(log.timestamp)}
                         </span>
                       </div>
                       
                       {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
+                        <div style={{ 
+                          fontSize: '13px', 
+                          color: 'var(--dark-gray)',
+                          background: '#f8f9fa',
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: '1px solid #e9ecef'
+                        }}>
                           {log.detalhes.changes && (
                             <div style={{ marginBottom: '8px' }}>
-                              <strong>Mudanças:</strong>
+                              <strong style={{ color: 'var(--dark-gray)' }}>🔄 Mudanças:</strong>
                               {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                <div key={field} style={{ marginLeft: '12px', marginTop: '4px' }}>
-                                  <span style={{ fontWeight: 'bold' }}>{field}:</span> 
-                                  <span style={{ color: '#721c24' }}> {change.from}</span> → 
-                                  <span style={{ color: '#2e7d32' }}> {change.to}</span>
+                                <div key={field} style={{ 
+                                  marginLeft: '16px', 
+                                  marginTop: '6px',
+                                  padding: '4px 8px',
+                                  background: 'white',
+                                  borderRadius: '4px',
+                                  border: '1px solid #e9ecef'
+                                }}>
+                                  <span style={{ fontWeight: 'bold', color: 'var(--dark-gray)' }}>{field}:</span> 
+                                  <span style={{ color: '#721c24', fontWeight: '500' }}> {change.from}</span> 
+                                  <span style={{ margin: '0 4px', color: 'var(--gray)' }}>→</span>
+                                  <span style={{ color: '#2e7d32', fontWeight: '500' }}> {change.to}</span>
                                 </div>
                               ))}
                             </div>
                           )}
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
-                              <strong>Dados:</strong> {JSON.stringify(log.detalhes.requestBody, null, 2)}
+                              <strong style={{ color: 'var(--dark-gray)' }}>📄 Dados:</strong>
+                              <pre style={{ 
+                                marginTop: '4px',
+                                fontSize: '11px',
+                                background: 'white',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                border: '1px solid #e9ecef',
+                                overflow: 'auto'
+                              }}>
+                                {JSON.stringify(log.detalhes.requestBody, null, 2)}
+                              </pre>
                             </div>
                           )}
                           {log.detalhes.resourceId && (
-                            <div>
-                              <strong>ID do Recurso:</strong> {log.detalhes.resourceId}
+                            <div style={{ marginTop: '8px' }}>
+                              <strong style={{ color: 'var(--dark-gray)' }}>🆔 ID do Recurso:</strong> 
+                              <span style={{ 
+                                background: '#e3f2fd', 
+                                padding: '2px 6px', 
+                                borderRadius: '4px',
+                                marginLeft: '4px'
+                              }}>
+                                {log.detalhes.resourceId}
+                              </span>
                             </div>
                           )}
                         </div>
