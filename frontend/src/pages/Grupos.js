@@ -365,16 +365,33 @@ const Grupos = () => {
   // Salvar grupo
   const onSubmit = async (data) => {
     try {
-      // Converter status para número
-      const formData = {
-        ...data,
-        status: parseInt(data.status)
-      };
-
       if (editingGrupo) {
-        await api.put(`/grupos/${editingGrupo.id}`, formData);
+        // Para edição, enviar apenas os campos que foram alterados
+        const updateData = {};
+        
+        if (data.nome !== editingGrupo.nome) {
+          updateData.nome = data.nome;
+        }
+        
+        if (parseInt(data.status) !== editingGrupo.status) {
+          updateData.status = parseInt(data.status);
+        }
+        
+        // Se não há campos para atualizar, mostrar erro
+        if (Object.keys(updateData).length === 0) {
+          toast.error('Nenhum campo foi alterado');
+          return;
+        }
+        
+        await api.put(`/grupos/${editingGrupo.id}`, updateData);
         toast.success('Grupo atualizado com sucesso!');
       } else {
+        // Para criação, enviar todos os campos
+        const formData = {
+          ...data,
+          status: parseInt(data.status)
+        };
+        
         await api.post('/grupos', formData);
         toast.success('Grupo criado com sucesso!');
       }
