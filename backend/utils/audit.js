@@ -88,6 +88,95 @@ const auditMiddleware = (action, resource) => {
   };
 };
 
+// Middleware para auditoria com comparação de mudanças
+const auditChangesMiddleware = (action, resource) => {
+  return async (req, res, next) => {
+    let originalData = null;
+    
+    // Capturar dados originais antes da modificação
+    if (action === AUDIT_ACTIONS.UPDATE && req.params.id) {
+      try {
+        const { executeQuery } = require('../config/database');
+        const tableName = resource === 'usuarios' ? 'usuarios' : resource;
+        
+        const result = await executeQuery(
+          `SELECT * FROM ${tableName} WHERE id = ?`,
+          [req.params.id]
+        );
+        
+        if (result.length > 0) {
+          originalData = result[0];
+        }
+      } catch (error) {
+        console.error('Erro ao capturar dados originais:', error);
+      }
+    }
+    
+    const originalSend = res.send;
+    
+    res.send = function(data) {
+      // Registrar apenas se a operação foi bem-sucedida
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        const details = {
+          method: req.method,
+          url: req.originalUrl,
+          statusCode: res.statusCode,
+          userAgent: req.get('User-Agent')
+        };
+        
+        // Para UPDATE, comparar dados antigos com novos
+        if (action === AUDIT_ACTIONS.UPDATE && originalData) {
+          const sanitizedBody = { ...req.body };
+          if (sanitizedBody.senha) {
+            sanitizedBody.senha = '[REDACTED]';
+          }
+          
+          // Identificar mudanças
+          const changes = {};
+          Object.keys(sanitizedBody).forEach(key => {
+            if (originalData[key] !== sanitizedBody[key]) {
+              changes[key] = {
+                from: originalData[key],
+                to: sanitizedBody[key]
+              };
+            }
+          });
+          
+          details.requestBody = sanitizedBody;
+          details.changes = changes;
+          details.resourceId = req.params.id;
+        }
+        
+        // Para CREATE
+        if (action === AUDIT_ACTIONS.CREATE) {
+          const sanitizedBody = { ...req.body };
+          if (sanitizedBody.senha) {
+            sanitizedBody.senha = '[REDACTED]';
+          }
+          details.requestBody = sanitizedBody;
+        }
+        
+        // Para DELETE
+        if (action === AUDIT_ACTIONS.DELETE) {
+          details.resourceId = req.params.id;
+        }
+        
+        logAction(
+          req.user?.id,
+          action,
+          resource,
+          details,
+          req.ip
+        );
+      }
+      
+      originalSend.call(this, data);
+    };
+    
+    next();
+  };
+};
+
 // Função para buscar logs de auditoria
 const getAuditLogs = async (filters = {}) => {
   try {
@@ -153,5 +242,6 @@ module.exports = {
   AUDIT_ACTIONS,
   logAction,
   auditMiddleware,
+  auditChangesMiddleware,
   getAuditLogs
 }; 

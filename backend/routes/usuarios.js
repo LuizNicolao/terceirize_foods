@@ -4,7 +4,7 @@ const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission, checkAccessType } = require('../middleware/auth');
 const { atualizarPermissoesPorTipoNivel } = require('./permissoes');
-const { auditMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -130,7 +130,7 @@ router.post('/', [
 // Atualizar usuário
 router.put('/:id', [
   checkPermission('editar'),
-  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'usuarios'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'usuarios'),
   body('nome').optional().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('email').optional().isEmail().withMessage('Email inválido'),
   body('senha').optional().isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
