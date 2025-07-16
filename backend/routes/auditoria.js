@@ -42,6 +42,37 @@ router.get('/test', async (req, res) => {
   }
 });
 
+// Rota de teste para verificar a função getAuditLogs
+router.get('/test-function', async (req, res) => {
+  try {
+    console.log('=== TESTE DA FUNÇÃO getAuditLogs ===');
+    const { getAuditLogs } = require('../utils/audit');
+    console.log('getAuditLogs importado com sucesso');
+    
+    const logs = await getAuditLogs({ limit: 5, offset: 0 });
+    console.log('Logs retornados:', logs.length);
+    
+    res.json({ 
+      message: 'Função getAuditLogs funcionando',
+      total: logs.length,
+      sample: logs[0] ? {
+        id: logs[0].id,
+        usuario_id: logs[0].usuario_id,
+        acao: logs[0].acao,
+        recurso: logs[0].recurso
+      } : null
+    });
+  } catch (error) {
+    console.error('=== ERRO NO TESTE DA FUNÇÃO ===');
+    console.error('Erro ao testar getAuditLogs:', error);
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ 
+      error: 'Erro na função getAuditLogs',
+      message: error.message 
+    });
+  }
+});
+
 // Listar logs de auditoria
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
@@ -59,30 +90,15 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       return res.status(403).json({ error: 'Acesso negado. Apenas administradores e coordenadores nível III podem visualizar logs de auditoria.' });
     }
 
-    // Teste simples primeiro - apenas contar registros
-    const { executeQuery } = require('../config/database');
-    console.log('Executando query de teste...');
-    
-    const countResult = await executeQuery('SELECT COUNT(*) as total FROM auditoria_acoes');
-    console.log('Total de registros na auditoria:', countResult[0].total);
+    console.log('Usuário tem permissão, buscando logs...');
 
-    // Se chegou até aqui, vamos buscar os logs
+    // Buscar logs diretamente sem filtros complexos
     const { 
-      usuario_id, 
-      acao, 
-      recurso, 
-      data_inicio, 
-      data_fim, 
       limit = 100, 
       offset = 0 
     } = req.query;
 
     const filters = {
-      usuario_id: usuario_id ? parseInt(usuario_id) : null,
-      acao,
-      recurso,
-      data_inicio,
-      data_fim,
       limit: parseInt(limit),
       offset: parseInt(offset)
     };

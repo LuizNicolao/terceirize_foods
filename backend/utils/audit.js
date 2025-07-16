@@ -184,20 +184,17 @@ const getAuditLogs = async (filters = {}) => {
     console.log('=== INÍCIO DA FUNÇÃO getAuditLogs ===');
     console.log('Filtros recebidos:', filters);
     
-    // Query com JOIN e filtros básicos
+    // Query mais simples primeiro - apenas buscar dados básicos
     let query = `
       SELECT 
         a.id,
         a.usuario_id,
-        u.nome as usuario_nome,
-        u.email as usuario_email,
         a.acao,
         a.recurso,
         a.detalhes,
         a.ip_address,
         a.timestamp
       FROM auditoria_acoes a
-      LEFT JOIN usuarios u ON a.usuario_id = u.id
       WHERE 1=1
     `;
     
@@ -216,11 +213,22 @@ const getAuditLogs = async (filters = {}) => {
     query += ' ORDER BY a.timestamp DESC LIMIT ? OFFSET ?';
     params.push(filters.limit || 100, filters.offset || 0);
     
-    console.log('Query simplificada:', query);
+    console.log('Query final:', query);
+    console.log('Parâmetros:', params);
     
-    const logs = await executeQuery(query);
+    const logs = await executeQuery(query, params);
     console.log('Logs brutos encontrados:', logs.length);
-    console.log('Primeiro log:', logs[0]);
+    
+    if (logs.length > 0) {
+      console.log('Primeiro log:', {
+        id: logs[0].id,
+        usuario_id: logs[0].usuario_id,
+        acao: logs[0].acao,
+        recurso: logs[0].recurso,
+        detalhes_type: typeof logs[0].detalhes,
+        detalhes_length: logs[0].detalhes ? logs[0].detalhes.length : 0
+      });
+    }
     
     // Processar logs com tratamento de erro mais robusto
     const processedLogs = logs.map((log, index) => {
