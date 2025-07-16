@@ -308,7 +308,7 @@ const Subgrupos = () => {
     try {
       setLoading(true);
       const response = await api.get('/subgrupos');
-      setSubgrupos(response.data.subgrupos || response.data);
+      setSubgrupos(response.data);
     } catch (error) {
       console.error('Erro ao carregar subgrupos:', error);
       toast.error('Erro ao carregar subgrupos');
