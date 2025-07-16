@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog, FaSearch } from 'react-icons/fa';
+import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog, FaSearch, FaSync, FaChevronDown } from 'react-icons/fa';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -28,6 +28,93 @@ const UserSelector = styled.div`
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-bottom: 24px;
+`;
+
+const SelectContainer = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const CustomSelect = styled.div`
+  position: relative;
+  width: 100%;
+`;
+
+const SelectInput = styled.input`
+  width: 100%;
+  padding: 12px 40px 12px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--white);
+  color: var(--dark-gray);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-green);
+  }
+
+  &::placeholder {
+    color: var(--gray);
+  }
+`;
+
+const SelectIcon = styled.div`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray);
+  font-size: 12px;
+  pointer-events: none;
+  transition: transform 0.2s ease;
+
+  ${props => props.isOpen && `
+    transform: translateY(-50%) rotate(180deg);
+  `}
+`;
+
+const SelectDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--white);
+  border: 1px solid #ddd;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+`;
+
+const SelectOption = styled.div`
+  padding: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  ${props => props.isSelected && `
+    background-color: var(--primary-green);
+    color: white;
+  `}
+`;
+
+const NoResults = styled.div`
+  padding: 12px;
+  text-align: center;
+  color: var(--gray);
+  font-size: 14px;
 `;
 
 const SearchContainer = styled.div`
@@ -265,10 +352,22 @@ const Permissoes = () => {
   const [editingPermissions, setEditingPermissions] = useState({});
   const [saving, setSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
 
   useEffect(() => {
     loadUsuarios();
   }, []);
+
+  // Recarregar dados periodicamente para detectar mudanças
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!loading) {
+        loadUsuarios();
+      }
+    }, 10000); // Recarregar a cada 10 segundos
+
+    return () => clearInterval(interval);
+  }, [loading]);
 
   useEffect(() => {
     // Filtrar usuários baseado no termo de busca
@@ -284,6 +383,29 @@ const Permissoes = () => {
       setFilteredUsuarios(filtered);
     }
   }, [searchTerm, usuarios]);
+
+  // Detectar mudanças no usuário selecionado e recarregar permissões
+  useEffect(() => {
+    if (selectedUser && selectedUserId) {
+      // Verificar se os dados do usuário mudaram (tipo ou nível de acesso)
+      const currentUser = usuarios.find(u => u.id === selectedUser.id);
+      if (currentUser && (
+        currentUser.tipo_de_acesso !== selectedUser.tipo_de_acesso ||
+        currentUser.nivel_de_acesso !== selectedUser.nivel_de_acesso
+      )) {
+        console.log('Mudança detectada no usuário:', {
+          old: { tipo: selectedUser.tipo_de_acesso, nivel: selectedUser.nivel_de_acesso },
+          new: { tipo: currentUser.tipo_de_acesso, nivel: currentUser.nivel_de_acesso }
+        });
+        
+        // Atualizar o usuário selecionado com os novos dados
+        setSelectedUser(currentUser);
+        // Recarregar permissões com os novos dados
+        loadUserPermissions(selectedUserId);
+        toast.success('Dados do usuário atualizados! As permissões foram recarregadas.');
+      }
+    }
+  }, [usuarios, selectedUser, selectedUserId]);
 
   const loadUsuarios = async () => {
     try {
@@ -322,16 +444,43 @@ const Permissoes = () => {
     }
   };
 
+  const reloadUserPermissions = async () => {
+    if (selectedUserId) {
+      await loadUserPermissions(selectedUserId);
+    }
+  };
+
   const handleUserSelect = (userId) => {
     const user = usuarios.find(u => u.id === parseInt(userId));
     setSelectedUserId(userId);
     setSelectedUser(user);
+    setSearchTerm(user ? `${user.nome} - ${getAccessTypeLabel(user.tipo_de_acesso)} (${getAccessLevelLabel(user.nivel_de_acesso)})` : '');
+    setIsSelectOpen(false);
     if (userId) {
       loadUserPermissions(userId);
     } else {
       setUserPermissions({});
       setEditingPermissions({});
     }
+  };
+
+  const handleSelectClick = () => {
+    setIsSelectOpen(!isSelectOpen);
+    if (!isSelectOpen) {
+      setSearchTerm('');
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setIsSelectOpen(true);
+  };
+
+  const handleSelectBlur = () => {
+    // Pequeno delay para permitir cliques nas opções
+    setTimeout(() => {
+      setIsSelectOpen(false);
+    }, 200);
   };
 
   const handlePermissionChange = (tela, acao, value) => {
@@ -429,17 +578,6 @@ const Permissoes = () => {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    // Limpar seleção se o usuário selecionado não estiver nos resultados filtrados
-    if (selectedUserId && !filteredUsuarios.find(u => u.id === parseInt(selectedUserId))) {
-      setSelectedUserId('');
-      setSelectedUser(null);
-      setUserPermissions({});
-      setEditingPermissions({});
-    }
-  };
-
   if (loading) {
     return (
       <Container>
@@ -459,40 +597,45 @@ const Permissoes = () => {
       ) : (
         <div>
           <UserSelector>
-            <SearchContainer>
-              <SearchIcon>
-                <FaSearch />
-              </SearchIcon>
-              <SearchInput
-                type="text"
-                placeholder="Buscar usuários por nome, email, tipo ou nível..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-              />
-            </SearchContainer>
-
-            <UserSelect
-              value={selectedUserId}
-              onChange={(e) => handleUserSelect(e.target.value)}
-            >
-              <option value="">Selecione um usuário</option>
-              {filteredUsuarios.map(user => (
-                <option key={user.id} value={user.id}>
-                  {user.nome} - {getAccessTypeLabel(user.tipo_de_acesso)} ({getAccessLevelLabel(user.nivel_de_acesso)})
-                </option>
-              ))}
-            </UserSelect>
-
-            {filteredUsuarios.length === 0 && searchTerm.trim() !== '' && (
-              <div style={{ 
-                marginTop: '8px', 
-                color: 'var(--gray)', 
-                fontSize: '14px',
-                textAlign: 'center'
-              }}>
-                Nenhum usuário encontrado para "{searchTerm}"
-              </div>
-            )}
+            <SelectContainer>
+              <CustomSelect>
+                <SelectInput
+                  type="text"
+                  placeholder="Buscar e selecionar usuário..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  onFocus={() => setIsSelectOpen(true)}
+                  onBlur={handleSelectBlur}
+                  onClick={handleSelectClick}
+                />
+                <SelectIcon isOpen={isSelectOpen}>
+                  <FaChevronDown />
+                </SelectIcon>
+                
+                {isSelectOpen && (
+                  <SelectDropdown>
+                    {filteredUsuarios.length > 0 ? (
+                      filteredUsuarios.map(user => (
+                        <SelectOption
+                          key={user.id}
+                          isSelected={selectedUserId === user.id.toString()}
+                          onClick={() => handleUserSelect(user.id.toString())}
+                        >
+                          {user.nome} - {getAccessTypeLabel(user.tipo_de_acesso)} ({getAccessLevelLabel(user.nivel_de_acesso)})
+                        </SelectOption>
+                      ))
+                    ) : (
+                      <NoResults>
+                        {searchTerm.trim() !== '' 
+                          ? `Nenhum usuário encontrado para "${searchTerm}"`
+                          : 'Nenhum usuário disponível'
+                        }
+                      </NoResults>
+                    )}
+                  </SelectDropdown>
+                )}
+              </CustomSelect>
+            </SelectContainer>
 
             {selectedUser && (
               <UserInfo>
@@ -578,6 +721,14 @@ const Permissoes = () => {
               >
                 <FaTimes />
                 Resetar para Padrão
+              </Button>
+              <Button
+                className="secondary"
+                onClick={reloadUserPermissions}
+                disabled={loading}
+              >
+                <FaSync />
+                Recarregar Permissões
               </Button>
             </ButtonGroup>
           )}
