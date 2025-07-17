@@ -361,16 +361,16 @@ const SectionTitle = styled.h3`
 const FormGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: 8px;
+  margin-bottom: 8px;
   flex: 1;
 `;
 
 const FormGrid2 = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-bottom: 6px;
+  gap: 8px;
+  margin-bottom: 8px;
 `;
 
 const FormGrid3 = styled.div`
@@ -1090,77 +1090,106 @@ const Produtos = () => {
                   </FormGrid>
                 </FormSection>
 
-                {/* Card 2: Tributação */}
+                {/* Card 2: Informações do Produto */}
                 <FormSection>
-                  <SectionTitle>Tributação</SectionTitle>
+                  <SectionTitle>Informações do Produto</SectionTitle>
                   <FormGrid>
                     <FormGrid2>
                       <FormGroup>
-                        <Label>CST ICMS</Label>
+                        <Label>Marca</Label>
                         <Input
                           type="text"
-                          placeholder="CST ICMS"
-                          {...register('cst_icms')}
+                          placeholder="Ex: KING"
+                          {...register('marca')}
                         />
-                        {errors.cst_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cst_icms.message}</span>}
+                        {errors.marca && <span style={{ color: 'red', fontSize: '11px' }}>{errors.marca.message}</span>}
                       </FormGroup>
 
                       <FormGroup>
-                        <Label>CSOSN</Label>
+                        <Label>Fabricante</Label>
                         <Input
                           type="text"
-                          placeholder="CSOSN"
-                          {...register('csosn')}
+                          placeholder="Ex: KING"
+                          {...register('fabricante')}
                         />
-                        {errors.csosn && <span style={{ color: 'red', fontSize: '11px' }}>{errors.csosn.message}</span>}
+                        {errors.fabricante && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fabricante.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
+
+                    <FormGroup>
+                      <Label>Informações Adicionais</Label>
+                      <TextArea
+                        placeholder="Ex: PRODUTO COM 5% DE GORDURA"
+                        {...register('informacoes_adicionais')}
+                      />
+                      {errors.informacoes_adicionais && <span style={{ color: 'red', fontSize: '11px' }}>{errors.informacoes_adicionais.message}</span>}
+                    </FormGroup>
+
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Referência Interna</Label>
+                        <Input
+                          type="text"
+                          placeholder="Referência interna"
+                          {...register('referencia')}
+                        />
+                        {errors.referencia && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia.message}</span>}
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label>Referência Externa</Label>
+                        <Input
+                          type="text"
+                          placeholder="Ex: 123654"
+                          {...register('referencia_externa')}
+                        />
+                        {errors.referencia_externa && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia_externa.message}</span>}
                       </FormGroup>
                     </FormGrid2>
 
                     <FormGrid2>
                       <FormGroup>
-                        <Label>Alíquota ICMS (%)</Label>
+                        <Label>Registro Específico (Número)</Label>
                         <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 18.00"
-                          {...register('aliquota_icms')}
+                          type="text"
+                          placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
+                          {...register('registro_especifico')}
                         />
-                        {errors.aliquota_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_icms.message}</span>}
+                        {errors.registro_especifico && <span style={{ color: 'red', fontSize: '11px' }}>{errors.registro_especifico.message}</span>}
                       </FormGroup>
 
                       <FormGroup>
-                        <Label>Alíquota IPI (%)</Label>
+                        <Label>Tipo do Registro</Label>
                         <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 5.00"
-                          {...register('aliquota_ipi')}
+                          type="text"
+                          placeholder="Tipo do registro"
+                          {...register('tipo_registro')}
                         />
-                        {errors.aliquota_ipi && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_ipi.message}</span>}
+                        {errors.tipo_registro && <span style={{ color: 'red', fontSize: '11px' }}>{errors.tipo_registro.message}</span>}
                       </FormGroup>
                     </FormGrid2>
 
                     <FormGrid2>
                       <FormGroup>
-                        <Label>Alíquota PIS (%)</Label>
+                        <Label>Prazo de Validade</Label>
                         <Input
                           type="number"
-                          step="0.01"
-                          placeholder="Ex: 1.65"
-                          {...register('aliquota_pis')}
+                          placeholder="Ex: 12"
+                          {...register('prazo_validade')}
                         />
-                        {errors.aliquota_pis && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_pis.message}</span>}
+                        {errors.prazo_validade && <span style={{ color: 'red', fontSize: '11px' }}>{errors.prazo_validade.message}</span>}
                       </FormGroup>
 
                       <FormGroup>
-                        <Label>Alíquota COFINS (%)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 7.60"
-                          {...register('aliquota_cofins')}
-                        />
-                        {errors.aliquota_cofins && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_cofins.message}</span>}
+                        <Label>Unidade de Validade</Label>
+                        <Select {...register('unidade_validade')}>
+                          <option value="">Selecione...</option>
+                          <option value="DIAS">Dias</option>
+                          <option value="SEMANAS">Semanas</option>
+                          <option value="MESES">Meses</option>
+                          <option value="ANOS">Anos</option>
+                        </Select>
+                        {errors.unidade_validade && <span style={{ color: 'red', fontSize: '11px' }}>{errors.unidade_validade.message}</span>}
                       </FormGroup>
                     </FormGrid2>
                   </FormGrid>
@@ -1294,7 +1323,83 @@ const Produtos = () => {
 
               {/* Segunda Linha - 2 Cards */}
               <SecondRow>
-                {/* Card 4: Documentos e Status */}
+                {/* Card 4: Tributação */}
+                <FormSection>
+                  <SectionTitle>Tributação</SectionTitle>
+                  <FormGrid>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>CST ICMS</Label>
+                        <Input
+                          type="text"
+                          placeholder="CST ICMS"
+                          {...register('cst_icms')}
+                        />
+                        {errors.cst_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cst_icms.message}</span>}
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label>CSOSN</Label>
+                        <Input
+                          type="text"
+                          placeholder="CSOSN"
+                          {...register('csosn')}
+                        />
+                        {errors.csosn && <span style={{ color: 'red', fontSize: '11px' }}>{errors.csosn.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
+
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Alíquota ICMS (%)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 18.00"
+                          {...register('aliquota_icms')}
+                        />
+                        {errors.aliquota_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_icms.message}</span>}
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label>Alíquota IPI (%)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 5.00"
+                          {...register('aliquota_ipi')}
+                        />
+                        {errors.aliquota_ipi && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_ipi.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
+
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Alíquota PIS (%)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 1.65"
+                          {...register('aliquota_pis')}
+                        />
+                        {errors.aliquota_pis && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_pis.message}</span>}
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label>Alíquota COFINS (%)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 7.60"
+                          {...register('aliquota_cofins')}
+                        />
+                        {errors.aliquota_cofins && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_cofins.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
+                  </FormGrid>
+                </FormSection>
+
+                {/* Card 5: Documentos e Status */}
                 <FormSection>
                   <SectionTitle>Documentos e Status</SectionTitle>
                   <FormGrid>
@@ -1331,111 +1436,6 @@ const Produtos = () => {
                     </FormGroup>
 
 
-                  </FormGrid>
-                </FormSection>
-
-                {/* Card 5: Informações do Produto */}
-                <FormSection>
-                  <SectionTitle>Informações do Produto</SectionTitle>
-                  <FormGrid>
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Marca</Label>
-                        <Input
-                          type="text"
-                          placeholder="Ex: KING"
-                          {...register('marca')}
-                        />
-                        {errors.marca && <span style={{ color: 'red', fontSize: '11px' }}>{errors.marca.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Fabricante</Label>
-                        <Input
-                          type="text"
-                          placeholder="Ex: KING"
-                          {...register('fabricante')}
-                        />
-                        {errors.fabricante && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fabricante.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGroup>
-                      <Label>Informações Adicionais</Label>
-                      <TextArea
-                        placeholder="Ex: PRODUTO COM 5% DE GORDURA"
-                        {...register('informacoes_adicionais')}
-                      />
-                      {errors.informacoes_adicionais && <span style={{ color: 'red', fontSize: '11px' }}>{errors.informacoes_adicionais.message}</span>}
-                    </FormGroup>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Referência Interna</Label>
-                        <Input
-                          type="text"
-                          placeholder="Referência interna"
-                          {...register('referencia')}
-                        />
-                        {errors.referencia && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Referência Externa</Label>
-                        <Input
-                          type="text"
-                          placeholder="Ex: 123654"
-                          {...register('referencia_externa')}
-                        />
-                        {errors.referencia_externa && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia_externa.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Registro Específico (Número)</Label>
-                        <Input
-                          type="text"
-                          placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
-                          {...register('registro_especifico')}
-                        />
-                        {errors.registro_especifico && <span style={{ color: 'red', fontSize: '11px' }}>{errors.registro_especifico.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Tipo do Registro</Label>
-                        <Input
-                          type="text"
-                          placeholder="Tipo do registro"
-                          {...register('tipo_registro')}
-                        />
-                        {errors.tipo_registro && <span style={{ color: 'red', fontSize: '11px' }}>{errors.tipo_registro.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Prazo de Validade</Label>
-                        <Input
-                          type="number"
-                          placeholder="Ex: 12"
-                          {...register('prazo_validade')}
-                        />
-                        {errors.prazo_validade && <span style={{ color: 'red', fontSize: '11px' }}>{errors.prazo_validade.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Unidade de Validade</Label>
-                        <Select {...register('unidade_validade')}>
-                          <option value="">Selecione...</option>
-                          <option value="DIAS">Dias</option>
-                          <option value="SEMANAS">Semanas</option>
-                          <option value="MESES">Meses</option>
-                          <option value="ANOS">Anos</option>
-                        </Select>
-                        {errors.unidade_validade && <span style={{ color: 'red', fontSize: '11px' }}>{errors.unidade_validade.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
                   </FormGrid>
                 </FormSection>
 
