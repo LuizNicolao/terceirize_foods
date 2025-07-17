@@ -660,6 +660,7 @@ const Fornecedores = () => {
   const handleAddFornecedor = () => {
     setEditingFornecedor(null);
     reset();
+    setValue('status', '1'); // Define status como "Ativo" por padrão
     setShowModal(true);
   };
 
