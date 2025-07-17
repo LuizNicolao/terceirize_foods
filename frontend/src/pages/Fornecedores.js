@@ -881,6 +881,10 @@ const Fornecedores = () => {
       console.error('Erro ao buscar CNPJ:', error);
       if (error.response?.status === 404) {
         toast.error('CNPJ não encontrado ou dados indisponíveis');
+      } else if (error.response?.status === 503) {
+        toast.error('Serviço de consulta CNPJ temporariamente indisponível. Tente novamente em alguns minutos.');
+      } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        toast.error('Tempo limite excedido. O serviço pode estar sobrecarregado. Tente novamente.');
       } else {
         toast.error('Erro ao buscar dados do CNPJ. Tente novamente.');
       }
@@ -1084,7 +1088,7 @@ const Fornecedores = () => {
                 </div>
                 {errors.cnpj && <span style={{ color: 'red', fontSize: '12px' }}>{errors.cnpj.message}</span>}
                 {!editingFornecedor && (
-                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ color: 'var(--gray)', fontSize: '11px' }}>
                       Digite o CNPJ completo para buscar dados automaticamente
                     </span>
@@ -1117,6 +1121,9 @@ const Fornecedores = () => {
                     >
                       Buscar Dados
                     </button>
+                    <span style={{ color: 'var(--orange)', fontSize: '10px', fontStyle: 'italic' }}>
+                      ⚠️ Se a busca falhar, você pode preencher os dados manualmente
+                    </span>
                   </div>
                 )}
               </FormGroup>
