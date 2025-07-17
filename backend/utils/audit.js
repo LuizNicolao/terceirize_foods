@@ -220,10 +220,36 @@ const auditChangesMiddleware = (action, resource) => {
                   });
                 } else {
                   console.log(`Tela ${newPerm.tela} não encontrada nas permissões originais`);
+                  // Se não encontrou permissões originais, registrar como mudança
+                  ['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].forEach(acao => {
+                    const newValue = newPerm[acao];
+                    if (newValue) {
+                      changes[`${newPerm.tela}_${acao}`] = {
+                        from: 'Não',
+                        to: newValue ? 'Sim' : 'Não'
+                      };
+                      console.log(`Nova permissão: ${newPerm.tela}_${acao} = Não → ${newValue ? 'Sim' : 'Não'}`);
+                    }
+                  });
                 }
               });
               
               console.log('Mudanças detectadas:', changes);
+              
+              // Se não detectou mudanças, registrar todas as permissões atuais
+              if (Object.keys(changes).length === 0) {
+                console.log('Nenhuma mudança detectada, registrando permissões atuais...');
+                sanitizedBody.permissoes.forEach(newPerm => {
+                  ['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].forEach(acao => {
+                    const newValue = newPerm[acao];
+                    changes[`${newPerm.tela}_${acao}`] = {
+                      from: 'Não informado',
+                      to: newValue ? 'Sim' : 'Não'
+                    };
+                  });
+                });
+                console.log('Permissões atuais registradas:', changes);
+              }
             } catch (error) {
               console.error('Erro ao comparar permissões:', error);
             }
