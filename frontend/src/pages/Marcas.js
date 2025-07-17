@@ -1,0 +1,1187 @@
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { useForm } from 'react-hook-form';
+import api from '../services/api';
+import toast from 'react-hot-toast';
+
+const Container = styled.div`
+  padding: 24px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+`;
+
+const Title = styled.h1`
+  color: var(--dark-gray);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+`;
+
+const AddButton = styled.button`
+  background: var(--primary-green);
+  color: var(--white);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: var(--dark-green);
+    transform: translateY(-1px);
+  }
+`;
+
+const SearchContainer = styled.div`
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
+  }
+`;
+
+const FilterSelect = styled.select`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    outline: none;
+  }
+`;
+
+const TableContainer = styled.div`
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
+
+const Th = styled.th`
+  background-color: #f5f5f5;
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--dark-gray);
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+`;
+
+const Td = styled.td`
+  padding: 16px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: var(--dark-gray);
+`;
+
+const StatusBadge = styled.span`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: ${props => props.status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
+  color: ${props => props.status === 'ativo' ? 'white' : 'var(--error-red)'};
+`;
+
+const ActionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  margin-right: 8px;
+  color: var(--gray);
+
+  &:hover {
+    background-color: var(--light-gray);
+  }
+
+  &.edit {
+    color: var(--blue);
+  }
+
+  &.delete {
+    color: var(--error-red);
+  }
+
+  &.view {
+    color: var(--primary-green);
+  }
+`;
+
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: var(--white);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+`;
+
+const ModalTitle = styled.h2`
+  color: var(--dark-gray);
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--gray);
+  padding: 4px;
+
+  &:hover {
+    color: var(--error-red);
+  }
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const FormRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const Label = styled.label`
+  color: var(--dark-gray);
+  font-weight: 600;
+  font-size: 14px;
+`;
+
+const Input = styled.input`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
+  }
+`;
+
+const TextArea = styled.textarea`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
+  }
+`;
+
+const Select = styled.select`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    outline: none;
+  }
+`;
+
+const Button = styled.button`
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &.primary {
+    background: var(--primary-green);
+    color: var(--white);
+
+    &:hover {
+      background: var(--dark-green);
+    }
+  }
+
+  &.secondary {
+    background: var(--gray);
+    color: var(--white);
+
+    &:hover {
+      background: var(--dark-gray);
+    }
+  }
+
+  &.danger {
+    background: var(--error-red);
+    color: var(--white);
+
+    &:hover {
+      background: #c62828;
+    }
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 48px;
+  color: var(--gray);
+`;
+
+const Marcas = () => {
+  const [marcas, setMarcas] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingMarca, setEditingMarca] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditFilters, setAuditFilters] = useState({
+    dataInicio: '',
+    dataFim: '',
+    acao: '',
+    usuario_id: '',
+    periodo: ''
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    setValue,
+    watch
+  } = useForm();
+
+  // Carregar marcas
+  const loadMarcas = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/marcas');
+      setMarcas(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar marcas:', error);
+      toast.error('Erro ao carregar marcas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadMarcas();
+  }, []);
+
+  // Carregar logs de auditoria
+  const loadAuditLogs = async () => {
+    try {
+      setAuditLoading(true);
+      
+      const params = new URLSearchParams();
+      
+      // Aplicar filtro de período se selecionado
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        // Usar filtros manuais se período não estiver selecionado
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para marcas
+      params.append('recurso', 'marcas');
+      
+      const response = await api.get(`/auditoria?${params.toString()}`);
+      setAuditLogs(response.data.logs || []);
+    } catch (error) {
+      console.error('Erro ao carregar logs de auditoria:', error);
+      toast.error('Erro ao carregar logs de auditoria');
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  // Abrir modal de auditoria
+  const handleOpenAuditModal = () => {
+    setShowAuditModal(true);
+    loadAuditLogs();
+  };
+
+  // Fechar modal de auditoria
+  const handleCloseAuditModal = () => {
+    setShowAuditModal(false);
+    setAuditLogs([]);
+    setAuditFilters({
+      dataInicio: '',
+      dataFim: '',
+      acao: '',
+      usuario_id: '',
+      periodo: ''
+    });
+  };
+
+  // Aplicar filtros de auditoria
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
+  };
+
+  // Exportar auditoria para XLSX
+  const handleExportXLSX = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      // Aplicar filtros atuais
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para marcas
+      params.append('recurso', 'marcas');
+      
+      // Fazer download do arquivo
+      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `auditoria_marcas_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Relatório exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar XLSX:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  // Exportar auditoria para PDF
+  const handleExportPDF = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      // Aplicar filtros atuais
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para marcas
+      params.append('recurso', 'marcas');
+      
+      // Fazer download do arquivo
+      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `auditoria_marcas_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Relatório exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  // Formatar data
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
+
+  // Obter label da ação
+  const getActionLabel = (action) => {
+    const actions = {
+      'create': 'Criar',
+      'update': 'Editar',
+      'delete': 'Excluir',
+      'login': 'Login',
+      'logout': 'Logout',
+      'view': 'Visualizar'
+    };
+    return actions[action] || action;
+  };
+
+  // Obter label do campo
+  const getFieldLabel = (field) => {
+    const labels = {
+      'marca': 'Marca',
+      'fabricante': 'Fabricante',
+      'descricao': 'Descrição',
+      'cnpj': 'CNPJ',
+      'telefone': 'Telefone',
+      'email': 'Email',
+      'website': 'Website',
+      'endereco': 'Endereço',
+      'status': 'Status'
+    };
+    return labels[field] || field;
+  };
+
+  // Formatar valor do campo
+  const formatFieldValue = (field, value) => {
+    if (value === null || value === undefined || value === '') {
+      return 'Não informado';
+    }
+
+    switch (field) {
+      case 'status':
+        return value === 1 ? 'Ativo' : 'Inativo';
+      default:
+        return value;
+    }
+  };
+
+  // Abrir modal para adicionar marca
+  const handleAddMarca = () => {
+    setEditingMarca(null);
+    reset();
+    setValue('status', '1'); // Define status como "Ativo" por padrão
+    setShowModal(true);
+  };
+
+  // Abrir modal para editar marca
+  const handleEditMarca = (marca) => {
+    setEditingMarca(marca);
+    setValue('marca', marca.marca);
+    setValue('fabricante', marca.fabricante);
+    setValue('descricao', marca.descricao);
+    setValue('cnpj', marca.cnpj);
+    setValue('telefone', marca.telefone);
+    setValue('email', marca.email);
+    setValue('website', marca.website);
+    setValue('endereco', marca.endereco);
+    setValue('status', marca.status);
+    setShowModal(true);
+  };
+
+  // Fechar modal
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingMarca(null);
+    reset();
+  };
+
+  // Salvar marca
+  const onSubmit = async (data) => {
+    try {
+      if (editingMarca) {
+        // Para edição, enviar apenas os campos que foram alterados
+        const updateData = {};
+        
+        if (data.marca !== editingMarca.marca) {
+          updateData.marca = data.marca;
+        }
+        
+        if (data.fabricante !== editingMarca.fabricante) {
+          updateData.fabricante = data.fabricante;
+        }
+        
+        if (data.descricao !== editingMarca.descricao) {
+          updateData.descricao = data.descricao;
+        }
+        
+        if (data.cnpj !== editingMarca.cnpj) {
+          updateData.cnpj = data.cnpj;
+        }
+        
+        if (data.telefone !== editingMarca.telefone) {
+          updateData.telefone = data.telefone;
+        }
+        
+        if (data.email !== editingMarca.email) {
+          updateData.email = data.email;
+        }
+        
+        if (data.website !== editingMarca.website) {
+          updateData.website = data.website;
+        }
+        
+        if (data.endereco !== editingMarca.endereco) {
+          updateData.endereco = data.endereco;
+        }
+        
+        if (data.status !== editingMarca.status) {
+          updateData.status = parseInt(data.status);
+        }
+        
+        // Se não há campos para atualizar, mostrar erro
+        if (Object.keys(updateData).length === 0) {
+          toast.error('Nenhum campo foi alterado');
+          return;
+        }
+        
+        await api.put(`/marcas/${editingMarca.id}`, updateData);
+        toast.success('Marca atualizada com sucesso!');
+      } else {
+        // Para criação, enviar todos os campos
+        const createData = { ...data };
+        if (createData.status) {
+          createData.status = parseInt(createData.status);
+        }
+        await api.post('/marcas', createData);
+        toast.success('Marca criada com sucesso!');
+      }
+      
+      handleCloseModal();
+      loadMarcas();
+    } catch (error) {
+      console.error('Erro ao salvar marca:', error);
+      toast.error(error.response?.data?.error || 'Erro ao salvar marca');
+    }
+  };
+
+  // Excluir marca
+  const handleDeleteMarca = async (marcaId) => {
+    if (window.confirm('Tem certeza que deseja excluir esta marca?')) {
+      try {
+        await api.delete(`/marcas/${marcaId}`);
+        toast.success('Marca excluída com sucesso!');
+        loadMarcas();
+      } catch (error) {
+        console.error('Erro ao excluir marca:', error);
+        toast.error(error.response?.data?.error || 'Erro ao excluir marca');
+      }
+    }
+  };
+
+  // Filtrar marcas
+  const filteredMarcas = marcas.filter(marca => {
+    const matchesSearch = marca.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         marca.fabricante?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         marca.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'todos' || marca.status === parseInt(statusFilter);
+    return matchesSearch && matchesStatus;
+  });
+
+  if (loading) {
+    return (
+      <Container>
+        <div>Carregando marcas...</div>
+      </Container>
+    );
+  }
+
+  return (
+    <Container>
+      <Header>
+        <Title>Marcas</Title>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <AddButton 
+            onClick={handleOpenAuditModal}
+            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+          >
+            <FaQuestionCircle />
+            Auditoria
+          </AddButton>
+          <AddButton onClick={handleAddMarca}>
+            <FaPlus />
+            Adicionar Marca
+          </AddButton>
+        </div>
+      </Header>
+
+      <SearchContainer>
+        <SearchInput
+          type="text"
+          placeholder="Buscar por marca, fabricante ou descrição..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <FilterSelect
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="todos">Todos os status</option>
+          <option value="1">Ativo</option>
+          <option value="0">Inativo</option>
+        </FilterSelect>
+      </SearchContainer>
+
+      <TableContainer>
+        <Table>
+          <thead>
+            <tr>
+              <Th>Marca</Th>
+              <Th>Fabricante</Th>
+              <Th>CNPJ</Th>
+              <Th>Telefone</Th>
+              <Th>Email</Th>
+              <Th>Status</Th>
+              <Th>Ações</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredMarcas.length === 0 ? (
+              <tr>
+                <Td colSpan="7">
+                  <EmptyState>
+                    {searchTerm || statusFilter !== 'todos'
+                      ? 'Nenhuma marca encontrada com os filtros aplicados'
+                      : 'Nenhuma marca cadastrada'
+                    }
+                  </EmptyState>
+                </Td>
+              </tr>
+            ) : (
+              filteredMarcas.map((marca) => (
+                <tr key={marca.id}>
+                  <Td>{marca.marca}</Td>
+                  <Td>{marca.fabricante}</Td>
+                  <Td>{marca.cnpj || '-'}</Td>
+                  <Td>{marca.telefone || '-'}</Td>
+                  <Td>{marca.email || '-'}</Td>
+                  <Td>
+                    <StatusBadge status={marca.status === 1 ? 'ativo' : 'inativo'}>
+                      {marca.status === 1 ? 'Ativo' : 'Inativo'}
+                    </StatusBadge>
+                  </Td>
+                  <Td>
+                    <ActionButton
+                      className="view"
+                      title="Visualizar"
+                      onClick={() => handleEditMarca(marca)}
+                    >
+                      <FaEye />
+                    </ActionButton>
+                    <ActionButton
+                      className="edit"
+                      title="Editar"
+                      onClick={() => handleEditMarca(marca)}
+                    >
+                      <FaEdit />
+                    </ActionButton>
+                    <ActionButton
+                      className="delete"
+                      title="Excluir"
+                      onClick={() => handleDeleteMarca(marca.id)}
+                    >
+                      <FaTrash />
+                    </ActionButton>
+                  </Td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </TableContainer>
+
+      {showModal && (
+        <Modal onClick={handleCloseModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>
+                {editingMarca ? 'Editar Marca' : 'Adicionar Marca'}
+              </ModalTitle>
+              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
+            </ModalHeader>
+
+            <Form onSubmit={handleSubmit(onSubmit)}>
+              <FormRow>
+                <FormGroup>
+                  <Label>Marca *</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: KING"
+                    {...register('marca', { required: 'Marca é obrigatória' })}
+                  />
+                  {errors.marca && <span style={{ color: 'red', fontSize: '12px' }}>{errors.marca.message}</span>}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Fabricante *</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: KING ALIMENTOS LTDA"
+                    {...register('fabricante', { required: 'Fabricante é obrigatório' })}
+                  />
+                  {errors.fabricante && <span style={{ color: 'red', fontSize: '12px' }}>{errors.fabricante.message}</span>}
+                </FormGroup>
+              </FormRow>
+
+              <FormGroup>
+                <Label>Descrição</Label>
+                <TextArea
+                  placeholder="Descrição detalhada da marca/fabricante"
+                  {...register('descricao')}
+                />
+                {errors.descricao && <span style={{ color: 'red', fontSize: '12px' }}>{errors.descricao.message}</span>}
+              </FormGroup>
+
+              <FormRow>
+                <FormGroup>
+                  <Label>CNPJ</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: 12.345.678/0001-90"
+                    {...register('cnpj')}
+                  />
+                  {errors.cnpj && <span style={{ color: 'red', fontSize: '12px' }}>{errors.cnpj.message}</span>}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Telefone</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: (11) 1234-5678"
+                    {...register('telefone')}
+                  />
+                  {errors.telefone && <span style={{ color: 'red', fontSize: '12px' }}>{errors.telefone.message}</span>}
+                </FormGroup>
+              </FormRow>
+
+              <FormRow>
+                <FormGroup>
+                  <Label>Email</Label>
+                  <Input
+                    type="email"
+                    placeholder="Ex: contato@marca.com.br"
+                    {...register('email')}
+                  />
+                  {errors.email && <span style={{ color: 'red', fontSize: '12px' }}>{errors.email.message}</span>}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Website</Label>
+                  <Input
+                    type="url"
+                    placeholder="Ex: www.marca.com.br"
+                    {...register('website')}
+                  />
+                  {errors.website && <span style={{ color: 'red', fontSize: '12px' }}>{errors.website.message}</span>}
+                </FormGroup>
+              </FormRow>
+
+              <FormGroup>
+                <Label>Endereço</Label>
+                <TextArea
+                  placeholder="Endereço completo do fabricante"
+                  {...register('endereco')}
+                />
+                {errors.endereco && <span style={{ color: 'red', fontSize: '12px' }}>{errors.endereco.message}</span>}
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Status</Label>
+                <Select {...register('status', { required: 'Status é obrigatório' })}>
+                  <option value="1">Ativo</option>
+                  <option value="0">Inativo</option>
+                </Select>
+                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
+              </FormGroup>
+
+              <ButtonGroup>
+                <Button
+                  type="button"
+                  className="secondary"
+                  onClick={handleCloseModal}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="primary"
+                >
+                  {editingMarca ? 'Atualizar' : 'Cadastrar'}
+                </Button>
+              </ButtonGroup>
+            </Form>
+          </ModalContent>
+        </Modal>
+      )}
+
+      {/* Modal de Auditoria */}
+      {showAuditModal && (
+        <Modal onClick={handleCloseAuditModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
+            <ModalHeader>
+              <ModalTitle>Relatório de Auditoria - Marcas</ModalTitle>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={handleExportXLSX}
+                  title="Exportar para Excel"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
+                  <FaFileExcel />
+                  Excel
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  title="Exportar para PDF"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
+                  <FaFilePdf />
+                  PDF
+                </button>
+                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
+              </div>
+            </ModalHeader>
+
+            {/* Filtros de Auditoria */}
+            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Início
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Fim
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Ação
+                  </label>
+                  <select
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
+                    <option value="login">Login</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Usuário
+                  </label>
+                  <select
+                    value={auditFilters.usuario_id}
+                    onChange={(e) => setAuditFilters({...auditFilters, usuario_id: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Todos os usuários</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Período
+                  </label>
+                  <select
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Período personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos os registros</option>
+                  </select>
+                </div>
+              </div>
+              <button
+                onClick={handleApplyAuditFilters}
+                style={{
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  background: 'var(--primary-green)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Aplicar Filtros
+              </button>
+            </div>
+
+            {/* Tabela de Auditoria */}
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              <Table>
+                <thead>
+                  <tr>
+                    <Th>Data/Hora</Th>
+                    <Th>Usuário</Th>
+                    <Th>Ação</Th>
+                    <Th>Recurso</Th>
+                    <Th>Detalhes</Th>
+                    <Th>IP</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditLoading ? (
+                    <tr>
+                      <Td colSpan="6" style={{ textAlign: 'center' }}>Carregando...</Td>
+                    </tr>
+                  ) : auditLogs.length === 0 ? (
+                    <tr>
+                      <Td colSpan="6" style={{ textAlign: 'center' }}>Nenhum log encontrado</Td>
+                    </tr>
+                  ) : (
+                    auditLogs.map((log) => (
+                      <tr key={log.id}>
+                        <Td>{formatDate(log.timestamp)}</Td>
+                        <Td>{log.usuario_nome || 'N/A'}</Td>
+                        <Td>{getActionLabel(log.acao)}</Td>
+                        <Td>{log.recurso}</Td>
+                        <Td>
+                          {log.detalhes ? (
+                            <div style={{ fontSize: '12px' }}>
+                              {Object.entries(JSON.parse(log.detalhes)).map(([key, value]) => (
+                                <div key={key}>
+                                  <strong>{getFieldLabel(key)}:</strong> {formatFieldValue(key, value)}
+                                </div>
+                              ))}
+                            </div>
+                          ) : '-'}
+                        </Td>
+                        <Td>{log.ip_address || '-'}</Td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </Table>
+            </div>
+          </ModalContent>
+        </Modal>
+      )}
+    </Container>
+  );
+};
+
+export default Marcas; 

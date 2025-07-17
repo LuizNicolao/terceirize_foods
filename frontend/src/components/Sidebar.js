@@ -8,6 +8,7 @@ import {
   FaBox, 
   FaLayerGroup, 
   FaRulerCombined,
+  FaTag,
   FaShieldAlt,
   FaSignOutAlt,
   FaChevronLeft,
@@ -168,6 +169,7 @@ const menuItems = [
   { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
   { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
   { path: '/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
+  { path: '/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
   { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
 ];
 
