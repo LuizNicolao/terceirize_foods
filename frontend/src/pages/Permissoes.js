@@ -1038,7 +1038,7 @@ const Permissoes = () => {
       <Header>
         <Title>Gerenciar Permissões</Title>
         <Button
-          className="secondary"
+          className="primary"
           onClick={handleOpenAuditModal}
           style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
