@@ -1,0 +1,1147 @@
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { useForm } from 'react-hook-form';
+import api from '../services/api';
+import toast from 'react-hot-toast';
+
+const Container = styled.div`
+  padding: 24px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+`;
+
+const Title = styled.h1`
+  color: var(--dark-gray);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+`;
+
+const AddButton = styled.button`
+  background: var(--primary-green);
+  color: var(--white);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: var(--dark-green);
+    transform: translateY(-1px);
+  }
+`;
+
+const SearchContainer = styled.div`
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  align-items: center;
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
+  }
+`;
+
+const FilterSelect = styled.select`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    outline: none;
+  }
+`;
+
+const TableContainer = styled.div`
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
+
+const Th = styled.th`
+  background-color: #f5f5f5;
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--dark-gray);
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+`;
+
+const Td = styled.td`
+  padding: 16px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: var(--dark-gray);
+`;
+
+const StatusBadge = styled.span`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: ${props => props.status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
+  color: ${props => props.status === 'ativo' ? 'white' : 'var(--error-red)'};
+`;
+
+const ActionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  margin-right: 8px;
+  color: var(--gray);
+
+  &:hover {
+    background-color: var(--light-gray);
+  }
+
+  &.edit {
+    color: var(--blue);
+  }
+
+  &.delete {
+    color: var(--error-red);
+  }
+
+  &.view {
+    color: var(--primary-green);
+  }
+`;
+
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: var(--white);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+`;
+
+const ModalTitle = styled.h2`
+  color: var(--dark-gray);
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--gray);
+  padding: 4px;
+
+  &:hover {
+    color: var(--error-red);
+  }
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const FormRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const Label = styled.label`
+  color: var(--dark-gray);
+  font-weight: 600;
+  font-size: 14px;
+`;
+
+const Input = styled.input`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
+  }
+`;
+
+const TextArea = styled.textarea`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
+  }
+`;
+
+const Select = styled.select`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    outline: none;
+  }
+`;
+
+const Button = styled.button`
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &.primary {
+    background: var(--primary-green);
+    color: var(--white);
+
+    &:hover {
+      background: var(--dark-green);
+    }
+  }
+
+  &.secondary {
+    background: var(--gray);
+    color: var(--white);
+
+    &:hover {
+      background: var(--dark-gray);
+    }
+  }
+
+  &.danger {
+    background: var(--error-red);
+    color: var(--white);
+
+    &:hover {
+      background: #c62828;
+    }
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 48px;
+  color: var(--gray);
+`;
+
+const Classes = () => {
+  const [classes, setClasses] = useState([]);
+  const [subgrupos, setSubgrupos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [editingClasse, setEditingClasse] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
+  const [subgrupoFilter, setSubgrupoFilter] = useState('');
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditFilters, setAuditFilters] = useState({
+    dataInicio: '',
+    dataFim: '',
+    acao: '',
+    usuario_id: '',
+    periodo: ''
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    setValue,
+    watch
+  } = useForm();
+
+  // Carregar classes
+  const loadClasses = async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+      if (statusFilter !== 'todos') {
+        params.append('status', statusFilter);
+      }
+      if (subgrupoFilter) {
+        params.append('subgrupo_id', subgrupoFilter);
+      }
+      
+      const response = await api.get(`/classes?${params.toString()}`);
+      setClasses(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar classes:', error);
+      toast.error('Erro ao carregar classes');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carregar subgrupos
+  const loadSubgrupos = async () => {
+    try {
+      const response = await api.get('/classes/subgrupos/list');
+      setSubgrupos(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar subgrupos:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadClasses();
+    loadSubgrupos();
+  }, []);
+
+  // Carregar logs de auditoria
+  const loadAuditLogs = async () => {
+    try {
+      setAuditLoading(true);
+      
+      const params = new URLSearchParams();
+      
+      // Aplicar filtro de período se selecionado
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        // Usar filtros manuais se período não estiver selecionado
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para classes
+      params.append('recurso', 'classes');
+      
+      const response = await api.get(`/auditoria?${params.toString()}`);
+      setAuditLogs(response.data.logs || []);
+    } catch (error) {
+      console.error('Erro ao carregar logs de auditoria:', error);
+      toast.error('Erro ao carregar logs de auditoria');
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  // Abrir modal de auditoria
+  const handleOpenAuditModal = () => {
+    setShowAuditModal(true);
+    loadAuditLogs();
+  };
+
+  // Fechar modal de auditoria
+  const handleCloseAuditModal = () => {
+    setShowAuditModal(false);
+    setAuditLogs([]);
+    setAuditFilters({
+      dataInicio: '',
+      dataFim: '',
+      acao: '',
+      usuario_id: '',
+      periodo: ''
+    });
+  };
+
+  // Aplicar filtros de auditoria
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
+  };
+
+  // Exportar auditoria para XLSX
+  const handleExportXLSX = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      // Aplicar filtros atuais
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para classes
+      params.append('recurso', 'classes');
+      
+      // Fazer download do arquivo
+      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `auditoria_classes_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Relatório exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar relatório:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  // Exportar auditoria para PDF
+  const handleExportPDF = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      // Aplicar filtros atuais
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para classes
+      params.append('recurso', 'classes');
+      
+      // Fazer download do arquivo
+      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `auditoria_classes_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Relatório exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar relatório:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
+
+  const getActionLabel = (action) => {
+    const labels = {
+      'create': 'Criar',
+      'update': 'Atualizar',
+      'delete': 'Excluir',
+      'view': 'Visualizar',
+      'login': 'Login',
+      'logout': 'Logout'
+    };
+    return labels[action] || action;
+  };
+
+  const getFieldLabel = (field) => {
+    const labels = {
+      'nome': 'Nome',
+      'subgrupo_id': 'Subgrupo',
+      'descricao': 'Descrição',
+      'status': 'Status'
+    };
+    return labels[field] || field;
+  };
+
+  const formatFieldValue = (field, value) => {
+    if (field === 'status') {
+      return value === 1 ? 'Ativo' : 'Inativo';
+    }
+    return value;
+  };
+
+  const handleAddClasse = () => {
+    setEditingClasse(null);
+    reset();
+    setShowModal(true);
+  };
+
+  const handleEditClasse = (classe) => {
+    setEditingClasse(classe);
+    setValue('nome', classe.nome);
+    setValue('subgrupo_id', classe.subgrupo_id);
+    setValue('descricao', classe.descricao || '');
+    setValue('status', classe.status.toString());
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingClasse(null);
+    reset();
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      if (editingClasse) {
+        await api.put(`/classes/${editingClasse.id}`, data);
+        toast.success('Classe atualizada com sucesso!');
+      } else {
+        await api.post('/classes', data);
+        toast.success('Classe criada com sucesso!');
+      }
+      
+      handleCloseModal();
+      loadClasses();
+    } catch (error) {
+      console.error('Erro ao salvar classe:', error);
+      const errorMessage = error.response?.data?.error || 'Erro ao salvar classe';
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleDeleteClasse = async (classeId) => {
+    if (window.confirm('Tem certeza que deseja excluir esta classe?')) {
+      try {
+        await api.delete(`/classes/${classeId}`);
+        toast.success('Classe excluída com sucesso!');
+        loadClasses();
+      } catch (error) {
+        console.error('Erro ao excluir classe:', error);
+        const errorMessage = error.response?.data?.error || 'Erro ao excluir classe';
+        toast.error(errorMessage);
+      }
+    }
+  };
+
+  // Filtrar classes
+  const filteredClasses = classes.filter(classe => {
+    const matchesSearch = !searchTerm || 
+      classe.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (classe.descricao && classe.descricao.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesStatus = statusFilter === 'todos' || 
+      (statusFilter === 'ativo' && classe.status === 1) ||
+      (statusFilter === 'inativo' && classe.status === 0);
+    
+    const matchesSubgrupo = !subgrupoFilter || classe.subgrupo_id.toString() === subgrupoFilter;
+    
+    return matchesSearch && matchesStatus && matchesSubgrupo;
+  });
+
+  return (
+    <Container>
+      <Header>
+        <Title>Classes</Title>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <button
+            onClick={handleOpenAuditModal}
+            title="Relatório de Auditoria"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 12px',
+              background: 'var(--blue)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '12px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => e.target.style.background = '#1976d2'}
+            onMouseOut={(e) => e.target.style.background = 'var(--blue)'}
+          >
+            <FaHistory />
+            Auditoria
+          </button>
+          <AddButton onClick={handleAddClasse}>
+            <FaPlus />
+            Adicionar Classe
+          </AddButton>
+        </div>
+      </Header>
+
+      <SearchContainer>
+        <SearchInput
+          type="text"
+          placeholder="Buscar por nome ou descrição..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <FilterSelect
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="todos">Todos os Status</option>
+          <option value="ativo">Ativo</option>
+          <option value="inativo">Inativo</option>
+        </FilterSelect>
+        <FilterSelect
+          value={subgrupoFilter}
+          onChange={(e) => setSubgrupoFilter(e.target.value)}
+        >
+          <option value="">Todos os Subgrupos</option>
+          {subgrupos.map(subgrupo => (
+            <option key={subgrupo.id} value={subgrupo.id}>
+              {subgrupo.grupo_nome} - {subgrupo.nome}
+            </option>
+          ))}
+        </FilterSelect>
+      </SearchContainer>
+
+      <TableContainer>
+        <Table>
+          <thead>
+            <tr>
+              <Th>Nome</Th>
+              <Th>Subgrupo</Th>
+              <Th>Grupo</Th>
+              <Th>Descrição</Th>
+              <Th>Status</Th>
+              <Th>Ações</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredClasses.length === 0 ? (
+              <tr>
+                <Td colSpan="6">
+                  <EmptyState>
+                    {searchTerm || statusFilter !== 'todos' || subgrupoFilter
+                      ? 'Nenhuma classe encontrada com os filtros aplicados'
+                      : 'Nenhuma classe cadastrada'
+                    }
+                  </EmptyState>
+                </Td>
+              </tr>
+            ) : (
+              filteredClasses.map((classe) => (
+                <tr key={classe.id}>
+                  <Td>{classe.nome}</Td>
+                  <Td>{classe.subgrupo_nome}</Td>
+                  <Td>{classe.grupo_nome}</Td>
+                  <Td>{classe.descricao || '-'}</Td>
+                  <Td>
+                    <StatusBadge status={classe.status === 1 ? 'ativo' : 'inativo'}>
+                      {classe.status === 1 ? 'Ativo' : 'Inativo'}
+                    </StatusBadge>
+                  </Td>
+                  <Td>
+                    <ActionButton
+                      className="view"
+                      title="Visualizar"
+                      onClick={() => handleEditClasse(classe)}
+                    >
+                      <FaEye />
+                    </ActionButton>
+                    <ActionButton
+                      className="edit"
+                      title="Editar"
+                      onClick={() => handleEditClasse(classe)}
+                    >
+                      <FaEdit />
+                    </ActionButton>
+                    <ActionButton
+                      className="delete"
+                      title="Excluir"
+                      onClick={() => handleDeleteClasse(classe.id)}
+                    >
+                      <FaTrash />
+                    </ActionButton>
+                  </Td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </TableContainer>
+
+      {showModal && (
+        <Modal onClick={handleCloseModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>
+                {editingClasse ? 'Editar Classe' : 'Adicionar Classe'}
+              </ModalTitle>
+              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
+            </ModalHeader>
+
+            <Form onSubmit={handleSubmit(onSubmit)}>
+              <FormRow>
+                <FormGroup>
+                  <Label>Nome *</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: BOVINO"
+                    {...register('nome', { required: 'Nome é obrigatório' })}
+                  />
+                  {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Subgrupo *</Label>
+                  <Select {...register('subgrupo_id', { required: 'Subgrupo é obrigatório' })}>
+                    <option value="">Selecione um subgrupo</option>
+                    {subgrupos.map(subgrupo => (
+                      <option key={subgrupo.id} value={subgrupo.id}>
+                        {subgrupo.grupo_nome} - {subgrupo.nome}
+                      </option>
+                    ))}
+                  </Select>
+                  {errors.subgrupo_id && <span style={{ color: 'red', fontSize: '12px' }}>{errors.subgrupo_id.message}</span>}
+                </FormGroup>
+              </FormRow>
+
+              <FormGroup>
+                <Label>Descrição</Label>
+                <TextArea
+                  placeholder="Descrição detalhada da classe"
+                  {...register('descricao')}
+                />
+                {errors.descricao && <span style={{ color: 'red', fontSize: '12px' }}>{errors.descricao.message}</span>}
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Status</Label>
+                <Select {...register('status', { required: 'Status é obrigatório' })}>
+                  <option value="1">Ativo</option>
+                  <option value="0">Inativo</option>
+                </Select>
+                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
+              </FormGroup>
+
+              <ButtonGroup>
+                <Button
+                  type="button"
+                  className="secondary"
+                  onClick={handleCloseModal}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="primary"
+                >
+                  {editingClasse ? 'Atualizar' : 'Cadastrar'}
+                </Button>
+              </ButtonGroup>
+            </Form>
+          </ModalContent>
+        </Modal>
+      )}
+
+      {/* Modal de Auditoria */}
+      {showAuditModal && (
+        <Modal onClick={handleCloseAuditModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
+            <ModalHeader>
+              <ModalTitle>Relatório de Auditoria - Classes</ModalTitle>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={handleExportXLSX}
+                  title="Exportar para Excel"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
+                  <FaFileExcel />
+                  Excel
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  title="Exportar para PDF"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
+                  <FaFilePdf />
+                  PDF
+                </button>
+                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
+              </div>
+            </ModalHeader>
+
+            {/* Filtros de Auditoria */}
+            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', fontWeight: '600' }}>
+                    Período
+                  </label>
+                  <select
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({ ...auditFilters, periodo: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    <option value="">Personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', fontWeight: '600' }}>
+                    Data Início
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({ ...auditFilters, dataInicio: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '12px'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', fontWeight: '600' }}>
+                    Data Fim
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({ ...auditFilters, dataFim: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '12px'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', fontWeight: '600' }}>
+                    Ação
+                  </label>
+                  <select
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({ ...auditFilters, acao: e.target.value })}
+                    style={{
+                      width: '100%',
+                      padding: '8px',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      fontSize: '12px'
+                    }}
+                  >
+                    <option value="">Todas</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Atualizar</option>
+                    <option value="delete">Excluir</option>
+                    <option value="view">Visualizar</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'end' }}>
+                  <button
+                    onClick={handleApplyAuditFilters}
+                    style={{
+                      padding: '8px 16px',
+                      background: 'var(--primary-green)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Aplicar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Tabela de Auditoria */}
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                <thead style={{ position: 'sticky', top: 0, background: '#f5f5f5' }}>
+                  <tr>
+                    <th style={{ padding: '8px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Data/Hora</th>
+                    <th style={{ padding: '8px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Usuário</th>
+                    <th style={{ padding: '8px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Ação</th>
+                    <th style={{ padding: '8px', textAlign: 'left', borderBottom: '1px solid #ddd' }}>Detalhes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditLoading ? (
+                    <tr>
+                      <td colSpan="4" style={{ padding: '16px', textAlign: 'center' }}>
+                        Carregando...
+                      </td>
+                    </tr>
+                  ) : auditLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" style={{ padding: '16px', textAlign: 'center', color: '#666' }}>
+                        Nenhum log encontrado
+                      </td>
+                    </tr>
+                  ) : (
+                    auditLogs.map((log, index) => (
+                      <tr key={index} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '8px' }}>{formatDate(log.timestamp)}</td>
+                        <td style={{ padding: '8px' }}>{log.usuario_nome || 'N/A'}</td>
+                        <td style={{ padding: '8px' }}>
+                          <span style={{
+                            padding: '2px 6px',
+                            borderRadius: '3px',
+                            fontSize: '10px',
+                            fontWeight: '600',
+                            background: log.acao === 'create' ? '#e8f5e8' : 
+                                       log.acao === 'update' ? '#fff3cd' : 
+                                       log.acao === 'delete' ? '#f8d7da' : '#e2e3e5',
+                            color: log.acao === 'create' ? '#155724' : 
+                                   log.acao === 'update' ? '#856404' : 
+                                   log.acao === 'delete' ? '#721c24' : '#383d41'
+                          }}>
+                            {getActionLabel(log.acao)}
+                          </span>
+                        </td>
+                        <td style={{ padding: '8px', maxWidth: '300px' }}>
+                          {log.detalhes && typeof log.detalhes === 'string' ? (
+                            <div style={{ fontSize: '11px', color: '#666' }}>
+                              {log.detalhes}
+                            </div>
+                          ) : log.detalhes && log.detalhes.changes ? (
+                            <div style={{ fontSize: '11px', color: '#666' }}>
+                              {Object.entries(log.detalhes.changes).map(([field, change]) => (
+                                <div key={field} style={{ marginBottom: '2px' }}>
+                                  <strong>{getFieldLabel(field)}:</strong> {formatFieldValue(field, change.old)} → {formatFieldValue(field, change.new)}
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: '#999' }}>Sem detalhes</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </ModalContent>
+        </Modal>
+      )}
+    </Container>
+  );
+};
+
+export default Classes; 

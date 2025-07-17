@@ -13,6 +13,7 @@ import Grupos from './pages/Grupos';
 import Subgrupos from './pages/Subgrupos';
 import Unidades from './pages/Unidades';
 import Marcas from './pages/Marcas';
+import Classes from './pages/Classes';
 import Permissoes from './pages/Permissoes';
 
 // Componente para rotas protegidas com autenticação
@@ -140,6 +141,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="marcas">
               <Marcas />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/classes" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="classes">
+              <Classes />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

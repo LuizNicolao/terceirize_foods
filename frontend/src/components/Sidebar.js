@@ -13,7 +13,8 @@ import {
   FaSignOutAlt,
   FaChevronLeft,
   FaChevronRight,
-  FaSitemap
+  FaSitemap,
+  FaCubes
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -168,6 +169,7 @@ const menuItems = [
   { path: '/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
   { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
   { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
+  { path: '/classes', icon: FaCubes, label: 'Classes', screen: 'classes' },
   { path: '/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
   { path: '/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
   { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
