@@ -140,7 +140,8 @@ router.post('/', [
   body('cnpj').isLength({ min: 14, max: 18 }).withMessage('CNPJ inválido'),
   body('razao_social').isLength({ min: 3 }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
   body('email').optional().isEmail().withMessage('Email inválido'),
-  body('uf').optional().isLength({ min: 2, max: 2 }).withMessage('UF deve ter 2 caracteres')
+  body('uf').optional().isLength({ min: 2, max: 2 }).withMessage('UF deve ter 2 caracteres'),
+  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -153,7 +154,7 @@ router.post('/', [
 
     const {
       cnpj, razao_social, nome_fantasia, logradouro, numero, cep,
-      bairro, municipio, uf, email, telefone
+      bairro, municipio, uf, email, telefone, status
     } = req.body;
 
     // Verificar se CNPJ já existe
@@ -169,10 +170,10 @@ router.post('/', [
     // Inserir fornecedor
     const result = await executeQuery(
       `INSERT INTO fornecedores (cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
-                                bairro, municipio, uf, email, telefone) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                                bairro, municipio, uf, email, telefone, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
-       bairro, municipio, uf, email, telefone]
+       bairro, municipio, uf, email, telefone, status || 1]
     );
 
     const newFornecedor = await executeQuery(
