@@ -839,17 +839,11 @@ const Fornecedores = () => {
         return;
       }
 
-      // Usar API pública da Receita Federal (via proxy para evitar CORS)
-      const response = await fetch(`https://api-publica.speedio.com.br/buscarcnpj?cnpj=${cnpjLimpo}`);
+      // Usar a rota do backend para evitar problemas de CORS
+      const response = await api.get(`/fornecedores/buscar-cnpj/${cnpjLimpo}`);
       
-      if (!response.ok) {
-        throw new Error('CNPJ não encontrado');
-      }
-
-      const data = await response.json();
-      
-      if (data.success && data.result) {
-        const result = data.result;
+      if (response.data.success && response.data.data) {
+        const result = response.data.data;
         
         // Preencher os campos automaticamente
         setValue('razao_social', result.razao_social || '');
@@ -885,7 +879,11 @@ const Fornecedores = () => {
       }
     } catch (error) {
       console.error('Erro ao buscar CNPJ:', error);
-      toast.error('Erro ao buscar dados do CNPJ. Tente novamente.');
+      if (error.response?.status === 404) {
+        toast.error('CNPJ não encontrado ou dados indisponíveis');
+      } else {
+        toast.error('Erro ao buscar dados do CNPJ. Tente novamente.');
+      }
     } finally {
       setCnpjLoading(false);
     }
