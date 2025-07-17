@@ -672,21 +672,8 @@ const Classes = () => {
       loadClasses();
     } catch (error) {
       console.error('Erro ao salvar classe:', error);
-      console.error('Erro detalhado:', error.response?.data);
-      
-      let errorMessage = 'Erro ao salvar classe';
-      if (error.response?.data?.message) {
-        errorMessage = `${errorMessage}: ${error.response.data.message}`;
-      } else if (error.response?.data?.error) {
-        errorMessage = error.response.data.error;
-      }
-      
+      const errorMessage = error.response?.data?.error || 'Erro ao salvar classe';
       toast.error(errorMessage);
-      
-      // Mostrar erro detalhado no console para debug
-      if (error.response?.data) {
-        console.log('Erro completo:', error.response.data);
-      }
     }
   };
 

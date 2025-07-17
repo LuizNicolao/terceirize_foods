@@ -96,19 +96,14 @@ router.post('/', [
       nome, subgrupo_id, status = 1
     } = req.body;
 
-    console.log('Dados recebidos:', { nome, subgrupo_id, status, tipo_subgrupo_id: typeof subgrupo_id });
-
     // Converter subgrupo_id para número se necessário
     const subgrupoId = parseInt(subgrupo_id);
-    console.log('Subgrupo ID convertido:', subgrupoId);
 
     // Verificar se subgrupo existe
     const subgrupo = await executeQuery(
       'SELECT id FROM subgrupos WHERE id = ?',
       [subgrupoId]
     );
-
-    console.log('Subgrupo encontrado:', subgrupo);
 
     if (subgrupo.length === 0) {
       return res.status(400).json({ error: 'Subgrupo não encontrado' });
@@ -120,25 +115,16 @@ router.post('/', [
       [nome, subgrupoId]
     );
 
-    console.log('Classe existente:', existingClasse);
-
     if (existingClasse.length > 0) {
       return res.status(400).json({ error: 'Classe já cadastrada neste subgrupo' });
     }
 
-    // Buscar próximo ID disponível
-    const maxIdResult = await executeQuery('SELECT MAX(id) as maxId FROM classes');
-    const nextId = (maxIdResult[0].maxId || 0) + 1;
-    
-    // Inserir classe com ID manual
-    console.log('Tentando inserir com params:', [nextId, nome, subgrupoId, status]);
+    // Inserir classe
     const result = await executeQuery(
-      `INSERT INTO classes (id, nome, subgrupo_id, status)
-       VALUES (?, ?, ?, ?)`,
-      [nextId, nome, subgrupoId, status]
+      `INSERT INTO classes (nome, subgrupo_id, status)
+       VALUES (?, ?, ?)`,
+      [nome, subgrupoId, status]
     );
-
-    console.log('Resultado da inserção:', result);
 
     const newClasse = await executeQuery(
       `SELECT c.*, s.nome as subgrupo_nome, g.nome as grupo_nome
@@ -156,16 +142,7 @@ router.post('/', [
 
   } catch (error) {
     console.error('Erro ao criar classe:', error);
-    console.error('Stack trace:', error.stack);
-    console.error('Error code:', error.code);
-    console.error('SQL State:', error.sqlState);
-    res.status(500).json({ 
-      error: 'Erro interno do servidor',
-      message: error.message,
-      code: error.code,
-      sqlState: error.sqlState,
-      stack: error.stack
-    });
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
