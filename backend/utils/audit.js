@@ -194,12 +194,11 @@ const auditChangesMiddleware = (action, resource) => {
                     console.log(`Comparando ${acao}: ${oldValue} vs ${newValue}`);
                     
                     if (oldValue !== newValue) {
-                      const fieldKey = `${newPerm.tela}_${acao}`;
-                      changes[fieldKey] = {
+                      changes[`${newPerm.tela}_${acao}`] = {
                         from: oldValue ? 'Sim' : 'Não',
                         to: newValue ? 'Sim' : 'Não'
                       };
-                      console.log(`Mudança detectada: ${fieldKey} = ${oldValue ? 'Sim' : 'Não'} → ${newValue ? 'Sim' : 'Não'}`);
+                      console.log(`Mudança detectada: ${newPerm.tela}_${acao} = ${oldValue ? 'Sim' : 'Não'} → ${newValue ? 'Sim' : 'Não'}`);
                     }
                   });
                 } else {

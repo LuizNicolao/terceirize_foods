@@ -769,12 +769,9 @@ const Permissoes = () => {
 
   // Obter label do campo
   const getFieldLabel = (field) => {
-    console.log('Campo recebido em getFieldLabel:', field);
-    
     // Para campos de permissões (formato: tela_acao)
     if (field.includes('_')) {
       const [tela, acao] = field.split('_');
-      console.log('Tela:', tela, 'Ação:', acao);
       const telaLabel = getScreenLabel(tela);
       const acaoLabel = {
         'pode_visualizar': 'Visualizar',
@@ -782,9 +779,7 @@ const Permissoes = () => {
         'pode_editar': 'Editar',
         'pode_excluir': 'Excluir'
       }[acao] || acao;
-      const result = `${telaLabel} - ${acaoLabel}`;
-      console.log('Label gerado:', result);
-      return result;
+      return `${telaLabel} - ${acaoLabel}`;
     }
     
     const labels = {
