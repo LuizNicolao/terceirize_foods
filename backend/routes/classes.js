@@ -24,8 +24,8 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     let params = [];
 
     if (search) {
-      query += ' AND (c.nome LIKE ? OR c.descricao LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`);
+      query += ' AND c.nome LIKE ?';
+      params.push(`%${search}%`);
     }
 
     if (status !== '') {
@@ -93,7 +93,7 @@ router.post('/', [
     }
 
     const {
-      nome, subgrupo_id, descricao, status = 1
+      nome, subgrupo_id, status = 1
     } = req.body;
 
     // Verificar se subgrupo existe
@@ -118,9 +118,9 @@ router.post('/', [
 
     // Inserir classe
     const result = await executeQuery(
-      `INSERT INTO classes (nome, subgrupo_id, descricao, status)
-       VALUES (?, ?, ?, ?)`,
-      [nome, subgrupo_id, descricao, status]
+      `INSERT INTO classes (nome, subgrupo_id, status)
+       VALUES (?, ?, ?)`,
+      [nome, subgrupo_id, status]
     );
 
     const newClasse = await executeQuery(

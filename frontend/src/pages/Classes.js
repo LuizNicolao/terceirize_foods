@@ -648,7 +648,6 @@ const Classes = () => {
     setEditingClasse(classe);
     setValue('nome', classe.nome);
     setValue('subgrupo_id', classe.subgrupo_id);
-    setValue('descricao', classe.descricao || '');
     setValue('status', classe.status.toString());
     setShowModal(true);
   };
@@ -695,8 +694,7 @@ const Classes = () => {
   // Filtrar classes
   const filteredClasses = classes.filter(classe => {
     const matchesSearch = !searchTerm || 
-      classe.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (classe.descricao && classe.descricao.toLowerCase().includes(searchTerm.toLowerCase()));
+      classe.nome.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'todos' || 
       (statusFilter === 'ativo' && classe.status === 1) ||
@@ -743,12 +741,12 @@ const Classes = () => {
       </Header>
 
       <SearchContainer>
-        <SearchInput
-          type="text"
-          placeholder="Buscar por nome ou descrição..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+              <SearchInput
+        type="text"
+        placeholder="Buscar por nome..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
         <FilterSelect
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -777,7 +775,6 @@ const Classes = () => {
               <Th>Nome</Th>
               <Th>Subgrupo</Th>
               <Th>Grupo</Th>
-              <Th>Descrição</Th>
               <Th>Status</Th>
               <Th>Ações</Th>
             </tr>
@@ -785,7 +782,7 @@ const Classes = () => {
           <tbody>
             {filteredClasses.length === 0 ? (
               <tr>
-                <Td colSpan="6">
+                <Td colSpan="5">
                   <EmptyState>
                     {searchTerm || statusFilter !== 'todos' || subgrupoFilter
                       ? 'Nenhuma classe encontrada com os filtros aplicados'
@@ -800,7 +797,6 @@ const Classes = () => {
                   <Td>{classe.nome}</Td>
                   <Td>{classe.subgrupo_nome}</Td>
                   <Td>{classe.grupo_nome}</Td>
-                  <Td>{classe.descricao || '-'}</Td>
                   <Td>
                     <StatusBadge status={classe.status === 1 ? 'ativo' : 'inativo'}>
                       {classe.status === 1 ? 'Ativo' : 'Inativo'}
@@ -871,15 +867,6 @@ const Classes = () => {
                   {errors.subgrupo_id && <span style={{ color: 'red', fontSize: '12px' }}>{errors.subgrupo_id.message}</span>}
                 </FormGroup>
               </FormRow>
-
-              <FormGroup>
-                <Label>Descrição</Label>
-                <TextArea
-                  placeholder="Descrição detalhada da classe"
-                  {...register('descricao')}
-                />
-                {errors.descricao && <span style={{ color: 'red', fontSize: '12px' }}>{errors.descricao.message}</span>}
-              </FormGroup>
 
               <FormGroup>
                 <Label>Status</Label>
