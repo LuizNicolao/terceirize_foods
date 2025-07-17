@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -70,6 +71,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 // Criar produto
 router.post('/', [
   checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'produtos'),
   body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('preco_custo').optional().isFloat({ min: 0 }).withMessage('Preço de custo deve ser um número positivo'),
   body('preco_venda').optional().isFloat({ min: 0 }).withMessage('Preço de venda deve ser um número positivo'),
@@ -135,6 +137,7 @@ router.post('/', [
 // Atualizar produto
 router.put('/:id', [
   checkPermission('editar'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'produtos'),
   body('nome').optional().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('preco_custo').optional().isFloat({ min: 0 }).withMessage('Preço de custo deve ser um número positivo'),
   body('preco_venda').optional().isFloat({ min: 0 }).withMessage('Preço de venda deve ser um número positivo'),
@@ -219,7 +222,10 @@ router.put('/:id', [
 });
 
 // Excluir produto
-router.delete('/:id', checkPermission('excluir'), async (req, res) => {
+router.delete('/:id', [
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'produtos')
+], async (req, res) => {
   try {
     const { id } = req.params;
 
