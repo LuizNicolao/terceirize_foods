@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -53,6 +54,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 // Criar unidade
 router.post('/', [
   checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades'),
   body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('sigla').isLength({ min: 1, max: 10 }).withMessage('Sigla deve ter entre 1 e 10 caracteres')
 ], async (req, res) => {
@@ -98,6 +100,7 @@ router.post('/', [
 // Atualizar unidade
 router.put('/:id', [
   checkPermission('editar'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades'),
   body('nome').optional().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('sigla').optional().isLength({ min: 1, max: 10 }).withMessage('Sigla deve ter entre 1 e 10 caracteres'),
   body('status').optional().isIn([0, 1]).withMessage('Status deve ser 0 ou 1')
@@ -177,7 +180,10 @@ router.put('/:id', [
 });
 
 // Excluir unidade
-router.delete('/:id', checkPermission('excluir'), async (req, res) => {
+router.delete('/:id', [
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'unidades')
+], async (req, res) => {
   try {
     const { id } = req.params;
 
