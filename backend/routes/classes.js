@@ -267,20 +267,20 @@ router.delete('/:id', [
       return res.status(404).json({ error: 'Classe não encontrada' });
     }
 
-    // Verificar se classe está sendo usada em produtos
-    console.log('Verificando se classe está sendo usada em produtos...');
-    const produtosUsingClasse = await executeQuery(
-      'SELECT COUNT(*) as count FROM produtos WHERE classe = ?',
-      [existingClasse[0].nome]
-    );
+    // Verificar se classe está sendo usada em produtos (comentado temporariamente)
+    // console.log('Verificando se classe está sendo usada em produtos...');
+    // const produtosUsingClasse = await executeQuery(
+    //   'SELECT COUNT(*) as count FROM produtos WHERE classe = ?',
+    //   [existingClasse[0].nome]
+    // );
 
-    console.log('Produtos usando a classe:', produtosUsingClasse);
+    // console.log('Produtos usando a classe:', produtosUsingClasse);
 
-    if (produtosUsingClasse[0].count > 0) {
-      return res.status(400).json({ 
-        error: 'Não é possível excluir esta classe pois está sendo utilizada em produtos' 
-      });
-    }
+    // if (produtosUsingClasse[0].count > 0) {
+    //   return res.status(400).json({ 
+    //     error: 'Não é possível excluir esta classe pois está sendo utilizada em produtos' 
+    //   });
+    // }
 
     console.log('Tentando excluir classe...');
     await executeQuery('DELETE FROM classes WHERE id = ?', [id]);
