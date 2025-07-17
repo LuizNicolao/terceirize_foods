@@ -800,9 +800,6 @@ const Marcas = () => {
             <tr>
               <Th>Marca</Th>
               <Th>Fabricante</Th>
-              <Th>CNPJ</Th>
-              <Th>Telefone</Th>
-              <Th>Email</Th>
               <Th>Status</Th>
               <Th>Ações</Th>
             </tr>
@@ -810,7 +807,7 @@ const Marcas = () => {
           <tbody>
             {filteredMarcas.length === 0 ? (
               <tr>
-                <Td colSpan="7">
+                <Td colSpan="4">
                   <EmptyState>
                     {searchTerm || statusFilter !== 'todos'
                       ? 'Nenhuma marca encontrada com os filtros aplicados'
@@ -824,9 +821,6 @@ const Marcas = () => {
                 <tr key={marca.id}>
                   <Td>{marca.marca}</Td>
                   <Td>{marca.fabricante}</Td>
-                  <Td>{marca.cnpj || '-'}</Td>
-                  <Td>{marca.telefone || '-'}</Td>
-                  <Td>{marca.email || '-'}</Td>
                   <Td>
                     <StatusBadge status={marca.status === 1 ? 'ativo' : 'inativo'}>
                       {marca.status === 1 ? 'Ativo' : 'Inativo'}
@@ -894,68 +888,6 @@ const Marcas = () => {
                   {errors.fabricante && <span style={{ color: 'red', fontSize: '12px' }}>{errors.fabricante.message}</span>}
                 </FormGroup>
               </FormRow>
-
-              <FormGroup>
-                <Label>Descrição</Label>
-                <TextArea
-                  placeholder="Descrição detalhada da marca/fabricante"
-                  {...register('descricao')}
-                />
-                {errors.descricao && <span style={{ color: 'red', fontSize: '12px' }}>{errors.descricao.message}</span>}
-              </FormGroup>
-
-              <FormRow>
-                <FormGroup>
-                  <Label>CNPJ</Label>
-                  <Input
-                    type="text"
-                    placeholder="Ex: 12.345.678/0001-90"
-                    {...register('cnpj')}
-                  />
-                  {errors.cnpj && <span style={{ color: 'red', fontSize: '12px' }}>{errors.cnpj.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Telefone</Label>
-                  <Input
-                    type="text"
-                    placeholder="Ex: (11) 1234-5678"
-                    {...register('telefone')}
-                  />
-                  {errors.telefone && <span style={{ color: 'red', fontSize: '12px' }}>{errors.telefone.message}</span>}
-                </FormGroup>
-              </FormRow>
-
-              <FormRow>
-                <FormGroup>
-                  <Label>Email</Label>
-                  <Input
-                    type="email"
-                    placeholder="Ex: contato@marca.com.br"
-                    {...register('email')}
-                  />
-                  {errors.email && <span style={{ color: 'red', fontSize: '12px' }}>{errors.email.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Website</Label>
-                  <Input
-                    type="url"
-                    placeholder="Ex: www.marca.com.br"
-                    {...register('website')}
-                  />
-                  {errors.website && <span style={{ color: 'red', fontSize: '12px' }}>{errors.website.message}</span>}
-                </FormGroup>
-              </FormRow>
-
-              <FormGroup>
-                <Label>Endereço</Label>
-                <TextArea
-                  placeholder="Endereço completo do fabricante"
-                  {...register('endereco')}
-                />
-                {errors.endereco && <span style={{ color: 'red', fontSize: '12px' }}>{errors.endereco.message}</span>}
-              </FormGroup>
 
               <FormGroup>
                 <Label>Status</Label>

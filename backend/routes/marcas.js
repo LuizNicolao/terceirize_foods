@@ -20,8 +20,8 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     let params = [];
 
     if (search) {
-      query += ' AND (marca LIKE ? OR fabricante LIKE ? OR descricao LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      query += ' AND (marca LIKE ? OR fabricante LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
     }
 
     if (status !== '') {
@@ -68,8 +68,6 @@ router.post('/', [
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'marcas'),
   body('marca').isLength({ min: 2 }).withMessage('Marca deve ter pelo menos 2 caracteres'),
   body('fabricante').isLength({ min: 2 }).withMessage('Fabricante deve ter pelo menos 2 caracteres'),
-  body('cnpj').optional().isLength({ min: 14, max: 18 }).withMessage('CNPJ deve ter entre 14 e 18 caracteres'),
-  body('email').optional().isEmail().withMessage('Email deve ser válido'),
   body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
 ], async (req, res) => {
   try {
@@ -82,7 +80,7 @@ router.post('/', [
     }
 
     const {
-      marca, fabricante, descricao, cnpj, telefone, email, website, endereco, status = 1
+      marca, fabricante, status = 1
     } = req.body;
 
     // Verificar se marca já existe
@@ -95,23 +93,11 @@ router.post('/', [
       return res.status(400).json({ error: 'Marca já cadastrada' });
     }
 
-    // Verificar se CNPJ já existe (se fornecido)
-    if (cnpj) {
-      const existingCNPJ = await executeQuery(
-        'SELECT id FROM marcas WHERE cnpj = ?',
-        [cnpj]
-      );
-
-      if (existingCNPJ.length > 0) {
-        return res.status(400).json({ error: 'CNPJ já cadastrado' });
-      }
-    }
-
     // Inserir marca
     const result = await executeQuery(
-      `INSERT INTO marcas (marca, fabricante, descricao, cnpj, telefone, email, website, endereco, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [marca, fabricante, descricao, cnpj, telefone, email, website, endereco, status]
+      `INSERT INTO marcas (marca, fabricante, status)
+       VALUES (?, ?, ?)`,
+      [marca, fabricante, status]
     );
 
     const newMarca = await executeQuery(
@@ -136,8 +122,6 @@ router.put('/:id', [
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'marcas'),
   body('marca').optional().isLength({ min: 2 }).withMessage('Marca deve ter pelo menos 2 caracteres'),
   body('fabricante').optional().isLength({ min: 2 }).withMessage('Fabricante deve ter pelo menos 2 caracteres'),
-  body('cnpj').optional().isLength({ min: 14, max: 18 }).withMessage('CNPJ deve ter entre 14 e 18 caracteres'),
-  body('email').optional().isEmail().withMessage('Email deve ser válido'),
   body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
 ], async (req, res) => {
   try {
@@ -174,17 +158,7 @@ router.put('/:id', [
       }
     }
 
-    // Verificar se CNPJ já existe (se estiver sendo alterado)
-    if (updateData.cnpj) {
-      const cnpjCheck = await executeQuery(
-        'SELECT id FROM marcas WHERE cnpj = ? AND id != ?',
-        [updateData.cnpj, id]
-      );
 
-      if (cnpjCheck.length > 0) {
-        return res.status(400).json({ error: 'CNPJ já cadastrado' });
-      }
-    }
 
     // Construir query de atualização
     const updateFields = [];
@@ -264,27 +238,6 @@ router.delete('/:id', [
   }
 });
 
-// Buscar marca por CNPJ
-router.get('/buscar-cnpj/:cnpj', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { cnpj } = req.params;
-    const cnpjLimpo = cnpj.replace(/\D/g, '');
 
-    const marcas = await executeQuery(
-      'SELECT * FROM marcas WHERE REPLACE(REPLACE(REPLACE(cnpj, ".", ""), "-", ""), "/", "") = ?',
-      [cnpjLimpo]
-    );
-
-    if (marcas.length === 0) {
-      return res.status(404).json({ error: 'Marca não encontrada' });
-    }
-
-    res.json(marcas[0]);
-
-  } catch (error) {
-    console.error('Erro ao buscar marca por CNPJ:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
 
 module.exports = router; 

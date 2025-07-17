@@ -1074,46 +1074,46 @@ const Produtos = () => {
                       {errors.nome && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome.message}</span>}
                     </FormGroup>
 
-                    <FormGroup>
-                      <Label>Grupo</Label>
-                      <Select {...register('grupo_id')}>
-                        <option value="">Selecione...</option>
-                        {grupos.map(grupo => (
-                          <option key={grupo.id} value={grupo.id}>
-                            {grupo.nome}
-                          </option>
-                        ))}
-                      </Select>
-                      {errors.grupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.grupo_id.message}</span>}
-                    </FormGroup>
+                      <FormGroup>
+                        <Label>Grupo</Label>
+                        <Select {...register('grupo_id')}>
+                          <option value="">Selecione...</option>
+                          {grupos.map(grupo => (
+                            <option key={grupo.id} value={grupo.id}>
+                              {grupo.nome}
+                            </option>
+                          ))}
+                        </Select>
+                        {errors.grupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.grupo_id.message}</span>}
+                      </FormGroup>
 
-                    <FormGroup>
-                      <Label>Subgrupo</Label>
-                      <Select {...register('subgrupo_id')}>
-                        <option value="">Selecione...</option>
-                        {/* Adicionar subgrupos quando disponível */}
-                      </Select>
-                      {errors.subgrupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.subgrupo_id.message}</span>}
-                    </FormGroup>
+                      <FormGroup>
+                        <Label>Subgrupo</Label>
+                        <Select {...register('subgrupo_id')}>
+                          <option value="">Selecione...</option>
+                          {/* Adicionar subgrupos quando disponível */}
+                        </Select>
+                        {errors.subgrupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.subgrupo_id.message}</span>}
+                      </FormGroup>
 
-                    <FormGroup>
-                      <Label>Classe</Label>
-                      <Select {...register('classe_id')}>
-                        <option value="">Selecione...</option>
-                        {/* Adicionar classes quando disponível */}
-                      </Select>
-                      {errors.classe_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.classe_id.message}</span>}
-                    </FormGroup>
+                      <FormGroup>
+                        <Label>Classe</Label>
+                        <Select {...register('classe_id')}>
+                          <option value="">Selecione...</option>
+                          {/* Adicionar classes quando disponível */}
+                        </Select>
+                        {errors.classe_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.classe_id.message}</span>}
+                      </FormGroup>
 
-                    <FormGroup>
-                      <Label>Nome Genérico do Produto</Label>
-                      <Input
-                        type="text"
-                        placeholder="Nome genérico do produto"
-                        {...register('nome_generico')}
-                      />
-                      {errors.nome_generico && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome_generico.message}</span>}
-                    </FormGroup>
+                      <FormGroup>
+                        <Label>Nome Genérico do Produto</Label>
+                        <Input
+                          type="text"
+                          placeholder="Nome genérico do produto"
+                          {...register('nome_generico')}
+                        />
+                        {errors.nome_generico && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome_generico.message}</span>}
+                      </FormGroup>
                   </FormGrid>
                 </FormSection>
 
@@ -1121,25 +1121,25 @@ const Produtos = () => {
                 <FormSection>
                   <SectionTitle>Informações do Produto</SectionTitle>
                   <FormGrid>
-                    <FormGroup>
+                      <FormGroup>
                       <Label>Marca</Label>
-                      <Input
-                        type="text"
+                        <Input
+                          type="text"
                         placeholder="Ex: KING"
                         {...register('marca')}
-                      />
+                        />
                       {errors.marca && <span style={{ color: 'red', fontSize: '11px' }}>{errors.marca.message}</span>}
-                    </FormGroup>
+                      </FormGroup>
 
-                    <FormGroup>
+                      <FormGroup>
                       <Label>Fabricante</Label>
-                      <Input
-                        type="text"
+                        <Input
+                          type="text"
                         placeholder="Ex: KING"
                         {...register('fabricante')}
-                      />
+                        />
                       {errors.fabricante && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fabricante.message}</span>}
-                    </FormGroup>
+                      </FormGroup>
 
                     <FormGroup>
                       <Label>Informações Adicionais</Label>
@@ -1249,25 +1249,25 @@ const Produtos = () => {
                       </FormGroup>
                     </FormGrid2>
 
-                    <FormGroup>
-                      <Label>Código de Barras</Label>
-                      <Input
-                        type="text"
-                        placeholder="Ex: 1234567891234"
-                        {...register('codigo_barras')}
-                      />
-                      {errors.codigo_barras && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_barras.message}</span>}
-                    </FormGroup>
+                      <FormGroup>
+                        <Label>Código de Barras</Label>
+                        <Input
+                          type="text"
+                          placeholder="Ex: 1234567891234"
+                          {...register('codigo_barras')}
+                        />
+                        {errors.codigo_barras && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_barras.message}</span>}
+                      </FormGroup>
 
-                    <FormGroup>
-                      <Label>Referência de Mercado</Label>
-                      <Input
-                        type="text"
-                        placeholder="Ex: Corte Bovino / Patinho / Cubos"
-                        {...register('referencia_mercado')}
-                      />
-                      {errors.referencia_mercado && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia_mercado.message}</span>}
-                    </FormGroup>
+                      <FormGroup>
+                        <Label>Referência de Mercado</Label>
+                        <Input
+                          type="text"
+                          placeholder="Ex: Corte Bovino / Patinho / Cubos"
+                          {...register('referencia_mercado')}
+                        />
+                        {errors.referencia_mercado && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia_mercado.message}</span>}
+                      </FormGroup>
 
                     <FormGrid2>
                       <FormGroup>
