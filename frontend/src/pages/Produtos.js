@@ -215,6 +215,19 @@ const CloseButton = styled.button`
 `;
 
 const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const FirstRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: start;
+`;
+
+const SecondRow = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
@@ -1043,11 +1056,11 @@ const Produtos = () => {
             </ModalHeader>
 
             <Form onSubmit={handleSubmit(onSubmit)}>
-              {/* Coluna 1 */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* Card 1: Identificação Básica */}
+              {/* Primeira Linha - 3 Cards */}
+              <FirstRow>
+                {/* Card 1: Informação Básica */}
                 <FormSection>
-                  <SectionTitle>Identificação Básica</SectionTitle>
+                  <SectionTitle>Informação Básica</SectionTitle>
                   <FormGrid>
                     <FormGroup>
                       <Label>Código do Produto</Label>
@@ -1116,7 +1129,83 @@ const Produtos = () => {
                   </FormGrid>
                 </FormSection>
 
-                {/* Card 2: Unidade e Dimensões */}
+                {/* Card 2: Tributação */}
+                <FormSection>
+                  <SectionTitle>Tributação</SectionTitle>
+                  <FormGrid>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>CST ICMS</Label>
+                        <Input
+                          type="text"
+                          placeholder="CST ICMS"
+                          {...register('cst_icms')}
+                        />
+                        {errors.cst_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cst_icms.message}</span>}
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label>CSOSN</Label>
+                        <Input
+                          type="text"
+                          placeholder="CSOSN"
+                          {...register('csosn')}
+                        />
+                        {errors.csosn && <span style={{ color: 'red', fontSize: '11px' }}>{errors.csosn.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
+
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Alíquota ICMS (%)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 18.00"
+                          {...register('aliquota_icms')}
+                        />
+                        {errors.aliquota_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_icms.message}</span>}
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label>Alíquota IPI (%)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 5.00"
+                          {...register('aliquota_ipi')}
+                        />
+                        {errors.aliquota_ipi && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_ipi.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
+
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Alíquota PIS (%)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 1.65"
+                          {...register('aliquota_pis')}
+                        />
+                        {errors.aliquota_pis && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_pis.message}</span>}
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label>Alíquota COFINS (%)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 7.60"
+                          {...register('aliquota_cofins')}
+                        />
+                        {errors.aliquota_cofins && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_cofins.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
+                  </FormGrid>
+                </FormSection>
+
+                {/* Card 3: Unidade e Dimensões */}
                 <FormSection>
                   <SectionTitle>Unidade e Dimensões</SectionTitle>
                   <FormGrid>
@@ -1240,8 +1329,11 @@ const Produtos = () => {
                     </FormGrid2>
                   </FormGrid>
                 </FormSection>
+              </FirstRow>
 
-                {/* Card 3: Informações do Produto */}
+              {/* Segunda Linha - 2 Cards */}
+              <SecondRow>
+                {/* Card 4: Informações do Produto */}
                 <FormSection>
                   <SectionTitle>Informações do Produto</SectionTitle>
                   <FormGrid>
@@ -1341,85 +1433,6 @@ const Produtos = () => {
                           <option value="ANOS">Anos</option>
                         </Select>
                         {errors.unidade_validade && <span style={{ color: 'red', fontSize: '11px' }}>{errors.unidade_validade.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-                  </FormGrid>
-                </FormSection>
-              </div>
-
-              {/* Coluna 2 */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                {/* Card 4: Tributação */}
-                <FormSection>
-                  <SectionTitle>Tributação</SectionTitle>
-                  <FormGrid>
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>CST ICMS</Label>
-                        <Input
-                          type="text"
-                          placeholder="CST ICMS"
-                          {...register('cst_icms')}
-                        />
-                        {errors.cst_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cst_icms.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>CSOSN</Label>
-                        <Input
-                          type="text"
-                          placeholder="CSOSN"
-                          {...register('csosn')}
-                        />
-                        {errors.csosn && <span style={{ color: 'red', fontSize: '11px' }}>{errors.csosn.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Alíquota ICMS (%)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 18.00"
-                          {...register('aliquota_icms')}
-                        />
-                        {errors.aliquota_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_icms.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Alíquota IPI (%)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 5.00"
-                          {...register('aliquota_ipi')}
-                        />
-                        {errors.aliquota_ipi && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_ipi.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Alíquota PIS (%)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 1.65"
-                          {...register('aliquota_pis')}
-                        />
-                        {errors.aliquota_pis && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_pis.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Alíquota COFINS (%)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 7.60"
-                          {...register('aliquota_cofins')}
-                        />
-                        {errors.aliquota_cofins && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_cofins.message}</span>}
                       </FormGroup>
                     </FormGrid2>
                   </FormGrid>
@@ -1536,7 +1549,7 @@ const Produtos = () => {
                     </FormGrid2>
                   </FormGrid>
                 </FormSection>
-              </div>
+              </SecondRow>
 
               <ButtonGroup>
                 <Button type="button" className="secondary" onClick={handleCloseModal}>
