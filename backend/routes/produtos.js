@@ -17,7 +17,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     let query = `
       SELECT p.*, f.razao_social as fornecedor_nome, g.nome as grupo_nome, sg.nome as subgrupo_nome
       FROM produtos p
-      LEFT JOIN fornecedores f ON p.id_fornecedor = f.id
+      LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       WHERE 1=1
@@ -49,7 +49,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
     const produtos = await executeQuery(
       `SELECT p.*, f.razao_social as fornecedor_nome, g.nome as grupo_nome, sg.nome as subgrupo_nome
        FROM produtos p
-       LEFT JOIN fornecedores f ON p.id_fornecedor = f.id
+       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
        WHERE p.id = ?`,
@@ -89,7 +89,7 @@ router.post('/', [
 
     const {
       nome, descricao, codigo_barras, preco_custo, preco_venda, estoque_atual, estoque_minimo,
-      id_fornecedor, grupo_id, unidade_id, status
+      fornecedor_id, grupo_id, unidade_id, status
     } = req.body;
 
     // Verificar se código de barras já existe
@@ -107,16 +107,16 @@ router.post('/', [
     // Inserir produto
     const result = await executeQuery(
       `INSERT INTO produtos (nome, descricao, codigo_barras, preco_custo, preco_venda, 
-                            estoque_atual, estoque_minimo, id_fornecedor, grupo_id, unidade_id, status)
+                            estoque_atual, estoque_minimo, fornecedor_id, grupo_id, unidade_id, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [nome, descricao, codigo_barras, preco_custo, preco_venda, estoque_atual, estoque_minimo, 
-       id_fornecedor, grupo_id, unidade_id, status]
+       fornecedor_id, grupo_id, unidade_id, status]
     );
 
     const newProduto = await executeQuery(
       `SELECT p.*, f.razao_social as fornecedor_nome, g.nome as grupo_nome, sg.nome as subgrupo_nome
        FROM produtos p
-       LEFT JOIN fornecedores f ON p.id_fornecedor = f.id
+       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
        WHERE p.id = ?`,
@@ -203,7 +203,7 @@ router.put('/:id', [
     const updatedProduto = await executeQuery(
       `SELECT p.*, f.razao_social as fornecedor_nome, g.nome as grupo_nome, sg.nome as subgrupo_nome
        FROM produtos p
-       LEFT JOIN fornecedores f ON p.id_fornecedor = f.id
+       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
        WHERE p.id = ?`,
