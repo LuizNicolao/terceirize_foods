@@ -12,137 +12,184 @@ router.get('/stats', checkPermission('visualizar'), async (req, res) => {
   try {
     console.log('Iniciando busca de estatísticas da dashboard...');
 
-    // Contar usuários ativos
-    const usuariosAtivos = await executeQuery(
-      'SELECT COUNT(*) as total FROM usuarios WHERE status = "ativo"'
-    );
-    console.log('Usuários ativos:', usuariosAtivos[0].total);
+    // Testar cada query individualmente
+    let stats = {
+      usuarios: 0,
+      fornecedores: 0,
+      produtos: 0,
+      grupos: 0,
+      unidades: 0,
+      valorEstoque: 0,
+      produtosEstoqueBaixo: 0
+    };
 
-    // Contar fornecedores ativos
-    const fornecedoresAtivos = await executeQuery(
-      'SELECT COUNT(*) as total FROM fornecedores WHERE status = 1'
-    );
-    console.log('Fornecedores ativos:', fornecedoresAtivos[0].total);
+    let recentes = {
+      produtos: [],
+      fornecedores: [],
+      grupos: [],
+      usuarios: []
+    };
 
-    // Contar produtos ativos
-    const produtosAtivos = await executeQuery(
-      'SELECT COUNT(*) as total FROM produtos WHERE status = 1'
-    );
-    console.log('Produtos ativos:', produtosAtivos[0].total);
+    let atividades = [];
 
-    // Contar grupos ativos
-    const gruposAtivos = await executeQuery(
-      'SELECT COUNT(*) as total FROM grupos WHERE status = 1'
-    );
-    console.log('Grupos ativos:', gruposAtivos[0].total);
+    try {
+      // Contar usuários ativos
+      const usuariosAtivos = await executeQuery(
+        'SELECT COUNT(*) as total FROM usuarios WHERE status = "ativo"'
+      );
+      stats.usuarios = usuariosAtivos[0].total;
+      console.log('Usuários ativos:', stats.usuarios);
+    } catch (error) {
+      console.error('Erro ao contar usuários:', error.message);
+    }
 
-    // Contar unidades ativas
-    const unidadesAtivas = await executeQuery(
-      'SELECT COUNT(*) as total FROM unidades_medida WHERE status = 1'
-    );
-    console.log('Unidades ativas:', unidadesAtivas[0].total);
+    try {
+      // Contar fornecedores ativos
+      const fornecedoresAtivos = await executeQuery(
+        'SELECT COUNT(*) as total FROM fornecedores WHERE status = 1'
+      );
+      stats.fornecedores = fornecedoresAtivos[0].total;
+      console.log('Fornecedores ativos:', stats.fornecedores);
+    } catch (error) {
+      console.error('Erro ao contar fornecedores:', error.message);
+    }
 
-    // Calcular valor total do estoque
-    const valorEstoque = await executeQuery(
-      'SELECT COALESCE(SUM(preco_custo * estoque_atual), 0) as total FROM produtos WHERE status = 1'
-    );
-    console.log('Valor estoque:', valorEstoque[0].total);
+    try {
+      // Contar produtos ativos
+      const produtosAtivos = await executeQuery(
+        'SELECT COUNT(*) as total FROM produtos WHERE status = 1'
+      );
+      stats.produtos = produtosAtivos[0].total;
+      console.log('Produtos ativos:', stats.produtos);
+    } catch (error) {
+      console.error('Erro ao contar produtos:', error.message);
+    }
 
-    // Produtos com estoque baixo
-    const produtosEstoqueBaixo = await executeQuery(
-      `SELECT COUNT(*) as total FROM produtos 
-       WHERE status = 1 AND estoque_atual <= estoque_minimo AND estoque_minimo > 0`
-    );
-    console.log('Produtos estoque baixo:', produtosEstoqueBaixo[0].total);
+    try {
+      // Contar grupos ativos
+      const gruposAtivos = await executeQuery(
+        'SELECT COUNT(*) as total FROM grupos WHERE status = 1'
+      );
+      stats.grupos = gruposAtivos[0].total;
+      console.log('Grupos ativos:', stats.grupos);
+    } catch (error) {
+      console.error('Erro ao contar grupos:', error.message);
+    }
 
-    // Últimos produtos criados
-    const ultimosProdutos = await executeQuery(
-      `SELECT p.nome, p.criado_em, f.razao_social as fornecedor
-       FROM produtos p
-       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-       WHERE p.status = 1
-       ORDER BY p.criado_em DESC
-       LIMIT 5`
-    );
-    console.log('Últimos produtos:', ultimosProdutos.length);
+    try {
+      // Contar unidades ativas
+      const unidadesAtivas = await executeQuery(
+        'SELECT COUNT(*) as total FROM unidades_medida WHERE status = 1'
+      );
+      stats.unidades = unidadesAtivas[0].total;
+      console.log('Unidades ativas:', stats.unidades);
+    } catch (error) {
+      console.error('Erro ao contar unidades:', error.message);
+    }
 
-    // Últimos fornecedores criados
-    const ultimosFornecedores = await executeQuery(
-      `SELECT razao_social, criado_em
-       FROM fornecedores
-       WHERE status = 1
-       ORDER BY criado_em DESC
-       LIMIT 5`
-    );
-    console.log('Últimos fornecedores:', ultimosFornecedores.length);
+    try {
+      // Calcular valor total do estoque
+      const valorEstoque = await executeQuery(
+        'SELECT COALESCE(SUM(preco_custo * estoque_atual), 0) as total FROM produtos WHERE status = 1'
+      );
+      stats.valorEstoque = valorEstoque[0].total;
+      console.log('Valor estoque:', stats.valorEstoque);
+    } catch (error) {
+      console.error('Erro ao calcular valor estoque:', error.message);
+    }
 
-    // Últimos grupos criados
-    const ultimosGrupos = await executeQuery(
-      `SELECT nome, criado_em
-       FROM grupos
-       WHERE status = 1
-       ORDER BY criado_em DESC
-       LIMIT 5`
-    );
-    console.log('Últimos grupos:', ultimosGrupos.length);
+    try {
+      // Produtos com estoque baixo
+      const produtosEstoqueBaixo = await executeQuery(
+        `SELECT COUNT(*) as total FROM produtos 
+         WHERE status = 1 AND estoque_atual <= estoque_minimo AND estoque_minimo > 0`
+      );
+      stats.produtosEstoqueBaixo = produtosEstoqueBaixo[0].total;
+      console.log('Produtos estoque baixo:', stats.produtosEstoqueBaixo);
+    } catch (error) {
+      console.error('Erro ao contar produtos estoque baixo:', error.message);
+    }
 
-    // Últimos usuários criados
-    const ultimosUsuarios = await executeQuery(
-      `SELECT nome, criado_em
-       FROM usuarios
-       WHERE status = "ativo"
-       ORDER BY criado_em DESC
-       LIMIT 5`
-    );
-    console.log('Últimos usuários:', ultimosUsuarios.length);
+    try {
+      // Últimos produtos criados
+      const ultimosProdutos = await executeQuery(
+        `SELECT p.nome, p.criado_em, f.razao_social as fornecedor
+         FROM produtos p
+         LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
+         WHERE p.status = 1
+         ORDER BY p.criado_em DESC
+         LIMIT 5`
+      );
+      recentes.produtos = ultimosProdutos;
+      console.log('Últimos produtos:', recentes.produtos.length);
+    } catch (error) {
+      console.error('Erro ao buscar últimos produtos:', error.message);
+    }
 
-    // Atividades recentes (combinação de todas as entidades)
-    const atividadesRecentes = await executeQuery(
-      `(SELECT 'produto' as tipo, nome as titulo, criado_em as data, 'Produto criado' as acao
-        FROM produtos 
-        WHERE status = 1
-        ORDER BY criado_em DESC 
-        LIMIT 3)
-       UNION ALL
-       (SELECT 'fornecedor' as tipo, razao_social as titulo, criado_em as data, 'Fornecedor criado' as acao
-        FROM fornecedores 
-        WHERE status = 1
-        ORDER BY criado_em DESC 
-        LIMIT 3)
-       UNION ALL
-       (SELECT 'grupo' as tipo, nome as titulo, criado_em as data, 'Grupo criado' as acao
-        FROM grupos 
-        WHERE status = 1
-        ORDER BY criado_em DESC 
-        LIMIT 3)
-       UNION ALL
-       (SELECT 'usuario' as tipo, nome as titulo, criado_em as data, 'Usuário criado' as acao
-        FROM usuarios 
-        WHERE status = 'ativo'
-        ORDER BY criado_em DESC 
-        LIMIT 3)
-       ORDER BY data DESC
-       LIMIT 10`
-    );
-    console.log('Atividades recentes:', atividadesRecentes.length);
+    try {
+      // Últimos fornecedores criados
+      const ultimosFornecedores = await executeQuery(
+        `SELECT razao_social, criado_em
+         FROM fornecedores
+         WHERE status = 1
+         ORDER BY criado_em DESC
+         LIMIT 5`
+      );
+      recentes.fornecedores = ultimosFornecedores;
+      console.log('Últimos fornecedores:', recentes.fornecedores.length);
+    } catch (error) {
+      console.error('Erro ao buscar últimos fornecedores:', error.message);
+    }
+
+    try {
+      // Últimos grupos criados
+      const ultimosGrupos = await executeQuery(
+        `SELECT nome, criado_em
+         FROM grupos
+         WHERE status = 1
+         ORDER BY criado_em DESC
+         LIMIT 5`
+      );
+      recentes.grupos = ultimosGrupos;
+      console.log('Últimos grupos:', recentes.grupos.length);
+    } catch (error) {
+      console.error('Erro ao buscar últimos grupos:', error.message);
+    }
+
+    try {
+      // Últimos usuários criados
+      const ultimosUsuarios = await executeQuery(
+        `SELECT nome, criado_em
+         FROM usuarios
+         WHERE status = "ativo"
+         ORDER BY criado_em DESC
+         LIMIT 5`
+      );
+      recentes.usuarios = ultimosUsuarios;
+      console.log('Últimos usuários:', recentes.usuarios.length);
+    } catch (error) {
+      console.error('Erro ao buscar últimos usuários:', error.message);
+    }
+
+    try {
+      // Atividades recentes (simplificada)
+      const atividadesRecentes = await executeQuery(
+        `SELECT 'produto' as tipo, nome as titulo, criado_em as data, 'Produto criado' as acao
+         FROM produtos 
+         WHERE status = 1
+         ORDER BY criado_em DESC 
+         LIMIT 5`
+      );
+      atividades = atividadesRecentes;
+      console.log('Atividades recentes:', atividades.length);
+    } catch (error) {
+      console.error('Erro ao buscar atividades recentes:', error.message);
+    }
 
     res.json({
-      stats: {
-        usuarios: usuariosAtivos[0].total,
-        fornecedores: fornecedoresAtivos[0].total,
-        produtos: produtosAtivos[0].total,
-        grupos: gruposAtivos[0].total,
-        unidades: unidadesAtivas[0].total,
-        valorEstoque: valorEstoque[0].total || 0,
-        produtosEstoqueBaixo: produtosEstoqueBaixo[0].total
-      },
-      recentes: {
-        produtos: ultimosProdutos,
-        fornecedores: ultimosFornecedores,
-        grupos: ultimosGrupos,
-        usuarios: ultimosUsuarios
-      },
-      atividades: atividadesRecentes
+      stats,
+      recentes,
+      atividades
     });
 
   } catch (error) {
