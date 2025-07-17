@@ -337,10 +337,7 @@ const EmptyState = styled.div`
   color: var(--gray);
 `;
 
-const PriceDisplay = styled.span`
-  font-weight: 600;
-  color: var(--primary-green);
-`;
+
 
 const FormSection = styled.div`
   border: 1px solid #e0e0e0;
@@ -392,7 +389,7 @@ const FormGrid4 = styled.div`
 
 const Produtos = () => {
   const [produtos, setProdutos] = useState([]);
-  const [fornecedores, setFornecedores] = useState([]);
+
   const [grupos, setGrupos] = useState([]);
   const [unidades, setUnidades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -425,15 +422,13 @@ const Produtos = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [produtosRes, fornecedoresRes, gruposRes, unidadesRes] = await Promise.all([
+      const [produtosRes, gruposRes, unidadesRes] = await Promise.all([
         api.get('/produtos'),
-        api.get('/fornecedores'),
         api.get('/grupos'),
         api.get('/unidades')
       ]);
 
       setProdutos(produtosRes.data);
-      setFornecedores(fornecedoresRes.data);
       setGrupos(gruposRes.data);
       setUnidades(unidadesRes.data);
     } catch (error) {
@@ -714,8 +709,7 @@ const Produtos = () => {
       case 'estoque_atual':
       case 'estoque_minimo':
         return value.toString();
-      case 'id_fornecedor':
-        return getFornecedorName(value);
+
       case 'grupo_id':
         return getGrupoName(value);
       case 'unidade_id':
@@ -776,11 +770,7 @@ const Produtos = () => {
     setValue('aliquota_ipi', produto.aliquota_ipi);
     setValue('aliquota_pis', produto.aliquota_pis);
     setValue('aliquota_cofins', produto.aliquota_cofins);
-    setValue('preco_custo', produto.preco_custo);
-    setValue('preco_venda', produto.preco_venda);
-    setValue('estoque_atual', produto.estoque_atual);
-    setValue('estoque_minimo', produto.estoque_minimo);
-    setValue('fornecedor_id', produto.fornecedor_id);
+
     setValue('status', produto.status);
     setValue('informacoes_adicionais', produto.informacoes_adicionais);
     setValue('registro_especifico', produto.registro_especifico);
@@ -814,25 +804,7 @@ const Produtos = () => {
           updateData.descricao = data.descricao;
         }
         
-        if (data.preco_custo !== editingProduto.preco_custo) {
-          updateData.preco_custo = data.preco_custo;
-        }
-        
-        if (data.preco_venda !== editingProduto.preco_venda) {
-          updateData.preco_venda = data.preco_venda;
-        }
-        
-        if (data.estoque_atual !== editingProduto.estoque_atual) {
-          updateData.estoque_atual = data.estoque_atual;
-        }
-        
-        if (data.estoque_minimo !== editingProduto.estoque_minimo) {
-          updateData.estoque_minimo = data.estoque_minimo;
-        }
-        
-        if (data.id_fornecedor !== editingProduto.id_fornecedor) {
-          updateData.id_fornecedor = data.id_fornecedor;
-        }
+
         
         if (data.grupo_id !== editingProduto.grupo_id) {
           updateData.grupo_id = data.grupo_id;
@@ -905,11 +877,7 @@ const Produtos = () => {
     }).format(price);
   };
 
-  // Buscar nome do fornecedor
-  const getFornecedorName = (fornecedorId) => {
-    const fornecedor = fornecedores.find(f => f.id === fornecedorId);
-    return fornecedor ? fornecedor.razao_social : 'N/A';
-  };
+
 
   // Buscar nome do grupo
   const getGrupoName = (grupoId) => {
@@ -982,10 +950,7 @@ const Produtos = () => {
             <tr>
               <Th>Nome</Th>
               <Th>Código</Th>
-              <Th>Preço Venda</Th>
-              <Th>Estoque</Th>
               <Th>Grupo</Th>
-              <Th>Fornecedor</Th>
               <Th>Status</Th>
               <Th>Ações</Th>
             </tr>
@@ -993,7 +958,7 @@ const Produtos = () => {
           <tbody>
             {filteredProdutos.length === 0 ? (
               <tr>
-                <Td colSpan="8">
+                <Td colSpan="5">
                   <EmptyState>
                     {searchTerm || statusFilter !== 'todos' || grupoFilter !== 'todos'
                       ? 'Nenhum produto encontrado com os filtros aplicados'
@@ -1007,12 +972,7 @@ const Produtos = () => {
                 <tr key={produto.id}>
                   <Td>{produto.nome}</Td>
                   <Td>{produto.codigo_barras}</Td>
-                  <Td>
-                    <PriceDisplay>{formatPrice(produto.preco_venda)}</PriceDisplay>
-                  </Td>
-                  <Td>{produto.estoque_atual || 0}</Td>
                   <Td>{getGrupoName(produto.grupo_id)}</Td>
-                  <Td>{getFornecedorName(produto.id_fornecedor)}</Td>
                   <Td>
                     <StatusBadge status={produto.status === 1 ? 'ativo' : 'inativo'}>
                       {produto.status === 1 ? 'Ativo' : 'Inativo'}
@@ -1477,67 +1437,7 @@ const Produtos = () => {
                       {errors.integracao_senior && <span style={{ color: 'red', fontSize: '11px' }}>{errors.integracao_senior.message}</span>}
                     </FormGroup>
 
-                    <FormGroup>
-                      <Label>Fornecedor</Label>
-                      <Select {...register('fornecedor_id')}>
-                        <option value="">Selecione...</option>
-                        {fornecedores.map(fornecedor => (
-                          <option key={fornecedor.id} value={fornecedor.id}>
-                            {fornecedor.razao_social}
-                          </option>
-                        ))}
-                      </Select>
-                      {errors.fornecedor_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fornecedor_id.message}</span>}
-                    </FormGroup>
 
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Preço de Custo</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          {...register('preco_custo', { min: 0 })}
-                        />
-                        {errors.preco_custo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_custo.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Preço de Venda *</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="0.00"
-                          {...register('preco_venda', { 
-                            required: 'Preço de venda é obrigatório',
-                            min: 0 
-                          })}
-                        />
-                        {errors.preco_venda && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_venda.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Estoque Mínimo</Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          {...register('estoque_minimo', { min: 0 })}
-                        />
-                        {errors.estoque_minimo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_minimo.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Estoque Atual</Label>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          {...register('estoque_atual', { min: 0 })}
-                        />
-                        {errors.estoque_atual && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_atual.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
                   </FormGrid>
                 </FormSection>
 
