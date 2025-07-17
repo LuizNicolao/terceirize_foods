@@ -49,25 +49,6 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
   }
 });
 
-// Buscar subgrupos para o select
-router.get('/subgrupos/list', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const subgrupos = await executeQuery(
-      `SELECT s.id, s.nome, g.nome as grupo_nome
-       FROM subgrupos s
-       LEFT JOIN grupos g ON s.grupo_id = g.id
-       WHERE s.status = 1
-       ORDER BY g.nome, s.nome`
-    );
-
-    res.json(subgrupos);
-
-  } catch (error) {
-    console.error('Erro ao listar subgrupos:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
 // Buscar classe por ID
 router.get('/:id', checkPermission('visualizar'), async (req, res) => {
   try {
@@ -97,7 +78,6 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 // Criar classe
 router.post('/', [
   checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'classes'),
   body('nome').isLength({ min: 2 }).withMessage('Nome deve ter pelo menos 2 caracteres'),
   body('subgrupo_id').notEmpty().withMessage('Subgrupo é obrigatório'),
   body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
@@ -117,6 +97,9 @@ router.post('/', [
 
     // Converter subgrupo_id para número
     const subgrupoId = parseInt(subgrupo_id);
+    if (isNaN(subgrupoId) || subgrupoId < 1) {
+      return res.status(400).json({ error: 'Subgrupo inválido' });
+    }
 
     // Verificar se subgrupo existe
     const subgrupo = await executeQuery(
@@ -140,8 +123,8 @@ router.post('/', [
 
     // Inserir classe
     const result = await executeQuery(
-      `INSERT INTO classes (nome, subgrupo_id, status)
-       VALUES (?, ?, ?)`,
+      `INSERT INTO classes (nome, subgrupo_id, descricao, status)
+       VALUES (?, ?, NULL, ?)`,
       [nome, subgrupoId, status]
     );
 
@@ -161,7 +144,11 @@ router.post('/', [
 
   } catch (error) {
     console.error('Erro ao criar classe:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -304,4 +291,23 @@ router.delete('/:id', [
   }
 });
 
- 
+// Buscar subgrupos para o select
+router.get('/subgrupos/list', checkPermission('visualizar'), async (req, res) => {
+  try {
+    const subgrupos = await executeQuery(
+      `SELECT s.id, s.nome, g.nome as grupo_nome
+       FROM subgrupos s
+       LEFT JOIN grupos g ON s.grupo_id = g.id
+       WHERE s.status = 1
+       ORDER BY g.nome, s.nome`
+    );
+
+    res.json(subgrupos);
+
+  } catch (error) {
+    console.error('Erro ao listar subgrupos:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+module.exports = router; 
