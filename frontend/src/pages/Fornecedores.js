@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -311,6 +311,15 @@ const Fornecedores = () => {
   const [editingFornecedor, setEditingFornecedor] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditFilters, setAuditFilters] = useState({
+    dataInicio: '',
+    dataFim: '',
+    acao: '',
+    usuario_id: ''
+  });
 
   const {
     register,
@@ -337,6 +346,80 @@ const Fornecedores = () => {
   useEffect(() => {
     loadFornecedores();
   }, []);
+
+  // Carregar logs de auditoria
+  const loadAuditLogs = async () => {
+    try {
+      setAuditLoading(true);
+      
+      const params = new URLSearchParams();
+      
+      if (auditFilters.dataInicio) {
+        params.append('data_inicio', auditFilters.dataInicio);
+      }
+      if (auditFilters.dataFim) {
+        params.append('data_fim', auditFilters.dataFim);
+      }
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para fornecedores
+      params.append('recurso', 'fornecedores');
+      
+      const response = await api.get(`/auditoria?${params.toString()}`);
+      setAuditLogs(response.data.logs || []);
+    } catch (error) {
+      console.error('Erro ao carregar logs de auditoria:', error);
+      toast.error('Erro ao carregar logs de auditoria');
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  // Abrir modal de auditoria
+  const handleOpenAuditModal = () => {
+    setShowAuditModal(true);
+    loadAuditLogs();
+  };
+
+  // Fechar modal de auditoria
+  const handleCloseAuditModal = () => {
+    setShowAuditModal(false);
+    setAuditLogs([]);
+    setAuditFilters({
+      dataInicio: '',
+      dataFim: '',
+      acao: '',
+      usuario_id: ''
+    });
+  };
+
+  // Aplicar filtros de auditoria
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
+  };
+
+  // Formatar data
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
+
+  // Obter label da ação
+  const getActionLabel = (action) => {
+    const actions = {
+      'create': 'Criar',
+      'update': 'Editar',
+      'delete': 'Excluir',
+      'login': 'Login',
+      'logout': 'Logout',
+      'view': 'Visualizar'
+    };
+    return actions[action] || action;
+  };
 
   // Abrir modal para adicionar fornecedor
   const handleAddFornecedor = () => {
@@ -483,10 +566,19 @@ const Fornecedores = () => {
     <Container>
       <Header>
         <Title>Fornecedores</Title>
-        <AddButton onClick={handleAddFornecedor}>
-          <FaPlus />
-          Adicionar Fornecedor
-        </AddButton>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <AddButton 
+            onClick={handleOpenAuditModal}
+            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+          >
+            <FaQuestionCircle />
+            Auditoria
+          </AddButton>
+          <AddButton onClick={handleAddFornecedor}>
+            <FaPlus />
+            Adicionar Fornecedor
+          </AddButton>
+        </div>
       </Header>
 
       <SearchContainer>
@@ -748,6 +840,171 @@ const Fornecedores = () => {
                 </Button>
               </ButtonGroup>
             </Form>
+          </ModalContent>
+        </Modal>
+      )}
+
+      {/* Modal de Auditoria */}
+      {showAuditModal && (
+        <Modal onClick={handleCloseAuditModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', maxHeight: '80vh' }}>
+            <ModalHeader>
+              <ModalTitle>Relatório de Auditoria - Fornecedores</ModalTitle>
+              <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
+            </ModalHeader>
+
+            {/* Filtros de Auditoria */}
+            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Início
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Fim
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Ação
+                  </label>
+                  <select
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
+                    <option value="login">Login</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Usuário
+                  </label>
+                  <select
+                    value={auditFilters.usuario_id}
+                    onChange={(e) => setAuditFilters({...auditFilters, usuario_id: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Todos os usuários</option>
+                    {/* Aqui você pode adicionar a lista de usuários se necessário */}
+                  </select>
+                </div>
+              </div>
+              <button
+                onClick={handleApplyAuditFilters}
+                style={{
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  background: 'var(--primary-green)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Aplicar Filtros
+              </button>
+            </div>
+
+            {/* Lista de Logs */}
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+              {auditLoading ? (
+                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
+              ) : auditLogs.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
+                  Nenhum log encontrado com os filtros aplicados
+                </div>
+              ) : (
+                <div>
+                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
+                    {auditLogs.length} log(s) encontrado(s)
+                  </div>
+                  {auditLogs.map((log, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        marginBottom: '12px',
+                        background: 'white'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            background: log.acao === 'create' ? '#e8f5e8' : 
+                                       log.acao === 'update' ? '#fff3cd' : 
+                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
+                            color: log.acao === 'create' ? '#2e7d32' : 
+                                   log.acao === 'update' ? '#856404' : 
+                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
+                          }}>
+                            {getActionLabel(log.acao)}
+                          </span>
+                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                            por {log.usuario_nome || 'Usuário desconhecido'}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                          {formatDate(log.timestamp)}
+                        </span>
+                      </div>
+                      
+                      {log.detalhes && (
+                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
+                          {log.detalhes.changes && (
+                            <div style={{ marginBottom: '8px' }}>
+                              <strong>Mudanças:</strong>
+                              {Object.entries(log.detalhes.changes).map(([field, change]) => (
+                                <div key={field} style={{ marginLeft: '12px', marginTop: '4px' }}>
+                                  <span style={{ fontWeight: 'bold' }}>{field}:</span> 
+                                  <span style={{ color: '#721c24' }}> {change.from}</span> → 
+                                  <span style={{ color: '#2e7d32' }}> {change.to}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                          {log.detalhes.requestBody && !log.detalhes.changes && (
+                            <div>
+                              <strong>Dados:</strong> {JSON.stringify(log.detalhes.requestBody, null, 2)}
+                            </div>
+                          )}
+                          {log.detalhes.resourceId && (
+                            <div>
+                              <strong>ID do Recurso:</strong> {log.detalhes.resourceId}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </ModalContent>
         </Modal>
       )}

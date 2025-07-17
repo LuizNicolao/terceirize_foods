@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -63,6 +64,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 // Criar fornecedor
 router.post('/', [
   checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'fornecedores'),
   body('cnpj').isLength({ min: 14, max: 18 }).withMessage('CNPJ inválido'),
   body('razao_social').isLength({ min: 3 }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
   body('email').optional().isEmail().withMessage('Email inválido'),
@@ -120,6 +122,7 @@ router.post('/', [
 // Atualizar fornecedor
 router.put('/:id', [
   checkPermission('editar'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'fornecedores'),
   body('cnpj').optional().isLength({ min: 14, max: 18 }).withMessage('CNPJ inválido'),
   body('razao_social').optional().isLength({ min: 3 }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
   body('email').optional().isEmail().withMessage('Email inválido'),
@@ -243,7 +246,10 @@ router.put('/:id', [
 });
 
 // Excluir fornecedor
-router.delete('/:id', checkPermission('excluir'), async (req, res) => {
+router.delete('/:id', [
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'fornecedores')
+], async (req, res) => {
   try {
     const { id } = req.params;
 
