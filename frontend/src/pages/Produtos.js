@@ -161,11 +161,30 @@ const Modal = styled.div`
 const ModalContent = styled.div`
   background: var(--white);
   border-radius: 12px;
-  padding: 32px;
+  padding: 24px;
   width: 100%;
-  max-width: 700px;
-  max-height: 90vh;
+  max-width: 1000px;
+  max-height: 95vh;
   overflow-y: auto;
+  
+  /* Personalizar scrollbar */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-green);
+  }
 `;
 
 const ModalHeader = styled.div`
@@ -198,26 +217,26 @@ const CloseButton = styled.button`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 `;
 
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 `;
 
 const Label = styled.label`
   color: var(--dark-gray);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
 `;
 
 const Input = styled.input`
-  padding: 12px 16px;
+  padding: 10px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   transition: all 0.3s ease;
 
   &:focus {
@@ -228,13 +247,13 @@ const Input = styled.input`
 `;
 
 const TextArea = styled.textarea`
-  padding: 12px 16px;
+  padding: 10px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   font-family: inherit;
   resize: vertical;
-  min-height: 100px;
+  min-height: 80px;
   transition: all 0.3s ease;
 
   &:focus {
@@ -245,10 +264,10 @@ const TextArea = styled.textarea`
 `;
 
 const Select = styled.select`
-  padding: 12px 16px;
+  padding: 10px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   background: var(--white);
   transition: all 0.3s ease;
 
@@ -262,13 +281,13 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  margin-top: 24px;
+  margin-top: 20px;
 `;
 
 const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 600;
   border: none;
   cursor: pointer;
@@ -941,25 +960,27 @@ const Produtos = () => {
             </ModalHeader>
 
             <Form onSubmit={handleSubmit(onSubmit)}>
-              <FormGroup>
-                <Label>Nome do Produto *</Label>
-                <Input
-                  type="text"
-                  placeholder="Nome do produto"
-                  {...register('nome', { required: 'Nome é obrigatório' })}
-                />
-                {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-              </FormGroup>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <FormGroup>
+                  <Label>Nome do Produto *</Label>
+                  <Input
+                    type="text"
+                    placeholder="Nome do produto"
+                    {...register('nome', { required: 'Nome é obrigatório' })}
+                  />
+                  {errors.nome && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome.message}</span>}
+                </FormGroup>
 
-              <FormGroup>
-                <Label>Código de Barras</Label>
-                <Input
-                  type="text"
-                  placeholder="Código de barras do produto"
-                  {...register('codigo_barras')}
-                />
-                {errors.codigo_barras && <span style={{ color: 'red', fontSize: '12px' }}>{errors.codigo_barras.message}</span>}
-              </FormGroup>
+                <FormGroup>
+                  <Label>Código de Barras</Label>
+                  <Input
+                    type="text"
+                    placeholder="Código de barras do produto"
+                    {...register('codigo_barras')}
+                  />
+                  {errors.codigo_barras && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_barras.message}</span>}
+                </FormGroup>
+              </div>
 
               <FormGroup>
                 <Label>Descrição</Label>
@@ -967,10 +988,10 @@ const Produtos = () => {
                   placeholder="Descrição detalhada do produto..."
                   {...register('descricao')}
                 />
-                {errors.descricao && <span style={{ color: 'red', fontSize: '12px' }}>{errors.descricao.message}</span>}
+                {errors.descricao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.descricao.message}</span>}
               </FormGroup>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
                 <FormGroup>
                   <Label>Preço de Custo</Label>
                   <Input
@@ -979,7 +1000,7 @@ const Produtos = () => {
                     placeholder="0.00"
                     {...register('preco_custo', { min: 0 })}
                   />
-                  {errors.preco_custo && <span style={{ color: 'red', fontSize: '12px' }}>{errors.preco_custo.message}</span>}
+                  {errors.preco_custo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_custo.message}</span>}
                 </FormGroup>
 
                 <FormGroup>
@@ -993,11 +1014,9 @@ const Produtos = () => {
                       min: 0 
                     })}
                   />
-                  {errors.preco_venda && <span style={{ color: 'red', fontSize: '12px' }}>{errors.preco_venda.message}</span>}
+                  {errors.preco_venda && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_venda.message}</span>}
                 </FormGroup>
-              </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <FormGroup>
                   <Label>Estoque Mínimo</Label>
                   <Input
@@ -1005,7 +1024,7 @@ const Produtos = () => {
                     placeholder="0"
                     {...register('estoque_minimo', { min: 0 })}
                   />
-                  {errors.estoque_minimo && <span style={{ color: 'red', fontSize: '12px' }}>{errors.estoque_minimo.message}</span>}
+                  {errors.estoque_minimo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_minimo.message}</span>}
                 </FormGroup>
 
                 <FormGroup>
@@ -1015,11 +1034,11 @@ const Produtos = () => {
                     placeholder="0"
                     {...register('estoque_atual', { min: 0 })}
                   />
-                  {errors.estoque_atual && <span style={{ color: 'red', fontSize: '12px' }}>{errors.estoque_atual.message}</span>}
+                  {errors.estoque_atual && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_atual.message}</span>}
                 </FormGroup>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
                 <FormGroup>
                   <Label>Fornecedor</Label>
                   <Select {...register('id_fornecedor')}>
@@ -1030,7 +1049,7 @@ const Produtos = () => {
                       </option>
                     ))}
                   </Select>
-                  {errors.id_fornecedor && <span style={{ color: 'red', fontSize: '12px' }}>{errors.id_fornecedor.message}</span>}
+                  {errors.id_fornecedor && <span style={{ color: 'red', fontSize: '11px' }}>{errors.id_fornecedor.message}</span>}
                 </FormGroup>
 
                 <FormGroup>
@@ -1043,7 +1062,7 @@ const Produtos = () => {
                       </option>
                     ))}
                   </Select>
-                  {errors.grupo_id && <span style={{ color: 'red', fontSize: '12px' }}>{errors.grupo_id.message}</span>}
+                  {errors.grupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.grupo_id.message}</span>}
                 </FormGroup>
 
                 <FormGroup>
@@ -1056,19 +1075,19 @@ const Produtos = () => {
                       </option>
                     ))}
                   </Select>
-                  {errors.unidade_id && <span style={{ color: 'red', fontSize: '12px' }}>{errors.unidade_id.message}</span>}
+                  {errors.unidade_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.unidade_id.message}</span>}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Status</Label>
+                  <Select {...register('status', { required: 'Status é obrigatório' })}>
+                    <option value="">Selecione...</option>
+                    <option value="1">Ativo</option>
+                    <option value="0">Inativo</option>
+                  </Select>
+                  {errors.status && <span style={{ color: 'red', fontSize: '11px' }}>{errors.status.message}</span>}
                 </FormGroup>
               </div>
-
-              <FormGroup>
-                <Label>Status</Label>
-                <Select {...register('status', { required: 'Status é obrigatório' })}>
-                  <option value="">Selecione...</option>
-                  <option value="1">Ativo</option>
-                  <option value="0">Inativo</option>
-                </Select>
-                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
-              </FormGroup>
 
               <ButtonGroup>
                 <Button type="button" className="secondary" onClick={handleCloseModal}>
