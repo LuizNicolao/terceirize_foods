@@ -157,7 +157,10 @@ router.post('/', [
     console.error('SQL State:', error.sqlState);
     res.status(500).json({ 
       error: 'Erro interno do servidor',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: error.message,
+      code: error.code,
+      sqlState: error.sqlState,
+      stack: error.stack
     });
   }
 });
