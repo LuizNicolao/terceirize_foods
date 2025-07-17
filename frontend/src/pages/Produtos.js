@@ -344,7 +344,7 @@ const FormSection = styled.div`
   border-radius: 8px;
   padding: 14px;
   background: #fafafa;
-  min-height: 400px;
+  height: 400px;
   display: flex;
   flex-direction: column;
 `;
@@ -364,6 +364,7 @@ const FormGrid = styled.div`
   gap: 8px;
   margin-bottom: 8px;
   flex: 1;
+  justify-content: start;
 `;
 
 const FormGrid2 = styled.div`
@@ -1045,29 +1046,27 @@ const Produtos = () => {
                       {errors.nome && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome.message}</span>}
                     </FormGroup>
 
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Grupo</Label>
-                        <Select {...register('grupo_id')}>
-                          <option value="">Selecione...</option>
-                          {grupos.map(grupo => (
-                            <option key={grupo.id} value={grupo.id}>
-                              {grupo.nome}
-                            </option>
-                          ))}
-                        </Select>
-                        {errors.grupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.grupo_id.message}</span>}
-                      </FormGroup>
+                    <FormGroup>
+                      <Label>Grupo</Label>
+                      <Select {...register('grupo_id')}>
+                        <option value="">Selecione...</option>
+                        {grupos.map(grupo => (
+                          <option key={grupo.id} value={grupo.id}>
+                            {grupo.nome}
+                          </option>
+                        ))}
+                      </Select>
+                      {errors.grupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.grupo_id.message}</span>}
+                    </FormGroup>
 
-                      <FormGroup>
-                        <Label>Subgrupo</Label>
-                        <Select {...register('subgrupo_id')}>
-                          <option value="">Selecione...</option>
-                          {/* Adicionar subgrupos quando disponível */}
-                        </Select>
-                        {errors.subgrupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.subgrupo_id.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
+                    <FormGroup>
+                      <Label>Subgrupo</Label>
+                      <Select {...register('subgrupo_id')}>
+                        <option value="">Selecione...</option>
+                        {/* Adicionar subgrupos quando disponível */}
+                      </Select>
+                      {errors.subgrupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.subgrupo_id.message}</span>}
+                    </FormGroup>
 
                     <FormGrid2>
                       <FormGroup>
