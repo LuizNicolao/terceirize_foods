@@ -33,7 +33,6 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     res.json(grupos);
 
   } catch (error) {
-    console.error('Erro ao listar grupos:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -55,7 +54,6 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
     res.json(grupos[0]);
 
   } catch (error) {
-    console.error('Erro ao buscar grupo:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -104,7 +102,6 @@ router.post('/', [
     });
 
   } catch (error) {
-    console.error('Erro ao criar grupo:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -116,11 +113,8 @@ router.put('/:id', [
   body('status').optional().isIn([0, 1]).withMessage('Status deve ser 0 ou 1')
 ], async (req, res) => {
   try {
-    console.log('Dados recebidos para atualização:', req.body);
-    
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('Erros de validação:', errors.array());
       return res.status(400).json({ 
         error: 'Dados inválidos',
         details: errors.array() 
@@ -142,14 +136,12 @@ router.put('/:id', [
 
     // Verificar se nome já existe (se estiver sendo alterado)
     if (nome) {
-      console.log('Verificando duplicação de nome:', nome, 'para grupo ID:', id);
       const nomeCheck = await executeQuery(
         'SELECT id FROM grupos WHERE nome = ? AND id != ?',
         [nome, id]
       );
 
       if (nomeCheck.length > 0) {
-        console.log('Nome já existe:', nomeCheck);
         return res.status(400).json({ error: 'Nome do grupo já existe' });
       }
     }
@@ -189,7 +181,6 @@ router.put('/:id', [
     });
 
   } catch (error) {
-    console.error('Erro ao atualizar grupo:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -238,7 +229,6 @@ router.delete('/:id', checkPermission('excluir'), async (req, res) => {
     res.json({ message: 'Grupo excluído com sucesso' });
 
   } catch (error) {
-    console.error('Erro ao excluir grupo:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
