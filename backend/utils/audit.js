@@ -192,6 +192,7 @@ const auditChangesMiddleware = (action, resource) => {
                   pode_editar: perm.pode_editar === 1,
                   pode_excluir: perm.pode_excluir === 1
                 };
+                console.log(`Permissão original para ${perm.tela}:`, originalPermsMap[perm.tela]);
               });
               
               console.log('Mapa de permissões originais:', originalPermsMap);
@@ -220,35 +221,17 @@ const auditChangesMiddleware = (action, resource) => {
                   });
                 } else {
                   console.log(`Tela ${newPerm.tela} não encontrada nas permissões originais`);
-                  // Se não encontrou permissões originais, registrar como mudança
-                  ['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].forEach(acao => {
-                    const newValue = newPerm[acao];
-                    if (newValue) {
-                      changes[`${newPerm.tela}_${acao}`] = {
-                        from: 'Não',
-                        to: newValue ? 'Sim' : 'Não'
-                      };
-                      console.log(`Nova permissão: ${newPerm.tela}_${acao} = Não → ${newValue ? 'Sim' : 'Não'}`);
-                    }
-                  });
+                  // Se não encontrou permissões originais, não registrar como mudança
+                  // pois pode ser a primeira vez que as permissões são criadas
                 }
               });
               
               console.log('Mudanças detectadas:', changes);
               
-              // Se não detectou mudanças, registrar todas as permissões atuais
+              // Se não detectou mudanças, pode ser que as permissões originais não existiam
+              // Neste caso, não vamos registrar todas as permissões, apenas deixar vazio
               if (Object.keys(changes).length === 0) {
-                console.log('Nenhuma mudança detectada, registrando permissões atuais...');
-                sanitizedBody.permissoes.forEach(newPerm => {
-                  ['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].forEach(acao => {
-                    const newValue = newPerm[acao];
-                    changes[`${newPerm.tela}_${acao}`] = {
-                      from: 'Não informado',
-                      to: newValue ? 'Sim' : 'Não'
-                    };
-                  });
-                });
-                console.log('Permissões atuais registradas:', changes);
+                console.log('Nenhuma mudança detectada - permissões podem ter sido criadas pela primeira vez');
               }
             } catch (error) {
               console.error('Erro ao comparar permissões:', error);
