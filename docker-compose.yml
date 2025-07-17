@@ -17,12 +17,6 @@ services:
       - ./BANCO_DE_DADOS_FOODS.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - foods_network
-    deploy:
-      resources:
-        limits:
-          memory: 800M
-        reservations:
-          memory: 400M
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -40,12 +34,6 @@ services:
       - mysql
     networks:
       - foods_network
-    deploy:
-      resources:
-        limits:
-          memory: 100M
-        reservations:
-          memory: 50M
 
   backend:
     build: ./backend
@@ -68,12 +56,6 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
-    deploy:
-      resources:
-        limits:
-          memory: 400M
-        reservations:
-          memory: 200M
 
   frontend:
     build: ./frontend
@@ -82,8 +64,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_API_URL: http://82.29.57.43:3001/api
-      HOST: 0.0.0.0
+      REACT_APP_API_URL: http://localhost:3001/api
     depends_on:
       - backend
     networks:
@@ -91,12 +72,6 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-    deploy:
-      resources:
-        limits:
-          memory: 300M
-        reservations:
-          memory: 150M
 
 volumes:
   mysql_data:
