@@ -97,7 +97,29 @@ const auditChangesMiddleware = (action, resource) => {
     if (action === AUDIT_ACTIONS.UPDATE && req.params.id) {
       try {
         const { executeQuery } = require('../config/database');
-        const tableName = resource === 'usuarios' ? 'usuarios' : resource;
+        let tableName;
+        switch (resource) {
+          case 'usuarios':
+            tableName = 'usuarios';
+            break;
+          case 'unidades':
+            tableName = 'unidades_medida';
+            break;
+          case 'grupos':
+            tableName = 'grupos';
+            break;
+          case 'subgrupos':
+            tableName = 'subgrupos';
+            break;
+          case 'produtos':
+            tableName = 'produtos';
+            break;
+          case 'fornecedores':
+            tableName = 'fornecedores';
+            break;
+          default:
+            tableName = resource;
+        }
         
         const result = await executeQuery(
           `SELECT * FROM ${tableName} WHERE id = ?`,
