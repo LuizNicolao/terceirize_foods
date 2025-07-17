@@ -251,23 +251,30 @@ router.delete('/:id', [
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'classes')
 ], async (req, res) => {
   try {
+    console.log('=== EXCLUSÃO DE CLASSE ===');
     const { id } = req.params;
+    console.log('ID da classe a excluir:', id);
 
     // Verificar se classe existe
     const existingClasse = await executeQuery(
-      'SELECT id FROM classes WHERE id = ?',
+      'SELECT id, nome FROM classes WHERE id = ?',
       [id]
     );
+
+    console.log('Classe encontrada:', existingClasse);
 
     if (existingClasse.length === 0) {
       return res.status(404).json({ error: 'Classe não encontrada' });
     }
 
     // Verificar se classe está sendo usada em produtos
+    console.log('Verificando se classe está sendo usada em produtos...');
     const produtosUsingClasse = await executeQuery(
-      'SELECT COUNT(*) as count FROM produtos WHERE classe = (SELECT nome FROM classes WHERE id = ?)',
-      [id]
+      'SELECT COUNT(*) as count FROM produtos WHERE classe = ?',
+      [existingClasse[0].nome]
     );
+
+    console.log('Produtos usando a classe:', produtosUsingClasse);
 
     if (produtosUsingClasse[0].count > 0) {
       return res.status(400).json({ 
@@ -275,13 +282,23 @@ router.delete('/:id', [
       });
     }
 
+    console.log('Tentando excluir classe...');
     await executeQuery('DELETE FROM classes WHERE id = ?', [id]);
+    console.log('Classe excluída com sucesso');
 
     res.json({ message: 'Classe excluída com sucesso' });
 
   } catch (error) {
+    console.error('=== ERRO NA EXCLUSÃO ===');
     console.error('Erro ao excluir classe:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Stack trace:', error.stack);
+    console.error('Error code:', error.code);
+    console.error('SQL State:', error.sqlState);
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      message: error.message,
+      code: error.code
+    });
   }
 });
 
