@@ -161,10 +161,10 @@ const Modal = styled.div`
 const ModalContent = styled.div`
   background: var(--white);
   border-radius: 12px;
-  padding: 24px;
+  padding: 20px;
   width: 100%;
-  max-width: 1000px;
-  max-height: 95vh;
+  max-width: 1400px;
+  max-height: 98vh;
   overflow-y: auto;
   
   /* Personalizar scrollbar */
@@ -326,6 +326,51 @@ const EmptyState = styled.div`
 const PriceDisplay = styled.span`
   font-weight: 600;
   color: var(--primary-green);
+`;
+
+const FormSection = styled.div`
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #fafafa;
+`;
+
+const SectionTitle = styled.h3`
+  color: var(--dark-gray);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--primary-green);
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+const FormGrid2 = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+const FormGrid3 = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+`;
+
+const FormGrid4 = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
 `;
 
 const Produtos = () => {
@@ -669,6 +714,7 @@ const Produtos = () => {
   const handleAddProduto = () => {
     setEditingProduto(null);
     reset();
+    setValue('status', '1'); // Define status como "Ativo" por padrão
     setShowModal(true);
   };
 
@@ -676,16 +722,52 @@ const Produtos = () => {
   const handleEditProduto = (produto) => {
     setEditingProduto(produto);
     setValue('nome', produto.nome);
+    setValue('codigo_produto', produto.codigo_produto);
     setValue('descricao', produto.descricao);
     setValue('codigo_barras', produto.codigo_barras);
+    setValue('ean', produto.ean);
+    setValue('referencia', produto.referencia);
+    setValue('referencia_externa', produto.referencia_externa);
+    setValue('referencia_mercado', produto.referencia_mercado);
+    setValue('integracao_senior', produto.integracao_senior);
+    setValue('ficha_homologacao', produto.ficha_homologacao);
+    setValue('grupo_id', produto.grupo_id);
+    setValue('subgrupo_id', produto.subgrupo_id);
+    setValue('classe_id', produto.classe_id);
+    setValue('unidade_id', produto.unidade_id);
+    setValue('agrupamento_n3', produto.agrupamento_n3);
+    setValue('agrupamento_n4', produto.agrupamento_n4);
+    setValue('marca', produto.marca);
+    setValue('fabricante', produto.fabricante);
+    setValue('peso_liquido', produto.peso_liquido);
+    setValue('peso_bruto', produto.peso_bruto);
+    setValue('quantidade', produto.quantidade);
+    setValue('regra_palet_un', produto.regra_palet_un);
+    setValue('comprimento', produto.comprimento);
+    setValue('largura', produto.largura);
+    setValue('altura', produto.altura);
+    setValue('volume', produto.volume);
+    setValue('prazo_validade', produto.prazo_validade);
+    setValue('unidade_validade', produto.unidade_validade);
+    setValue('ncm', produto.ncm);
+    setValue('cest', produto.cest);
+    setValue('cfop', produto.cfop);
+    setValue('origem', produto.origem);
+    setValue('cst_icms', produto.cst_icms);
+    setValue('csosn', produto.csosn);
+    setValue('aliquota_icms', produto.aliquota_icms);
+    setValue('aliquota_ipi', produto.aliquota_ipi);
+    setValue('aliquota_pis', produto.aliquota_pis);
+    setValue('aliquota_cofins', produto.aliquota_cofins);
     setValue('preco_custo', produto.preco_custo);
     setValue('preco_venda', produto.preco_venda);
-    setValue('estoque_minimo', produto.estoque_minimo);
     setValue('estoque_atual', produto.estoque_atual);
-    setValue('id_fornecedor', produto.id_fornecedor);
-    setValue('grupo_id', produto.grupo_id);
-    setValue('unidade_id', produto.unidade_id);
+    setValue('estoque_minimo', produto.estoque_minimo);
+    setValue('fornecedor_id', produto.fornecedor_id);
     setValue('status', produto.status);
+    setValue('informacoes_adicionais', produto.informacoes_adicionais);
+    setValue('registro_especifico', produto.registro_especifico);
+    setValue('foto_produto', produto.foto_produto);
     setShowModal(true);
   };
 
@@ -960,134 +1042,560 @@ const Produtos = () => {
             </ModalHeader>
 
             <Form onSubmit={handleSubmit(onSubmit)}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+              {/* Seção: Informações Básicas */}
+              <FormSection>
+                <SectionTitle>Informações Básicas</SectionTitle>
+                <FormGrid2>
+                  <FormGroup>
+                    <Label>Nome do Produto *</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: PATINHO BOVINO EM CUBOS KING"
+                      {...register('nome', { required: 'Nome é obrigatório' })}
+                    />
+                    {errors.nome && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Código do Produto</Label>
+                    <Input
+                      type="text"
+                      placeholder="Código interno do produto"
+                      {...register('codigo_produto')}
+                    />
+                    {errors.codigo_produto && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_produto.message}</span>}
+                  </FormGroup>
+                </FormGrid2>
+
+                <FormGrid2>
+                  <FormGroup>
+                    <Label>Código de Barras</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: 1234567891234"
+                      {...register('codigo_barras')}
+                    />
+                    {errors.codigo_barras && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_barras.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>EAN</Label>
+                    <Input
+                      type="text"
+                      placeholder="Código EAN"
+                      {...register('ean')}
+                    />
+                    {errors.ean && <span style={{ color: 'red', fontSize: '11px' }}>{errors.ean.message}</span>}
+                  </FormGroup>
+                </FormGrid2>
+
                 <FormGroup>
-                  <Label>Nome do Produto *</Label>
-                  <Input
-                    type="text"
-                    placeholder="Nome do produto"
-                    {...register('nome', { required: 'Nome é obrigatório' })}
+                  <Label>Descrição</Label>
+                  <TextArea
+                    placeholder="Descrição detalhada do produto..."
+                    {...register('descricao')}
                   />
-                  {errors.nome && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome.message}</span>}
+                  {errors.descricao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.descricao.message}</span>}
                 </FormGroup>
+              </FormSection>
 
+              {/* Seção: Referências */}
+              <FormSection>
+                <SectionTitle>Referências</SectionTitle>
+                <FormGrid3>
+                  <FormGroup>
+                    <Label>Referência Interna</Label>
+                    <Input
+                      type="text"
+                      placeholder="Referência interna"
+                      {...register('referencia')}
+                    />
+                    {errors.referencia && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Referência Externa</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: 123654"
+                      {...register('referencia_externa')}
+                    />
+                    {errors.referencia_externa && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia_externa.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Referência Mercado</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: Corte Bovino / Patinho / Cubos"
+                      {...register('referencia_mercado')}
+                    />
+                    {errors.referencia_mercado && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia_mercado.message}</span>}
+                  </FormGroup>
+                </FormGrid3>
+
+                <FormGrid2>
+                  <FormGroup>
+                    <Label>Integração Senior</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: 123654"
+                      {...register('integracao_senior')}
+                    />
+                    {errors.integracao_senior && <span style={{ color: 'red', fontSize: '11px' }}>{errors.integracao_senior.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Ficha de Homologação</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: 123456"
+                      {...register('ficha_homologacao')}
+                    />
+                    {errors.ficha_homologacao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.ficha_homologacao.message}</span>}
+                  </FormGroup>
+                </FormGrid2>
+              </FormSection>
+
+              {/* Seção: Classificação e Agrupamento */}
+              <FormSection>
+                <SectionTitle>Classificação e Agrupamento</SectionTitle>
+                <FormGrid4>
+                  <FormGroup>
+                    <Label>Grupo</Label>
+                    <Select {...register('grupo_id')}>
+                      <option value="">Selecione...</option>
+                      {grupos.map(grupo => (
+                        <option key={grupo.id} value={grupo.id}>
+                          {grupo.nome}
+                        </option>
+                      ))}
+                    </Select>
+                    {errors.grupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.grupo_id.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Subgrupo</Label>
+                    <Select {...register('subgrupo_id')}>
+                      <option value="">Selecione...</option>
+                      {/* Adicionar subgrupos quando disponível */}
+                    </Select>
+                    {errors.subgrupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.subgrupo_id.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Classe</Label>
+                    <Select {...register('classe_id')}>
+                      <option value="">Selecione...</option>
+                      {/* Adicionar classes quando disponível */}
+                    </Select>
+                    {errors.classe_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.classe_id.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Unidade</Label>
+                    <Select {...register('unidade_id')}>
+                      <option value="">Selecione...</option>
+                      {unidades.map(unidade => (
+                        <option key={unidade.id} value={unidade.id}>
+                          {unidade.nome}
+                        </option>
+                      ))}
+                    </Select>
+                    {errors.unidade_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.unidade_id.message}</span>}
+                  </FormGroup>
+                </FormGrid4>
+
+                <FormGrid4>
+                  <FormGroup>
+                    <Label>Agrupamento N3</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: BOVINO"
+                      {...register('agrupamento_n3')}
+                    />
+                    {errors.agrupamento_n3 && <span style={{ color: 'red', fontSize: '11px' }}>{errors.agrupamento_n3.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Agrupamento N4</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
+                      {...register('agrupamento_n4')}
+                    />
+                    {errors.agrupamento_n4 && <span style={{ color: 'red', fontSize: '11px' }}>{errors.agrupamento_n4.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Marca</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: KING"
+                      {...register('marca')}
+                    />
+                    {errors.marca && <span style={{ color: 'red', fontSize: '11px' }}>{errors.marca.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Fabricante</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: KING"
+                      {...register('fabricante')}
+                    />
+                    {errors.fabricante && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fabricante.message}</span>}
+                  </FormGroup>
+                </FormGrid4>
+              </FormSection>
+
+              {/* Seção: Dimensões e Peso */}
+              <FormSection>
+                <SectionTitle>Dimensões e Peso</SectionTitle>
+                <FormGrid4>
+                  <FormGroup>
+                    <Label>Peso Líquido (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      placeholder="Ex: 1.000"
+                      {...register('peso_liquido')}
+                    />
+                    {errors.peso_liquido && <span style={{ color: 'red', fontSize: '11px' }}>{errors.peso_liquido.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Peso Bruto (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      placeholder="Ex: 1.000"
+                      {...register('peso_bruto')}
+                    />
+                    {errors.peso_bruto && <span style={{ color: 'red', fontSize: '11px' }}>{errors.peso_bruto.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Quantidade</Label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      placeholder="Ex: 1.000"
+                      {...register('quantidade')}
+                    />
+                    {errors.quantidade && <span style={{ color: 'red', fontSize: '11px' }}>{errors.quantidade.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Regra Palet (UN)</Label>
+                    <Input
+                      type="number"
+                      placeholder="Ex: 1200"
+                      {...register('regra_palet_un')}
+                    />
+                    {errors.regra_palet_un && <span style={{ color: 'red', fontSize: '11px' }}>{errors.regra_palet_un.message}</span>}
+                  </FormGroup>
+                </FormGrid4>
+
+                <FormGrid4>
+                  <FormGroup>
+                    <Label>Comprimento (cm)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 20.00"
+                      {...register('comprimento')}
+                    />
+                    {errors.comprimento && <span style={{ color: 'red', fontSize: '11px' }}>{errors.comprimento.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Largura (cm)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 15.00"
+                      {...register('largura')}
+                    />
+                    {errors.largura && <span style={{ color: 'red', fontSize: '11px' }}>{errors.largura.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Altura (cm)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 10.00"
+                      {...register('altura')}
+                    />
+                    {errors.altura && <span style={{ color: 'red', fontSize: '11px' }}>{errors.altura.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Volume (cm³)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 3000.00"
+                      {...register('volume')}
+                    />
+                    {errors.volume && <span style={{ color: 'red', fontSize: '11px' }}>{errors.volume.message}</span>}
+                  </FormGroup>
+                </FormGrid4>
+              </FormSection>
+
+              {/* Seção: Validade */}
+              <FormSection>
+                <SectionTitle>Validade</SectionTitle>
+                <FormGrid2>
+                  <FormGroup>
+                    <Label>Prazo de Validade</Label>
+                    <Input
+                      type="number"
+                      placeholder="Ex: 12"
+                      {...register('prazo_validade')}
+                    />
+                    {errors.prazo_validade && <span style={{ color: 'red', fontSize: '11px' }}>{errors.prazo_validade.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Unidade de Validade</Label>
+                    <Select {...register('unidade_validade')}>
+                      <option value="">Selecione...</option>
+                      <option value="DIAS">Dias</option>
+                      <option value="SEMANAS">Semanas</option>
+                      <option value="MESES">Meses</option>
+                      <option value="ANOS">Anos</option>
+                    </Select>
+                    {errors.unidade_validade && <span style={{ color: 'red', fontSize: '11px' }}>{errors.unidade_validade.message}</span>}
+                  </FormGroup>
+                </FormGrid2>
+              </FormSection>
+
+              {/* Seção: Tributação */}
+              <FormSection>
+                <SectionTitle>Tributação</SectionTitle>
+                <FormGrid4>
+                  <FormGroup>
+                    <Label>NCM</Label>
+                    <Input
+                      type="text"
+                      placeholder="Classificação NCM"
+                      {...register('ncm')}
+                    />
+                    {errors.ncm && <span style={{ color: 'red', fontSize: '11px' }}>{errors.ncm.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>CEST</Label>
+                    <Input
+                      type="text"
+                      placeholder="Código CEST"
+                      {...register('cest')}
+                    />
+                    {errors.cest && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cest.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>CFOP</Label>
+                    <Input
+                      type="text"
+                      placeholder="Código CFOP"
+                      {...register('cfop')}
+                    />
+                    {errors.cfop && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cfop.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Origem</Label>
+                    <Input
+                      type="text"
+                      placeholder="Origem"
+                      {...register('origem')}
+                    />
+                    {errors.origem && <span style={{ color: 'red', fontSize: '11px' }}>{errors.origem.message}</span>}
+                  </FormGroup>
+                </FormGrid4>
+
+                <FormGrid4>
+                  <FormGroup>
+                    <Label>CST ICMS</Label>
+                    <Input
+                      type="text"
+                      placeholder="CST ICMS"
+                      {...register('cst_icms')}
+                    />
+                    {errors.cst_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cst_icms.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>CSOSN</Label>
+                    <Input
+                      type="text"
+                      placeholder="CSOSN"
+                      {...register('csosn')}
+                    />
+                    {errors.csosn && <span style={{ color: 'red', fontSize: '11px' }}>{errors.csosn.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Alíquota ICMS (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 18.00"
+                      {...register('aliquota_icms')}
+                    />
+                    {errors.aliquota_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_icms.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Alíquota IPI (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 5.00"
+                      {...register('aliquota_ipi')}
+                    />
+                    {errors.aliquota_ipi && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_ipi.message}</span>}
+                  </FormGroup>
+                </FormGrid4>
+
+                <FormGrid2>
+                  <FormGroup>
+                    <Label>Alíquota PIS (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 1.65"
+                      {...register('aliquota_pis')}
+                    />
+                    {errors.aliquota_pis && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_pis.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Alíquota COFINS (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ex: 7.60"
+                      {...register('aliquota_cofins')}
+                    />
+                    {errors.aliquota_cofins && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_cofins.message}</span>}
+                  </FormGroup>
+                </FormGrid2>
+              </FormSection>
+
+              {/* Seção: Comercial */}
+              <FormSection>
+                <SectionTitle>Comercial</SectionTitle>
+                <FormGrid4>
+                  <FormGroup>
+                    <Label>Preço de Custo</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('preco_custo', { min: 0 })}
+                    />
+                    {errors.preco_custo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_custo.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Preço de Venda *</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('preco_venda', { 
+                        required: 'Preço de venda é obrigatório',
+                        min: 0 
+                      })}
+                    />
+                    {errors.preco_venda && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_venda.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Estoque Mínimo</Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...register('estoque_minimo', { min: 0 })}
+                    />
+                    {errors.estoque_minimo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_minimo.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Estoque Atual</Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...register('estoque_atual', { min: 0 })}
+                    />
+                    {errors.estoque_atual && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_atual.message}</span>}
+                  </FormGroup>
+                </FormGrid4>
+
+                <FormGrid2>
+                  <FormGroup>
+                    <Label>Fornecedor</Label>
+                    <Select {...register('fornecedor_id')}>
+                      <option value="">Selecione...</option>
+                      {fornecedores.map(fornecedor => (
+                        <option key={fornecedor.id} value={fornecedor.id}>
+                          {fornecedor.razao_social}
+                        </option>
+                      ))}
+                    </Select>
+                    {errors.fornecedor_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fornecedor_id.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Status</Label>
+                    <Select {...register('status', { required: 'Status é obrigatório' })}>
+                      <option value="">Selecione...</option>
+                      <option value="1">Ativo</option>
+                      <option value="0">Inativo</option>
+                    </Select>
+                    {errors.status && <span style={{ color: 'red', fontSize: '11px' }}>{errors.status.message}</span>}
+                  </FormGroup>
+                </FormGrid2>
+              </FormSection>
+
+              {/* Seção: Informações Adicionais */}
+              <FormSection>
+                <SectionTitle>Informações Adicionais</SectionTitle>
                 <FormGroup>
-                  <Label>Código de Barras</Label>
-                  <Input
-                    type="text"
-                    placeholder="Código de barras do produto"
-                    {...register('codigo_barras')}
+                  <Label>Informações Adicionais</Label>
+                  <TextArea
+                    placeholder="Ex: PRODUTO COM 5% DE GORDURA"
+                    {...register('informacoes_adicionais')}
                   />
-                  {errors.codigo_barras && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_barras.message}</span>}
-                </FormGroup>
-              </div>
-
-              <FormGroup>
-                <Label>Descrição</Label>
-                <TextArea
-                  placeholder="Descrição detalhada do produto..."
-                  {...register('descricao')}
-                />
-                {errors.descricao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.descricao.message}</span>}
-              </FormGroup>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
-                <FormGroup>
-                  <Label>Preço de Custo</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    {...register('preco_custo', { min: 0 })}
-                  />
-                  {errors.preco_custo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_custo.message}</span>}
+                  {errors.informacoes_adicionais && <span style={{ color: 'red', fontSize: '11px' }}>{errors.informacoes_adicionais.message}</span>}
                 </FormGroup>
 
-                <FormGroup>
-                  <Label>Preço de Venda *</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    {...register('preco_venda', { 
-                      required: 'Preço de venda é obrigatório',
-                      min: 0 
-                    })}
-                  />
-                  {errors.preco_venda && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_venda.message}</span>}
-                </FormGroup>
+                <FormGrid2>
+                  <FormGroup>
+                    <Label>Registro Específico</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
+                      {...register('registro_especifico')}
+                    />
+                    {errors.registro_especifico && <span style={{ color: 'red', fontSize: '11px' }}>{errors.registro_especifico.message}</span>}
+                  </FormGroup>
 
-                <FormGroup>
-                  <Label>Estoque Mínimo</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    {...register('estoque_minimo', { min: 0 })}
-                  />
-                  {errors.estoque_minimo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_minimo.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Estoque Atual</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    {...register('estoque_atual', { min: 0 })}
-                  />
-                  {errors.estoque_atual && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_atual.message}</span>}
-                </FormGroup>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
-                <FormGroup>
-                  <Label>Fornecedor</Label>
-                  <Select {...register('id_fornecedor')}>
-                    <option value="">Selecione...</option>
-                    {fornecedores.map(fornecedor => (
-                      <option key={fornecedor.id} value={fornecedor.id}>
-                        {fornecedor.razao_social}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.id_fornecedor && <span style={{ color: 'red', fontSize: '11px' }}>{errors.id_fornecedor.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Grupo</Label>
-                  <Select {...register('grupo_id')}>
-                    <option value="">Selecione...</option>
-                    {grupos.map(grupo => (
-                      <option key={grupo.id} value={grupo.id}>
-                        {grupo.nome}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.grupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.grupo_id.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Unidade</Label>
-                  <Select {...register('unidade_id')}>
-                    <option value="">Selecione...</option>
-                    {unidades.map(unidade => (
-                      <option key={unidade.id} value={unidade.id}>
-                        {unidade.nome}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.unidade_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.unidade_id.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Status</Label>
-                  <Select {...register('status', { required: 'Status é obrigatório' })}>
-                    <option value="">Selecione...</option>
-                    <option value="1">Ativo</option>
-                    <option value="0">Inativo</option>
-                  </Select>
-                  {errors.status && <span style={{ color: 'red', fontSize: '11px' }}>{errors.status.message}</span>}
-                </FormGroup>
-              </div>
+                  <FormGroup>
+                    <Label>Foto do Produto</Label>
+                    <Input
+                      type="text"
+                      placeholder="Caminho da foto"
+                      {...register('foto_produto')}
+                    />
+                    {errors.foto_produto && <span style={{ color: 'red', fontSize: '11px' }}>{errors.foto_produto.message}</span>}
+                  </FormGroup>
+                </FormGrid2>
+              </FormSection>
 
               <ButtonGroup>
                 <Button type="button" className="secondary" onClick={handleCloseModal}>
