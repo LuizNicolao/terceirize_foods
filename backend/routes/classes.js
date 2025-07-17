@@ -126,12 +126,16 @@ router.post('/', [
       return res.status(400).json({ error: 'Classe já cadastrada neste subgrupo' });
     }
 
-    // Inserir classe
-    console.log('Tentando inserir com params:', [nome, subgrupoId, status]);
+    // Buscar próximo ID disponível
+    const maxIdResult = await executeQuery('SELECT MAX(id) as maxId FROM classes');
+    const nextId = (maxIdResult[0].maxId || 0) + 1;
+    
+    // Inserir classe com ID manual
+    console.log('Tentando inserir com params:', [nextId, nome, subgrupoId, status]);
     const result = await executeQuery(
-      `INSERT INTO classes (nome, subgrupo_id, status)
-       VALUES (?, ?, ?)`,
-      [nome, subgrupoId, status]
+      `INSERT INTO classes (id, nome, subgrupo_id, status)
+       VALUES (?, ?, ?, ?)`,
+      [nextId, nome, subgrupoId, status]
     );
 
     console.log('Resultado da inserção:', result);
