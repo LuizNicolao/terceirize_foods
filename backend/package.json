@@ -21,6 +21,7 @@
     "xlsx": "^0.18.5",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
+    "puppeteer": "^21.5.2",
     "express-session": "^1.17.3",
     "cookie-parser": "^1.4.6"
   },

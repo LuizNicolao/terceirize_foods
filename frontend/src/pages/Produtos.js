@@ -877,6 +877,35 @@ const Produtos = () => {
     }).format(price);
   };
 
+  // Imprimir produto em PDF
+  const handlePrintProduto = async () => {
+    if (!editingProduto) {
+      toast.error('Nenhum produto selecionado para impressão');
+      return;
+    }
+
+    try {
+      // Fazer download do PDF do produto
+      const response = await api.get(`/produtos/${editingProduto.id}/pdf`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `produto_${editingProduto.nome.replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Produto impresso com sucesso!');
+    } catch (error) {
+      console.error('Erro ao imprimir produto:', error);
+      toast.error('Erro ao imprimir produto');
+    }
+  };
+
 
 
   // Buscar nome do grupo
@@ -1464,7 +1493,7 @@ const Produtos = () => {
 
                       <Button
                         type="button"
-                        onClick={() => {/* Função de impressão */}}
+                        onClick={handlePrintProduto}
                         style={{ 
                           backgroundColor: '#f5f5f5', 
                           color: '#666',

@@ -13,6 +13,7 @@ import Grupos from './pages/Grupos';
 import Subgrupos from './pages/Subgrupos';
 import Unidades from './pages/Unidades';
 import Permissoes from './pages/Permissoes';
+import Classes from './pages/Classes';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -139,6 +140,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="permissoes">
               <Permissoes />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/classes" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="classes">
+              <Classes />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 
