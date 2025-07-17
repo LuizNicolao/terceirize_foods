@@ -318,7 +318,8 @@ const Fornecedores = () => {
     dataInicio: '',
     dataFim: '',
     acao: '',
-    usuario_id: ''
+    usuario_id: '',
+    periodo: ''
   });
 
   const {
@@ -354,12 +355,38 @@ const Fornecedores = () => {
       
       const params = new URLSearchParams();
       
-      if (auditFilters.dataInicio) {
-        params.append('data_inicio', auditFilters.dataInicio);
+      // Aplicar filtro de período se selecionado
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        // Usar filtros manuais se período não estiver selecionado
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
       }
-      if (auditFilters.dataFim) {
-        params.append('data_fim', auditFilters.dataFim);
-      }
+      
       if (auditFilters.acao) {
         params.append('acao', auditFilters.acao);
       }
@@ -394,7 +421,8 @@ const Fornecedores = () => {
       dataInicio: '',
       dataFim: '',
       acao: '',
-      usuario_id: ''
+      usuario_id: '',
+      periodo: ''
     });
   };
 
@@ -886,7 +914,7 @@ const Fornecedores = () => {
       {/* Modal de Auditoria */}
       {showAuditModal && (
         <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', maxHeight: '80vh' }}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
             <ModalHeader>
               <ModalTitle>Relatório de Auditoria - Fornecedores</ModalTitle>
               <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
@@ -895,7 +923,7 @@ const Fornecedores = () => {
             {/* Filtros de Auditoria */}
             <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
               <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
                     Data Início
@@ -947,6 +975,22 @@ const Fornecedores = () => {
                     {/* Aqui você pode adicionar a lista de usuários se necessário */}
                   </select>
                 </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Período
+                  </label>
+                  <select
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Período personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos os registros</option>
+                  </select>
+                </div>
               </div>
               <button
                 onClick={handleApplyAuditFilters}
@@ -965,7 +1009,7 @@ const Fornecedores = () => {
             </div>
 
             {/* Lista de Logs */}
-            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
               {auditLoading ? (
                 <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
               ) : auditLogs.length === 0 ? (
