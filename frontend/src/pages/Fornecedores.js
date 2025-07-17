@@ -421,6 +421,45 @@ const Fornecedores = () => {
     return actions[action] || action;
   };
 
+  // Obter label do campo
+  const getFieldLabel = (field) => {
+    const labels = {
+      'razao_social': 'Razão Social',
+      'nome_fantasia': 'Nome Fantasia',
+      'cnpj': 'CNPJ',
+      'email': 'Email',
+      'telefone': 'Telefone',
+      'logradouro': 'Logradouro',
+      'numero': 'Número',
+      'bairro': 'Bairro',
+      'municipio': 'Município',
+      'uf': 'UF',
+      'cep': 'CEP',
+      'status': 'Status'
+    };
+    return labels[field] || field;
+  };
+
+  // Formatar valor do campo
+  const formatFieldValue = (field, value) => {
+    if (value === null || value === undefined || value === '') {
+      return 'Não informado';
+    }
+
+    switch (field) {
+      case 'cnpj':
+        return formatCNPJ(value);
+      case 'telefone':
+        return formatPhone(value);
+      case 'status':
+        return value === 1 ? 'Ativo' : 'Inativo';
+      case 'email':
+        return value;
+      default:
+        return value;
+    }
+  };
+
   // Abrir modal para adicionar fornecedor
   const handleAddFornecedor = () => {
     setEditingFornecedor(null);
@@ -978,24 +1017,74 @@ const Fornecedores = () => {
                         <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
                           {log.detalhes.changes && (
                             <div style={{ marginBottom: '8px' }}>
-                              <strong>Mudanças:</strong>
-                              {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                <div key={field} style={{ marginLeft: '12px', marginTop: '4px' }}>
-                                  <span style={{ fontWeight: 'bold' }}>{field}:</span> 
-                                  <span style={{ color: '#721c24' }}> {change.from}</span> → 
-                                  <span style={{ color: '#2e7d32' }}> {change.to}</span>
-                                </div>
-                              ))}
+                              <strong>Mudanças Realizadas:</strong>
+                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
+                                {Object.entries(log.detalhes.changes).map(([field, change]) => (
+                                  <div key={field} style={{ 
+                                    marginBottom: '6px', 
+                                    padding: '8px', 
+                                    background: '#f8f9fa', 
+                                    borderRadius: '4px',
+                                    border: '1px solid #e9ecef'
+                                  }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
+                                      {getFieldLabel(field)}:
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
+                                      <span style={{ color: '#721c24' }}>
+                                        <strong>Antes:</strong> {formatFieldValue(field, change.from)}
+                                      </span>
+                                      <span style={{ color: '#6c757d' }}>→</span>
+                                      <span style={{ color: '#2e7d32' }}>
+                                        <strong>Depois:</strong> {formatFieldValue(field, change.to)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
-                              <strong>Dados:</strong> {JSON.stringify(log.detalhes.requestBody, null, 2)}
+                              <strong>Dados do Fornecedor:</strong>
+                              <div style={{ 
+                                marginLeft: '12px', 
+                                marginTop: '8px',
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '8px'
+                              }}>
+                                {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
+                                  <div key={field} style={{ 
+                                    padding: '6px 8px', 
+                                    background: '#f8f9fa', 
+                                    borderRadius: '4px',
+                                    border: '1px solid #e9ecef',
+                                    fontSize: '11px'
+                                  }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
+                                      {getFieldLabel(field)}:
+                                    </div>
+                                    <div style={{ color: '#2e7d32' }}>
+                                      {formatFieldValue(field, value)}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                           {log.detalhes.resourceId && (
-                            <div>
-                              <strong>ID do Recurso:</strong> {log.detalhes.resourceId}
+                            <div style={{ 
+                              marginTop: '8px', 
+                              padding: '6px 8px', 
+                              background: '#e3f2fd', 
+                              borderRadius: '4px',
+                              fontSize: '11px'
+                            }}>
+                              <strong>ID do Fornecedor:</strong> 
+                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
+                                #{log.detalhes.resourceId}
+                              </span>
                             </div>
                           )}
                         </div>
