@@ -38,6 +38,9 @@ router.get('/test', async (req, res) => {
       total: result[0].total 
     });
   } catch (error) {
+    console.error('=== ERRO NO TESTE ===');
+    console.error('Erro ao testar tabela:', error);
+    console.error('Stack trace:', error.stack);
     res.status(500).json({ 
       error: 'Erro ao acessar tabela de auditoria',
       message: error.message 
@@ -63,6 +66,9 @@ router.get('/test-function', async (req, res) => {
       } : null
     });
   } catch (error) {
+    console.error('=== ERRO NO TESTE DA FUNÇÃO ===');
+    console.error('Erro ao testar getAuditLogs:', error);
+    console.error('Stack trace:', error.stack);
     res.status(500).json({ 
       error: 'Erro na função getAuditLogs',
       message: error.message 
@@ -73,11 +79,21 @@ router.get('/test-function', async (req, res) => {
 // Listar logs de auditoria
 router.get('/', async (req, res) => {
   try {
+    console.log('=== INÍCIO DA REQUISIÇÃO DE AUDITORIA ===');
+    console.log('Usuário atual:', {
+      id: req.user.id,
+      nome: req.user.nome,
+      tipo_de_acesso: req.user.tipo_de_acesso,
+      nivel_de_acesso: req.user.nivel_de_acesso
+    });
+
     // Verificar se usuário tem permissão para visualizar auditoria
     if (req.user.tipo_de_acesso !== 'administrador' && 
         !(req.user.tipo_de_acesso === 'coordenador' && req.user.nivel_de_acesso === 'III')) {
       return res.status(403).json({ error: 'Acesso negado. Apenas administradores e coordenadores nível III podem visualizar logs de auditoria.' });
     }
+
+    console.log('Usuário tem permissão, buscando logs...');
 
     // Buscar logs diretamente sem filtros complexos
     const { 
@@ -90,7 +106,9 @@ router.get('/', async (req, res) => {
       offset: parseInt(offset)
     };
 
+    console.log('Buscando logs de auditoria com filtros:', filters);
     const logs = await getAuditLogs(filters);
+    console.log('Logs encontrados:', logs.length);
 
     res.json({
       logs,
@@ -99,6 +117,9 @@ router.get('/', async (req, res) => {
     });
 
   } catch (error) {
+    console.error('=== ERRO NA AUDITORIA ===');
+    console.error('Erro ao buscar logs de auditoria:', error);
+    console.error('Stack trace:', error.stack);
     res.status(500).json({ 
       error: 'Erro interno do servidor',
       message: error.message 
@@ -132,6 +153,7 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
     });
 
   } catch (error) {
+    console.error('Erro ao buscar logs de auditoria do usuário:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -193,6 +215,7 @@ router.get('/estatisticas', checkPermission('visualizar'), async (req, res) => {
     });
 
   } catch (error) {
+    console.error('Erro ao buscar estatísticas de auditoria:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });

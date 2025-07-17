@@ -35,6 +35,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     res.json(users);
 
   } catch (error) {
+    console.error('Erro ao listar usuários:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -56,6 +57,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
     res.json(users[0]);
 
   } catch (error) {
+    console.error('Erro ao buscar usuário:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -108,7 +110,9 @@ router.post('/', [
     // Criar permissões padrão para o novo usuário
     try {
       await atualizarPermissoesPorTipoNivel(result.insertId, tipo_de_acesso, nivel_de_acesso);
+      console.log('Permissões padrão criadas para novo usuário');
     } catch (error) {
+      console.error('Erro ao criar permissões padrão:', error);
       // Não falhar a criação do usuário se a criação de permissões falhar
     }
 
@@ -118,6 +122,7 @@ router.post('/', [
     });
 
   } catch (error) {
+    console.error('Erro ao criar usuário:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -220,9 +225,13 @@ router.put('/:id', [
       const finalTipo = tipo_de_acesso || updatedUser[0].tipo_de_acesso;
       const finalNivel = nivel_de_acesso || updatedUser[0].nivel_de_acesso;
       
+      console.log(`Atualizando permissões para usuário ${id}: ${finalTipo} - ${finalNivel}`);
+      
       try {
         await atualizarPermissoesPorTipoNivel(id, finalTipo, finalNivel);
+        console.log('Permissões atualizadas com sucesso');
       } catch (error) {
+        console.error('Erro ao atualizar permissões:', error);
         // Não falhar a atualização do usuário se a atualização de permissões falhar
       }
     }
@@ -233,6 +242,7 @@ router.put('/:id', [
     });
 
   } catch (error) {
+    console.error('Erro ao atualizar usuário:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -265,6 +275,7 @@ router.delete('/:id', [
     res.json({ message: 'Usuário excluído com sucesso' });
 
   } catch (error) {
+    console.error('Erro ao excluir usuário:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });

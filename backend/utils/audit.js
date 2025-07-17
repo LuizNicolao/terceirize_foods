@@ -29,7 +29,10 @@ const logAction = async (userId, action, resource, details = null, ip = null) =>
       details ? JSON.stringify(details) : null,
       ip
     ]);
+    
+    console.log(`Auditoria: Usuário ${userId} executou ${action} em ${resource}`);
   } catch (error) {
+    console.error('Erro ao registrar auditoria:', error);
     // Não falhar a operação principal se a auditoria falhar
   }
 };
@@ -105,7 +108,7 @@ const auditChangesMiddleware = (action, resource) => {
           originalData = result[0];
         }
       } catch (error) {
-        // Silenciar erro ao capturar dados originais
+        console.error('Erro ao capturar dados originais:', error);
       }
     }
     
@@ -178,6 +181,8 @@ const auditChangesMiddleware = (action, resource) => {
 const getAuditLogs = async (filters = {}) => {
   try {
     const { executeQuery } = require('../config/database');
+    console.log('=== INÍCIO DA FUNÇÃO getAuditLogs ===');
+    console.log('Filtros recebidos:', filters);
     
     // Query com filtros e JOIN com usuários
     const limit = parseInt(filters.limit) || 100;
@@ -198,10 +203,12 @@ const getAuditLogs = async (filters = {}) => {
     // Filtro por período
     if (filters.data_inicio) {
       whereConditions.push(`DATE(a.timestamp) >= '${filters.data_inicio}'`);
+      console.log('Filtro data_inicio adicionado:', filters.data_inicio);
     }
     
     if (filters.data_fim) {
       whereConditions.push(`DATE(a.timestamp) <= '${filters.data_fim}'`);
+      console.log('Filtro data_fim adicionado:', filters.data_fim);
     }
     
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
@@ -224,7 +231,22 @@ const getAuditLogs = async (filters = {}) => {
       LIMIT ${limit} OFFSET ${offset}
     `;
     
+    console.log('Query final:', query);
+    console.log('Where conditions:', whereConditions);
+    
     const logs = await executeQuery(query);
+    console.log('Logs brutos encontrados:', logs.length);
+    
+    if (logs.length > 0) {
+      console.log('Primeiro log:', {
+        id: logs[0].id,
+        usuario_id: logs[0].usuario_id,
+        acao: logs[0].acao,
+        recurso: logs[0].recurso,
+        detalhes_type: typeof logs[0].detalhes,
+        detalhes_length: logs[0].detalhes ? logs[0].detalhes.length : 0
+      });
+    }
     
     // Processar logs com tratamento de erro mais robusto
     const processedLogs = logs.map((log, index) => {
@@ -243,6 +265,8 @@ const getAuditLogs = async (filters = {}) => {
           detalhes: detalhes
         };
       } catch (parseError) {
+        console.error(`Erro ao processar log ${index}:`, parseError);
+        console.error('Log problemático:', log);
         return {
           ...log,
           detalhes: null
@@ -250,9 +274,13 @@ const getAuditLogs = async (filters = {}) => {
       }
     });
     
+    console.log('Logs processados com sucesso:', processedLogs.length);
     return processedLogs;
     
   } catch (error) {
+    console.error('=== ERRO NA FUNÇÃO getAuditLogs ===');
+    console.error('Erro ao buscar logs de auditoria:', error);
+    console.error('Stack trace:', error.stack);
     throw error;
   }
 };
