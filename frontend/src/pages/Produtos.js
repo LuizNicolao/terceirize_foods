@@ -224,14 +224,14 @@ const FirstRow = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
 `;
 
 const SecondRow = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
-  align-items: start;
+  align-items: stretch;
 `;
 
 const FormGroup = styled.div`
@@ -347,7 +347,9 @@ const FormSection = styled.div`
   border-radius: 8px;
   padding: 14px;
   background: #fafafa;
-  height: fit-content;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
 `;
 
 const SectionTitle = styled.h3`
@@ -364,6 +366,7 @@ const FormGrid = styled.div`
   grid-template-columns: 1fr;
   gap: 8px;
   margin-bottom: 8px;
+  flex: 1;
 `;
 
 const FormGrid2 = styled.div`
