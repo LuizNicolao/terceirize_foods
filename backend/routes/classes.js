@@ -75,98 +75,40 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
   }
 });
 
-// Criar classe
-router.post('/', [
-  checkPermission('criar'),
-  body('nome').isLength({ min: 2 }).withMessage('Nome deve ter pelo menos 2 caracteres'),
-  body('subgrupo_id').notEmpty().withMessage('Subgrupo é obrigatório'),
-  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
-], async (req, res) => {
+// Criar classe - Versão simplificada para teste
+router.post('/', async (req, res) => {
   try {
-    console.log('Iniciando criação de classe...');
+    console.log('=== TESTE SIMPLIFICADO ===');
     console.log('Body recebido:', req.body);
     
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      console.log('Erros de validação:', errors.array());
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
-
-    const {
-      nome, subgrupo_id, status = 1
-    } = req.body;
-
-    console.log('Dados extraídos:', { nome, subgrupo_id, status });
-
-    // Converter subgrupo_id para número
-    const subgrupoId = parseInt(subgrupo_id);
-    if (isNaN(subgrupoId) || subgrupoId < 1) {
-      return res.status(400).json({ error: 'Subgrupo inválido' });
-    }
-
-    console.log('Subgrupo ID convertido:', subgrupoId);
-
-    // Verificar se subgrupo existe
-    console.log('Verificando se subgrupo existe...');
-    const subgrupo = await executeQuery(
-      'SELECT id FROM subgrupos WHERE id = ?',
-      [subgrupoId]
-    );
-
-    console.log('Resultado da busca do subgrupo:', subgrupo);
-
-    if (subgrupo.length === 0) {
-      return res.status(400).json({ error: 'Subgrupo não encontrado' });
-    }
-
-    // Verificar se classe já existe no mesmo subgrupo
-    console.log('Verificando se classe já existe...');
-    const existingClasse = await executeQuery(
-      'SELECT id FROM classes WHERE nome = ? AND subgrupo_id = ?',
-      [nome, subgrupoId]
-    );
-
-    console.log('Resultado da busca de classe existente:', existingClasse);
-
-    if (existingClasse.length > 0) {
-      return res.status(400).json({ error: 'Classe já cadastrada neste subgrupo' });
-    }
-
-    // Inserir classe
-    console.log('Inserindo nova classe...');
-    console.log('Query params:', [nome, subgrupoId, status]);
+    const { nome, subgrupo_id, status = 1 } = req.body;
     
+    console.log('Dados extraídos:', { nome, subgrupo_id, status });
+    
+    // Teste simples de inserção
     const result = await executeQuery(
-      `INSERT INTO classes (nome, subgrupo_id, status)
-       VALUES (?, ?, ?)`,
-      [nome, subgrupoId, status]
+      'INSERT INTO classes (nome, subgrupo_id, status) VALUES (?, ?, ?)',
+      [nome, subgrupo_id, status]
     );
-
-    console.log('Resultado da inserção:', result);
-
-    const newClasse = await executeQuery(
-      `SELECT c.*, s.nome as subgrupo_nome, g.nome as grupo_nome
-       FROM classes c
-       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
-       LEFT JOIN grupos g ON s.grupo_id = g.id
-       WHERE c.id = ?`,
-      [result.insertId]
-    );
-
+    
+    console.log('Inserção realizada com sucesso:', result);
+    
     res.status(201).json({
       message: 'Classe criada com sucesso',
-      classe: newClasse[0]
+      id: result.insertId
     });
 
   } catch (error) {
-    console.error('Erro ao criar classe:', error);
-    console.error('Stack trace:', error.stack);
+    console.error('=== ERRO DETALHADO ===');
+    console.error('Mensagem:', error.message);
+    console.error('Stack:', error.stack);
+    console.error('Código:', error.code);
+    console.error('SQL State:', error.sqlState);
+    
     res.status(500).json({ 
       error: 'Erro interno do servidor',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: error.message,
+      code: error.code
     });
   }
 });
