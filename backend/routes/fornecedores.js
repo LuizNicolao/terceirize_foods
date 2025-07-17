@@ -3,11 +3,116 @@ const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
+const axios = require('axios');
 
 const router = express.Router();
 
 // Aplicar autenticação em todas as rotas
 router.use(authenticateToken);
+
+// Buscar dados do CNPJ
+router.get('/buscar-cnpj/:cnpj', checkPermission('visualizar'), async (req, res) => {
+  try {
+    const { cnpj } = req.params;
+    
+    // Limpar CNPJ (remover pontos, traços e barras)
+    const cnpjLimpo = cnpj.replace(/\D/g, '');
+    
+    if (cnpjLimpo.length !== 14) {
+      return res.status(400).json({ error: 'CNPJ deve ter 14 dígitos' });
+    }
+
+    // Tentar múltiplas APIs para maior confiabilidade
+    let dadosCNPJ = null;
+    
+    // API 1: Receita Federal (via proxy)
+    try {
+      const response = await axios.get(`https://api-publica.speedio.com.br/buscarcnpj?cnpj=${cnpjLimpo}`, {
+        timeout: 10000
+      });
+      
+      if (response.data && response.data.success && response.data.result) {
+        dadosCNPJ = response.data.result;
+      }
+    } catch (error) {
+      console.log('API 1 falhou, tentando API 2...');
+    }
+
+    // API 2: API alternativa
+    if (!dadosCNPJ) {
+      try {
+        const response = await axios.get(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`, {
+          timeout: 10000
+        });
+        
+        if (response.data) {
+          dadosCNPJ = {
+            razao_social: response.data.razao_social,
+            nome_fantasia: response.data.nome_fantasia,
+            logradouro: response.data.logradouro,
+            numero: response.data.numero,
+            bairro: response.data.bairro,
+            municipio: response.data.municipio,
+            uf: response.data.uf,
+            cep: response.data.cep,
+            telefone: response.data.ddd_telefone_1 ? `${response.data.ddd_telefone_1}${response.data.telefone_1}` : null,
+            email: response.data.email
+          };
+        }
+      } catch (error) {
+        console.log('API 2 falhou, tentando API 3...');
+      }
+    }
+
+    // API 3: API de fallback
+    if (!dadosCNPJ) {
+      try {
+        const response = await axios.get(`https://api.cnpjs.rocks/cnpj/${cnpjLimpo}`, {
+          timeout: 10000
+        });
+        
+        if (response.data && response.data.estabelecimento) {
+          const estabelecimento = response.data.estabelecimento;
+          const empresa = response.data.empresa;
+          
+          dadosCNPJ = {
+            razao_social: empresa.razao_social,
+            nome_fantasia: estabelecimento.nome_fantasia,
+            logradouro: estabelecimento.logradouro,
+            numero: estabelecimento.numero,
+            bairro: estabelecimento.bairro,
+            municipio: estabelecimento.cidade?.nome,
+            uf: estabelecimento.estado?.sigla,
+            cep: estabelecimento.cep,
+            telefone: estabelecimento.telefone1,
+            email: estabelecimento.email
+          };
+        }
+      } catch (error) {
+        console.log('Todas as APIs falharam');
+      }
+    }
+
+    if (dadosCNPJ) {
+      res.json({
+        success: true,
+        data: dadosCNPJ
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'CNPJ não encontrado ou dados indisponíveis'
+      });
+    }
+
+  } catch (error) {
+    console.error('Erro ao buscar CNPJ:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+});
 
 // Listar fornecedores
 router.get('/', checkPermission('visualizar'), async (req, res) => {
