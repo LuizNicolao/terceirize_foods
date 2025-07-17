@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog, FaSearch, FaSync, FaChevronDown, FaQuestionCircle } from 'react-icons/fa';
+import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog, FaSearch, FaSync, FaChevronDown, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
@@ -385,6 +385,30 @@ const AuditModalTitle = styled.h2`
   margin: 0;
 `;
 
+const AuditExportButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--primary-green);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--dark-green);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
 const AuditModalClose = styled.button`
   background: none;
   border: none;
@@ -747,6 +771,140 @@ const Permissoes = () => {
   // Aplicar filtros de auditoria
   const handleApplyAuditFilters = () => {
     loadAuditLogs();
+  };
+
+  // Exportar auditoria para XLSX
+  const handleExportXLSX = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      // Aplicar filtros atuais
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para permissões
+      params.append('recurso', 'permissoes');
+      
+      // Fazer download do arquivo
+      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `auditoria_permissoes_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Relatório exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar XLSX:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  // Exportar auditoria para PDF
+  const handleExportPDF = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      // Aplicar filtros atuais
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para permissões
+      params.append('recurso', 'permissoes');
+      
+      // Fazer download do arquivo
+      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `auditoria_permissoes_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Relatório exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar relatório');
+    }
   };
 
   // Formatar data
@@ -1219,9 +1377,19 @@ const Permissoes = () => {
           <AuditModalContent>
             <AuditModalHeader>
               <AuditModalTitle>Auditoria de Permissões</AuditModalTitle>
-              <AuditModalClose onClick={handleCloseAuditModal}>
-                <FaTimes />
-              </AuditModalClose>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <AuditExportButton onClick={handleExportXLSX} title="Exportar para Excel">
+                  <FaFileExcel />
+                  Excel
+                </AuditExportButton>
+                <AuditExportButton onClick={handleExportPDF} title="Exportar para PDF">
+                  <FaFilePdf />
+                  PDF
+                </AuditExportButton>
+                <AuditModalClose onClick={handleCloseAuditModal}>
+                  <FaTimes />
+                </AuditModalClose>
+              </div>
             </AuditModalHeader>
 
             <AuditFiltersContainer>
