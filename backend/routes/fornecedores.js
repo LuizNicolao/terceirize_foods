@@ -138,16 +138,40 @@ router.post('/', [
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'fornecedores'),
   body('cnpj').custom((value) => {
+    if (!value) {
+      throw new Error('CNPJ é obrigatório');
+    }
     const cnpjLimpo = value.replace(/\D/g, '');
     if (cnpjLimpo.length !== 14) {
       throw new Error('CNPJ deve ter 14 dígitos');
     }
     return true;
   }).withMessage('CNPJ inválido'),
-  body('razao_social').trim().isLength({ min: 3 }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
-  body('email').optional().trim().isEmail().withMessage('Email inválido'),
+  body('razao_social').custom((value) => {
+    if (!value || value.trim().length < 3) {
+      throw new Error('Razão social deve ter pelo menos 3 caracteres');
+    }
+    return true;
+  }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
+  body('email').optional().custom((value) => {
+    if (value && value.trim() !== '') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value.trim())) {
+        throw new Error('Email inválido');
+      }
+    }
+    return true;
+  }).withMessage('Email inválido'),
   body('uf').optional().isLength({ min: 2, max: 2 }).withMessage('UF deve ter 2 caracteres'),
-  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
+  body('status').optional().custom((value) => {
+    if (value !== undefined && value !== null && value !== '') {
+      const statusValue = value.toString();
+      if (!['0', '1'].includes(statusValue)) {
+        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
+      }
+    }
+    return true;
+  }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
