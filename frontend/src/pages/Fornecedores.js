@@ -7,6 +7,11 @@ import toast from 'react-hot-toast';
 
 const Container = styled.div`
   padding: 24px;
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 `;
 
 const Header = styled.div`
@@ -321,6 +326,7 @@ const Fornecedores = () => {
     usuario_id: '',
     periodo: ''
   });
+  const [cnpjLoading, setCnpjLoading] = useState(false);
 
   const {
     register,
@@ -755,6 +761,156 @@ const Fornecedores = () => {
     return phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
   };
 
+  // Formatar CNPJ para exibição
+  const formatCNPJDisplay = (cnpj) => {
+    if (!cnpj) return '';
+    const cleaned = cnpj.replace(/\D/g, '');
+    if (cleaned.length === 14) {
+      return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+    }
+    return cnpj;
+  };
+
+  // Formatar CNPJ para input
+  const formatCNPJInput = (cnpj) => {
+    if (!cnpj) return '';
+    const cleaned = cnpj.replace(/\D/g, '');
+    if (cleaned.length <= 14) {
+      return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+    }
+    return cnpj;
+  };
+
+  // Validar CNPJ
+  const validarCNPJ = (cnpj) => {
+    const cnpjLimpo = cnpj.replace(/\D/g, '');
+    
+    if (cnpjLimpo.length !== 14) return false;
+    
+    // Verificar se todos os dígitos são iguais
+    if (/^(\d)\1+$/.test(cnpjLimpo)) return false;
+    
+    // Validar dígitos verificadores
+    let soma = 0;
+    let peso = 2;
+    
+    // Primeiro dígito verificador
+    for (let i = 11; i >= 0; i--) {
+      soma += parseInt(cnpjLimpo.charAt(i)) * peso;
+      peso = peso === 9 ? 2 : peso + 1;
+    }
+    
+    let digito1 = 11 - (soma % 11);
+    if (digito1 > 9) digito1 = 0;
+    
+    if (parseInt(cnpjLimpo.charAt(12)) !== digito1) return false;
+    
+    // Segundo dígito verificador
+    soma = 0;
+    peso = 2;
+    
+    for (let i = 12; i >= 0; i--) {
+      soma += parseInt(cnpjLimpo.charAt(i)) * peso;
+      peso = peso === 9 ? 2 : peso + 1;
+    }
+    
+    let digito2 = 11 - (soma % 11);
+    if (digito2 > 9) digito2 = 0;
+    
+    return parseInt(cnpjLimpo.charAt(13)) === digito2;
+  };
+
+  // Buscar dados do CNPJ via API
+  const buscarDadosCNPJ = async (cnpj) => {
+    try {
+      setCnpjLoading(true);
+      
+      // Limpar CNPJ (remover pontos, traços e barras)
+      const cnpjLimpo = cnpj.replace(/\D/g, '');
+      
+      if (cnpjLimpo.length !== 14) {
+        toast.error('CNPJ deve ter 14 dígitos');
+        return;
+      }
+
+      if (!validarCNPJ(cnpj)) {
+        toast.error('CNPJ inválido');
+        return;
+      }
+
+      // Usar API pública da Receita Federal (via proxy para evitar CORS)
+      const response = await fetch(`https://api-publica.speedio.com.br/buscarcnpj?cnpj=${cnpjLimpo}`);
+      
+      if (!response.ok) {
+        throw new Error('CNPJ não encontrado');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.result) {
+        const result = data.result;
+        
+        // Preencher os campos automaticamente
+        setValue('razao_social', result.razao_social || '');
+        setValue('nome_fantasia', result.nome_fantasia || '');
+        setValue('cnpj', formatCNPJDisplay(cnpjLimpo));
+        setValue('logradouro', result.logradouro || '');
+        setValue('numero', result.numero || '');
+        setValue('bairro', result.bairro || '');
+        setValue('municipio', result.municipio || '');
+        setValue('uf', result.uf || '');
+        setValue('cep', result.cep || '');
+        
+        // Se há telefone, formatar
+        if (result.telefone) {
+          const telefone = result.telefone.replace(/\D/g, '');
+          if (telefone.length === 11) {
+            setValue('telefone', telefone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3'));
+          } else if (telefone.length === 10) {
+            setValue('telefone', telefone.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3'));
+          } else {
+            setValue('telefone', result.telefone);
+          }
+        }
+        
+        // Se há email
+        if (result.email) {
+          setValue('email', result.email);
+        }
+        
+        toast.success('Dados do CNPJ carregados com sucesso!');
+      } else {
+        toast.error('CNPJ não encontrado ou dados indisponíveis');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar CNPJ:', error);
+      toast.error('Erro ao buscar dados do CNPJ. Tente novamente.');
+    } finally {
+      setCnpjLoading(false);
+    }
+  };
+
+  // Função para lidar com mudança no campo CNPJ
+  const handleCNPJChange = (e) => {
+    const value = e.target.value;
+    const formatted = formatCNPJInput(value);
+    setValue('cnpj', formatted);
+    
+    // Se o CNPJ está completo (14 dígitos), buscar dados automaticamente
+    const cnpjLimpo = value.replace(/\D/g, '');
+    if (cnpjLimpo.length === 14 && !editingFornecedor) {
+      // Validar CNPJ antes de buscar
+      if (validarCNPJ(formatted)) {
+        // Aguardar um pouco para o usuário terminar de digitar
+        setTimeout(() => {
+          buscarDadosCNPJ(formatted);
+        }, 1000);
+      } else {
+        toast.error('CNPJ inválido');
+      }
+    }
+  };
+
   if (loading) {
     return (
       <Container>
@@ -900,12 +1056,70 @@ const Fornecedores = () => {
 
               <FormGroup>
                 <Label>CNPJ</Label>
-                <Input
-                  type="text"
-                  placeholder="00.000.000/0000-00"
-                  {...register('cnpj')}
-                />
+                <div style={{ position: 'relative' }}>
+                  <Input
+                    type="text"
+                    placeholder="00.000.000/0000-00"
+                    {...register('cnpj')}
+                    onChange={handleCNPJChange}
+                    style={{ paddingRight: cnpjLoading ? '40px' : '12px' }}
+                  />
+                  {cnpjLoading && (
+                    <div style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      color: 'var(--primary-green)'
+                    }}>
+                      <div style={{
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid #f3f3f3',
+                        borderTop: '2px solid var(--primary-green)',
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite'
+                      }}></div>
+                    </div>
+                  )}
+                </div>
                 {errors.cnpj && <span style={{ color: 'red', fontSize: '12px' }}>{errors.cnpj.message}</span>}
+                {!editingFornecedor && (
+                  <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ color: 'var(--gray)', fontSize: '11px' }}>
+                      Digite o CNPJ completo para buscar dados automaticamente
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const cnpjValue = getValues('cnpj');
+                        if (cnpjValue && cnpjValue.replace(/\D/g, '').length === 14) {
+                          if (validarCNPJ(cnpjValue)) {
+                            buscarDadosCNPJ(cnpjValue);
+                          } else {
+                            toast.error('CNPJ inválido');
+                          }
+                        } else {
+                          toast.error('Digite um CNPJ válido primeiro');
+                        }
+                      }}
+                      style={{
+                        padding: '4px 8px',
+                        background: 'var(--primary-green)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        fontSize: '10px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                      onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                    >
+                      Buscar Dados
+                    </button>
+                  </div>
+                )}
               </FormGroup>
 
               <FormGroup>
