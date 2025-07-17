@@ -36,7 +36,9 @@ services:
       - foods_network
 
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: foods_backend
     restart: always
     ports:
@@ -53,12 +55,11 @@ services:
       - mysql
     networks:
       - foods_network
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: foods_frontend
     restart: always
     ports:
@@ -69,9 +70,6 @@ services:
       - backend
     networks:
       - foods_network
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
 
 volumes:
   mysql_data:
