@@ -332,6 +332,9 @@ const Produtos = () => {
   const [produtos, setProdutos] = useState([]);
   const [fornecedores, setFornecedores] = useState([]);
   const [grupos, setGrupos] = useState([]);
+  const [subgrupos, setSubgrupos] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [marcas, setMarcas] = useState([]);
   const [unidades, setUnidades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -363,16 +366,22 @@ const Produtos = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [produtosRes, fornecedoresRes, gruposRes, unidadesRes] = await Promise.all([
+      const [produtosRes, fornecedoresRes, gruposRes, subgruposRes, classesRes, marcasRes, unidadesRes] = await Promise.all([
         api.get('/produtos'),
         api.get('/fornecedores'),
         api.get('/grupos'),
+        api.get('/subgrupos'),
+        api.get('/classes'),
+        api.get('/marcas'),
         api.get('/unidades')
       ]);
 
       setProdutos(produtosRes.data);
       setFornecedores(fornecedoresRes.data);
       setGrupos(gruposRes.data);
+      setSubgrupos(subgruposRes.data);
+      setClasses(classesRes.data);
+      setMarcas(marcasRes.data);
       setUnidades(unidadesRes.data);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -669,22 +678,58 @@ const Produtos = () => {
   const handleAddProduto = () => {
     setEditingProduto(null);
     reset();
+    setValue('status', '1'); // Define status como "Ativo" por padrão
     setShowModal(true);
   };
 
   // Abrir modal para editar produto
   const handleEditProduto = (produto) => {
     setEditingProduto(produto);
+    setValue('codigo_produto', produto.codigo_produto);
     setValue('nome', produto.nome);
     setValue('descricao', produto.descricao);
     setValue('codigo_barras', produto.codigo_barras);
+    setValue('referencia', produto.referencia);
+    setValue('referencia_externa', produto.referencia_externa);
+    setValue('referencia_mercado', produto.referencia_mercado);
+    setValue('unidade_id', produto.unidade_id);
+    setValue('quantidade', produto.quantidade);
+    setValue('grupo_id', produto.grupo_id);
+    setValue('subgrupo_id', produto.subgrupo_id);
+    setValue('classe_id', produto.classe_id);
+    setValue('marca_id', produto.marca_id);
+    setValue('agrupamento_n3', produto.agrupamento_n3);
+    setValue('agrupamento_n4', produto.agrupamento_n4);
+    setValue('peso_liquido', produto.peso_liquido);
+    setValue('peso_bruto', produto.peso_bruto);
+    setValue('marca', produto.marca);
+    setValue('fabricante', produto.fabricante);
+    setValue('informacoes_adicionais', produto.informacoes_adicionais);
+    setValue('prazo_validade', produto.prazo_validade);
+    setValue('unidade_validade', produto.unidade_validade);
+    setValue('regra_palet_un', produto.regra_palet_un);
+    setValue('ficha_homologacao', produto.ficha_homologacao);
+    setValue('registro_especifico', produto.registro_especifico);
+    setValue('comprimento', produto.comprimento);
+    setValue('largura', produto.largura);
+    setValue('altura', produto.altura);
+    setValue('volume', produto.volume);
+    setValue('integracao_senior', produto.integracao_senior);
+    setValue('ncm', produto.ncm);
+    setValue('cest', produto.cest);
+    setValue('cfop', produto.cfop);
+    setValue('ean', produto.ean);
+    setValue('cst_icms', produto.cst_icms);
+    setValue('csosn', produto.csosn);
+    setValue('aliquota_icms', produto.aliquota_icms);
+    setValue('aliquota_ipi', produto.aliquota_ipi);
+    setValue('aliquota_pis', produto.aliquota_pis);
+    setValue('aliquota_cofins', produto.aliquota_cofins);
     setValue('preco_custo', produto.preco_custo);
     setValue('preco_venda', produto.preco_venda);
-    setValue('estoque_minimo', produto.estoque_minimo);
     setValue('estoque_atual', produto.estoque_atual);
-    setValue('id_fornecedor', produto.id_fornecedor);
-    setValue('grupo_id', produto.grupo_id);
-    setValue('unidade_id', produto.unidade_id);
+    setValue('estoque_minimo', produto.estoque_minimo);
+    setValue('fornecedor_id', produto.fornecedor_id);
     setValue('status', produto.status);
     setShowModal(true);
   };
@@ -731,8 +776,8 @@ const Produtos = () => {
           updateData.estoque_minimo = data.estoque_minimo;
         }
         
-        if (data.id_fornecedor !== editingProduto.id_fornecedor) {
-          updateData.id_fornecedor = data.id_fornecedor;
+        if (data.fornecedor_id !== editingProduto.fornecedor_id) {
+          updateData.fornecedor_id = data.fornecedor_id;
         }
         
         if (data.grupo_id !== editingProduto.grupo_id) {
@@ -818,6 +863,24 @@ const Produtos = () => {
     return grupo ? grupo.nome : 'N/A';
   };
 
+  // Buscar nome do subgrupo
+  const getSubgrupoName = (subgrupoId) => {
+    const subgrupo = subgrupos.find(sg => sg.id === subgrupoId);
+    return subgrupo ? subgrupo.nome : 'N/A';
+  };
+
+  // Buscar nome da classe
+  const getClasseName = (classeId) => {
+    const classe = classes.find(c => c.id === classeId);
+    return classe ? classe.nome : 'N/A';
+  };
+
+  // Buscar nome da marca
+  const getMarcaName = (marcaId) => {
+    const marca = marcas.find(m => m.id === marcaId);
+    return marca ? marca.marca : 'N/A';
+  };
+
   // Buscar nome da unidade
   const getUnidadeName = (unidadeId) => {
     const unidade = unidades.find(u => u.id === unidadeId);
@@ -881,12 +944,13 @@ const Produtos = () => {
         <Table>
           <thead>
             <tr>
-              <Th>Nome</Th>
               <Th>Código</Th>
+              <Th>Nome</Th>
               <Th>Preço Venda</Th>
               <Th>Estoque</Th>
               <Th>Grupo</Th>
-              <Th>Fornecedor</Th>
+              <Th>Classe</Th>
+              <Th>Marca</Th>
               <Th>Status</Th>
               <Th>Ações</Th>
             </tr>
@@ -894,7 +958,7 @@ const Produtos = () => {
           <tbody>
             {filteredProdutos.length === 0 ? (
               <tr>
-                <Td colSpan="8">
+                <Td colSpan="9">
                   <EmptyState>
                     {searchTerm || statusFilter !== 'todos' || grupoFilter !== 'todos'
                       ? 'Nenhum produto encontrado com os filtros aplicados'
@@ -906,14 +970,15 @@ const Produtos = () => {
             ) : (
               filteredProdutos.map((produto) => (
                 <tr key={produto.id}>
+                  <Td>{produto.codigo_produto || produto.codigo_barras}</Td>
                   <Td>{produto.nome}</Td>
-                  <Td>{produto.codigo_barras}</Td>
                   <Td>
                     <PriceDisplay>{formatPrice(produto.preco_venda)}</PriceDisplay>
                   </Td>
                   <Td>{produto.estoque_atual || 0}</Td>
                   <Td>{getGrupoName(produto.grupo_id)}</Td>
-                  <Td>{getFornecedorName(produto.id_fornecedor)}</Td>
+                  <Td>{getClasseName(produto.classe_id)}</Td>
+                  <Td>{getMarcaName(produto.marca_id)}</Td>
                   <Td>
                     <StatusBadge status={produto.status === 1 ? 'ativo' : 'inativo'}>
                       {produto.status === 1 ? 'Ativo' : 'Inativo'}
@@ -960,124 +1025,533 @@ const Produtos = () => {
             </ModalHeader>
 
             <Form onSubmit={handleSubmit(onSubmit)}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                <FormGroup>
-                  <Label>Nome do Produto *</Label>
-                  <Input
-                    type="text"
-                    placeholder="Nome do produto"
-                    {...register('nome', { required: 'Nome é obrigatório' })}
-                  />
-                  {errors.nome && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome.message}</span>}
-                </FormGroup>
+              {/* Seção 1: Identificação Básica */}
+              <div style={{ 
+                background: '#f8f9fa', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                marginBottom: '16px' 
+              }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>
+                  📋 Identificação Básica
+                </h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Código do Produto</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: PROD001"
+                      {...register('codigo_produto')}
+                    />
+                    {errors.codigo_produto && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_produto.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Nome do Produto *</Label>
+                    <Input
+                      type="text"
+                      placeholder="Nome do produto"
+                      {...register('nome', { required: 'Nome é obrigatório' })}
+                    />
+                    {errors.nome && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome.message}</span>}
+                  </FormGroup>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Código de Barras</Label>
+                    <Input
+                      type="text"
+                      placeholder="Código de barras"
+                      {...register('codigo_barras')}
+                    />
+                    {errors.codigo_barras && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_barras.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Referência</Label>
+                    <Input
+                      type="text"
+                      placeholder="Referência interna"
+                      {...register('referencia')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Referência Externa</Label>
+                    <Input
+                      type="text"
+                      placeholder="Referência externa"
+                      {...register('referencia_externa')}
+                    />
+                  </FormGroup>
+                </div>
 
                 <FormGroup>
-                  <Label>Código de Barras</Label>
-                  <Input
-                    type="text"
-                    placeholder="Código de barras do produto"
-                    {...register('codigo_barras')}
+                  <Label>Descrição</Label>
+                  <TextArea
+                    placeholder="Descrição detalhada do produto..."
+                    {...register('descricao')}
                   />
-                  {errors.codigo_barras && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_barras.message}</span>}
+                  {errors.descricao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.descricao.message}</span>}
                 </FormGroup>
               </div>
 
-              <FormGroup>
-                <Label>Descrição</Label>
-                <TextArea
-                  placeholder="Descrição detalhada do produto..."
-                  {...register('descricao')}
-                />
-                {errors.descricao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.descricao.message}</span>}
-              </FormGroup>
+              {/* Seção 2: Classificação */}
+              <div style={{ 
+                background: '#f8f9fa', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                marginBottom: '16px' 
+              }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>
+                  🏷️ Classificação
+                </h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Grupo</Label>
+                    <Select {...register('grupo_id')}>
+                      <option value="">Selecione...</option>
+                      {grupos.map(grupo => (
+                        <option key={grupo.id} value={grupo.id}>
+                          {grupo.nome}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormGroup>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Subgrupo</Label>
+                    <Select {...register('subgrupo_id')}>
+                      <option value="">Selecione...</option>
+                      {subgrupos.map(subgrupo => (
+                        <option key={subgrupo.id} value={subgrupo.id}>
+                          {subgrupo.nome}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Classe</Label>
+                    <Select {...register('classe_id')}>
+                      <option value="">Selecione...</option>
+                      {classes.map(classe => (
+                        <option key={classe.id} value={classe.id}>
+                          {classe.nome}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Marca</Label>
+                    <Select {...register('marca_id')}>
+                      <option value="">Selecione...</option>
+                      {marcas.map(marca => (
+                        <option key={marca.id} value={marca.id}>
+                          {marca.marca}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormGroup>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Agrupamento N3</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: BOVINO"
+                      {...register('agrupamento_n3')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Agrupamento N4</Label>
+                    <Input
+                      type="text"
+                      placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
+                      {...register('agrupamento_n4')}
+                    />
+                  </FormGroup>
+                </div>
+              </div>
+
+              {/* Seção 3: Dimensões e Peso */}
+              <div style={{ 
+                background: '#f8f9fa', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                marginBottom: '16px' 
+              }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>
+                  📏 Dimensões e Peso
+                </h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Unidade</Label>
+                    <Select {...register('unidade_id')}>
+                      <option value="">Selecione...</option>
+                      {unidades.map(unidade => (
+                        <option key={unidade.id} value={unidade.id}>
+                          {unidade.nome}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Quantidade</Label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      placeholder="1.000"
+                      {...register('quantidade')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Peso Líquido (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      placeholder="0.000"
+                      {...register('peso_liquido')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Peso Bruto (kg)</Label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      placeholder="0.000"
+                      {...register('peso_bruto')}
+                    />
+                  </FormGroup>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Comprimento (cm)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('comprimento')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Largura (cm)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('largura')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Altura (cm)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('altura')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Volume (cm³)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('volume')}
+                    />
+                  </FormGroup>
+                </div>
+              </div>
+
+              {/* Seção 4: Informações Fiscais */}
+              <div style={{ 
+                background: '#f8f9fa', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                marginBottom: '16px' 
+              }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>
+                  🧾 Informações Fiscais
+                </h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>NCM</Label>
+                    <Input
+                      type="text"
+                      placeholder="Classificação NCM"
+                      {...register('ncm')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>CEST</Label>
+                    <Input
+                      type="text"
+                      placeholder="Código CEST"
+                      {...register('cest')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>CFOP</Label>
+                    <Input
+                      type="text"
+                      placeholder="Código CFOP"
+                      {...register('cfop')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>EAN</Label>
+                    <Input
+                      type="text"
+                      placeholder="Código EAN"
+                      {...register('ean')}
+                    />
+                  </FormGroup>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>CST ICMS</Label>
+                    <Input
+                      type="text"
+                      placeholder="CST ICMS"
+                      {...register('cst_icms')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>CSOSN</Label>
+                    <Input
+                      type="text"
+                      placeholder="CSOSN"
+                      {...register('csosn')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Alíquota ICMS (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('aliquota_icms')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Alíquota IPI (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('aliquota_ipi')}
+                    />
+                  </FormGroup>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Alíquota PIS (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('aliquota_pis')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Alíquota COFINS (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('aliquota_cofins')}
+                    />
+                  </FormGroup>
+                </div>
+              </div>
+
+              {/* Seção 5: Preços e Estoque */}
+              <div style={{ 
+                background: '#f8f9fa', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                marginBottom: '16px' 
+              }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>
+                  💰 Preços e Estoque
+                </h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Preço de Custo</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('preco_custo')}
+                    />
+                    {errors.preco_custo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_custo.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Preço de Venda *</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register('preco_venda', { 
+                        required: 'Preço de venda é obrigatório',
+                        min: 0 
+                      })}
+                    />
+                    {errors.preco_venda && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_venda.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Estoque Mínimo</Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...register('estoque_minimo')}
+                    />
+                    {errors.estoque_minimo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_minimo.message}</span>}
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Estoque Atual</Label>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...register('estoque_atual')}
+                    />
+                    {errors.estoque_atual && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_atual.message}</span>}
+                  </FormGroup>
+                </div>
+              </div>
+
+              {/* Seção 6: Informações Adicionais */}
+              <div style={{ 
+                background: '#f8f9fa', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                marginBottom: '16px' 
+              }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>
+                  ℹ️ Informações Adicionais
+                </h3>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Fornecedor</Label>
+                    <Select {...register('fornecedor_id')}>
+                      <option value="">Selecione...</option>
+                      {fornecedores.map(fornecedor => (
+                        <option key={fornecedor.id} value={fornecedor.id}>
+                          {fornecedor.razao_social}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Prazo de Validade</Label>
+                    <Input
+                      type="number"
+                      placeholder="12"
+                      {...register('prazo_validade')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Unidade Validade</Label>
+                    <Select {...register('unidade_validade')}>
+                      <option value="">Selecione...</option>
+                      <option value="DIAS">Dias</option>
+                      <option value="SEMANAS">Semanas</option>
+                      <option value="MESES">Meses</option>
+                      <option value="ANOS">Anos</option>
+                    </Select>
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Regra Palet (UN)</Label>
+                    <Input
+                      type="number"
+                      placeholder="1200"
+                      {...register('regra_palet_un')}
+                    />
+                  </FormGroup>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <FormGroup>
+                    <Label>Ficha de Homologação</Label>
+                    <Input
+                      type="text"
+                      placeholder="123456"
+                      {...register('ficha_homologacao')}
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <Label>Integração Senior</Label>
+                    <Input
+                      type="text"
+                      placeholder="123654"
+                      {...register('integracao_senior')}
+                    />
+                  </FormGroup>
+                </div>
+
                 <FormGroup>
-                  <Label>Preço de Custo</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    {...register('preco_custo', { min: 0 })}
+                  <Label>Informações Adicionais</Label>
+                  <TextArea
+                    placeholder="Ex: PRODUTO COM 5% DE GORDURA"
+                    {...register('informacoes_adicionais')}
                   />
-                  {errors.preco_custo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_custo.message}</span>}
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>Preço de Venda *</Label>
+                  <Label>Registro Específico</Label>
                   <Input
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    {...register('preco_venda', { 
-                      required: 'Preço de venda é obrigatório',
-                      min: 0 
-                    })}
+                    type="text"
+                    placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
+                    {...register('registro_especifico')}
                   />
-                  {errors.preco_venda && <span style={{ color: 'red', fontSize: '11px' }}>{errors.preco_venda.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Estoque Mínimo</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    {...register('estoque_minimo', { min: 0 })}
-                  />
-                  {errors.estoque_minimo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_minimo.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Estoque Atual</Label>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    {...register('estoque_atual', { min: 0 })}
-                  />
-                  {errors.estoque_atual && <span style={{ color: 'red', fontSize: '11px' }}>{errors.estoque_atual.message}</span>}
                 </FormGroup>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '16px' }}>
-                <FormGroup>
-                  <Label>Fornecedor</Label>
-                  <Select {...register('id_fornecedor')}>
-                    <option value="">Selecione...</option>
-                    {fornecedores.map(fornecedor => (
-                      <option key={fornecedor.id} value={fornecedor.id}>
-                        {fornecedor.razao_social}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.id_fornecedor && <span style={{ color: 'red', fontSize: '11px' }}>{errors.id_fornecedor.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Grupo</Label>
-                  <Select {...register('grupo_id')}>
-                    <option value="">Selecione...</option>
-                    {grupos.map(grupo => (
-                      <option key={grupo.id} value={grupo.id}>
-                        {grupo.nome}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.grupo_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.grupo_id.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Unidade</Label>
-                  <Select {...register('unidade_id')}>
-                    <option value="">Selecione...</option>
-                    {unidades.map(unidade => (
-                      <option key={unidade.id} value={unidade.id}>
-                        {unidade.nome}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.unidade_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.unidade_id.message}</span>}
-                </FormGroup>
-
+              {/* Seção 7: Status */}
+              <div style={{ 
+                background: '#f8f9fa', 
+                padding: '16px', 
+                borderRadius: '8px', 
+                marginBottom: '16px' 
+              }}>
+                <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>
+                  ✅ Status
+                </h3>
+                
                 <FormGroup>
                   <Label>Status</Label>
                   <Select {...register('status', { required: 'Status é obrigatório' })}>
