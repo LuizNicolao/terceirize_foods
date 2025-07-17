@@ -467,7 +467,9 @@ const Grupos = () => {
   const getFieldLabel = (field) => {
     const labels = {
       'nome': 'Nome',
-      'status': 'Status'
+      'status': 'Status',
+      'grupo_id': 'ID do Grupo',
+      'id': 'ID'
     };
     return labels[field] || field;
   };
@@ -486,26 +488,7 @@ const Grupos = () => {
     }
   };
 
-  // Formatar detalhes da auditoria
-  const formatAuditDetails = (details) => {
-    if (!details) return '';
-    
-    // Se for uma string, retornar como está
-    if (typeof details === 'string') {
-      return details;
-    }
-    
-    // Se for um objeto, tentar converter para string legível
-    if (typeof details === 'object') {
-      try {
-        return JSON.stringify(details, null, 2);
-      } catch (error) {
-        return 'Detalhes não disponíveis';
-      }
-    }
-    
-    return String(details);
-  };
+
 
   // Abrir modal para adicionar grupo
   const handleAddGrupo = () => {
@@ -879,10 +862,10 @@ const Grupos = () => {
                     auditLogs.map((log, index) => (
                       <tr key={index} style={{ borderBottom: '1px solid #f0f0f0' }}>
                         <td style={{ padding: '12px', fontSize: '12px', color: '#666' }}>
-                          {formatDate(log.data_hora)}
+                          {formatDate(log.timestamp)}
                         </td>
                         <td style={{ padding: '12px', fontSize: '12px' }}>
-                          {typeof log.nome_usuario === 'string' ? log.nome_usuario : 'Usuário não encontrado'}
+                          {typeof log.usuario_nome === 'string' ? log.usuario_nome : 'Usuário não encontrado'}
                         </td>
                         <td style={{ padding: '12px', fontSize: '12px' }}>
                           <span style={{
@@ -903,26 +886,85 @@ const Grupos = () => {
                           </span>
                         </td>
                         <td style={{ padding: '12px', fontSize: '12px' }}>
-                          <div style={{ maxWidth: '300px' }}>
-                            {log.detalhes && (typeof log.detalhes === 'string' || typeof log.detalhes === 'object') && (
-                              <div style={{ marginBottom: '8px' }}>
-                                <strong>Mudanças:</strong>
-                                <div style={{ 
-                                  backgroundColor: '#f8f9fa', 
-                                  padding: '8px', 
-                                  borderRadius: '4px',
-                                  marginTop: '4px',
-                                  fontSize: '11px',
-                                  fontFamily: 'monospace',
-                                  whiteSpace: 'pre-wrap',
-                                  wordBreak: 'break-word'
-                                }}>
-                                  {formatAuditDetails(log.detalhes)}
-                                </div>
+                          <div style={{ maxWidth: '400px' }}>
+                            {log.detalhes && (
+                              <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
+                                {log.detalhes.changes && (
+                                  <div style={{ marginBottom: '8px' }}>
+                                    <strong>Mudanças Realizadas:</strong>
+                                    <div style={{ marginLeft: '12px', marginTop: '8px' }}>
+                                      {Object.entries(log.detalhes.changes).map(([field, change]) => (
+                                        <div key={field} style={{ 
+                                          marginBottom: '6px', 
+                                          padding: '8px', 
+                                          background: '#f8f9fa', 
+                                          borderRadius: '4px',
+                                          border: '1px solid #e9ecef'
+                                        }}>
+                                          <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
+                                            {getFieldLabel(field)}:
+                                          </div>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
+                                            <span style={{ color: '#721c24' }}>
+                                              <strong>Antes:</strong> {formatFieldValue(field, change.from)}
+                                            </span>
+                                            <span style={{ color: '#6c757d' }}>→</span>
+                                            <span style={{ color: '#2e7d32' }}>
+                                              <strong>Depois:</strong> {formatFieldValue(field, change.to)}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {log.detalhes.requestBody && !log.detalhes.changes && (
+                                  <div>
+                                    <strong>Dados do Grupo:</strong>
+                                    <div style={{ 
+                                      marginLeft: '12px', 
+                                      marginTop: '8px',
+                                      display: 'grid',
+                                      gridTemplateColumns: '1fr 1fr',
+                                      gap: '8px'
+                                    }}>
+                                      {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
+                                        <div key={field} style={{ 
+                                          padding: '6px 8px', 
+                                          background: '#f8f9fa', 
+                                          borderRadius: '4px',
+                                          border: '1px solid #e9ecef',
+                                          fontSize: '11px'
+                                        }}>
+                                          <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
+                                            {getFieldLabel(field)}:
+                                          </div>
+                                          <div style={{ color: '#2e7d32' }}>
+                                            {formatFieldValue(field, value)}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                                {log.detalhes.resourceId && (
+                                  <div style={{ 
+                                    marginTop: '8px', 
+                                    padding: '6px 8px', 
+                                    background: '#e3f2fd', 
+                                    borderRadius: '4px',
+                                    fontSize: '11px'
+                                  }}>
+                                    <strong>ID do Grupo:</strong> 
+                                    <span style={{ color: '#1976d2', marginLeft: '4px' }}>
+                                      #{log.detalhes.resourceId}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             )}
                             {log.ip_address && typeof log.ip_address === 'string' && (
-                              <div style={{ fontSize: '11px', color: '#666' }}>
+                              <div style={{ fontSize: '11px', color: '#666', marginTop: '8px' }}>
                                 IP: {log.ip_address}
                               </div>
                             )}
