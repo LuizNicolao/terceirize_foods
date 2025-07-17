@@ -958,8 +958,22 @@ const Permissoes = () => {
         ...editingPermissions[tela]
       }));
 
+      // Preparar estado anterior para auditoria
+      const estadoAnterior = {};
+      if (userPermissions.permissoes) {
+        userPermissions.permissoes.forEach(perm => {
+          estadoAnterior[perm.tela] = {
+            pode_visualizar: perm.pode_visualizar === 1,
+            pode_criar: perm.pode_criar === 1,
+            pode_editar: perm.pode_editar === 1,
+            pode_excluir: perm.pode_excluir === 1
+          };
+        });
+      }
+
       await api.put(`/permissoes/usuario/${selectedUser.id}`, {
-        permissoes: permissoesArray
+        permissoes: permissoesArray,
+        estado_anterior: estadoAnterior
       });
 
       toast.success('Permissões atualizadas com sucesso!');

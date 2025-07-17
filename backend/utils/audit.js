@@ -173,33 +173,15 @@ const auditChangesMiddleware = (action, resource) => {
           
           // Para permissões, comparar arrays de permissões
           if (resource === 'permissoes' && sanitizedBody.permissoes) {
-            // Buscar permissões originais do usuário
             try {
-              const originalPerms = await executeQuery(
-                'SELECT * FROM permissoes_usuario WHERE usuario_id = ?',
-                [req.params.usuarioId]
-              );
-              
-              console.log('Permissões originais encontradas:', originalPerms.length);
+              // Usar estado anterior enviado pelo frontend
+              const estadoAnterior = sanitizedBody.estado_anterior || {};
+              console.log('Estado anterior recebido:', estadoAnterior);
               console.log('Novas permissões:', sanitizedBody.permissoes);
-              
-              // Criar mapa das permissões originais por tela
-              const originalPermsMap = {};
-              originalPerms.forEach(perm => {
-                originalPermsMap[perm.tela] = {
-                  pode_visualizar: perm.pode_visualizar === 1,
-                  pode_criar: perm.pode_criar === 1,
-                  pode_editar: perm.pode_editar === 1,
-                  pode_excluir: perm.pode_excluir === 1
-                };
-                console.log(`Permissão original para ${perm.tela}:`, originalPermsMap[perm.tela]);
-              });
-              
-              console.log('Mapa de permissões originais:', originalPermsMap);
               
               // Comparar com novas permissões
               sanitizedBody.permissoes.forEach(newPerm => {
-                const originalPerm = originalPermsMap[newPerm.tela];
+                const originalPerm = estadoAnterior[newPerm.tela];
                 console.log(`Comparando tela ${newPerm.tela}:`, {
                   original: originalPerm,
                   nova: newPerm
@@ -220,19 +202,11 @@ const auditChangesMiddleware = (action, resource) => {
                     }
                   });
                 } else {
-                  console.log(`Tela ${newPerm.tela} não encontrada nas permissões originais`);
-                  // Se não encontrou permissões originais, não registrar como mudança
-                  // pois pode ser a primeira vez que as permissões são criadas
+                  console.log(`Tela ${newPerm.tela} não encontrada no estado anterior`);
                 }
               });
               
               console.log('Mudanças detectadas:', changes);
-              
-              // Se não detectou mudanças, pode ser que as permissões originais não existiam
-              // Neste caso, não vamos registrar todas as permissões, apenas deixar vazio
-              if (Object.keys(changes).length === 0) {
-                console.log('Nenhuma mudança detectada - permissões podem ter sido criadas pela primeira vez');
-              }
             } catch (error) {
               console.error('Erro ao comparar permissões:', error);
             }
