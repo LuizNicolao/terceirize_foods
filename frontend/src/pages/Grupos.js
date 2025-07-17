@@ -821,160 +821,135 @@ const Grupos = () => {
               </div>
             </div>
 
-            {/* Tabela de Logs */}
-            <div style={{ 
-              maxHeight: '500px', 
-              overflowY: 'auto',
-              border: '1px solid #e0e0e0',
-              borderRadius: '8px'
-            }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f5f5f5' }}>
-                  <tr>
-                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600', borderBottom: '1px solid #e0e0e0' }}>
-                      Data/Hora
-                    </th>
-                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600', borderBottom: '1px solid #e0e0e0' }}>
-                      Usuário
-                    </th>
-                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600', borderBottom: '1px solid #e0e0e0' }}>
-                      Ação
-                    </th>
-                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600', borderBottom: '1px solid #e0e0e0' }}>
-                      Detalhes
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {auditLoading ? (
-                    <tr>
-                      <td colSpan="4" style={{ padding: '20px', textAlign: 'center', fontSize: '14px' }}>
-                        Carregando logs...
-                      </td>
-                    </tr>
-                  ) : auditLogs.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" style={{ padding: '20px', textAlign: 'center', fontSize: '14px', color: '#666' }}>
-                        Nenhum log encontrado
-                      </td>
-                    </tr>
-                  ) : (
-                    auditLogs.map((log, index) => (
-                      <tr key={index} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '12px', fontSize: '12px', color: '#666' }}>
-                          {formatDate(log.timestamp)}
-                        </td>
-                        <td style={{ padding: '12px', fontSize: '12px' }}>
-                          {typeof log.usuario_nome === 'string' ? log.usuario_nome : 'Usuário não encontrado'}
-                        </td>
-                        <td style={{ padding: '12px', fontSize: '12px' }}>
+            {/* Lista de Logs */}
+            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+              {auditLoading ? (
+                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
+              ) : auditLogs.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
+                  Nenhum log encontrado com os filtros aplicados
+                </div>
+              ) : (
+                <div>
+                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
+                    {auditLogs.length} log(s) encontrado(s)
+                  </div>
+                  {auditLogs.map((log, index) => (
+                    <div
+                      key={index}
+                      style={{
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        marginBottom: '12px',
+                        background: 'white'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{
                             padding: '4px 8px',
-                            borderRadius: '12px',
-                            fontSize: '10px',
-                            fontWeight: '600',
-                            backgroundColor: 
-                              (log.acao && typeof log.acao === 'string' && log.acao === 'create') ? '#e8f5e8' :
-                              (log.acao && typeof log.acao === 'string' && log.acao === 'update') ? '#fff3e0' :
-                              (log.acao && typeof log.acao === 'string' && log.acao === 'delete') ? '#ffebee' : '#f5f5f5',
-                            color: 
-                              (log.acao && typeof log.acao === 'string' && log.acao === 'create') ? '#2e7d32' :
-                              (log.acao && typeof log.acao === 'string' && log.acao === 'update') ? '#f57c00' :
-                              (log.acao && typeof log.acao === 'string' && log.acao === 'delete') ? '#d32f2f' : '#666'
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            background: log.acao === 'create' ? '#e8f5e8' : 
+                                       log.acao === 'update' ? '#fff3cd' : 
+                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
+                            color: log.acao === 'create' ? '#2e7d32' : 
+                                   log.acao === 'update' ? '#856404' : 
+                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
                           }}>
                             {getActionLabel(log.acao)}
                           </span>
-                        </td>
-                        <td style={{ padding: '12px', fontSize: '12px' }}>
-                          <div style={{ maxWidth: '400px' }}>
-                            {log.detalhes && (
-                              <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
-                                {log.detalhes.changes && (
-                                  <div style={{ marginBottom: '8px' }}>
-                                    <strong>Mudanças Realizadas:</strong>
-                                    <div style={{ marginLeft: '12px', marginTop: '8px' }}>
-                                      {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                        <div key={field} style={{ 
-                                          marginBottom: '6px', 
-                                          padding: '8px', 
-                                          background: '#f8f9fa', 
-                                          borderRadius: '4px',
-                                          border: '1px solid #e9ecef'
-                                        }}>
-                                          <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
-                                            {getFieldLabel(field)}:
-                                          </div>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                            <span style={{ color: '#721c24' }}>
-                                              <strong>Antes:</strong> {formatFieldValue(field, change.from)}
-                                            </span>
-                                            <span style={{ color: '#6c757d' }}>→</span>
-                                            <span style={{ color: '#2e7d32' }}>
-                                              <strong>Depois:</strong> {formatFieldValue(field, change.to)}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {log.detalhes.requestBody && !log.detalhes.changes && (
-                                  <div>
-                                    <strong>Dados do Grupo:</strong>
-                                    <div style={{ 
-                                      marginLeft: '12px', 
-                                      marginTop: '8px',
-                                      display: 'grid',
-                                      gridTemplateColumns: '1fr 1fr',
-                                      gap: '8px'
-                                    }}>
-                                      {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                        <div key={field} style={{ 
-                                          padding: '6px 8px', 
-                                          background: '#f8f9fa', 
-                                          borderRadius: '4px',
-                                          border: '1px solid #e9ecef',
-                                          fontSize: '11px'
-                                        }}>
-                                          <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
-                                            {getFieldLabel(field)}:
-                                          </div>
-                                          <div style={{ color: '#2e7d32' }}>
-                                            {formatFieldValue(field, value)}
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                                {log.detalhes.resourceId && (
-                                  <div style={{ 
-                                    marginTop: '8px', 
-                                    padding: '6px 8px', 
-                                    background: '#e3f2fd', 
+                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                            por {log.usuario_nome || 'Usuário desconhecido'}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                          {formatDate(log.timestamp)}
+                        </span>
+                      </div>
+                      
+                      {log.detalhes && (
+                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
+                          {log.detalhes.changes && (
+                            <div style={{ marginBottom: '8px' }}>
+                              <strong>Mudanças Realizadas:</strong>
+                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
+                                {Object.entries(log.detalhes.changes).map(([field, change]) => (
+                                  <div key={field} style={{ 
+                                    marginBottom: '6px', 
+                                    padding: '8px', 
+                                    background: '#f8f9fa', 
                                     borderRadius: '4px',
+                                    border: '1px solid #e9ecef'
+                                  }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
+                                      {getFieldLabel(field)}:
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
+                                      <span style={{ color: '#721c24' }}>
+                                        <strong>Antes:</strong> {formatFieldValue(field, change.from)}
+                                      </span>
+                                      <span style={{ color: '#6c757d' }}>→</span>
+                                      <span style={{ color: '#2e7d32' }}>
+                                        <strong>Depois:</strong> {formatFieldValue(field, change.to)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {log.detalhes.requestBody && !log.detalhes.changes && (
+                            <div>
+                              <strong>Dados do Grupo:</strong>
+                              <div style={{ 
+                                marginLeft: '12px', 
+                                marginTop: '8px',
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '8px'
+                              }}>
+                                {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
+                                  <div key={field} style={{ 
+                                    padding: '6px 8px', 
+                                    background: '#f8f9fa', 
+                                    borderRadius: '4px',
+                                    border: '1px solid #e9ecef',
                                     fontSize: '11px'
                                   }}>
-                                    <strong>ID do Grupo:</strong> 
-                                    <span style={{ color: '#1976d2', marginLeft: '4px' }}>
-                                      #{log.detalhes.resourceId}
-                                    </span>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
+                                      {getFieldLabel(field)}:
+                                    </div>
+                                    <div style={{ color: '#2e7d32' }}>
+                                      {formatFieldValue(field, value)}
+                                    </div>
                                   </div>
-                                )}
+                                ))}
                               </div>
-                            )}
-                            {log.ip_address && typeof log.ip_address === 'string' && (
-                              <div style={{ fontSize: '11px', color: '#666', marginTop: '8px' }}>
-                                IP: {log.ip_address}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                            </div>
+                          )}
+                          {log.detalhes.resourceId && (
+                            <div style={{ 
+                              marginTop: '8px', 
+                              padding: '6px 8px', 
+                              background: '#e3f2fd', 
+                              borderRadius: '4px',
+                              fontSize: '11px'
+                            }}>
+                              <strong>ID do Grupo:</strong> 
+                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
+                                #{log.detalhes.resourceId}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </ModalContent>
         </Modal>
