@@ -31,6 +31,13 @@ const logAction = async (userId, action, resource, details = null, ip = null) =>
     ]);
     
     console.log(`Auditoria: Usuário ${userId} executou ${action} em ${resource}`);
+    console.log('Detalhes da auditoria:', {
+      userId,
+      action,
+      resource,
+      details,
+      ip
+    });
   } catch (error) {
     console.error('Erro ao registrar auditoria:', error);
     // Não falhar a operação principal se a auditoria falhar

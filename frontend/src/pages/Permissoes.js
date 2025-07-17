@@ -751,23 +751,11 @@ const Permissoes = () => {
 
   // Formatar data
   const formatDate = (dateString) => {
-    if (!dateString) {
-      return 'Data não disponível';
-    }
-    
-    try {
-      return new Date(dateString).toLocaleString('pt-BR');
-    } catch (error) {
-      return 'Data inválida';
-    }
+    return new Date(dateString).toLocaleString('pt-BR');
   };
 
   // Obter label da ação
   const getActionLabel = (action) => {
-    if (!action || typeof action !== 'string') {
-      return 'Desconhecida';
-    }
-    
     const actions = {
       'create': 'Criar',
       'update': 'Editar',
@@ -781,6 +769,19 @@ const Permissoes = () => {
 
   // Obter label do campo
   const getFieldLabel = (field) => {
+    // Para campos de permissões (formato: tela_acao)
+    if (field.includes('_')) {
+      const [tela, acao] = field.split('_');
+      const telaLabel = getScreenLabel(tela);
+      const acaoLabel = {
+        'pode_visualizar': 'Visualizar',
+        'pode_criar': 'Criar',
+        'pode_editar': 'Editar',
+        'pode_excluir': 'Excluir'
+      }[acao] || acao;
+      return `${telaLabel} - ${acaoLabel}`;
+    }
+    
     const labels = {
       'tela': 'Tela',
       'pode_visualizar': 'Visualizar',
@@ -798,6 +799,14 @@ const Permissoes = () => {
   const formatFieldValue = (field, value) => {
     if (value === null || value === undefined || value === '') {
       return 'Não informado';
+    }
+
+    // Para campos de permissões (formato: tela_acao)
+    if (field.includes('_')) {
+      const [, acao] = field.split('_');
+      if (acao === 'pode_visualizar' || acao === 'pode_criar' || acao === 'pode_editar' || acao === 'pode_excluir') {
+        return value === 1 || value === true || value === 'Sim' ? 'Sim' : 'Não';
+      }
     }
 
     switch (field) {
@@ -1286,11 +1295,11 @@ const Permissoes = () => {
                         <AuditLogAction action={log.acao}>
                           {getActionLabel(log.acao)}
                         </AuditLogAction>
-                        <AuditLogDate>{formatDate(log.data_hora)}</AuditLogDate>
+                        <AuditLogDate>{formatDate(log.timestamp)}</AuditLogDate>
                       </AuditLogHeader>
                       
                       <AuditLogUser>
-                        <strong>Usuário:</strong> {log.nome_usuario || 'Usuário não encontrado'}
+                        <strong>Usuário:</strong> {log.usuario_nome || 'Usuário desconhecido'}
                       </AuditLogUser>
                       
                       <AuditLogResource>
