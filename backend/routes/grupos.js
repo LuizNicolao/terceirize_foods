@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -63,6 +64,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 // Criar grupo
 router.post('/', [
   checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'grupos'),
   body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('status').optional().isIn([0, 1]).withMessage('Status deve ser 0 ou 1')
 ], async (req, res) => {
@@ -112,6 +114,7 @@ router.post('/', [
 // Atualizar grupo
 router.put('/:id', [
   checkPermission('editar'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'grupos'),
   body('nome').optional().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('status').optional().isIn([0, 1]).withMessage('Status deve ser 0 ou 1')
 ], async (req, res) => {
@@ -195,7 +198,10 @@ router.put('/:id', [
 });
 
 // Excluir grupo
-router.delete('/:id', checkPermission('excluir'), async (req, res) => {
+router.delete('/:id', [
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'grupos')
+], async (req, res) => {
   try {
     const { id } = req.params;
 

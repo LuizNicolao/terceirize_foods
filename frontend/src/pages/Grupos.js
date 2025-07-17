@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaLayerGroup } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaLayerGroup, FaQuestionCircle } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -313,6 +313,16 @@ const Grupos = () => {
   const [editingGrupo, setEditingGrupo] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditFilters, setAuditFilters] = useState({
+    dataInicio: '',
+    dataFim: '',
+    acao: '',
+    usuario_id: '',
+    periodo: ''
+  });
 
   const {
     register,
@@ -339,6 +349,130 @@ const Grupos = () => {
   useEffect(() => {
     loadGrupos();
   }, []);
+
+  // Carregar logs de auditoria
+  const loadAuditLogs = async () => {
+    try {
+      setAuditLoading(true);
+      
+      const params = new URLSearchParams();
+      
+      // Aplicar filtro de período se selecionado
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        // Usar filtros manuais se período não estiver selecionado
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para grupos
+      params.append('recurso', 'grupos');
+      
+      const response = await api.get(`/auditoria?${params.toString()}`);
+      setAuditLogs(response.data.logs || []);
+    } catch (error) {
+      console.error('Erro ao carregar logs de auditoria:', error);
+      toast.error('Erro ao carregar logs de auditoria');
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
+  // Abrir modal de auditoria
+  const handleOpenAuditModal = () => {
+    setShowAuditModal(true);
+    loadAuditLogs();
+  };
+
+  // Fechar modal de auditoria
+  const handleCloseAuditModal = () => {
+    setShowAuditModal(false);
+    setAuditLogs([]);
+    setAuditFilters({
+      dataInicio: '',
+      dataFim: '',
+      acao: '',
+      usuario_id: '',
+      periodo: ''
+    });
+  };
+
+  // Aplicar filtros de auditoria
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
+  };
+
+  // Formatar data
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
+
+  // Obter label da ação
+  const getActionLabel = (action) => {
+    const actions = {
+      'create': 'Criar',
+      'update': 'Editar',
+      'delete': 'Excluir',
+      'login': 'Login',
+      'logout': 'Logout',
+      'view': 'Visualizar'
+    };
+    return actions[action] || action;
+  };
+
+  // Obter label do campo
+  const getFieldLabel = (field) => {
+    const labels = {
+      'nome': 'Nome',
+      'status': 'Status'
+    };
+    return labels[field] || field;
+  };
+
+  // Formatar valor do campo
+  const formatFieldValue = (field, value) => {
+    if (value === null || value === undefined || value === '') {
+      return 'Não informado';
+    }
+
+    switch (field) {
+      case 'status':
+        return value === 1 ? 'Ativo' : 'Inativo';
+      default:
+        return value;
+    }
+  };
 
   // Abrir modal para adicionar grupo
   const handleAddGrupo = () => {
@@ -439,10 +573,19 @@ const Grupos = () => {
     <Container>
       <Header>
         <Title>Grupos</Title>
-        <AddButton onClick={handleAddGrupo}>
-          <FaPlus />
-          Adicionar Grupo
-        </AddButton>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <AddButton 
+            onClick={handleOpenAuditModal}
+            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+          >
+            <FaQuestionCircle />
+            Auditoria
+          </AddButton>
+          <AddButton onClick={handleAddGrupo}>
+            <FaPlus />
+            Adicionar Grupo
+          </AddButton>
+        </div>
       </Header>
 
 
@@ -564,6 +707,198 @@ const Grupos = () => {
                 </Button>
               </ButtonGroup>
             </Form>
+          </ModalContent>
+        </Modal>
+      )}
+
+      {/* Modal de Auditoria */}
+      {showAuditModal && (
+        <Modal onClick={handleCloseAuditModal}>
+          <ModalContent 
+            onClick={(e) => e.stopPropagation()}
+            style={{ 
+              maxWidth: '1200px', 
+              width: '95%', 
+              maxHeight: '90vh',
+              padding: '24px'
+            }}
+          >
+            <ModalHeader>
+              <ModalTitle>Auditoria - Grupos</ModalTitle>
+              <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
+            </ModalHeader>
+
+            {/* Filtros de Auditoria */}
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+              gap: '16px', 
+              marginBottom: '24px',
+              padding: '16px',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '8px'
+            }}>
+              <div>
+                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Período Rápido</Label>
+                <Select
+                  value={auditFilters.periodo}
+                  onChange={(e) => setAuditFilters(prev => ({ ...prev, periodo: e.target.value }))}
+                  style={{ fontSize: '12px', padding: '8px' }}
+                >
+                  <option value="">Selecione...</option>
+                  <option value="7dias">Últimos 7 dias</option>
+                  <option value="30dias">Últimos 30 dias</option>
+                  <option value="90dias">Últimos 90 dias</option>
+                  <option value="todos">Todos</option>
+                </Select>
+              </div>
+
+              <div>
+                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Data Início</Label>
+                <Input
+                  type="date"
+                  value={auditFilters.dataInicio}
+                  onChange={(e) => setAuditFilters(prev => ({ ...prev, dataInicio: e.target.value, periodo: '' }))}
+                  style={{ fontSize: '12px', padding: '8px' }}
+                />
+              </div>
+
+              <div>
+                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Data Fim</Label>
+                <Input
+                  type="date"
+                  value={auditFilters.dataFim}
+                  onChange={(e) => setAuditFilters(prev => ({ ...prev, dataFim: e.target.value, periodo: '' }))}
+                  style={{ fontSize: '12px', padding: '8px' }}
+                />
+              </div>
+
+              <div>
+                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Ação</Label>
+                <Select
+                  value={auditFilters.acao}
+                  onChange={(e) => setAuditFilters(prev => ({ ...prev, acao: e.target.value }))}
+                  style={{ fontSize: '12px', padding: '8px' }}
+                >
+                  <option value="">Todas</option>
+                  <option value="create">Criar</option>
+                  <option value="update">Editar</option>
+                  <option value="delete">Excluir</option>
+                </Select>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'end' }}>
+                <Button 
+                  onClick={handleApplyAuditFilters}
+                  style={{ 
+                    fontSize: '12px', 
+                    padding: '8px 16px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Aplicar Filtros
+                </Button>
+              </div>
+            </div>
+
+            {/* Tabela de Logs */}
+            <div style={{ 
+              maxHeight: '500px', 
+              overflowY: 'auto',
+              border: '1px solid #e0e0e0',
+              borderRadius: '8px'
+            }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead style={{ position: 'sticky', top: 0, backgroundColor: '#f5f5f5' }}>
+                  <tr>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600', borderBottom: '1px solid #e0e0e0' }}>
+                      Data/Hora
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600', borderBottom: '1px solid #e0e0e0' }}>
+                      Usuário
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600', borderBottom: '1px solid #e0e0e0' }}>
+                      Ação
+                    </th>
+                    <th style={{ padding: '12px', textAlign: 'left', fontSize: '12px', fontWeight: '600', borderBottom: '1px solid #e0e0e0' }}>
+                      Detalhes
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {auditLoading ? (
+                    <tr>
+                      <td colSpan="4" style={{ padding: '20px', textAlign: 'center', fontSize: '14px' }}>
+                        Carregando logs...
+                      </td>
+                    </tr>
+                  ) : auditLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" style={{ padding: '20px', textAlign: 'center', fontSize: '14px', color: '#666' }}>
+                        Nenhum log encontrado
+                      </td>
+                    </tr>
+                  ) : (
+                    auditLogs.map((log, index) => (
+                      <tr key={index} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '12px', fontSize: '12px', color: '#666' }}>
+                          {formatDate(log.data_hora)}
+                        </td>
+                        <td style={{ padding: '12px', fontSize: '12px' }}>
+                          {log.nome_usuario || 'Usuário não encontrado'}
+                        </td>
+                        <td style={{ padding: '12px', fontSize: '12px' }}>
+                          <span style={{
+                            padding: '4px 8px',
+                            borderRadius: '12px',
+                            fontSize: '10px',
+                            fontWeight: '600',
+                            backgroundColor: 
+                              log.acao === 'create' ? '#e8f5e8' :
+                              log.acao === 'update' ? '#fff3e0' :
+                              log.acao === 'delete' ? '#ffebee' : '#f5f5f5',
+                            color: 
+                              log.acao === 'create' ? '#2e7d32' :
+                              log.acao === 'update' ? '#f57c00' :
+                              log.acao === 'delete' ? '#d32f2f' : '#666'
+                          }}>
+                            {getActionLabel(log.acao)}
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px', fontSize: '12px' }}>
+                          <div style={{ maxWidth: '300px' }}>
+                            {log.detalhes && (
+                              <div style={{ marginBottom: '8px' }}>
+                                <strong>Mudanças:</strong>
+                                <div style={{ 
+                                  backgroundColor: '#f8f9fa', 
+                                  padding: '8px', 
+                                  borderRadius: '4px',
+                                  marginTop: '4px',
+                                  fontSize: '11px',
+                                  fontFamily: 'monospace'
+                                }}>
+                                  {log.detalhes}
+                                </div>
+                              </div>
+                            )}
+                            {log.ip_address && (
+                              <div style={{ fontSize: '11px', color: '#666' }}>
+                                IP: {log.ip_address}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </ModalContent>
         </Modal>
       )}
