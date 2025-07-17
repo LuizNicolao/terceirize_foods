@@ -14,7 +14,7 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./BANCO_DE_DADOS_FOODS.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./foods_db.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - foods_network
 
