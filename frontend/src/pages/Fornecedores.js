@@ -742,6 +742,7 @@ const Fornecedores = () => {
         if (createData.status) {
           createData.status = parseInt(createData.status);
         }
+        console.log('Dados sendo enviados para criação:', createData);
         await api.post('/fornecedores', createData);
         toast.success('Fornecedor criado com sucesso!');
       }
@@ -750,6 +751,7 @@ const Fornecedores = () => {
       loadFornecedores();
     } catch (error) {
       console.error('Erro ao salvar fornecedor:', error);
+      console.error('Detalhes do erro:', error.response?.data);
       toast.error(error.response?.data?.error || 'Erro ao salvar fornecedor');
     }
   };

@@ -137,20 +137,29 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 router.post('/', [
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'fornecedores'),
-  body('cnpj').isLength({ min: 14, max: 18 }).withMessage('CNPJ inválido'),
-  body('razao_social').isLength({ min: 3 }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
-  body('email').optional().isEmail().withMessage('Email inválido'),
+  body('cnpj').custom((value) => {
+    const cnpjLimpo = value.replace(/\D/g, '');
+    if (cnpjLimpo.length !== 14) {
+      throw new Error('CNPJ deve ter 14 dígitos');
+    }
+    return true;
+  }).withMessage('CNPJ inválido'),
+  body('razao_social').trim().isLength({ min: 3 }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
+  body('email').optional().trim().isEmail().withMessage('Email inválido'),
   body('uf').optional().isLength({ min: 2, max: 2 }).withMessage('UF deve ter 2 caracteres'),
   body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('Erros de validação:', errors.array());
       return res.status(400).json({ 
         error: 'Dados inválidos',
         details: errors.array() 
       });
     }
+
+    console.log('Dados recebidos para criação:', req.body);
 
     const {
       cnpj, razao_social, nome_fantasia, logradouro, numero, cep,
@@ -196,7 +205,15 @@ router.post('/', [
 router.put('/:id', [
   checkPermission('editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'fornecedores'),
-  body('cnpj').optional().isLength({ min: 14, max: 18 }).withMessage('CNPJ inválido'),
+  body('cnpj').optional().custom((value) => {
+    if (value) {
+      const cnpjLimpo = value.replace(/\D/g, '');
+      if (cnpjLimpo.length !== 14) {
+        throw new Error('CNPJ deve ter 14 dígitos');
+      }
+    }
+    return true;
+  }).withMessage('CNPJ inválido'),
   body('razao_social').optional().isLength({ min: 3 }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
   body('email').optional().isEmail().withMessage('Email inválido'),
   body('uf').optional().isLength({ min: 2, max: 2 }).withMessage('UF deve ter 2 caracteres')
