@@ -435,11 +435,23 @@ const Grupos = () => {
 
   // Formatar data
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('pt-BR');
+    if (!dateString) {
+      return 'Data não disponível';
+    }
+    
+    try {
+      return new Date(dateString).toLocaleString('pt-BR');
+    } catch (error) {
+      return 'Data inválida';
+    }
   };
 
   // Obter label da ação
   const getActionLabel = (action) => {
+    if (!action || typeof action !== 'string') {
+      return 'Desconhecida';
+    }
+    
     const actions = {
       'create': 'Criar',
       'update': 'Editar',
@@ -472,6 +484,27 @@ const Grupos = () => {
       default:
         return value;
     }
+  };
+
+  // Formatar detalhes da auditoria
+  const formatAuditDetails = (details) => {
+    if (!details) return '';
+    
+    // Se for uma string, retornar como está
+    if (typeof details === 'string') {
+      return details;
+    }
+    
+    // Se for um objeto, tentar converter para string legível
+    if (typeof details === 'object') {
+      try {
+        return JSON.stringify(details, null, 2);
+      } catch (error) {
+        return 'Detalhes não disponíveis';
+      }
+    }
+    
+    return String(details);
   };
 
   // Abrir modal para adicionar grupo
@@ -849,7 +882,7 @@ const Grupos = () => {
                           {formatDate(log.data_hora)}
                         </td>
                         <td style={{ padding: '12px', fontSize: '12px' }}>
-                          {log.nome_usuario || 'Usuário não encontrado'}
+                          {typeof log.nome_usuario === 'string' ? log.nome_usuario : 'Usuário não encontrado'}
                         </td>
                         <td style={{ padding: '12px', fontSize: '12px' }}>
                           <span style={{
@@ -858,20 +891,20 @@ const Grupos = () => {
                             fontSize: '10px',
                             fontWeight: '600',
                             backgroundColor: 
-                              log.acao === 'create' ? '#e8f5e8' :
-                              log.acao === 'update' ? '#fff3e0' :
-                              log.acao === 'delete' ? '#ffebee' : '#f5f5f5',
+                              (log.acao && typeof log.acao === 'string' && log.acao === 'create') ? '#e8f5e8' :
+                              (log.acao && typeof log.acao === 'string' && log.acao === 'update') ? '#fff3e0' :
+                              (log.acao && typeof log.acao === 'string' && log.acao === 'delete') ? '#ffebee' : '#f5f5f5',
                             color: 
-                              log.acao === 'create' ? '#2e7d32' :
-                              log.acao === 'update' ? '#f57c00' :
-                              log.acao === 'delete' ? '#d32f2f' : '#666'
+                              (log.acao && typeof log.acao === 'string' && log.acao === 'create') ? '#2e7d32' :
+                              (log.acao && typeof log.acao === 'string' && log.acao === 'update') ? '#f57c00' :
+                              (log.acao && typeof log.acao === 'string' && log.acao === 'delete') ? '#d32f2f' : '#666'
                           }}>
                             {getActionLabel(log.acao)}
                           </span>
                         </td>
                         <td style={{ padding: '12px', fontSize: '12px' }}>
                           <div style={{ maxWidth: '300px' }}>
-                            {log.detalhes && (
+                            {log.detalhes && (typeof log.detalhes === 'string' || typeof log.detalhes === 'object') && (
                               <div style={{ marginBottom: '8px' }}>
                                 <strong>Mudanças:</strong>
                                 <div style={{ 
@@ -880,13 +913,15 @@ const Grupos = () => {
                                   borderRadius: '4px',
                                   marginTop: '4px',
                                   fontSize: '11px',
-                                  fontFamily: 'monospace'
+                                  fontFamily: 'monospace',
+                                  whiteSpace: 'pre-wrap',
+                                  wordBreak: 'break-word'
                                 }}>
-                                  {log.detalhes}
+                                  {formatAuditDetails(log.detalhes)}
                                 </div>
                               </div>
                             )}
-                            {log.ip_address && (
+                            {log.ip_address && typeof log.ip_address === 'string' && (
                               <div style={{ fontSize: '11px', color: '#666' }}>
                                 IP: {log.ip_address}
                               </div>
