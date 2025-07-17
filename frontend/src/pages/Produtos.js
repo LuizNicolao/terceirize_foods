@@ -1587,7 +1587,7 @@ const Produtos = () => {
 
                       <Button
                         type="button"
-                        onClick={onClose}
+                        onClick={handleCloseModal}
                         style={{ 
                           backgroundColor: '#dc3545', 
                           color: 'white',
