@@ -158,7 +158,11 @@ const auditChangesMiddleware = (action, resource) => {
         };
         
         // Para UPDATE, comparar dados antigos com novos
-        if (action === AUDIT_ACTIONS.UPDATE && originalData) {
+        if (action === AUDIT_ACTIONS.UPDATE && (originalData || resource === 'permissoes')) {
+          console.log('=== INÍCIO DA COMPARAÇÃO DE MUDANÇAS ===');
+          console.log('Recurso:', resource);
+          console.log('Dados originais:', originalData);
+          console.log('Dados novos:', req.body);
           const sanitizedBody = { ...req.body };
           if (sanitizedBody.senha) {
             sanitizedBody.senha = '[REDACTED]';
@@ -176,33 +180,50 @@ const auditChangesMiddleware = (action, resource) => {
                 [req.params.usuarioId]
               );
               
+              console.log('Permissões originais encontradas:', originalPerms.length);
+              console.log('Novas permissões:', sanitizedBody.permissoes);
+              
               // Criar mapa das permissões originais por tela
               const originalPermsMap = {};
               originalPerms.forEach(perm => {
                 originalPermsMap[perm.tela] = {
-                  pode_visualizar: perm.pode_visualizar,
-                  pode_criar: perm.pode_criar,
-                  pode_editar: perm.pode_editar,
-                  pode_excluir: perm.pode_excluir
+                  pode_visualizar: perm.pode_visualizar === 1,
+                  pode_criar: perm.pode_criar === 1,
+                  pode_editar: perm.pode_editar === 1,
+                  pode_excluir: perm.pode_excluir === 1
                 };
               });
+              
+              console.log('Mapa de permissões originais:', originalPermsMap);
               
               // Comparar com novas permissões
               sanitizedBody.permissoes.forEach(newPerm => {
                 const originalPerm = originalPermsMap[newPerm.tela];
+                console.log(`Comparando tela ${newPerm.tela}:`, {
+                  original: originalPerm,
+                  nova: newPerm
+                });
+                
                 if (originalPerm) {
                   ['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].forEach(acao => {
-                    const oldValue = originalPerm[acao] === 1;
+                    const oldValue = originalPerm[acao];
                     const newValue = newPerm[acao];
+                    console.log(`Comparando ${acao}: ${oldValue} vs ${newValue}`);
+                    
                     if (oldValue !== newValue) {
                       changes[`${newPerm.tela}_${acao}`] = {
                         from: oldValue ? 'Sim' : 'Não',
                         to: newValue ? 'Sim' : 'Não'
                       };
+                      console.log(`Mudança detectada: ${newPerm.tela}_${acao} = ${oldValue ? 'Sim' : 'Não'} → ${newValue ? 'Sim' : 'Não'}`);
                     }
                   });
+                } else {
+                  console.log(`Tela ${newPerm.tela} não encontrada nas permissões originais`);
                 }
               });
+              
+              console.log('Mudanças detectadas:', changes);
             } catch (error) {
               console.error('Erro ao comparar permissões:', error);
             }
