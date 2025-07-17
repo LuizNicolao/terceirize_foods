@@ -75,41 +75,61 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
   }
 });
 
-// Criar classe - Versão simplificada para teste
-router.post('/', async (req, res) => {
+// Criar classe
+router.post('/', [
+  checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'classes'),
+  body('nome').isLength({ min: 2 }).withMessage('Nome deve ter pelo menos 2 caracteres'),
+  body('subgrupo_id').notEmpty().withMessage('Subgrupo é obrigatório'),
+  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
+], async (req, res) => {
   try {
-    console.log('=== TESTE SIMPLIFICADO ===');
-    console.log('Body recebido:', req.body);
-    
-    const { nome, subgrupo_id, status = 1 } = req.body;
-    
-    console.log('Dados extraídos:', { nome, subgrupo_id, status });
-    
-    // Teste simples de inserção
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        error: 'Dados inválidos',
+        details: errors.array() 
+      });
+    }
+
+    const {
+      nome, subgrupo_id, status = 1
+    } = req.body;
+
+    // Verificar se classe já existe no mesmo subgrupo
+    const existingClasse = await executeQuery(
+      'SELECT id FROM classes WHERE nome = ? AND subgrupo_id = ?',
+      [nome, subgrupo_id]
+    );
+
+    if (existingClasse.length > 0) {
+      return res.status(400).json({ error: 'Classe já cadastrada neste subgrupo' });
+    }
+
+    // Inserir classe
     const result = await executeQuery(
-      'INSERT INTO classes (nome, subgrupo_id, status) VALUES (?, ?, ?)',
+      `INSERT INTO classes (nome, subgrupo_id, status)
+       VALUES (?, ?, ?)`,
       [nome, subgrupo_id, status]
     );
-    
-    console.log('Inserção realizada com sucesso:', result);
-    
+
+    const newClasse = await executeQuery(
+      `SELECT c.*, s.nome as subgrupo_nome, g.nome as grupo_nome
+       FROM classes c
+       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
+       LEFT JOIN grupos g ON s.grupo_id = g.id
+       WHERE c.id = ?`,
+      [result.insertId]
+    );
+
     res.status(201).json({
       message: 'Classe criada com sucesso',
-      id: result.insertId
+      classe: newClasse[0]
     });
 
   } catch (error) {
-    console.error('=== ERRO DETALHADO ===');
-    console.error('Mensagem:', error.message);
-    console.error('Stack:', error.stack);
-    console.error('Código:', error.code);
-    console.error('SQL State:', error.sqlState);
-    
-    res.status(500).json({ 
-      error: 'Erro interno do servidor',
-      message: error.message,
-      code: error.code
-    });
+    console.error('Erro ao criar classe:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
