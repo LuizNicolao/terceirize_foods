@@ -333,7 +333,8 @@ const Fornecedores = () => {
     handleSubmit,
     reset,
     formState: { errors },
-    setValue
+    setValue,
+    getValues
   } = useForm();
 
   // Carregar fornecedores
