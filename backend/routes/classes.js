@@ -49,6 +49,25 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
   }
 });
 
+// Buscar subgrupos para o select
+router.get('/subgrupos/list', checkPermission('visualizar'), async (req, res) => {
+  try {
+    const subgrupos = await executeQuery(
+      `SELECT s.id, s.nome, g.nome as grupo_nome
+       FROM subgrupos s
+       LEFT JOIN grupos g ON s.grupo_id = g.id
+       WHERE s.status = 1
+       ORDER BY g.nome, s.nome`
+    );
+
+    res.json(subgrupos);
+
+  } catch (error) {
+    console.error('Erro ao listar subgrupos:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // Buscar classe por ID
 router.get('/:id', checkPermission('visualizar'), async (req, res) => {
   try {
@@ -80,7 +99,7 @@ router.post('/', [
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'classes'),
   body('nome').isLength({ min: 2 }).withMessage('Nome deve ter pelo menos 2 caracteres'),
-  body('subgrupo_id').isInt({ min: 1 }).withMessage('Subgrupo é obrigatório'),
+  body('subgrupo_id').notEmpty().withMessage('Subgrupo é obrigatório'),
   body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
 ], async (req, res) => {
   try {
@@ -96,10 +115,13 @@ router.post('/', [
       nome, subgrupo_id, status = 1
     } = req.body;
 
+    // Converter subgrupo_id para número
+    const subgrupoId = parseInt(subgrupo_id);
+
     // Verificar se subgrupo existe
     const subgrupo = await executeQuery(
       'SELECT id FROM subgrupos WHERE id = ?',
-      [subgrupo_id]
+      [subgrupoId]
     );
 
     if (subgrupo.length === 0) {
@@ -109,7 +131,7 @@ router.post('/', [
     // Verificar se classe já existe no mesmo subgrupo
     const existingClasse = await executeQuery(
       'SELECT id FROM classes WHERE nome = ? AND subgrupo_id = ?',
-      [nome, subgrupo_id]
+      [nome, subgrupoId]
     );
 
     if (existingClasse.length > 0) {
@@ -120,7 +142,7 @@ router.post('/', [
     const result = await executeQuery(
       `INSERT INTO classes (nome, subgrupo_id, status)
        VALUES (?, ?, ?)`,
-      [nome, subgrupo_id, status]
+      [nome, subgrupoId, status]
     );
 
     const newClasse = await executeQuery(
@@ -148,7 +170,7 @@ router.put('/:id', [
   checkPermission('editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'classes'),
   body('nome').optional().isLength({ min: 2 }).withMessage('Nome deve ter pelo menos 2 caracteres'),
-  body('subgrupo_id').optional().isInt({ min: 1 }).withMessage('Subgrupo deve ser válido'),
+  body('subgrupo_id').optional().notEmpty().withMessage('Subgrupo deve ser válido'),
   body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
 ], async (req, res) => {
   try {
@@ -282,23 +304,4 @@ router.delete('/:id', [
   }
 });
 
-// Buscar subgrupos para o select
-router.get('/subgrupos/list', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const subgrupos = await executeQuery(
-      `SELECT s.id, s.nome, g.nome as grupo_nome
-       FROM subgrupos s
-       LEFT JOIN grupos g ON s.grupo_id = g.id
-       WHERE s.status = 1
-       ORDER BY g.nome, s.nome`
-    );
-
-    res.json(subgrupos);
-
-  } catch (error) {
-    console.error('Erro ao listar subgrupos:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-module.exports = router; 
+ 
