@@ -96,11 +96,19 @@ router.post('/', [
       nome, subgrupo_id, status = 1
     } = req.body;
 
+    console.log('Dados recebidos:', { nome, subgrupo_id, status, tipo_subgrupo_id: typeof subgrupo_id });
+
+    // Converter subgrupo_id para número se necessário
+    const subgrupoId = parseInt(subgrupo_id);
+    console.log('Subgrupo ID convertido:', subgrupoId);
+
     // Verificar se subgrupo existe
     const subgrupo = await executeQuery(
       'SELECT id FROM subgrupos WHERE id = ?',
-      [subgrupo_id]
+      [subgrupoId]
     );
+
+    console.log('Subgrupo encontrado:', subgrupo);
 
     if (subgrupo.length === 0) {
       return res.status(400).json({ error: 'Subgrupo não encontrado' });
@@ -109,19 +117,24 @@ router.post('/', [
     // Verificar se classe já existe no mesmo subgrupo
     const existingClasse = await executeQuery(
       'SELECT id FROM classes WHERE nome = ? AND subgrupo_id = ?',
-      [nome, subgrupo_id]
+      [nome, subgrupoId]
     );
+
+    console.log('Classe existente:', existingClasse);
 
     if (existingClasse.length > 0) {
       return res.status(400).json({ error: 'Classe já cadastrada neste subgrupo' });
     }
 
     // Inserir classe
+    console.log('Tentando inserir com params:', [nome, subgrupoId, status]);
     const result = await executeQuery(
       `INSERT INTO classes (nome, subgrupo_id, status)
        VALUES (?, ?, ?)`,
-      [nome, subgrupo_id, status]
+      [nome, subgrupoId, status]
     );
+
+    console.log('Resultado da inserção:', result);
 
     const newClasse = await executeQuery(
       `SELECT c.*, s.nome as subgrupo_nome, g.nome as grupo_nome
