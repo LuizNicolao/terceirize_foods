@@ -344,7 +344,7 @@ const FormSection = styled.div`
   border-radius: 8px;
   padding: 14px;
   background: #fafafa;
-  height: 400px;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
 `;
@@ -361,17 +361,16 @@ const SectionTitle = styled.h3`
 const FormGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
   flex: 1;
-  justify-content: start;
 `;
 
 const FormGrid2 = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
 `;
 
 const FormGrid3 = styled.div`
@@ -1295,7 +1294,47 @@ const Produtos = () => {
 
               {/* Segunda Linha - 2 Cards */}
               <SecondRow>
-                {/* Card 4: Informações do Produto */}
+                {/* Card 4: Documentos e Status */}
+                <FormSection>
+                  <SectionTitle>Documentos e Status</SectionTitle>
+                  <FormGrid>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Ficha de Homologação</Label>
+                        <Input
+                          type="text"
+                          placeholder="Ex: 123456"
+                          {...register('ficha_homologacao')}
+                        />
+                        {errors.ficha_homologacao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.ficha_homologacao.message}</span>}
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label>Foto do Produto</Label>
+                        <Input
+                          type="text"
+                          placeholder="Caminho da foto"
+                          {...register('foto_produto')}
+                        />
+                        {errors.foto_produto && <span style={{ color: 'red', fontSize: '11px' }}>{errors.foto_produto.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
+
+                    <FormGroup>
+                      <Label>Integração Senior</Label>
+                      <Input
+                        type="text"
+                        placeholder="Ex: 123654"
+                        {...register('integracao_senior')}
+                      />
+                      {errors.integracao_senior && <span style={{ color: 'red', fontSize: '11px' }}>{errors.integracao_senior.message}</span>}
+                    </FormGroup>
+
+
+                  </FormGrid>
+                </FormSection>
+
+                {/* Card 5: Informações do Produto */}
                 <FormSection>
                   <SectionTitle>Informações do Produto</SectionTitle>
                   <FormGrid>
@@ -1397,46 +1436,6 @@ const Produtos = () => {
                         {errors.unidade_validade && <span style={{ color: 'red', fontSize: '11px' }}>{errors.unidade_validade.message}</span>}
                       </FormGroup>
                     </FormGrid2>
-                  </FormGrid>
-                </FormSection>
-
-                {/* Card 5: Documentos e Status */}
-                <FormSection>
-                  <SectionTitle>Documentos e Status</SectionTitle>
-                  <FormGrid>
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Ficha de Homologação</Label>
-                        <Input
-                          type="text"
-                          placeholder="Ex: 123456"
-                          {...register('ficha_homologacao')}
-                        />
-                        {errors.ficha_homologacao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.ficha_homologacao.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Foto do Produto</Label>
-                        <Input
-                          type="text"
-                          placeholder="Caminho da foto"
-                          {...register('foto_produto')}
-                        />
-                        {errors.foto_produto && <span style={{ color: 'red', fontSize: '11px' }}>{errors.foto_produto.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGroup>
-                      <Label>Integração Senior</Label>
-                      <Input
-                        type="text"
-                        placeholder="Ex: 123654"
-                        {...register('integracao_senior')}
-                      />
-                      {errors.integracao_senior && <span style={{ color: 'red', fontSize: '11px' }}>{errors.integracao_senior.message}</span>}
-                    </FormGroup>
-
-
                   </FormGrid>
                 </FormSection>
 
