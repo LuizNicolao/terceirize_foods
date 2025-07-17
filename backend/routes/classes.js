@@ -96,6 +96,16 @@ router.post('/', [
       nome, subgrupo_id, status = 1
     } = req.body;
 
+    // Verificar se subgrupo existe
+    const subgrupo = await executeQuery(
+      'SELECT id FROM subgrupos WHERE id = ?',
+      [subgrupo_id]
+    );
+
+    if (subgrupo.length === 0) {
+      return res.status(400).json({ error: 'Subgrupo não encontrado' });
+    }
+
     // Verificar se classe já existe no mesmo subgrupo
     const existingClasse = await executeQuery(
       'SELECT id FROM classes WHERE nome = ? AND subgrupo_id = ?',
@@ -129,7 +139,13 @@ router.post('/', [
 
   } catch (error) {
     console.error('Erro ao criar classe:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Stack trace:', error.stack);
+    console.error('Error code:', error.code);
+    console.error('SQL State:', error.sqlState);
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
