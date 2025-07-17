@@ -95,16 +95,28 @@ router.get('/', async (req, res) => {
 
     console.log('Usuário tem permissão, buscando logs...');
 
-    // Buscar logs diretamente sem filtros complexos
+    // Buscar logs com todos os filtros disponíveis
     const { 
       limit = 100, 
-      offset = 0 
+      offset = 0,
+      data_inicio,
+      data_fim,
+      acao,
+      recurso,
+      usuario_id
     } = req.query;
 
     const filters = {
       limit: parseInt(limit),
       offset: parseInt(offset)
     };
+
+    // Adicionar filtros opcionais
+    if (data_inicio) filters.data_inicio = data_inicio;
+    if (data_fim) filters.data_fim = data_fim;
+    if (acao) filters.acao = acao;
+    if (recurso) filters.recurso = recurso;
+    if (usuario_id) filters.usuario_id = parseInt(usuario_id);
 
     console.log('Buscando logs de auditoria com filtros:', filters);
     const logs = await getAuditLogs(filters);
