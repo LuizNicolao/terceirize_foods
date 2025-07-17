@@ -169,12 +169,6 @@ const menuItems = [
   { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
   { path: '/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
   { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
-  {
-    path: '/classes',
-    icon: FaLayerGroup,
-    label: 'Classes',
-    screen: 'classes'
-  },
 ];
 
 const Sidebar = ({ collapsed, onToggle }) => {

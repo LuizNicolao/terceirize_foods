@@ -19,7 +19,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -29,7 +28,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: true, editar: true, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
-      classes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -39,7 +37,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: true, editar: true, excluir: true },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: true },
       unidades: { visualizar: true, criar: true, editar: true, excluir: true },
-      classes: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -51,7 +48,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -61,7 +57,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: true, editar: true, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
-      classes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -71,7 +66,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: true, editar: true, excluir: true },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: true },
       unidades: { visualizar: true, criar: true, editar: true, excluir: true },
-      classes: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: false, editar: false, excluir: false }
     }
   },
@@ -83,7 +77,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -93,7 +86,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: true, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: false, excluir: false },
       unidades: { visualizar: true, criar: true, editar: false, excluir: false },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -103,7 +95,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: true, editar: true, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -115,7 +106,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -125,7 +115,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: true, editar: true, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -135,7 +124,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: true, editar: true, excluir: true },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: true },
       unidades: { visualizar: true, criar: true, editar: true, excluir: true },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -147,7 +135,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -157,7 +144,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: true, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: false, excluir: false },
       unidades: { visualizar: true, criar: true, editar: false, excluir: false },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -167,7 +153,6 @@ const PERMISSOES_PADRAO = {
       grupos: { visualizar: true, criar: true, editar: true, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
-      classes: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
