@@ -166,10 +166,11 @@ const Modal = styled.div`
 const ModalContent = styled.div`
   background: var(--white);
   border-radius: 12px;
-  padding: 32px;
+  padding: 24px;
   width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
+  max-width: 90vw;
+  width: 1200px;
+  max-height: 95vh;
   overflow-y: auto;
 `;
 
@@ -177,12 +178,13 @@ const ModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
+  grid-column: 1 / -1;
 `;
 
 const ModalTitle = styled.h2`
   color: var(--dark-gray);
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   margin: 0;
 `;
@@ -201,28 +203,50 @@ const CloseButton = styled.button`
 `;
 
 const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-height: calc(95vh - 120px);
+  overflow-y: auto;
+  padding-right: 8px;
+
+  /* Estilizar scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-green);
+  }
 `;
 
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 `;
 
 const Label = styled.label`
   color: var(--dark-gray);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
 `;
 
 const Input = styled.input`
-  padding: 12px 16px;
+  padding: 10px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   transition: all 0.3s ease;
 
   &:focus {
@@ -250,10 +274,10 @@ const TextArea = styled.textarea`
 `;
 
 const Select = styled.select`
-  padding: 12px 16px;
+  padding: 10px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   background: var(--white);
   transition: all 0.3s ease;
 
@@ -267,13 +291,16 @@ const ButtonGroup = styled.div`
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  margin-top: 24px;
+  margin-top: 16px;
+  grid-column: 1 / -1;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 16px;
 `;
 
 const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 600;
   border: none;
   cursor: pointer;
@@ -1044,7 +1071,7 @@ const Fornecedores = () => {
                   placeholder="Razão social da empresa"
                   {...register('razao_social', { required: 'Razão social é obrigatória' })}
                 />
-                {errors.razao_social && <span style={{ color: 'red', fontSize: '12px' }}>{errors.razao_social.message}</span>}
+                {errors.razao_social && <span style={{ color: 'red', fontSize: '11px' }}>{errors.razao_social.message}</span>}
               </FormGroup>
 
               <FormGroup>
@@ -1054,7 +1081,7 @@ const Fornecedores = () => {
                   placeholder="Nome fantasia da empresa"
                   {...register('nome_fantasia')}
                 />
-                {errors.nome_fantasia && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome_fantasia.message}</span>}
+                {errors.nome_fantasia && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome_fantasia.message}</span>}
               </FormGroup>
 
               <FormGroup>
@@ -1086,7 +1113,7 @@ const Fornecedores = () => {
                     </div>
                   )}
                 </div>
-                {errors.cnpj && <span style={{ color: 'red', fontSize: '12px' }}>{errors.cnpj.message}</span>}
+                                  {errors.cnpj && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cnpj.message}</span>}
                 {!editingFornecedor && (
                   <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ color: 'var(--gray)', fontSize: '11px' }}>
@@ -1135,7 +1162,7 @@ const Fornecedores = () => {
                   placeholder="(00) 00000-0000"
                   {...register('telefone')}
                 />
-                {errors.telefone && <span style={{ color: 'red', fontSize: '12px' }}>{errors.telefone.message}</span>}
+                                  {errors.telefone && <span style={{ color: 'red', fontSize: '11px' }}>{errors.telefone.message}</span>}
               </FormGroup>
 
               <FormGroup>
@@ -1150,7 +1177,7 @@ const Fornecedores = () => {
                     }
                   })}
                 />
-                {errors.email && <span style={{ color: 'red', fontSize: '12px' }}>{errors.email.message}</span>}
+                                  {errors.email && <span style={{ color: 'red', fontSize: '11px' }}>{errors.email.message}</span>}
               </FormGroup>
 
               <FormGroup>
@@ -1160,7 +1187,7 @@ const Fornecedores = () => {
                   placeholder="Rua, avenida, etc."
                   {...register('logradouro')}
                 />
-                {errors.logradouro && <span style={{ color: 'red', fontSize: '12px' }}>{errors.logradouro.message}</span>}
+                                  {errors.logradouro && <span style={{ color: 'red', fontSize: '11px' }}>{errors.logradouro.message}</span>}
               </FormGroup>
 
               <FormGroup>
@@ -1170,7 +1197,7 @@ const Fornecedores = () => {
                   placeholder="Número"
                   {...register('numero')}
                 />
-                {errors.numero && <span style={{ color: 'red', fontSize: '12px' }}>{errors.numero.message}</span>}
+                                  {errors.numero && <span style={{ color: 'red', fontSize: '11px' }}>{errors.numero.message}</span>}
               </FormGroup>
 
               <FormGroup>
@@ -1180,10 +1207,10 @@ const Fornecedores = () => {
                   placeholder="Bairro"
                   {...register('bairro')}
                 />
-                {errors.bairro && <span style={{ color: 'red', fontSize: '12px' }}>{errors.bairro.message}</span>}
+                                  {errors.bairro && <span style={{ color: 'red', fontSize: '11px' }}>{errors.bairro.message}</span>}
               </FormGroup>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
                 <FormGroup>
                   <Label>Município</Label>
                   <Input
@@ -1191,7 +1218,7 @@ const Fornecedores = () => {
                     placeholder="Município"
                     {...register('municipio')}
                   />
-                  {errors.municipio && <span style={{ color: 'red', fontSize: '12px' }}>{errors.municipio.message}</span>}
+                                      {errors.municipio && <span style={{ color: 'red', fontSize: '11px' }}>{errors.municipio.message}</span>}
                 </FormGroup>
 
                 <FormGroup>
@@ -1226,7 +1253,7 @@ const Fornecedores = () => {
                     <option value="SE">Sergipe</option>
                     <option value="TO">Tocantins</option>
                   </Select>
-                  {errors.uf && <span style={{ color: 'red', fontSize: '12px' }}>{errors.uf.message}</span>}
+                                      {errors.uf && <span style={{ color: 'red', fontSize: '11px' }}>{errors.uf.message}</span>}
                 </FormGroup>
 
                 <FormGroup>
@@ -1236,7 +1263,7 @@ const Fornecedores = () => {
                     placeholder="00000-000"
                     {...register('cep')}
                   />
-                  {errors.cep && <span style={{ color: 'red', fontSize: '12px' }}>{errors.cep.message}</span>}
+                                      {errors.cep && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cep.message}</span>}
                 </FormGroup>
               </div>
 
@@ -1249,7 +1276,7 @@ const Fornecedores = () => {
                   <option value="1">Ativo</option>
                   <option value="0">Inativo</option>
                 </Select>
-                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
+                {errors.status && <span style={{ color: 'red', fontSize: '11px' }}>{errors.status.message}</span>}
               </FormGroup>
 
               <ButtonGroup>
