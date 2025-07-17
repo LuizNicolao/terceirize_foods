@@ -42,7 +42,7 @@ const auditMiddleware = (action, resource) => {
   return async (req, res, next) => {
     const originalSend = res.send;
     
-    res.send = function(data) {
+    res.send = async function(data) {
       // Registrar apenas se a operação foi bem-sucedida
       if (res.statusCode >= 200 && res.statusCode < 300) {
         const details = {
@@ -69,10 +69,10 @@ const auditMiddleware = (action, resource) => {
         
         // Para UPDATE, adicionar ID do recurso
         if (action === AUDIT_ACTIONS.UPDATE) {
-          details.resourceId = req.params.id;
+          details.resourceId = req.params.id || req.params.usuarioId;
         }
         
-        logAction(
+        await logAction(
           req.user?.id,
           action,
           resource,
@@ -94,7 +94,7 @@ const auditChangesMiddleware = (action, resource) => {
     let originalData = null;
     
     // Capturar dados originais antes da modificação
-    if (action === AUDIT_ACTIONS.UPDATE && req.params.id) {
+    if (action === AUDIT_ACTIONS.UPDATE && (req.params.id || req.params.usuarioId)) {
       try {
         const { executeQuery } = require('../config/database');
         let tableName;
@@ -124,9 +124,10 @@ const auditChangesMiddleware = (action, resource) => {
             tableName = resource;
         }
         
+        const resourceId = req.params.id || req.params.usuarioId;
         const result = await executeQuery(
           `SELECT * FROM ${tableName} WHERE id = ?`,
-          [req.params.id]
+          [resourceId]
         );
         
         if (result.length > 0) {
@@ -139,7 +140,7 @@ const auditChangesMiddleware = (action, resource) => {
     
     const originalSend = res.send;
     
-    res.send = function(data) {
+    res.send = async function(data) {
       // Registrar apenas se a operação foi bem-sucedida
       if (res.statusCode >= 200 && res.statusCode < 300) {
         const details = {
@@ -158,18 +159,61 @@ const auditChangesMiddleware = (action, resource) => {
           
           // Identificar mudanças
           const changes = {};
-          Object.keys(sanitizedBody).forEach(key => {
-            if (originalData[key] !== sanitizedBody[key]) {
-              changes[key] = {
-                from: originalData[key],
-                to: sanitizedBody[key]
-              };
+          
+          // Para permissões, comparar arrays de permissões
+          if (resource === 'permissoes' && sanitizedBody.permissoes) {
+            // Buscar permissões originais do usuário
+            try {
+              const originalPerms = await executeQuery(
+                'SELECT * FROM permissoes_usuario WHERE usuario_id = ?',
+                [req.params.usuarioId]
+              );
+              
+              // Criar mapa das permissões originais por tela
+              const originalPermsMap = {};
+              originalPerms.forEach(perm => {
+                originalPermsMap[perm.tela] = {
+                  pode_visualizar: perm.pode_visualizar,
+                  pode_criar: perm.pode_criar,
+                  pode_editar: perm.pode_editar,
+                  pode_excluir: perm.pode_excluir
+                };
+              });
+              
+              // Comparar com novas permissões
+              sanitizedBody.permissoes.forEach(newPerm => {
+                const originalPerm = originalPermsMap[newPerm.tela];
+                if (originalPerm) {
+                  ['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].forEach(acao => {
+                    const oldValue = originalPerm[acao] === 1;
+                    const newValue = newPerm[acao];
+                    if (oldValue !== newValue) {
+                      changes[`${newPerm.tela}_${acao}`] = {
+                        from: oldValue ? 'Sim' : 'Não',
+                        to: newValue ? 'Sim' : 'Não'
+                      };
+                    }
+                  });
+                }
+              });
+            } catch (error) {
+              console.error('Erro ao comparar permissões:', error);
             }
-          });
+          } else {
+            // Para outros recursos, comparar campos simples
+            Object.keys(sanitizedBody).forEach(key => {
+              if (originalData[key] !== sanitizedBody[key]) {
+                changes[key] = {
+                  from: originalData[key],
+                  to: sanitizedBody[key]
+                };
+              }
+            });
+          }
           
           details.requestBody = sanitizedBody;
           details.changes = changes;
-          details.resourceId = req.params.id;
+          details.resourceId = req.params.id || req.params.usuarioId;
         }
         
         // Para CREATE
@@ -186,7 +230,7 @@ const auditChangesMiddleware = (action, resource) => {
           details.resourceId = req.params.id;
         }
         
-        logAction(
+        await logAction(
           req.user?.id,
           action,
           resource,
