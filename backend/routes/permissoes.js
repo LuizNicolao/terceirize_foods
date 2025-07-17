@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -266,7 +267,10 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
 });
 
 // Atualizar permissões de um usuário
-router.put('/usuario/:usuarioId', checkPermission('editar'), async (req, res) => {
+router.put('/usuario/:usuarioId', [
+  checkPermission('editar'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'permissoes')
+], async (req, res) => {
   try {
     const { usuarioId } = req.params;
     const { permissoes } = req.body;
@@ -311,7 +315,7 @@ router.put('/usuario/:usuarioId', checkPermission('editar'), async (req, res) =>
 });
 
 // Função para atualizar permissões quando tipo/nível de acesso for alterado
-const atualizarPermissoesPorTipoNivel = async (usuarioId, tipoAcesso, nivelAcesso) => {
+const atualizarPermissoesPorTipoNivel = async (usuarioId, tipoAcesso, nivelAcesso, req = null) => {
   try {
     const permissoes = PERMISSOES_PADRAO[tipoAcesso]?.[nivelAcesso];
     
@@ -339,6 +343,35 @@ const atualizarPermissoesPorTipoNivel = async (usuarioId, tipoAcesso, nivelAcess
           permissoesTela.excluir ? 1 : 0
         ]
       );
+    }
+
+    // Registrar auditoria se req estiver disponível
+    if (req) {
+      try {
+        const { logAction } = require('../utils/audit');
+        const details = {
+          method: 'PUT',
+          url: `/permissoes/usuario/${usuarioId}`,
+          statusCode: 200,
+          userAgent: req.get('User-Agent'),
+          requestBody: { tipoAcesso, nivelAcesso },
+          resourceId: usuarioId,
+          changes: {
+            tipo_acesso: { from: 'alterado', to: tipoAcesso },
+            nivel_acesso: { from: 'alterado', to: nivelAcesso }
+          }
+        };
+        
+        await logAction(
+          req.user?.id,
+          AUDIT_ACTIONS.UPDATE,
+          'permissoes',
+          details,
+          req.ip
+        );
+      } catch (auditError) {
+        console.error('Erro ao registrar auditoria:', auditError);
+      }
     }
 
     return true;

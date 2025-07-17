@@ -117,6 +117,9 @@ const auditChangesMiddleware = (action, resource) => {
           case 'fornecedores':
             tableName = 'fornecedores';
             break;
+          case 'permissoes':
+            tableName = 'permissoes_usuario';
+            break;
           default:
             tableName = resource;
         }
