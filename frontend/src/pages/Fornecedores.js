@@ -742,7 +742,6 @@ const Fornecedores = () => {
         if (createData.status) {
           createData.status = parseInt(createData.status);
         }
-        console.log('Dados sendo enviados para criação:', createData);
         await api.post('/fornecedores', createData);
         toast.success('Fornecedor criado com sucesso!');
       }
@@ -751,15 +750,7 @@ const Fornecedores = () => {
       loadFornecedores();
     } catch (error) {
       console.error('Erro ao salvar fornecedor:', error);
-      console.error('Detalhes do erro:', error.response?.data);
-      
-      // Mostrar detalhes específicos dos erros de validação
-      if (error.response?.data?.details && Array.isArray(error.response.data.details)) {
-        const errorMessages = error.response.data.details.map(detail => detail.msg).join(', ');
-        toast.error(`Erro de validação: ${errorMessages}`);
-      } else {
-        toast.error(error.response?.data?.error || 'Erro ao salvar fornecedor');
-      }
+      toast.error(error.response?.data?.error || 'Erro ao salvar fornecedor');
     }
   };
 

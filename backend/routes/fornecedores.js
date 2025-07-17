@@ -176,14 +176,11 @@ router.post('/', [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('Erros de validação:', errors.array());
       return res.status(400).json({ 
         error: 'Dados inválidos',
         details: errors.array() 
       });
     }
-
-    console.log('Dados recebidos para criação:', req.body);
 
     const {
       cnpj, razao_social, nome_fantasia, logradouro, numero, cep,
