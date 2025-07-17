@@ -229,7 +229,7 @@ const FirstRow = styled.div`
 
 const SecondRow = styled.div`
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   align-items: stretch;
 `;
@@ -1477,30 +1477,18 @@ const Produtos = () => {
                       {errors.integracao_senior && <span style={{ color: 'red', fontSize: '11px' }}>{errors.integracao_senior.message}</span>}
                     </FormGroup>
 
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Fornecedor</Label>
-                        <Select {...register('fornecedor_id')}>
-                          <option value="">Selecione...</option>
-                          {fornecedores.map(fornecedor => (
-                            <option key={fornecedor.id} value={fornecedor.id}>
-                              {fornecedor.razao_social}
-                            </option>
-                          ))}
-                        </Select>
-                        {errors.fornecedor_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fornecedor_id.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Status</Label>
-                        <Select {...register('status', { required: 'Status é obrigatório' })}>
-                          <option value="">Selecione...</option>
-                          <option value="1">Ativo</option>
-                          <option value="0">Inativo</option>
-                        </Select>
-                        {errors.status && <span style={{ color: 'red', fontSize: '11px' }}>{errors.status.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
+                    <FormGroup>
+                      <Label>Fornecedor</Label>
+                      <Select {...register('fornecedor_id')}>
+                        <option value="">Selecione...</option>
+                        {fornecedores.map(fornecedor => (
+                          <option key={fornecedor.id} value={fornecedor.id}>
+                            {fornecedor.razao_social}
+                          </option>
+                        ))}
+                      </Select>
+                      {errors.fornecedor_id && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fornecedor_id.message}</span>}
+                    </FormGroup>
 
                     <FormGrid2>
                       <FormGroup>
@@ -1552,16 +1540,68 @@ const Produtos = () => {
                     </FormGrid2>
                   </FormGrid>
                 </FormSection>
-              </SecondRow>
 
-              <ButtonGroup>
-                <Button type="button" className="secondary" onClick={handleCloseModal}>
-                  Cancelar
-                </Button>
-                <Button type="submit" className="primary">
-                  {editingProduto ? 'Atualizar' : 'Criar'}
-                </Button>
-              </ButtonGroup>
+                {/* Card 6: Ações e Status */}
+                <FormSection>
+                  <SectionTitle>Ações</SectionTitle>
+                  <FormGrid>
+                    <FormGroup>
+                      <Label>Status do Produto</Label>
+                      <Select {...register('status', { required: 'Status é obrigatório' })}>
+                        <option value="">Selecione...</option>
+                        <option value="1">Ativo</option>
+                        <option value="0">Inativo</option>
+                      </Select>
+                      {errors.status && <span style={{ color: 'red', fontSize: '11px' }}>{errors.status.message}</span>}
+                    </FormGroup>
+
+                    <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <Button
+                        type="submit"
+                        style={{ 
+                          backgroundColor: 'var(--primary-green)', 
+                          color: 'white',
+                          padding: '12px 20px',
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}
+                      >
+                        <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
+                        {editingProduto ? 'Atualizar Produto' : 'Cadastrar Produto'}
+                      </Button>
+
+                      <Button
+                        type="button"
+                        onClick={() => {/* Função de impressão */}}
+                        style={{ 
+                          backgroundColor: '#f5f5f5', 
+                          color: '#666',
+                          padding: '10px 16px',
+                          fontSize: '13px',
+                          border: '1px solid #ddd'
+                        }}
+                      >
+                        <i className="fas fa-print" style={{ marginRight: '8px' }}></i>
+                        Imprimir Produto
+                      </Button>
+
+                      <Button
+                        type="button"
+                        onClick={onClose}
+                        style={{ 
+                          backgroundColor: '#dc3545', 
+                          color: 'white',
+                          padding: '10px 16px',
+                          fontSize: '13px'
+                        }}
+                      >
+                        <i className="fas fa-arrow-left" style={{ marginRight: '8px' }}></i>
+                        Cancelar
+                      </Button>
+                    </div>
+                  </FormGrid>
+                </FormSection>
+              </SecondRow>
             </Form>
           </ModalContent>
         </Modal>
