@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -68,6 +69,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 // Criar subgrupo
 router.post('/', [
   checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'subgrupos'),
   body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('grupo_id').isInt({ min: 1 }).withMessage('ID do grupo é obrigatório')
 ], async (req, res) => {
@@ -127,6 +129,7 @@ router.post('/', [
 // Atualizar subgrupo
 router.put('/:id', [
   checkPermission('editar'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'subgrupos'),
   body('nome').optional().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('grupo_id').optional().isInt({ min: 1 }).withMessage('ID do grupo deve ser um número válido'),
   body('status').optional().isIn([0, 1]).withMessage('Status deve ser 0 ou 1')
@@ -222,7 +225,10 @@ router.put('/:id', [
 });
 
 // Excluir subgrupo
-router.delete('/:id', checkPermission('excluir'), async (req, res) => {
+router.delete('/:id', [
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'subgrupos')
+], async (req, res) => {
   try {
     const { id } = req.params;
 
