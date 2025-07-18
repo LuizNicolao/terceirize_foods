@@ -344,22 +344,7 @@ const Grupos = () => {
     setValue
   } = useForm();
 
-  const { permissions } = usePermissions();
-
-  // Verificar permissões para Grupos
-  const canCreate = permissions?.grupos?.create || false;
-  const canEdit = permissions?.grupos?.edit || false;
-  const canDelete = permissions?.grupos?.delete || false;
-  const canView = permissions?.grupos?.view || false;
-
-  // Debug: verificar permissões
-  console.log('Permissões carregadas:', permissions);
-  console.log('Permissões para Grupos:', {
-    canCreate,
-    canEdit,
-    canDelete,
-    canView
-  });
+  const { canCreate, canEdit, canDelete } = usePermissions();
 
   // Carregar grupos
   const loadGrupos = async () => {
@@ -772,7 +757,7 @@ const Grupos = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          {canCreate && (
+          {canCreate('grupos') && (
             <AddButton onClick={handleAddGrupo}>
               <FaPlus />
               Adicionar Grupo
@@ -838,24 +823,24 @@ const Grupos = () => {
                       >
                         <FaEye />
                       </ActionButton>
-                      {canEdit && (
-                        <ActionButton
-                          className="edit"
-                          title="Editar"
-                          onClick={() => handleEditGrupo(grupo)}
-                        >
-                          <FaEdit />
-                        </ActionButton>
-                      )}
-                      {canDelete && (
-                        <ActionButton
-                          className="delete"
-                          title="Excluir"
-                          onClick={() => handleDeleteGrupo(grupo.id)}
-                        >
-                          <FaTrash />
-                        </ActionButton>
-                      )}
+                                {canEdit('grupos') && (
+            <ActionButton
+              className="edit"
+              title="Editar"
+              onClick={() => handleEditGrupo(grupo)}
+            >
+              <FaEdit />
+            </ActionButton>
+          )}
+          {canDelete('grupos') && (
+            <ActionButton
+              className="delete"
+              title="Excluir"
+              onClick={() => handleDeleteGrupo(grupo.id)}
+            >
+              <FaTrash />
+            </ActionButton>
+          )}
                     </Td>
                   </tr>
                 ))
