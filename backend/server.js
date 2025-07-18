@@ -33,13 +33,36 @@ app.use(cors({
   credentials: true
 }));
 
-// Rate limiting
+// Rate limiting mais flexível para sistema em produção
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // limite de 100 requisições por IP
-  message: 'Muitas requisições deste IP, tente novamente mais tarde.'
+  max: 2000, // limite de 2000 requisições por IP (aumentado significativamente)
+  message: 'Muitas requisições deste IP, tente novamente mais tarde.',
+  standardHeaders: true, // Retorna rate limit info nos headers
+  legacyHeaders: false, // Não usa headers legacy
+  skip: (req) => {
+    // Pular rate limiting para health check e algumas rotas específicas
+    return req.path === '/api/health' || 
+           req.path === '/api/auth/verify' || // Verificação de token
+           req.path.startsWith('/api/dashboard'); // Dashboard (muitas requisições)
+  }
 });
+
+// Rate limiting específico para login (mais restritivo)
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 20, // limite de 20 tentativas de login por IP (aumentado de 10)
+  message: 'Muitas tentativas de login, tente novamente em 15 minutos.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Pular se não for tentativa de login
+    return req.path !== '/api/auth/login';
+  }
+});
+
 app.use('/api/', limiter);
+app.use('/api/auth', loginLimiter);
 
 // Middleware para parsing
 app.use(express.json({ limit: '10mb' }));
@@ -75,6 +98,35 @@ app.get('/api/health', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+
+// Rota para resetar rate limiting (apenas em desenvolvimento)
+if (process.env.NODE_ENV !== 'production') {
+  app.post('/api/reset-rate-limit', (req, res) => {
+    try {
+      // Resetar rate limiting para o IP atual
+      const clientIP = req.ip || req.connection.remoteAddress;
+      
+      // Limpar rate limiting do login
+      if (loginLimiter.resetKey) {
+        loginLimiter.resetKey(clientIP);
+      }
+      
+      // Limpar rate limiting geral
+      if (limiter.resetKey) {
+        limiter.resetKey(clientIP);
+      }
+      
+      res.json({ 
+        message: 'Rate limiting resetado com sucesso',
+        ip: clientIP,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro ao resetar rate limiting:', error);
+      res.status(500).json({ error: 'Erro ao resetar rate limiting' });
+    }
+  });
+}
 
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {

@@ -47,6 +47,15 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true };
     } catch (error) {
+      // Tratamento específico para erro 429 (Too Many Requests)
+      if (error.response?.status === 429) {
+        return { 
+          success: false, 
+          error: 'Muitas tentativas de login. Aguarde 15 minutos ou reinicie o servidor.',
+          isRateLimited: true
+        };
+      }
+      
       return { 
         success: false, 
         error: error.response?.data?.error || 'Erro ao fazer login' 

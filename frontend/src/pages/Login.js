@@ -123,10 +123,14 @@ const LoginButton = styled.button`
 `;
 
 const ErrorMessage = styled.p`
-  color: var(--error-red);
+  color: ${props => props.type === 'rate-limit' ? '#f57c00' : 'var(--error-red)'};
   font-size: 14px;
   margin: 0;
   text-align: center;
+  padding: 12px;
+  background: ${props => props.type === 'rate-limit' ? '#fff3e0' : 'transparent'};
+  border-radius: 6px;
+  border: ${props => props.type === 'rate-limit' ? '1px solid #ffb74d' : 'none'};
 `;
 
 const Login = () => {
@@ -152,8 +156,19 @@ const Login = () => {
         toast.success('Login realizado com sucesso!');
         navigate('/');
       } else {
-        setError('root', { message: result.error });
-        toast.error(result.error);
+        // Tratamento específico para rate limiting
+        if (result.isRateLimited) {
+          setError('root', { 
+            message: 'Muitas tentativas de login. Aguarde 15 minutos ou reinicie o servidor.',
+            type: 'rate-limit'
+          });
+          toast.error('Rate limit atingido. Aguarde 15 minutos.', {
+            duration: 5000
+          });
+        } else {
+          setError('root', { message: result.error });
+          toast.error(result.error);
+        }
       }
     } catch (error) {
       setError('root', { message: 'Erro interno do servidor' });
@@ -221,9 +236,9 @@ const Login = () => {
             )}
           </FormGroup>
 
-          {errors.root && (
-            <ErrorMessage>{errors.root.message}</ErrorMessage>
-          )}
+                      {errors.root && (
+              <ErrorMessage type={errors.root.type}>{errors.root.message}</ErrorMessage>
+            )}
 
           <LoginButton type="submit" disabled={isLoading}>
             {isLoading ? 'Entrando...' : 'Entrar'}
