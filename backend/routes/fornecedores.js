@@ -396,4 +396,106 @@ router.delete('/:id', [
   }
 });
 
+// Importar fornecedores via Excel
+router.post('/importar', [
+  checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'fornecedores')
+], async (req, res) => {
+  try {
+    const { dados } = req.body;
+
+    if (!dados || !Array.isArray(dados) || dados.length === 0) {
+      return res.status(400).json({ error: 'Dados inválidos para importação' });
+    }
+
+    const resultados = {
+      sucessos: 0,
+      erros: 0,
+      detalhes: []
+    };
+
+    for (let i = 0; i < dados.length; i++) {
+      const linha = dados[i];
+      const numeroLinha = i + 2; // +2 porque a primeira linha é o cabeçalho e arrays começam em 0
+
+      try {
+        // Mapear campos da planilha para campos do banco
+        const fornecedor = {
+          cnpj: linha.CNPJ || linha.cnpj || '',
+          razao_social: linha['RAZAO SOCIAL'] || linha['razao_social'] || linha['RAZÃO SOCIAL'] || '',
+          nome_fantasia: linha['NOME FANTASIA'] || linha['nome_fantasia'] || '',
+          logradouro: linha.LOGRADOURO || linha.logradouro || '',
+          numero: linha.NÚMERO || linha.NUMERO || linha.numero || '',
+          cep: linha.CEP || linha.cep || '',
+          bairro: linha.BAIRRO || linha.bairro || '',
+          municipio: linha.MUNICIPIO || linha.municipio || '',
+          uf: linha.UF || linha.uf || '',
+          email: linha.EMAIL || linha.email || '',
+          telefone: linha.TELEFONE || linha.telefone || '',
+          status: 1 // Padrão ativo
+        };
+
+        // Validações básicas
+        if (!fornecedor.cnpj || fornecedor.cnpj.trim() === '') {
+          throw new Error('CNPJ é obrigatório');
+        }
+
+        if (!fornecedor.razao_social || fornecedor.razao_social.trim() === '') {
+          throw new Error('Razão social é obrigatória');
+        }
+
+        // Limpar CNPJ (remover pontos, traços e barras)
+        const cnpjLimpo = fornecedor.cnpj.replace(/\D/g, '');
+        if (cnpjLimpo.length !== 14) {
+          throw new Error('CNPJ deve ter 14 dígitos');
+        }
+
+        // Verificar se CNPJ já existe
+        const existingFornecedor = await executeQuery(
+          'SELECT id FROM fornecedores WHERE cnpj = ?',
+          [cnpjLimpo]
+        );
+
+        if (existingFornecedor.length > 0) {
+          throw new Error('CNPJ já cadastrado');
+        }
+
+        // Inserir fornecedor
+        await executeQuery(
+          `INSERT INTO fornecedores (cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
+                                    bairro, municipio, uf, email, telefone, status) 
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [cnpjLimpo, fornecedor.razao_social, fornecedor.nome_fantasia, fornecedor.logradouro, 
+           fornecedor.numero, fornecedor.cep, fornecedor.bairro, fornecedor.municipio, 
+           fornecedor.uf, fornecedor.email, fornecedor.telefone, fornecedor.status]
+        );
+
+        resultados.sucessos++;
+        resultados.detalhes.push({
+          linha: numeroLinha,
+          status: 'sucesso',
+          mensagem: 'Fornecedor importado com sucesso'
+        });
+
+      } catch (error) {
+        resultados.erros++;
+        resultados.detalhes.push({
+          linha: numeroLinha,
+          status: 'erro',
+          mensagem: error.message
+        });
+      }
+    }
+
+    res.json({
+      message: `Importação concluída. ${resultados.sucessos} sucessos, ${resultados.erros} erros.`,
+      resultados
+    });
+
+  } catch (error) {
+    console.error('Erro ao importar fornecedores:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 module.exports = router; 

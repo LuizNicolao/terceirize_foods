@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUpload } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
+import * as XLSX from 'xlsx';
 
 const Container = styled.div`
   padding: 24px;
@@ -359,6 +360,10 @@ const Fornecedores = () => {
     periodo: ''
   });
   const [cnpjLoading, setCnpjLoading] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importResults, setImportResults] = useState(null);
+  const fileInputRef = useRef(null);
 
   const {
     register,
@@ -601,6 +606,104 @@ const Fornecedores = () => {
     } catch (error) {
       console.error('Erro ao exportar PDF:', error);
       toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  // Importar fornecedores via Excel
+  const handleImportExcel = async (file) => {
+    try {
+      setImportLoading(true);
+      
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          
+          if (jsonData.length < 2) {
+            toast.error('Arquivo deve ter pelo menos um cabeçalho e uma linha de dados');
+            setImportLoading(false);
+            return;
+          }
+          
+          // Pegar cabeçalhos (primeira linha)
+          const headers = jsonData[0];
+          
+          // Converter dados para objetos com nomes de colunas
+          const dados = jsonData.slice(1).map(row => {
+            const obj = {};
+            headers.forEach((header, index) => {
+              if (header && row[index] !== undefined) {
+                obj[header] = row[index];
+              }
+            });
+            return obj;
+          }).filter(row => {
+            // Filtrar linhas vazias
+            return Object.values(row).some(value => value !== null && value !== undefined && value !== '');
+          });
+          
+          if (dados.length === 0) {
+            toast.error('Nenhum dado válido encontrado no arquivo');
+            setImportLoading(false);
+            return;
+          }
+          
+          // Enviar dados para o backend
+          const response = await api.post('/fornecedores/importar', { dados });
+          
+          setImportResults(response.data);
+          setShowImportModal(true);
+          
+          if (response.data.resultados.sucessos > 0) {
+            toast.success(`Importação concluída! ${response.data.resultados.sucessos} fornecedores importados com sucesso.`);
+            loadFornecedores(); // Recarregar lista
+          }
+          
+        } catch (error) {
+          console.error('Erro ao processar arquivo:', error);
+          toast.error('Erro ao processar arquivo Excel');
+        } finally {
+          setImportLoading(false);
+        }
+      };
+      
+      reader.readAsArrayBuffer(file);
+      
+    } catch (error) {
+      console.error('Erro ao importar arquivo:', error);
+      toast.error('Erro ao importar arquivo');
+      setImportLoading(false);
+    }
+  };
+
+  // Abrir modal de importação
+  const handleOpenImportModal = () => {
+    setShowImportModal(true);
+    setImportResults(null);
+  };
+
+  // Fechar modal de importação
+  const handleCloseImportModal = () => {
+    setShowImportModal(false);
+    setImportResults(null);
+  };
+
+  // Selecionar arquivo para importação
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+          file.type === 'application/vnd.ms-excel' ||
+          file.name.endsWith('.xlsx') ||
+          file.name.endsWith('.xls')) {
+        handleImportExcel(file);
+      } else {
+        toast.error('Por favor, selecione um arquivo Excel (.xlsx ou .xls)');
+      }
     }
   };
 
@@ -989,10 +1092,20 @@ const Fornecedores = () => {
             Auditoria
           </AddButton>
           {canCreate('fornecedores') && (
-            <AddButton onClick={handleAddFornecedor}>
-              <FaPlus />
-              Adicionar Fornecedor
-            </AddButton>
+            <>
+              <AddButton 
+                onClick={() => fileInputRef.current?.click()}
+                style={{ background: 'var(--orange)', fontSize: '12px', padding: '8px 12px' }}
+                disabled={importLoading}
+              >
+                <FaUpload />
+                {importLoading ? 'Importando...' : 'Importar Excel'}
+              </AddButton>
+              <AddButton onClick={handleAddFornecedor}>
+                <FaPlus />
+                Adicionar Fornecedor
+              </AddButton>
+            </>
           )}
         </div>
       </Header>
@@ -1085,6 +1198,15 @@ const Fornecedores = () => {
           </tbody>
         </Table>
       </TableContainer>
+
+      {/* Input file oculto para importação */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        accept=".xlsx,.xls"
+        style={{ display: 'none' }}
+      />
 
       {showModal && (
         <Modal onClick={handleCloseModal}>
@@ -1612,6 +1734,113 @@ const Fornecedores = () => {
                 </div>
               )}
             </div>
+          </ModalContent>
+        </Modal>
+      )}
+
+      {/* Modal de Resultados de Importação */}
+      {showImportModal && (
+        <Modal onClick={handleCloseImportModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
+            <ModalHeader>
+              <ModalTitle>Resultados da Importação</ModalTitle>
+              <CloseButton onClick={handleCloseImportModal}>&times;</CloseButton>
+            </ModalHeader>
+
+            {importResults ? (
+              <div>
+                <div style={{ 
+                  padding: '16px', 
+                  borderRadius: '8px', 
+                  marginBottom: '20px',
+                  background: importResults.resultados.sucessos > 0 ? '#e8f5e8' : '#f8d7da',
+                  border: `1px solid ${importResults.resultados.sucessos > 0 ? '#2e7d32' : '#721c24'}`
+                }}>
+                  <h3 style={{ 
+                    margin: '0 0 8px 0', 
+                    color: importResults.resultados.sucessos > 0 ? '#2e7d32' : '#721c24',
+                    fontSize: '16px'
+                  }}>
+                    {importResults.message}
+                  </h3>
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '16px', 
+                    fontSize: '14px',
+                    color: importResults.resultados.sucessos > 0 ? '#2e7d32' : '#721c24'
+                  }}>
+                    <span><strong>Sucessos:</strong> {importResults.resultados.sucessos}</span>
+                    <span><strong>Erros:</strong> {importResults.resultados.erros}</span>
+                  </div>
+                </div>
+
+                {importResults.resultados.detalhes.length > 0 && (
+                  <div>
+                    <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--dark-gray)' }}>
+                      Detalhes por Linha:
+                    </h4>
+                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                      {importResults.resultados.detalhes.map((detalhe, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            padding: '8px 12px',
+                            marginBottom: '8px',
+                            borderRadius: '4px',
+                            border: `1px solid ${detalhe.status === 'sucesso' ? '#2e7d32' : '#721c24'}`,
+                            background: detalhe.status === 'sucesso' ? '#e8f5e8' : '#f8d7da',
+                            fontSize: '12px'
+                          }}
+                        >
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            marginBottom: '4px'
+                          }}>
+                            <span style={{ 
+                              fontWeight: 'bold',
+                              color: detalhe.status === 'sucesso' ? '#2e7d32' : '#721c24'
+                            }}>
+                              Linha {detalhe.linha}
+                            </span>
+                            <span style={{
+                              padding: '2px 6px',
+                              borderRadius: '3px',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              background: detalhe.status === 'sucesso' ? '#2e7d32' : '#721c24',
+                              color: 'white'
+                            }}>
+                              {detalhe.status === 'sucesso' ? 'SUCESSO' : 'ERRO'}
+                            </span>
+                          </div>
+                          <div style={{ 
+                            color: detalhe.status === 'sucesso' ? '#2e7d32' : '#721c24',
+                            fontSize: '11px'
+                          }}>
+                            {detalhe.mensagem}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                <div style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  border: '4px solid #f3f3f3', 
+                  borderTop: '4px solid var(--primary-green)', 
+                  borderRadius: '50%', 
+                  animation: 'spin 1s linear infinite',
+                  margin: '0 auto 16px auto'
+                }}></div>
+                Processando importação...
+              </div>
+            )}
           </ModalContent>
         </Modal>
       )}
