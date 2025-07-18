@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle, FaFileExcel, FaFilePd
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 const Container = styled.div`
   padding: 24px;
@@ -114,8 +115,8 @@ const StatusBadge = styled.span`
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  background: ${props => props.status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.status === 'ativo' ? 'white' : 'var(--error-red)'};
+  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
+  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
 `;
 
 const ActionButton = styled.button`
@@ -289,6 +290,7 @@ const Unidades = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUnidade, setEditingUnidade] = useState(null);
+  const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -301,6 +303,12 @@ const Unidades = () => {
     usuario_id: '',
     periodo: ''
   });
+
+  const { permissions } = usePermissions();
+  const canCreate = permissions?.unidades?.create || false;
+  const canEdit = permissions?.unidades?.edit || false;
+  const canDelete = permissions?.unidades?.delete || false;
+  const canView = permissions?.unidades?.view || false;
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
@@ -610,11 +618,22 @@ const Unidades = () => {
     setShowModal(true);
   };
 
+  // Abrir modal para visualizar unidade
+  const handleViewUnidade = (unidade) => {
+    setEditingUnidade(unidade);
+    setViewMode(true);
+    setValue('nome', unidade.nome);
+    setValue('sigla', unidade.sigla);
+    setValue('status', unidade.status);
+    setShowModal(true);
+  };
+
   // Fechar modal
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingUnidade(null);
     reset();
+    setViewMode(false); // Resetar modo de visualização
   };
 
   // Salvar unidade
@@ -704,10 +723,12 @@ const Unidades = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          <AddButton onClick={handleAddUnidade}>
-            <FaPlus />
-            Adicionar Unidade
-          </AddButton>
+          {canCreate && (
+            <AddButton onClick={handleAddUnidade}>
+              <FaPlus />
+              Adicionar Unidade
+            </AddButton>
+          )}
         </div>
       </Header>
 
@@ -756,7 +777,7 @@ const Unidades = () => {
                   <Td>{unidade.nome}</Td>
                   <Td>{unidade.sigla}</Td>
                   <Td>
-                    <StatusBadge status={unidade.status === 1 ? 'ativo' : 'inativo'}>
+                    <StatusBadge $status={unidade.status === 1 ? 'ativo' : 'inativo'}>
                       {unidade.status === 1 ? 'Ativo' : 'Inativo'}
                     </StatusBadge>
                   </Td>
@@ -764,24 +785,28 @@ const Unidades = () => {
                     <ActionButton
                       className="view"
                       title="Visualizar"
-                      onClick={() => handleEditUnidade(unidade)}
+                      onClick={() => handleViewUnidade(unidade)}
                     >
                       <FaEye />
                     </ActionButton>
-                    <ActionButton
-                      className="edit"
-                      title="Editar"
-                      onClick={() => handleEditUnidade(unidade)}
-                    >
-                      <FaEdit />
-                    </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      title="Excluir"
-                      onClick={() => handleDeleteUnidade(unidade.id)}
-                    >
-                      <FaTrash />
-                    </ActionButton>
+                    {canEdit && (
+                      <ActionButton
+                        className="edit"
+                        title="Editar"
+                        onClick={() => handleEditUnidade(unidade)}
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                    )}
+                    {canDelete && (
+                      <ActionButton
+                        className="delete"
+                        title="Excluir"
+                        onClick={() => handleDeleteUnidade(unidade.id)}
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    )}
                   </Td>
                 </tr>
               ))
@@ -807,6 +832,7 @@ const Unidades = () => {
                   type="text"
                   placeholder="Nome da unidade"
                   {...register('nome', { required: 'Nome é obrigatório' })}
+                  disabled={viewMode}
                 />
                 {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
               </FormGroup>
@@ -817,13 +843,14 @@ const Unidades = () => {
                   type="text"
                   placeholder="Ex: KG, L, UN"
                   {...register('sigla', { required: 'Sigla é obrigatória' })}
+                  disabled={viewMode}
                 />
                 {errors.sigla && <span style={{ color: 'red', fontSize: '12px' }}>{errors.sigla.message}</span>}
               </FormGroup>
 
               <FormGroup>
                 <Label>Status</Label>
-                <Select {...register('status', { required: 'Status é obrigatório' })}>
+                <Select {...register('status', { required: 'Status é obrigatório' })} disabled={viewMode}>
                   <option value="">Selecione...</option>
                   <option value="1">Ativo</option>
                   <option value="0">Inativo</option>
@@ -832,12 +859,21 @@ const Unidades = () => {
               </FormGroup>
 
               <ButtonGroup>
-                <Button type="button" className="secondary" onClick={handleCloseModal}>
-                  Cancelar
+                <Button
+                  type="button"
+                  className="secondary"
+                  onClick={handleCloseModal}
+                >
+                  {viewMode ? 'Fechar' : 'Cancelar'}
                 </Button>
-                <Button type="submit" className="primary">
-                  {editingUnidade ? 'Atualizar' : 'Criar'}
-                </Button>
+                {!viewMode && (
+                  <Button
+                    type="submit"
+                    className="primary"
+                  >
+                    {editingUnidade ? 'Atualizar' : 'Cadastrar'}
+                  </Button>
+                )}
               </ButtonGroup>
             </Form>
           </ModalContent>
