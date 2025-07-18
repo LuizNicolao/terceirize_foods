@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaBox, FaQuestionCi
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 const Container = styled.div`
   padding: 24px;
@@ -114,8 +115,8 @@ const StatusBadge = styled.span`
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  background: ${props => props.status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.status === 'ativo' ? 'white' : 'var(--error-red)'};
+  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
+  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
 `;
 
 const ActionButton = styled.button`
@@ -225,6 +226,11 @@ const Input = styled.input`
     box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
     outline: none;
   }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
 `;
 
 const Select = styled.select`
@@ -239,6 +245,11 @@ const Select = styled.select`
   &:focus {
     border-color: var(--primary-green);
     outline: none;
+  }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
   }
 `;
 
@@ -316,6 +327,7 @@ const Subgrupos = () => {
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingSubgrupo, setEditingSubgrupo] = useState(null);
+  const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGrupo, setSelectedGrupo] = useState('');
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -328,6 +340,14 @@ const Subgrupos = () => {
     usuario_id: '',
     periodo: ''
   });
+
+  const { permissions } = usePermissions();
+
+  // Verificar permissões para Subgrupos
+  const canCreate = permissions?.subgrupos?.create || false;
+  const canEdit = permissions?.subgrupos?.edit || false;
+  const canDelete = permissions?.subgrupos?.delete || false;
+  const canView = permissions?.subgrupos?.view || false;
 
   useEffect(() => {
     loadSubgrupos();
@@ -634,11 +654,19 @@ const Subgrupos = () => {
 
   const handleCreate = () => {
     setEditingSubgrupo(null);
+    setViewMode(false);
     setShowModal(true);
   };
 
   const handleEdit = (subgrupo) => {
     setEditingSubgrupo(subgrupo);
+    setViewMode(false);
+    setShowModal(true);
+  };
+
+  const handleView = (subgrupo) => {
+    setEditingSubgrupo(subgrupo);
+    setViewMode(true);
     setShowModal(true);
   };
 
@@ -718,10 +746,12 @@ const Subgrupos = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          <AddButton onClick={handleCreate}>
-            <FaPlus />
-            Novo Subgrupo
-          </AddButton>
+          {canCreate && (
+            <AddButton onClick={handleCreate}>
+              <FaPlus />
+              Novo Subgrupo
+            </AddButton>
+          )}
         </div>
       </Header>
 
@@ -766,27 +796,39 @@ const Subgrupos = () => {
                   <Td>{subgrupo.nome}</Td>
                   <Td>{subgrupo.grupo_nome}</Td>
                   <Td>
-                    <StatusBadge status={subgrupo.status === 1 ? 'ativo' : 'inativo'}>
+                    <StatusBadge $status={subgrupo.status === 1 ? 'ativo' : 'inativo'}>
                       {subgrupo.status === 1 ? 'Ativo' : 'Inativo'}
                     </StatusBadge>
                   </Td>
                   <Td>
                     <ActionButton
-                      className="edit"
-                      onClick={() => handleEdit(subgrupo)}
+                      className="view"
+                      onClick={() => handleView(subgrupo)}
                       disabled={saving}
-                      title="Editar"
+                      title="Visualizar"
                     >
-                      <FaEdit />
+                      <FaEye />
                     </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      onClick={() => handleDelete(subgrupo.id)}
-                      disabled={saving}
-                      title="Excluir"
-                    >
-                      <FaTrash />
-                    </ActionButton>
+                    {canEdit && (
+                      <ActionButton
+                        className="edit"
+                        onClick={() => handleEdit(subgrupo)}
+                        disabled={saving}
+                        title="Editar"
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                    )}
+                    {canDelete && (
+                      <ActionButton
+                        className="delete"
+                        onClick={() => handleDelete(subgrupo.id)}
+                        disabled={saving}
+                        title="Excluir"
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    )}
                   </Td>
                 </tr>
               ))}
@@ -800,7 +842,7 @@ const Subgrupos = () => {
           <ModalContent>
             <ModalHeader>
               <ModalTitle>
-                {editingSubgrupo ? 'Editar Subgrupo' : 'Novo Subgrupo'}
+                {viewMode ? 'Visualizar Subgrupo' : editingSubgrupo ? 'Editar Subgrupo' : 'Novo Subgrupo'}
               </ModalTitle>
               <CloseButton onClick={() => setShowModal(false)}>
                 ×
@@ -815,6 +857,7 @@ const Subgrupos = () => {
                   name="nome"
                   type="text"
                   defaultValue={editingSubgrupo?.nome || ''}
+                  disabled={viewMode}
                   required
                   minLength={3}
                 />
@@ -826,6 +869,7 @@ const Subgrupos = () => {
                   id="grupo_id"
                   name="grupo_id"
                   defaultValue={editingSubgrupo?.grupo_id || ''}
+                  disabled={viewMode}
                   required
                 >
                   <option value="">Selecione um grupo</option>
@@ -843,6 +887,7 @@ const Subgrupos = () => {
                   id="status"
                   name="status"
                   defaultValue={editingSubgrupo?.status === 1 ? 'ativo' : 'inativo'}
+                  disabled={viewMode}
                   required
                 >
                   <option value="ativo">Ativo</option>
@@ -851,21 +896,23 @@ const Subgrupos = () => {
               </FormGroup>
 
               <FormButtons>
-                <Button
-                  type="submit"
-                  className="primary"
-                  disabled={saving}
-                >
-                  <FaPlus />
-                  {saving ? 'Salvando...' : (editingSubgrupo ? 'Atualizar' : 'Criar')}
-                </Button>
+                {!viewMode && (
+                  <Button
+                    type="submit"
+                    className="primary"
+                    disabled={saving}
+                  >
+                    <FaPlus />
+                    {saving ? 'Salvando...' : (editingSubgrupo ? 'Atualizar' : 'Criar')}
+                  </Button>
+                )}
                 <Button
                   type="button"
                   className="secondary"
                   onClick={() => setShowModal(false)}
                   disabled={saving}
                 >
-                  Cancelar
+                  {viewMode ? 'Fechar' : 'Cancelar'}
                 </Button>
               </FormButtons>
             </Form>
