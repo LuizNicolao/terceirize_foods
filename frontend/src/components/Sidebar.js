@@ -319,7 +319,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                   </GroupToggle>
                 )}
               </GroupHeader>
-              <GroupContent $expanded={collapsed || expandedGroups[group.title]}>
+              <GroupContent $expanded={expandedGroups[group.title]}>
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
