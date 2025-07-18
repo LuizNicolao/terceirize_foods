@@ -19,7 +19,12 @@
     "react-hot-toast": "^2.4.1",
     "date-fns": "^2.30.0",
     "react-table": "^7.8.0",
-    "react-select": "^5.8.0"
+    "react-select": "^5.8.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0",
+    "eslint-config-react-app": "^7.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
