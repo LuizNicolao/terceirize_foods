@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuesti
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 const Container = styled.div`
   padding: 24px;
@@ -114,8 +115,8 @@ const StatusBadge = styled.span`
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  background: ${props => props.status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.status === 'ativo' ? 'white' : 'var(--error-red)'};
+  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
+  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
 `;
 
 const ActionButton = styled.button`
@@ -231,6 +232,11 @@ const Input = styled.input`
     box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
     outline: none;
   }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
 `;
 
 const TextArea = styled.textarea`
@@ -261,6 +267,11 @@ const Select = styled.select`
   &:focus {
     border-color: var(--primary-green);
     outline: none;
+  }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
   }
 `;
 
@@ -324,6 +335,7 @@ const Classes = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingClasse, setEditingClasse] = useState(null);
+  const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [subgrupoFilter, setSubgrupoFilter] = useState('');
@@ -337,6 +349,14 @@ const Classes = () => {
     usuario_id: '',
     periodo: ''
   });
+
+  const { permissions } = usePermissions();
+
+  // Verificar permissões para Classes
+  const canCreate = permissions?.classes?.create || false;
+  const canEdit = permissions?.classes?.edit || false;
+  const canDelete = permissions?.classes?.delete || false;
+  const canView = permissions?.classes?.view || false;
 
   const {
     register,
@@ -640,12 +660,23 @@ const Classes = () => {
 
   const handleAddClasse = () => {
     setEditingClasse(null);
+    setViewMode(false);
     reset();
     setShowModal(true);
   };
 
   const handleEditClasse = (classe) => {
     setEditingClasse(classe);
+    setViewMode(false);
+    setValue('nome', classe.nome);
+    setValue('subgrupo_id', classe.subgrupo_id);
+    setValue('status', classe.status.toString());
+    setShowModal(true);
+  };
+
+  const handleViewClasse = (classe) => {
+    setEditingClasse(classe);
+    setViewMode(true);
     setValue('nome', classe.nome);
     setValue('subgrupo_id', classe.subgrupo_id);
     setValue('status', classe.status.toString());
@@ -655,6 +686,7 @@ const Classes = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingClasse(null);
+    setViewMode(false);
     reset();
   };
 
@@ -746,10 +778,12 @@ const Classes = () => {
             <FaHistory />
             Auditoria
           </button>
-          <AddButton onClick={handleAddClasse}>
-            <FaPlus />
-            Adicionar Classe
-          </AddButton>
+          {canCreate && (
+            <AddButton onClick={handleAddClasse}>
+              <FaPlus />
+              Adicionar Classe
+            </AddButton>
+          )}
         </div>
       </Header>
 
@@ -811,7 +845,7 @@ const Classes = () => {
                   <Td>{classe.subgrupo_nome}</Td>
                   <Td>{classe.grupo_nome}</Td>
                   <Td>
-                    <StatusBadge status={classe.status === 1 ? 'ativo' : 'inativo'}>
+                    <StatusBadge $status={classe.status === 1 ? 'ativo' : 'inativo'}>
                       {classe.status === 1 ? 'Ativo' : 'Inativo'}
                     </StatusBadge>
                   </Td>
@@ -819,24 +853,28 @@ const Classes = () => {
                     <ActionButton
                       className="view"
                       title="Visualizar"
-                      onClick={() => handleEditClasse(classe)}
+                      onClick={() => handleViewClasse(classe)}
                     >
                       <FaEye />
                     </ActionButton>
-                    <ActionButton
-                      className="edit"
-                      title="Editar"
-                      onClick={() => handleEditClasse(classe)}
-                    >
-                      <FaEdit />
-                    </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      title="Excluir"
-                      onClick={() => handleDeleteClasse(classe.id)}
-                    >
-                      <FaTrash />
-                    </ActionButton>
+                    {canEdit && (
+                      <ActionButton
+                        className="edit"
+                        title="Editar"
+                        onClick={() => handleEditClasse(classe)}
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                    )}
+                    {canDelete && (
+                      <ActionButton
+                        className="delete"
+                        title="Excluir"
+                        onClick={() => handleDeleteClasse(classe.id)}
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    )}
                   </Td>
                 </tr>
               ))
@@ -850,7 +888,7 @@ const Classes = () => {
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalHeader>
               <ModalTitle>
-                {editingClasse ? 'Editar Classe' : 'Adicionar Classe'}
+                {viewMode ? 'Visualizar Classe' : editingClasse ? 'Editar Classe' : 'Adicionar Classe'}
               </ModalTitle>
               <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
             </ModalHeader>
@@ -862,6 +900,7 @@ const Classes = () => {
                   <Input
                     type="text"
                     placeholder="Ex: BOVINO"
+                    disabled={viewMode}
                     {...register('nome', { required: 'Nome é obrigatório' })}
                   />
                   {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
@@ -869,7 +908,7 @@ const Classes = () => {
 
                 <FormGroup>
                   <Label>Subgrupo *</Label>
-                  <Select {...register('subgrupo_id', { required: 'Subgrupo é obrigatório' })}>
+                  <Select disabled={viewMode} {...register('subgrupo_id', { required: 'Subgrupo é obrigatório' })}>
                     <option value="">Selecione um subgrupo</option>
                     {subgrupos.map(subgrupo => (
                       <option key={subgrupo.id} value={subgrupo.id}>
@@ -883,7 +922,7 @@ const Classes = () => {
 
               <FormGroup>
                 <Label>Status</Label>
-                <Select {...register('status', { required: 'Status é obrigatório' })}>
+                <Select disabled={viewMode} {...register('status', { required: 'Status é obrigatório' })}>
                   <option value="1">Ativo</option>
                   <option value="0">Inativo</option>
                 </Select>
@@ -896,14 +935,16 @@ const Classes = () => {
                   className="secondary"
                   onClick={handleCloseModal}
                 >
-                  Cancelar
+                  {viewMode ? 'Fechar' : 'Cancelar'}
                 </Button>
-                <Button
-                  type="submit"
-                  className="primary"
-                >
-                  {editingClasse ? 'Atualizar' : 'Cadastrar'}
-                </Button>
+                {!viewMode && (
+                  <Button
+                    type="submit"
+                    className="primary"
+                  >
+                    {editingClasse ? 'Atualizar' : 'Cadastrar'}
+                  </Button>
+                )}
               </ButtonGroup>
             </Form>
           </ModalContent>
