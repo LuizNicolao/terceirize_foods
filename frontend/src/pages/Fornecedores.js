@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styled from 'styled-components';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUpload, FaTimes } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
@@ -1117,61 +1117,75 @@ const Fornecedores = () => {
   };
 
   // Filtrar e ordenar fornecedores
-  const filteredFornecedores = sortFornecedores(
-    fornecedores.filter(fornecedor => {
-      let matchesSearch = true;
-      
-      if (searchTerm) {
-        switch (searchField) {
-          case 'id':
-            matchesSearch = fornecedor.id?.toString().includes(searchTerm);
-            break;
-          case 'razao_social':
-            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'nome_fantasia':
-            matchesSearch = fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'cnpj':
-            matchesSearch = fornecedor.cnpj?.includes(searchTerm);
-            break;
-          case 'email':
-            matchesSearch = fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'telefone':
-            matchesSearch = fornecedor.telefone?.includes(searchTerm);
-            break;
-          case 'municipio':
-            matchesSearch = fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'uf':
-            matchesSearch = fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'todos':
-          default:
-            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.cnpj?.includes(searchTerm) ||
-                           fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.telefone?.includes(searchTerm) ||
-                           fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.id?.toString().includes(searchTerm);
-            break;
+  const filteredFornecedores = useMemo(() => {
+    return sortFornecedores(
+      fornecedores.filter(fornecedor => {
+        let matchesSearch = true;
+        
+        if (searchTerm) {
+          switch (searchField) {
+            case 'id':
+              matchesSearch = fornecedor.id?.toString().includes(searchTerm);
+              break;
+            case 'razao_social':
+              matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase());
+              break;
+            case 'nome_fantasia':
+              matchesSearch = fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase());
+              break;
+            case 'cnpj':
+              matchesSearch = fornecedor.cnpj?.includes(searchTerm);
+              break;
+            case 'email':
+              matchesSearch = fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
+              break;
+            case 'telefone':
+              matchesSearch = fornecedor.telefone?.includes(searchTerm);
+              break;
+            case 'municipio':
+              matchesSearch = fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase());
+              break;
+            case 'uf':
+              matchesSearch = fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase());
+              break;
+            case 'todos':
+            default:
+              matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             fornecedor.cnpj?.includes(searchTerm) ||
+                             fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             fornecedor.telefone?.includes(searchTerm) ||
+                             fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             fornecedor.id?.toString().includes(searchTerm);
+              break;
+          }
         }
-      }
-      
-      const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
-      return matchesSearch && matchesStatus;
-    })
-  );
+        
+        const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
+        return matchesSearch && matchesStatus;
+      })
+    );
+  }, [fornecedores, searchTerm, searchField, statusFilter, sortField, sortDirection]);
 
   // Calcular dados da paginação
-  const totalItems = filteredFornecedores.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentItems = filteredFornecedores.slice(startIndex, endIndex);
+  const paginationData = useMemo(() => {
+    const totalItems = filteredFornecedores.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredFornecedores.slice(startIndex, endIndex);
+    
+    return {
+      totalItems,
+      totalPages,
+      startIndex,
+      endIndex,
+      currentItems
+    };
+  }, [filteredFornecedores, currentPage, itemsPerPage]);
+
+  const { totalItems, totalPages, startIndex, endIndex, currentItems } = paginationData;
 
   // Função para mudar de página
   const handlePageChange = (page) => {
@@ -1199,7 +1213,7 @@ const Fornecedores = () => {
   };
 
   // Gerar array de páginas para exibir
-  const getPageNumbers = () => {
+  const pageNumbers = useMemo(() => {
     const pages = [];
     const maxVisiblePages = 5;
     
@@ -1237,7 +1251,7 @@ const Fornecedores = () => {
     }
     
     return pages;
-  };
+  }, [totalPages, currentPage]);
 
   // Formatar CNPJ
   const formatCNPJ = (cnpj) => {
@@ -1649,7 +1663,7 @@ const Fornecedores = () => {
               ‹
             </PageButton>
 
-            {getPageNumbers().map((page, index) => (
+            {pageNumbers.map((page, index) => (
               <PageButton
                 key={index}
                 onClick={() => typeof page === 'number' ? handlePageChange(page) : null}
