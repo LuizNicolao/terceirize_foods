@@ -147,6 +147,12 @@ const SortableTh = styled.th`
     color: var(--primary-green);
   }
 
+  &.asc, &.desc {
+    background-color: #e8f5e8;
+    color: var(--primary-green);
+    font-weight: 700;
+  }
+
   &::after {
     content: '';
     position: absolute;
@@ -157,14 +163,17 @@ const SortableTh = styled.th`
     height: 0;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
+    opacity: 0.3;
   }
 
   &.asc::after {
     border-bottom: 6px solid var(--primary-green);
+    opacity: 1;
   }
 
   &.desc::after {
     border-top: 6px solid var(--primary-green);
+    opacity: 1;
   }
 `;
 
@@ -965,18 +974,53 @@ const Fornecedores = () => {
       let aValue = a[sortField];
       let bValue = b[sortField];
 
-      // Tratar valores nulos/undefined
-      if (aValue === null || aValue === undefined) aValue = '';
-      if (bValue === null || bValue === undefined) bValue = '';
+      // Tratar diferentes tipos de dados
+      if (sortField === 'id' || sortField === 'status') {
+        // Para números, converter para número
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+        
+        if (sortDirection === 'asc') {
+          return aValue - bValue;
+        } else {
+          return bValue - aValue;
+        }
+      } else if (sortField === 'cnpj' || sortField === 'telefone') {
+        // Para CNPJ e telefone, remover formatação antes de comparar
+        aValue = String(aValue).replace(/\D/g, '').toLowerCase();
+        bValue = String(bValue).replace(/\D/g, '').toLowerCase();
 
-      // Converter para string para comparação
-      aValue = String(aValue).toLowerCase();
-      bValue = String(bValue).toLowerCase();
+        if (sortDirection === 'asc') {
+          return aValue.localeCompare(bValue, 'pt-BR');
+        } else {
+          return bValue.localeCompare(aValue, 'pt-BR');
+        }
+      } else if (sortField === 'municipio') {
+        // Para cidade/estado, ordenar primeiro por cidade, depois por estado
+        const aCidade = String(a.municipio || '').toLowerCase();
+        const bCidade = String(b.municipio || '').toLowerCase();
+        const aEstado = String(a.uf || '').toLowerCase();
+        const bEstado = String(b.uf || '').toLowerCase();
 
-      if (sortDirection === 'asc') {
-        return aValue.localeCompare(bValue);
+        if (sortDirection === 'asc') {
+          const cidadeCompare = aCidade.localeCompare(bCidade, 'pt-BR');
+          if (cidadeCompare !== 0) return cidadeCompare;
+          return aEstado.localeCompare(bEstado, 'pt-BR');
+        } else {
+          const cidadeCompare = bCidade.localeCompare(aCidade, 'pt-BR');
+          if (cidadeCompare !== 0) return cidadeCompare;
+          return bEstado.localeCompare(aEstado, 'pt-BR');
+        }
       } else {
-        return bValue.localeCompare(aValue);
+        // Para texto, converter para string e usar localeCompare
+        aValue = String(aValue).toLowerCase();
+        bValue = String(bValue).toLowerCase();
+
+        if (sortDirection === 'asc') {
+          return aValue.localeCompare(bValue, 'pt-BR');
+        } else {
+          return bValue.localeCompare(aValue, 'pt-BR');
+        }
       }
     });
   };
@@ -1308,43 +1352,57 @@ const Fornecedores = () => {
                 onClick={() => handleSort('id')}
                 className={sortField === 'id' ? sortDirection : ''}
               >
-                ID
+                ID {sortField === 'id' && <span style={{ fontSize: '10px', marginLeft: '4px' }}>
+                  ({sortDirection === 'asc' ? '↑' : '↓'})
+                </span>}
               </SortableTh>
               <SortableTh 
                 onClick={() => handleSort('razao_social')}
                 className={sortField === 'razao_social' ? sortDirection : ''}
               >
-                Nome
+                Nome {sortField === 'razao_social' && <span style={{ fontSize: '10px', marginLeft: '4px' }}>
+                  ({sortDirection === 'asc' ? '↑' : '↓'})
+                </span>}
               </SortableTh>
               <SortableTh 
                 onClick={() => handleSort('cnpj')}
                 className={sortField === 'cnpj' ? sortDirection : ''}
               >
-                CNPJ
+                CNPJ {sortField === 'cnpj' && <span style={{ fontSize: '10px', marginLeft: '4px' }}>
+                  ({sortDirection === 'asc' ? '↑' : '↓'})
+                </span>}
               </SortableTh>
               <SortableTh 
                 onClick={() => handleSort('telefone')}
                 className={sortField === 'telefone' ? sortDirection : ''}
               >
-                Telefone
+                Telefone {sortField === 'telefone' && <span style={{ fontSize: '10px', marginLeft: '4px' }}>
+                  ({sortDirection === 'asc' ? '↑' : '↓'})
+                </span>}
               </SortableTh>
               <SortableTh 
                 onClick={() => handleSort('email')}
                 className={sortField === 'email' ? sortDirection : ''}
               >
-                Email
+                Email {sortField === 'email' && <span style={{ fontSize: '10px', marginLeft: '4px' }}>
+                  ({sortDirection === 'asc' ? '↑' : '↓'})
+                </span>}
               </SortableTh>
               <SortableTh 
                 onClick={() => handleSort('municipio')}
                 className={sortField === 'municipio' ? sortDirection : ''}
               >
-                Cidade/Estado
+                Cidade/Estado {sortField === 'municipio' && <span style={{ fontSize: '10px', marginLeft: '4px' }}>
+                  ({sortDirection === 'asc' ? '↑' : '↓'})
+                </span>}
               </SortableTh>
               <SortableTh 
                 onClick={() => handleSort('status')}
                 className={sortField === 'status' ? sortDirection : ''}
               >
-                Status
+                Status {sortField === 'status' && <span style={{ fontSize: '10px', marginLeft: '4px' }}>
+                  ({sortDirection === 'asc' ? '↑' : '↓'})
+                </span>}
               </SortableTh>
               <Th>Ações</Th>
             </tr>
