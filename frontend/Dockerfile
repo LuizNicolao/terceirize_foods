@@ -8,8 +8,8 @@ COPY package.json ./
 # Instalar dependências globalmente primeiro
 RUN npm install -g react-scripts
 
-# Instalar dependências do projeto
-RUN npm install
+# Instalar todas as dependências (incluindo devDependencies)
+RUN npm install --production=false
 
 # Verificar se react-scripts foi instalado
 RUN which react-scripts || echo "react-scripts não encontrado no PATH"
