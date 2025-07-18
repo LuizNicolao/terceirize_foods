@@ -1485,7 +1485,27 @@ const Fornecedores = () => {
   // Formatar telefone
   const formatPhone = (phone) => {
     if (!phone) return '';
-    return phone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    
+    // Remover "undefined" se estiver concatenado
+    let telefoneLimpo = phone.toString().replace(/undefined/g, '');
+    
+    // Remover todos os caracteres não numéricos
+    telefoneLimpo = telefoneLimpo.replace(/\D/g, '');
+    
+    // Se não tem dígitos suficientes, retornar como está
+    if (telefoneLimpo.length < 10) {
+      return phone;
+    }
+    
+    // Formatar baseado no tamanho
+    if (telefoneLimpo.length === 11) {
+      return telefoneLimpo.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    } else if (telefoneLimpo.length === 10) {
+      return telefoneLimpo.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    } else {
+      // Para outros tamanhos, retornar apenas os números
+      return telefoneLimpo;
+    }
   };
 
   // Formatar CNPJ para exibição
@@ -1584,14 +1604,9 @@ const Fornecedores = () => {
         
         // Se há telefone, formatar
         if (result.telefone) {
-          const telefone = result.telefone.replace(/\D/g, '');
-          if (telefone.length === 11) {
-            setValue('telefone', telefone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3'));
-          } else if (telefone.length === 10) {
-            setValue('telefone', telefone.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3'));
-          } else {
-            setValue('telefone', result.telefone);
-          }
+          // Usar a função formatPhone para garantir consistência
+          const telefoneFormatado = formatPhone(result.telefone);
+          setValue('telefone', telefoneFormatado);
         }
         
         // Se há email

@@ -45,7 +45,30 @@ router.get('/buscar-cnpj/:cnpj', checkPermission('visualizar'), async (req, res)
           municipio: response.data.municipio,
           uf: response.data.uf,
           cep: response.data.cep,
-          telefone: response.data.ddd_telefone_1 ? `${response.data.ddd_telefone_1}${response.data.telefone_1}` : null,
+          telefone: (() => {
+            // Tentar diferentes formatos de telefone da API
+            let telefone = null;
+            
+            if (response.data.ddd_telefone_1 && response.data.telefone_1) {
+              telefone = `${response.data.ddd_telefone_1}${response.data.telefone_1}`;
+            } else if (response.data.telefone) {
+              telefone = response.data.telefone;
+            } else if (response.data.ddd_telefone_1) {
+              telefone = response.data.ddd_telefone_1;
+            }
+            
+            // Limpar telefone se encontrado
+            if (telefone) {
+              // Remover "undefined" se estiver concatenado
+              telefone = telefone.toString().replace(/undefined/g, '');
+              // Remover caracteres não numéricos
+              telefone = telefone.replace(/\D/g, '');
+              // Retornar apenas se tiver pelo menos 10 dígitos
+              return telefone.length >= 10 ? telefone : null;
+            }
+            
+            return null;
+          })(),
           email: response.data.email
         };
       }
