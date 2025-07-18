@@ -15,7 +15,10 @@ import {
   FaChevronRight,
   FaSitemap,
   FaCubes,
-  FaFileAlt
+  FaFileAlt,
+  FaBuilding,
+  FaCog,
+  FaDatabase
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -44,6 +47,7 @@ const SidebarHeader = styled.div`
   border-bottom: 1px solid #e0e0e0;
   text-align: center;
   position: relative;
+  flex-shrink: 0;
 `;
 
 const Logo = styled.h2`
@@ -88,18 +92,55 @@ const ToggleButton = styled.button`
 `;
 
 const Nav = styled.nav`
-  padding: 20px 0;
   flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+  
+  /* Estilização da scrollbar */
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #c0c0c0;
+    border-radius: 2px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #a0a0a0;
+  }
+`;
+
+const MenuGroup = styled.div`
+  margin: 16px 0;
+`;
+
+const GroupTitle = styled.div`
+  padding: 8px 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: ${props => props.$collapsed ? 'none' : 'block'};
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 8px;
 `;
 
 const NavItem = styled(Link)`
   display: flex;
   align-items: center;
-  padding: 12px 20px;
+  padding: 10px 20px;
   color: var(--dark-gray);
   text-decoration: none;
   transition: all 0.3s ease;
   border-left: 3px solid transparent;
+  font-size: 13px;
 
   &:hover {
     background-color: var(--light-gray);
@@ -111,18 +152,20 @@ const NavItem = styled(Link)`
     background-color: var(--light-green);
     color: var(--primary-green);
     border-left-color: var(--primary-green);
+    font-weight: 600;
   }
 `;
 
 const NavIcon = styled.div`
   margin-right: ${props => props.$collapsed ? '0' : '12px'};
-  font-size: 18px;
+  font-size: 16px;
   min-width: 20px;
   text-align: center;
+  color: ${props => props.$active ? 'var(--primary-green)' : 'inherit'};
 `;
 
 const NavText = styled.span`
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -141,6 +184,8 @@ const LogoutButton = styled.button`
   cursor: pointer;
   transition: all 0.3s ease;
   border-left: 3px solid transparent;
+  border-top: 1px solid #f0f0f0;
+  flex-shrink: 0;
 
   &:hover {
     background-color: #ffebee;
@@ -163,19 +208,40 @@ const Overlay = styled.div`
   }
 `;
 
-const menuItems = [
-  { path: '/', icon: FaHome, label: 'Dashboard', screen: 'dashboard' },
-  { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
-  { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
-  { path: '/clientes', icon: FaUsers, label: 'Clientes', screen: 'clientes' },
-  { path: '/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
-  { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
-  { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
-  { path: '/classes', icon: FaCubes, label: 'Classes', screen: 'classes' },
-  { path: '/nome-generico-produto', icon: FaFileAlt, label: 'Nomes Genéricos', screen: 'nome_generico_produto' },
-  { path: '/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
-  { path: '/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
-  { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
+// Agrupamento dos itens do menu
+const menuGroups = [
+  {
+    title: 'Principal',
+    items: [
+      { path: '/', icon: FaHome, label: 'Dashboard', screen: 'dashboard' },
+    ]
+  },
+  {
+    title: 'Cadastros',
+    items: [
+      { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
+      { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
+      { path: '/clientes', icon: FaBuilding, label: 'Clientes', screen: 'clientes' },
+      { path: '/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
+    ]
+  },
+  {
+    title: 'Categorização',
+    items: [
+      { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
+      { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
+      { path: '/classes', icon: FaCubes, label: 'Classes', screen: 'classes' },
+      { path: '/nome-generico-produto', icon: FaFileAlt, label: 'Nomes Genéricos', screen: 'nome_generico_produto' },
+    ]
+  },
+  {
+    title: 'Configurações',
+    items: [
+      { path: '/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
+      { path: '/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
+      { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
+    ]
+  }
 ];
 
 const Sidebar = ({ collapsed, onToggle }) => {
@@ -201,51 +267,55 @@ const Sidebar = ({ collapsed, onToggle }) => {
         </SidebarHeader>
         
         <Nav>
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
-            
-            // Verificar se o usuário pode visualizar este item
-            // Dashboard sempre é visível, outros itens dependem das permissões
-            const canViewItem = item.screen === 'dashboard' || canView(item.screen);
-            
-            if (!canViewItem) {
-              return null; // Não renderizar o item se não tiver permissão
-            }
-            
-            return (
-              <NavItem 
-                key={item.path} 
-                to={item.path}
-                className={isActive ? 'active' : ''}
-                onClick={() => {
-                  // Fechar sidebar no mobile quando clicar em um item
-                  if (window.innerWidth <= 768) {
-                    onToggle();
-                  }
-                }}
-              >
-                <NavIcon $collapsed={collapsed}>
-                  <Icon />
-                </NavIcon>
-                <NavText $collapsed={collapsed}>
-                  {item.label}
-                </NavText>
-              </NavItem>
-            );
-          })}
+          {menuGroups.map((group, groupIndex) => (
+            <MenuGroup key={groupIndex}>
+              <GroupTitle $collapsed={collapsed}>
+                {group.title}
+              </GroupTitle>
+              {group.items.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                
+                // Verificar se o usuário pode visualizar este item
+                const canViewItem = item.screen === 'dashboard' || canView(item.screen);
+                
+                if (!canViewItem) {
+                  return null;
+                }
+                
+                return (
+                  <NavItem 
+                    key={item.path} 
+                    to={item.path}
+                    className={isActive ? 'active' : ''}
+                    onClick={() => {
+                      // Fechar sidebar no mobile quando clicar em um item
+                      if (window.innerWidth <= 768) {
+                        onToggle();
+                      }
+                    }}
+                  >
+                    <NavIcon $collapsed={collapsed} $active={isActive}>
+                      <Icon />
+                    </NavIcon>
+                    <NavText $collapsed={collapsed}>
+                      {item.label}
+                    </NavText>
+                  </NavItem>
+                );
+              })}
+            </MenuGroup>
+          ))}
         </Nav>
 
-        <div style={{ marginTop: 'auto', padding: '20px 0' }}>
-          <LogoutButton onClick={handleLogout}>
-            <NavIcon $collapsed={collapsed}>
-              <FaSignOutAlt />
-            </NavIcon>
-            <NavText $collapsed={collapsed}>
-              Sair
-            </NavText>
-          </LogoutButton>
-        </div>
+        <LogoutButton onClick={handleLogout}>
+          <NavIcon $collapsed={collapsed}>
+            <FaSignOutAlt />
+          </NavIcon>
+          <NavText $collapsed={collapsed}>
+            Sair
+          </NavText>
+        </LogoutButton>
       </SidebarContainer>
     </>
   );
