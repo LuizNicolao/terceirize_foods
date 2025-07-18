@@ -88,7 +88,7 @@ router.post('/', [
     }
 
     const {
-      nome, descricao, codigo_barras, preco_custo, preco_venda, estoque_atual, estoque_minimo,
+      nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, estoque_atual, estoque_minimo,
       fornecedor_id, grupo_id, unidade_id, status
     } = req.body;
 
@@ -106,10 +106,10 @@ router.post('/', [
 
     // Inserir produto
     const result = await executeQuery(
-      `INSERT INTO produtos (nome, descricao, codigo_barras, preco_custo, preco_venda, 
+      `INSERT INTO produtos (nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, 
                             estoque_atual, estoque_minimo, fornecedor_id, grupo_id, unidade_id, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [nome, descricao, codigo_barras, preco_custo, preco_venda, estoque_atual, estoque_minimo, 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, estoque_atual, estoque_minimo, 
        fornecedor_id, grupo_id, unidade_id, status]
     );
 

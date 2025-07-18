@@ -684,6 +684,7 @@ const Produtos = () => {
       'nome': 'Nome',
       'descricao': 'Descrição',
       'codigo_barras': 'Código de Barras',
+      'fator_conversao': 'Fator de Conversão',
       'preco_custo': 'Preço de Custo',
       'preco_venda': 'Preço de Venda',
       'estoque_atual': 'Estoque Atual',
@@ -736,6 +737,7 @@ const Produtos = () => {
     setValue('codigo_produto', produto.codigo_produto);
     setValue('descricao', produto.descricao);
     setValue('codigo_barras', produto.codigo_barras);
+    setValue('fator_conversao', produto.fator_conversao);
     setValue('ean', produto.ean);
     setValue('referencia', produto.referencia);
     setValue('referencia_externa', produto.referencia_externa);
@@ -798,6 +800,10 @@ const Produtos = () => {
         
         if (data.codigo_barras !== editingProduto.codigo_barras) {
           updateData.codigo_barras = data.codigo_barras;
+        }
+        
+        if (data.fator_conversao !== editingProduto.fator_conversao) {
+          updateData.fator_conversao = data.fator_conversao;
         }
         
         if (data.descricao !== editingProduto.descricao) {
