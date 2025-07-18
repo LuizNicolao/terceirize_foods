@@ -123,23 +123,24 @@ const ActionButton = styled.button`
   cursor: pointer;
   padding: 8px;
   border-radius: 4px;
-  margin-right: 4px;
   transition: all 0.3s ease;
+  margin-right: 8px;
   color: var(--gray);
 
-  &.view:hover {
-    background: var(--blue-light);
+  &:hover {
+    background-color: var(--light-gray);
+  }
+
+  &.edit {
     color: var(--blue);
   }
 
-  &.edit:hover {
-    background: var(--warning-light);
-    color: var(--warning);
+  &.delete {
+    color: var(--error-red);
   }
 
-  &.delete:hover {
-    background: var(--error-light);
-    color: var(--error);
+  &.view {
+    color: var(--primary-green);
   }
 `;
 
