@@ -1,15 +1,18 @@
-FROM node:18-alpine
+FROM node:18
 
 WORKDIR /app
 
 # Copiar package.json
 COPY package.json ./
 
-# Instalar dependências
+# Instalar dependências globalmente primeiro
+RUN npm install -g react-scripts
+
+# Instalar dependências do projeto
 RUN npm install
 
 # Verificar se react-scripts foi instalado
-RUN npx react-scripts --version || echo "react-scripts não encontrado"
+RUN which react-scripts || echo "react-scripts não encontrado no PATH"
 
 # Copiar o resto dos arquivos
 COPY . .
