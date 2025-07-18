@@ -109,6 +109,45 @@ const Th = styled.th`
   border-bottom: 1px solid #e0e0e0;
 `;
 
+const SortableTh = styled.th`
+  background-color: #f5f5f5;
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--dark-gray);
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.3s ease;
+  position: relative;
+
+  &:hover {
+    background-color: #e8e8e8;
+    color: var(--primary-green);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+  }
+
+  &.asc::after {
+    border-bottom: 6px solid var(--primary-green);
+  }
+
+  &.desc::after {
+    border-top: 6px solid var(--primary-green);
+  }
+`;
+
 const Td = styled.td`
   padding: 16px 12px;
   border-bottom: 1px solid #f0f0f0;
@@ -363,6 +402,8 @@ const Fornecedores = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importResults, setImportResults] = useState(null);
+  const [sortField, setSortField] = useState('id');
+  const [sortDirection, setSortDirection] = useState('asc');
   const fileInputRef = useRef(null);
 
   const {
@@ -897,15 +938,49 @@ const Fornecedores = () => {
     }
   };
 
-  // Filtrar fornecedores
-  const filteredFornecedores = fornecedores.filter(fornecedor => {
-    const matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         fornecedor.cnpj?.includes(searchTerm) ||
-                         fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
-    return matchesSearch && matchesStatus;
-  });
+  // Função para ordenar fornecedores
+  const sortFornecedores = (fornecedores) => {
+    return fornecedores.sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+
+      // Tratar valores nulos/undefined
+      if (aValue === null || aValue === undefined) aValue = '';
+      if (bValue === null || bValue === undefined) bValue = '';
+
+      // Converter para string para comparação
+      aValue = String(aValue).toLowerCase();
+      bValue = String(bValue).toLowerCase();
+
+      if (sortDirection === 'asc') {
+        return aValue.localeCompare(bValue);
+      } else {
+        return bValue.localeCompare(aValue);
+      }
+    });
+  };
+
+  // Função para lidar com ordenação
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Filtrar e ordenar fornecedores
+  const filteredFornecedores = sortFornecedores(
+    fornecedores.filter(fornecedor => {
+      const matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.cnpj?.includes(searchTerm) ||
+                           fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
+      return matchesSearch && matchesStatus;
+    })
+  );
 
   // Formatar CNPJ
   const formatCNPJ = (cnpj) => {
@@ -1131,19 +1206,55 @@ const Fornecedores = () => {
         <Table>
           <thead>
             <tr>
-              <Th>Nome</Th>
-              <Th>CNPJ</Th>
-              <Th>Telefone</Th>
-              <Th>Email</Th>
-              <Th>Cidade/Estado</Th>
-              <Th>Status</Th>
+              <SortableTh 
+                onClick={() => handleSort('id')}
+                className={sortField === 'id' ? sortDirection : ''}
+              >
+                ID
+              </SortableTh>
+              <SortableTh 
+                onClick={() => handleSort('razao_social')}
+                className={sortField === 'razao_social' ? sortDirection : ''}
+              >
+                Nome
+              </SortableTh>
+              <SortableTh 
+                onClick={() => handleSort('cnpj')}
+                className={sortField === 'cnpj' ? sortDirection : ''}
+              >
+                CNPJ
+              </SortableTh>
+              <SortableTh 
+                onClick={() => handleSort('telefone')}
+                className={sortField === 'telefone' ? sortDirection : ''}
+              >
+                Telefone
+              </SortableTh>
+              <SortableTh 
+                onClick={() => handleSort('email')}
+                className={sortField === 'email' ? sortDirection : ''}
+              >
+                Email
+              </SortableTh>
+              <SortableTh 
+                onClick={() => handleSort('municipio')}
+                className={sortField === 'municipio' ? sortDirection : ''}
+              >
+                Cidade/Estado
+              </SortableTh>
+              <SortableTh 
+                onClick={() => handleSort('status')}
+                className={sortField === 'status' ? sortDirection : ''}
+              >
+                Status
+              </SortableTh>
               <Th>Ações</Th>
             </tr>
           </thead>
           <tbody>
             {filteredFornecedores.length === 0 ? (
               <tr>
-                <Td colSpan="7">
+                <Td colSpan="8">
                   <EmptyState>
                     {searchTerm || statusFilter !== 'todos' 
                       ? 'Nenhum fornecedor encontrado com os filtros aplicados'
@@ -1155,6 +1266,7 @@ const Fornecedores = () => {
             ) : (
               filteredFornecedores.map((fornecedor) => (
                 <tr key={fornecedor.id}>
+                  <Td>{fornecedor.id}</Td>
                   <Td>{fornecedor.razao_social}</Td>
                   <Td>{formatCNPJ(fornecedor.cnpj)}</Td>
                   <Td>{formatPhone(fornecedor.telefone)}</Td>
