@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { FaUsers, FaTruck, FaBox, FaLayerGroup, FaChartLine, FaExclamationTriangle, FaDollarSign, FaRuler } from 'react-icons/fa';
 import api from '../services/api';
@@ -169,24 +168,15 @@ const LoadingSpinner = styled.div`
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Verificar se há uma rota salva no localStorage e redirecionar se necessário
-    const lastRoute = localStorage.getItem('lastRoute');
-    console.log('Dashboard - lastRoute:', lastRoute, 'current path:', window.location.pathname);
+    console.log('Dashboard - useEffect executado');
+    console.log('Dashboard - window.location.pathname:', window.location.pathname);
+    console.log('Dashboard - localStorage lastRoute:', localStorage.getItem('lastRoute'));
     
-    if (lastRoute && lastRoute !== '/' && lastRoute !== window.location.pathname) {
-      console.log('Redirecionando para:', lastRoute);
-      // Pequeno delay para garantir que a autenticação foi verificada
-      setTimeout(() => {
-        navigate(lastRoute, { replace: true });
-      }, 100);
-      return;
-    }
-    
+    // Carregar dados da dashboard normalmente
     loadDashboardData();
-  }, [navigate]);
+  }, []);
 
   const loadDashboardData = async () => {
     try {
