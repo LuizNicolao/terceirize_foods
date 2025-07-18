@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuesti
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 const Container = styled.div`
   padding: 24px;
@@ -113,8 +114,8 @@ const StatusBadge = styled.span`
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  background: ${props => props.status === 'ativo' ? 'var(--success-light)' : 'var(--error-light)'};
-  color: ${props => props.status === 'ativo' ? 'var(--success)' : 'var(--error)'};
+  background: ${props => props.$status === 'ativo' ? 'var(--success-light)' : 'var(--error-light)'};
+  color: ${props => props.$status === 'ativo' ? 'var(--success)' : 'var(--error)'};
 `;
 
 const ActionButton = styled.button`
@@ -242,6 +243,12 @@ const Input = styled.input`
     box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
     outline: none;
   }
+
+  &:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
 `;
 
 const Select = styled.select`
@@ -257,6 +264,12 @@ const Select = styled.select`
   &:focus {
     border-color: var(--primary-green);
     outline: none;
+  }
+
+  &:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.7;
   }
 `;
 
@@ -283,6 +296,15 @@ const Button = styled.button`
     &:hover {
       background: var(--dark-green);
     }
+
+    &:disabled {
+      background: var(--gray);
+      cursor: not-allowed;
+    }
+
+    &:disabled:hover {
+      background: var(--gray);
+    }
   }
 
   &.secondary {
@@ -292,6 +314,26 @@ const Button = styled.button`
     &:hover {
       background: var(--gray);
     }
+
+    &:disabled {
+      background: var(--light-gray);
+      color: var(--gray);
+      cursor: not-allowed;
+    }
+
+    &:disabled:hover {
+      background: var(--light-gray);
+      color: var(--gray);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:disabled:hover {
+    transform: none;
   }
 `;
 
@@ -309,6 +351,7 @@ const NomeGenericoProduto = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingNomeGenerico, setEditingNomeGenerico] = useState(null);
+  const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -321,6 +364,14 @@ const NomeGenericoProduto = () => {
     usuario_id: '',
     periodo: ''
   });
+
+  const { permissions } = usePermissions();
+
+  // Verificar permissões para Nomes Genéricos de Produtos
+  const canCreate = permissions?.nome_generico_produto?.create || false;
+  const canEdit = permissions?.nome_generico_produto?.edit || false;
+  const canDelete = permissions?.nome_generico_produto?.delete || false;
+  const canView = permissions?.nome_generico_produto?.view || false;
 
   const {
     register,
@@ -655,6 +706,7 @@ const NomeGenericoProduto = () => {
   // Abrir modal para adicionar nome genérico
   const handleAddNomeGenerico = () => {
     setEditingNomeGenerico(null);
+    setViewMode(false);
     reset();
     setValue('status', '1'); // Define status como "Ativo" por padrão
     setShowModal(true);
@@ -663,6 +715,19 @@ const NomeGenericoProduto = () => {
   // Abrir modal para editar nome genérico
   const handleEditNomeGenerico = (nomeGenerico) => {
     setEditingNomeGenerico(nomeGenerico);
+    setViewMode(false);
+    setValue('nome', nomeGenerico.nome);
+    setValue('grupo_id', nomeGenerico.grupo_id || '');
+    setValue('subgrupo_id', nomeGenerico.subgrupo_id || '');
+    setValue('classe_id', nomeGenerico.classe_id || '');
+    setValue('status', nomeGenerico.status);
+    setShowModal(true);
+  };
+
+  // Abrir modal para visualizar nome genérico
+  const handleViewNomeGenerico = (nomeGenerico) => {
+    setEditingNomeGenerico(nomeGenerico);
+    setViewMode(true);
     setValue('nome', nomeGenerico.nome);
     setValue('grupo_id', nomeGenerico.grupo_id || '');
     setValue('subgrupo_id', nomeGenerico.subgrupo_id || '');
@@ -675,6 +740,7 @@ const NomeGenericoProduto = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingNomeGenerico(null);
+    setViewMode(false);
     reset();
   };
 
@@ -779,10 +845,12 @@ const NomeGenericoProduto = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          <AddButton onClick={handleAddNomeGenerico}>
-            <FaPlus />
-            Adicionar Nome Genérico
-          </AddButton>
+          {canCreate && (
+            <AddButton onClick={handleAddNomeGenerico}>
+              <FaPlus />
+              Adicionar Nome Genérico
+            </AddButton>
+          )}
         </div>
       </Header>
 
@@ -835,7 +903,7 @@ const NomeGenericoProduto = () => {
                   <Td>{nomeGenerico.subgrupo_nome || 'Não informado'}</Td>
                   <Td>{nomeGenerico.classe_nome || 'Não informado'}</Td>
                   <Td>
-                    <StatusBadge status={nomeGenerico.status === 1 ? 'ativo' : 'inativo'}>
+                    <StatusBadge $status={nomeGenerico.status === 1 ? 'ativo' : 'inativo'}>
                       {nomeGenerico.status === 1 ? 'Ativo' : 'Inativo'}
                     </StatusBadge>
                   </Td>
@@ -843,24 +911,28 @@ const NomeGenericoProduto = () => {
                     <ActionButton
                       className="view"
                       title="Visualizar"
-                      onClick={() => handleEditNomeGenerico(nomeGenerico)}
+                      onClick={() => handleViewNomeGenerico(nomeGenerico)}
                     >
                       <FaEye />
                     </ActionButton>
-                    <ActionButton
-                      className="edit"
-                      title="Editar"
-                      onClick={() => handleEditNomeGenerico(nomeGenerico)}
-                    >
-                      <FaEdit />
-                    </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      title="Excluir"
-                      onClick={() => handleDeleteNomeGenerico(nomeGenerico.id)}
-                    >
-                      <FaTrash />
-                    </ActionButton>
+                    {canEdit && (
+                      <ActionButton
+                        className="edit"
+                        title="Editar"
+                        onClick={() => handleEditNomeGenerico(nomeGenerico)}
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                    )}
+                    {canDelete && (
+                      <ActionButton
+                        className="delete"
+                        title="Excluir"
+                        onClick={() => handleDeleteNomeGenerico(nomeGenerico.id)}
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    )}
                   </Td>
                 </tr>
               ))
@@ -874,7 +946,7 @@ const NomeGenericoProduto = () => {
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalHeader>
               <ModalTitle>
-                {editingNomeGenerico ? 'Editar Nome Genérico' : 'Adicionar Nome Genérico'}
+                {viewMode ? 'Visualizar Nome Genérico' : editingNomeGenerico ? 'Editar Nome Genérico' : 'Adicionar Nome Genérico'}
               </ModalTitle>
               <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
             </ModalHeader>
@@ -885,6 +957,7 @@ const NomeGenericoProduto = () => {
                 <Input
                   type="text"
                   placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
+                  disabled={viewMode}
                   {...register('nome', { required: 'Nome é obrigatório' })}
                 />
                 {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
@@ -893,7 +966,7 @@ const NomeGenericoProduto = () => {
               <FormRow>
                 <FormGroup>
                   <Label>Grupo</Label>
-                  <Select {...register('grupo_id')}>
+                  <Select disabled={viewMode} {...register('grupo_id')}>
                     <option value="">Selecione um grupo</option>
                     {grupos.map((grupo) => (
                       <option key={grupo.id} value={grupo.id}>
@@ -905,7 +978,7 @@ const NomeGenericoProduto = () => {
 
                 <FormGroup>
                   <Label>Subgrupo</Label>
-                  <Select {...register('subgrupo_id')}>
+                  <Select disabled={viewMode} {...register('subgrupo_id')}>
                     <option value="">Selecione um subgrupo</option>
                     {subgrupos.map((subgrupo) => (
                       <option key={subgrupo.id} value={subgrupo.id}>
@@ -918,7 +991,7 @@ const NomeGenericoProduto = () => {
 
               <FormGroup>
                 <Label>Classe</Label>
-                <Select {...register('classe_id')}>
+                <Select disabled={viewMode} {...register('classe_id')}>
                   <option value="">Selecione uma classe</option>
                   {classes.map((classe) => (
                     <option key={classe.id} value={classe.id}>
@@ -930,7 +1003,7 @@ const NomeGenericoProduto = () => {
 
               <FormGroup>
                 <Label>Status</Label>
-                <Select {...register('status', { required: 'Status é obrigatório' })}>
+                <Select disabled={viewMode} {...register('status', { required: 'Status é obrigatório' })}>
                   <option value="1">Ativo</option>
                   <option value="0">Inativo</option>
                 </Select>
@@ -943,14 +1016,16 @@ const NomeGenericoProduto = () => {
                   className="secondary"
                   onClick={handleCloseModal}
                 >
-                  Cancelar
+                  {viewMode ? 'Fechar' : 'Cancelar'}
                 </Button>
-                <Button
-                  type="submit"
-                  className="primary"
-                >
-                  {editingNomeGenerico ? 'Atualizar' : 'Cadastrar'}
-                </Button>
+                {!viewMode && (
+                  <Button
+                    type="submit"
+                    className="primary"
+                  >
+                    {editingNomeGenerico ? 'Atualizar' : 'Cadastrar'}
+                  </Button>
+                )}
               </ButtonGroup>
             </Form>
           </ModalContent>
