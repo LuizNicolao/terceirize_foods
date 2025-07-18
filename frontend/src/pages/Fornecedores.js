@@ -773,9 +773,44 @@ const Fornecedores = () => {
             return;
           }
           
+          // Função para tentar corrigir CNPJ
+          const tentarCorrigirCNPJ = (valor) => {
+            if (!valor) return null;
+            
+            let cnpj = valor.toString().trim();
+            
+            // Remover todos os caracteres não numéricos
+            cnpj = cnpj.replace(/\D/g, '');
+            
+            // Se tem exatamente 14 dígitos, está correto
+            if (cnpj.length === 14) {
+              return cnpj;
+            }
+            
+            // Tentar adicionar zeros à esquerda se for muito curto
+            if (cnpj.length < 14 && cnpj.length >= 10) {
+              const cnpjCorrigido = cnpj.padStart(14, '0');
+              console.log(`🔧 Tentando corrigir CNPJ: ${valor} -> ${cnpjCorrigido}`);
+              return cnpjCorrigido;
+            }
+            
+            // Tentar remover dígitos extras se for muito longo
+            if (cnpj.length > 14 && cnpj.length <= 18) {
+              const cnpjCorrigido = cnpj.substring(0, 14);
+              console.log(`🔧 Tentando corrigir CNPJ: ${valor} -> ${cnpjCorrigido}`);
+              return cnpjCorrigido;
+            }
+            
+            return null;
+          };
+
           // Extrair CNPJs da planilha (primeira coluna ou coluna com CNPJ)
           const cnpjs = [];
+          const cnpjsInvalidos = [];
+          const cnpjsCorrigidos = [];
           const headers = jsonData[0];
+          
+          console.log('📊 Headers encontrados:', headers);
           
           // Encontrar a coluna que contém CNPJs
           let cnpjColumnIndex = 0; // Padrão: primeira coluna
@@ -784,26 +819,94 @@ const Fornecedores = () => {
           headers.forEach((header, index) => {
             if (header && header.toString().toLowerCase().includes('cnpj')) {
               cnpjColumnIndex = index;
+              console.log(`🎯 Coluna CNPJ encontrada no índice ${index}: "${header}"`);
             }
           });
+          
+          console.log(`📋 Usando coluna ${cnpjColumnIndex} para extrair CNPJs`);
+          console.log(`📄 Total de linhas de dados: ${jsonData.length - 1}`);
+          
+          // Verificar se há linhas vazias ou com dados inconsistentes
+          let linhasVazias = 0;
+          let linhasComDados = 0;
+          
+          jsonData.slice(1).forEach((row, rowIndex) => {
+            if (row && row.length > 0) {
+              const temDados = row.some(cell => cell !== null && cell !== undefined && cell.toString().trim() !== '');
+              if (temDados) {
+                linhasComDados++;
+              } else {
+                linhasVazias++;
+              }
+            } else {
+              linhasVazias++;
+            }
+          });
+          
+          console.log(`📊 Análise das linhas:`);
+          console.log(`   - Linhas com dados: ${linhasComDados}`);
+          console.log(`   - Linhas vazias: ${linhasVazias}`);
+          console.log(`   - Total esperado: ${linhasComDados + linhasVazias}`);
           
           // Extrair CNPJs da coluna identificada
           jsonData.slice(1).forEach((row, rowIndex) => {
             const cnpjValue = row[cnpjColumnIndex];
+            const linhaReal = rowIndex + 2;
+            
             if (cnpjValue && cnpjValue.toString().trim() !== '') {
-              // Limpar CNPJ (remover pontos, traços, barras e espaços)
-              const cnpjLimpo = cnpjValue.toString().replace(/\D/g, '');
-              if (cnpjLimpo.length === 14) {
+              // Tentar corrigir CNPJ primeiro
+              const cnpjCorrigido = tentarCorrigirCNPJ(cnpjValue);
+              
+              if (cnpjCorrigido) {
                 cnpjs.push({
                   original: cnpjValue.toString(),
-                  limpo: cnpjLimpo,
-                  linha: rowIndex + 2 // +2 porque começamos do índice 1 e adicionamos 1 para linha real
+                  limpo: cnpjCorrigido,
+                  linha: linhaReal,
+                  foiCorrigido: cnpjCorrigido !== cnpjValue.toString().replace(/\D/g, '')
                 });
+                
+                if (cnpjCorrigido !== cnpjValue.toString().replace(/\D/g, '')) {
+                  cnpjsCorrigidos.push({
+                    original: cnpjValue.toString(),
+                    corrigido: cnpjCorrigido,
+                    linha: linhaReal
+                  });
+                }
               } else {
-                console.warn(`CNPJ inválido na linha ${rowIndex + 2}: ${cnpjValue}`);
+                // Registrar CNPJs inválidos para análise
+                const cnpjLimpo = cnpjValue.toString().replace(/\D/g, '');
+                cnpjsInvalidos.push({
+                  original: cnpjValue.toString(),
+                  limpo: cnpjLimpo,
+                  linha: linhaReal,
+                  motivo: cnpjLimpo.length < 14 ? 'Muito curto' : 'Muito longo'
+                });
+                console.warn(`❌ CNPJ inválido na linha ${linhaReal}: "${cnpjValue}" (${cnpjLimpo.length} dígitos)`);
               }
+            } else {
+              console.warn(`⚠️  Linha ${linhaReal} vazia ou sem CNPJ`);
             }
           });
+          
+          console.log(`✅ CNPJs válidos encontrados: ${cnpjs.length}`);
+          console.log(`🔧 CNPJs corrigidos: ${cnpjsCorrigidos.length}`);
+          console.log(`❌ CNPJs inválidos encontrados: ${cnpjsInvalidos.length}`);
+          
+          // Mostrar alguns exemplos de CNPJs corrigidos
+          if (cnpjsCorrigidos.length > 0) {
+            console.log('🔧 Exemplos de CNPJs corrigidos:');
+            cnpjsCorrigidos.slice(0, 5).forEach(cnpj => {
+              console.log(`   Linha ${cnpj.linha}: "${cnpj.original}" -> ${cnpj.corrigido}`);
+            });
+          }
+          
+          // Mostrar alguns exemplos de CNPJs inválidos para debug
+          if (cnpjsInvalidos.length > 0) {
+            console.log('🔍 Exemplos de CNPJs inválidos:');
+            cnpjsInvalidos.slice(0, 5).forEach(cnpj => {
+              console.log(`   Linha ${cnpj.linha}: "${cnpj.original}" -> ${cnpj.limpo} (${cnpj.motivo})`);
+            });
+          }
           
           if (cnpjs.length === 0) {
             toast.error('Nenhum CNPJ válido encontrado no arquivo');
@@ -909,7 +1012,16 @@ const Fornecedores = () => {
           // Definir resultados finais
           setImportResults({
             resultados,
-            mensagem: `Importação concluída! ${resultados.sucessos} fornecedores importados com sucesso e ${resultados.erros} erros.`
+            mensagem: `Importação concluída! ${resultados.sucessos} fornecedores importados com sucesso e ${resultados.erros} erros.`,
+            estatisticas: {
+              totalLinhas: jsonData.length - 1,
+              linhasComDados: linhasComDados,
+              linhasVazias: linhasVazias,
+              cnpjsValidos: cnpjs.length,
+              cnpjsCorrigidos: cnpjsCorrigidos.length,
+              cnpjsInvalidos: cnpjsInvalidos.length,
+              cnpjsProcessados: resultados.total
+            }
           });
           setShowImportModal(true);
           
@@ -2407,12 +2519,34 @@ const Fornecedores = () => {
                     display: 'flex', 
                     gap: '16px', 
                     fontSize: '14px',
-                    color: importResults.resultados.sucessos > 0 ? '#2e7d32' : '#721c24'
+                    color: importResults.resultados.sucessos > 0 ? '#2e7d32' : '#721c24',
+                    flexWrap: 'wrap'
                   }}>
                     <span><strong>Total de CNPJs:</strong> {importResults.resultados.total}</span>
                     <span><strong>Sucessos:</strong> {importResults.resultados.sucessos}</span>
                     <span><strong>Erros:</strong> {importResults.resultados.erros}</span>
                   </div>
+                  
+                  {/* Estatísticas detalhadas */}
+                  {importResults.estatisticas && (
+                    <div style={{ 
+                      marginTop: '12px', 
+                      padding: '12px', 
+                      background: 'rgba(255,255,255,0.7)', 
+                      borderRadius: '6px',
+                      fontSize: '12px'
+                    }}>
+                      <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>📊 Análise da Planilha:</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <span>📄 Total de linhas: {importResults.estatisticas.totalLinhas}</span>
+                        <span>📝 Linhas com dados: {importResults.estatisticas.linhasComDados}</span>
+                        <span>⚪ Linhas vazias: {importResults.estatisticas.linhasVazias}</span>
+                        <span>✅ CNPJs válidos: {importResults.estatisticas.cnpjsValidos}</span>
+                        <span>🔧 CNPJs corrigidos: {importResults.estatisticas.cnpjsCorrigidos}</span>
+                        <span>❌ CNPJs inválidos: {importResults.estatisticas.cnpjsInvalidos}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Seção de Sucessos */}
