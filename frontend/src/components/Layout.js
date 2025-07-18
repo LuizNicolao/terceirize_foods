@@ -21,15 +21,29 @@ const MainContent = styled.main`
 `;
 
 const Layout = ({ children }) => {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    // Carregar estado salvo do localStorage
+    const saved = localStorage.getItem('sidebarCollapsed');
+    if (saved !== null) {
+      return JSON.parse(saved);
+    }
+    // Estado padrão baseado no tamanho da tela
+    return window.innerWidth <= 768;
+  });
 
   // Detectar tamanho da tela e ajustar sidebar automaticamente
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 768) {
         setSidebarCollapsed(true);
+        localStorage.setItem('sidebarCollapsed', 'true');
       } else {
-        setSidebarCollapsed(false);
+        // Em telas maiores, manter o estado salvo pelo usuário
+        const saved = localStorage.getItem('sidebarCollapsed');
+        if (saved === null) {
+          setSidebarCollapsed(false);
+          localStorage.setItem('sidebarCollapsed', 'false');
+        }
       }
     };
 
@@ -42,7 +56,9 @@ const Layout = ({ children }) => {
   }, []);
 
   const toggleSidebar = () => {
-    setSidebarCollapsed(!sidebarCollapsed);
+    const newState = !sidebarCollapsed;
+    setSidebarCollapsed(newState);
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
   };
 
   return (
