@@ -848,7 +848,7 @@ const Fornecedores = () => {
           let cnpjColumnIndex = 0; // Padrão: primeira coluna
           
           // Procurar por coluna com "cnpj" no cabeçalho
-          headers.forEach((header, index) => {
+            headers.forEach((header, index) => {
             if (header && header.toString().toLowerCase().includes('cnpj')) {
               cnpjColumnIndex = index;
               console.log(`🎯 Coluna CNPJ encontrada no índice ${index}: "${header}"`);
@@ -1406,8 +1406,8 @@ const Fornecedores = () => {
             case 'todos':
             default:
               matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             fornecedor.cnpj?.includes(searchTerm) ||
+                         fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         fornecedor.cnpj?.includes(searchTerm) ||
                              fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                              fornecedor.telefone?.includes(searchTerm) ||
                              fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1417,8 +1417,8 @@ const Fornecedores = () => {
           }
         }
         
-        const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
-        return matchesSearch && matchesStatus;
+    const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
+    return matchesSearch && matchesStatus;
       })
     );
   }, [fornecedores, searchTerm, searchField, statusFilter, sortField, sortDirection]);
@@ -2096,11 +2096,11 @@ const Fornecedores = () => {
               <FormGroup>
                 <Label>Telefone</Label>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  <Input
-                    type="text"
-                    placeholder="(00) 00000-0000"
-                    disabled={isViewMode}
-                    {...register('telefone')}
+                <Input
+                  type="text"
+                  placeholder="(00) 00000-0000"
+                  disabled={isViewMode}
+                  {...register('telefone')}
                     style={{ flex: 1 }}
                   />
                   {isViewMode && getValues('telefone') && (
@@ -2119,7 +2119,7 @@ const Fornecedores = () => {
                     </PhoneLink>
                   )}
                 </div>
-                {errors.telefone && <span style={{ color: 'red', fontSize: '11px' }}>{errors.telefone.message}</span>}
+                                  {errors.telefone && <span style={{ color: 'red', fontSize: '11px' }}>{errors.telefone.message}</span>}
               </FormGroup>
 
               <FormGroup>
