@@ -345,6 +345,7 @@ const Fornecedores = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingFornecedor, setEditingFornecedor] = useState(null);
+  const [isViewMode, setIsViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -668,6 +669,25 @@ const Fornecedores = () => {
     setShowModal(true);
   };
 
+  // Abrir modal para visualizar fornecedor
+  const handleViewFornecedor = (fornecedor) => {
+    setEditingFornecedor(fornecedor);
+    setValue('razao_social', fornecedor.razao_social);
+    setValue('nome_fantasia', fornecedor.nome_fantasia);
+    setValue('cnpj', fornecedor.cnpj);
+    setValue('telefone', fornecedor.telefone);
+    setValue('email', fornecedor.email);
+    setValue('logradouro', fornecedor.logradouro);
+    setValue('numero', fornecedor.numero);
+    setValue('bairro', fornecedor.bairro);
+    setValue('municipio', fornecedor.municipio);
+    setValue('uf', fornecedor.uf);
+    setValue('cep', fornecedor.cep);
+    setValue('status', fornecedor.status);
+    setIsViewMode(true);
+    setShowModal(true);
+  };
+
   // Abrir modal para editar fornecedor
   const handleEditFornecedor = (fornecedor) => {
     setEditingFornecedor(fornecedor);
@@ -683,6 +703,7 @@ const Fornecedores = () => {
     setValue('uf', fornecedor.uf);
     setValue('cep', fornecedor.cep);
     setValue('status', fornecedor.status);
+    setIsViewMode(false);
     setShowModal(true);
   };
 
@@ -690,6 +711,7 @@ const Fornecedores = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingFornecedor(null);
+    setIsViewMode(false);
     reset();
   };
 
@@ -1034,7 +1056,7 @@ const Fornecedores = () => {
                     <ActionButton
                       className="view"
                       title="Visualizar"
-                      onClick={() => handleEditFornecedor(fornecedor)}
+                      onClick={() => handleViewFornecedor(fornecedor)}
                     >
                       <FaEye />
                     </ActionButton>
@@ -1069,7 +1091,7 @@ const Fornecedores = () => {
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalHeader>
               <ModalTitle>
-                {editingFornecedor ? 'Editar Fornecedor' : 'Adicionar Fornecedor'}
+                {isViewMode ? 'Visualizar Fornecedor' : editingFornecedor ? 'Editar Fornecedor' : 'Adicionar Fornecedor'}
               </ModalTitle>
               <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
             </ModalHeader>
@@ -1080,6 +1102,7 @@ const Fornecedores = () => {
                 <Input
                   type="text"
                   placeholder="Razão social da empresa"
+                  disabled={isViewMode}
                   {...register('razao_social', { required: 'Razão social é obrigatória' })}
                 />
                 {errors.razao_social && <span style={{ color: 'red', fontSize: '11px' }}>{errors.razao_social.message}</span>}
@@ -1090,6 +1113,7 @@ const Fornecedores = () => {
                 <Input
                   type="text"
                   placeholder="Nome fantasia da empresa"
+                  disabled={isViewMode}
                   {...register('nome_fantasia')}
                 />
                 {errors.nome_fantasia && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome_fantasia.message}</span>}
@@ -1101,8 +1125,9 @@ const Fornecedores = () => {
                   <Input
                     type="text"
                     placeholder="00.000.000/0000-00"
+                    disabled={isViewMode}
                     {...register('cnpj')}
-                    onChange={handleCNPJChange}
+                    onChange={isViewMode ? undefined : handleCNPJChange}
                     style={{ paddingRight: cnpjLoading ? '40px' : '12px' }}
                   />
                   {cnpjLoading && (
@@ -1125,7 +1150,7 @@ const Fornecedores = () => {
                   )}
                 </div>
                                   {errors.cnpj && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cnpj.message}</span>}
-                {!editingFornecedor && (
+                {!editingFornecedor && !isViewMode && (
                   <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                     <span style={{ color: 'var(--gray)', fontSize: '11px' }}>
                       Digite o CNPJ completo para buscar dados automaticamente
@@ -1171,6 +1196,7 @@ const Fornecedores = () => {
                 <Input
                   type="text"
                   placeholder="(00) 00000-0000"
+                  disabled={isViewMode}
                   {...register('telefone')}
                 />
                                   {errors.telefone && <span style={{ color: 'red', fontSize: '11px' }}>{errors.telefone.message}</span>}
@@ -1181,6 +1207,7 @@ const Fornecedores = () => {
                 <Input
                   type="email"
                   placeholder="email@exemplo.com"
+                  disabled={isViewMode}
                   {...register('email', {
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
@@ -1196,6 +1223,7 @@ const Fornecedores = () => {
                 <Input
                   type="text"
                   placeholder="Rua, avenida, etc."
+                  disabled={isViewMode}
                   {...register('logradouro')}
                 />
                                   {errors.logradouro && <span style={{ color: 'red', fontSize: '11px' }}>{errors.logradouro.message}</span>}
@@ -1206,6 +1234,7 @@ const Fornecedores = () => {
                 <Input
                   type="text"
                   placeholder="Número"
+                  disabled={isViewMode}
                   {...register('numero')}
                 />
                                   {errors.numero && <span style={{ color: 'red', fontSize: '11px' }}>{errors.numero.message}</span>}
@@ -1216,6 +1245,7 @@ const Fornecedores = () => {
                 <Input
                   type="text"
                   placeholder="Bairro"
+                  disabled={isViewMode}
                   {...register('bairro')}
                 />
                                   {errors.bairro && <span style={{ color: 'red', fontSize: '11px' }}>{errors.bairro.message}</span>}
@@ -1227,6 +1257,7 @@ const Fornecedores = () => {
                   <Input
                     type="text"
                     placeholder="Município"
+                    disabled={isViewMode}
                     {...register('municipio')}
                   />
                                       {errors.municipio && <span style={{ color: 'red', fontSize: '11px' }}>{errors.municipio.message}</span>}
@@ -1234,7 +1265,7 @@ const Fornecedores = () => {
 
                 <FormGroup>
                   <Label>UF</Label>
-                  <Select {...register('uf')}>
+                  <Select disabled={isViewMode} {...register('uf')}>
                     <option value="">Selecione...</option>
                     <option value="AC">Acre</option>
                     <option value="AL">Alagoas</option>
@@ -1272,6 +1303,7 @@ const Fornecedores = () => {
                   <Input
                     type="text"
                     placeholder="00000-000"
+                    disabled={isViewMode}
                     {...register('cep')}
                   />
                                       {errors.cep && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cep.message}</span>}
@@ -1282,7 +1314,7 @@ const Fornecedores = () => {
 
               <FormGroup>
                 <Label>Status</Label>
-                <Select {...register('status', { required: 'Status é obrigatório' })}>
+                <Select disabled={isViewMode} {...register('status', { required: 'Status é obrigatório' })}>
                   <option value="">Selecione...</option>
                   <option value="1">Ativo</option>
                   <option value="0">Inativo</option>
@@ -1292,11 +1324,13 @@ const Fornecedores = () => {
 
               <ButtonGroup>
                 <Button type="button" className="secondary" onClick={handleCloseModal}>
-                  Cancelar
+                  {isViewMode ? 'Fechar' : 'Cancelar'}
                 </Button>
-                <Button type="submit" className="primary">
-                  {editingFornecedor ? 'Atualizar' : 'Criar'}
-                </Button>
+                {!isViewMode && (
+                  <Button type="submit" className="primary">
+                    {editingFornecedor ? 'Atualizar' : 'Criar'}
+                  </Button>
+                )}
               </ButtonGroup>
             </Form>
           </ModalContent>

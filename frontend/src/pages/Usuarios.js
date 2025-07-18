@@ -296,6 +296,7 @@ const Usuarios = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [isViewMode, setIsViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -612,6 +613,18 @@ const Usuarios = () => {
     setShowModal(true);
   };
 
+  // Abrir modal para visualizar usuário
+  const handleViewUser = (user) => {
+    setEditingUser(user);
+    setValue('nome', user.nome);
+    setValue('email', user.email);
+    setValue('nivel_de_acesso', user.nivel_de_acesso);
+    setValue('tipo_de_acesso', user.tipo_de_acesso);
+    setValue('status', user.status);
+    setIsViewMode(true);
+    setShowModal(true);
+  };
+
   // Abrir modal para editar usuário
   const handleEditUser = (user) => {
     setEditingUser(user);
@@ -620,6 +633,7 @@ const Usuarios = () => {
     setValue('nivel_de_acesso', user.nivel_de_acesso);
     setValue('tipo_de_acesso', user.tipo_de_acesso);
     setValue('status', user.status);
+    setIsViewMode(false);
     setShowModal(true);
   };
 
@@ -627,6 +641,7 @@ const Usuarios = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingUser(null);
+    setIsViewMode(false);
     reset();
   };
 
@@ -782,7 +797,7 @@ const Usuarios = () => {
                     <ActionButton
                       className="view"
                       title="Visualizar"
-                      onClick={() => handleEditUser(user)}
+                      onClick={() => handleViewUser(user)}
                     >
                       <FaEye />
                     </ActionButton>
@@ -817,7 +832,7 @@ const Usuarios = () => {
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalHeader>
               <ModalTitle>
-                {editingUser ? 'Editar Usuário' : 'Adicionar Usuário'}
+                {isViewMode ? 'Visualizar Usuário' : editingUser ? 'Editar Usuário' : 'Adicionar Usuário'}
               </ModalTitle>
               <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
             </ModalHeader>
@@ -828,6 +843,7 @@ const Usuarios = () => {
                 <Input
                   type="text"
                   placeholder="Nome completo"
+                  disabled={isViewMode}
                   {...register('nome', { required: 'Nome é obrigatório' })}
                 />
                 {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
@@ -838,6 +854,7 @@ const Usuarios = () => {
                 <Input
                   type="email"
                   placeholder="email@exemplo.com"
+                  disabled={isViewMode}
                   {...register('email', { 
                     required: 'Email é obrigatório',
                     pattern: {
@@ -849,25 +866,27 @@ const Usuarios = () => {
                 {errors.email && <span style={{ color: 'red', fontSize: '12px' }}>{errors.email.message}</span>}
               </FormGroup>
 
-              <FormGroup>
-                <Label>Senha {editingUser && '(deixe em branco para manter a atual)'}</Label>
-                <Input
-                  type="password"
-                  placeholder={editingUser ? "Nova senha (opcional)" : "Senha"}
-                  {...register('senha', { 
-                    required: !editingUser ? 'Senha é obrigatória' : false,
-                    minLength: {
-                      value: 6,
-                      message: 'Senha deve ter pelo menos 6 caracteres'
-                    }
-                  })}
-                />
-                {errors.senha && <span style={{ color: 'red', fontSize: '12px' }}>{errors.senha.message}</span>}
-              </FormGroup>
+              {!isViewMode && (
+                <FormGroup>
+                  <Label>Senha {editingUser && '(deixe em branco para manter a atual)'}</Label>
+                  <Input
+                    type="password"
+                    placeholder={editingUser ? "Nova senha (opcional)" : "Senha"}
+                    {...register('senha', { 
+                      required: !editingUser ? 'Senha é obrigatória' : false,
+                      minLength: {
+                        value: 6,
+                        message: 'Senha deve ter pelo menos 6 caracteres'
+                      }
+                    })}
+                  />
+                  {errors.senha && <span style={{ color: 'red', fontSize: '12px' }}>{errors.senha.message}</span>}
+                </FormGroup>
+              )}
 
               <FormGroup>
                 <Label>Nível de Acesso</Label>
-                <Select {...register('nivel_de_acesso', { required: 'Nível de acesso é obrigatório' })}>
+                <Select disabled={isViewMode} {...register('nivel_de_acesso', { required: 'Nível de acesso é obrigatório' })}>
                   <option value="">Selecione...</option>
                   <option value="I">Nível I - Visualizar</option>
                   <option value="II">Nível II - Criar/Editar</option>
@@ -878,7 +897,7 @@ const Usuarios = () => {
 
               <FormGroup>
                 <Label>Tipo de Acesso</Label>
-                <Select {...register('tipo_de_acesso', { required: 'Tipo de acesso é obrigatório' })}>
+                <Select disabled={isViewMode} {...register('tipo_de_acesso', { required: 'Tipo de acesso é obrigatório' })}>
                   <option value="">Selecione...</option>
                   <option value="administrador">Administrador</option>
                   <option value="coordenador">Coordenador</option>
@@ -891,7 +910,7 @@ const Usuarios = () => {
 
               <FormGroup>
                 <Label>Status</Label>
-                <Select {...register('status', { required: 'Status é obrigatório' })}>
+                <Select disabled={isViewMode} {...register('status', { required: 'Status é obrigatório' })}>
                   <option value="">Selecione...</option>
                   <option value="ativo">Ativo</option>
                   <option value="inativo">Inativo</option>
@@ -901,11 +920,13 @@ const Usuarios = () => {
 
               <ButtonGroup>
                 <Button type="button" className="secondary" onClick={handleCloseModal}>
-                  Cancelar
+                  {isViewMode ? 'Fechar' : 'Cancelar'}
                 </Button>
-                <Button type="submit" className="primary">
-                  {editingUser ? 'Atualizar' : 'Criar'}
-                </Button>
+                {!isViewMode && (
+                  <Button type="submit" className="primary">
+                    {editingUser ? 'Atualizar' : 'Criar'}
+                  </Button>
+                )}
               </ButtonGroup>
             </Form>
           </ModalContent>
