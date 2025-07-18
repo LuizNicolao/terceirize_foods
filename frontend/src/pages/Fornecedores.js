@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUpload, FaTimes, FaInfoCircle } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUpload, FaTimes, FaInfoCircle, FaWhatsapp } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -472,6 +472,38 @@ const EmptyState = styled.div`
   text-align: center;
   padding: 48px;
   color: var(--gray);
+`;
+
+const PhoneLink = styled.a`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--primary-green);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  padding: 4px 8px;
+  border-radius: 6px;
+  
+  &:hover {
+    background: rgba(0, 114, 62, 0.1);
+    color: var(--dark-green);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const WhatsAppIcon = styled(FaWhatsapp)`
+  font-size: 14px;
+  color: #25D366;
+  transition: all 0.3s ease;
+  
+  ${PhoneLink}:hover & {
+    transform: scale(1.1);
+  }
 `;
 
 const Fornecedores = () => {
@@ -1825,7 +1857,21 @@ const Fornecedores = () => {
                   <Td>{fornecedor.id}</Td>
                   <Td>{fornecedor.razao_social}</Td>
                   <Td>{formatCNPJ(fornecedor.cnpj)}</Td>
-                  <Td>{formatPhone(fornecedor.telefone)}</Td>
+                  <Td>
+                    {fornecedor.telefone ? (
+                      <PhoneLink 
+                        href={`https://wa.me/55${fornecedor.telefone.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Abrir no WhatsApp"
+                      >
+                        {formatPhone(fornecedor.telefone)}
+                        <WhatsAppIcon />
+                      </PhoneLink>
+                    ) : (
+                      '-'
+                    )}
+                  </Td>
                   <Td>{fornecedor.email}</Td>
                   <Td>{fornecedor.municipio}/{fornecedor.uf}</Td>
                   <Td>
@@ -2049,13 +2095,31 @@ const Fornecedores = () => {
 
               <FormGroup>
                 <Label>Telefone</Label>
-                <Input
-                  type="text"
-                  placeholder="(00) 00000-0000"
-                  disabled={isViewMode}
-                  {...register('telefone')}
-                />
-                                  {errors.telefone && <span style={{ color: 'red', fontSize: '11px' }}>{errors.telefone.message}</span>}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <Input
+                    type="text"
+                    placeholder="(00) 00000-0000"
+                    disabled={isViewMode}
+                    {...register('telefone')}
+                    style={{ flex: 1 }}
+                  />
+                  {isViewMode && getValues('telefone') && (
+                    <PhoneLink 
+                      href={`https://wa.me/55${getValues('telefone').replace(/\D/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Abrir no WhatsApp"
+                      style={{ 
+                        padding: '8px 12px', 
+                        fontSize: '14px',
+                        minWidth: 'auto'
+                      }}
+                    >
+                      <WhatsAppIcon />
+                    </PhoneLink>
+                  )}
+                </div>
+                {errors.telefone && <span style={{ color: 'red', fontSize: '11px' }}>{errors.telefone.message}</span>}
               </FormGroup>
 
               <FormGroup>
