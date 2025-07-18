@@ -107,6 +107,71 @@ const ClearButton = styled.button`
   }
 `;
 
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`;
+
+const PaginationInfo = styled.div`
+  color: var(--dark-gray);
+  font-size: 14px;
+`;
+
+const PaginationControls = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`;
+
+const PageButton = styled.button`
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  background: var(--white);
+  color: var(--dark-gray);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+
+  &:hover:not(:disabled) {
+    background: var(--primary-green);
+    color: var(--white);
+    border-color: var(--primary-green);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.active {
+    background: var(--primary-green);
+    color: var(--white);
+    border-color: var(--primary-green);
+  }
+`;
+
+const PageSizeSelect = styled.select`
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background: var(--white);
+  color: var(--dark-gray);
+  font-size: 14px;
+  cursor: pointer;
+
+  &:focus {
+    border-color: var(--primary-green);
+    outline: none;
+  }
+`;
+
 const TableContainer = styled.div`
   background: var(--white);
   border-radius: 12px;
@@ -434,6 +499,10 @@ const Fornecedores = () => {
   const [importResults, setImportResults] = useState(null);
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [pageSize, setPageSize] = useState(50);
   const fileInputRef = useRef(null);
 
   const {
@@ -449,8 +518,29 @@ const Fornecedores = () => {
   const loadFornecedores = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/fornecedores');
-      setFornecedores(response.data);
+      
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+        search: searchTerm,
+        searchField: searchField,
+        status: statusFilter,
+        sortField: sortField,
+        sortDirection: sortDirection
+      });
+
+      const response = await api.get(`/fornecedores?${params.toString()}`);
+      
+      if (response.data.fornecedores) {
+        setFornecedores(response.data.fornecedores);
+        setTotalPages(response.data.pagination.totalPages);
+        setTotalRecords(response.data.pagination.totalRecords);
+      } else {
+        // Fallback para resposta antiga
+        setFornecedores(response.data);
+        setTotalPages(1);
+        setTotalRecords(response.data.length);
+      }
     } catch (error) {
       console.error('Erro ao carregar fornecedores:', error);
       toast.error('Erro ao carregar fornecedores');
@@ -461,7 +551,7 @@ const Fornecedores = () => {
 
   useEffect(() => {
     loadFornecedores();
-  }, []);
+  }, [currentPage, pageSize, searchTerm, searchField, statusFilter, sortField, sortDirection]);
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
@@ -968,62 +1058,7 @@ const Fornecedores = () => {
     }
   };
 
-  // Função para ordenar fornecedores
-  const sortFornecedores = (fornecedores) => {
-    return fornecedores.sort((a, b) => {
-      let aValue = a[sortField];
-      let bValue = b[sortField];
 
-      // Tratar diferentes tipos de dados
-      if (sortField === 'id' || sortField === 'status') {
-        // Para números, converter para número
-        aValue = Number(aValue) || 0;
-        bValue = Number(bValue) || 0;
-        
-        if (sortDirection === 'asc') {
-          return aValue - bValue;
-        } else {
-          return bValue - aValue;
-        }
-      } else if (sortField === 'cnpj' || sortField === 'telefone') {
-        // Para CNPJ e telefone, remover formatação antes de comparar
-        aValue = String(aValue).replace(/\D/g, '').toLowerCase();
-        bValue = String(bValue).replace(/\D/g, '').toLowerCase();
-
-        if (sortDirection === 'asc') {
-          return aValue.localeCompare(bValue, 'pt-BR');
-        } else {
-          return bValue.localeCompare(aValue, 'pt-BR');
-        }
-      } else if (sortField === 'municipio') {
-        // Para cidade/estado, ordenar primeiro por cidade, depois por estado
-        const aCidade = String(a.municipio || '').toLowerCase();
-        const bCidade = String(b.municipio || '').toLowerCase();
-        const aEstado = String(a.uf || '').toLowerCase();
-        const bEstado = String(b.uf || '').toLowerCase();
-
-        if (sortDirection === 'asc') {
-          const cidadeCompare = aCidade.localeCompare(bCidade, 'pt-BR');
-          if (cidadeCompare !== 0) return cidadeCompare;
-          return aEstado.localeCompare(bEstado, 'pt-BR');
-        } else {
-          const cidadeCompare = bCidade.localeCompare(aCidade, 'pt-BR');
-          if (cidadeCompare !== 0) return cidadeCompare;
-          return bEstado.localeCompare(aEstado, 'pt-BR');
-        }
-      } else {
-        // Para texto, converter para string e usar localeCompare
-        aValue = String(aValue).toLowerCase();
-        bValue = String(bValue).toLowerCase();
-
-        if (sortDirection === 'asc') {
-          return aValue.localeCompare(bValue, 'pt-BR');
-        } else {
-          return bValue.localeCompare(aValue, 'pt-BR');
-        }
-      }
-    });
-  };
 
   // Função para lidar com ordenação
   const handleSort = (field) => {
@@ -1033,6 +1068,7 @@ const Fornecedores = () => {
       setSortField(field);
       setSortDirection('asc');
     }
+    setCurrentPage(1); // Resetar para primeira página ao ordenar
   };
 
   // Função para limpar filtros
@@ -1040,57 +1076,57 @@ const Fornecedores = () => {
     setSearchTerm('');
     setSearchField('todos');
     setStatusFilter('todos');
+    setCurrentPage(1);
   };
 
-  // Filtrar e ordenar fornecedores
-  const filteredFornecedores = sortFornecedores(
-    fornecedores.filter(fornecedor => {
-      let matchesSearch = true;
-      
-      if (searchTerm) {
-        switch (searchField) {
-          case 'id':
-            matchesSearch = fornecedor.id?.toString().includes(searchTerm);
-            break;
-          case 'razao_social':
-            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'nome_fantasia':
-            matchesSearch = fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'cnpj':
-            matchesSearch = fornecedor.cnpj?.includes(searchTerm);
-            break;
-          case 'email':
-            matchesSearch = fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'telefone':
-            matchesSearch = fornecedor.telefone?.includes(searchTerm);
-            break;
-          case 'municipio':
-            matchesSearch = fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'uf':
-            matchesSearch = fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'todos':
-          default:
-            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.cnpj?.includes(searchTerm) ||
-                           fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.telefone?.includes(searchTerm) ||
-                           fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.id?.toString().includes(searchTerm);
-            break;
-        }
+  // Funções de paginação
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (newPageSize) => {
+    setPageSize(parseInt(newPageSize));
+    setCurrentPage(1); // Voltar para primeira página
+  };
+
+  // Gerar array de páginas para exibição
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
       }
-      
-      const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
-      return matchesSearch && matchesStatus;
-    })
-  );
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
+
+  // Usar fornecedores diretamente (já filtrados e ordenados pelo servidor)
+  const filteredFornecedores = fornecedores;
 
   // Formatar CNPJ
   const formatCNPJ = (cnpj) => {
@@ -1414,7 +1450,9 @@ const Fornecedores = () => {
                   <EmptyState>
                     {searchTerm || searchField !== 'todos' || statusFilter !== 'todos' 
                       ? 'Nenhum fornecedor encontrado com os filtros aplicados'
-                      : 'Nenhum fornecedor cadastrado'
+                      : totalRecords === 0 
+                        ? 'Nenhum fornecedor cadastrado'
+                        : 'Nenhum fornecedor encontrado nesta página'
                     }
                   </EmptyState>
                 </Td>
@@ -1466,6 +1504,51 @@ const Fornecedores = () => {
           </tbody>
         </Table>
       </TableContainer>
+
+      {/* Paginação */}
+      {totalRecords > 0 && (
+        <PaginationContainer>
+          <PaginationInfo>
+            Mostrando {((currentPage - 1) * pageSize) + 1} a {Math.min(currentPage * pageSize, totalRecords)} de {totalRecords} fornecedores
+          </PaginationInfo>
+          
+          <PaginationControls>
+            <PageSizeSelect
+              value={pageSize}
+              onChange={(e) => handlePageSizeChange(e.target.value)}
+            >
+              <option value={25}>25 por página</option>
+              <option value={50}>50 por página</option>
+              <option value={100}>100 por página</option>
+            </PageSizeSelect>
+            
+            <PageButton
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Anterior
+            </PageButton>
+            
+            {getPageNumbers().map((page, index) => (
+              <PageButton
+                key={index}
+                onClick={() => typeof page === 'number' ? handlePageChange(page) : null}
+                className={page === currentPage ? 'active' : ''}
+                disabled={page === '...'}
+              >
+                {page}
+              </PageButton>
+            ))}
+            
+            <PageButton
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Próxima
+            </PageButton>
+          </PaginationControls>
+        </PaginationContainer>
+      )}
 
       {/* Input file oculto para importação */}
       <input
