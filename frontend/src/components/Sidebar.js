@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { 
@@ -18,7 +18,9 @@ import {
   FaFileAlt,
   FaBuilding,
   FaCog,
-  FaDatabase
+  FaDatabase,
+  FaChevronDown,
+  FaChevronUp
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -117,19 +119,45 @@ const Nav = styled.nav`
 `;
 
 const MenuGroup = styled.div`
-  margin: 16px 0;
+  margin: 8px 0;
+`;
+
+const GroupHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 4px;
+
+  &:hover {
+    background-color: var(--light-gray);
+  }
+
+  display: ${props => props.$collapsed ? 'none' : 'flex'};
 `;
 
 const GroupTitle = styled.div`
-  padding: 8px 20px;
   font-size: 11px;
   font-weight: 600;
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  display: ${props => props.$collapsed ? 'none' : 'block'};
-  border-bottom: 1px solid #f0f0f0;
-  margin-bottom: 8px;
+`;
+
+const GroupToggle = styled.div`
+  font-size: 10px;
+  color: #999;
+  transition: all 0.3s ease;
+`;
+
+const GroupContent = styled.div`
+  overflow: hidden;
+  transition: all 0.3s ease;
+  max-height: ${props => props.$expanded ? '1000px' : '0'};
+  opacity: ${props => props.$expanded ? '1' : '0'};
 `;
 
 const NavItem = styled(Link)`
@@ -223,22 +251,17 @@ const menuGroups = [
       { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
       { path: '/clientes', icon: FaBuilding, label: 'Clientes', screen: 'clientes' },
       { path: '/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
-    ]
-  },
-  {
-    title: 'Categorização',
-    items: [
       { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
       { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
       { path: '/classes', icon: FaCubes, label: 'Classes', screen: 'classes' },
       { path: '/nome-generico-produto', icon: FaFileAlt, label: 'Nomes Genéricos', screen: 'nome_generico_produto' },
+      { path: '/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
+      { path: '/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
     ]
   },
   {
     title: 'Configurações',
     items: [
-      { path: '/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
-      { path: '/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
       { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
     ]
   }
@@ -248,9 +271,23 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
   const { logout } = useAuth();
   const { canView, loading } = usePermissions();
+  
+  // Estado para controlar expansão dos grupos
+  const [expandedGroups, setExpandedGroups] = useState({
+    'Principal': true,
+    'Cadastros': true,
+    'Configurações': true
+  });
 
   const handleLogout = () => {
     logout();
+  };
+
+  const toggleGroup = (groupTitle) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupTitle]: !prev[groupTitle]
+    }));
   };
 
   return (
@@ -269,41 +306,53 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <Nav>
           {menuGroups.map((group, groupIndex) => (
             <MenuGroup key={groupIndex}>
-              <GroupTitle $collapsed={collapsed}>
-                {group.title}
-              </GroupTitle>
-              {group.items.map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                
-                // Verificar se o usuário pode visualizar este item
-                const canViewItem = item.screen === 'dashboard' || canView(item.screen);
-                
-                if (!canViewItem) {
-                  return null;
-                }
-                
-                return (
-                  <NavItem 
-                    key={item.path} 
-                    to={item.path}
-                    className={isActive ? 'active' : ''}
-                    onClick={() => {
-                      // Fechar sidebar no mobile quando clicar em um item
-                      if (window.innerWidth <= 768) {
-                        onToggle();
-                      }
-                    }}
-                  >
-                    <NavIcon $collapsed={collapsed} $active={isActive}>
-                      <Icon />
-                    </NavIcon>
-                    <NavText $collapsed={collapsed}>
-                      {item.label}
-                    </NavText>
-                  </NavItem>
-                );
-              })}
+              <GroupHeader 
+                $collapsed={collapsed}
+                onClick={() => !collapsed && toggleGroup(group.title)}
+              >
+                <GroupTitle>
+                  {group.title}
+                </GroupTitle>
+                {!collapsed && (
+                  <GroupToggle>
+                    {expandedGroups[group.title] ? <FaChevronUp /> : <FaChevronDown />}
+                  </GroupToggle>
+                )}
+              </GroupHeader>
+              <GroupContent $expanded={collapsed || expandedGroups[group.title]}>
+                {group.items.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  
+                  // Verificar se o usuário pode visualizar este item
+                  const canViewItem = item.screen === 'dashboard' || canView(item.screen);
+                  
+                  if (!canViewItem) {
+                    return null;
+                  }
+                  
+                  return (
+                    <NavItem 
+                      key={item.path} 
+                      to={item.path}
+                      className={isActive ? 'active' : ''}
+                      onClick={() => {
+                        // Fechar sidebar no mobile quando clicar em um item
+                        if (window.innerWidth <= 768) {
+                          onToggle();
+                        }
+                      }}
+                    >
+                      <NavIcon $collapsed={collapsed} $active={isActive}>
+                        <Icon />
+                      </NavIcon>
+                      <NavText $collapsed={collapsed}>
+                        {item.label}
+                      </NavText>
+                    </NavItem>
+                  );
+                })}
+              </GroupContent>
             </MenuGroup>
           ))}
         </Nav>
