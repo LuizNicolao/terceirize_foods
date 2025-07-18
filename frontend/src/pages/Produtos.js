@@ -1337,6 +1337,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                           placeholder="Ex: 1234567891234"
+                          disabled={isViewMode}
                           {...register('codigo_barras')}
                         />
                         {errors.codigo_barras && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_barras.message}</span>}
@@ -1348,6 +1349,7 @@ const Produtos = () => {
                           type="number"
                           step="0.001"
                           placeholder="Ex: 1.000"
+                          disabled={isViewMode}
                           {...register('fator_conversao')}
                         />
                         {errors.fator_conversao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fator_conversao.message}</span>}
