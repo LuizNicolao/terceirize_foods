@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
-const { authenticateToken, checkPermission, checkPermissionForResource } = require('../middleware/auth');
+const { authenticateToken, checkPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 const axios = require('axios');
 
@@ -11,7 +11,7 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // Buscar dados do CNPJ
-router.get('/buscar-cnpj/:cnpj', checkPermissionForResource('visualizar', 'fornecedores'), async (req, res) => {
+router.get('/buscar-cnpj/:cnpj', checkPermission('visualizar'), async (req, res) => {
   try {
     const { cnpj } = req.params;
     
@@ -105,7 +105,7 @@ router.get('/buscar-cnpj/:cnpj', checkPermissionForResource('visualizar', 'forne
 });
 
 // Listar fornecedores
-router.get('/', checkPermissionForResource('visualizar', 'fornecedores'), async (req, res) => {
+router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
     const { search = '' } = req.query;
 
@@ -135,7 +135,7 @@ router.get('/', checkPermissionForResource('visualizar', 'fornecedores'), async 
 });
 
 // Buscar fornecedor por ID
-router.get('/:id', checkPermissionForResource('visualizar', 'fornecedores'), async (req, res) => {
+router.get('/:id', checkPermission('visualizar'), async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -158,7 +158,7 @@ router.get('/:id', checkPermissionForResource('visualizar', 'fornecedores'), asy
 
 // Criar fornecedor
 router.post('/', [
-  checkPermissionForResource('criar', 'fornecedores'),
+  checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'fornecedores'),
   body('cnpj').custom((value) => {
     if (!value) {
@@ -247,7 +247,7 @@ router.post('/', [
 
 // Atualizar fornecedor
 router.put('/:id', [
-  checkPermissionForResource('editar', 'fornecedores'),
+  checkPermission('editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'fornecedores'),
   body('cnpj').optional().custom((value) => {
     if (value) {
@@ -381,7 +381,7 @@ router.put('/:id', [
 
 // Excluir fornecedor
 router.delete('/:id', [
-  checkPermissionForResource('excluir', 'fornecedores'),
+  checkPermission('excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'fornecedores')
 ], async (req, res) => {
   try {
@@ -399,7 +399,7 @@ router.delete('/:id', [
 
     // Verificar se há produtos vinculados
     const produtosVinculados = await executeQuery(
-      'SELECT id FROM produtos WHERE id_fornecedor = ?',
+      'SELECT id FROM produtos WHERE fornecedor_id = ?',
       [id]
     );
 
@@ -421,7 +421,7 @@ router.delete('/:id', [
 
 // Importar fornecedores via Excel
 router.post('/importar', [
-  checkPermissionForResource('criar', 'fornecedores'),
+  checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'fornecedores')
 ], async (req, res) => {
   try {
