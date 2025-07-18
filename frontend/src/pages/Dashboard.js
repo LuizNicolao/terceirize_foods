@@ -170,11 +170,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log('Dashboard - useEffect executado');
-    console.log('Dashboard - window.location.pathname:', window.location.pathname);
-    console.log('Dashboard - localStorage lastRoute:', localStorage.getItem('lastRoute'));
-    
-    // Carregar dados da dashboard normalmente
     loadDashboardData();
   }, []);
 
