@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuesti
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 const Container = styled.div`
   padding: 24px;
@@ -109,7 +110,9 @@ const Td = styled.td`
   color: var(--dark-gray);
 `;
 
-const StatusBadge = styled.span`
+const StatusBadge = styled.span.withConfig({
+  shouldForwardProp: (prop) => prop !== 'status'
+})`
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
@@ -388,6 +391,7 @@ const FormGrid4 = styled.div`
 `;
 
 const Produtos = () => {
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [produtos, setProdutos] = useState([]);
 
   const [grupos, setGrupos] = useState([]);
@@ -395,6 +399,7 @@ const Produtos = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingProduto, setEditingProduto] = useState(null);
+  const [isViewMode, setIsViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [grupoFilter, setGrupoFilter] = useState('todos');
@@ -730,6 +735,57 @@ const Produtos = () => {
     setShowModal(true);
   };
 
+  // Abrir modal para visualizar produto
+  const handleViewProduto = (produto) => {
+    setEditingProduto(produto);
+    setValue('nome', produto.nome);
+    setValue('codigo_produto', produto.codigo_produto);
+    setValue('descricao', produto.descricao);
+    setValue('codigo_barras', produto.codigo_barras);
+    setValue('fator_conversao', produto.fator_conversao);
+    setValue('ean', produto.ean);
+    setValue('referencia', produto.referencia);
+    setValue('referencia_externa', produto.referencia_externa);
+    setValue('referencia_mercado', produto.referencia_mercado);
+    setValue('integracao_senior', produto.integracao_senior);
+    setValue('ficha_homologacao', produto.ficha_homologacao);
+    setValue('grupo_id', produto.grupo_id);
+    setValue('subgrupo_id', produto.subgrupo_id);
+    setValue('classe_id', produto.classe_id);
+    setValue('unidade_id', produto.unidade_id);
+    setValue('agrupamento_n3', produto.agrupamento_n3);
+    setValue('agrupamento_n4', produto.agrupamento_n4);
+    setValue('marca', produto.marca);
+    setValue('fabricante', produto.fabricante);
+    setValue('peso_liquido', produto.peso_liquido);
+    setValue('peso_bruto', produto.peso_bruto);
+    setValue('quantidade', produto.quantidade);
+    setValue('regra_palet_un', produto.regra_palet_un);
+    setValue('comprimento', produto.comprimento);
+    setValue('largura', produto.largura);
+    setValue('altura', produto.altura);
+    setValue('volume', produto.volume);
+    setValue('prazo_validade', produto.prazo_validade);
+    setValue('unidade_validade', produto.unidade_validade);
+    setValue('ncm', produto.ncm);
+    setValue('cest', produto.cest);
+    setValue('cfop', produto.cfop);
+    setValue('origem', produto.origem);
+    setValue('cst_icms', produto.cst_icms);
+    setValue('csosn', produto.csosn);
+    setValue('aliquota_icms', produto.aliquota_icms);
+    setValue('aliquota_ipi', produto.aliquota_ipi);
+    setValue('aliquota_pis', produto.aliquota_pis);
+    setValue('aliquota_cofins', produto.aliquota_cofins);
+
+    setValue('status', produto.status);
+    setValue('informacoes_adicionais', produto.informacoes_adicionais);
+    setValue('registro_especifico', produto.registro_especifico);
+    setValue('foto_produto', produto.foto_produto);
+    setIsViewMode(true);
+    setShowModal(true);
+  };
+
   // Abrir modal para editar produto
   const handleEditProduto = (produto) => {
     setEditingProduto(produto);
@@ -777,6 +833,7 @@ const Produtos = () => {
     setValue('informacoes_adicionais', produto.informacoes_adicionais);
     setValue('registro_especifico', produto.registro_especifico);
     setValue('foto_produto', produto.foto_produto);
+    setIsViewMode(false);
     setShowModal(true);
   };
 
@@ -784,6 +841,7 @@ const Produtos = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingProduto(null);
+    setIsViewMode(false);
     reset();
   };
 
@@ -946,10 +1004,12 @@ const Produtos = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          <AddButton onClick={handleAddProduto}>
-            <FaPlus />
-            Adicionar Produto
-          </AddButton>
+          {canCreate('produtos') && (
+            <AddButton onClick={handleAddProduto}>
+              <FaPlus />
+              Adicionar Produto
+            </AddButton>
+          )}
         </div>
       </Header>
 
@@ -1017,24 +1077,28 @@ const Produtos = () => {
                     <ActionButton
                       className="view"
                       title="Visualizar"
-                      onClick={() => handleEditProduto(produto)}
+                      onClick={() => handleViewProduto(produto)}
                     >
                       <FaEye />
                     </ActionButton>
-                    <ActionButton
-                      className="edit"
-                      title="Editar"
-                      onClick={() => handleEditProduto(produto)}
-                    >
-                      <FaEdit />
-                    </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      title="Excluir"
-                      onClick={() => handleDeleteProduto(produto.id)}
-                    >
-                      <FaTrash />
-                    </ActionButton>
+                    {canEdit('produtos') && (
+                      <ActionButton
+                        className="edit"
+                        title="Editar"
+                        onClick={() => handleEditProduto(produto)}
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                    )}
+                    {canDelete('produtos') && (
+                      <ActionButton
+                        className="delete"
+                        title="Excluir"
+                        onClick={() => handleDeleteProduto(produto.id)}
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    )}
                   </Td>
                 </tr>
               ))
@@ -1048,7 +1112,7 @@ const Produtos = () => {
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalHeader>
               <ModalTitle>
-                {editingProduto ? 'Editar Produto' : 'Adicionar Produto'}
+                {isViewMode ? 'Visualizar Produto' : editingProduto ? 'Editar Produto' : 'Adicionar Produto'}
               </ModalTitle>
               <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
             </ModalHeader>
@@ -1065,6 +1129,7 @@ const Produtos = () => {
                       <Input
                         type="text"
                         placeholder="Código interno do produto"
+                        disabled={isViewMode}
                         {...register('codigo_produto')}
                       />
                       {errors.codigo_produto && <span style={{ color: 'red', fontSize: '11px' }}>{errors.codigo_produto.message}</span>}
@@ -1075,6 +1140,7 @@ const Produtos = () => {
                       <Input
                         type="text"
                         placeholder="Ex: PATINHO BOVINO EM CUBOS KING"
+                        disabled={isViewMode}
                         {...register('nome', { required: 'Nome é obrigatório' })}
                       />
                       {errors.nome && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome.message}</span>}
@@ -1496,34 +1562,38 @@ const Produtos = () => {
                     </FormGroup>
 
                     <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <Button
-                        type="submit"
-                        style={{ 
-                          backgroundColor: 'var(--primary-green)', 
-                          color: 'white',
-                          padding: '12px 20px',
-                          fontSize: '14px',
-                          fontWeight: '600'
-                        }}
-                      >
-                        <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
-                        {editingProduto ? 'Atualizar Produto' : 'Cadastrar Produto'}
-                      </Button>
+                      {!isViewMode && (
+                        <Button
+                          type="submit"
+                          style={{ 
+                            backgroundColor: 'var(--primary-green)', 
+                            color: 'white',
+                            padding: '12px 20px',
+                            fontSize: '14px',
+                            fontWeight: '600'
+                          }}
+                        >
+                          <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
+                          {editingProduto ? 'Atualizar Produto' : 'Cadastrar Produto'}
+                        </Button>
+                      )}
 
-                      <Button
-                        type="button"
-                        onClick={handlePrintProduto}
-                        style={{ 
-                          backgroundColor: '#f5f5f5', 
-                          color: '#666',
-                          padding: '10px 16px',
-                          fontSize: '13px',
-                          border: '1px solid #ddd'
-                        }}
-                      >
-                        <i className="fas fa-print" style={{ marginRight: '8px' }}></i>
-                        Imprimir Produto
-                      </Button>
+                      {!isViewMode && (
+                        <Button
+                          type="button"
+                          onClick={handlePrintProduto}
+                          style={{ 
+                            backgroundColor: '#f5f5f5', 
+                            color: '#666',
+                            padding: '10px 16px',
+                            fontSize: '13px',
+                            border: '1px solid #ddd'
+                          }}
+                        >
+                          <i className="fas fa-print" style={{ marginRight: '8px' }}></i>
+                          Imprimir Produto
+                        </Button>
+                      )}
 
                       <Button
                         type="button"
@@ -1536,7 +1606,7 @@ const Produtos = () => {
                         }}
                       >
                         <i className="fas fa-arrow-left" style={{ marginRight: '8px' }}></i>
-                        Cancelar
+                        {isViewMode ? 'Fechar' : 'Cancelar'}
                       </Button>
                     </div>
                   </FormGrid>

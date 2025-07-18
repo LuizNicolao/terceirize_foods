@@ -1210,6 +1210,9 @@ const Permissoes = () => {
       case 'subgrupos': return 'Subgrupos';
       case 'unidades': return 'Unidades';
       case 'permissoes': return 'Permissões';
+      case 'classes': return 'Classes';
+      case 'marcas': return 'Marcas';
+      case 'nome_generico_produto': return 'Nome Genérico Produto';
       default: return screen;
     }
   };
