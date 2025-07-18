@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUpload } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUpload, FaTimes } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -84,6 +84,26 @@ const FilterSelect = styled.select`
   &:focus {
     border-color: var(--primary-green);
     outline: none;
+  }
+`;
+
+const ClearButton = styled.button`
+  background: var(--gray);
+  color: var(--white);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: var(--dark-gray);
+    transform: translateY(-1px);
   }
 `;
 
@@ -387,6 +407,7 @@ const Fornecedores = () => {
   const [editingFornecedor, setEditingFornecedor] = useState(null);
   const [isViewMode, setIsViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchField, setSearchField] = useState('todos');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
@@ -970,13 +991,58 @@ const Fornecedores = () => {
     }
   };
 
+  // Função para limpar filtros
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSearchField('todos');
+    setStatusFilter('todos');
+  };
+
   // Filtrar e ordenar fornecedores
   const filteredFornecedores = sortFornecedores(
     fornecedores.filter(fornecedor => {
-      const matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      let matchesSearch = true;
+      
+      if (searchTerm) {
+        switch (searchField) {
+          case 'id':
+            matchesSearch = fornecedor.id?.toString().includes(searchTerm);
+            break;
+          case 'razao_social':
+            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'nome_fantasia':
+            matchesSearch = fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'cnpj':
+            matchesSearch = fornecedor.cnpj?.includes(searchTerm);
+            break;
+          case 'email':
+            matchesSearch = fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'telefone':
+            matchesSearch = fornecedor.telefone?.includes(searchTerm);
+            break;
+          case 'municipio':
+            matchesSearch = fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'uf':
+            matchesSearch = fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'todos':
+          default:
+            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            fornecedor.cnpj?.includes(searchTerm) ||
-                           fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
+                           fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.telefone?.includes(searchTerm) ||
+                           fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.id?.toString().includes(searchTerm);
+            break;
+        }
+      }
+      
       const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
       return matchesSearch && matchesStatus;
     })
@@ -1186,9 +1252,35 @@ const Fornecedores = () => {
       </Header>
 
       <SearchContainer>
+        <FilterSelect
+          value={searchField}
+          onChange={(e) => setSearchField(e.target.value)}
+          style={{ minWidth: '150px' }}
+        >
+          <option value="todos">Todos os campos</option>
+          <option value="id">ID</option>
+          <option value="razao_social">Razão Social</option>
+          <option value="nome_fantasia">Nome Fantasia</option>
+          <option value="cnpj">CNPJ</option>
+          <option value="email">Email</option>
+          <option value="telefone">Telefone</option>
+          <option value="municipio">Cidade</option>
+          <option value="uf">Estado</option>
+        </FilterSelect>
         <SearchInput
           type="text"
-          placeholder="Buscar por nome, CNPJ ou email..."
+          placeholder={
+            searchField === 'todos' ? 'Buscar em todos os campos...' :
+            searchField === 'id' ? 'Buscar por ID...' :
+            searchField === 'razao_social' ? 'Buscar por razão social...' :
+            searchField === 'nome_fantasia' ? 'Buscar por nome fantasia...' :
+            searchField === 'cnpj' ? 'Buscar por CNPJ...' :
+            searchField === 'email' ? 'Buscar por email...' :
+            searchField === 'telefone' ? 'Buscar por telefone...' :
+            searchField === 'municipio' ? 'Buscar por cidade...' :
+            searchField === 'uf' ? 'Buscar por estado...' :
+            'Buscar...'
+          }
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -1200,6 +1292,12 @@ const Fornecedores = () => {
           <option value="1">Ativo</option>
           <option value="0">Inativo</option>
         </FilterSelect>
+        {(searchTerm || searchField !== 'todos' || statusFilter !== 'todos') && (
+          <ClearButton onClick={handleClearFilters}>
+            <FaTimes />
+            Limpar Filtros
+          </ClearButton>
+        )}
       </SearchContainer>
 
       <TableContainer>
@@ -1256,7 +1354,7 @@ const Fornecedores = () => {
               <tr>
                 <Td colSpan="8">
                   <EmptyState>
-                    {searchTerm || statusFilter !== 'todos' 
+                    {searchTerm || searchField !== 'todos' || statusFilter !== 'todos' 
                       ? 'Nenhum fornecedor encontrado com os filtros aplicados'
                       : 'Nenhum fornecedor cadastrado'
                     }
