@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUpload } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
-
 
 const Container = styled.div`
   padding: 24px;
@@ -360,9 +359,6 @@ const Fornecedores = () => {
     periodo: ''
   });
   const [cnpjLoading, setCnpjLoading] = useState(false);
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [importLoading, setImportLoading] = useState(false);
-  const [importResults, setImportResults] = useState(null);
 
   const {
     register,
@@ -972,102 +968,6 @@ const Fornecedores = () => {
     }
   };
 
-  // Função para abrir modal de importação
-  const handleOpenImportModal = () => {
-    setShowImportModal(true);
-    setImportResults(null);
-  };
-
-  // Função para fechar modal de importação
-  const handleCloseImportModal = () => {
-    setShowImportModal(false);
-    setImportResults(null);
-  };
-
-  // Função para processar arquivo CSV
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    // Verificar se é um arquivo CSV
-    if (!file.name.match(/\.(csv)$/)) {
-      toast.error('Por favor, selecione um arquivo CSV (.csv)');
-      return;
-    }
-
-    setImportLoading(true);
-
-    try {
-      // Ler o arquivo como texto
-      const text = await file.text();
-      const lines = text.split('\n');
-      
-      if (lines.length < 2) {
-        throw new Error('Arquivo deve ter pelo menos um cabeçalho e uma linha de dados');
-      }
-
-      // Extrair cabeçalhos (primeira linha)
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-      
-      // Mapear colunas da planilha para campos do banco
-      const columnMapping = {
-        'CNPJ': 'cnpj',
-        'RAZAO SOCIAL': 'razao_social',
-        'NOME FANTASIA': 'nome_fantasia',
-        'LOGRADOURO': 'logradouro',
-        'NÚMERO': 'numero',
-        'CEP': 'cep',
-        'BAIRRO': 'bairro',
-        'MUNICIPIO': 'municipio',
-        'UF': 'uf',
-        'EMAIL': 'email',
-        'TELEFONE': 'telefone'
-      };
-
-      // Converter dados
-      const fornecedores = [];
-      for (let i = 1; i < lines.length; i++) {
-        const line = lines[i].trim();
-        if (!line) continue; // Pular linhas vazias
-        
-        const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-        const fornecedor = {};
-        
-        headers.forEach((header, index) => {
-          const mappedField = columnMapping[header?.toUpperCase()];
-          if (mappedField && values[index] !== undefined && values[index] !== null && values[index] !== '') {
-            fornecedor[mappedField] = values[index];
-          }
-        });
-
-        // Só adicionar se tiver pelo menos CNPJ ou razão social
-        if (fornecedor.cnpj || fornecedor.razao_social) {
-          fornecedores.push(fornecedor);
-        }
-      }
-
-      if (fornecedores.length === 0) {
-        throw new Error('Nenhum fornecedor válido encontrado no arquivo');
-      }
-
-      // Enviar para o backend
-      const response = await api.post('/fornecedores/import', { fornecedores });
-      setImportResults(response.data);
-      
-      if (response.data.resultados.sucessos > 0) {
-        toast.success(`Importação concluída! ${response.data.resultados.sucessos} fornecedores importados com sucesso.`);
-        loadFornecedores(); // Recarregar lista
-      }
-
-    } catch (error) {
-      console.error('Erro ao processar arquivo:', error);
-      toast.error(error.response?.data?.error || error.message || 'Erro ao processar arquivo');
-    } finally {
-      setImportLoading(false);
-      event.target.value = ''; // Limpar input
-    }
-  };
-
   if (loading) {
     return (
       <Container>
@@ -1089,16 +989,10 @@ const Fornecedores = () => {
             Auditoria
           </AddButton>
           {canCreate('fornecedores') && (
-            <>
-              <AddButton onClick={handleOpenImportModal}>
-                <FaUpload />
-                Importar
-              </AddButton>
-              <AddButton onClick={handleAddFornecedor}>
-                <FaPlus />
-                Adicionar Fornecedor
-              </AddButton>
-            </>
+            <AddButton onClick={handleAddFornecedor}>
+              <FaPlus />
+              Adicionar Fornecedor
+            </AddButton>
           )}
         </div>
       </Header>
@@ -1715,163 +1609,6 @@ const Fornecedores = () => {
                       )}
                     </div>
                   ))}
-                </div>
-              )}
-            </div>
-          </ModalContent>
-        </Modal>
-      )}
-
-      {/* Modal de Importação */}
-      {showImportModal && (
-        <Modal onClick={handleCloseImportModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
-            <ModalHeader>
-              <ModalTitle>Importar Fornecedores</ModalTitle>
-              <CloseButton onClick={handleCloseImportModal}>&times;</CloseButton>
-            </ModalHeader>
-
-            <div style={{ padding: '24px' }}>
-              {!importResults ? (
-                <div>
-                  <div style={{ marginBottom: '24px' }}>
-                    <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>
-                      Instruções para Importação
-                    </h3>
-                    <div style={{ fontSize: '14px', color: 'var(--gray)', lineHeight: '1.5' }}>
-                      <p style={{ marginBottom: '12px' }}>
-                        <strong>Formato do arquivo:</strong> CSV (.csv)
-                      </p>
-                      <p style={{ marginBottom: '12px', fontSize: '12px', color: '#856404', background: '#fff3cd', padding: '8px', borderRadius: '4px' }}>
-                        <strong>Dica:</strong> Salve sua planilha Excel como CSV (Arquivo → Salvar como → CSV)
-                      </p>
-                      <p style={{ marginBottom: '12px' }}>
-                        <strong>Colunas aceitas:</strong>
-                      </p>
-                      <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-                        <li>CNPJ (obrigatório)</li>
-                        <li>RAZAO SOCIAL (obrigatório)</li>
-                        <li>NOME FANTASIA</li>
-                        <li>LOGRADOURO</li>
-                        <li>NÚMERO</li>
-                        <li>CEP</li>
-                        <li>BAIRRO</li>
-                        <li>MUNICIPIO</li>
-                        <li>UF</li>
-                        <li>EMAIL</li>
-                        <li>TELEFONE</li>
-                      </ul>
-                      <p style={{ marginTop: '12px', fontSize: '12px', color: '#856404', background: '#fff3cd', padding: '8px', borderRadius: '4px' }}>
-                        <strong>Observação:</strong> Colunas não listadas serão ignoradas. CNPJ e Razão Social são obrigatórios.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div style={{ textAlign: 'center' }}>
-                    <input
-                      type="file"
-                      accept=".csv"
-                      onChange={handleFileUpload}
-                      style={{ display: 'none' }}
-                      id="file-upload"
-                      disabled={importLoading}
-                    />
-                    <label
-                      htmlFor="file-upload"
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '12px 24px',
-                        background: importLoading ? 'var(--gray)' : 'var(--primary-green)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        cursor: importLoading ? 'not-allowed' : 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '600',
-                        transition: 'all 0.3s ease'
-                      }}
-                    >
-                      {importLoading ? (
-                        <>
-                          <div style={{
-                            width: '16px',
-                            height: '16px',
-                            border: '2px solid #f3f3f3',
-                            borderTop: '2px solid white',
-                            borderRadius: '50%',
-                            animation: 'spin 1s linear infinite'
-                          }}></div>
-                          Processando...
-                        </>
-                      ) : (
-                        <>
-                          <FaUpload />
-                          Selecionar Arquivo CSV
-                        </>
-                      )}
-                    </label>
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <div style={{ 
-                    padding: '16px', 
-                    borderRadius: '8px', 
-                    marginBottom: '24px',
-                    background: importResults.resultados.sucessos > 0 ? '#e8f5e8' : '#f8d7da',
-                    border: `1px solid ${importResults.resultados.sucessos > 0 ? '#2e7d32' : '#721c24'}`
-                  }}>
-                    <h3 style={{ 
-                      margin: '0 0 12px 0', 
-                      fontSize: '16px', 
-                      color: importResults.resultados.sucessos > 0 ? '#2e7d32' : '#721c24' 
-                    }}>
-                      {importResults.message}
-                    </h3>
-                    <div style={{ fontSize: '14px', color: importResults.resultados.sucessos > 0 ? '#2e7d32' : '#721c24' }}>
-                      <p><strong>Sucessos:</strong> {importResults.resultados.sucessos}</p>
-                      <p><strong>Erros:</strong> {importResults.resultados.erros}</p>
-                    </div>
-                  </div>
-
-                  {importResults.resultados.detalhes.length > 0 && (
-                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                      <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--dark-gray)' }}>
-                        Detalhes da Importação:
-                      </h4>
-                      {importResults.resultados.detalhes.map((detalhe, index) => (
-                        <div
-                          key={index}
-                          style={{
-                            padding: '8px 12px',
-                            marginBottom: '8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            background: detalhe.status === 'sucesso' ? '#e8f5e8' : '#f8d7da',
-                            border: `1px solid ${detalhe.status === 'sucesso' ? '#2e7d32' : '#721c24'}`,
-                            color: detalhe.status === 'sucesso' ? '#2e7d32' : '#721c24'
-                          }}
-                        >
-                          <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                            Linha {detalhe.linha} - CNPJ: {detalhe.cnpj}
-                          </div>
-                          <div>{detalhe.mensagem}</div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  <div style={{ textAlign: 'center', marginTop: '24px' }}>
-                    <Button
-                      type="button"
-                      className="secondary"
-                      onClick={handleCloseImportModal}
-                    >
-                      Fechar
-                    </Button>
-                  </div>
                 </div>
               )}
             </div>
