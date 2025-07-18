@@ -1213,6 +1213,7 @@ const Permissoes = () => {
       case 'classes': return 'Classes';
       case 'marcas': return 'Marcas';
       case 'nome_generico_produto': return 'Nome Genérico Produto';
+      case 'clientes': return 'Clientes';
       default: return screen;
     }
   };

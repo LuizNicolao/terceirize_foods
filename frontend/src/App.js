@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/Usuarios';
 import Fornecedores from './pages/Fornecedores';
+import Clientes from './pages/Clientes';
 import Produtos from './pages/Produtos';
 import Grupos from './pages/Grupos';
 import Subgrupos from './pages/Subgrupos';
@@ -16,7 +17,6 @@ import Marcas from './pages/Marcas';
 import Classes from './pages/Classes';
 import NomeGenericoProduto from './pages/NomeGenericoProduto';
 import Permissoes from './pages/Permissoes';
-import Clientes from './pages/Clientes';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -88,6 +88,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="fornecedores">
               <Fornecedores />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/clientes" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="clientes">
+              <Clientes />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 
@@ -176,17 +187,6 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="permissoes">
               <Permissoes />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/clientes" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="clientes">
-              <Clientes />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

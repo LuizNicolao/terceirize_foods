@@ -57,6 +57,7 @@ router.get('/buscar-cnpj/:cnpj', checkPermission('visualizar'), async (req, res)
         };
       }
     } catch (error) {
+      console.log('Erro ao buscar CNPJ na API externa:', error.message);
       return res.status(503).json({
         success: false,
         error: 'Serviço de consulta CNPJ temporariamente indisponível. Tente novamente em alguns minutos.',
@@ -64,12 +65,22 @@ router.get('/buscar-cnpj/:cnpj', checkPermission('visualizar'), async (req, res)
       });
     }
     if (dadosCNPJ) {
-      res.json({ success: true, data: dadosCNPJ });
+      res.json({
+        success: true,
+        data: dadosCNPJ
+      });
     } else {
-      res.status(404).json({ success: false, error: 'CNPJ não encontrado ou dados indisponíveis' });
+      res.status(404).json({
+        success: false,
+        error: 'CNPJ não encontrado ou dados indisponíveis'
+      });
     }
   } catch (error) {
-    res.status(500).json({ success: false, error: 'Erro interno do servidor' });
+    console.error('Erro ao buscar CNPJ:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
   }
 });
 
@@ -77,7 +88,12 @@ router.get('/buscar-cnpj/:cnpj', checkPermission('visualizar'), async (req, res)
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
     const { search = '' } = req.query;
-    let query = `SELECT id, cnpj, razao_social, nome_fantasia, logradouro, numero, cep, bairro, municipio, uf, email, telefone, status, criado_em, atualizado_em FROM clientes WHERE 1=1`;
+    let query = `
+      SELECT id, cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
+             bairro, municipio, uf, email, telefone, status, criado_em, atualizado_em 
+      FROM clientes 
+      WHERE 1=1
+    `;
     let params = [];
     if (search) {
       query += ' AND (razao_social LIKE ? OR nome_fantasia LIKE ? OR cnpj LIKE ?)';
@@ -87,6 +103,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     const clientes = await executeQuery(query, params);
     res.json(clientes);
   } catch (error) {
+    console.error('Erro ao listar clientes:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -95,12 +112,16 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
 router.get('/:id', checkPermission('visualizar'), async (req, res) => {
   try {
     const { id } = req.params;
-    const clientes = await executeQuery('SELECT * FROM clientes WHERE id = ?', [id]);
+    const clientes = await executeQuery(
+      'SELECT * FROM clientes WHERE id = ?',
+      [id]
+    );
     if (clientes.length === 0) {
       return res.status(404).json({ error: 'Cliente não encontrado' });
     }
     res.json(clientes[0]);
   } catch (error) {
+    console.error('Erro ao buscar cliente:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -110,19 +131,27 @@ router.post('/', [
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'clientes'),
   body('cnpj').custom((value) => {
-    if (!value) throw new Error('CNPJ é obrigatório');
+    if (!value) {
+      throw new Error('CNPJ é obrigatório');
+    }
     const cnpjLimpo = value.replace(/\D/g, '');
-    if (cnpjLimpo.length !== 14) throw new Error('CNPJ deve ter 14 dígitos');
+    if (cnpjLimpo.length !== 14) {
+      throw new Error('CNPJ deve ter 14 dígitos');
+    }
     return true;
   }).withMessage('CNPJ inválido'),
   body('razao_social').custom((value) => {
-    if (!value || value.trim().length < 3) throw new Error('Razão social deve ter pelo menos 3 caracteres');
+    if (!value || value.trim().length < 3) {
+      throw new Error('Razão social deve ter pelo menos 3 caracteres');
+    }
     return true;
   }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
   body('email').optional().custom((value) => {
     if (value && value.trim() !== '') {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value.trim())) throw new Error('Email inválido');
+      if (!emailRegex.test(value.trim())) {
+        throw new Error('Email inválido');
+      }
     }
     return true;
   }).withMessage('Email inválido'),
@@ -130,7 +159,9 @@ router.post('/', [
   body('status').optional().custom((value) => {
     if (value !== undefined && value !== null && value !== '') {
       const statusValue = value.toString();
-      if (!['0', '1'].includes(statusValue)) throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
+      if (!['0', '1'].includes(statusValue)) {
+        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
+      }
     }
     return true;
   }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
@@ -138,22 +169,41 @@ router.post('/', [
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ error: 'Dados inválidos', details: errors.array() });
+      return res.status(400).json({ 
+        error: 'Dados inválidos',
+        details: errors.array() 
+      });
     }
-    const { cnpj, razao_social, nome_fantasia, logradouro, numero, cep, bairro, municipio, uf, email, telefone, status } = req.body;
+    const {
+      cnpj, razao_social, nome_fantasia, logradouro, numero, cep,
+      bairro, municipio, uf, email, telefone, status
+    } = req.body;
     // Verificar se CNPJ já existe
-    const existingCliente = await executeQuery('SELECT id FROM clientes WHERE cnpj = ?', [cnpj]);
+    const existingCliente = await executeQuery(
+      'SELECT id FROM clientes WHERE cnpj = ?',
+      [cnpj]
+    );
     if (existingCliente.length > 0) {
       return res.status(400).json({ error: 'CNPJ já cadastrado' });
     }
     // Inserir cliente
     const result = await executeQuery(
-      `INSERT INTO clientes (cnpj, razao_social, nome_fantasia, logradouro, numero, cep, bairro, municipio, uf, email, telefone, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [cnpj, razao_social, nome_fantasia, logradouro, numero, cep, bairro, municipio, uf, email, telefone, status || 1]
+      `INSERT INTO clientes (cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
+                            bairro, municipio, uf, email, telefone, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
+       bairro, municipio, uf, email, telefone, status || 1]
     );
-    const newCliente = await executeQuery('SELECT * FROM clientes WHERE id = ?', [result.insertId]);
-    res.status(201).json({ message: 'Cliente criado com sucesso', cliente: newCliente[0] });
+    const newCliente = await executeQuery(
+      'SELECT * FROM clientes WHERE id = ?',
+      [result.insertId]
+    );
+    res.status(201).json({
+      message: 'Cliente criado com sucesso',
+      cliente: newCliente[0]
+    });
   } catch (error) {
+    console.error('Erro ao criar cliente:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -162,59 +212,83 @@ router.post('/', [
 router.put('/:id', [
   checkPermission('editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'clientes'),
-  body('cnpj').optional().custom((value) => {
-    if (value) {
-      const cnpjLimpo = value.replace(/\D/g, '');
-      if (cnpjLimpo.length !== 14) throw new Error('CNPJ deve ter 14 dígitos');
+  body('cnpj').custom((value) => {
+    if (!value) {
+      throw new Error('CNPJ é obrigatório');
+    }
+    const cnpjLimpo = value.replace(/\D/g, '');
+    if (cnpjLimpo.length !== 14) {
+      throw new Error('CNPJ deve ter 14 dígitos');
     }
     return true;
   }).withMessage('CNPJ inválido'),
-  body('razao_social').optional().isLength({ min: 3 }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
-  body('email').optional().isEmail().withMessage('Email inválido'),
-  body('uf').optional().isLength({ min: 2, max: 2 }).withMessage('UF deve ter 2 caracteres')
+  body('razao_social').custom((value) => {
+    if (!value || value.trim().length < 3) {
+      throw new Error('Razão social deve ter pelo menos 3 caracteres');
+    }
+    return true;
+  }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
+  body('email').optional().custom((value) => {
+    if (value && value.trim() !== '') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value.trim())) {
+        throw new Error('Email inválido');
+      }
+    }
+    return true;
+  }).withMessage('Email inválido'),
+  body('uf').optional().isLength({ min: 2, max: 2 }).withMessage('UF deve ter 2 caracteres'),
+  body('status').optional().custom((value) => {
+    if (value !== undefined && value !== null && value !== '') {
+      const statusValue = value.toString();
+      if (!['0', '1'].includes(statusValue)) {
+        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
+      }
+    }
+    return true;
+  }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ error: 'Dados inválidos', details: errors.array() });
+      return res.status(400).json({ 
+        error: 'Dados inválidos',
+        details: errors.array() 
+      });
     }
     const { id } = req.params;
-    const { cnpj, razao_social, nome_fantasia, logradouro, numero, cep, bairro, municipio, uf, email, telefone, status } = req.body;
-    // Verificar se cliente existe
-    const existingCliente = await executeQuery('SELECT id FROM clientes WHERE id = ?', [id]);
-    if (existingCliente.length === 0) {
-      return res.status(404).json({ error: 'Cliente não encontrado' });
-    }
+    const {
+      cnpj, razao_social, nome_fantasia, logradouro, numero, cep,
+      bairro, municipio, uf, email, telefone, status
+    } = req.body;
     // Verificar se CNPJ já existe (se estiver sendo alterado)
     if (cnpj) {
-      const cnpjCheck = await executeQuery('SELECT id FROM clientes WHERE cnpj = ? AND id != ?', [cnpj, id]);
+      const cnpjCheck = await executeQuery(
+        'SELECT id FROM clientes WHERE cnpj = ? AND id <> ?',
+        [cnpj, id]
+      );
       if (cnpjCheck.length > 0) {
         return res.status(400).json({ error: 'CNPJ já cadastrado' });
       }
     }
-    // Construir query de atualização
-    const updateFields = [];
-    const updateParams = [];
-    if (cnpj) { updateFields.push('cnpj = ?'); updateParams.push(cnpj); }
-    if (razao_social) { updateFields.push('razao_social = ?'); updateParams.push(razao_social); }
-    if (nome_fantasia !== undefined) { updateFields.push('nome_fantasia = ?'); updateParams.push(nome_fantasia); }
-    if (logradouro !== undefined) { updateFields.push('logradouro = ?'); updateParams.push(logradouro); }
-    if (numero !== undefined) { updateFields.push('numero = ?'); updateParams.push(numero); }
-    if (cep !== undefined) { updateFields.push('cep = ?'); updateParams.push(cep); }
-    if (bairro !== undefined) { updateFields.push('bairro = ?'); updateParams.push(bairro); }
-    if (municipio !== undefined) { updateFields.push('municipio = ?'); updateParams.push(municipio); }
-    if (uf) { updateFields.push('uf = ?'); updateParams.push(uf); }
-    if (email !== undefined) { updateFields.push('email = ?'); updateParams.push(email); }
-    if (telefone !== undefined) { updateFields.push('telefone = ?'); updateParams.push(telefone); }
-    if (status !== undefined) { updateFields.push('status = ?'); updateParams.push(status); }
-    if (updateFields.length === 0) {
-      return res.status(400).json({ error: 'Nenhum campo para atualizar' });
-    }
-    updateParams.push(id);
-    await executeQuery(`UPDATE clientes SET ${updateFields.join(', ')} WHERE id = ?`, updateParams);
-    const updatedCliente = await executeQuery('SELECT * FROM clientes WHERE id = ?', [id]);
-    res.json({ message: 'Cliente atualizado com sucesso', cliente: updatedCliente[0] });
+    // Atualizar cliente
+    await executeQuery(
+      `UPDATE clientes SET cnpj = ?, razao_social = ?, nome_fantasia = ?, logradouro = ?, numero = ?, cep = ?, 
+                          bairro = ?, municipio = ?, uf = ?, email = ?, telefone = ?, status = ?, atualizado_em = NOW() 
+       WHERE id = ?`,
+      [cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
+       bairro, municipio, uf, email, telefone, status || 1, id]
+    );
+    const updatedCliente = await executeQuery(
+      'SELECT * FROM clientes WHERE id = ?',
+      [id]
+    );
+    res.json({
+      message: 'Cliente atualizado com sucesso',
+      cliente: updatedCliente[0]
+    });
   } catch (error) {
+    console.error('Erro ao atualizar cliente:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
@@ -226,66 +300,11 @@ router.delete('/:id', [
 ], async (req, res) => {
   try {
     const { id } = req.params;
-    // Verificar se cliente existe
-    const existingCliente = await executeQuery('SELECT id FROM clientes WHERE id = ?', [id]);
-    if (existingCliente.length === 0) {
-      return res.status(404).json({ error: 'Cliente não encontrado' });
-    }
+    // Excluir cliente
     await executeQuery('DELETE FROM clientes WHERE id = ?', [id]);
     res.json({ message: 'Cliente excluído com sucesso' });
   } catch (error) {
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Importar clientes via Excel
-router.post('/importar', [
-  checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'clientes')
-], async (req, res) => {
-  try {
-    const { dados } = req.body;
-    if (!dados || !Array.isArray(dados) || dados.length === 0) {
-      return res.status(400).json({ error: 'Dados inválidos para importação' });
-    }
-    const resultados = { sucessos: 0, erros: 0, detalhes: [] };
-    for (let i = 0; i < dados.length; i++) {
-      const linha = dados[i];
-      const numeroLinha = i + 2;
-      try {
-        const cliente = {
-          cnpj: linha.CNPJ || linha.cnpj || '',
-          razao_social: linha['RAZAO SOCIAL'] || linha['razao_social'] || linha['RAZÃO SOCIAL'] || '',
-          nome_fantasia: linha['NOME FANTASIA'] || linha['nome_fantasia'] || '',
-          logradouro: linha.LOGRADOURO || linha.logradouro || '',
-          numero: linha.NÚMERO || linha.NUMERO || linha.numero || '',
-          cep: linha.CEP || linha.cep || '',
-          bairro: linha.BAIRRO || linha.bairro || '',
-          municipio: linha.MUNICIPIO || linha.municipio || '',
-          uf: linha.UF || linha.uf || '',
-          email: linha.EMAIL || linha.email || '',
-          telefone: linha.TELEFONE || linha.telefone || '',
-          status: 1
-        };
-        if (!cliente.cnpj || cliente.cnpj.trim() === '') throw new Error('CNPJ é obrigatório');
-        if (!cliente.razao_social || cliente.razao_social.trim() === '') throw new Error('Razão social é obrigatória');
-        const cnpjLimpo = cliente.cnpj.replace(/\D/g, '');
-        if (cnpjLimpo.length !== 14) throw new Error('CNPJ deve ter 14 dígitos');
-        const existingCliente = await executeQuery('SELECT id FROM clientes WHERE cnpj = ?', [cnpjLimpo]);
-        if (existingCliente.length > 0) throw new Error('CNPJ já cadastrado');
-        await executeQuery(
-          `INSERT INTO clientes (cnpj, razao_social, nome_fantasia, logradouro, numero, cep, bairro, municipio, uf, email, telefone, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [cnpjLimpo, cliente.razao_social, cliente.nome_fantasia, cliente.logradouro, cliente.numero, cliente.cep, cliente.bairro, cliente.municipio, cliente.uf, cliente.email, cliente.telefone, cliente.status]
-        );
-        resultados.sucessos++;
-        resultados.detalhes.push({ linha: numeroLinha, status: 'sucesso', mensagem: 'Cliente importado com sucesso' });
-      } catch (error) {
-        resultados.erros++;
-        resultados.detalhes.push({ linha: numeroLinha, status: 'erro', mensagem: error.message });
-      }
-    }
-    res.json({ message: `Importação concluída. ${resultados.sucessos} sucessos, ${resultados.erros} erros.`, resultados });
-  } catch (error) {
+    console.error('Erro ao excluir cliente:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });

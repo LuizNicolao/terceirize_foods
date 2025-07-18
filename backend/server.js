@@ -8,6 +8,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const usuariosRoutes = require('./routes/usuarios');
 const fornecedoresRoutes = require('./routes/fornecedores');
+const clientesRoutes = require('./routes/clientes');
 const produtosRoutes = require('./routes/produtos');
 const gruposRoutes = require('./routes/grupos');
 const subgruposRoutes = require('./routes/subgrupos');
@@ -18,7 +19,6 @@ const nomeGenericoProdutoRoutes = require('./routes/nome_generico_produto');
 const { router: permissoesRoutes } = require('./routes/permissoes');
 const dashboardRoutes = require('./routes/dashboard');
 const auditoriaRoutes = require('./routes/auditoria');
-const clientesRouter = require('./routes/clientes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -80,6 +80,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/fornecedores', fornecedoresRoutes);
+app.use('/api/clientes', clientesRoutes);
 app.use('/api/produtos', produtosRoutes);
 app.use('/api/grupos', gruposRoutes);
 app.use('/api/subgrupos', subgruposRoutes);
@@ -90,7 +91,6 @@ app.use('/api/nome-generico-produto', nomeGenericoProdutoRoutes);
 app.use('/api/permissoes', permissoesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auditoria', auditoriaRoutes);
-app.use('/api/clientes', clientesRouter);
 
 // Rota de health check
 app.get('/api/health', (req, res) => {
