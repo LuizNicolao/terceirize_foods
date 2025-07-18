@@ -352,6 +352,15 @@ const Grupos = () => {
   const canDelete = permissions?.grupos?.delete || false;
   const canView = permissions?.grupos?.view || false;
 
+  // Debug: verificar permissões
+  console.log('Permissões carregadas:', permissions);
+  console.log('Permissões para Grupos:', {
+    canCreate,
+    canEdit,
+    canDelete,
+    canView
+  });
+
   // Carregar grupos
   const loadGrupos = async () => {
     try {
@@ -822,15 +831,13 @@ const Grupos = () => {
                       </StatusBadge>
                     </Td>
                     <Td>
-                      {canView && (
-                        <ActionButton
-                          className="view"
-                          title="Visualizar"
-                          onClick={() => handleViewGrupo(grupo)}
-                        >
-                          <FaEye />
-                        </ActionButton>
-                      )}
+                      <ActionButton
+                        className="view"
+                        title="Visualizar"
+                        onClick={() => handleViewGrupo(grupo)}
+                      >
+                        <FaEye />
+                      </ActionButton>
                       {canEdit && (
                         <ActionButton
                           className="edit"
