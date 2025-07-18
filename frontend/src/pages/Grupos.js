@@ -4,7 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaLayerGroup, FaQue
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
-import { PermissionsContext } from '../contexts/PermissionsContext';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 const Container = styled.div`
   padding: 24px;
@@ -344,7 +344,7 @@ const Grupos = () => {
     setValue
   } = useForm();
 
-  const { permissions } = useContext(PermissionsContext);
+  const { permissions } = usePermissions();
 
   // Verificar permissões para Grupos
   const canCreate = permissions?.grupos?.create || false;
