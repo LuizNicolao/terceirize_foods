@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuesti
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 const Container = styled.div`
   padding: 24px;
@@ -290,6 +291,7 @@ const EmptyState = styled.div`
 
 
 const Usuarios = () => {
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -714,10 +716,12 @@ const Usuarios = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          <AddButton onClick={handleAddUser}>
-            <FaPlus />
-            Adicionar Usuário
-          </AddButton>
+          {canCreate('usuarios') && (
+            <AddButton onClick={handleAddUser}>
+              <FaPlus />
+              Adicionar Usuário
+            </AddButton>
+          )}
         </div>
       </Header>
 
@@ -782,20 +786,24 @@ const Usuarios = () => {
                     >
                       <FaEye />
                     </ActionButton>
-                    <ActionButton
-                      className="edit"
-                      title="Editar"
-                      onClick={() => handleEditUser(user)}
-                    >
-                      <FaEdit />
-                    </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      title="Excluir"
-                      onClick={() => handleDeleteUser(user.id)}
-                    >
-                      <FaTrash />
-                    </ActionButton>
+                    {canEdit('usuarios') && (
+                      <ActionButton
+                        className="edit"
+                        title="Editar"
+                        onClick={() => handleEditUser(user)}
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                    )}
+                    {canDelete('usuarios') && (
+                      <ActionButton
+                        className="delete"
+                        title="Excluir"
+                        onClick={() => handleDeleteUser(user.id)}
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    )}
                   </Td>
                 </tr>
               ))
