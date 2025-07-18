@@ -1718,7 +1718,7 @@ const Clientes = () => {
                 <FaUpload />
                 {importLoading ? 'Importando...' : 'Importar por CNPJ'}
               </AddButton>
-              <AddButton onClick={handleAddcliente}>
+              <AddButton onClick={handleAddCliente}>
                 <FaPlus />
                 Adicionar cliente
               </AddButton>
@@ -1840,7 +1840,7 @@ const Clientes = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredclientes.length === 0 ? (
+            {filteredClientes.length === 0 ? (
               <tr>
                 <Td colSpan="8">
                   <EmptyState>
@@ -1883,7 +1883,7 @@ const Clientes = () => {
                     <ActionButton
                       className="view"
                       title="Visualizar"
-                      onClick={() => handleViewcliente(cliente)}
+                      onClick={() => handleViewCliente(cliente)}
                     >
                       <FaEye />
                     </ActionButton>
@@ -1891,7 +1891,7 @@ const Clientes = () => {
                       <ActionButton
                         className="edit"
                         title="Editar"
-                        onClick={() => handleEditcliente(cliente)}
+                        onClick={() => handleEditCliente(cliente)}
                       >
                         <FaEdit />
                       </ActionButton>
@@ -1900,7 +1900,7 @@ const Clientes = () => {
                       <ActionButton
                         className="delete"
                         title="Excluir"
-                        onClick={() => handleDeletecliente(cliente.id)}
+                        onClick={() => handleDeleteCliente(cliente.id)}
                       >
                         <FaTrash />
                       </ActionButton>
