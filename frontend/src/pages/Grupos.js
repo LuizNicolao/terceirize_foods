@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import styled from 'styled-components';
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaLayerGroup, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { PermissionsContext } from '../contexts/PermissionsContext';
 
 const Container = styled.div`
   padding: 24px;
@@ -114,8 +115,8 @@ const StatusBadge = styled.span`
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  background: ${props => props.status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.status === 'ativo' ? 'white' : 'var(--error-red)'};
+  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
+  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
 `;
 
 const ActionButton = styled.button`
@@ -225,6 +226,11 @@ const Input = styled.input`
     box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
     outline: none;
   }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+  }
 `;
 
 const TextArea = styled.textarea`
@@ -255,6 +261,11 @@ const Select = styled.select`
   &:focus {
     border-color: var(--primary-green);
     outline: none;
+  }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
   }
 `;
 
@@ -311,6 +322,7 @@ const Grupos = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingGrupo, setEditingGrupo] = useState(null);
+  const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -331,6 +343,14 @@ const Grupos = () => {
     formState: { errors },
     setValue
   } = useForm();
+
+  const { permissions } = useContext(PermissionsContext);
+
+  // Verificar permissões para Grupos
+  const canCreate = permissions?.grupos?.create || false;
+  const canEdit = permissions?.grupos?.edit || false;
+  const canDelete = permissions?.grupos?.delete || false;
+  const canView = permissions?.grupos?.view || false;
 
   // Carregar grupos
   const loadGrupos = async () => {
@@ -627,6 +647,7 @@ const Grupos = () => {
   // Abrir modal para adicionar grupo
   const handleAddGrupo = () => {
     setEditingGrupo(null);
+    setViewMode(false);
     reset();
     setShowModal(true);
   };
@@ -634,6 +655,16 @@ const Grupos = () => {
   // Abrir modal para editar grupo
   const handleEditGrupo = (grupo) => {
     setEditingGrupo(grupo);
+    setViewMode(false);
+    setValue('nome', grupo.nome);
+    setValue('status', grupo.status.toString());
+    setShowModal(true);
+  };
+
+  // Abrir modal para visualizar grupo
+  const handleViewGrupo = (grupo) => {
+    setEditingGrupo(grupo);
+    setViewMode(true);
     setValue('nome', grupo.nome);
     setValue('status', grupo.status.toString());
     setShowModal(true);
@@ -643,6 +674,7 @@ const Grupos = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingGrupo(null);
+    setViewMode(false);
     reset();
   };
 
@@ -731,10 +763,12 @@ const Grupos = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          <AddButton onClick={handleAddGrupo}>
-            <FaPlus />
-            Adicionar Grupo
-          </AddButton>
+          {canCreate && (
+            <AddButton onClick={handleAddGrupo}>
+              <FaPlus />
+              Adicionar Grupo
+            </AddButton>
+          )}
         </div>
       </Header>
 
@@ -783,32 +817,38 @@ const Grupos = () => {
                   <tr key={grupo.id}>
                     <Td>{grupo.nome}</Td>
                     <Td>
-                      <StatusBadge status={grupo.status === 1 ? 'ativo' : 'inativo'}>
+                      <StatusBadge $status={grupo.status === 1 ? 'ativo' : 'inativo'}>
                         {grupo.status === 1 ? 'Ativo' : 'Inativo'}
                       </StatusBadge>
                     </Td>
                     <Td>
-                      <ActionButton
-                        className="view"
-                        title="Visualizar"
-                        onClick={() => handleEditGrupo(grupo)}
-                      >
-                        <FaEye />
-                      </ActionButton>
-                      <ActionButton
-                        className="edit"
-                        title="Editar"
-                        onClick={() => handleEditGrupo(grupo)}
-                      >
-                        <FaEdit />
-                      </ActionButton>
-                      <ActionButton
-                        className="delete"
-                        title="Excluir"
-                        onClick={() => handleDeleteGrupo(grupo.id)}
-                      >
-                        <FaTrash />
-                      </ActionButton>
+                      {canView && (
+                        <ActionButton
+                          className="view"
+                          title="Visualizar"
+                          onClick={() => handleViewGrupo(grupo)}
+                        >
+                          <FaEye />
+                        </ActionButton>
+                      )}
+                      {canEdit && (
+                        <ActionButton
+                          className="edit"
+                          title="Editar"
+                          onClick={() => handleEditGrupo(grupo)}
+                        >
+                          <FaEdit />
+                        </ActionButton>
+                      )}
+                      {canDelete && (
+                        <ActionButton
+                          className="delete"
+                          title="Excluir"
+                          onClick={() => handleDeleteGrupo(grupo.id)}
+                        >
+                          <FaTrash />
+                        </ActionButton>
+                      )}
                     </Td>
                   </tr>
                 ))
@@ -822,7 +862,7 @@ const Grupos = () => {
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalHeader>
               <ModalTitle>
-                {editingGrupo ? 'Editar Grupo' : 'Adicionar Grupo'}
+                {viewMode ? 'Visualizar Grupo' : editingGrupo ? 'Editar Grupo' : 'Adicionar Grupo'}
               </ModalTitle>
               <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
             </ModalHeader>
@@ -833,6 +873,7 @@ const Grupos = () => {
                 <Input
                   type="text"
                   placeholder="Nome do grupo"
+                  disabled={viewMode}
                   {...register('nome', { required: 'Nome é obrigatório' })}
                 />
                 {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
@@ -840,7 +881,7 @@ const Grupos = () => {
 
               <FormGroup>
                 <Label>Status</Label>
-                <Select {...register('status', { required: 'Status é obrigatório' })}>
+                <Select disabled={viewMode} {...register('status', { required: 'Status é obrigatório' })}>
                   <option value="">Selecione...</option>
                   <option value={1}>Ativo</option>
                   <option value={0}>Inativo</option>
@@ -850,11 +891,13 @@ const Grupos = () => {
 
               <ButtonGroup>
                 <Button type="button" className="secondary" onClick={handleCloseModal}>
-                  Cancelar
+                  {viewMode ? 'Fechar' : 'Cancelar'}
                 </Button>
-                <Button type="submit" className="primary">
-                  {editingGrupo ? 'Atualizar' : 'Criar'}
-                </Button>
+                {!viewMode && (
+                  <Button type="submit" className="primary">
+                    {editingGrupo ? 'Atualizar' : 'Criar'}
+                  </Button>
+                )}
               </ButtonGroup>
             </Form>
           </ModalContent>
