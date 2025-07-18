@@ -107,64 +107,6 @@ const ClearButton = styled.button`
   }
 `;
 
-const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 24px;
-  padding: 16px;
-  background: var(--white);
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const PaginationInfo = styled.div`
-  color: var(--dark-gray);
-  font-size: 14px;
-`;
-
-const PaginationControls = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const PageButton = styled.button`
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  background: var(--white);
-  color: var(--dark-gray);
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 14px;
-
-  &:hover {
-    background: var(--light-gray);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &.active {
-    background: var(--primary-green);
-    color: var(--white);
-    border-color: var(--primary-green);
-  }
-`;
-
-const ItemsPerPageSelect = styled.select`
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background: var(--white);
-  color: var(--dark-gray);
-  font-size: 14px;
-  cursor: pointer;
-`;
-
 const TableContainer = styled.div`
   background: var(--white);
   border-radius: 12px;
@@ -492,10 +434,6 @@ const Fornecedores = () => {
   const [importResults, setImportResults] = useState(null);
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(50);
-  const [totalItems, setTotalItems] = useState(0);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const fileInputRef = useRef(null);
 
   const {
@@ -507,30 +445,12 @@ const Fornecedores = () => {
     getValues
   } = useForm();
 
-  // Carregar fornecedores com paginação
-  const loadFornecedores = async (page = 1, limit = itemsPerPage) => {
+  // Carregar fornecedores
+  const loadFornecedores = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        sortField: sortField,
-        sortDirection: sortDirection
-      });
-
-      // Adicionar filtros se aplicáveis
-      if (searchTerm) {
-        params.append('search', searchTerm);
-        params.append('searchField', searchField);
-      }
-      if (statusFilter !== 'todos') {
-        params.append('status', statusFilter);
-      }
-
-      const response = await api.get(`/fornecedores?${params.toString()}`);
-      setFornecedores(response.data.fornecedores || response.data);
-      setTotalItems(response.data.total || response.data.length);
-      setCurrentPage(page);
+      const response = await api.get('/fornecedores');
+      setFornecedores(response.data);
     } catch (error) {
       console.error('Erro ao carregar fornecedores:', error);
       toast.error('Erro ao carregar fornecedores');
@@ -542,13 +462,6 @@ const Fornecedores = () => {
   useEffect(() => {
     loadFornecedores();
   }, []);
-
-  // Recarregar quando filtros ou ordenação mudarem
-  useEffect(() => {
-    if (!loading) {
-      loadFornecedores(1, itemsPerPage);
-    }
-  }, [searchTerm, searchField, statusFilter, sortField, sortDirection, itemsPerPage]);
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
@@ -1127,63 +1040,57 @@ const Fornecedores = () => {
     setSearchTerm('');
     setSearchField('todos');
     setStatusFilter('todos');
-    setCurrentPage(1);
   };
 
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    loadFornecedores(page, itemsPerPage);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-    loadFornecedores(1, newItemsPerPage);
-  };
-
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-
-  // Gerar array de páginas para exibição
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
+  // Filtrar e ordenar fornecedores
+  const filteredFornecedores = sortFornecedores(
+    fornecedores.filter(fornecedor => {
+      let matchesSearch = true;
+      
+      if (searchTerm) {
+        switch (searchField) {
+          case 'id':
+            matchesSearch = fornecedor.id?.toString().includes(searchTerm);
+            break;
+          case 'razao_social':
+            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'nome_fantasia':
+            matchesSearch = fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'cnpj':
+            matchesSearch = fornecedor.cnpj?.includes(searchTerm);
+            break;
+          case 'email':
+            matchesSearch = fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'telefone':
+            matchesSearch = fornecedor.telefone?.includes(searchTerm);
+            break;
+          case 'municipio':
+            matchesSearch = fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'uf':
+            matchesSearch = fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'todos':
+          default:
+            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.cnpj?.includes(searchTerm) ||
+                           fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.telefone?.includes(searchTerm) ||
+                           fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.id?.toString().includes(searchTerm);
+            break;
+        }
       }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push('...');
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        pages.push(1);
-        pages.push('...');
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(totalPages);
-      }
-    }
-    
-    return pages;
-  };
-
-  // Usar fornecedores diretamente (já filtrados e ordenados pelo servidor)
-  const displayedFornecedores = fornecedores;
+      
+      const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
+      return matchesSearch && matchesStatus;
+    })
+  );
 
   // Formatar CNPJ
   const formatCNPJ = (cnpj) => {
@@ -1501,7 +1408,7 @@ const Fornecedores = () => {
             </tr>
           </thead>
           <tbody>
-            {displayedFornecedores.length === 0 ? (
+            {filteredFornecedores.length === 0 ? (
               <tr>
                 <Td colSpan="8">
                   <EmptyState>
@@ -1513,7 +1420,7 @@ const Fornecedores = () => {
                 </Td>
               </tr>
             ) : (
-              displayedFornecedores.map((fornecedor) => (
+              filteredFornecedores.map((fornecedor) => (
                 <tr key={fornecedor.id}>
                   <Td>{fornecedor.id}</Td>
                   <Td>{fornecedor.razao_social}</Td>
@@ -1559,53 +1466,6 @@ const Fornecedores = () => {
           </tbody>
         </Table>
       </TableContainer>
-
-      {/* Paginação */}
-      {totalItems > 0 && (
-        <PaginationContainer>
-          <PaginationInfo>
-            Mostrando {startItem} a {endItem} de {totalItems} fornecedores
-          </PaginationInfo>
-          
-          <PaginationControls>
-            <ItemsPerPageSelect
-              value={itemsPerPage}
-              onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
-            >
-              <option value={25}>25 por página</option>
-              <option value={50}>50 por página</option>
-              <option value={100}>100 por página</option>
-              <option value={200}>200 por página</option>
-            </ItemsPerPageSelect>
-            
-            <PageButton
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              Anterior
-            </PageButton>
-            
-            {getPageNumbers().map((page, index) => (
-              <PageButton
-                key={index}
-                onClick={() => typeof page === 'number' ? handlePageChange(page) : null}
-                className={page === currentPage ? 'active' : ''}
-                disabled={page === '...'}
-                style={page === '...' ? { cursor: 'default' } : {}}
-              >
-                {page}
-              </PageButton>
-            ))}
-            
-            <PageButton
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Próxima
-            </PageButton>
-          </PaginationControls>
-        </PaginationContainer>
-      )}
 
       {/* Input file oculto para importação */}
       <input

@@ -81,56 +81,33 @@ router.get('/buscar-cnpj/:cnpj', checkPermission('visualizar'), async (req, res)
   }
 });
 
-// Listar fornecedores com paginação
+// Listar fornecedores
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    const { 
-      page = 1, 
-      limit = 50, 
-      search = '', 
-      searchField = 'todos',
-      status = '',
-      sortField = 'id',
-      sortDirection = 'asc'
-    } = req.query;
+    const { search = '' } = req.query;
 
-    console.log('Query params:', req.query);
-
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
-    const offset = (pageNum - 1) * limitNum;
-
-    // Query simples primeiro para testar
-    let query = 'SELECT COUNT(*) as total FROM fornecedores';
-    let countResult = await executeQuery(query);
-    const total = countResult[0].total;
-
-    // Query para buscar dados
-    query = `
+    let query = `
       SELECT id, cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
              bairro, municipio, uf, email, telefone, status, criado_em, atualizado_em 
       FROM fornecedores 
-      ORDER BY id ASC
-      LIMIT ? OFFSET ?
+      WHERE 1=1
     `;
+    let params = [];
 
-    const fornecedores = await executeQuery(query, [limitNum, offset]);
+    if (search) {
+      query += ' AND (razao_social LIKE ? OR nome_fantasia LIKE ? OR cnpj LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
 
-    res.json({
-      fornecedores,
-      total,
-      page: pageNum,
-      limit: limitNum,
-      totalPages: Math.ceil(total / limitNum)
-    });
+    query += ' ORDER BY razao_social ASC';
+
+    const fornecedores = await executeQuery(query, params);
+
+    res.json(fornecedores);
 
   } catch (error) {
     console.error('Erro ao listar fornecedores:', error);
-    console.error('Stack trace:', error.stack);
-    res.status(500).json({ 
-      error: 'Erro interno do servidor',
-      details: error.message 
-    });
+    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 
