@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf, FaTimes } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -74,6 +74,92 @@ const FilterSelect = styled.select`
   background: var(--white);
   cursor: pointer;
   transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    outline: none;
+  }
+`;
+
+const ClearButton = styled.button`
+  background: var(--gray);
+  color: var(--white);
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: var(--dark-gray);
+    transform: translateY(-1px);
+  }
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: var(--white);
+  border-top: 1px solid #e0e0e0;
+  border-radius: 0 0 12px 12px;
+`;
+
+const PaginationInfo = styled.div`
+  color: var(--dark-gray);
+  font-size: 14px;
+`;
+
+const PaginationControls = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const PageButton = styled.button`
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  background: var(--white);
+  color: var(--dark-gray);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+  min-width: 40px;
+
+  &:hover:not(:disabled) {
+    background: var(--primary-green);
+    color: var(--white);
+    border-color: var(--primary-green);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.active {
+    background: var(--primary-green);
+    color: var(--white);
+    border-color: var(--primary-green);
+  }
+`;
+
+const PageSizeSelect = styled.select`
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--dark-gray);
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 16px;
 
   &:focus {
     border-color: var(--primary-green);
@@ -401,8 +487,11 @@ const Produtos = () => {
   const [editingProduto, setEditingProduto] = useState(null);
   const [isViewMode, setIsViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchField, setSearchField] = useState('todos');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [grupoFilter, setGrupoFilter] = useState('todos');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
@@ -447,6 +536,11 @@ const Produtos = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Resetar página quando filtros mudarem
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, searchField, statusFilter, grupoFilter, itemsPerPage]);
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
@@ -923,14 +1017,120 @@ const Produtos = () => {
   };
 
   // Filtrar produtos
-  const filteredProdutos = produtos.filter(produto => {
-    const matchesSearch = produto.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         produto.codigo_barras?.includes(searchTerm) ||
-                         produto.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || produto.status === parseInt(statusFilter);
-    const matchesGrupo = grupoFilter === 'todos' || produto.grupo_id === parseInt(grupoFilter);
-    return matchesSearch && matchesStatus && matchesGrupo;
-  });
+  const filteredProdutos = useMemo(() => {
+    return produtos.filter(produto => {
+      let matchesSearch = true;
+      
+      if (searchTerm) {
+        switch (searchField) {
+          case 'nome':
+            matchesSearch = produto.nome?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'codigo_barras':
+            matchesSearch = produto.codigo_barras?.includes(searchTerm);
+            break;
+          case 'descricao':
+            matchesSearch = produto.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'todos':
+          default:
+            matchesSearch = produto.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           produto.codigo_barras?.includes(searchTerm) ||
+                           produto.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+        }
+      }
+      
+      const matchesStatus = statusFilter === 'todos' || produto.status === parseInt(statusFilter);
+      const matchesGrupo = grupoFilter === 'todos' || produto.grupo_id === parseInt(grupoFilter);
+      return matchesSearch && matchesStatus && matchesGrupo;
+    });
+  }, [produtos, searchTerm, searchField, statusFilter, grupoFilter]);
+
+  // Calcular dados da paginação
+  const paginationData = useMemo(() => {
+    const totalItems = filteredProdutos.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredProdutos.slice(startIndex, endIndex);
+    
+    return {
+      totalItems,
+      totalPages,
+      startIndex,
+      endIndex,
+      currentItems
+    };
+  }, [filteredProdutos, currentPage, itemsPerPage]);
+
+  const { totalItems, totalPages, startIndex, endIndex, currentItems } = paginationData;
+
+  // Função para limpar filtros
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setSearchField('todos');
+    setStatusFilter('todos');
+    setGrupoFilter('todos');
+    setCurrentPage(1);
+  };
+
+  // Funções de paginação
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleFirstPage = () => {
+    setCurrentPage(1);
+  };
+
+  const handleLastPage = () => {
+    setCurrentPage(totalPages);
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  };
+
+  // Gerar array de páginas para exibir
+  const pageNumbers = useMemo(() => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  }, [totalPages, currentPage]);
 
   // Formatar preço
   const formatPrice = (price) => {
@@ -1014,9 +1214,25 @@ const Produtos = () => {
       </Header>
 
       <SearchContainer>
+        <FilterSelect
+          value={searchField}
+          onChange={(e) => setSearchField(e.target.value)}
+          style={{ minWidth: '150px' }}
+        >
+          <option value="todos">Todos os campos</option>
+          <option value="nome">Nome</option>
+          <option value="codigo_barras">Código de Barras</option>
+          <option value="descricao">Descrição</option>
+        </FilterSelect>
         <SearchInput
           type="text"
-          placeholder="Buscar por nome, código ou descrição..."
+          placeholder={
+            searchField === 'todos' ? 'Buscar em todos os campos...' :
+            searchField === 'nome' ? 'Buscar por nome...' :
+            searchField === 'codigo_barras' ? 'Buscar por código de barras...' :
+            searchField === 'descricao' ? 'Buscar por descrição...' :
+            'Buscar...'
+          }
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -1037,6 +1253,12 @@ const Produtos = () => {
             <option key={grupo.id} value={grupo.id}>{grupo.nome}</option>
           ))}
         </FilterSelect>
+        {(searchTerm || searchField !== 'todos' || statusFilter !== 'todos' || grupoFilter !== 'todos') && (
+          <ClearButton onClick={handleClearFilters}>
+            <FaTimes />
+            Limpar Filtros
+          </ClearButton>
+        )}
       </SearchContainer>
 
       <TableContainer>
@@ -1055,7 +1277,7 @@ const Produtos = () => {
               <tr>
                 <Td colSpan="5">
                   <EmptyState>
-                    {searchTerm || statusFilter !== 'todos' || grupoFilter !== 'todos'
+                    {searchTerm || searchField !== 'todos' || statusFilter !== 'todos' || grupoFilter !== 'todos'
                       ? 'Nenhum produto encontrado com os filtros aplicados'
                       : 'Nenhum produto cadastrado'
                     }
@@ -1063,7 +1285,7 @@ const Produtos = () => {
                 </Td>
               </tr>
             ) : (
-              filteredProdutos.map((produto) => (
+              currentItems.map((produto) => (
                 <tr key={produto.id}>
                   <Td>{produto.nome}</Td>
                   <Td>{produto.codigo_barras}</Td>
@@ -1106,6 +1328,72 @@ const Produtos = () => {
           </tbody>
         </Table>
       </TableContainer>
+
+      {/* Paginação */}
+      {totalItems > 0 && (
+        <PaginationContainer>
+          <PaginationInfo>
+            Mostrando {startIndex + 1} a {Math.min(endIndex, totalItems)} de {totalItems} produtos 
+            {totalPages > 1 && ` (Página ${currentPage} de ${totalPages})`}
+          </PaginationInfo>
+          
+          <PaginationControls>
+            <PageSizeSelect
+              value={itemsPerPage}
+              onChange={(e) => setItemsPerPage(Number(e.target.value))}
+            >
+              <option value={10}>10 por página</option>
+              <option value={25}>25 por página</option>
+              <option value={50}>50 por página</option>
+              <option value={100}>100 por página</option>
+            </PageSizeSelect>
+            
+            <PageButton 
+              onClick={handleFirstPage} 
+              disabled={currentPage === 1}
+              title="Primeira página"
+            >
+              «
+            </PageButton>
+            
+            <PageButton 
+              onClick={handlePrevPage} 
+              disabled={currentPage === 1}
+              title="Página anterior"
+            >
+              ‹
+            </PageButton>
+
+            {pageNumbers.map((page, index) => (
+              <PageButton
+                key={index}
+                onClick={() => typeof page === 'number' ? handlePageChange(page) : null}
+                className={page === currentPage ? 'active' : ''}
+                disabled={page === '...'}
+                style={page === '...' ? { cursor: 'default', border: 'none', background: 'transparent' } : {}}
+              >
+                {page}
+              </PageButton>
+            ))}
+
+            <PageButton 
+              onClick={handleNextPage} 
+              disabled={currentPage === totalPages}
+              title="Próxima página"
+            >
+              ›
+            </PageButton>
+            
+            <PageButton 
+              onClick={handleLastPage} 
+              disabled={currentPage === totalPages}
+              title="Última página"
+            >
+              »
+            </PageButton>
+          </PaginationControls>
+        </PaginationContainer>
+      )}
 
       {showModal && (
         <Modal onClick={handleCloseModal}>

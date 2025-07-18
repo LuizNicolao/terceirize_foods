@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUpload, FaTimes } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUpload, FaTimes, FaInfoCircle } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -773,38 +773,149 @@ const Fornecedores = () => {
             return;
           }
           
-          // Pegar cabeçalhos (primeira linha)
+          // Extrair CNPJs da planilha (primeira coluna ou coluna com CNPJ)
+          const cnpjs = [];
           const headers = jsonData[0];
           
-          // Converter dados para objetos com nomes de colunas
-          const dados = jsonData.slice(1).map(row => {
-            const obj = {};
-            headers.forEach((header, index) => {
-              if (header && row[index] !== undefined) {
-                obj[header] = row[index];
-              }
-            });
-            return obj;
-          }).filter(row => {
-            // Filtrar linhas vazias
-            return Object.values(row).some(value => value !== null && value !== undefined && value !== '');
+          // Encontrar a coluna que contém CNPJs
+          let cnpjColumnIndex = 0; // Padrão: primeira coluna
+          
+          // Procurar por coluna com "cnpj" no cabeçalho
+          headers.forEach((header, index) => {
+            if (header && header.toString().toLowerCase().includes('cnpj')) {
+              cnpjColumnIndex = index;
+            }
           });
           
-          if (dados.length === 0) {
-            toast.error('Nenhum dado válido encontrado no arquivo');
+          // Extrair CNPJs da coluna identificada
+          jsonData.slice(1).forEach((row, rowIndex) => {
+            const cnpjValue = row[cnpjColumnIndex];
+            if (cnpjValue && cnpjValue.toString().trim() !== '') {
+              // Limpar CNPJ (remover pontos, traços, barras e espaços)
+              const cnpjLimpo = cnpjValue.toString().replace(/\D/g, '');
+              if (cnpjLimpo.length === 14) {
+                cnpjs.push({
+                  original: cnpjValue.toString(),
+                  limpo: cnpjLimpo,
+                  linha: rowIndex + 2 // +2 porque começamos do índice 1 e adicionamos 1 para linha real
+                });
+              } else {
+                console.warn(`CNPJ inválido na linha ${rowIndex + 2}: ${cnpjValue}`);
+              }
+            }
+          });
+          
+          if (cnpjs.length === 0) {
+            toast.error('Nenhum CNPJ válido encontrado no arquivo');
             setImportLoading(false);
             return;
           }
           
-          // Enviar dados para o backend
-          const response = await api.post('/fornecedores/importar', { dados });
+          // Inicializar resultados
+          const resultados = {
+            total: cnpjs.length,
+            sucessos: 0,
+            erros: 0,
+            detalhes: {
+              sucessos: [],
+              erros: []
+            }
+          };
           
-          setImportResults(response.data);
+          // Processar cada CNPJ
+          for (let i = 0; i < cnpjs.length; i++) {
+            const cnpj = cnpjs[i];
+            
+            try {
+              // Buscar dados do CNPJ usando a API existente
+              const response = await api.get(`/fornecedores/buscar-cnpj/${cnpj.limpo}`);
+              
+              if (response.data.success && response.data.data) {
+                const dadosCNPJ = response.data.data;
+                
+                // Preparar dados para cadastro
+                const dadosFornecedor = {
+                  cnpj: cnpj.limpo,
+                  razao_social: dadosCNPJ.razao_social || '',
+                  nome_fantasia: dadosCNPJ.nome_fantasia || '',
+                  logradouro: dadosCNPJ.logradouro || '',
+                  numero: dadosCNPJ.numero || '',
+                  bairro: dadosCNPJ.bairro || '',
+                  municipio: dadosCNPJ.municipio || '',
+                  uf: dadosCNPJ.uf || '',
+                  cep: dadosCNPJ.cep || '',
+                  telefone: dadosCNPJ.telefone || '',
+                  email: dadosCNPJ.email || '',
+                  status: 1 // Ativo por padrão
+                };
+                
+                // Cadastrar fornecedor
+                const createResponse = await api.post('/fornecedores', dadosFornecedor);
+                
+                resultados.sucessos++;
+                resultados.detalhes.sucessos.push({
+                  cnpj: cnpj.original,
+                  razao_social: dadosCNPJ.razao_social,
+                  linha: cnpj.linha
+                });
+                
+                // Mostrar progresso
+                toast.success(`CNPJ ${cnpj.original} importado com sucesso! (${i + 1}/${cnpjs.length})`, {
+                  duration: 2000
+                });
+                
+              } else {
+                resultados.erros++;
+                resultados.detalhes.erros.push({
+                  cnpj: cnpj.original,
+                  erro: 'CNPJ não encontrado ou dados indisponíveis',
+                  linha: cnpj.linha
+                });
+                
+                toast.error(`CNPJ ${cnpj.original} não encontrado (${i + 1}/${cnpjs.length})`, {
+                  duration: 2000
+                });
+              }
+              
+            } catch (error) {
+              resultados.erros++;
+              let erroMsg = 'Erro desconhecido';
+              
+              if (error.response?.status === 400 && error.response?.data?.error === 'CNPJ já cadastrado') {
+                erroMsg = 'CNPJ já cadastrado no sistema';
+              } else if (error.response?.status === 404) {
+                erroMsg = 'CNPJ não encontrado';
+              } else if (error.response?.status === 503) {
+                erroMsg = 'Serviço de consulta indisponível';
+              } else if (error.code === 'ECONNABORTED') {
+                erroMsg = 'Timeout na consulta';
+              }
+              
+              resultados.detalhes.erros.push({
+                cnpj: cnpj.original,
+                erro: erroMsg,
+                linha: cnpj.linha
+              });
+              
+              toast.error(`Erro ao processar CNPJ ${cnpj.original}: ${erroMsg} (${i + 1}/${cnpjs.length})`, {
+                duration: 2000
+              });
+            }
+            
+            // Pequena pausa entre as consultas para não sobrecarregar a API
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+          
+          // Definir resultados finais
+          setImportResults({
+            resultados,
+            mensagem: `Importação concluída! ${resultados.sucessos} fornecedores importados com sucesso e ${resultados.erros} erros.`
+          });
           setShowImportModal(true);
           
-          if (response.data.resultados.sucessos > 0) {
-            toast.success(`Importação concluída! ${response.data.resultados.sucessos} fornecedores importados com sucesso.`);
-            loadFornecedores(); // Recarregar lista
+          // Recarregar lista se houve sucessos
+          if (resultados.sucessos > 0) {
+            loadFornecedores();
           }
           
         } catch (error) {
@@ -1443,9 +1554,10 @@ const Fornecedores = () => {
                 onClick={() => fileInputRef.current?.click()}
                 style={{ background: 'var(--orange)', fontSize: '12px', padding: '8px 12px' }}
                 disabled={importLoading}
+                title="Importar planilha com CNPJs - busca dados automaticamente"
               >
                 <FaUpload />
-                {importLoading ? 'Importando...' : 'Importar Excel'}
+                {importLoading ? 'Importando...' : 'Importar por CNPJ'}
               </AddButton>
               <AddButton onClick={handleAddFornecedor}>
                 <FaPlus />
@@ -2238,9 +2350,42 @@ const Fornecedores = () => {
         <Modal onClick={handleCloseImportModal}>
           <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
             <ModalHeader>
-              <ModalTitle>Resultados da Importação</ModalTitle>
+              <ModalTitle>Resultados da Importação por CNPJ</ModalTitle>
               <CloseButton onClick={handleCloseImportModal}>&times;</CloseButton>
             </ModalHeader>
+            
+            {!importResults && (
+              <div style={{ 
+                padding: '16px', 
+                background: '#e3f2fd', 
+                borderRadius: '8px', 
+                marginBottom: '16px',
+                border: '1px solid #1976d2'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '8px', 
+                  marginBottom: '8px',
+                  color: '#1976d2',
+                  fontWeight: 'bold'
+                }}>
+                  <FaInfoCircle />
+                  Como funciona a importação por CNPJ:
+                </div>
+                <ul style={{ 
+                  margin: '0', 
+                  paddingLeft: '20px', 
+                  fontSize: '13px',
+                  color: '#1976d2'
+                }}>
+                  <li>A planilha deve conter apenas CNPJs (uma coluna)</li>
+                  <li>O sistema busca automaticamente os dados de cada CNPJ</li>
+                  <li>Fornecedores são cadastrados com status "Ativo"</li>
+                  <li>CNPJs já cadastrados são ignorados</li>
+                </ul>
+              </div>
+            )}
 
             {importResults ? (
               <div>
@@ -2256,7 +2401,7 @@ const Fornecedores = () => {
                     color: importResults.resultados.sucessos > 0 ? '#2e7d32' : '#721c24',
                     fontSize: '16px'
                   }}>
-                    {importResults.message}
+                    {importResults.mensagem}
                   </h3>
                   <div style={{ 
                     display: 'flex', 
@@ -2264,26 +2409,42 @@ const Fornecedores = () => {
                     fontSize: '14px',
                     color: importResults.resultados.sucessos > 0 ? '#2e7d32' : '#721c24'
                   }}>
+                    <span><strong>Total de CNPJs:</strong> {importResults.resultados.total}</span>
                     <span><strong>Sucessos:</strong> {importResults.resultados.sucessos}</span>
                     <span><strong>Erros:</strong> {importResults.resultados.erros}</span>
                   </div>
                 </div>
 
-                {importResults.resultados.detalhes.length > 0 && (
-                  <div>
-                    <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', color: 'var(--dark-gray)' }}>
-                      Detalhes por Linha:
+                {/* Seção de Sucessos */}
+                {importResults.resultados.detalhes.sucessos.length > 0 && (
+                  <div style={{ marginBottom: '20px' }}>
+                    <h4 style={{ 
+                      margin: '0 0 12px 0', 
+                      fontSize: '14px', 
+                      color: '#2e7d32',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '16px' }}>✓</span>
+                      Fornecedores Importados com Sucesso ({importResults.resultados.detalhes.sucessos.length})
                     </h4>
-                    <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                      {importResults.resultados.detalhes.map((detalhe, index) => (
+                    <div style={{ 
+                      maxHeight: '200px', 
+                      overflowY: 'auto',
+                      border: '1px solid #e8f5e8',
+                      borderRadius: '6px',
+                      padding: '8px'
+                    }}>
+                      {importResults.resultados.detalhes.sucessos.map((sucesso, index) => (
                         <div
                           key={index}
                           style={{
                             padding: '8px 12px',
-                            marginBottom: '8px',
+                            marginBottom: '6px',
                             borderRadius: '4px',
-                            border: `1px solid ${detalhe.status === 'sucesso' ? '#2e7d32' : '#721c24'}`,
-                            background: detalhe.status === 'sucesso' ? '#e8f5e8' : '#f8d7da',
+                            border: '1px solid #2e7d32',
+                            background: '#e8f5e8',
                             fontSize: '12px'
                           }}
                         >
@@ -2295,26 +2456,94 @@ const Fornecedores = () => {
                           }}>
                             <span style={{ 
                               fontWeight: 'bold',
-                              color: detalhe.status === 'sucesso' ? '#2e7d32' : '#721c24'
+                              color: '#2e7d32'
                             }}>
-                              Linha {detalhe.linha}
+                              Linha {sucesso.linha} - CNPJ: {formatCNPJ(sucesso.cnpj)}
                             </span>
                             <span style={{
                               padding: '2px 6px',
                               borderRadius: '3px',
                               fontSize: '10px',
                               fontWeight: 'bold',
-                              background: detalhe.status === 'sucesso' ? '#2e7d32' : '#721c24',
+                              background: '#2e7d32',
                               color: 'white'
                             }}>
-                              {detalhe.status === 'sucesso' ? 'SUCESSO' : 'ERRO'}
+                              SUCESSO
                             </span>
                           </div>
                           <div style={{ 
-                            color: detalhe.status === 'sucesso' ? '#2e7d32' : '#721c24',
+                            color: '#2e7d32',
                             fontSize: '11px'
                           }}>
-                            {detalhe.mensagem}
+                            <strong>Razão Social:</strong> {sucesso.razao_social}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Seção de Erros */}
+                {importResults.resultados.detalhes.erros.length > 0 && (
+                  <div>
+                    <h4 style={{ 
+                      margin: '0 0 12px 0', 
+                      fontSize: '14px', 
+                      color: '#721c24',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <span style={{ fontSize: '16px' }}>✗</span>
+                      Erros na Importação ({importResults.resultados.detalhes.erros.length})
+                    </h4>
+                    <div style={{ 
+                      maxHeight: '200px', 
+                      overflowY: 'auto',
+                      border: '1px solid #f8d7da',
+                      borderRadius: '6px',
+                      padding: '8px'
+                    }}>
+                      {importResults.resultados.detalhes.erros.map((erro, index) => (
+                        <div
+                          key={index}
+                          style={{
+                            padding: '8px 12px',
+                            marginBottom: '6px',
+                            borderRadius: '4px',
+                            border: '1px solid #721c24',
+                            background: '#f8d7da',
+                            fontSize: '12px'
+                          }}
+                        >
+                          <div style={{ 
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center',
+                            marginBottom: '4px'
+                          }}>
+                            <span style={{ 
+                              fontWeight: 'bold',
+                              color: '#721c24'
+                            }}>
+                              Linha {erro.linha} - CNPJ: {formatCNPJ(erro.cnpj)}
+                            </span>
+                            <span style={{
+                              padding: '2px 6px',
+                              borderRadius: '3px',
+                              fontSize: '10px',
+                              fontWeight: 'bold',
+                              background: '#721c24',
+                              color: 'white'
+                            }}>
+                              ERRO
+                            </span>
+                          </div>
+                          <div style={{ 
+                            color: '#721c24',
+                            fontSize: '11px'
+                          }}>
+                            <strong>Erro:</strong> {erro.erro}
                           </div>
                         </div>
                       ))}
