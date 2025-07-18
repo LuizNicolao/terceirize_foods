@@ -1148,7 +1148,7 @@ const Produtos = () => {
 
                       <FormGroup>
                         <Label>Grupo</Label>
-                        <Select {...register('grupo_id')}>
+                        <Select disabled={isViewMode} {...register('grupo_id')}>
                           <option value="">Selecione...</option>
                           {grupos.map(grupo => (
                             <option key={grupo.id} value={grupo.id}>
@@ -1161,7 +1161,7 @@ const Produtos = () => {
 
                       <FormGroup>
                         <Label>Subgrupo</Label>
-                        <Select {...register('subgrupo_id')}>
+                        <Select disabled={isViewMode} {...register('subgrupo_id')}>
                           <option value="">Selecione...</option>
                           {/* Adicionar subgrupos quando disponível */}
                         </Select>
@@ -1170,7 +1170,7 @@ const Produtos = () => {
 
                       <FormGroup>
                         <Label>Classe</Label>
-                        <Select {...register('classe_id')}>
+                        <Select disabled={isViewMode} {...register('classe_id')}>
                           <option value="">Selecione...</option>
                           {/* Adicionar classes quando disponível */}
                         </Select>
@@ -1182,6 +1182,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                           placeholder="Nome genérico do produto"
+                          disabled={isViewMode}
                           {...register('nome_generico')}
                         />
                         {errors.nome_generico && <span style={{ color: 'red', fontSize: '11px' }}>{errors.nome_generico.message}</span>}
@@ -1198,6 +1199,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                         placeholder="Ex: KING"
+                        disabled={isViewMode}
                         {...register('marca')}
                         />
                       {errors.marca && <span style={{ color: 'red', fontSize: '11px' }}>{errors.marca.message}</span>}
@@ -1208,6 +1210,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                         placeholder="Ex: KING"
+                        disabled={isViewMode}
                         {...register('fabricante')}
                         />
                       {errors.fabricante && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fabricante.message}</span>}
@@ -1217,6 +1220,7 @@ const Produtos = () => {
                       <Label>Informações Adicionais</Label>
                       <TextArea
                         placeholder="Ex: PRODUTO COM 5% DE GORDURA"
+                        disabled={isViewMode}
                         {...register('informacoes_adicionais')}
                       />
                       {errors.informacoes_adicionais && <span style={{ color: 'red', fontSize: '11px' }}>{errors.informacoes_adicionais.message}</span>}
@@ -1228,6 +1232,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                           placeholder="Referência interna"
+                          disabled={isViewMode}
                           {...register('referencia')}
                         />
                         {errors.referencia && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia.message}</span>}
@@ -1238,6 +1243,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                           placeholder="Ex: 123654"
+                          disabled={isViewMode}
                           {...register('referencia_externa')}
                         />
                         {errors.referencia_externa && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia_externa.message}</span>}
@@ -1250,6 +1256,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                           placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
+                          disabled={isViewMode}
                           {...register('registro_especifico')}
                         />
                         {errors.registro_especifico && <span style={{ color: 'red', fontSize: '11px' }}>{errors.registro_especifico.message}</span>}
@@ -1260,6 +1267,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                           placeholder="Tipo do registro"
+                          disabled={isViewMode}
                           {...register('tipo_registro')}
                         />
                         {errors.tipo_registro && <span style={{ color: 'red', fontSize: '11px' }}>{errors.tipo_registro.message}</span>}
@@ -1272,6 +1280,7 @@ const Produtos = () => {
                         <Input
                           type="number"
                           placeholder="Ex: 12"
+                          disabled={isViewMode}
                           {...register('prazo_validade')}
                         />
                         {errors.prazo_validade && <span style={{ color: 'red', fontSize: '11px' }}>{errors.prazo_validade.message}</span>}
@@ -1279,7 +1288,7 @@ const Produtos = () => {
 
                       <FormGroup>
                         <Label>Unidade de Validade</Label>
-                        <Select {...register('unidade_validade')}>
+                        <Select disabled={isViewMode} {...register('unidade_validade')}>
                           <option value="">Selecione...</option>
                           <option value="DIAS">Dias</option>
                           <option value="SEMANAS">Semanas</option>
@@ -1299,7 +1308,7 @@ const Produtos = () => {
                     <FormGrid2>
                       <FormGroup>
                         <Label>Unidade de Medida</Label>
-                        <Select {...register('unidade_id')}>
+                        <Select disabled={isViewMode} {...register('unidade_id')}>
                           <option value="">Selecione...</option>
                           {unidades.map(unidade => (
                             <option key={unidade.id} value={unidade.id}>
@@ -1315,6 +1324,7 @@ const Produtos = () => {
                         <Input
                           type="number"
                           placeholder="Ex: 1200"
+                          disabled={isViewMode}
                           {...register('regra_palet_un')}
                         />
                         {errors.regra_palet_un && <span style={{ color: 'red', fontSize: '11px' }}>{errors.regra_palet_un.message}</span>}
@@ -1349,6 +1359,7 @@ const Produtos = () => {
                       <Input
                         type="text"
                         placeholder="Ex: Corte Bovino / Patinho / Cubos"
+                        disabled={isViewMode}
                         {...register('referencia_mercado')}
                       />
                       {errors.referencia_mercado && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia_mercado.message}</span>}
@@ -1361,6 +1372,7 @@ const Produtos = () => {
                           type="number"
                           step="0.001"
                           placeholder="Ex: 1.000"
+                          disabled={isViewMode}
                           {...register('peso_liquido')}
                         />
                         {errors.peso_liquido && <span style={{ color: 'red', fontSize: '11px' }}>{errors.peso_liquido.message}</span>}
@@ -1372,6 +1384,7 @@ const Produtos = () => {
                           type="number"
                           step="0.001"
                           placeholder="Ex: 1.000"
+                          disabled={isViewMode}
                           {...register('peso_bruto')}
                         />
                         {errors.peso_bruto && <span style={{ color: 'red', fontSize: '11px' }}>{errors.peso_bruto.message}</span>}
@@ -1385,6 +1398,7 @@ const Produtos = () => {
                           type="number"
                           step="0.01"
                           placeholder="Ex: 20.00"
+                          disabled={isViewMode}
                           {...register('comprimento')}
                         />
                         {errors.comprimento && <span style={{ color: 'red', fontSize: '11px' }}>{errors.comprimento.message}</span>}
@@ -1396,6 +1410,7 @@ const Produtos = () => {
                           type="number"
                           step="0.01"
                           placeholder="Ex: 15.00"
+                          disabled={isViewMode}
                           {...register('largura')}
                         />
                         {errors.largura && <span style={{ color: 'red', fontSize: '11px' }}>{errors.largura.message}</span>}
@@ -1409,6 +1424,7 @@ const Produtos = () => {
                           type="number"
                           step="0.01"
                           placeholder="Ex: 10.00"
+                          disabled={isViewMode}
                           {...register('altura')}
                         />
                         {errors.altura && <span style={{ color: 'red', fontSize: '11px' }}>{errors.altura.message}</span>}
@@ -1420,6 +1436,7 @@ const Produtos = () => {
                           type="number"
                           step="0.01"
                           placeholder="Ex: 3000.00"
+                          disabled={isViewMode}
                           {...register('volume')}
                         />
                         {errors.volume && <span style={{ color: 'red', fontSize: '11px' }}>{errors.volume.message}</span>}
@@ -1441,6 +1458,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                           placeholder="CST ICMS"
+                          disabled={isViewMode}
                           {...register('cst_icms')}
                         />
                         {errors.cst_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.cst_icms.message}</span>}
@@ -1451,6 +1469,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                           placeholder="CSOSN"
+                          disabled={isViewMode}
                           {...register('csosn')}
                         />
                         {errors.csosn && <span style={{ color: 'red', fontSize: '11px' }}>{errors.csosn.message}</span>}
@@ -1464,6 +1483,7 @@ const Produtos = () => {
                           type="number"
                           step="0.01"
                           placeholder="Ex: 18.00"
+                          disabled={isViewMode}
                           {...register('aliquota_icms')}
                         />
                         {errors.aliquota_icms && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_icms.message}</span>}
@@ -1475,6 +1495,7 @@ const Produtos = () => {
                           type="number"
                           step="0.01"
                           placeholder="Ex: 5.00"
+                          disabled={isViewMode}
                           {...register('aliquota_ipi')}
                         />
                         {errors.aliquota_ipi && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_ipi.message}</span>}
@@ -1488,6 +1509,7 @@ const Produtos = () => {
                           type="number"
                           step="0.01"
                           placeholder="Ex: 1.65"
+                          disabled={isViewMode}
                           {...register('aliquota_pis')}
                         />
                         {errors.aliquota_pis && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_pis.message}</span>}
@@ -1499,6 +1521,7 @@ const Produtos = () => {
                           type="number"
                           step="0.01"
                           placeholder="Ex: 7.60"
+                          disabled={isViewMode}
                           {...register('aliquota_cofins')}
                         />
                         {errors.aliquota_cofins && <span style={{ color: 'red', fontSize: '11px' }}>{errors.aliquota_cofins.message}</span>}
@@ -1517,6 +1540,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                           placeholder="Ex: 123456"
+                          disabled={isViewMode}
                           {...register('ficha_homologacao')}
                         />
                         {errors.ficha_homologacao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.ficha_homologacao.message}</span>}
@@ -1527,6 +1551,7 @@ const Produtos = () => {
                         <Input
                           type="text"
                           placeholder="Caminho da foto"
+                          disabled={isViewMode}
                           {...register('foto_produto')}
                         />
                         {errors.foto_produto && <span style={{ color: 'red', fontSize: '11px' }}>{errors.foto_produto.message}</span>}
@@ -1538,6 +1563,7 @@ const Produtos = () => {
                       <Input
                         type="text"
                         placeholder="Ex: 123654"
+                        disabled={isViewMode}
                         {...register('integracao_senior')}
                       />
                       {errors.integracao_senior && <span style={{ color: 'red', fontSize: '11px' }}>{errors.integracao_senior.message}</span>}
@@ -1553,7 +1579,7 @@ const Produtos = () => {
                   <FormGrid>
                     <FormGroup>
                       <Label>Status do Produto</Label>
-                      <Select {...register('status', { required: 'Status é obrigatório' })}>
+                      <Select disabled={isViewMode} {...register('status', { required: 'Status é obrigatório' })}>
                         <option value="">Selecione...</option>
                         <option value="1">Ativo</option>
                         <option value="0">Inativo</option>
