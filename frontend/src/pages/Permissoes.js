@@ -60,7 +60,9 @@ const SelectInput = styled.input`
   }
 `;
 
-const SelectIcon = styled.div`
+const SelectIcon = styled.div.withConfig({
+  shouldForwardProp: (prop) => prop !== 'isOpen'
+})`
   position: absolute;
   right: 12px;
   top: 50%;
@@ -90,7 +92,9 @@ const SelectDropdown = styled.div`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 `;
 
-const SelectOption = styled.div`
+const SelectOption = styled.div.withConfig({
+  shouldForwardProp: (prop) => prop !== 'isSelected'
+})`
   padding: 12px;
   cursor: pointer;
   border-bottom: 1px solid #f0f0f0;
@@ -330,7 +334,9 @@ const UserEmail = styled.p`
   margin: 0;
 `;
 
-const AccessBadge = styled.span`
+const AccessBadge = styled.span.withConfig({
+  shouldForwardProp: (prop) => prop !== 'type'
+})`
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
@@ -636,7 +642,9 @@ const AuditChangeValues = styled.div`
   flex: 1;
 `;
 
-const AuditChangeValue = styled.span`
+const AuditChangeValue = styled.span.withConfig({
+  shouldForwardProp: (prop) => prop !== 'type'
+})`
   padding: 4px 8px;
   border-radius: 4px;
   font-size: 12px;
