@@ -94,8 +94,8 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       sortDirection = 'asc'
     } = req.query;
 
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(200, Math.max(1, parseInt(limit) || 50));
     const offset = (pageNum - 1) * limitNum;
 
     // Construir query base
@@ -165,7 +165,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     // Query para contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM fornecedores WHERE ${whereConditions.join(' AND ')}`;
     const countResult = await executeQuery(countQuery, params);
-    const total = countResult[0].total;
+    const total = parseInt(countResult[0].total) || 0;
 
     // Query para buscar dados com paginação
     let orderBy = '';
@@ -191,7 +191,13 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       LIMIT ? OFFSET ?
     `;
 
-    const fornecedores = await executeQuery(dataQuery, [...params, limitNum, offset]);
+    // Garantir que os parâmetros sejam números válidos
+    const queryParams = [...params, parseInt(limitNum), parseInt(offset)];
+    
+    console.log('Query:', dataQuery);
+    console.log('Params:', queryParams);
+    
+    const fornecedores = await executeQuery(dataQuery, queryParams);
 
     // Calcular informações de paginação
     const totalPages = Math.ceil(total / limitNum);
