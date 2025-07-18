@@ -14,7 +14,8 @@ import {
   FaChevronLeft,
   FaChevronRight,
   FaSitemap,
-  FaCubes
+  FaCubes,
+  FaFileAlt
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -170,6 +171,7 @@ const menuItems = [
   { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
   { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
   { path: '/classes', icon: FaCubes, label: 'Classes', screen: 'classes' },
+  { path: '/nome-generico-produto', icon: FaFileAlt, label: 'Nomes Genéricos', screen: 'nome_generico_produto' },
   { path: '/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
   { path: '/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
   { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },

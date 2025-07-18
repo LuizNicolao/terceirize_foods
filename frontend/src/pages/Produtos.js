@@ -1249,6 +1249,7 @@ const Produtos = () => {
                       </FormGroup>
                     </FormGrid2>
 
+                    <FormGrid2>
                       <FormGroup>
                         <Label>Código de Barras</Label>
                         <Input
@@ -1260,14 +1261,26 @@ const Produtos = () => {
                       </FormGroup>
 
                       <FormGroup>
-                        <Label>Referência de Mercado</Label>
+                        <Label>Fator de Conversão</Label>
                         <Input
-                          type="text"
-                          placeholder="Ex: Corte Bovino / Patinho / Cubos"
-                          {...register('referencia_mercado')}
+                          type="number"
+                          step="0.001"
+                          placeholder="Ex: 1.000"
+                          {...register('fator_conversao')}
                         />
-                        {errors.referencia_mercado && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia_mercado.message}</span>}
+                        {errors.fator_conversao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fator_conversao.message}</span>}
                       </FormGroup>
+                    </FormGrid2>
+
+                    <FormGroup>
+                      <Label>Referência de Mercado</Label>
+                      <Input
+                        type="text"
+                        placeholder="Ex: Corte Bovino / Patinho / Cubos"
+                        {...register('referencia_mercado')}
+                      />
+                      {errors.referencia_mercado && <span style={{ color: 'red', fontSize: '11px' }}>{errors.referencia_mercado.message}</span>}
+                    </FormGroup>
 
                     <FormGrid2>
                       <FormGroup>

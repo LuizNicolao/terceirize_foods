@@ -14,6 +14,7 @@ import Subgrupos from './pages/Subgrupos';
 import Unidades from './pages/Unidades';
 import Marcas from './pages/Marcas';
 import Classes from './pages/Classes';
+import NomeGenericoProduto from './pages/NomeGenericoProduto';
 import Permissoes from './pages/Permissoes';
 
 // Componente para rotas protegidas com autenticação
@@ -152,6 +153,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="classes">
               <Classes />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/nome-generico-produto" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="nome_generico_produto">
+              <NomeGenericoProduto />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 
