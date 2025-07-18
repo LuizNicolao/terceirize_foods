@@ -81,140 +81,29 @@ router.get('/buscar-cnpj/:cnpj', checkPermission('visualizar'), async (req, res)
   }
 });
 
-// Listar fornecedores com paginação e filtros
+// Listar fornecedores
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    const {
-      page = 1,
-      limit = 50,
-      search = '',
-      searchField = 'todos',
-      status = 'todos',
-      sortField = 'id',
-      sortDirection = 'asc'
-    } = req.query;
+    const { search = '' } = req.query;
 
-    const pageNum = Math.max(1, parseInt(page) || 1);
-    const limitNum = Math.min(200, Math.max(1, parseInt(limit) || 50));
-    const offset = (pageNum - 1) * limitNum;
-
-    // Construir query base
-    let whereConditions = ['1=1'];
-    let params = [];
-
-    // Filtro de busca
-    if (search) {
-      switch (searchField) {
-        case 'id':
-          whereConditions.push('id = ?');
-          params.push(parseInt(search) || 0);
-          break;
-        case 'razao_social':
-          whereConditions.push('razao_social LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'nome_fantasia':
-          whereConditions.push('nome_fantasia LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'cnpj':
-          whereConditions.push('cnpj LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'email':
-          whereConditions.push('email LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'telefone':
-          whereConditions.push('telefone LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'municipio':
-          whereConditions.push('municipio LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'uf':
-          whereConditions.push('uf LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'todos':
-        default:
-          whereConditions.push(`(
-            razao_social LIKE ? OR 
-            nome_fantasia LIKE ? OR 
-            cnpj LIKE ? OR 
-            email LIKE ? OR 
-            telefone LIKE ? OR 
-            municipio LIKE ? OR 
-            uf LIKE ? OR 
-            id = ?
-          )`);
-          const searchTerm = `%${search}%`;
-          const searchId = parseInt(search) || 0;
-          params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchTerm, searchId);
-          break;
-      }
-    }
-
-    // Filtro de status
-    if (status !== 'todos') {
-      whereConditions.push('status = ?');
-      params.push(parseInt(status));
-    }
-
-    // Query para contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM fornecedores WHERE ${whereConditions.join(' AND ')}`;
-    const countResult = await executeQuery(countQuery, params);
-    const total = parseInt(countResult[0].total) || 0;
-
-    // Query para buscar dados com paginação
-    let orderBy = '';
-    switch (sortField) {
-      case 'id':
-      case 'status':
-        orderBy = `${sortField} ${sortDirection.toUpperCase()}`;
-        break;
-      case 'municipio':
-        orderBy = `municipio ${sortDirection.toUpperCase()}, uf ${sortDirection.toUpperCase()}`;
-        break;
-      default:
-        orderBy = `${sortField} ${sortDirection.toUpperCase()}`;
-        break;
-    }
-
-    const dataQuery = `
+    let query = `
       SELECT id, cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
              bairro, municipio, uf, email, telefone, status, criado_em, atualizado_em 
       FROM fornecedores 
-      WHERE ${whereConditions.join(' AND ')}
-      ORDER BY ${orderBy}
-      LIMIT ? OFFSET ?
+      WHERE 1=1
     `;
+    let params = [];
 
-    // Garantir que os parâmetros sejam números válidos
-    const queryParams = [...params, parseInt(limitNum), parseInt(offset)];
-    
-    console.log('Query:', dataQuery);
-    console.log('Params:', queryParams);
-    
-    const fornecedores = await executeQuery(dataQuery, queryParams);
+    if (search) {
+      query += ' AND (razao_social LIKE ? OR nome_fantasia LIKE ? OR cnpj LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
 
-    // Calcular informações de paginação
-    const totalPages = Math.ceil(total / limitNum);
-    const hasNextPage = pageNum < totalPages;
-    const hasPrevPage = pageNum > 1;
+    query += ' ORDER BY razao_social ASC';
 
-    res.json({
-      fornecedores,
-      pagination: {
-        currentPage: pageNum,
-        totalPages,
-        totalItems: total,
-        itemsPerPage: limitNum,
-        hasNextPage,
-        hasPrevPage
-      }
-    });
+    const fornecedores = await executeQuery(query, params);
+
+    res.json(fornecedores);
 
   } catch (error) {
     console.error('Erro ao listar fornecedores:', error);
