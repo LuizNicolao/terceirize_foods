@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaTruck, FaQuestion
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 const Container = styled.div`
   padding: 24px;
@@ -114,7 +115,9 @@ const Td = styled.td`
   color: var(--dark-gray);
 `;
 
-const StatusBadge = styled.span`
+const StatusBadge = styled.span.withConfig({
+  shouldForwardProp: (prop) => prop !== 'status'
+})`
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 12px;
@@ -337,6 +340,7 @@ const EmptyState = styled.div`
 `;
 
 const Fornecedores = () => {
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [fornecedores, setFornecedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -962,10 +966,12 @@ const Fornecedores = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          <AddButton onClick={handleAddFornecedor}>
-            <FaPlus />
-            Adicionar Fornecedor
-          </AddButton>
+          {canCreate('fornecedores') && (
+            <AddButton onClick={handleAddFornecedor}>
+              <FaPlus />
+              Adicionar Fornecedor
+            </AddButton>
+          )}
         </div>
       </Header>
 
@@ -1032,20 +1038,24 @@ const Fornecedores = () => {
                     >
                       <FaEye />
                     </ActionButton>
-                    <ActionButton
-                      className="edit"
-                      title="Editar"
-                      onClick={() => handleEditFornecedor(fornecedor)}
-                    >
-                      <FaEdit />
-                    </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      title="Excluir"
-                      onClick={() => handleDeleteFornecedor(fornecedor.id)}
-                    >
-                      <FaTrash />
-                    </ActionButton>
+                    {canEdit('fornecedores') && (
+                      <ActionButton
+                        className="edit"
+                        title="Editar"
+                        onClick={() => handleEditFornecedor(fornecedor)}
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                    )}
+                    {canDelete('fornecedores') && (
+                      <ActionButton
+                        className="delete"
+                        title="Excluir"
+                        onClick={() => handleDeleteFornecedor(fornecedor.id)}
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    )}
                   </Td>
                 </tr>
               ))
