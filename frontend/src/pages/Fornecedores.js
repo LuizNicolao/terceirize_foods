@@ -107,70 +107,6 @@ const ClearButton = styled.button`
   }
 `;
 
-const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 24px;
-  background: var(--white);
-  border-top: 1px solid #e0e0e0;
-  border-radius: 0 0 12px 12px;
-`;
-
-const PaginationInfo = styled.div`
-  color: var(--gray);
-  font-size: 14px;
-`;
-
-const PaginationControls = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const PageButton = styled.button`
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  background: var(--white);
-  color: var(--dark-gray);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 14px;
-
-  &:hover:not(:disabled) {
-    background: var(--primary-green);
-    color: var(--white);
-    border-color: var(--primary-green);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  &.active {
-    background: var(--primary-green);
-    color: var(--white);
-    border-color: var(--primary-green);
-  }
-`;
-
-const PageSizeSelect = styled.select`
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  background: var(--white);
-  color: var(--dark-gray);
-  font-size: 14px;
-  cursor: pointer;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-`;
-
 const TableContainer = styled.div`
   background: var(--white);
   border-radius: 12px;
@@ -498,11 +434,6 @@ const Fornecedores = () => {
   const [importResults, setImportResults] = useState(null);
   const [sortField, setSortField] = useState('id');
   const [sortDirection, setSortDirection] = useState('asc');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(50);
-  const [totalRecords, setTotalRecords] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef(null);
 
   const {
@@ -514,60 +445,23 @@ const Fornecedores = () => {
     getValues
   } = useForm();
 
-  // Carregar fornecedores com paginação
-  const loadFornecedores = async (page = currentPage, size = pageSize) => {
+  // Carregar fornecedores
+  const loadFornecedores = async () => {
     try {
-      setIsLoading(true);
-      
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: size.toString(),
-        sortField: sortField,
-        sortDirection: sortDirection
-      });
-
-      // Adicionar filtros se existirem
-      if (searchTerm) {
-        params.append('search', searchTerm);
-      }
-      if (statusFilter !== 'todos') {
-        params.append('status', statusFilter);
-      }
-
-      const response = await api.get(`/fornecedores?${params.toString()}`);
-      
-      setFornecedores(response.data.fornecedores);
-      setTotalRecords(response.data.pagination.totalRecords);
-      setTotalPages(response.data.pagination.totalPages);
-      setCurrentPage(response.data.pagination.currentPage);
-      
+      setLoading(true);
+      const response = await api.get('/fornecedores');
+      setFornecedores(response.data);
     } catch (error) {
       console.error('Erro ao carregar fornecedores:', error);
       toast.error('Erro ao carregar fornecedores');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     loadFornecedores();
   }, []);
-
-  // Recarregar quando filtros ou ordenação mudarem
-  useEffect(() => {
-    if (currentPage === 1) {
-      loadFornecedores(1);
-    } else {
-      setCurrentPage(1);
-    }
-  }, [searchTerm, searchField, statusFilter, sortField, sortDirection]);
-
-  // Recarregar quando página mudar
-  useEffect(() => {
-    if (currentPage > 0) {
-      loadFornecedores(currentPage);
-    }
-  }, [currentPage]);
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
@@ -1074,6 +968,63 @@ const Fornecedores = () => {
     }
   };
 
+  // Função para ordenar fornecedores
+  const sortFornecedores = (fornecedores) => {
+    return fornecedores.sort((a, b) => {
+      let aValue = a[sortField];
+      let bValue = b[sortField];
+
+      // Tratar diferentes tipos de dados
+      if (sortField === 'id' || sortField === 'status') {
+        // Para números, converter para número
+        aValue = Number(aValue) || 0;
+        bValue = Number(bValue) || 0;
+        
+        if (sortDirection === 'asc') {
+          return aValue - bValue;
+        } else {
+          return bValue - aValue;
+        }
+      } else if (sortField === 'cnpj' || sortField === 'telefone') {
+        // Para CNPJ e telefone, remover formatação antes de comparar
+        aValue = String(aValue).replace(/\D/g, '').toLowerCase();
+        bValue = String(bValue).replace(/\D/g, '').toLowerCase();
+
+        if (sortDirection === 'asc') {
+          return aValue.localeCompare(bValue, 'pt-BR');
+        } else {
+          return bValue.localeCompare(aValue, 'pt-BR');
+        }
+      } else if (sortField === 'municipio') {
+        // Para cidade/estado, ordenar primeiro por cidade, depois por estado
+        const aCidade = String(a.municipio || '').toLowerCase();
+        const bCidade = String(b.municipio || '').toLowerCase();
+        const aEstado = String(a.uf || '').toLowerCase();
+        const bEstado = String(b.uf || '').toLowerCase();
+
+        if (sortDirection === 'asc') {
+          const cidadeCompare = aCidade.localeCompare(bCidade, 'pt-BR');
+          if (cidadeCompare !== 0) return cidadeCompare;
+          return aEstado.localeCompare(bEstado, 'pt-BR');
+        } else {
+          const cidadeCompare = bCidade.localeCompare(aCidade, 'pt-BR');
+          if (cidadeCompare !== 0) return cidadeCompare;
+          return bEstado.localeCompare(aEstado, 'pt-BR');
+        }
+      } else {
+        // Para texto, converter para string e usar localeCompare
+        aValue = String(aValue).toLowerCase();
+        bValue = String(bValue).toLowerCase();
+
+        if (sortDirection === 'asc') {
+          return aValue.localeCompare(bValue, 'pt-BR');
+        } else {
+          return bValue.localeCompare(aValue, 'pt-BR');
+        }
+      }
+    });
+  };
+
   // Função para lidar com ordenação
   const handleSort = (field) => {
     if (sortField === field) {
@@ -1091,17 +1042,55 @@ const Fornecedores = () => {
     setStatusFilter('todos');
   };
 
-  // Função para mudar página
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
-  };
-
-  // Função para mudar tamanho da página
-  const handlePageSizeChange = (newSize) => {
-    setPageSize(newSize);
-    setCurrentPage(1);
-    loadFornecedores(1, newSize);
-  };
+  // Filtrar e ordenar fornecedores
+  const filteredFornecedores = sortFornecedores(
+    fornecedores.filter(fornecedor => {
+      let matchesSearch = true;
+      
+      if (searchTerm) {
+        switch (searchField) {
+          case 'id':
+            matchesSearch = fornecedor.id?.toString().includes(searchTerm);
+            break;
+          case 'razao_social':
+            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'nome_fantasia':
+            matchesSearch = fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'cnpj':
+            matchesSearch = fornecedor.cnpj?.includes(searchTerm);
+            break;
+          case 'email':
+            matchesSearch = fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'telefone':
+            matchesSearch = fornecedor.telefone?.includes(searchTerm);
+            break;
+          case 'municipio':
+            matchesSearch = fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'uf':
+            matchesSearch = fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'todos':
+          default:
+            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.cnpj?.includes(searchTerm) ||
+                           fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.telefone?.includes(searchTerm) ||
+                           fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.id?.toString().includes(searchTerm);
+            break;
+        }
+      }
+      
+      const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
+      return matchesSearch && matchesStatus;
+    })
+  );
 
   // Formatar CNPJ
   const formatCNPJ = (cnpj) => {
@@ -1270,10 +1259,7 @@ const Fornecedores = () => {
   if (loading) {
     return (
       <Container>
-        <div style={{ textAlign: 'center', padding: '50px', color: 'var(--gray)' }}>
-          <div style={{ fontSize: '18px', marginBottom: '10px' }}>Carregando fornecedores...</div>
-          <div style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid var(--primary-green)', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto' }}></div>
-        </div>
+        <div>Carregando fornecedores...</div>
       </Container>
     );
   }
@@ -1422,12 +1408,11 @@ const Fornecedores = () => {
             </tr>
           </thead>
           <tbody>
-            {fornecedores.length === 0 ? (
+            {filteredFornecedores.length === 0 ? (
               <tr>
                 <Td colSpan="8">
                   <EmptyState>
-                    {isLoading ? 'Carregando...' : 
-                     searchTerm || searchField !== 'todos' || statusFilter !== 'todos' 
+                    {searchTerm || searchField !== 'todos' || statusFilter !== 'todos' 
                       ? 'Nenhum fornecedor encontrado com os filtros aplicados'
                       : 'Nenhum fornecedor cadastrado'
                     }
@@ -1435,7 +1420,7 @@ const Fornecedores = () => {
                 </Td>
               </tr>
             ) : (
-              fornecedores.map((fornecedor) => (
+              filteredFornecedores.map((fornecedor) => (
                 <tr key={fornecedor.id}>
                   <Td>{fornecedor.id}</Td>
                   <Td>{fornecedor.razao_social}</Td>
@@ -1481,72 +1466,6 @@ const Fornecedores = () => {
           </tbody>
         </Table>
       </TableContainer>
-
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <PaginationContainer>
-          <PaginationInfo>
-            Mostrando {((currentPage - 1) * pageSize) + 1} a {Math.min(currentPage * pageSize, totalRecords)} de {totalRecords} registros
-          </PaginationInfo>
-          
-          <PaginationControls>
-            <PageSizeSelect
-              value={pageSize}
-              onChange={(e) => handlePageSizeChange(parseInt(e.target.value))}
-            >
-              <option value={10}>10 por página</option>
-              <option value={25}>25 por página</option>
-              <option value={50}>50 por página</option>
-              <option value={100}>100 por página</option>
-            </PageSizeSelect>
-
-            <PageButton
-              onClick={() => handlePageChange(1)}
-              disabled={currentPage === 1}
-            >
-              Primeira
-            </PageButton>
-
-            <PageButton
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              Anterior
-            </PageButton>
-
-            {/* Mostrar páginas próximas */}
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
-              if (pageNum <= totalPages) {
-                return (
-                  <PageButton
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={pageNum === currentPage ? 'active' : ''}
-                  >
-                    {pageNum}
-                  </PageButton>
-                );
-              }
-              return null;
-            })}
-
-            <PageButton
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Próxima
-            </PageButton>
-
-            <PageButton
-              onClick={() => handlePageChange(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              Última
-            </PageButton>
-          </PaginationControls>
-        </PaginationContainer>
-      )}
 
       {/* Input file oculto para importação */}
       <input
