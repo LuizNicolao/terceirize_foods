@@ -350,13 +350,7 @@ const Classes = () => {
     periodo: ''
   });
 
-  const { permissions } = usePermissions();
-
-  // Verificar permissões para Classes
-  const canCreate = permissions?.classes?.create || false;
-  const canEdit = permissions?.classes?.edit || false;
-  const canDelete = permissions?.classes?.delete || false;
-  const canView = permissions?.classes?.view || false;
+  const { canCreate, canEdit, canDelete } = usePermissions();
 
   const {
     register,
@@ -778,7 +772,7 @@ const Classes = () => {
             <FaHistory />
             Auditoria
           </button>
-          {canCreate && (
+          {canCreate('classes') && (
             <AddButton onClick={handleAddClasse}>
               <FaPlus />
               Adicionar Classe
@@ -857,7 +851,7 @@ const Classes = () => {
                     >
                       <FaEye />
                     </ActionButton>
-                    {canEdit && (
+                    {canEdit('classes') && (
                       <ActionButton
                         className="edit"
                         title="Editar"
@@ -866,7 +860,7 @@ const Classes = () => {
                         <FaEdit />
                       </ActionButton>
                     )}
-                    {canDelete && (
+                    {canDelete('classes') && (
                       <ActionButton
                         className="delete"
                         title="Excluir"

@@ -341,13 +341,7 @@ const Subgrupos = () => {
     periodo: ''
   });
 
-  const { permissions } = usePermissions();
-
-  // Verificar permissões para Subgrupos
-  const canCreate = permissions?.subgrupos?.create || false;
-  const canEdit = permissions?.subgrupos?.edit || false;
-  const canDelete = permissions?.subgrupos?.delete || false;
-  const canView = permissions?.subgrupos?.view || false;
+  const { canCreate, canEdit, canDelete } = usePermissions();
 
   useEffect(() => {
     loadSubgrupos();
@@ -746,7 +740,7 @@ const Subgrupos = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          {canCreate && (
+          {canCreate('subgrupos') && (
             <AddButton onClick={handleCreate}>
               <FaPlus />
               Novo Subgrupo
@@ -809,7 +803,7 @@ const Subgrupos = () => {
                     >
                       <FaEye />
                     </ActionButton>
-                    {canEdit && (
+                    {canEdit('subgrupos') && (
                       <ActionButton
                         className="edit"
                         onClick={() => handleEdit(subgrupo)}
@@ -819,7 +813,7 @@ const Subgrupos = () => {
                         <FaEdit />
                       </ActionButton>
                     )}
-                    {canDelete && (
+                    {canDelete('subgrupos') && (
                       <ActionButton
                         className="delete"
                         onClick={() => handleDelete(subgrupo.id)}

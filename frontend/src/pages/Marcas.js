@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuesti
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { usePermissions } from '../contexts/PermissionsContext';
 
 const Container = styled.div`
   padding: 24px;
@@ -114,8 +115,8 @@ const StatusBadge = styled.span`
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  background: ${props => props.status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.status === 'ativo' ? 'white' : 'var(--error-red)'};
+  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
+  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
 `;
 
 const ActionButton = styled.button`
@@ -323,6 +324,7 @@ const Marcas = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingMarca, setEditingMarca] = useState(null);
+  const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -335,6 +337,8 @@ const Marcas = () => {
     usuario_id: '',
     periodo: ''
   });
+
+  const { canCreate, canEdit, canDelete } = usePermissions();
 
   const {
     register,
@@ -631,6 +635,7 @@ const Marcas = () => {
   // Abrir modal para adicionar marca
   const handleAddMarca = () => {
     setEditingMarca(null);
+    setViewMode(false);
     reset();
     setValue('status', '1'); // Define status como "Ativo" por padrão
     setShowModal(true);
@@ -639,6 +644,23 @@ const Marcas = () => {
   // Abrir modal para editar marca
   const handleEditMarca = (marca) => {
     setEditingMarca(marca);
+    setViewMode(false);
+    setValue('marca', marca.marca);
+    setValue('fabricante', marca.fabricante);
+    setValue('descricao', marca.descricao);
+    setValue('cnpj', marca.cnpj);
+    setValue('telefone', marca.telefone);
+    setValue('email', marca.email);
+    setValue('website', marca.website);
+    setValue('endereco', marca.endereco);
+    setValue('status', marca.status);
+    setShowModal(true);
+  };
+
+  // Abrir modal para visualizar marca
+  const handleViewMarca = (marca) => {
+    setEditingMarca(marca);
+    setViewMode(true);
     setValue('marca', marca.marca);
     setValue('fabricante', marca.fabricante);
     setValue('descricao', marca.descricao);
@@ -655,6 +677,7 @@ const Marcas = () => {
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingMarca(null);
+    setViewMode(false);
     reset();
   };
 
@@ -770,10 +793,12 @@ const Marcas = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          <AddButton onClick={handleAddMarca}>
-            <FaPlus />
-            Adicionar Marca
-          </AddButton>
+          {canCreate('marcas') && (
+            <AddButton onClick={handleAddMarca}>
+              <FaPlus />
+              Adicionar Marca
+            </AddButton>
+          )}
         </div>
       </Header>
 
@@ -822,7 +847,7 @@ const Marcas = () => {
                   <Td>{marca.marca}</Td>
                   <Td>{marca.fabricante}</Td>
                   <Td>
-                    <StatusBadge status={marca.status === 1 ? 'ativo' : 'inativo'}>
+                    <StatusBadge $status={marca.status === 1 ? 'ativo' : 'inativo'}>
                       {marca.status === 1 ? 'Ativo' : 'Inativo'}
                     </StatusBadge>
                   </Td>
@@ -830,24 +855,28 @@ const Marcas = () => {
                     <ActionButton
                       className="view"
                       title="Visualizar"
-                      onClick={() => handleEditMarca(marca)}
+                      onClick={() => handleViewMarca(marca)}
                     >
                       <FaEye />
                     </ActionButton>
-                    <ActionButton
-                      className="edit"
-                      title="Editar"
-                      onClick={() => handleEditMarca(marca)}
-                    >
-                      <FaEdit />
-                    </ActionButton>
-                    <ActionButton
-                      className="delete"
-                      title="Excluir"
-                      onClick={() => handleDeleteMarca(marca.id)}
-                    >
-                      <FaTrash />
-                    </ActionButton>
+                    {canEdit('marcas') && (
+                      <ActionButton
+                        className="edit"
+                        title="Editar"
+                        onClick={() => handleEditMarca(marca)}
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                    )}
+                    {canDelete('marcas') && (
+                      <ActionButton
+                        className="delete"
+                        title="Excluir"
+                        onClick={() => handleDeleteMarca(marca.id)}
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    )}
                   </Td>
                 </tr>
               ))
@@ -861,7 +890,7 @@ const Marcas = () => {
           <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalHeader>
               <ModalTitle>
-                {editingMarca ? 'Editar Marca' : 'Adicionar Marca'}
+                {viewMode ? 'Visualizar Marca' : editingMarca ? 'Editar Marca' : 'Adicionar Marca'}
               </ModalTitle>
               <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
             </ModalHeader>
@@ -873,6 +902,7 @@ const Marcas = () => {
                   <Input
                     type="text"
                     placeholder="Ex: KING"
+                    disabled={viewMode}
                     {...register('marca', { required: 'Marca é obrigatória' })}
                   />
                   {errors.marca && <span style={{ color: 'red', fontSize: '12px' }}>{errors.marca.message}</span>}
@@ -883,6 +913,7 @@ const Marcas = () => {
                   <Input
                     type="text"
                     placeholder="Ex: KING ALIMENTOS LTDA"
+                    disabled={viewMode}
                     {...register('fabricante', { required: 'Fabricante é obrigatório' })}
                   />
                   {errors.fabricante && <span style={{ color: 'red', fontSize: '12px' }}>{errors.fabricante.message}</span>}
@@ -891,7 +922,7 @@ const Marcas = () => {
 
               <FormGroup>
                 <Label>Status</Label>
-                <Select {...register('status', { required: 'Status é obrigatório' })}>
+                <Select disabled={viewMode} {...register('status', { required: 'Status é obrigatório' })}>
                   <option value="1">Ativo</option>
                   <option value="0">Inativo</option>
                 </Select>
@@ -904,14 +935,16 @@ const Marcas = () => {
                   className="secondary"
                   onClick={handleCloseModal}
                 >
-                  Cancelar
+                  {viewMode ? 'Fechar' : 'Cancelar'}
                 </Button>
-                <Button
-                  type="submit"
-                  className="primary"
-                >
-                  {editingMarca ? 'Atualizar' : 'Cadastrar'}
-                </Button>
+                {!viewMode && (
+                  <Button
+                    type="submit"
+                    className="primary"
+                  >
+                    {editingMarca ? 'Atualizar' : 'Cadastrar'}
+                  </Button>
+                )}
               </ButtonGroup>
             </Form>
           </ModalContent>

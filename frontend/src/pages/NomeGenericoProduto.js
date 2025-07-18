@@ -365,13 +365,7 @@ const NomeGenericoProduto = () => {
     periodo: ''
   });
 
-  const { permissions } = usePermissions();
-
-  // Verificar permissões para Nomes Genéricos de Produtos
-  const canCreate = permissions?.nome_generico_produto?.create || false;
-  const canEdit = permissions?.nome_generico_produto?.edit || false;
-  const canDelete = permissions?.nome_generico_produto?.delete || false;
-  const canView = permissions?.nome_generico_produto?.view || false;
+  const { canCreate, canEdit, canDelete } = usePermissions();
 
   const {
     register,
@@ -845,7 +839,7 @@ const NomeGenericoProduto = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          {canCreate && (
+          {canCreate('nome_generico_produto') && (
             <AddButton onClick={handleAddNomeGenerico}>
               <FaPlus />
               Adicionar Nome Genérico
@@ -915,7 +909,7 @@ const NomeGenericoProduto = () => {
                     >
                       <FaEye />
                     </ActionButton>
-                    {canEdit && (
+                    {canEdit('nome_generico_produto') && (
                       <ActionButton
                         className="edit"
                         title="Editar"
@@ -924,7 +918,7 @@ const NomeGenericoProduto = () => {
                         <FaEdit />
                       </ActionButton>
                     )}
-                    {canDelete && (
+                    {canDelete('nome_generico_produto') && (
                       <ActionButton
                         className="delete"
                         title="Excluir"

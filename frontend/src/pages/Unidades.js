@@ -304,11 +304,7 @@ const Unidades = () => {
     periodo: ''
   });
 
-  const { permissions } = usePermissions();
-  const canCreate = permissions?.unidades?.create || false;
-  const canEdit = permissions?.unidades?.edit || false;
-  const canDelete = permissions?.unidades?.delete || false;
-  const canView = permissions?.unidades?.view || false;
+  const { canCreate, canEdit, canDelete } = usePermissions();
 
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
@@ -723,7 +719,7 @@ const Unidades = () => {
             <FaQuestionCircle />
             Auditoria
           </AddButton>
-          {canCreate && (
+          {canCreate('unidades') && (
             <AddButton onClick={handleAddUnidade}>
               <FaPlus />
               Adicionar Unidade
@@ -789,7 +785,7 @@ const Unidades = () => {
                     >
                       <FaEye />
                     </ActionButton>
-                    {canEdit && (
+                    {canEdit('unidades') && (
                       <ActionButton
                         className="edit"
                         title="Editar"
@@ -798,7 +794,7 @@ const Unidades = () => {
                         <FaEdit />
                       </ActionButton>
                     )}
-                    {canDelete && (
+                    {canDelete('unidades') && (
                       <ActionButton
                         className="delete"
                         title="Excluir"
