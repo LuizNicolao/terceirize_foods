@@ -960,8 +960,8 @@ const NomeGenericoProduto = () => {
       {/* Modal de Auditoria */}
       {showAuditModal && (
         <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
-            <ModalHeader>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px', padding: '24px' }}>
+            <ModalHeader style={{ padding: '0 0 24px 0', borderBottom: '1px solid #e0e0e0' }}>
               <ModalTitle>Relatório de Auditoria - Nomes Genéricos de Produtos</ModalTitle>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button
@@ -1015,7 +1015,7 @@ const NomeGenericoProduto = () => {
             </ModalHeader>
 
             {/* Filtros de Auditoria */}
-            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+            <div style={{ marginTop: '24px', marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
               <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
                 <div>
