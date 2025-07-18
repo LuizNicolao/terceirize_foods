@@ -94,101 +94,27 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
       sortDirection = 'asc'
     } = req.query;
 
+    console.log('Query params:', req.query);
+
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
     const offset = (pageNum - 1) * limitNum;
 
-    // Construir query base
-    let whereConditions = ['1=1'];
-    let params = [];
-
-    // Filtro de busca
-    if (search) {
-      switch (searchField) {
-        case 'id':
-          whereConditions.push('id LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'razao_social':
-          whereConditions.push('razao_social LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'nome_fantasia':
-          whereConditions.push('nome_fantasia LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'cnpj':
-          whereConditions.push('cnpj LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'email':
-          whereConditions.push('email LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'telefone':
-          whereConditions.push('telefone LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'municipio':
-          whereConditions.push('municipio LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'uf':
-          whereConditions.push('uf LIKE ?');
-          params.push(`%${search}%`);
-          break;
-        case 'todos':
-        default:
-          whereConditions.push('(razao_social LIKE ? OR nome_fantasia LIKE ? OR cnpj LIKE ? OR email LIKE ? OR telefone LIKE ? OR municipio LIKE ? OR uf LIKE ? OR id LIKE ?)');
-          params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
-          break;
-      }
-    }
-
-    // Filtro de status
-    if (status && status !== 'todos') {
-      whereConditions.push('status = ?');
-      params.push(parseInt(status));
-    }
-
-    // Validar e sanitizar campos de ordenação
-    const allowedSortFields = ['id', 'razao_social', 'nome_fantasia', 'cnpj', 'email', 'telefone', 'municipio', 'uf', 'status'];
-    const allowedSortDirections = ['asc', 'desc'];
-    
-    const validSortField = allowedSortFields.includes(sortField) ? sortField : 'id';
-    const validSortDirection = allowedSortDirections.includes(sortDirection.toLowerCase()) ? sortDirection.toUpperCase() : 'ASC';
-
-    // Query para contar total
-    const countQuery = `
-      SELECT COUNT(*) as total 
-      FROM fornecedores 
-      WHERE ${whereConditions.join(' AND ')}
-    `;
-    
-    const countResult = await executeQuery(countQuery, params);
+    // Query simples primeiro para testar
+    let query = 'SELECT COUNT(*) as total FROM fornecedores';
+    let countResult = await executeQuery(query);
     const total = countResult[0].total;
 
-    // Query para buscar dados com paginação
-    let dataQuery = `
+    // Query para buscar dados
+    query = `
       SELECT id, cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
              bairro, municipio, uf, email, telefone, status, criado_em, atualizado_em 
       FROM fornecedores 
-      WHERE ${whereConditions.join(' AND ')}
+      ORDER BY id ASC
+      LIMIT ? OFFSET ?
     `;
 
-    // Adicionar ordenação
-    if (validSortField === 'municipio') {
-      // Ordenação especial para cidade/estado
-      dataQuery += ` ORDER BY municipio ${validSortDirection}, uf ${validSortDirection}`;
-    } else {
-      dataQuery += ` ORDER BY ${validSortField} ${validSortDirection}`;
-    }
-
-    // Adicionar paginação
-    dataQuery += ` LIMIT ? OFFSET ?`;
-    params.push(limitNum, offset);
-
-    const fornecedores = await executeQuery(dataQuery, params);
+    const fornecedores = await executeQuery(query, [limitNum, offset]);
 
     res.json({
       fornecedores,
@@ -200,7 +126,11 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
 
   } catch (error) {
     console.error('Erro ao listar fornecedores:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ 
+      error: 'Erro interno do servidor',
+      details: error.message 
+    });
   }
 });
 
