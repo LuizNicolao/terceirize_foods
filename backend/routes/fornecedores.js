@@ -81,29 +81,122 @@ router.get('/buscar-cnpj/:cnpj', checkPermission('visualizar'), async (req, res)
   }
 });
 
-// Listar fornecedores
+// Listar fornecedores com paginação
 router.get('/', checkPermission('visualizar'), async (req, res) => {
   try {
-    const { search = '' } = req.query;
+    const { 
+      page = 1, 
+      limit = 50, 
+      search = '', 
+      searchField = 'todos',
+      status = '',
+      sortField = 'id',
+      sortDirection = 'asc'
+    } = req.query;
 
-    let query = `
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+    const offset = (pageNum - 1) * limitNum;
+
+    // Construir query base
+    let whereConditions = ['1=1'];
+    let params = [];
+
+    // Filtro de busca
+    if (search) {
+      switch (searchField) {
+        case 'id':
+          whereConditions.push('id LIKE ?');
+          params.push(`%${search}%`);
+          break;
+        case 'razao_social':
+          whereConditions.push('razao_social LIKE ?');
+          params.push(`%${search}%`);
+          break;
+        case 'nome_fantasia':
+          whereConditions.push('nome_fantasia LIKE ?');
+          params.push(`%${search}%`);
+          break;
+        case 'cnpj':
+          whereConditions.push('cnpj LIKE ?');
+          params.push(`%${search}%`);
+          break;
+        case 'email':
+          whereConditions.push('email LIKE ?');
+          params.push(`%${search}%`);
+          break;
+        case 'telefone':
+          whereConditions.push('telefone LIKE ?');
+          params.push(`%${search}%`);
+          break;
+        case 'municipio':
+          whereConditions.push('municipio LIKE ?');
+          params.push(`%${search}%`);
+          break;
+        case 'uf':
+          whereConditions.push('uf LIKE ?');
+          params.push(`%${search}%`);
+          break;
+        case 'todos':
+        default:
+          whereConditions.push('(razao_social LIKE ? OR nome_fantasia LIKE ? OR cnpj LIKE ? OR email LIKE ? OR telefone LIKE ? OR municipio LIKE ? OR uf LIKE ? OR id LIKE ?)');
+          params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+          break;
+      }
+    }
+
+    // Filtro de status
+    if (status && status !== 'todos') {
+      whereConditions.push('status = ?');
+      params.push(parseInt(status));
+    }
+
+    // Validar e sanitizar campos de ordenação
+    const allowedSortFields = ['id', 'razao_social', 'nome_fantasia', 'cnpj', 'email', 'telefone', 'municipio', 'uf', 'status'];
+    const allowedSortDirections = ['asc', 'desc'];
+    
+    const validSortField = allowedSortFields.includes(sortField) ? sortField : 'id';
+    const validSortDirection = allowedSortDirections.includes(sortDirection.toLowerCase()) ? sortDirection.toUpperCase() : 'ASC';
+
+    // Query para contar total
+    const countQuery = `
+      SELECT COUNT(*) as total 
+      FROM fornecedores 
+      WHERE ${whereConditions.join(' AND ')}
+    `;
+    
+    const countResult = await executeQuery(countQuery, params);
+    const total = countResult[0].total;
+
+    // Query para buscar dados com paginação
+    let dataQuery = `
       SELECT id, cnpj, razao_social, nome_fantasia, logradouro, numero, cep, 
              bairro, municipio, uf, email, telefone, status, criado_em, atualizado_em 
       FROM fornecedores 
-      WHERE 1=1
+      WHERE ${whereConditions.join(' AND ')}
     `;
-    let params = [];
 
-    if (search) {
-      query += ' AND (razao_social LIKE ? OR nome_fantasia LIKE ? OR cnpj LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    // Adicionar ordenação
+    if (validSortField === 'municipio') {
+      // Ordenação especial para cidade/estado
+      dataQuery += ` ORDER BY municipio ${validSortDirection}, uf ${validSortDirection}`;
+    } else {
+      dataQuery += ` ORDER BY ${validSortField} ${validSortDirection}`;
     }
 
-    query += ' ORDER BY razao_social ASC';
+    // Adicionar paginação
+    dataQuery += ` LIMIT ? OFFSET ?`;
+    params.push(limitNum, offset);
 
-    const fornecedores = await executeQuery(query, params);
+    const fornecedores = await executeQuery(dataQuery, params);
 
-    res.json(fornecedores);
+    res.json({
+      fornecedores,
+      total,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum)
+    });
 
   } catch (error) {
     console.error('Erro ao listar fornecedores:', error);
