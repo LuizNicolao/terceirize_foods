@@ -2,14 +2,14 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copiar package.json e package-lock.json primeiro
-COPY package*.json ./
+# Copiar package.json
+COPY package.json ./
 
 # Instalar dependências
-RUN npm ci --only=production
+RUN npm install
 
 # Verificar se react-scripts foi instalado
-RUN ls -la node_modules/.bin/ | grep react-scripts || echo "react-scripts não encontrado"
+RUN npx react-scripts --version || echo "react-scripts não encontrado"
 
 # Copiar o resto dos arquivos
 COPY . .
