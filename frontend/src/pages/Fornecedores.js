@@ -1116,6 +1116,56 @@ const Fornecedores = () => {
     setCurrentPage(1); // Reset para primeira página
   };
 
+  // Filtrar e ordenar fornecedores
+  const filteredFornecedores = sortFornecedores(
+    fornecedores.filter(fornecedor => {
+      let matchesSearch = true;
+      
+      if (searchTerm) {
+        switch (searchField) {
+          case 'id':
+            matchesSearch = fornecedor.id?.toString().includes(searchTerm);
+            break;
+          case 'razao_social':
+            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'nome_fantasia':
+            matchesSearch = fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'cnpj':
+            matchesSearch = fornecedor.cnpj?.includes(searchTerm);
+            break;
+          case 'email':
+            matchesSearch = fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'telefone':
+            matchesSearch = fornecedor.telefone?.includes(searchTerm);
+            break;
+          case 'municipio':
+            matchesSearch = fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'uf':
+            matchesSearch = fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase());
+            break;
+          case 'todos':
+          default:
+            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.cnpj?.includes(searchTerm) ||
+                           fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.telefone?.includes(searchTerm) ||
+                           fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           fornecedor.id?.toString().includes(searchTerm);
+            break;
+        }
+      }
+      
+      const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
+      return matchesSearch && matchesStatus;
+    })
+  );
+
   // Calcular dados da paginação
   const totalItems = filteredFornecedores.length;
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -1188,56 +1238,6 @@ const Fornecedores = () => {
     
     return pages;
   };
-
-  // Filtrar e ordenar fornecedores
-  const filteredFornecedores = sortFornecedores(
-    fornecedores.filter(fornecedor => {
-      let matchesSearch = true;
-      
-      if (searchTerm) {
-        switch (searchField) {
-          case 'id':
-            matchesSearch = fornecedor.id?.toString().includes(searchTerm);
-            break;
-          case 'razao_social':
-            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'nome_fantasia':
-            matchesSearch = fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'cnpj':
-            matchesSearch = fornecedor.cnpj?.includes(searchTerm);
-            break;
-          case 'email':
-            matchesSearch = fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'telefone':
-            matchesSearch = fornecedor.telefone?.includes(searchTerm);
-            break;
-          case 'municipio':
-            matchesSearch = fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'uf':
-            matchesSearch = fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase());
-            break;
-          case 'todos':
-          default:
-            matchesSearch = fornecedor.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.nome_fantasia?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.cnpj?.includes(searchTerm) ||
-                           fornecedor.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.telefone?.includes(searchTerm) ||
-                           fornecedor.municipio?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.uf?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           fornecedor.id?.toString().includes(searchTerm);
-            break;
-        }
-      }
-      
-      const matchesStatus = statusFilter === 'todos' || fornecedor.status === parseInt(statusFilter);
-      return matchesSearch && matchesStatus;
-    })
-  );
 
   // Formatar CNPJ
   const formatCNPJ = (cnpj) => {
