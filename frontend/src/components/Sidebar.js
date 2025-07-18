@@ -167,6 +167,7 @@ const menuItems = [
   { path: '/', icon: FaHome, label: 'Dashboard', screen: 'dashboard' },
   { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
   { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
+  { path: '/clientes', icon: FaUsers, label: 'Clientes', screen: 'clientes' },
   { path: '/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
   { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
   { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
