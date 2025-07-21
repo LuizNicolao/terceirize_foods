@@ -1,24 +1,19 @@
-FROM node:18
+FROM node:18-alpine
 
 WORKDIR /app
 
-# Copiar package.json
-COPY package.json ./
+# Configurar npm para usar registry mais rápido
+RUN npm config set registry https://registry.npmjs.org/
 
-# Instalar dependências globalmente primeiro
-RUN npm install -g react-scripts
+# Copiar package files primeiro para aproveitar cache do Docker
+COPY package*.json ./
 
-# Instalar todas as dependências (incluindo devDependencies)
-RUN npm install --production=false
+# Instalar dependências com cache (incluindo devDependencies para desenvolvimento)
+RUN npm ci --production=false && npm cache clean --force
 
-# Verificar se react-scripts foi instalado
-RUN which react-scripts || echo "react-scripts não encontrado no PATH"
-
-# Copiar o resto dos arquivos
+# Copiar código da aplicação
 COPY . .
 
-# Expor porta 3000
 EXPOSE 3000
 
-# Comando para iniciar
 CMD ["npm", "start"] 
