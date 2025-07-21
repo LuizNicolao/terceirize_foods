@@ -58,20 +58,7 @@ services:
     networks:
       - app-network
 
-  # phpMyAdmin - Interface Web para MySQL
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    ports:
-      - "8081:80"
-    environment:
-      - PMA_HOST=mysql
-      - PMA_PORT=3306
-      - PMA_USER=root
-      - PMA_PASSWORD=password
-    depends_on:
-      - mysql
-    networks:
-      - app-network
+  # phpMyAdmin removido - usando o do sistema principal na porta 8080
 
 volumes:
   mysql_data:
