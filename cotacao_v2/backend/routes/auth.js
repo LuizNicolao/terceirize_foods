@@ -46,7 +46,7 @@ router.post('/sso', async (req, res) => {
     }
 
     // Verificar se o token é válido (usando o JWT_SECRET do sistema principal)
-    const decoded = jwt.verify(token, 'foods_jwt_secret_key_2024');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'foods_jwt_secret_key_2024');
     
     if (!decoded) {
       return res.status(401).json({ message: 'Token SSO inválido' });
@@ -54,27 +54,12 @@ router.post('/sso', async (req, res) => {
 
     console.log('🔍 Token decodificado:', decoded);
 
-    // Buscar usuário no banco do cotacao_v2 pelo userId ou email
+    // Buscar usuário no banco do cotacao_v2 pelo userId (assumindo que os IDs são iguais)
     const connection = await pool.getConnection();
-    let users;
-    
-    if (decoded.userId) {
-      // Se o token tem userId, buscar pelo ID correspondente
-      const [usersResult] = await connection.execute(`
-        SELECT id, name, email, role, status
-        FROM users WHERE id = ?
-      `, [decoded.userId]);
-      users = usersResult;
-    } else if (decoded.email) {
-      // Se o token tem email, buscar pelo email
-      const [usersResult] = await connection.execute(`
-        SELECT id, name, email, role, status
-        FROM users WHERE email = ?
-      `, [decoded.email]);
-      users = usersResult;
-    } else {
-      return res.status(401).json({ message: 'Token SSO não contém informações válidas' });
-    }
+    const [users] = await connection.execute(`
+      SELECT id, name, email, role, status
+      FROM users WHERE id = ?
+    `, [decoded.userId]);
     
     await connection.release();
 

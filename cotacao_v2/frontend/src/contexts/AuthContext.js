@@ -35,9 +35,10 @@ export const AuthProvider = ({ children }) => {
       if (ssoToken) {
         console.log('🔍 Token SSO encontrado, tentando autenticar...');
         
-        console.log('🔍 Fazendo requisição SSO para:', `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/sso`);
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        console.log('🔍 Fazendo requisição SSO para:', `${apiUrl}/api/auth/sso`);
         
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/sso`, {
+        const response = await fetch(`${apiUrl}/api/auth/sso`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -49,6 +50,8 @@ export const AuthProvider = ({ children }) => {
 
         if (response.ok) {
           const data = await response.json();
+          console.log('✅ SSO bem-sucedido:', data);
+          
           localStorage.setItem('token', data.token);
           setUser(data.user);
           setIsAuthenticated(true);
@@ -61,7 +64,8 @@ export const AuthProvider = ({ children }) => {
           
           console.log('✅ SSO realizado com sucesso!');
         } else {
-          console.log('❌ SSO falhou, removendo token da URL');
+          const errorData = await response.json().catch(() => ({}));
+          console.log('❌ SSO falhou:', errorData);
           window.history.replaceState({}, document.title, window.location.pathname);
         }
       }
