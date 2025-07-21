@@ -399,7 +399,7 @@ const Cotacoes = () => {
       setLoading(true);
       setError(null);
       
-      const response = await axios.get('http://localhost:5000/api/cotacoes');
+      const response = await axios.get('/api/cotacoes');
       setCotacoes(response.data);
       updateStatusCounts(response.data);
     } catch (error) {
@@ -545,11 +545,7 @@ const Cotacoes = () => {
 
   const handleEnviarParaSupervisor = async (cotacaoId) => {
     try {
-      const response = await axios.post(`http://localhost:5000/api/cotacoes/${cotacaoId}/enviar-supervisor`, {}, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
+      const response = await axios.post(`/api/cotacoes/${cotacaoId}/enviar-supervisor`);
 
       if (response.status === 200) {
         alert('Cotação enviada para análise do supervisor com sucesso!');
