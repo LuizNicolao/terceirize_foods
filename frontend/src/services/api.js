@@ -22,11 +22,11 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    // Adicionar CSRF apenas em métodos protegidos
+    // Sempre enviar cookies
+    config.withCredentials = true;
+    // Adicionar CSRF em métodos protegidos
     if (['post', 'put', 'delete', 'patch'].includes(config.method)) {
-      if (!api.defaults.headers['X-CSRF-Token']) {
-        await setCSRFToken();
-      }
+      await setCSRFToken();
       config.headers['X-CSRF-Token'] = api.defaults.headers['X-CSRF-Token'];
     }
     return config;
