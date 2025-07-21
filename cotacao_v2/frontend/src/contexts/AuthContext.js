@@ -30,12 +30,7 @@ export const AuthProvider = ({ children }) => {
       const urlParams = new URLSearchParams(window.location.search);
       const ssoToken = urlParams.get('sso_token');
       
-      console.log('🔍 Verificando SSO...', { 
-        ssoToken: ssoToken ? 'Presente' : 'Ausente',
-        fullUrl: window.location.href,
-        search: window.location.search,
-        urlParams: Object.fromEntries(urlParams.entries())
-      });
+      console.log('🔍 Verificando SSO...', { ssoToken: ssoToken ? 'Presente' : 'Ausente' });
       
       if (ssoToken) {
         console.log('🔍 Token SSO encontrado, tentando autenticar...');

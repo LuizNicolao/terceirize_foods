@@ -1,21 +1,24 @@
-FROM node:18-alpine
+FROM node:18
 
 WORKDIR /app
 
-# Configurar npm para usar registry mais rápido e cache
-RUN npm config set registry https://registry.npmjs.org/ && \
-    npm config set cache /tmp/npm-cache
+# Copiar package.json
+COPY package.json ./
 
-# Copiar package files primeiro para aproveitar cache do Docker
-COPY package*.json ./
+# Instalar dependências globalmente primeiro
+RUN npm install -g react-scripts
 
-# Instalar dependências com cache otimizado
-RUN npm install --prefer-offline --no-audit && \
-    npm cache clean --force
+# Instalar todas as dependências (incluindo devDependencies)
+RUN npm install --production=false
 
-# Copiar código da aplicação
+# Verificar se react-scripts foi instalado
+RUN which react-scripts || echo "react-scripts não encontrado no PATH"
+
+# Copiar o resto dos arquivos
 COPY . .
 
+# Expor porta 3000
 EXPOSE 3000
 
+# Comando para iniciar
 CMD ["npm", "start"] 
