@@ -282,7 +282,7 @@ const Button = styled.button`
   }
 `;
 
-const LoadingSpinner = styled.div`
+const LoadingContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
@@ -513,12 +513,7 @@ const AuditContent = styled.div`
   padding: 20px 24px;
 `;
 
-const AuditLoading = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: var(--gray);
-  font-size: 16px;
-`;
+// Removido AuditLoading pois agora usamos o LoadingSpinner
 
 const AuditEmpty = styled.div`
   text-align: center;
@@ -1244,7 +1239,9 @@ const Permissoes = () => {
   if (loading) {
     return (
       <Container>
-        <LoadingSpinner text="Carregando usuários..." />
+        <LoadingContainer>
+          <LoadingSpinner inline={true} text="Carregando usuários..." />
+        </LoadingContainer>
       </Container>
     );
   }
