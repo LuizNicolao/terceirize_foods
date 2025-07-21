@@ -1214,6 +1214,7 @@ const Permissoes = () => {
       case 'marcas': return 'Marcas';
       case 'nome_generico_produto': return 'Nome Genérico Produto';
       case 'clientes': return 'Clientes';
+      case 'filiais': return 'Filiais';
       default: return screen;
     }
   };
