@@ -21,7 +21,8 @@ import {
   FaDatabase,
   FaChevronDown,
   FaChevronUp,
-  FaStore
+  FaStore,
+  FaClipboardList
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -262,6 +263,12 @@ const menuGroups = [
     ]
   },
   {
+    title: 'Suprimentos',
+    items: [
+      { path: '/cotacao', icon: FaClipboardList, label: 'Cotação', screen: 'cotacao' },
+    ]
+  },
+  {
     title: 'Configurações',
     items: [
       { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
@@ -278,6 +285,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const [expandedGroups, setExpandedGroups] = useState({
     'Principal': true,
     'Cadastros': true,
+    'Suprimentos': true,
     'Configurações': true
   });
 
@@ -338,7 +346,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
                       key={item.path} 
                       to={item.path}
                       className={isActive ? 'active' : ''}
-                      onClick={() => {
+                      onClick={(e) => {
+                        // Se for o item de cotação, abrir em nova aba
+                        if (item.path === '/cotacao') {
+                          e.preventDefault();
+                          window.open('http://localhost:3002', '_blank');
+                        }
+                        
                         // Fechar sidebar no mobile quando clicar em um item
                         if (window.innerWidth <= 768) {
                           onToggle();
