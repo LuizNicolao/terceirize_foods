@@ -350,7 +350,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         // Se for o item de cotação, abrir em nova aba
                         if (item.path === '/cotacao') {
                           e.preventDefault();
-                          window.open('http://localhost:3002', '_blank');
+                          window.open('http://82.29.57.43:3002', '_blank');
                         }
                         
                         // Fechar sidebar no mobile quando clicar em um item

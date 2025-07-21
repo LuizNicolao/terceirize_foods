@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Configurar URL base do backend
-axios.defaults.baseURL = 'http://localhost:5000';
+axios.defaults.baseURL = 'http://82.29.57.43:5001';
 
 // Configurar interceptor para incluir token automaticamente
 axios.interceptors.request.use(

@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 5000;
 
 // CORS - deve vir antes do helmet
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://82.29.57.43:3000', 'http://82.29.57.43:3002'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -33,7 +33,7 @@ app.use(cors({
 
 // Middleware para garantir resposta a preflight OPTIONS em todas as rotas
 app.options('*', cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://82.29.57.43:3000', 'http://82.29.57.43:3002'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
