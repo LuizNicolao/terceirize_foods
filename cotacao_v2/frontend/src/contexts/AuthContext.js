@@ -27,8 +27,12 @@ export const AuthProvider = ({ children }) => {
       const urlParams = new URLSearchParams(window.location.search);
       const ssoToken = urlParams.get('sso_token');
       
+      console.log('🔍 Verificando SSO...', { ssoToken: ssoToken ? 'Presente' : 'Ausente' });
+      
       if (ssoToken) {
         console.log('🔍 Token SSO encontrado, tentando autenticar...');
+        
+        console.log('🔍 Fazendo requisição SSO para:', `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/sso`);
         
         const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/sso`, {
           method: 'POST',
@@ -37,6 +41,8 @@ export const AuthProvider = ({ children }) => {
           },
           body: JSON.stringify({ token: ssoToken })
         });
+
+        console.log('🔍 Resposta SSO:', { status: response.status, ok: response.ok });
 
         if (response.ok) {
           const data = await response.json();
