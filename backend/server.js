@@ -107,7 +107,8 @@ app.use((err, req, res, next) => {
       req.path === '/api/auth/login' ||
       req.path === '/api/auth/verify' ||
       req.path === '/api/health' ||
-      req.path === '/api/integration/cotacao'
+      req.path === '/api/integration/cotacao' ||
+      req.path === '/api/integration/test-post'
     ) {
       return next();
     }
