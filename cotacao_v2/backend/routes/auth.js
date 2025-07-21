@@ -52,14 +52,33 @@ router.post('/sso', async (req, res) => {
       return res.status(401).json({ message: 'Token SSO inválido' });
     }
 
-    // Buscar usuário no banco do cotacao_v2 pelo email
+    console.log('🔍 Token decodificado:', decoded);
+
+    // Buscar usuário no banco do cotacao_v2 pelo userId ou email
     const connection = await pool.getConnection();
-    const [users] = await connection.execute(`
-      SELECT id, name, email, role, status
-      FROM users WHERE email = ?
-    `, [decoded.email]);
+    let users;
+    
+    if (decoded.userId) {
+      // Se o token tem userId, buscar pelo ID correspondente
+      const [usersResult] = await connection.execute(`
+        SELECT id, name, email, role, status
+        FROM users WHERE id = ?
+      `, [decoded.userId]);
+      users = usersResult;
+    } else if (decoded.email) {
+      // Se o token tem email, buscar pelo email
+      const [usersResult] = await connection.execute(`
+        SELECT id, name, email, role, status
+        FROM users WHERE email = ?
+      `, [decoded.email]);
+      users = usersResult;
+    } else {
+      return res.status(401).json({ message: 'Token SSO não contém informações válidas' });
+    }
     
     await connection.release();
+
+    console.log('🔍 Usuários encontrados:', users.length);
 
     if (users.length === 0) {
       return res.status(401).json({ message: 'Usuário não encontrado no sistema de cotações' });
