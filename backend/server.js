@@ -21,6 +21,7 @@ const nomeGenericoProdutoRoutes = require('./routes/nome_generico_produto');
 const { router: permissoesRoutes } = require('./routes/permissoes');
 const dashboardRoutes = require('./routes/dashboard');
 const auditoriaRoutes = require('./routes/auditoria');
+const integrationRoutes = require('./routes/integration');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -123,6 +124,7 @@ app.use('/api/nome-generico-produto', nomeGenericoProdutoRoutes);
 app.use('/api/permissoes', permissoesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auditoria', auditoriaRoutes);
+app.use('/api/integration', integrationRoutes);
 
 // Rota de health check
 app.get('/api/health', (req, res) => {
