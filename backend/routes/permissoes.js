@@ -280,60 +280,55 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
-    // Buscar permissões do usuário
-    const permissoes = await executeQuery(
+    // Lista de todas as telas disponíveis no sistema
+    const todasTelas = [
+      'usuarios',
+      'fornecedores',
+      'clientes',
+      'filiais',
+      'produtos',
+      'grupos',
+      'subgrupos',
+      'classes',
+      'nome_generico_produto',
+      'unidades',
+      'marcas',
+      'permissoes'
+    ];
+
+    // Buscar permissões existentes do usuário
+    const permissoesExistentes = await executeQuery(
       'SELECT * FROM permissoes_usuario WHERE usuario_id = ? ORDER BY tela',
       [usuarioId]
     );
 
-    // Se não há permissões, gerar baseadas no tipo e nível
-    if (permissoes.length === 0) {
-      const tipoAcesso = usuario[0].tipo_de_acesso;
-      const nivelAcesso = usuario[0].nivel_de_acesso;
-      const permissoesPadrao = PERMISSOES_PADRAO[tipoAcesso]?.[nivelAcesso];
+    // Criar um mapa das permissões existentes
+    const mapaPermissoes = {};
+    permissoesExistentes.forEach(perm => {
+      mapaPermissoes[perm.tela] = perm;
+    });
 
-      if (permissoesPadrao) {
-        // Inserir permissões padrão
-        for (const [tela, permissoesTela] of Object.entries(permissoesPadrao)) {
-          await executeQuery(
-            `INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [
-              usuarioId,
-              tela,
-              permissoesTela.visualizar ? 1 : 0,
-              permissoesTela.criar ? 1 : 0,
-              permissoesTela.editar ? 1 : 0,
-              permissoesTela.excluir ? 1 : 0
-            ]
-          );
-        }
-
-        // Buscar permissões inseridas
-        const permissoesInseridas = await executeQuery(
-          'SELECT * FROM permissoes_usuario WHERE usuario_id = ? ORDER BY tela',
-          [usuarioId]
-        );
-
-        res.json({
-          usuario: usuario[0],
-          permissoes: permissoesInseridas,
-          geradas_automaticamente: true
-        });
+    // Gerar lista completa de permissões, incluindo telas sem permissões definidas
+    const permissoesCompletas = todasTelas.map(tela => {
+      if (mapaPermissoes[tela]) {
+        return mapaPermissoes[tela];
       } else {
-        res.json({
-          usuario: usuario[0],
-          permissoes: [],
-          geradas_automaticamente: false
-        });
+        return {
+          tela,
+          usuario_id: parseInt(usuarioId),
+          pode_visualizar: 0,
+          pode_criar: 0,
+          pode_editar: 0,
+          pode_excluir: 0
+        };
       }
-    } else {
-      res.json({
-        usuario: usuario[0],
-        permissoes,
-        geradas_automaticamente: false
-      });
-    }
+    });
+
+    res.json({
+      usuario: usuario[0],
+      permissoes: permissoesCompletas,
+      geradas_automaticamente: false
+    });
 
   } catch (error) {
     console.error('Erro ao listar permissões:', error);
@@ -360,25 +355,40 @@ router.put('/usuario/:usuarioId', [
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
+    // Buscar permissões existentes para auditoria
+    const permissoesAnteriores = await executeQuery(
+      'SELECT * FROM permissoes_usuario WHERE usuario_id = ?',
+      [usuarioId]
+    );
+
+    // Criar mapa das permissões anteriores para comparação
+    const mapaPermissoesAnteriores = {};
+    permissoesAnteriores.forEach(perm => {
+      mapaPermissoesAnteriores[perm.tela] = perm;
+    });
+
     // Deletar permissões existentes
     await executeQuery(
       'DELETE FROM permissoes_usuario WHERE usuario_id = ?',
       [usuarioId]
     );
 
-    // Inserir novas permissões
+    // Inserir novas permissões (apenas para telas com alguma permissão)
     for (const permissao of permissoes) {
-      await executeQuery(
-        'INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir) VALUES (?, ?, ?, ?, ?, ?)',
-        [
-          usuarioId,
-          permissao.tela,
-          permissao.pode_visualizar ? 1 : 0,
-          permissao.pode_criar ? 1 : 0,
-          permissao.pode_editar ? 1 : 0,
-          permissao.pode_excluir ? 1 : 0
-        ]
-      );
+      // Só insere se tiver alguma permissão
+      if (permissao.pode_visualizar || permissao.pode_criar || permissao.pode_editar || permissao.pode_excluir) {
+        await executeQuery(
+          'INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir) VALUES (?, ?, ?, ?, ?, ?)',
+          [
+            usuarioId,
+            permissao.tela,
+            permissao.pode_visualizar ? 1 : 0,
+            permissao.pode_criar ? 1 : 0,
+            permissao.pode_editar ? 1 : 0,
+            permissao.pode_excluir ? 1 : 0
+          ]
+        );
+      }
     }
 
     res.json({ message: 'Permissões atualizadas com sucesso' });
