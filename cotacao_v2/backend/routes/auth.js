@@ -40,17 +40,24 @@ const authenticateToken = (req, res, next) => {
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    
+    console.log('🔍 Tentativa de login:', { email, password: password ? '***' : 'undefined' });
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email e senha são obrigatórios' });
     }
 
+    console.log('🔍 Conectando ao banco...');
     const connection = await pool.getConnection();
+    console.log('✅ Conexão obtida com sucesso');
     
+    console.log('🔍 Executando query para buscar usuário...');
     const [users] = await connection.execute(`
       SELECT id, name, email, password, role, status
       FROM users WHERE email = ?
     `, [email]);
+    
+    console.log('🔍 Resultado da query:', { encontrados: users.length });
 
     await connection.release();
 
