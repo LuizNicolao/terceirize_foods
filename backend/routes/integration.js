@@ -13,6 +13,15 @@ router.get('/test', (req, res) => {
   });
 });
 
+// Rota de teste de autenticação
+router.get('/auth-test', authenticateToken, (req, res) => {
+  res.json({ 
+    message: 'Autenticação funcionando!',
+    user: req.user,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Aplicar autenticação em todas as rotas
 router.use(authenticateToken);
 
@@ -21,6 +30,12 @@ router.post('/cotacao', async (req, res) => {
   try {
     console.log('🔗 Iniciando integração com cotação...');
     console.log('👤 Usuário:', req.user);
+    console.log('🔐 Headers:', req.headers);
+    
+    if (!req.user) {
+      console.log('❌ req.user está undefined');
+      return res.status(401).json({ error: 'Usuário não autenticado' });
+    }
     
     const userId = req.user.id;
     
@@ -41,6 +56,12 @@ router.post('/cotacao', async (req, res) => {
 
     const userData = user[0];
     console.log('✅ Usuário encontrado:', userData);
+
+    // Verificar se JWT_SECRET está definido
+    if (!process.env.JWT_SECRET) {
+      console.error('❌ JWT_SECRET não definido');
+      return res.status(500).json({ error: 'Configuração de segurança não encontrada' });
+    }
 
     // Criar token JWT para o sistema de cotação
     const cotacaoToken = jwt.sign(

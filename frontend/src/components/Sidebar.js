@@ -306,6 +306,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       try {
         console.log('🔗 Iniciando integração...');
         console.log('🎫 Token:', token ? 'Presente' : 'Ausente');
+        console.log('🎫 Token completo:', token);
         
         if (!token) {
           console.error('❌ Token não encontrado');
