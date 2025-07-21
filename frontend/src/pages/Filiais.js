@@ -888,25 +888,21 @@ const Filiais = () => {
                   <TableContainer>
                     <Table>
                       <thead>
-                        <tr>
-                          <Th>Nome</Th>
-                          <Th>Setor</Th>
-                          <Th>Responsável</Th>
-                          <Th>Status</Th>
-                          <Th>Ações</Th>
-                        </tr>
+                                            <tr>
+                      <Th>Nome</Th>
+                      <Th>Status</Th>
+                      <Th>Ações</Th>
+                    </tr>
                       </thead>
                       <tbody>
                         {almoxarifados.map(almox => (
-                          <tr key={almox.id}>
-                            <Td>{almox.nome}</Td>
-                            <Td>{almox.setor || '-'}</Td>
-                            <Td>{almox.responsavel || '-'}</Td>
-                            <Td>
-                              <StatusBadge $status={almox.status === 1 ? 'ativo' : 'inativo'}>
-                                {almox.status === 1 ? 'Ativo' : 'Inativo'}
-                              </StatusBadge>
-                            </Td>
+                                                  <tr key={almox.id}>
+                          <Td>{almox.nome}</Td>
+                          <Td>
+                            <StatusBadge $status={almox.status === 1 ? 'ativo' : 'inativo'}>
+                              {almox.status === 1 ? 'Ativo' : 'Inativo'}
+                            </StatusBadge>
+                          </Td>
                             <Td>
                               <ActionButton title="Itens" onClick={() => handleOpenItensModal(almox)}>
                                 <FaEye /> Itens
@@ -958,24 +954,6 @@ const Filiais = () => {
                         {...register('nome', { required: 'Nome é obrigatório' })} 
                       />
                       {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>Setor</Label>
-                      <Input 
-                        type="text" 
-                        placeholder="Setor" 
-                        defaultValue={editingAlmoxarifado?.setor || ''}
-                        {...register('setor')} 
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>Responsável</Label>
-                      <Input 
-                        type="text" 
-                        placeholder="Responsável" 
-                        defaultValue={editingAlmoxarifado?.responsavel || ''}
-                        {...register('responsavel')} 
-                      />
                     </FormGroup>
                     <FormGroup>
                       <Label>Status</Label>
