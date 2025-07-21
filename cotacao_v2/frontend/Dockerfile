@@ -9,7 +9,7 @@ RUN npm config set registry https://registry.npmjs.org/
 COPY package*.json ./
 
 # Instalar dependências com cache
-RUN npm ci && npm cache clean --force
+RUN npm install && npm cache clean --force
 
 # Copiar código da aplicação
 COPY . .
