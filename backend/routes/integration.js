@@ -11,19 +11,28 @@ router.use(authenticateToken);
 // Rota para integração com sistema de cotação
 router.post('/cotacao', async (req, res) => {
   try {
+    console.log('🔗 Iniciando integração com cotação...');
+    console.log('👤 Usuário:', req.user);
+    
     const userId = req.user.id;
     
     // Verificar se o usuário existe no sistema principal
+    console.log('🔍 Buscando usuário ID:', userId);
+    
     const [user] = await executeQuery(
       'SELECT id, nome, email, tipo_de_acesso, nivel_de_acesso FROM usuarios WHERE id = ?',
       [userId]
     );
 
+    console.log('📋 Resultado da busca:', user);
+
     if (user.length === 0) {
+      console.log('❌ Usuário não encontrado');
       return res.status(404).json({ error: 'Usuário não encontrado' });
     }
 
     const userData = user[0];
+    console.log('✅ Usuário encontrado:', userData);
 
     // Criar token JWT para o sistema de cotação
     const cotacaoToken = jwt.sign(
@@ -39,10 +48,12 @@ router.post('/cotacao', async (req, res) => {
     );
 
     // URL do sistema de cotação (ajuste conforme necessário)
-    const cotacaoUrl = process.env.COTACAO_URL || 'http://localhost:3002';
+    const cotacaoUrl = process.env.COTACAO_URL || 'http://82.29.57.43:5000';
     
     // URL de integração com token
     const integrationUrl = `${cotacaoUrl}/auth/integration?token=${cotacaoToken}`;
+    
+    console.log('🔗 URL de integração gerada:', integrationUrl);
 
     res.json({
       success: true,

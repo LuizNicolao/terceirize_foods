@@ -304,6 +304,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const handleExternalLink = async (item) => {
     if (item.external) {
       try {
+        console.log('🔗 Iniciando integração...');
+        console.log('🎫 Token:', token ? 'Presente' : 'Ausente');
+        
+        if (!token) {
+          console.error('❌ Token não encontrado');
+          return;
+        }
+        
         // Fazer requisição para obter URL de integração
         const response = await fetch('/api/integration/cotacao', {
           method: 'POST',
@@ -313,15 +321,19 @@ const Sidebar = ({ collapsed, onToggle }) => {
           }
         });
         
+        console.log('📡 Status da resposta:', response.status);
+        
         if (response.ok) {
           const data = await response.json();
+          console.log('✅ URL gerada:', data.url);
           // Abrir em nova aba
           window.open(data.url, '_blank');
         } else {
-          console.error('Erro ao obter URL de integração');
+          const errorData = await response.json();
+          console.error('❌ Erro ao obter URL de integração:', errorData);
         }
       } catch (error) {
-        console.error('Erro ao acessar sistema de cotação:', error);
+        console.error('❌ Erro ao acessar sistema de cotação:', error);
       }
     }
   };
