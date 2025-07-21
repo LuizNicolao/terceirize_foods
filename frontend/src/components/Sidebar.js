@@ -250,7 +250,6 @@ const menuGroups = [
       { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
       { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
       { path: '/clientes', icon: FaBuilding, label: 'Clientes', screen: 'clientes' },
-      { path: '/filiais', icon: FaBuilding, label: 'Filiais', screen: 'filiais' },
       { path: '/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
       { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
       { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },

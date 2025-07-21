@@ -15,7 +15,6 @@ const PERMISSOES_PADRAO = {
     I: {
       usuarios: { visualizar: true, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: false, editar: false, excluir: false },
-      filiais: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
@@ -26,7 +25,6 @@ const PERMISSOES_PADRAO = {
     II: {
       usuarios: { visualizar: true, criar: true, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: true, editar: true, excluir: false },
-      filiais: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos: { visualizar: true, criar: true, editar: true, excluir: false },
       grupos: { visualizar: true, criar: true, editar: true, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
@@ -37,7 +35,6 @@ const PERMISSOES_PADRAO = {
     III: {
       usuarios: { visualizar: true, criar: true, editar: true, excluir: true },
       fornecedores: { visualizar: true, criar: true, editar: true, excluir: true },
-      filiais: { visualizar: true, criar: true, editar: true, excluir: true },
       produtos: { visualizar: true, criar: true, editar: true, excluir: true },
       grupos: { visualizar: true, criar: true, editar: true, excluir: true },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: true },
@@ -50,7 +47,6 @@ const PERMISSOES_PADRAO = {
     I: {
       usuarios: { visualizar: true, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: false, editar: false, excluir: false },
-      filiais: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
@@ -61,7 +57,6 @@ const PERMISSOES_PADRAO = {
     II: {
       usuarios: { visualizar: true, criar: true, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: true, editar: true, excluir: false },
-      filiais: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos: { visualizar: true, criar: true, editar: true, excluir: false },
       grupos: { visualizar: true, criar: true, editar: true, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
@@ -72,7 +67,6 @@ const PERMISSOES_PADRAO = {
     III: {
       usuarios: { visualizar: true, criar: true, editar: true, excluir: false },
       fornecedores: { visualizar: true, criar: true, editar: true, excluir: true },
-      filiais: { visualizar: true, criar: true, editar: true, excluir: true },
       produtos: { visualizar: true, criar: true, editar: true, excluir: true },
       grupos: { visualizar: true, criar: true, editar: true, excluir: true },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: true },
@@ -85,7 +79,6 @@ const PERMISSOES_PADRAO = {
     I: {
       usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: false, editar: false, excluir: false },
-      filiais: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
@@ -96,7 +89,6 @@ const PERMISSOES_PADRAO = {
     II: {
       usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: true, editar: false, excluir: false },
-      filiais: { visualizar: true, criar: true, editar: false, excluir: false },
       produtos: { visualizar: true, criar: true, editar: false, excluir: false },
       grupos: { visualizar: true, criar: true, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: false, excluir: false },
@@ -107,7 +99,6 @@ const PERMISSOES_PADRAO = {
     III: {
       usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: true, editar: true, excluir: false },
-      filiais: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos: { visualizar: true, criar: true, editar: true, excluir: false },
       grupos: { visualizar: true, criar: true, editar: true, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
@@ -120,7 +111,6 @@ const PERMISSOES_PADRAO = {
     I: {
       usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: false, editar: false, excluir: false },
-      filiais: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
@@ -131,7 +121,6 @@ const PERMISSOES_PADRAO = {
     II: {
       usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: true, editar: true, excluir: false },
-      filiais: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos: { visualizar: true, criar: true, editar: true, excluir: false },
       grupos: { visualizar: true, criar: true, editar: true, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
@@ -142,7 +131,6 @@ const PERMISSOES_PADRAO = {
     III: {
       usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: true, editar: true, excluir: true },
-      filiais: { visualizar: true, criar: true, editar: true, excluir: true },
       produtos: { visualizar: true, criar: true, editar: true, excluir: true },
       grupos: { visualizar: true, criar: true, editar: true, excluir: true },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: true },
@@ -155,7 +143,6 @@ const PERMISSOES_PADRAO = {
     I: {
       usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: false, editar: false, excluir: false },
-      filiais: { visualizar: true, criar: false, editar: false, excluir: false },
       produtos: { visualizar: true, criar: false, editar: false, excluir: false },
       grupos: { visualizar: true, criar: false, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
@@ -166,7 +153,6 @@ const PERMISSOES_PADRAO = {
     II: {
       usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: true, editar: false, excluir: false },
-      filiais: { visualizar: true, criar: true, editar: false, excluir: false },
       produtos: { visualizar: true, criar: true, editar: false, excluir: false },
       grupos: { visualizar: true, criar: true, editar: false, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: false, excluir: false },
@@ -177,7 +163,6 @@ const PERMISSOES_PADRAO = {
     III: {
       usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: true, editar: true, excluir: false },
-      filiais: { visualizar: true, criar: true, editar: true, excluir: false },
       produtos: { visualizar: true, criar: true, editar: true, excluir: false },
       grupos: { visualizar: true, criar: true, editar: true, excluir: false },
       subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
