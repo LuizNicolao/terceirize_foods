@@ -20,7 +20,8 @@ import {
   FaCog,
   FaDatabase,
   FaChevronDown,
-  FaChevronUp
+  FaChevronUp,
+  FaStore
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -250,6 +251,7 @@ const menuGroups = [
       { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
       { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
       { path: '/clientes', icon: FaBuilding, label: 'Clientes', screen: 'clientes' },
+      { path: '/filiais', icon: FaStore, label: 'Filiais', screen: 'filiais' },
       { path: '/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
       { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
       { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
