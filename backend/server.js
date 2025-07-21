@@ -80,6 +80,7 @@ app.use(
   csurf({
     cookie: true,
     ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
+    ignorePaths: ['/api/integration/cotacao']
   })
 );
 
@@ -88,14 +89,15 @@ app.get('/api/csrf-token', (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
 
-// Exceções para rotas públicas (login, verify, health)
+// Exceções para rotas públicas (login, verify, health, integration)
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
-    // Permitir login, verify e health sem CSRF
+    // Permitir login, verify, health e integration sem CSRF
     if (
       req.path === '/api/auth/login' ||
       req.path === '/api/auth/verify' ||
-      req.path === '/api/health'
+      req.path === '/api/health' ||
+      req.path === '/api/integration/cotacao'
     ) {
       return next();
     }
