@@ -481,11 +481,15 @@ const Filiais = () => {
   // Salvar almoxarifado
   const handleSaveAlmoxarifado = async (data) => {
     try {
+      const payload = {
+        ...data,
+        status: data.status.toString()
+      };
       if (editingAlmoxarifado) {
-        await api.put(`/filiais/almoxarifados/${editingAlmoxarifado.id}`, data);
+        await api.put(`/filiais/almoxarifados/${editingAlmoxarifado.id}`, payload);
         toast.success('Almoxarifado atualizado!');
       } else {
-        await api.post(`/filiais/${editingFilial.id}/almoxarifados`, data);
+        await api.post(`/filiais/${editingFilial.id}/almoxarifados`, payload);
         toast.success('Almoxarifado criado!');
       }
       setShowAlmoxarifadoModal(false);
