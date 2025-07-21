@@ -798,9 +798,7 @@ const Filiais = () => {
             
             <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>
-                  <LoadingSpinner />
-                </div>
+                <LoadingSpinner inline={true} text="Carregando logs..." />
               ) : auditLogs.length === 0 ? (
                 <EmptyState>
                   Nenhum log encontrado com os filtros aplicados

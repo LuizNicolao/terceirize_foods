@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog, FaSearch, FaSync, FaChevronDown, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Container = styled.div`
   padding: 24px;
@@ -1243,7 +1244,7 @@ const Permissoes = () => {
   if (loading) {
     return (
       <Container>
-        <LoadingSpinner>Carregando usuários...</LoadingSpinner>
+        <LoadingSpinner text="Carregando usuários..." />
       </Container>
     );
   }
@@ -1511,7 +1512,7 @@ const Permissoes = () => {
 
             <AuditContent>
               {auditLoading ? (
-                <AuditLoading>Carregando logs de auditoria...</AuditLoading>
+                <LoadingSpinner inline={true} text="Carregando logs de auditoria..." />
               ) : auditLogs.length === 0 ? (
                 <AuditEmpty>Nenhum log de auditoria encontrado</AuditEmpty>
               ) : (
