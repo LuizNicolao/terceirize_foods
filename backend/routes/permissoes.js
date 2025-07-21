@@ -472,6 +472,71 @@ router.get('/telas', checkPermission('visualizar'), (req, res) => {
   res.json(telas);
 });
 
+// Sincronizar permissões de todos os usuários (adicionar telas faltantes)
+router.post('/sincronizar', checkPermission('editar'), async (req, res) => {
+  try {
+    // Buscar todos os usuários
+    const usuarios = await executeQuery(
+      'SELECT id, tipo_de_acesso, nivel_de_acesso FROM usuarios WHERE status = "ativo"'
+    );
+
+    let usuariosAtualizados = 0;
+    let telasAdicionadas = 0;
+
+    for (const usuario of usuarios) {
+      // Buscar permissões existentes do usuário
+      const permissoesExistentes = await executeQuery(
+        'SELECT tela FROM permissoes_usuario WHERE usuario_id = ?',
+        [usuario.id]
+      );
+
+      const telasExistentes = permissoesExistentes.map(p => p.tela);
+      
+      // Obter permissões padrão para o tipo e nível do usuário
+      const permissoesPadrao = PERMISSOES_PADRAO[usuario.tipo_de_acesso]?.[usuario.nivel_de_acesso];
+      
+      if (permissoesPadrao) {
+        const telasEsperadas = Object.keys(permissoesPadrao);
+        const telasFaltantes = telasEsperadas.filter(tela => !telasExistentes.includes(tela));
+        
+        if (telasFaltantes.length > 0) {
+          // Adicionar telas faltantes
+          for (const tela of telasFaltantes) {
+            const permissoesTela = permissoesPadrao[tela];
+            await executeQuery(
+              `INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir)
+               VALUES (?, ?, ?, ?, ?, ?)`,
+              [
+                usuario.id,
+                tela,
+                permissoesTela.visualizar ? 1 : 0,
+                permissoesTela.criar ? 1 : 0,
+                permissoesTela.editar ? 1 : 0,
+                permissoesTela.excluir ? 1 : 0
+              ]
+            );
+          }
+          
+          usuariosAtualizados++;
+          telasAdicionadas += telasFaltantes.length;
+          
+          console.log(`Usuário ${usuario.id}: Adicionadas ${telasFaltantes.length} telas: ${telasFaltantes.join(', ')}`);
+        }
+      }
+    }
+
+    res.json({
+      message: 'Sincronização concluída com sucesso',
+      usuarios_atualizados: usuariosAtualizados,
+      telas_adicionadas: telasAdicionadas
+    });
+
+  } catch (error) {
+    console.error('Erro ao sincronizar permissões:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // Listar tipos de acesso disponíveis
 router.get('/tipos-acesso', checkPermission('visualizar'), (req, res) => {
   const tipos = [
