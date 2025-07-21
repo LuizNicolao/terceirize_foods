@@ -8,7 +8,7 @@
   --white: #FFFFFF;
   --light-gray: #f5f5f5;
   --gray: #757575;
-  --dark-gray: #424242;
+  --dark-gray: #333333;
   
   /* Cores Secundárias */
   --blue: #2196F3;
@@ -16,6 +16,7 @@
   --error-red: #f44336;
   --success-green: #4CAF50;
   --warning-orange: #FF9800;
+  --warning-yellow: #ffcc00;
 }
 
 * {
