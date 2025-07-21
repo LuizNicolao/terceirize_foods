@@ -22,6 +22,15 @@ router.get('/auth-test', authenticateToken, (req, res) => {
   });
 });
 
+// Rota de teste POST sem autenticação
+router.post('/test-post', (req, res) => {
+  res.json({ 
+    message: 'Rota POST funcionando!',
+    headers: req.headers,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Rota para integração com sistema de cotação
 router.post('/cotacao', authenticateToken, async (req, res) => {
   try {
@@ -30,6 +39,8 @@ router.post('/cotacao', authenticateToken, async (req, res) => {
     console.log('🔐 Headers:', req.headers);
     console.log('🔐 Rota chamada:', req.path);
     console.log('🔐 Método:', req.method);
+    console.log('🔐 req.user existe?', !!req.user);
+    console.log('🔐 req.user.id:', req.user?.id);
     
     if (!req.user) {
       console.log('❌ req.user está undefined');
@@ -37,6 +48,7 @@ router.post('/cotacao', authenticateToken, async (req, res) => {
     }
     
     const userId = req.user.id;
+    console.log('🔐 userId extraído:', userId);
     
     // Verificar se o usuário existe no sistema principal
     console.log('🔍 Buscando usuário ID:', userId);
