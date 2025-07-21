@@ -373,6 +373,14 @@ const Filiais = () => {
   const [loadingAlmoxarifados, setLoadingAlmoxarifados] = useState(false);
   const [showAlmoxarifadoModal, setShowAlmoxarifadoModal] = useState(false);
   const [editingAlmoxarifado, setEditingAlmoxarifado] = useState(null);
+  const [showItensModal, setShowItensModal] = useState(false);
+  const [selectedAlmoxarifado, setSelectedAlmoxarifado] = useState(null);
+  const [itensAlmoxarifado, setItensAlmoxarifado] = useState([]);
+  const [loadingItens, setLoadingItens] = useState(false);
+  const [produtos, setProdutos] = useState([]);
+  const [searchProduto, setSearchProduto] = useState('');
+  const [selectedProduto, setSelectedProduto] = useState(null);
+  const [quantidadeProduto, setQuantidadeProduto] = useState('');
 
   const { canCreate, canEdit, canDelete } = usePermissions();
 
@@ -402,6 +410,89 @@ const Filiais = () => {
       toast.error('Erro ao carregar almoxarifados');
     } finally {
       setLoadingAlmoxarifados(false);
+    }
+  };
+
+  // Carregar produtos para autocomplete
+  const loadProdutos = async (search = '') => {
+    try {
+      const res = await api.get(`/produtos?search=${search}`);
+      setProdutos(res.data);
+    } catch (err) {
+      console.error('Erro ao carregar produtos:', err);
+    }
+  };
+
+  // Carregar itens do almoxarifado
+  const loadItensAlmoxarifado = async (almoxarifadoId) => {
+    setLoadingItens(true);
+    try {
+      const res = await api.get(`/filiais/almoxarifados/${almoxarifadoId}/itens`);
+      setItensAlmoxarifado(res.data);
+    } catch (err) {
+      toast.error('Erro ao carregar itens do almoxarifado');
+    } finally {
+      setLoadingItens(false);
+    }
+  };
+
+  // Abrir modal de itens
+  const handleOpenItensModal = (almoxarifado) => {
+    setSelectedAlmoxarifado(almoxarifado);
+    setShowItensModal(true);
+    loadItensAlmoxarifado(almoxarifado.id);
+    loadProdutos();
+  };
+
+  // Adicionar produto ao almoxarifado
+  const handleAddProduto = async () => {
+    if (!selectedProduto || !quantidadeProduto) {
+      toast.error('Selecione um produto e informe a quantidade');
+      return;
+    }
+
+    try {
+      await api.post(`/filiais/almoxarifados/${selectedAlmoxarifado.id}/itens`, {
+        produto_id: selectedProduto.id,
+        quantidade: parseFloat(quantidadeProduto)
+      });
+      toast.success('Produto adicionado ao almoxarifado!');
+      setSelectedProduto(null);
+      setQuantidadeProduto('');
+      loadItensAlmoxarifado(selectedAlmoxarifado.id);
+    } catch (err) {
+      toast.error('Erro ao adicionar produto');
+    }
+  };
+
+  // Remover produto do almoxarifado
+  const handleRemoveProduto = async (itemId) => {
+    if (window.confirm('Deseja remover este produto do almoxarifado?')) {
+      try {
+        await api.delete(`/filiais/almoxarifados/${selectedAlmoxarifado.id}/itens/${itemId}`);
+        toast.success('Produto removido do almoxarifado!');
+        loadItensAlmoxarifado(selectedAlmoxarifado.id);
+      } catch (err) {
+        toast.error('Erro ao remover produto');
+      }
+    }
+  };
+
+  // Salvar almoxarifado
+  const handleSaveAlmoxarifado = async (data) => {
+    try {
+      if (editingAlmoxarifado) {
+        await api.put(`/filiais/almoxarifados/${editingAlmoxarifado.id}`, data);
+        toast.success('Almoxarifado atualizado!');
+      } else {
+        await api.post(`/filiais/${editingFilial.id}/almoxarifados`, data);
+        toast.success('Almoxarifado criado!');
+      }
+      setShowAlmoxarifadoModal(false);
+      setEditingAlmoxarifado(null);
+      loadAlmoxarifados(editingFilial.id);
+    } catch (err) {
+      toast.error('Erro ao salvar almoxarifado');
     }
   };
 
@@ -817,7 +908,7 @@ const Filiais = () => {
                               </StatusBadge>
                             </Td>
                             <Td>
-                              <ActionButton title="Itens" onClick={() => {/* abrir modal de itens */}}>
+                              <ActionButton title="Itens" onClick={() => handleOpenItensModal(almox)}>
                                 <FaEye /> Itens
                               </ActionButton>
                               {!viewMode && (
@@ -857,8 +948,55 @@ const Filiais = () => {
                     <ModalTitle>{editingAlmoxarifado ? 'Editar Almoxarifado' : 'Novo Almoxarifado'}</ModalTitle>
                     <CloseButton onClick={() => setShowAlmoxarifadoModal(false)}>&times;</CloseButton>
                   </ModalHeader>
-                  {/* Formulário de almoxarifado */}
-                  {/* ... implementar ... */}
+                  <Form onSubmit={handleSubmit(handleSaveAlmoxarifado)}>
+                    <FormGroup>
+                      <Label>Nome *</Label>
+                      <Input 
+                        type="text" 
+                        placeholder="Nome do almoxarifado" 
+                        defaultValue={editingAlmoxarifado?.nome || ''}
+                        {...register('nome', { required: 'Nome é obrigatório' })} 
+                      />
+                      {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Setor</Label>
+                      <Input 
+                        type="text" 
+                        placeholder="Setor" 
+                        defaultValue={editingAlmoxarifado?.setor || ''}
+                        {...register('setor')} 
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Responsável</Label>
+                      <Input 
+                        type="text" 
+                        placeholder="Responsável" 
+                        defaultValue={editingAlmoxarifado?.responsavel || ''}
+                        {...register('responsavel')} 
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Status</Label>
+                      <Select 
+                        defaultValue={editingAlmoxarifado?.status?.toString() || '1'}
+                        {...register('status', { required: 'Status é obrigatório' })}
+                      >
+                        <option value="1">Ativo</option>
+                        <option value="0">Inativo</option>
+                      </Select>
+                      {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
+                    </FormGroup>
+                    <ButtonGroup>
+                      <Button type="button" className="secondary" onClick={() => setShowAlmoxarifadoModal(false)}>
+                        Cancelar
+                      </Button>
+                      <Button type="submit" className="primary">
+                        {editingAlmoxarifado ? 'Atualizar' : 'Cadastrar'}
+                      </Button>
+                    </ButtonGroup>
+                  </Form>
                 </ModalContent>
               </Modal>
             )}
@@ -982,6 +1120,106 @@ const Filiais = () => {
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+          </ModalContent>
+        </Modal>
+      )}
+
+      {/* Modal de itens do almoxarifado */}
+      {showItensModal && selectedAlmoxarifado && (
+        <Modal onClick={() => setShowItensModal(false)}>
+          <ModalContent onClick={e => e.stopPropagation()} style={{ maxWidth: 800 }}>
+            <ModalHeader>
+              <ModalTitle>Itens do Almoxarifado: {selectedAlmoxarifado.nome}</ModalTitle>
+              <CloseButton onClick={() => setShowItensModal(false)}>&times;</CloseButton>
+            </ModalHeader>
+            
+            <div style={{ marginBottom: 24 }}>
+              <h4 style={{ margin: '0 0 16px 0' }}>Adicionar Produto</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto auto', gap: 12, alignItems: 'end' }}>
+                <FormGroup>
+                  <Label>Produto</Label>
+                  <Select 
+                    value={selectedProduto?.id || ''} 
+                    onChange={(e) => {
+                      const produto = produtos.find(p => p.id === parseInt(e.target.value));
+                      setSelectedProduto(produto);
+                    }}
+                  >
+                    <option value="">Selecione um produto...</option>
+                    {produtos.map(produto => (
+                      <option key={produto.id} value={produto.id}>
+                        {produto.nome}
+                      </option>
+                    ))}
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Quantidade</Label>
+                  <Input 
+                    type="number" 
+                    step="0.001"
+                    placeholder="0.000" 
+                    value={quantidadeProduto}
+                    onChange={(e) => setQuantidadeProduto(e.target.value)}
+                  />
+                </FormGroup>
+                <Button 
+                  type="button" 
+                  className="primary" 
+                  onClick={handleAddProduto}
+                  disabled={!selectedProduto || !quantidadeProduto}
+                >
+                  Adicionar
+                </Button>
+                <Button 
+                  type="button" 
+                  className="secondary" 
+                  onClick={() => {
+                    setSearchProduto('');
+                    loadProdutos();
+                  }}
+                >
+                  Buscar
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <h4 style={{ margin: '0 0 16px 0' }}>Produtos no Almoxarifado</h4>
+              {loadingItens ? (
+                <LoadingSpinner inline={true} text="Carregando itens..." />
+              ) : itensAlmoxarifado.length === 0 ? (
+                <EmptyState>Nenhum produto cadastrado neste almoxarifado</EmptyState>
+              ) : (
+                <TableContainer>
+                  <Table>
+                    <thead>
+                      <tr>
+                        <Th>Produto</Th>
+                        <Th>Quantidade</Th>
+                        <Th>Ações</Th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {itensAlmoxarifado.map(item => (
+                        <tr key={item.id}>
+                          <Td>{item.produto_nome}</Td>
+                          <Td>{item.quantidade}</Td>
+                          <Td>
+                            <ActionButton 
+                              title="Remover" 
+                              onClick={() => handleRemoveProduto(item.id)}
+                            >
+                              <FaTrash />
+                            </ActionButton>
+                          </Td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </TableContainer>
               )}
             </div>
           </ModalContent>
