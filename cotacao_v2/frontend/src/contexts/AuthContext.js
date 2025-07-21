@@ -18,7 +18,10 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkAuthStatus();
-    checkSSO();
+    // Adicionar delay para garantir que a URL seja processada
+    setTimeout(() => {
+      checkSSO();
+    }, 100);
   }, []);
 
   const checkSSO = async () => {
