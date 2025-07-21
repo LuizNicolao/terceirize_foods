@@ -22,15 +22,14 @@ router.get('/auth-test', authenticateToken, (req, res) => {
   });
 });
 
-// Aplicar autenticação em todas as rotas
-router.use(authenticateToken);
-
 // Rota para integração com sistema de cotação
-router.post('/cotacao', async (req, res) => {
+router.post('/cotacao', authenticateToken, async (req, res) => {
   try {
     console.log('🔗 Iniciando integração com cotação...');
     console.log('👤 Usuário:', req.user);
     console.log('🔐 Headers:', req.headers);
+    console.log('🔐 Rota chamada:', req.path);
+    console.log('🔐 Método:', req.method);
     
     if (!req.user) {
       console.log('❌ req.user está undefined');

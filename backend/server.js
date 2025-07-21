@@ -90,7 +90,7 @@ app.use(
   csurf({
     cookie: true,
     ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
-    ignorePaths: ['/api/integration/cotacao']
+    ignorePaths: ['/api/integration/cotacao', '/api/integration/auth-test']
   })
 );
 
