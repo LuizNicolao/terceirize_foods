@@ -31,7 +31,7 @@ services:
     environment:
       - NODE_ENV=development
       - DB_HOST=82.29.57.43
-      - DB_USER=foods_user
+      - DB_USER=root
       - DB_PASSWORD=foods123456
       - DB_NAME=cotacao_db
       - DB_PORT=3306
