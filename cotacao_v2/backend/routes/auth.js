@@ -48,8 +48,8 @@ router.post('/login', async (req, res) => {
     const connection = await pool.getConnection();
     
     const [users] = await connection.execute(`
-      SELECT id, nome, email, senha, nivel_de_acesso, tipo_de_acesso, status
-      FROM usuarios WHERE email = ?
+      SELECT id, name, email, password, role, status
+      FROM users WHERE email = ?
     `, [email]);
 
     await connection.release();
@@ -66,7 +66,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Verificar senha
-    const isValidPassword = await bcrypt.compare(password, user.senha);
+    const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Email ou senha inválidos' });
     }
@@ -76,8 +76,7 @@ router.post('/login', async (req, res) => {
       { 
         id: user.id, 
         email: user.email, 
-        nivel_de_acesso: user.nivel_de_acesso,
-        tipo_de_acesso: user.tipo_de_acesso
+        role: user.role 
       },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
@@ -97,7 +96,7 @@ router.post('/login', async (req, res) => {
     await connection2.release();
 
     // Remover senha do objeto de resposta
-    const { senha: _, ...userWithoutPassword } = user;
+    const { password: _, ...userWithoutPassword } = user;
 
     res.json({
       message: 'Login realizado com sucesso',
@@ -117,8 +116,8 @@ router.get('/me', authenticateToken, async (req, res) => {
     const connection = await pool.getConnection();
     
     const [users] = await connection.execute(`
-      SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status, criado_em, atualizado_em
-      FROM usuarios WHERE id = ?
+      SELECT id, name, email, role, status, created_at, updated_at
+      FROM users WHERE id = ?
     `, [req.user.id]);
 
     await connection.release();
