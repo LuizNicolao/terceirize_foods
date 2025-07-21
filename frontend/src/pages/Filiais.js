@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Container = styled.div`
   padding: 24px;
@@ -94,49 +95,60 @@ const Table = styled.table`
 `;
 
 const Th = styled.th`
-  background: var(--primary-green);
-  color: var(--white);
-  padding: 12px;
+  background-color: #f5f5f5;
+  padding: 16px 12px;
   text-align: left;
-`;
-
-const Td = styled.td`
-  padding: 12px;
+  font-weight: 600;
+  color: var(--dark-gray);
+  font-size: 14px;
   border-bottom: 1px solid #e0e0e0;
 `;
 
-const StatusBadge = styled.span`
-  display: inline-block;
+const Td = styled.td`
+  padding: 16px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: var(--dark-gray);
+`;
+
+const StatusBadge = styled.span.withConfig({
+  shouldForwardProp: (prop) => prop !== '$status'
+})`
   padding: 4px 12px;
-  border-radius: 12px;
+  border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  color: var(--white);
-  background: ${props => props.$status === 'ativo' ? 'var(--primary-green)' : 'var(--gray)'};
+  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
+  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
 `;
 
 const ActionButton = styled.button`
   background: none;
   border: none;
-  color: var(--primary-green);
-  font-size: 18px;
-  margin-right: 8px;
   cursor: pointer;
-  transition: color 0.2s;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  margin-right: 8px;
+  color: var(--gray);
 
   &:hover {
-    color: var(--dark-green);
+    background-color: var(--light-gray);
+  }
+
+  &.edit {
+    color: var(--blue);
   }
 
   &.delete {
-    color: var(--red);
-    &:hover {
-      color: var(--dark-red);
-    }
+    color: var(--error-red);
+  }
+
+  &.view {
+    color: var(--primary-green);
   }
 `;
 
-// Adicionar styled-components para Modal, Form, etc. (copiado de Unidades/Clientes)
 const Modal = styled.div`
   position: fixed;
   top: 0;
@@ -149,27 +161,33 @@ const Modal = styled.div`
   align-items: center;
   z-index: 1000;
 `;
+
 const ModalContent = styled.div`
   background: var(--white);
   border-radius: 12px;
-  padding: 32px;
+  padding: 24px;
   width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
+  max-width: 90vw;
+  width: 1000px;
+  max-height: 95vh;
   overflow-y: auto;
 `;
+
 const ModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  grid-column: 1 / -1;
 `;
+
 const ModalTitle = styled.h2`
   color: var(--dark-gray);
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
   margin: 0;
 `;
+
 const CloseButton = styled.button`
   background: none;
   border: none;
@@ -177,82 +195,140 @@ const CloseButton = styled.button`
   cursor: pointer;
   color: var(--gray);
   padding: 4px;
+
   &:hover {
-    color: var(--red);
+    color: var(--error-red);
   }
 `;
+
 const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  max-height: calc(95vh - 120px);
+  overflow-y: auto;
+  padding-right: 8px;
+
+  /* Estilizar scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-green);
+  }
 `;
+
 const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 `;
+
 const Label = styled.label`
-  font-weight: 600;
   color: var(--dark-gray);
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 13px;
 `;
+
 const Input = styled.input`
-  padding: 12px 16px;
+  padding: 10px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   transition: all 0.3s ease;
+
   &:focus {
     border-color: var(--primary-green);
     box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
     outline: none;
   }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    color: var(--gray);
+    cursor: not-allowed;
+  }
 `;
+
 const Select = styled.select`
-  padding: 12px 16px;
+  padding: 10px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   background: var(--white);
-  cursor: pointer;
   transition: all 0.3s ease;
+
   &:focus {
     border-color: var(--primary-green);
     outline: none;
   }
+
+  &:disabled {
+    background-color: #f5f5f5;
+    color: var(--gray);
+    cursor: not-allowed;
+  }
 `;
+
 const ButtonGroup = styled.div`
   display: flex;
   gap: 12px;
   justify-content: flex-end;
-  margin-top: 8px;
+  margin-top: 16px;
+  grid-column: 1 / -1;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 16px;
 `;
+
 const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 600;
   border: none;
   cursor: pointer;
   transition: all 0.3s ease;
+
   &.primary {
     background: var(--primary-green);
     color: var(--white);
+
     &:hover {
       background: var(--dark-green);
     }
   }
+
   &.secondary {
-    background: var(--gray);
-    color: var(--white);
+    background: var(--light-gray);
+    color: var(--dark-gray);
+
     &:hover {
-      background: var(--dark-gray);
+      background: #d0d0d0;
     }
   }
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gray);
+  font-size: 16px;
 `;
 
 const Filiais = () => {
@@ -306,7 +382,7 @@ const Filiais = () => {
   if (loading) {
     return (
       <Container>
-        <div>Carregando filiais...</div>
+        <LoadingSpinner />
       </Container>
     );
   }
@@ -314,55 +390,36 @@ const Filiais = () => {
   // Modal handlers
   const handleAddFilial = () => {
     setEditingFilial(null);
+    setViewMode(false);
     reset();
     setShowModal(true);
-    setViewMode(false);
   };
+
   const handleEditFilial = (filial) => {
     setEditingFilial(filial);
-    setValue('nome', filial.nome);
-    setValue('logradouro', filial.logradouro);
-    setValue('numero', filial.numero);
-    setValue('bairro', filial.bairro);
-    setValue('cep', filial.cep);
-    setValue('cidade', filial.cidade);
-    setValue('estado', filial.estado);
-    setValue('supervisao', filial.supervisao);
-    setValue('coordenacao', filial.coordenacao);
-    setValue('centro_distribuicao', filial.centro_distribuicao);
-    setValue('regional', filial.regional);
-    setValue('rota_id', filial.rota_id);
-    setValue('lote', filial.lote);
-    setValue('abastecimento', filial.abastecimento);
-    setValue('status', filial.status);
-    setShowModal(true);
     setViewMode(false);
+    // Preencher o formulário com os dados da filial
+    Object.keys(filial).forEach(key => {
+      setValue(key, filial[key]);
+    });
+    setShowModal(true);
   };
+
   const handleViewFilial = (filial) => {
     setEditingFilial(filial);
-    setValue('nome', filial.nome);
-    setValue('logradouro', filial.logradouro);
-    setValue('numero', filial.numero);
-    setValue('bairro', filial.bairro);
-    setValue('cep', filial.cep);
-    setValue('cidade', filial.cidade);
-    setValue('estado', filial.estado);
-    setValue('supervisao', filial.supervisao);
-    setValue('coordenacao', filial.coordenacao);
-    setValue('centro_distribuicao', filial.centro_distribuicao);
-    setValue('regional', filial.regional);
-    setValue('rota_id', filial.rota_id);
-    setValue('lote', filial.lote);
-    setValue('abastecimento', filial.abastecimento);
-    setValue('status', filial.status);
-    setShowModal(true);
     setViewMode(true);
+    // Preencher o formulário com os dados da filial
+    Object.keys(filial).forEach(key => {
+      setValue(key, filial[key]);
+    });
+    setShowModal(true);
   };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingFilial(null);
-    reset();
     setViewMode(false);
+    reset();
   };
   // CRUD
   const onSubmit = async (data) => {
@@ -457,14 +514,14 @@ const Filiais = () => {
         <Title>Filiais</Title>
         <div style={{ display: 'flex', gap: '12px' }}>
           <AddButton 
-            onClick={() => setShowAuditModal(true)}
-            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+            onClick={handleOpenAuditModal}
+            style={{ background: 'var(--blue)' }}
           >
             <FaQuestionCircle />
             Auditoria
           </AddButton>
           {canCreate('filiais') && (
-            <AddButton onClick={() => { setShowModal(true); setEditingFilial(null); setViewMode(false); }}>
+            <AddButton onClick={handleAddFilial}>
               <FaPlus />
               Adicionar Filial
             </AddButton>
@@ -489,60 +546,69 @@ const Filiais = () => {
         </FilterSelect>
       </SearchContainer>
 
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Nome</Th>
-              <Th>Cidade</Th>
-              <Th>Estado</Th>
-              <Th>Status</Th>
-              <Th>Ações</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredFiliais.map(filial => (
-              <tr key={filial.id}>
-                <Td>{filial.nome}</Td>
-                <Td>{filial.cidade}</Td>
-                <Td>{filial.estado}</Td>
-                <Td>
-                  <StatusBadge $status={filial.status === 1 ? 'ativo' : 'inativo'}>
-                    {filial.status === 1 ? 'Ativo' : 'Inativo'}
-                  </StatusBadge>
-                </Td>
-                <Td>
-                  <ActionButton
-                    className="view"
-                    title="Visualizar"
-                    onClick={() => { setEditingFilial(filial); setViewMode(true); setShowModal(true); }}
-                  >
-                    <FaEye />
-                  </ActionButton>
-                  {canEdit('filiais') && (
-                    <ActionButton
-                      className="edit"
-                      title="Editar"
-                      onClick={() => { setEditingFilial(filial); setViewMode(false); setShowModal(true); }}
-                    >
-                      <FaEdit />
-                    </ActionButton>
-                  )}
-                  {canDelete('filiais') && (
-                    <ActionButton
-                      className="delete"
-                      title="Excluir"
-                      onClick={() => {/* handleDeleteFilial(filial.id) */}}
-                    >
-                      <FaTrash />
-                    </ActionButton>
-                  )}
-                </Td>
+      {filteredFiliais.length === 0 ? (
+        <EmptyState>
+          {searchTerm || statusFilter !== 'todos' ? 
+            'Nenhuma filial encontrada com os filtros aplicados' : 
+            'Nenhuma filial cadastrada'
+          }
+        </EmptyState>
+      ) : (
+        <TableContainer>
+          <Table>
+            <thead>
+              <tr>
+                <Th>Nome</Th>
+                <Th>Cidade</Th>
+                <Th>Estado</Th>
+                <Th>Status</Th>
+                <Th>Ações</Th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
-      </TableContainer>
+            </thead>
+            <tbody>
+              {filteredFiliais.map(filial => (
+                <tr key={filial.id}>
+                  <Td>{filial.nome}</Td>
+                  <Td>{filial.cidade}</Td>
+                  <Td>{filial.estado}</Td>
+                  <Td>
+                    <StatusBadge $status={filial.status === 1 ? 'ativo' : 'inativo'}>
+                      {filial.status === 1 ? 'Ativo' : 'Inativo'}
+                    </StatusBadge>
+                  </Td>
+                  <Td>
+                    <ActionButton
+                      className="view"
+                      title="Visualizar"
+                      onClick={() => handleViewFilial(filial)}
+                    >
+                      <FaEye />
+                    </ActionButton>
+                    {canEdit('filiais') && (
+                      <ActionButton
+                        className="edit"
+                        title="Editar"
+                        onClick={() => handleEditFilial(filial)}
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                    )}
+                    {canDelete('filiais') && (
+                      <ActionButton
+                        className="delete"
+                        title="Excluir"
+                        onClick={() => handleDeleteFilial(filial.id)}
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    )}
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </TableContainer>
+      )}
 
       {/* Modal de Cadastro/Edição/Visualização */}
       {showModal && (
@@ -663,67 +729,106 @@ const Filiais = () => {
       {/* Modal de Auditoria */}
       {showAuditModal && (
         <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={e => e.stopPropagation()} style={{ maxWidth: '1200px', width: '95%', maxHeight: '90vh', padding: '24px' }}>
+          <ModalContent onClick={e => e.stopPropagation()}>
             <ModalHeader>
               <ModalTitle>Auditoria - Filiais</ModalTitle>
               <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
             </ModalHeader>
-            {/* Filtros de Auditoria */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px', padding: '16px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-              <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Período Rápido</Label>
-                <Select value={auditFilters.periodo} onChange={e => setAuditFilters(prev => ({ ...prev, periodo: e.target.value }))} style={{ fontSize: '12px', padding: '8px' }}>
+            
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+              gap: '16px', 
+              marginBottom: '24px', 
+              padding: '16px', 
+              backgroundColor: '#f8f9fa', 
+              borderRadius: '8px' 
+            }}>
+              <FormGroup>
+                <Label>Período</Label>
+                <Select 
+                  value={auditFilters.periodo} 
+                  onChange={e => setAuditFilters(prev => ({ ...prev, periodo: e.target.value }))}
+                >
                   <option value="">Selecione...</option>
                   <option value="7dias">Últimos 7 dias</option>
                   <option value="30dias">Últimos 30 dias</option>
                   <option value="90dias">Últimos 90 dias</option>
                   <option value="todos">Todos</option>
                 </Select>
-              </div>
-              <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Data Início</Label>
-                <Input type="date" value={auditFilters.dataInicio} onChange={e => setAuditFilters(prev => ({ ...prev, dataInicio: e.target.value, periodo: '' }))} style={{ fontSize: '12px', padding: '8px' }} />
-              </div>
-              <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Data Fim</Label>
-                <Input type="date" value={auditFilters.dataFim} onChange={e => setAuditFilters(prev => ({ ...prev, dataFim: e.target.value, periodo: '' }))} style={{ fontSize: '12px', padding: '8px' }} />
-              </div>
-              <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Ação</Label>
-                <Select value={auditFilters.acao} onChange={e => setAuditFilters(prev => ({ ...prev, acao: e.target.value }))} style={{ fontSize: '12px', padding: '8px' }}>
+              </FormGroup>
+              
+              <FormGroup>
+                <Label>Data Início</Label>
+                <Input 
+                  type="date" 
+                  value={auditFilters.dataInicio} 
+                  onChange={e => setAuditFilters(prev => ({ ...prev, dataInicio: e.target.value, periodo: '' }))} 
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <Label>Data Fim</Label>
+                <Input 
+                  type="date" 
+                  value={auditFilters.dataFim} 
+                  onChange={e => setAuditFilters(prev => ({ ...prev, dataFim: e.target.value, periodo: '' }))} 
+                />
+              </FormGroup>
+              
+              <FormGroup>
+                <Label>Ação</Label>
+                <Select 
+                  value={auditFilters.acao} 
+                  onChange={e => setAuditFilters(prev => ({ ...prev, acao: e.target.value }))}
+                >
                   <option value="">Todas</option>
                   <option value="create">Criar</option>
                   <option value="update">Editar</option>
                   <option value="delete">Excluir</option>
                 </Select>
-              </div>
+              </FormGroup>
+              
               <div style={{ display: 'flex', alignItems: 'end' }}>
-                <Button onClick={handleApplyAuditFilters} style={{ fontSize: '12px', padding: '8px 16px', background: 'var(--primary-green)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                <Button className="primary" onClick={handleApplyAuditFilters}>
                   Aplicar Filtros
                 </Button>
               </div>
             </div>
-            {/* Lista de Logs */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            
+            <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
               {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
-              ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
-                  Nenhum log encontrado com os filtros aplicados
+                <div style={{ textAlign: 'center', padding: '20px' }}>
+                  <LoadingSpinner />
                 </div>
+              ) : auditLogs.length === 0 ? (
+                <EmptyState>
+                  Nenhum log encontrado com os filtros aplicados
+                </EmptyState>
               ) : (
                 <div>
                   <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
                     {auditLogs.length} log(s) encontrado(s)
                   </div>
                   {auditLogs.map((log, index) => (
-                    <div key={index} style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '16px', marginBottom: '12px', background: 'white' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', background: log.acao === 'create' ? '#e8f5e8' : log.acao === 'update' ? '#fff3cd' : log.acao === 'delete' ? '#f8d7da' : '#e3f2fd', color: log.acao === 'create' ? '#2e7d32' : log.acao === 'update' ? '#856404' : log.acao === 'delete' ? '#721c24' : '#1976d2' }}>
-                            {log.acao === 'create' ? 'Criar' : log.acao === 'update' ? 'Editar' : log.acao === 'delete' ? 'Excluir' : log.acao}
-                          </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                    <div key={index} style={{ 
+                      border: '1px solid #e0e0e0', 
+                      borderRadius: '8px', 
+                      padding: '16px', 
+                      marginBottom: '12px', 
+                      background: 'white' 
+                    }}>
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        marginBottom: '8px' 
+                      }}>
+                        <div>
+                          <StatusBadge $status={log.acao === 'create' ? 'ativo' : 'inativo'}>
+                            {log.acao === 'create' ? 'Criar' : log.acao === 'update' ? 'Editar' : 'Excluir'}
+                          </StatusBadge>
+                          <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--gray)' }}>
                             por {log.usuario_nome || 'Usuário desconhecido'}
                           </span>
                         </div>
@@ -731,43 +836,10 @@ const Filiais = () => {
                           {new Date(log.timestamp).toLocaleString('pt-BR')}
                         </span>
                       </div>
+                      
                       {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
-                          {log.detalhes.changes && (
-                            <div style={{ marginBottom: '8px' }}>
-                              <strong>Mudanças Realizadas:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
-                                {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} style={{ marginBottom: '6px', padding: '8px', background: '#f8f9fa', borderRadius: '4px', border: '1px solid #e9ecef' }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>{field}:</div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                      <span style={{ color: '#721c24' }}><strong>Antes:</strong> {change.from ?? 'Não informado'}</span>
-                                      <span style={{ color: '#6c757d' }}>→</span>
-                                      <span style={{ color: '#2e7d32' }}><strong>Depois:</strong> {change.to ?? 'Não informado'}</span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {log.detalhes.requestBody && !log.detalhes.changes && (
-                            <div>
-                              <strong>Dados da Filial:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                                {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} style={{ padding: '6px 8px', background: '#f8f9fa', borderRadius: '4px', border: '1px solid #e9ecef', fontSize: '11px' }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>{field}:</div>
-                                    <div style={{ color: '#2e7d32' }}>{value ?? 'Não informado'}</div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {log.detalhes.resourceId && (
-                            <div style={{ marginTop: '8px', padding: '6px 8px', background: '#e3f2fd', borderRadius: '4px', fontSize: '11px' }}>
-                              <strong>ID da Filial:</strong> <span style={{ color: '#1976d2', marginLeft: '4px' }}>#{log.detalhes.resourceId}</span>
-                            </div>
-                          )}
+                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)', marginTop: '8px' }}>
+                          <strong>Detalhes da operação</strong>
                         </div>
                       )}
                     </div>
