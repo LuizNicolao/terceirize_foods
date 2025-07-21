@@ -908,15 +908,15 @@ const Filiais = () => {
                             </StatusBadge>
                           </Td>
                             <Td>
-                              <ActionButton title="Itens" onClick={() => handleOpenItensModal(almox)}>
+                              <ActionButton className="view" title="Itens" onClick={() => handleOpenItensModal(almox)}>
                                 <FaEye /> Itens
                               </ActionButton>
                               {!viewMode && (
                                 <>
-                                  <ActionButton title="Editar" onClick={() => { setEditingAlmoxarifado(almox); setShowAlmoxarifadoModal(true); }}>
+                                  <ActionButton className="edit" title="Editar" onClick={() => { setEditingAlmoxarifado(almox); setShowAlmoxarifadoModal(true); }}>
                                     <FaEdit />
                                   </ActionButton>
-                                  <ActionButton title="Excluir" onClick={async () => {
+                                  <ActionButton className="delete" title="Excluir" onClick={async () => {
                                     if (window.confirm('Deseja excluir este almoxarifado?')) {
                                       try {
                                         await api.delete(`/filiais/almoxarifados/${almox.id}`);
