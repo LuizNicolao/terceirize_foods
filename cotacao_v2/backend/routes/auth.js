@@ -48,8 +48,8 @@ router.post('/login', async (req, res) => {
     const connection = await pool.getConnection();
     
     const [users] = await connection.execute(`
-      SELECT id, name, email, password, role, status
-      FROM users WHERE email = ?
+      SELECT id, nome, email, senha, nivel_de_acesso, tipo_de_acesso, status
+      FROM usuarios WHERE email = ?
     `, [email]);
 
     await connection.release();
@@ -66,7 +66,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Verificar senha
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    const isValidPassword = await bcrypt.compare(password, user.senha);
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Email ou senha inválidos' });
     }
@@ -76,14 +76,20 @@ router.post('/login', async (req, res) => {
       { 
         id: user.id, 
         email: user.email, 
-        role: user.role 
+        nivel_de_acesso: user.nivel_de_acesso,
+        tipo_de_acesso: user.tipo_de_acesso
       },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
 
-    // Salvar sessão no banco
+    // Remover sessão antiga se existir
     const connection2 = await pool.getConnection();
+    await connection2.execute(`
+      DELETE FROM user_sessions WHERE user_id = ?
+    `, [user.id]);
+    
+    // Salvar nova sessão no banco
     await connection2.execute(`
       INSERT INTO user_sessions (user_id, token, expires_at)
       VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))
@@ -91,7 +97,7 @@ router.post('/login', async (req, res) => {
     await connection2.release();
 
     // Remover senha do objeto de resposta
-    const { password: _, ...userWithoutPassword } = user;
+    const { senha: _, ...userWithoutPassword } = user;
 
     res.json({
       message: 'Login realizado com sucesso',
@@ -111,8 +117,8 @@ router.get('/me', authenticateToken, async (req, res) => {
     const connection = await pool.getConnection();
     
     const [users] = await connection.execute(`
-      SELECT id, name, email, role, status, created_at, updated_at
-      FROM users WHERE id = ?
+      SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status, criado_em, atualizado_em
+      FROM usuarios WHERE id = ?
     `, [req.user.id]);
 
     await connection.release();

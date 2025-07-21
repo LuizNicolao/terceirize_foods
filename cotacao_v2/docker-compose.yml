@@ -30,38 +30,19 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - DB_HOST=mysql
-      - DB_USER=root
-      - DB_PASSWORD=password
-      - DB_NAME=cotacao_db
+      - DB_HOST=82.29.57.43
+      - DB_USER=foods_user
+      - DB_PASSWORD=foods123456
+      - DB_NAME=foods_db
       - DB_PORT=3306
-      - JWT_SECRET=sua_chave_secreta_muito_segura_aqui
-    depends_on:
-      - mysql
+      - JWT_SECRET=foods_jwt_secret_key_2024
     networks:
       - app-network
     restart: unless-stopped
 
-  # MySQL Database
-  mysql:
-    image: mysql:8.0
-    ports:
-      - "3307:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=cotacao_db
-      - MYSQL_USER=app_user
-      - MYSQL_PASSWORD=app_password
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - app-network
+  # MySQL removido - usando o banco principal do sistema foods
 
   # phpMyAdmin removido - usando o do sistema principal na porta 8080
-
-volumes:
-  mysql_data:
 
 networks:
   app-network:
