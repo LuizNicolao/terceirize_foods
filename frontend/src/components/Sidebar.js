@@ -21,9 +21,7 @@ import {
   FaDatabase,
   FaChevronDown,
   FaChevronUp,
-  FaStore,
-  FaClipboardList,
-  FaExternalLinkAlt
+  FaStore
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -264,12 +262,6 @@ const menuGroups = [
     ]
   },
   {
-    title: 'Suprimentos',
-    items: [
-      { path: '/cotacao', icon: FaClipboardList, label: 'Cotação', screen: 'cotacao', external: true },
-    ]
-  },
-  {
     title: 'Configurações',
     items: [
       { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
@@ -279,14 +271,13 @@ const menuGroups = [
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
-  const { logout, token } = useAuth();
+  const { logout } = useAuth();
   const { canView, loading } = usePermissions();
   
   // Estado para controlar expansão dos grupos
   const [expandedGroups, setExpandedGroups] = useState({
     'Principal': true,
     'Cadastros': true,
-    'Suprimentos': true,
     'Configurações': true
   });
 
@@ -301,51 +292,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
     }));
   };
 
-  const handleExternalLink = async (item) => {
-    if (item.external) {
-      try {
-        console.log('🔗 Iniciando integração...');
-        console.log('🎫 Token:', token ? 'Presente' : 'Ausente');
-        console.log('🎫 Token completo:', token);
-        
-        if (!token) {
-          console.error('❌ Token não encontrado');
-          return;
-        }
-        
-        // Fazer requisição para obter URL de integração
-        const response = await fetch('/api/integration/cotacao', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
-        console.log('📡 Status da resposta:', response.status);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('✅ URL gerada:', data.url);
-          // Abrir em nova aba
-          window.open(data.url, '_blank');
-        } else {
-          const errorData = await response.json();
-          console.error('❌ Erro ao obter URL de integração:', errorData);
-        }
-      } catch (error) {
-        console.error('❌ Erro ao acessar sistema de cotação:', error);
-      }
-    }
-  };
-
   return (
     <>
       <Overlay $visible={!collapsed} onClick={onToggle} />
       <SidebarContainer $collapsed={collapsed}>
         <SidebarHeader>
           <Logo $collapsed={collapsed}>
-            {collapsed ? 'C' : 'CILS'}
+            {collapsed ? 'F' : 'Foods'}
           </Logo>
           <ToggleButton onClick={onToggle}>
             {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
@@ -383,13 +336,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
                   return (
                     <NavItem 
                       key={item.path} 
-                      to={item.external ? '#' : item.path}
+                      to={item.path}
                       className={isActive ? 'active' : ''}
-                      onClick={(e) => {
-                        if (item.external) {
-                          e.preventDefault();
-                          handleExternalLink(item);
-                        }
+                      onClick={() => {
                         // Fechar sidebar no mobile quando clicar em um item
                         if (window.innerWidth <= 768) {
                           onToggle();
@@ -401,7 +350,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
                       </NavIcon>
                       <NavText $collapsed={collapsed}>
                         {item.label}
-                        {item.external && <FaExternalLinkAlt style={{ marginLeft: '8px', fontSize: '10px' }} />}
                       </NavText>
                     </NavItem>
                   );

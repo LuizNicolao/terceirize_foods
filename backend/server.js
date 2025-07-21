@@ -21,7 +21,6 @@ const nomeGenericoProdutoRoutes = require('./routes/nome_generico_produto');
 const { router: permissoesRoutes } = require('./routes/permissoes');
 const dashboardRoutes = require('./routes/dashboard');
 const auditoriaRoutes = require('./routes/auditoria');
-const integrationRoutes = require('./routes/integration');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -32,11 +31,9 @@ app.use(helmet());
 // Configuração de CORS
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['http://82.29.57.43:3000', 'http://82.29.57.43', 'http://localhost:3000', 'http://82.29.57.43:3003'] 
-    : ['http://localhost:3000', 'http://localhost:3003'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token']
+    ? ['http://82.29.57.43:3000', 'http://82.29.57.43', 'http://localhost:3000'] 
+    : ['http://localhost:3000'],
+  credentials: true
 }));
 
 // Rate limiting mais flexível para sistema em produção
@@ -70,16 +67,6 @@ const loginLimiter = rateLimit({
 app.use('/api/', limiter);
 app.use('/api/auth', loginLimiter);
 
-// Middleware para preflight OPTIONS com CORS completo
-app.options('*', cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['http://82.29.57.43:3000', 'http://82.29.57.43', 'http://localhost:3000', 'http://82.29.57.43:3003'] 
-    : ['http://localhost:3000', 'http://localhost:3003'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token']
-}));
-
 // Middleware para parsing
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -90,7 +77,6 @@ app.use(
   csurf({
     cookie: true,
     ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
-    ignorePaths: ['/api/integration/cotacao', '/api/integration/auth-test', '/api/integration/test-post']
   })
 );
 
@@ -99,16 +85,14 @@ app.get('/api/csrf-token', (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
 
-// Exceções para rotas públicas (login, verify, health, integration)
+// Exceções para rotas públicas (login, verify, health)
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
-    // Permitir login, verify, health e integration sem CSRF
+    // Permitir login, verify e health sem CSRF
     if (
       req.path === '/api/auth/login' ||
       req.path === '/api/auth/verify' ||
-      req.path === '/api/health' ||
-      req.path === '/api/integration/cotacao' ||
-      req.path === '/api/integration/test-post'
+      req.path === '/api/health'
     ) {
       return next();
     }
@@ -139,7 +123,6 @@ app.use('/api/nome-generico-produto', nomeGenericoProdutoRoutes);
 app.use('/api/permissoes', permissoesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auditoria', auditoriaRoutes);
-app.use('/api/integration', integrationRoutes);
 
 // Rota de health check
 app.get('/api/health', (req, res) => {

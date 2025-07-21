@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || '/api',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3001/api',
   timeout: 10000,
 });
 
@@ -24,20 +24,8 @@ api.interceptors.request.use(
     }
     // Sempre enviar cookies
     config.withCredentials = true;
-    
-    // Rotas que não precisam de CSRF
-    const noCSRFRoutes = [
-      '/auth/login',
-      '/auth/verify',
-      '/health',
-      '/integration/cotacao'
-    ];
-    
-    // Verificar se a rota atual precisa de CSRF
-    const needsCSRF = !noCSRFRoutes.some(route => config.url.includes(route));
-    
-    // Adicionar CSRF em métodos protegidos (exceto rotas específicas)
-    if (['post', 'put', 'delete', 'patch'].includes(config.method) && needsCSRF) {
+    // Adicionar CSRF em métodos protegidos
+    if (['post', 'put', 'delete', 'patch'].includes(config.method)) {
       await setCSRFToken();
       config.headers['X-CSRF-Token'] = api.defaults.headers['X-CSRF-Token'];
     }

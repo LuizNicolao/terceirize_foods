@@ -3,8 +3,6 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const mysql = require('mysql2/promise');
-const { body, validationResult } = require('express-validator');
-const db = require('../config/database');
 
 // Configuração do banco de dados
 const dbConfig = {
@@ -160,101 +158,6 @@ router.post('/logout', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Erro no logout:', error);
     res.status(500).json({ message: 'Erro interno do servidor' });
-  }
-});
-
-// Rota de integração para autenticação automática
-router.get('/integration', async (req, res) => {
-  try {
-    const { token } = req.query;
-    
-    if (!token) {
-      return res.status(400).json({ 
-        error: 'Token não fornecido',
-        message: 'Token de integração é obrigatório'
-      });
-    }
-
-    // Verificar token JWT
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
-    // Verificar se o token é do sistema principal
-    if (decoded.system !== 'terceirize_foods') {
-      return res.status(401).json({ 
-        error: 'Token inválido',
-        message: 'Token não é do sistema principal'
-      });
-    }
-
-    // Verificar se o usuário existe no sistema de cotação
-    let [user] = await db.execute(
-      'SELECT id, nome, email, tipo_acesso, nivel_acesso FROM usuarios WHERE email = ?',
-      [decoded.email]
-    );
-
-    // Se não existir, criar o usuário
-    if (user.length === 0) {
-      // Criar usuário no sistema de cotação
-      const [result] = await db.execute(
-        'INSERT INTO usuarios (nome, email, tipo_acesso, nivel_acesso, senha, status) VALUES (?, ?, ?, ?, ?, ?)',
-        [
-          decoded.name,
-          decoded.email,
-          decoded.role.split('_')[0] || 'usuario',
-          decoded.role.split('_')[1] || 'I',
-          await bcrypt.hash('senha123', 10), // Senha padrão
-          1 // Ativo
-        ]
-      );
-
-      // Buscar usuário criado
-      [user] = await db.execute(
-        'SELECT id, nome, email, tipo_acesso, nivel_acesso FROM usuarios WHERE id = ?',
-        [result.insertId]
-      );
-    }
-
-    const userData = user[0];
-
-    // Criar token JWT para o sistema de cotação
-    const cotacaoToken = jwt.sign(
-      {
-        id: userData.id,
-        name: userData.nome,
-        email: userData.email,
-        role: `${userData.tipo_acesso}_${userData.nivel_acesso}`
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '8h' }
-    );
-
-    // Redirecionar para o frontend com o token
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3003';
-    const redirectUrl = `${frontendUrl}/auth/integration?token=${cotacaoToken}`;
-    
-    res.redirect(redirectUrl);
-
-  } catch (error) {
-    console.error('Erro na integração:', error);
-    
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
-        error: 'Token expirado',
-        message: 'Token de integração expirou'
-      });
-    }
-    
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(401).json({ 
-        error: 'Token inválido',
-        message: 'Token de integração inválido'
-      });
-    }
-    
-    res.status(500).json({ 
-      error: 'Erro interno do servidor',
-      message: 'Erro ao processar integração'
-    });
   }
 });
 

@@ -8,55 +8,37 @@ if (!JWT_SECRET) {
 
 // Middleware para verificar token JWT
 const authenticateToken = async (req, res, next) => {
-  console.log('🔐 Middleware de autenticação iniciado para:', req.path);
-  
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  console.log('🔐 Headers de autorização:', req.headers.authorization ? 'Presente' : 'Ausente');
-  console.log('🎫 Token extraído:', token ? 'Presente' : 'Ausente');
-
   if (!token) {
-    console.log('❌ Token não fornecido');
     return res.status(401).json({ error: 'Token de acesso não fornecido' });
   }
 
   try {
-    console.log('🔍 Verificando token JWT...');
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log('✅ Token decodificado:', decoded);
     
     // Verificar se o usuário ainda existe e está ativo
-    console.log('🔍 Buscando usuário ID:', decoded.userId);
     const user = await executeQuery(
       'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE id = ?',
       [decoded.userId]
     );
 
-    console.log('👤 Usuário encontrado:', user);
-
     if (user.length === 0) {
-      console.log('❌ Usuário não encontrado no banco');
       return res.status(401).json({ error: 'Usuário não encontrado' });
     }
 
     if (user[0].status === 'bloqueado') {
-      console.log('🚫 Usuário bloqueado');
       return res.status(403).json({ error: 'Usuário bloqueado. Procure o administrador.' });
     }
 
     if (user[0].status !== 'ativo') {
-      console.log('⚠️ Usuário inativo');
       return res.status(401).json({ error: 'Usuário inativo' });
     }
 
     req.user = user[0];
-    console.log('✅ Autenticação bem-sucedida para usuário:', user[0].nome);
-    console.log('✅ req.user definido:', req.user);
     next();
   } catch (error) {
-    console.error('❌ Erro na autenticação:', error);
-    console.error('❌ Stack trace:', error.stack);
     return res.status(403).json({ error: 'Token inválido' });
   }
 };
