@@ -223,7 +223,7 @@ const Usuarios = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000'}/api/users`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -259,7 +259,7 @@ const Usuarios = () => {
   const handleDelete = async (userId) => {
     if (window.confirm('Tem certeza que deseja excluir este usuário?')) {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/${userId}`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000'}/api/users/${userId}`, {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`

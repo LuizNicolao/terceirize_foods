@@ -574,7 +574,7 @@ const VisualizarCotacao = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cotacoes/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000'}/api/cotacoes/${id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }

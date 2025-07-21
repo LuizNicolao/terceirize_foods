@@ -844,7 +844,7 @@ const NovaCotacao = () => {
 
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/cotacoes`, {
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000'}/api/cotacoes`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

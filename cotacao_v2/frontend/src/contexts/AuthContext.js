@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
       if (ssoToken) {
         console.log('🔍 Token SSO encontrado, tentando autenticar...');
         
-        const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+        const apiUrl = process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000';
         console.log('🔍 Fazendo requisição SSO para:', `${apiUrl}/api/auth/sso`);
         
         const response = await fetch(`${apiUrl}/api/auth/sso`, {
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/me`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000'}/api/auth/me`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserPermissions = async (userId) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/${userId}/permissions`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000'}/api/users/${userId}/permissions`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -139,7 +139,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/login`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000'}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
