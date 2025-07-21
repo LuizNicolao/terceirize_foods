@@ -46,25 +46,14 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
 router.get('/:filialId/almoxarifados', checkPermission('visualizar'), async (req, res) => {
   try {
     const { filialId } = req.params;
-    const { search = '' } = req.query;
-
-    let query = `
-      SELECT id, nome, setor, responsavel, telefone, email, observacoes, status, criado_em, atualizado_em 
-      FROM almoxarifados 
+    const query = `
+      SELECT id, nome, status, criado_em, atualizado_em
+      FROM almoxarifados
       WHERE filial_id = ?
+      ORDER BY nome ASC
     `;
-    let params = [filialId];
-
-    if (search) {
-      query += ' AND (nome LIKE ? OR setor LIKE ? OR responsavel LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-    }
-
-    query += ' ORDER BY nome ASC';
-
-    const almoxarifados = await executeQuery(query, params);
+    const almoxarifados = await executeQuery(query, [filialId]);
     res.json(almoxarifados);
-
   } catch (error) {
     console.error('Erro ao listar almoxarifados:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -75,18 +64,14 @@ router.get('/:filialId/almoxarifados', checkPermission('visualizar'), async (req
 router.get('/almoxarifados/:id', checkPermission('visualizar'), async (req, res) => {
   try {
     const { id } = req.params;
-
     const almoxarifados = await executeQuery(
-      'SELECT * FROM almoxarifados WHERE id = ?',
+      'SELECT id, filial_id, nome, status, criado_em, atualizado_em FROM almoxarifados WHERE id = ?',
       [id]
     );
-
     if (almoxarifados.length === 0) {
       return res.status(404).json({ error: 'Almoxarifado não encontrado' });
     }
-
     res.json(almoxarifados[0]);
-
   } catch (error) {
     console.error('Erro ao buscar almoxarifado:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -97,72 +82,34 @@ router.get('/almoxarifados/:id', checkPermission('visualizar'), async (req, res)
 router.post('/:filialId/almoxarifados', [
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'almoxarifados'),
-  body('nome').custom((value) => {
-    if (!value || value.trim().length < 3) {
-      throw new Error('Nome deve ter pelo menos 3 caracteres');
-    }
-    return true;
-  }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('email').optional().custom((value) => {
-    if (value && value.trim() !== '') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value.trim())) {
-        throw new Error('Email inválido');
-      }
-    }
-    return true;
-  }).withMessage('Email inválido'),
-  body('status').optional().custom((value) => {
-    if (value !== undefined && value !== null && value !== '') {
-      const statusValue = value.toString();
-      if (!['0', '1'].includes(statusValue)) {
-        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
-      }
-    }
-    return true;
-  }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
+  body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
+  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
+      return res.status(400).json({ error: 'Dados inválidos', details: errors.array() });
     }
-
     const { filialId } = req.params;
-    const {
-      nome, setor, responsavel, telefone, email, observacoes, status
-    } = req.body;
-
+    const { nome, status } = req.body;
     // Verificar se a filial existe
-    const filial = await executeQuery(
-      'SELECT id FROM filiais WHERE id = ?',
-      [filialId]
-    );
-
+    const filial = await executeQuery('SELECT id FROM filiais WHERE id = ?', [filialId]);
     if (filial.length === 0) {
       return res.status(404).json({ error: 'Filial não encontrada' });
     }
-
     // Inserir almoxarifado
     const result = await executeQuery(
-      `INSERT INTO almoxarifados (filial_id, nome, setor, responsavel, telefone, email, observacoes, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [filialId, nome, setor, responsavel, telefone, email, observacoes, status || 1]
+      `INSERT INTO almoxarifados (filial_id, nome, status) VALUES (?, ?, ?)`,
+      [filialId, nome, status || 1]
     );
-
     const newAlmoxarifado = await executeQuery(
-      'SELECT * FROM almoxarifados WHERE id = ?',
+      'SELECT id, filial_id, nome, status, criado_em, atualizado_em FROM almoxarifados WHERE id = ?',
       [result.insertId]
     );
-
     res.status(201).json({
       message: 'Almoxarifado criado com sucesso',
       almoxarifado: newAlmoxarifado[0]
     });
-
   } catch (error) {
     console.error('Erro ao criar almoxarifado:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -173,73 +120,34 @@ router.post('/:filialId/almoxarifados', [
 router.put('/almoxarifados/:id', [
   checkPermission('editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'almoxarifados'),
-  body('nome').custom((value) => {
-    if (!value || value.trim().length < 3) {
-      throw new Error('Nome deve ter pelo menos 3 caracteres');
-    }
-    return true;
-  }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('email').optional().custom((value) => {
-    if (value && value.trim() !== '') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value.trim())) {
-        throw new Error('Email inválido');
-      }
-    }
-    return true;
-  }).withMessage('Email inválido'),
-  body('status').optional().custom((value) => {
-    if (value !== undefined && value !== null && value !== '') {
-      const statusValue = value.toString();
-      if (!['0', '1'].includes(statusValue)) {
-        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
-      }
-    }
-    return true;
-  }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
+  body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
+  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
+      return res.status(400).json({ error: 'Dados inválidos', details: errors.array() });
     }
-
     const { id } = req.params;
-    const {
-      nome, setor, responsavel, telefone, email, observacoes, status
-    } = req.body;
-
+    const { nome, status } = req.body;
     // Verificar se o almoxarifado existe
-    const almoxarifado = await executeQuery(
-      'SELECT * FROM almoxarifados WHERE id = ?',
-      [id]
-    );
-
+    const almoxarifado = await executeQuery('SELECT id FROM almoxarifados WHERE id = ?', [id]);
     if (almoxarifado.length === 0) {
       return res.status(404).json({ error: 'Almoxarifado não encontrado' });
     }
-
     // Atualizar almoxarifado
     await executeQuery(
-      `UPDATE almoxarifados SET nome = ?, setor = ?, responsavel = ?, telefone = ?,
-                               email = ?, observacoes = ?, status = ?, atualizado_em = CURRENT_TIMESTAMP
-       WHERE id = ?`,
-      [nome, setor, responsavel, telefone, email, observacoes, status, id]
+      `UPDATE almoxarifados SET nome = ?, status = ?, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?`,
+      [nome, status, id]
     );
-
     const updatedAlmoxarifado = await executeQuery(
-      'SELECT * FROM almoxarifados WHERE id = ?',
+      'SELECT id, filial_id, nome, status, criado_em, atualizado_em FROM almoxarifados WHERE id = ?',
       [id]
     );
-
     res.json({
       message: 'Almoxarifado atualizado com sucesso',
       almoxarifado: updatedAlmoxarifado[0]
     });
-
   } catch (error) {
     console.error('Erro ao atualizar almoxarifado:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
@@ -253,33 +161,18 @@ router.delete('/almoxarifados/:id', [
 ], async (req, res) => {
   try {
     const { id } = req.params;
-
     // Verificar se o almoxarifado existe
-    const almoxarifado = await executeQuery(
-      'SELECT id FROM almoxarifados WHERE id = ?',
-      [id]
-    );
-
+    const almoxarifado = await executeQuery('SELECT id FROM almoxarifados WHERE id = ?', [id]);
     if (almoxarifado.length === 0) {
       return res.status(404).json({ error: 'Almoxarifado não encontrado' });
     }
-
     // Verificar se há itens vinculados
-    const itens = await executeQuery(
-      'SELECT id FROM almoxarifado_itens WHERE almoxarifado_id = ?',
-      [id]
-    );
-
+    const itens = await executeQuery('SELECT id FROM almoxarifado_itens WHERE almoxarifado_id = ?', [id]);
     if (itens.length > 0) {
-      return res.status(400).json({
-        error: 'Não é possível excluir o almoxarifado. Existem itens vinculados a ele.'
-      });
+      return res.status(400).json({ error: 'Não é possível excluir o almoxarifado. Existem itens vinculados a ele.' });
     }
-
     await executeQuery('DELETE FROM almoxarifados WHERE id = ?', [id]);
-
     res.json({ message: 'Almoxarifado excluído com sucesso' });
-
   } catch (error) {
     console.error('Erro ao excluir almoxarifado:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
