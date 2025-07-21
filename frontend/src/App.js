@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/Usuarios';
 import Fornecedores from './pages/Fornecedores';
 import Clientes from './pages/Clientes';
+import Filiais from './pages/Filiais';
 import Produtos from './pages/Produtos';
 import Grupos from './pages/Grupos';
 import Subgrupos from './pages/Subgrupos';
@@ -99,6 +100,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="clientes">
               <Clientes />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/filiais" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="filiais">
+              <Filiais />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 
