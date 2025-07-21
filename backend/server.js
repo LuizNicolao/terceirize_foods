@@ -36,7 +36,7 @@ app.use(cors({
     : ['http://localhost:3000', 'http://localhost:3003'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token']
 }));
 
 // Rate limiting mais flexível para sistema em produção
@@ -69,6 +69,16 @@ const loginLimiter = rateLimit({
 
 app.use('/api/', limiter);
 app.use('/api/auth', loginLimiter);
+
+// Middleware para preflight OPTIONS com CORS completo
+app.options('*', cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['http://82.29.57.43:3000', 'http://82.29.57.43', 'http://localhost:3000', 'http://82.29.57.43:3003'] 
+    : ['http://localhost:3000', 'http://localhost:3003'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token']
+}));
 
 // Middleware para parsing
 app.use(express.json({ limit: '10mb' }));
