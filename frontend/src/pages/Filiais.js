@@ -382,7 +382,9 @@ const Filiais = () => {
   if (loading) {
     return (
       <Container>
-        <LoadingSpinner />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+          <LoadingSpinner inline={true} text="Carregando filiais..." />
+        </div>
       </Container>
     );
   }
