@@ -1181,6 +1181,27 @@ const Permissoes = () => {
     }
   };
 
+  const handleSyncPermissions = async () => {
+    try {
+      setSaving(true);
+      
+      const response = await api.post('/permissoes/sincronizar');
+      
+      toast.success(`Sincronização concluída! ${response.data.usuarios_atualizados} usuários atualizados, ${response.data.telas_adicionadas} telas adicionadas.`);
+      
+      // Recarregar permissões do usuário atual se houver
+      if (selectedUserId) {
+        loadUserPermissions(selectedUserId);
+      }
+      
+    } catch (error) {
+      console.error('Erro ao sincronizar permissões:', error);
+      toast.error('Erro ao sincronizar permissões');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const getAccessTypeLabel = (type) => {
     switch (type) {
       case 'administrador': return 'Administrador';
@@ -1231,14 +1252,25 @@ const Permissoes = () => {
     <Container>
       <Header>
         <Title>Gerenciar Permissões</Title>
-        <Button
-          className="primary"
-          onClick={handleOpenAuditModal}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <FaQuestionCircle />
-          Auditoria
-        </Button>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <Button
+            className="secondary"
+            onClick={handleSyncPermissions}
+            disabled={saving}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <FaSync />
+            {saving ? 'Sincronizando...' : 'Sincronizar Permissões'}
+          </Button>
+          <Button
+            className="primary"
+            onClick={handleOpenAuditModal}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <FaQuestionCircle />
+            Auditoria
+          </Button>
+        </div>
       </Header>
 
       {usuarios.length === 0 ? (
