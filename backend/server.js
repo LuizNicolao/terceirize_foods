@@ -3,12 +3,14 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
+const csurf = require('csurf');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const usuariosRoutes = require('./routes/usuarios');
 const fornecedoresRoutes = require('./routes/fornecedores');
 const clientesRoutes = require('./routes/clientes');
+const filiaisRoutes = require('./routes/filiais');
 const produtosRoutes = require('./routes/produtos');
 const gruposRoutes = require('./routes/grupos');
 const subgruposRoutes = require('./routes/subgrupos');
@@ -70,6 +72,35 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
+// Middleware CSRF (exceto para rotas públicas)
+app.use(
+  csurf({
+    cookie: true,
+    ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
+  })
+);
+
+// Rota para fornecer o token CSRF ao frontend
+app.get('/api/csrf-token', (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
+// Exceções para rotas públicas (login, verify, health)
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    // Permitir login, verify e health sem CSRF
+    if (
+      req.path === '/api/auth/login' ||
+      req.path === '/api/auth/verify' ||
+      req.path === '/api/health'
+    ) {
+      return next();
+    }
+    return res.status(403).json({ error: 'Token CSRF inválido ou ausente.' });
+  }
+  next(err);
+});
+
 // Middleware de logging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
@@ -81,6 +112,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/fornecedores', fornecedoresRoutes);
 app.use('/api/clientes', clientesRoutes);
+app.use('/api/filiais', filiaisRoutes);
 app.use('/api/produtos', produtosRoutes);
 app.use('/api/grupos', gruposRoutes);
 app.use('/api/subgrupos', subgruposRoutes);

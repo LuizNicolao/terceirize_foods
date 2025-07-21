@@ -7,6 +7,11 @@ const { logAction, AUDIT_ACTIONS } = require('../utils/audit');
 
 const router = express.Router();
 
+// Controle de tentativas de login (em memória)
+const loginAttempts = {};
+const MAX_ATTEMPTS = 5;
+const BLOCK_TIME_MINUTES = 30;
+
 // Login
 router.post('/login', [
   body('email').isEmail().withMessage('Email inválido'),
@@ -23,6 +28,17 @@ router.post('/login', [
     }
 
     const { email, senha } = req.body;
+    const now = Date.now();
+
+    // Inicializar tentativas
+    if (!loginAttempts[email]) {
+      loginAttempts[email] = { count: 0, lastAttempt: now, blockedUntil: null };
+    }
+
+    // Verificar se está bloqueado temporariamente
+    if (loginAttempts[email].blockedUntil && now < loginAttempts[email].blockedUntil) {
+      return res.status(403).json({ error: `Usuário temporariamente bloqueado por tentativas inválidas. Tente novamente em alguns minutos.` });
+    }
 
     // Buscar usuário
     const users = await executeQuery(
@@ -31,12 +47,22 @@ router.post('/login', [
     );
 
     if (users.length === 0) {
+      loginAttempts[email].count++;
+      loginAttempts[email].lastAttempt = now;
+      if (loginAttempts[email].count >= MAX_ATTEMPTS) {
+        loginAttempts[email].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
+      }
       return res.status(401).json({ error: 'Email ou senha incorretos' });
     }
 
     const user = users[0];
 
-    // Verificar se usuário está ativo
+    // Se já estiver bloqueado permanentemente
+    if (user.status === 'bloqueado') {
+      return res.status(403).json({ error: 'Usuário bloqueado. Procure o administrador.' });
+    }
+
+    // Se não estiver ativo
     if (user.status !== 'ativo') {
       return res.status(401).json({ error: 'Usuário inativo' });
     }
@@ -45,8 +71,19 @@ router.post('/login', [
     const isValidPassword = await bcrypt.compare(senha, user.senha);
 
     if (!isValidPassword) {
+      loginAttempts[email].count++;
+      loginAttempts[email].lastAttempt = now;
+      if (loginAttempts[email].count >= MAX_ATTEMPTS) {
+        // Bloquear usuário no banco
+        await executeQuery('UPDATE usuarios SET status = ? WHERE id = ?', ['bloqueado', user.id]);
+        loginAttempts[email].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
+        return res.status(403).json({ error: 'Usuário bloqueado por tentativas inválidas. Procure o administrador.' });
+      }
       return res.status(401).json({ error: 'Email ou senha incorretos' });
     }
+
+    // Login bem-sucedido: resetar tentativas
+    loginAttempts[email] = { count: 0, lastAttempt: now, blockedUntil: null };
 
     // Gerar token
     const token = generateToken(user.id);
@@ -86,7 +123,10 @@ router.get('/verify', async (req, res) => {
     }
 
     const jwt = require('jsonwebtoken');
-    const JWT_SECRET = process.env.JWT_SECRET || 'foods_jwt_secret_key_2024';
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET não definido nas variáveis de ambiente!');
+    }
 
     const decoded = jwt.verify(token, JWT_SECRET);
     

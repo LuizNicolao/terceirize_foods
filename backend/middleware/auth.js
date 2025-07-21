@@ -1,7 +1,10 @@
 const jwt = require('jsonwebtoken');
 const { executeQuery } = require('../config/database');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'foods_jwt_secret_key_2024';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET não definido nas variáveis de ambiente!');
+}
 
 // Middleware para verificar token JWT
 const authenticateToken = async (req, res, next) => {
@@ -17,12 +20,20 @@ const authenticateToken = async (req, res, next) => {
     
     // Verificar se o usuário ainda existe e está ativo
     const user = await executeQuery(
-      'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE id = ? AND status = "ativo"',
+      'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE id = ?',
       [decoded.userId]
     );
 
     if (user.length === 0) {
-      return res.status(401).json({ error: 'Usuário não encontrado ou inativo' });
+      return res.status(401).json({ error: 'Usuário não encontrado' });
+    }
+
+    if (user[0].status === 'bloqueado') {
+      return res.status(403).json({ error: 'Usuário bloqueado. Procure o administrador.' });
+    }
+
+    if (user[0].status !== 'ativo') {
+      return res.status(401).json({ error: 'Usuário inativo' });
     }
 
     req.user = user[0];

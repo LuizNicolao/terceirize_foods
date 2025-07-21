@@ -115,8 +115,12 @@ const StatusBadge = styled.span`
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  background: ${props => props.status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.status === 'ativo' ? 'white' : 'var(--error-red)'};
+  background: ${props =>
+    props.status === 'ativo' ? 'var(--success-green)' :
+    props.status === 'bloqueado' ? 'var(--warning-yellow)' : '#ffebee'};
+  color: ${props =>
+    props.status === 'ativo' ? 'white' :
+    props.status === 'bloqueado' ? 'var(--dark-gray)' : 'var(--error-red)'};
 `;
 
 const ActionButton = styled.button`
@@ -596,7 +600,7 @@ const Usuarios = () => {
       case 'tipo_de_acesso':
         return getTipoAcessoLabel(value);
       case 'status':
-        return value === 'ativo' ? 'Ativo' : 'Inativo';
+        return value === 'ativo' ? 'Ativo' : value === 'bloqueado' ? 'Bloqueado' : 'Inativo';
       case 'senha':
         return '[PROTEGIDO]';
       case 'email':
@@ -754,6 +758,7 @@ const Usuarios = () => {
           <option value="todos">Todos os status</option>
           <option value="ativo">Ativo</option>
           <option value="inativo">Inativo</option>
+          <option value="bloqueado">Bloqueado</option>
         </FilterSelect>
       </SearchContainer>
 
@@ -790,7 +795,7 @@ const Usuarios = () => {
                   <Td>{getTipoAcessoLabel(user.tipo_de_acesso)}</Td>
                   <Td>
                     <StatusBadge status={user.status}>
-                      {user.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                      {user.status === 'ativo' ? 'Ativo' : user.status === 'bloqueado' ? 'Bloqueado' : 'Inativo'}
                     </StatusBadge>
                   </Td>
                   <Td>
@@ -914,6 +919,7 @@ const Usuarios = () => {
                   <option value="">Selecione...</option>
                   <option value="ativo">Ativo</option>
                   <option value="inativo">Inativo</option>
+                  <option value="bloqueado">Bloqueado</option>
                 </Select>
                 {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
               </FormGroup>

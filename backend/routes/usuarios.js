@@ -68,7 +68,12 @@ router.post('/', [
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'usuarios'),
   body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('email').isEmail().withMessage('Email inválido'),
-  body('senha').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
+  body('senha')
+    .isLength({ min: 8 }).withMessage('Senha deve ter pelo menos 8 caracteres')
+    .matches(/[a-z]/).withMessage('Senha deve conter pelo menos uma letra minúscula')
+    .matches(/[A-Z]/).withMessage('Senha deve conter pelo menos uma letra maiúscula')
+    .matches(/[0-9]/).withMessage('Senha deve conter pelo menos um número')
+    .matches(/[^A-Za-z0-9]/).withMessage('Senha deve conter pelo menos um caractere especial'),
   body('nivel_de_acesso').isIn(['I', 'II', 'III']).withMessage('Nível de acesso inválido'),
   body('tipo_de_acesso').isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor']).withMessage('Tipo de acesso inválido')
 ], async (req, res) => {
@@ -133,10 +138,15 @@ router.put('/:id', [
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'usuarios'),
   body('nome').optional().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('email').optional().isEmail().withMessage('Email inválido'),
-  body('senha').optional().isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
+  body('senha').optional()
+    .isLength({ min: 8 }).withMessage('Senha deve ter pelo menos 8 caracteres')
+    .matches(/[a-z]/).withMessage('Senha deve conter pelo menos uma letra minúscula')
+    .matches(/[A-Z]/).withMessage('Senha deve conter pelo menos uma letra maiúscula')
+    .matches(/[0-9]/).withMessage('Senha deve conter pelo menos um número')
+    .matches(/[^A-Za-z0-9]/).withMessage('Senha deve conter pelo menos um caractere especial'),
   body('nivel_de_acesso').optional().isIn(['I', 'II', 'III']).withMessage('Nível de acesso inválido'),
   body('tipo_de_acesso').optional().isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor']).withMessage('Tipo de acesso inválido'),
-  body('status').optional().isIn(['ativo', 'inativo']).withMessage('Status inválido')
+  body('status').optional().isIn(['ativo', 'inativo', 'bloqueado']).withMessage('Status inválido')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
