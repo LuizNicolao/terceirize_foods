@@ -446,4 +446,76 @@ router.delete('/almoxarifados/:id', [
   }
 });
 
+// ===== ROTAS PARA ITENS DO ALMOXARIFADO =====
+
+// Listar itens de um almoxarifado
+router.get('/almoxarifados/:almoxarifadoId/itens', checkPermission('visualizar'), async (req, res) => {
+  try {
+    const { almoxarifadoId } = req.params;
+    const itens = await executeQuery(
+      `SELECT ai.id, ai.produto_id, p.nome as produto_nome, ai.quantidade
+       FROM almoxarifado_itens ai
+       JOIN produtos p ON ai.produto_id = p.id
+       WHERE ai.almoxarifado_id = ?
+       ORDER BY p.nome ASC`,
+      [almoxarifadoId]
+    );
+    res.json(itens);
+  } catch (error) {
+    console.error('Erro ao listar itens do almoxarifado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Adicionar ou atualizar item no almoxarifado
+router.post('/almoxarifados/:almoxarifadoId/itens', [
+  checkPermission('editar'),
+  body('produto_id').isInt({ min: 1 }).withMessage('Produto obrigatório'),
+  body('quantidade').isNumeric().withMessage('Quantidade obrigatória')
+], async (req, res) => {
+  try {
+    const { almoxarifadoId } = req.params;
+    const { produto_id, quantidade } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Dados inválidos', details: errors.array() });
+    }
+    // Verifica se já existe
+    const existe = await executeQuery(
+      'SELECT id FROM almoxarifado_itens WHERE almoxarifado_id = ? AND produto_id = ?',
+      [almoxarifadoId, produto_id]
+    );
+    if (existe.length > 0) {
+      // Atualiza
+      await executeQuery(
+        'UPDATE almoxarifado_itens SET quantidade = ? WHERE id = ?',
+        [quantidade, existe[0].id]
+      );
+      return res.json({ message: 'Item atualizado com sucesso' });
+    } else {
+      // Insere
+      await executeQuery(
+        'INSERT INTO almoxarifado_itens (almoxarifado_id, produto_id, quantidade) VALUES (?, ?, ?)',
+        [almoxarifadoId, produto_id, quantidade]
+      );
+      return res.status(201).json({ message: 'Item adicionado com sucesso' });
+    }
+  } catch (error) {
+    console.error('Erro ao adicionar/atualizar item:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Remover item do almoxarifado
+router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId', checkPermission('editar'), async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    await executeQuery('DELETE FROM almoxarifado_itens WHERE id = ?', [itemId]);
+    res.json({ message: 'Item removido com sucesso' });
+  } catch (error) {
+    console.error('Erro ao remover item:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 module.exports = router; 
