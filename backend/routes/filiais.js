@@ -40,6 +40,371 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
   }
 });
 
+// ===== ROTAS PARA ALMOXARIFADOS =====
+
+// Listar almoxarifados de uma filial
+router.get('/:filialId/almoxarifados', checkPermission('visualizar'), async (req, res) => {
+  try {
+    const { filialId } = req.params;
+    const { search = '' } = req.query;
+
+    let query = `
+      SELECT id, nome, setor, responsavel, telefone, email, observacoes, status, criado_em, atualizado_em 
+      FROM almoxarifados 
+      WHERE filial_id = ?
+    `;
+    let params = [filialId];
+
+    if (search) {
+      query += ' AND (nome LIKE ? OR setor LIKE ? OR responsavel LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY nome ASC';
+
+    const almoxarifados = await executeQuery(query, params);
+    res.json(almoxarifados);
+
+  } catch (error) {
+    console.error('Erro ao listar almoxarifados:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Buscar almoxarifado por ID
+router.get('/almoxarifados/:id', checkPermission('visualizar'), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const almoxarifados = await executeQuery(
+      'SELECT * FROM almoxarifados WHERE id = ?',
+      [id]
+    );
+
+    if (almoxarifados.length === 0) {
+      return res.status(404).json({ error: 'Almoxarifado não encontrado' });
+    }
+
+    res.json(almoxarifados[0]);
+
+  } catch (error) {
+    console.error('Erro ao buscar almoxarifado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Criar almoxarifado
+router.post('/:filialId/almoxarifados', [
+  checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'almoxarifados'),
+  body('nome').custom((value) => {
+    if (!value || value.trim().length < 3) {
+      throw new Error('Nome deve ter pelo menos 3 caracteres');
+    }
+    return true;
+  }).withMessage('Nome deve ter pelo menos 3 caracteres'),
+  body('email').optional().custom((value) => {
+    if (value && value.trim() !== '') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value.trim())) {
+        throw new Error('Email inválido');
+      }
+    }
+    return true;
+  }).withMessage('Email inválido'),
+  body('status').optional().custom((value) => {
+    if (value !== undefined && value !== null && value !== '') {
+      const statusValue = value.toString();
+      if (!['0', '1'].includes(statusValue)) {
+        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
+      }
+    }
+    return true;
+  }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        error: 'Dados inválidos',
+        details: errors.array() 
+      });
+    }
+
+    const { filialId } = req.params;
+    const {
+      nome, setor, responsavel, telefone, email, observacoes, status
+    } = req.body;
+
+    // Verificar se a filial existe
+    const filial = await executeQuery(
+      'SELECT id FROM filiais WHERE id = ?',
+      [filialId]
+    );
+
+    if (filial.length === 0) {
+      return res.status(404).json({ error: 'Filial não encontrada' });
+    }
+
+    // Inserir almoxarifado
+    const result = await executeQuery(
+      `INSERT INTO almoxarifados (filial_id, nome, setor, responsavel, telefone, email, observacoes, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [filialId, nome, setor, responsavel, telefone, email, observacoes, status || 1]
+    );
+
+    const newAlmoxarifado = await executeQuery(
+      'SELECT * FROM almoxarifados WHERE id = ?',
+      [result.insertId]
+    );
+
+    res.status(201).json({
+      message: 'Almoxarifado criado com sucesso',
+      almoxarifado: newAlmoxarifado[0]
+    });
+
+  } catch (error) {
+    console.error('Erro ao criar almoxarifado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Atualizar almoxarifado
+router.put('/almoxarifados/:id', [
+  checkPermission('editar'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'almoxarifados'),
+  body('nome').custom((value) => {
+    if (!value || value.trim().length < 3) {
+      throw new Error('Nome deve ter pelo menos 3 caracteres');
+    }
+    return true;
+  }).withMessage('Nome deve ter pelo menos 3 caracteres'),
+  body('email').optional().custom((value) => {
+    if (value && value.trim() !== '') {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value.trim())) {
+        throw new Error('Email inválido');
+      }
+    }
+    return true;
+  }).withMessage('Email inválido'),
+  body('status').optional().custom((value) => {
+    if (value !== undefined && value !== null && value !== '') {
+      const statusValue = value.toString();
+      if (!['0', '1'].includes(statusValue)) {
+        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
+      }
+    }
+    return true;
+  }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        error: 'Dados inválidos',
+        details: errors.array() 
+      });
+    }
+
+    const { id } = req.params;
+    const {
+      nome, setor, responsavel, telefone, email, observacoes, status
+    } = req.body;
+
+    // Verificar se o almoxarifado existe
+    const almoxarifado = await executeQuery(
+      'SELECT * FROM almoxarifados WHERE id = ?',
+      [id]
+    );
+
+    if (almoxarifado.length === 0) {
+      return res.status(404).json({ error: 'Almoxarifado não encontrado' });
+    }
+
+    // Atualizar almoxarifado
+    await executeQuery(
+      `UPDATE almoxarifados SET nome = ?, setor = ?, responsavel = ?, telefone = ?,
+                               email = ?, observacoes = ?, status = ?, atualizado_em = CURRENT_TIMESTAMP
+       WHERE id = ?`,
+      [nome, setor, responsavel, telefone, email, observacoes, status, id]
+    );
+
+    const updatedAlmoxarifado = await executeQuery(
+      'SELECT * FROM almoxarifados WHERE id = ?',
+      [id]
+    );
+
+    res.json({
+      message: 'Almoxarifado atualizado com sucesso',
+      almoxarifado: updatedAlmoxarifado[0]
+    });
+
+  } catch (error) {
+    console.error('Erro ao atualizar almoxarifado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Excluir almoxarifado
+router.delete('/almoxarifados/:id', [
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'almoxarifados')
+], async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verificar se o almoxarifado existe
+    const almoxarifado = await executeQuery(
+      'SELECT id FROM almoxarifados WHERE id = ?',
+      [id]
+    );
+
+    if (almoxarifado.length === 0) {
+      return res.status(404).json({ error: 'Almoxarifado não encontrado' });
+    }
+
+    // Verificar se há itens vinculados
+    const itens = await executeQuery(
+      'SELECT id FROM almoxarifado_itens WHERE almoxarifado_id = ?',
+      [id]
+    );
+
+    if (itens.length > 0) {
+      return res.status(400).json({
+        error: 'Não é possível excluir o almoxarifado. Existem itens vinculados a ele.'
+      });
+    }
+
+    await executeQuery('DELETE FROM almoxarifados WHERE id = ?', [id]);
+
+    res.json({ message: 'Almoxarifado excluído com sucesso' });
+
+  } catch (error) {
+    console.error('Erro ao excluir almoxarifado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// ===== ROTAS PARA ITENS DO ALMOXARIFADO =====
+
+// Listar itens de um almoxarifado
+router.get('/almoxarifados/:almoxarifadoId/itens', checkPermission('visualizar'), async (req, res) => {
+  try {
+    const { almoxarifadoId } = req.params;
+
+    const itens = await executeQuery(
+      `SELECT ai.id, ai.almoxarifado_id, ai.produto_id, ai.quantidade, ai.criado_em, ai.atualizado_em,
+              p.nome as produto_nome, p.codigo_barras as produto_codigo
+       FROM almoxarifado_itens ai
+       JOIN produtos p ON ai.produto_id = p.id
+       WHERE ai.almoxarifado_id = ?
+       ORDER BY p.nome ASC`,
+      [almoxarifadoId]
+    );
+
+    res.json(itens);
+
+  } catch (error) {
+    console.error('Erro ao listar itens do almoxarifado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Adicionar item ao almoxarifado
+router.post('/almoxarifados/:almoxarifadoId/itens', [
+  checkPermission('editar'),
+  body('produto_id').isInt({ min: 1 }).withMessage('ID do produto é obrigatório'),
+  body('quantidade').isNumeric().withMessage('Quantidade deve ser um número válido')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ 
+        error: 'Dados inválidos',
+        details: errors.array() 
+      });
+    }
+
+    const { almoxarifadoId } = req.params;
+    const { produto_id, quantidade } = req.body;
+
+    // Verificar se o almoxarifado existe
+    const almoxarifado = await executeQuery(
+      'SELECT id FROM almoxarifados WHERE id = ?',
+      [almoxarifadoId]
+    );
+
+    if (almoxarifado.length === 0) {
+      return res.status(404).json({ error: 'Almoxarifado não encontrado' });
+    }
+
+    // Verificar se o produto existe
+    const produto = await executeQuery(
+      'SELECT id FROM produtos WHERE id = ?',
+      [produto_id]
+    );
+
+    if (produto.length === 0) {
+      return res.status(404).json({ error: 'Produto não encontrado' });
+    }
+
+    // Verificar se o item já existe
+    const existingItem = await executeQuery(
+      'SELECT id FROM almoxarifado_itens WHERE almoxarifado_id = ? AND produto_id = ?',
+      [almoxarifadoId, produto_id]
+    );
+
+    if (existingItem.length > 0) {
+      // Atualizar quantidade
+      await executeQuery(
+        'UPDATE almoxarifado_itens SET quantidade = quantidade + ?, atualizado_em = CURRENT_TIMESTAMP WHERE almoxarifado_id = ? AND produto_id = ?',
+        [quantidade, almoxarifadoId, produto_id]
+      );
+    } else {
+      // Inserir novo item
+      await executeQuery(
+        'INSERT INTO almoxarifado_itens (almoxarifado_id, produto_id, quantidade) VALUES (?, ?, ?)',
+        [almoxarifadoId, produto_id, quantidade]
+      );
+    }
+
+    res.status(201).json({ message: 'Item adicionado ao almoxarifado com sucesso' });
+
+  } catch (error) {
+    console.error('Erro ao adicionar item ao almoxarifado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Remover item do almoxarifado
+router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId', checkPermission('editar'), async (req, res) => {
+  try {
+    const { almoxarifadoId, itemId } = req.params;
+
+    // Verificar se o item existe
+    const item = await executeQuery(
+      'SELECT id FROM almoxarifado_itens WHERE id = ? AND almoxarifado_id = ?',
+      [itemId, almoxarifadoId]
+    );
+
+    if (item.length === 0) {
+      return res.status(404).json({ error: 'Item não encontrado' });
+    }
+
+    await executeQuery(
+      'DELETE FROM almoxarifado_itens WHERE id = ?',
+      [itemId]
+    );
+
+    res.json({ message: 'Item removido do almoxarifado com sucesso' });
+
+  } catch (error) {
+    console.error('Erro ao remover item do almoxarifado:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // Buscar filial por ID
 router.get('/:id', checkPermission('visualizar'), async (req, res) => {
   try {
@@ -174,16 +539,26 @@ router.put('/:id', [
       rota_id, lote, abastecimento, status
     } = req.body;
 
+    // Verificar se a filial existe
+    const filial = await executeQuery(
+      'SELECT * FROM filiais WHERE id = ?',
+      [id]
+    );
+
+    if (filial.length === 0) {
+      return res.status(404).json({ error: 'Filial não encontrada' });
+    }
+
     // Atualizar filial
     await executeQuery(
       `UPDATE filiais SET nome = ?, logradouro = ?, numero = ?, bairro = ?, cep = ?, 
-                          cidade = ?, estado = ?, supervisao = ?, coordenacao = ?, 
-                          centro_distribuicao = ?, regional = ?, rota_id = ?, lote = ?, 
-                          abastecimento = ?, status = ?, atualizado_em = NOW() 
+                         cidade = ?, estado = ?, supervisao = ?, coordenacao = ?, 
+                         centro_distribuicao = ?, regional = ?, rota_id = ?, lote = ?, 
+                         abastecimento = ?, status = ?, atualizado_em = CURRENT_TIMESTAMP
        WHERE id = ?`,
       [nome, logradouro, numero, bairro, cep, cidade, estado,
        supervisao, coordenacao, centro_distribuicao, regional,
-       rota_id, lote, abastecimento, status || 1, id]
+       rota_id, lote, abastecimento, status, id]
     );
 
     const updatedFilial = await executeQuery(
@@ -210,6 +585,16 @@ router.delete('/:id', [
   try {
     const { id } = req.params;
 
+    // Verificar se a filial existe
+    const filial = await executeQuery(
+      'SELECT id FROM filiais WHERE id = ?',
+      [id]
+    );
+
+    if (filial.length === 0) {
+      return res.status(404).json({ error: 'Filial não encontrada' });
+    }
+
     // Verificar se há almoxarifados vinculados
     const almoxarifados = await executeQuery(
       'SELECT id FROM almoxarifados WHERE filial_id = ?',
@@ -217,8 +602,8 @@ router.delete('/:id', [
     );
 
     if (almoxarifados.length > 0) {
-      return res.status(400).json({ 
-        error: 'Não é possível excluir a filial. Existem almoxarifados vinculados a ela.' 
+      return res.status(400).json({
+        error: 'Não é possível excluir a filial. Existem almoxarifados vinculados a ela.'
       });
     }
 
@@ -228,292 +613,6 @@ router.delete('/:id', [
 
   } catch (error) {
     console.error('Erro ao excluir filial:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// ===== ROTAS PARA ALMOXARIFADOS =====
-
-// Listar almoxarifados de uma filial
-router.get('/:filialId/almoxarifados', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { filialId } = req.params;
-    const { search = '' } = req.query;
-
-    let query = `
-      SELECT id, nome, setor, responsavel, telefone, email, observacoes, status, criado_em, atualizado_em 
-      FROM almoxarifados 
-      WHERE filial_id = ?
-    `;
-    let params = [filialId];
-
-    if (search) {
-      query += ' AND (nome LIKE ? OR setor LIKE ? OR responsavel LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-    }
-
-    query += ' ORDER BY nome ASC';
-
-    const almoxarifados = await executeQuery(query, params);
-    res.json(almoxarifados);
-
-  } catch (error) {
-    console.error('Erro ao listar almoxarifados:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Buscar almoxarifado por ID
-router.get('/almoxarifados/:id', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const almoxarifados = await executeQuery(
-      'SELECT * FROM almoxarifados WHERE id = ?',
-      [id]
-    );
-
-    if (almoxarifados.length === 0) {
-      return res.status(404).json({ error: 'Almoxarifado não encontrado' });
-    }
-
-    res.json(almoxarifados[0]);
-
-  } catch (error) {
-    console.error('Erro ao buscar almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Criar almoxarifado
-router.post('/:filialId/almoxarifados', [
-  checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'almoxarifados'),
-  body('nome').custom((value) => {
-    if (!value || value.trim().length < 3) {
-      throw new Error('Nome deve ter pelo menos 3 caracteres');
-    }
-    return true;
-  }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('email').optional().custom((value) => {
-    if (value && value.trim() !== '') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value.trim())) {
-        throw new Error('Email inválido');
-      }
-    }
-    return true;
-  }).withMessage('Email inválido'),
-  body('status').optional().custom((value) => {
-    if (value !== undefined && value !== null && value !== '') {
-      const statusValue = value.toString();
-      if (!['0', '1'].includes(statusValue)) {
-        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
-      }
-    }
-    return true;
-  }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
-
-    const { filialId } = req.params;
-    const {
-      nome, setor, responsavel, telefone, email, observacoes, status
-    } = req.body;
-
-    // Verificar se a filial existe
-    const filial = await executeQuery(
-      'SELECT id FROM filiais WHERE id = ?',
-      [filialId]
-    );
-
-    if (filial.length === 0) {
-      return res.status(404).json({ error: 'Filial não encontrada' });
-    }
-
-    // Inserir almoxarifado
-    const result = await executeQuery(
-      `INSERT INTO almoxarifados (filial_id, nome, setor, responsavel, telefone, email, observacoes, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [filialId, nome, setor, responsavel, telefone, email, observacoes, status || 1]
-    );
-
-    const newAlmoxarifado = await executeQuery(
-      'SELECT * FROM almoxarifados WHERE id = ?',
-      [result.insertId]
-    );
-
-    res.status(201).json({
-      message: 'Almoxarifado criado com sucesso',
-      almoxarifado: newAlmoxarifado[0]
-    });
-
-  } catch (error) {
-    console.error('Erro ao criar almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Atualizar almoxarifado
-router.put('/almoxarifados/:id', [
-  checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'almoxarifados'),
-  body('nome').custom((value) => {
-    if (!value || value.trim().length < 3) {
-      throw new Error('Nome deve ter pelo menos 3 caracteres');
-    }
-    return true;
-  }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('email').optional().custom((value) => {
-    if (value && value.trim() !== '') {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(value.trim())) {
-        throw new Error('Email inválido');
-      }
-    }
-    return true;
-  }).withMessage('Email inválido'),
-  body('status').optional().custom((value) => {
-    if (value !== undefined && value !== null && value !== '') {
-      const statusValue = value.toString();
-      if (!['0', '1'].includes(statusValue)) {
-        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
-      }
-    }
-    return true;
-  }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
-
-    const { id } = req.params;
-    const {
-      nome, setor, responsavel, telefone, email, observacoes, status
-    } = req.body;
-
-    // Atualizar almoxarifado
-    await executeQuery(
-      `UPDATE almoxarifados SET nome = ?, setor = ?, responsavel = ?, telefone = ?, 
-                                email = ?, observacoes = ?, status = ?, atualizado_em = NOW() 
-       WHERE id = ?`,
-      [nome, setor, responsavel, telefone, email, observacoes, status || 1, id]
-    );
-
-    const updatedAlmoxarifado = await executeQuery(
-      'SELECT * FROM almoxarifados WHERE id = ?',
-      [id]
-    );
-
-    res.json({
-      message: 'Almoxarifado atualizado com sucesso',
-      almoxarifado: updatedAlmoxarifado[0]
-    });
-
-  } catch (error) {
-    console.error('Erro ao atualizar almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Excluir almoxarifado
-router.delete('/almoxarifados/:id', [
-  checkPermission('excluir'),
-  auditMiddleware(AUDIT_ACTIONS.DELETE, 'almoxarifados')
-], async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Excluir almoxarifado
-    await executeQuery('DELETE FROM almoxarifados WHERE id = ?', [id]);
-    res.json({ message: 'Almoxarifado excluído com sucesso' });
-
-  } catch (error) {
-    console.error('Erro ao excluir almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// ===== ROTAS PARA ITENS DO ALMOXARIFADO =====
-
-// Listar itens de um almoxarifado
-router.get('/almoxarifados/:almoxarifadoId/itens', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { almoxarifadoId } = req.params;
-    const itens = await executeQuery(
-      `SELECT ai.id, ai.produto_id, p.nome as produto_nome, ai.quantidade
-       FROM almoxarifado_itens ai
-       JOIN produtos p ON ai.produto_id = p.id
-       WHERE ai.almoxarifado_id = ?
-       ORDER BY p.nome ASC`,
-      [almoxarifadoId]
-    );
-    res.json(itens);
-  } catch (error) {
-    console.error('Erro ao listar itens do almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Adicionar ou atualizar item no almoxarifado
-router.post('/almoxarifados/:almoxarifadoId/itens', [
-  checkPermission('editar'),
-  body('produto_id').isInt({ min: 1 }).withMessage('Produto obrigatório'),
-  body('quantidade').isNumeric().withMessage('Quantidade obrigatória')
-], async (req, res) => {
-  try {
-    const { almoxarifadoId } = req.params;
-    const { produto_id, quantidade } = req.body;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: 'Dados inválidos', details: errors.array() });
-    }
-    // Verifica se já existe
-    const existe = await executeQuery(
-      'SELECT id FROM almoxarifado_itens WHERE almoxarifado_id = ? AND produto_id = ?',
-      [almoxarifadoId, produto_id]
-    );
-    if (existe.length > 0) {
-      // Atualiza
-      await executeQuery(
-        'UPDATE almoxarifado_itens SET quantidade = ? WHERE id = ?',
-        [quantidade, existe[0].id]
-      );
-      return res.json({ message: 'Item atualizado com sucesso' });
-    } else {
-      // Insere
-      await executeQuery(
-        'INSERT INTO almoxarifado_itens (almoxarifado_id, produto_id, quantidade) VALUES (?, ?, ?)',
-        [almoxarifadoId, produto_id, quantidade]
-      );
-      return res.status(201).json({ message: 'Item adicionado com sucesso' });
-    }
-  } catch (error) {
-    console.error('Erro ao adicionar/atualizar item:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Remover item do almoxarifado
-router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId', checkPermission('editar'), async (req, res) => {
-  try {
-    const { itemId } = req.params;
-    await executeQuery('DELETE FROM almoxarifado_itens WHERE id = ?', [itemId]);
-    res.json({ message: 'Item removido com sucesso' });
-  } catch (error) {
-    console.error('Erro ao remover item:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
