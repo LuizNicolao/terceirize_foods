@@ -351,10 +351,15 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         if (item.path === '/cotacao') {
                           e.preventDefault();
                           const token = localStorage.getItem('token');
+                          console.log('🔍 Token encontrado no sistema principal:', token ? 'Sim' : 'Não');
+                          
                           if (token) {
                             // Passar o token como parâmetro na URL
-                            window.open(`http://82.29.57.43:3002?sso_token=${token}`, '_blank');
+                            const ssoUrl = `http://82.29.57.43:3002?sso_token=${token}`;
+                            console.log('🔍 Abrindo URL SSO:', ssoUrl);
+                            window.open(ssoUrl, '_blank');
                           } else {
+                            console.log('🔍 Nenhum token encontrado, abrindo sem SSO');
                             window.open('http://82.29.57.43:3002', '_blank');
                           }
                         }
