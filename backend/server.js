@@ -32,9 +32,11 @@ app.use(helmet());
 // Configuração de CORS
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['http://82.29.57.43:3000', 'http://82.29.57.43', 'http://localhost:3000'] 
-    : ['http://localhost:3000'],
-  credentials: true
+    ? ['http://82.29.57.43:3000', 'http://82.29.57.43', 'http://localhost:3000', 'http://82.29.57.43:3003'] 
+    : ['http://localhost:3000', 'http://localhost:3003'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Rate limiting mais flexível para sistema em produção

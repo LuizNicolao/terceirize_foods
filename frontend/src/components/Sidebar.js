@@ -313,7 +313,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         }
         
         // Fazer requisição para obter URL de integração
-        const response = await fetch('/api/integration/cotacao', {
+        const response = await fetch('http://82.29.57.43:3001/api/integration/cotacao', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -344,7 +344,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
       <SidebarContainer $collapsed={collapsed}>
         <SidebarHeader>
           <Logo $collapsed={collapsed}>
-            {collapsed ? 'F' : 'Foods'}
+            {collapsed ? 'C' : 'CILS'}
           </Logo>
           <ToggleButton onClick={onToggle}>
             {collapsed ? <FaChevronRight /> : <FaChevronLeft />}

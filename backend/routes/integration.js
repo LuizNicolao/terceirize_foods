@@ -5,6 +5,14 @@ const { executeQuery } = require('../config/database');
 
 const router = express.Router();
 
+// Rota de teste (sem autenticação)
+router.get('/test', (req, res) => {
+  res.json({ 
+    message: 'Rota de integração funcionando!',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Aplicar autenticação em todas as rotas
 router.use(authenticateToken);
 
@@ -62,10 +70,12 @@ router.post('/cotacao', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Erro na integração com cotação:', error);
+    console.error('❌ Erro na integração com cotação:', error);
+    console.error('❌ Stack trace:', error.stack);
     res.status(500).json({ 
       error: 'Erro interno do servidor',
-      message: 'Erro ao gerar URL de integração'
+      message: 'Erro ao gerar URL de integração',
+      details: error.message
     });
   }
 });
