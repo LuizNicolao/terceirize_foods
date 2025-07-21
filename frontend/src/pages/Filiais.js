@@ -331,6 +331,25 @@ const EmptyState = styled.div`
   font-size: 16px;
 `;
 
+// Adicionar styled para abas
+const Tabs = styled.div`
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 16px;
+`;
+const Tab = styled.button`
+  background: none;
+  border: none;
+  padding: 12px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: ${props => props.active ? 'var(--primary-green)' : 'var(--dark-gray)'};
+  border-bottom: 3px solid ${props => props.active ? 'var(--primary-green)' : 'transparent'};
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+`;
+
 const Filiais = () => {
   const [filiais, setFiliais] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -349,6 +368,11 @@ const Filiais = () => {
     usuario_id: '',
     periodo: ''
   });
+  const [activeTab, setActiveTab] = useState('dados');
+  const [almoxarifados, setAlmoxarifados] = useState([]);
+  const [loadingAlmoxarifados, setLoadingAlmoxarifados] = useState(false);
+  const [showAlmoxarifadoModal, setShowAlmoxarifadoModal] = useState(false);
+  const [editingAlmoxarifado, setEditingAlmoxarifado] = useState(null);
 
   const { canCreate, canEdit, canDelete } = usePermissions();
 
@@ -368,9 +392,31 @@ const Filiais = () => {
     }
   };
 
+  // Carregar almoxarifados da filial selecionada
+  const loadAlmoxarifados = async (filialId) => {
+    setLoadingAlmoxarifados(true);
+    try {
+      const res = await api.get(`/filiais/${filialId}/almoxarifados`);
+      setAlmoxarifados(res.data);
+    } catch (err) {
+      toast.error('Erro ao carregar almoxarifados');
+    } finally {
+      setLoadingAlmoxarifados(false);
+    }
+  };
+
   useEffect(() => {
     loadFiliais();
   }, []);
+
+  // Ao abrir modal de edição/visualização, carregar almoxarifados
+  useEffect(() => {
+    if (showModal && editingFilial && editingFilial.id) {
+      loadAlmoxarifados(editingFilial.id);
+    } else {
+      setAlmoxarifados([]);
+    }
+  }, [showModal, editingFilial]);
 
   // Filtros
   const filteredFiliais = filiais.filter(filial => {
@@ -620,111 +666,202 @@ const Filiais = () => {
               <ModalTitle>{viewMode ? 'Visualizar Filial' : editingFilial ? 'Editar Filial' : 'Adicionar Filial'}</ModalTitle>
               <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
             </ModalHeader>
-            <Form onSubmit={handleSubmit(onSubmit)}>
-              <FormGroup>
-                <Label>Nome *</Label>
-                <Input type="text" placeholder="Nome da filial" {...register('nome', { required: 'Nome é obrigatório' })} disabled={viewMode} />
-                {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-              </FormGroup>
-              <FormGroup>
-                <Label>Logradouro</Label>
-                <Input type="text" placeholder="Rua, avenida, etc." {...register('logradouro')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Número</Label>
-                <Input type="text" placeholder="Número" {...register('numero')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Bairro</Label>
-                <Input type="text" placeholder="Bairro" {...register('bairro')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>CEP</Label>
-                <Input type="text" placeholder="00000-000" {...register('cep')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Cidade</Label>
-                <Input type="text" placeholder="Cidade" {...register('cidade')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Estado</Label>
-                <Select {...register('estado')} disabled={viewMode}>
-                  <option value="">Selecione...</option>
-                  <option value="AC">AC</option>
-                  <option value="AL">AL</option>
-                  <option value="AP">AP</option>
-                  <option value="AM">AM</option>
-                  <option value="BA">BA</option>
-                  <option value="CE">CE</option>
-                  <option value="DF">DF</option>
-                  <option value="ES">ES</option>
-                  <option value="GO">GO</option>
-                  <option value="MA">MA</option>
-                  <option value="MT">MT</option>
-                  <option value="MS">MS</option>
-                  <option value="MG">MG</option>
-                  <option value="PA">PA</option>
-                  <option value="PB">PB</option>
-                  <option value="PR">PR</option>
-                  <option value="PE">PE</option>
-                  <option value="PI">PI</option>
-                  <option value="RJ">RJ</option>
-                  <option value="RN">RN</option>
-                  <option value="RO">RO</option>
-                  <option value="RR">RR</option>
-                  <option value="SC">SC</option>
-                  <option value="SP">SP</option>
-                  <option value="SE">SE</option>
-                  <option value="TO">TO</option>
-                </Select>
-              </FormGroup>
-              <FormGroup>
-                <Label>Supervisão</Label>
-                <Input type="text" placeholder="Supervisão" {...register('supervisao')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Coordenação</Label>
-                <Input type="text" placeholder="Coordenação" {...register('coordenacao')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Centro de Distribuição</Label>
-                <Input type="text" placeholder="Centro de Distribuição" {...register('centro_distribuicao')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Regional</Label>
-                <Input type="text" placeholder="Regional" {...register('regional')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Rota ID</Label>
-                <Input type="text" placeholder="Rota ID" {...register('rota_id')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Lote</Label>
-                <Input type="text" placeholder="Lote" {...register('lote')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Abastecimento</Label>
-                <Input type="text" placeholder="Abastecimento" {...register('abastecimento')} disabled={viewMode} />
-              </FormGroup>
-              <FormGroup>
-                <Label>Status</Label>
-                <Select {...register('status', { required: 'Status é obrigatório' })} disabled={viewMode}>
-                  <option value="1">Ativo</option>
-                  <option value="0">Inativo</option>
-                </Select>
-                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
-              </FormGroup>
-              <ButtonGroup>
-                <Button type="button" className="secondary" onClick={handleCloseModal}>
-                  {viewMode ? 'Fechar' : 'Cancelar'}
-                </Button>
-                {!viewMode && (
-                  <Button type="submit" className="primary">
-                    {editingFilial ? 'Atualizar' : 'Cadastrar'}
+            <Tabs>
+              <Tab active={activeTab === 'dados'} onClick={() => setActiveTab('dados')}>Dados</Tab>
+              {editingFilial && editingFilial.id && (
+                <Tab active={activeTab === 'almoxarifados'} onClick={() => setActiveTab('almoxarifados')}>Almoxarifados</Tab>
+              )}
+            </Tabs>
+            {activeTab === 'dados' && (
+              <Form onSubmit={handleSubmit(onSubmit)}>
+                <FormGroup>
+                  <Label>Nome *</Label>
+                  <Input type="text" placeholder="Nome da filial" {...register('nome', { required: 'Nome é obrigatório' })} disabled={viewMode} />
+                  {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
+                </FormGroup>
+                <FormGroup>
+                  <Label>Logradouro</Label>
+                  <Input type="text" placeholder="Rua, avenida, etc." {...register('logradouro')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Número</Label>
+                  <Input type="text" placeholder="Número" {...register('numero')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Bairro</Label>
+                  <Input type="text" placeholder="Bairro" {...register('bairro')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>CEP</Label>
+                  <Input type="text" placeholder="00000-000" {...register('cep')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Cidade</Label>
+                  <Input type="text" placeholder="Cidade" {...register('cidade')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Estado</Label>
+                  <Select {...register('estado')} disabled={viewMode}>
+                    <option value="">Selecione...</option>
+                    <option value="AC">AC</option>
+                    <option value="AL">AL</option>
+                    <option value="AP">AP</option>
+                    <option value="AM">AM</option>
+                    <option value="BA">BA</option>
+                    <option value="CE">CE</option>
+                    <option value="DF">DF</option>
+                    <option value="ES">ES</option>
+                    <option value="GO">GO</option>
+                    <option value="MA">MA</option>
+                    <option value="MT">MT</option>
+                    <option value="MS">MS</option>
+                    <option value="MG">MG</option>
+                    <option value="PA">PA</option>
+                    <option value="PB">PB</option>
+                    <option value="PR">PR</option>
+                    <option value="PE">PE</option>
+                    <option value="PI">PI</option>
+                    <option value="RJ">RJ</option>
+                    <option value="RN">RN</option>
+                    <option value="RO">RO</option>
+                    <option value="RR">RR</option>
+                    <option value="SC">SC</option>
+                    <option value="SP">SP</option>
+                    <option value="SE">SE</option>
+                    <option value="TO">TO</option>
+                  </Select>
+                </FormGroup>
+                <FormGroup>
+                  <Label>Supervisão</Label>
+                  <Input type="text" placeholder="Supervisão" {...register('supervisao')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Coordenação</Label>
+                  <Input type="text" placeholder="Coordenação" {...register('coordenacao')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Centro de Distribuição</Label>
+                  <Input type="text" placeholder="Centro de Distribuição" {...register('centro_distribuicao')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Regional</Label>
+                  <Input type="text" placeholder="Regional" {...register('regional')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Rota ID</Label>
+                  <Input type="text" placeholder="Rota ID" {...register('rota_id')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Lote</Label>
+                  <Input type="text" placeholder="Lote" {...register('lote')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Abastecimento</Label>
+                  <Input type="text" placeholder="Abastecimento" {...register('abastecimento')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>Status</Label>
+                  <Select {...register('status', { required: 'Status é obrigatório' })} disabled={viewMode}>
+                    <option value="1">Ativo</option>
+                    <option value="0">Inativo</option>
+                  </Select>
+                  {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
+                </FormGroup>
+                <ButtonGroup>
+                  <Button type="button" className="secondary" onClick={handleCloseModal}>
+                    {viewMode ? 'Fechar' : 'Cancelar'}
                   </Button>
+                  {!viewMode && (
+                    <Button type="submit" className="primary">
+                      {editingFilial ? 'Atualizar' : 'Cadastrar'}
+                    </Button>
+                  )}
+                </ButtonGroup>
+              </Form>
+            )}
+            {activeTab === 'almoxarifados' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <h3 style={{ margin: 0, fontSize: 18 }}>Almoxarifados da Filial</h3>
+                  {!viewMode && (
+                    <Button className="primary" type="button" onClick={() => { setEditingAlmoxarifado(null); setShowAlmoxarifadoModal(true); }}>
+                      <FaPlus /> Novo Almoxarifado
+                    </Button>
+                  )}
+                </div>
+                {loadingAlmoxarifados ? (
+                  <LoadingSpinner inline={true} text="Carregando almoxarifados..." />
+                ) : almoxarifados.length === 0 ? (
+                  <EmptyState>Nenhum almoxarifado cadastrado para esta filial</EmptyState>
+                ) : (
+                  <TableContainer>
+                    <Table>
+                      <thead>
+                        <tr>
+                          <Th>Nome</Th>
+                          <Th>Setor</Th>
+                          <Th>Responsável</Th>
+                          <Th>Status</Th>
+                          <Th>Ações</Th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {almoxarifados.map(almox => (
+                          <tr key={almox.id}>
+                            <Td>{almox.nome}</Td>
+                            <Td>{almox.setor || '-'}</Td>
+                            <Td>{almox.responsavel || '-'}</Td>
+                            <Td>
+                              <StatusBadge $status={almox.status === 1 ? 'ativo' : 'inativo'}>
+                                {almox.status === 1 ? 'Ativo' : 'Inativo'}
+                              </StatusBadge>
+                            </Td>
+                            <Td>
+                              <ActionButton title="Itens" onClick={() => {/* abrir modal de itens */}}>
+                                <FaEye /> Itens
+                              </ActionButton>
+                              {!viewMode && (
+                                <>
+                                  <ActionButton title="Editar" onClick={() => { setEditingAlmoxarifado(almox); setShowAlmoxarifadoModal(true); }}>
+                                    <FaEdit />
+                                  </ActionButton>
+                                  <ActionButton title="Excluir" onClick={async () => {
+                                    if (window.confirm('Deseja excluir este almoxarifado?')) {
+                                      try {
+                                        await api.delete(`/filiais/almoxarifados/${almox.id}`);
+                                        toast.success('Almoxarifado excluído!');
+                                        loadAlmoxarifados(editingFilial.id);
+                                      } catch {
+                                        toast.error('Erro ao excluir almoxarifado');
+                                      }
+                                    }
+                                  }}>
+                                    <FaTrash />
+                                  </ActionButton>
+                                </>
+                              )}
+                            </Td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </TableContainer>
                 )}
-              </ButtonGroup>
-            </Form>
+              </div>
+            )}
+            {/* Modal de cadastro/edição de almoxarifado */}
+            {showAlmoxarifadoModal && (
+              <Modal onClick={() => setShowAlmoxarifadoModal(false)}>
+                <ModalContent onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+                  <ModalHeader>
+                    <ModalTitle>{editingAlmoxarifado ? 'Editar Almoxarifado' : 'Novo Almoxarifado'}</ModalTitle>
+                    <CloseButton onClick={() => setShowAlmoxarifadoModal(false)}>&times;</CloseButton>
+                  </ModalHeader>
+                  {/* Formulário de almoxarifado */}
+                  {/* ... implementar ... */}
+                </ModalContent>
+              </Modal>
+            )}
           </ModalContent>
         </Modal>
       )}
