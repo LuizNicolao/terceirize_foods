@@ -18,7 +18,50 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkAuthStatus();
+    checkSSO();
   }, []);
+
+  const checkSSO = async () => {
+    try {
+      // Verificar se há token SSO na URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const ssoToken = urlParams.get('sso_token');
+      
+      if (ssoToken) {
+        console.log('🔍 Token SSO encontrado, tentando autenticar...');
+        
+        const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/auth/sso`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ token: ssoToken })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          localStorage.setItem('token', data.token);
+          setUser(data.user);
+          setIsAuthenticated(true);
+          
+          // Buscar permissões do usuário
+          await fetchUserPermissions(data.user.id);
+          
+          // Limpar o parâmetro da URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          
+          console.log('✅ SSO realizado com sucesso!');
+        } else {
+          console.log('❌ SSO falhou, removendo token da URL');
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    } catch (error) {
+      console.error('Erro no SSO:', error);
+      // Limpar o parâmetro da URL em caso de erro
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  };
 
   const checkAuthStatus = async () => {
     try {

@@ -347,10 +347,16 @@ const Sidebar = ({ collapsed, onToggle }) => {
                       to={item.path}
                       className={isActive ? 'active' : ''}
                       onClick={(e) => {
-                        // Se for o item de cotação, abrir em nova aba
+                        // Se for o item de cotação, abrir em nova aba com SSO
                         if (item.path === '/cotacao') {
                           e.preventDefault();
-                          window.open('http://82.29.57.43:3002', '_blank');
+                          const token = localStorage.getItem('token');
+                          if (token) {
+                            // Passar o token como parâmetro na URL
+                            window.open(`http://82.29.57.43:3002?sso_token=${token}`, '_blank');
+                          } else {
+                            window.open('http://82.29.57.43:3002', '_blank');
+                          }
                         }
                         
                         // Fechar sidebar no mobile quando clicar em um item
