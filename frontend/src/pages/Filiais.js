@@ -384,7 +384,7 @@ const Filiais = () => {
 
   const { canCreate, canEdit, canDelete } = usePermissions();
 
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
 
   // Carregar filiais
   const loadFiliais = async () => {

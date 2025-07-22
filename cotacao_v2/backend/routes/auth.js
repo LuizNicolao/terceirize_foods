@@ -71,7 +71,11 @@ router.post('/sso', async (req, res) => {
 
     const user = users[0];
 
-    // Verificar se o usuário está ativo
+    // Verificar se o usuário está bloqueado
+    if (user.status === 'bloqueado') {
+      return res.status(401).json({ message: 'Usuário bloqueado. Entre em contato com o administrador.' });
+    }
+    // Verificar se o usuário está inativo
     if (user.status !== 'ativo') {
       return res.status(401).json({ message: 'Usuário inativo no sistema de cotações' });
     }
@@ -145,7 +149,11 @@ router.post('/login', async (req, res) => {
 
     const user = users[0];
 
-    // Verificar se o usuário está ativo
+    // Verificar se o usuário está bloqueado
+    if (user.status === 'bloqueado') {
+      return res.status(401).json({ message: 'Usuário bloqueado. Entre em contato com o administrador.' });
+    }
+    // Verificar se o usuário está inativo
     if (user.status !== 'ativo') {
       return res.status(401).json({ message: 'Usuário inativo. Entre em contato com o administrador.' });
     }
