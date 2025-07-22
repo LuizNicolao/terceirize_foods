@@ -22,7 +22,9 @@ import {
   FaChevronDown,
   FaChevronUp,
   FaStore,
-  FaClipboardList
+  FaClipboardList,
+  FaStar,
+  FaRegStar
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -289,6 +291,49 @@ const Sidebar = ({ collapsed, onToggle }) => {
     'Configurações': true
   });
 
+  // Estado para busca
+  const [search, setSearch] = useState('');
+
+  // Estado para favoritos
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('sidebarFavorites')) || [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Atualizar favoritos no localStorage sempre que mudar
+  React.useEffect(() => {
+    localStorage.setItem('sidebarFavorites', JSON.stringify(favorites));
+  }, [favorites]);
+
+  // Função para alternar favorito
+  const toggleFavorite = (item) => {
+    setFavorites((prev) => {
+      if (prev.some(fav => fav.path === item.path)) {
+        return prev.filter(fav => fav.path !== item.path);
+      } else {
+        return [...prev, item];
+      }
+    });
+  };
+
+  // Filtrar itens do menu conforme busca
+  const filterMenu = (groups) => {
+    if (!search.trim()) return groups;
+    const lower = search.toLowerCase();
+    return groups
+      .map(group => ({
+        ...group,
+        items: group.items.filter(item => item.label.toLowerCase().includes(lower))
+      }))
+      .filter(group => group.items.length > 0);
+  };
+
+  // Filtrar favoritos conforme busca
+  const filteredFavorites = favorites.filter(item => item.label.toLowerCase().includes(search.toLowerCase()));
+
   const handleLogout = () => {
     logout();
   };
@@ -312,9 +357,63 @@ const Sidebar = ({ collapsed, onToggle }) => {
             {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
           </ToggleButton>
         </SidebarHeader>
-        
+        {/* Campo de busca */}
+        {!collapsed && (
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #eee' }}>
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ddd', fontSize: 15 }}
+            />
+          </div>
+        )}
         <Nav>
-          {menuGroups.map((group, groupIndex) => (
+          {/* Favoritos */}
+          {!collapsed && filteredFavorites.length > 0 && (
+            <MenuGroup>
+              <GroupHeader $collapsed={collapsed} style={{ color: '#f7b731' }}>
+                <GroupTitle>Favoritos</GroupTitle>
+              </GroupHeader>
+              <GroupContent $expanded={true}>
+                {filteredFavorites.map(item => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <NavItem
+                      key={item.path}
+                      to={item.path}
+                      className={isActive ? 'active' : ''}
+                      onClick={e => {
+                        if (item.path === '/cotacao') {
+                          e.preventDefault();
+                          const token = localStorage.getItem('token');
+                          const ssoUrl = token ? `http://82.29.57.43:3002?sso_token=${token}` : 'http://82.29.57.43:3002';
+                          window.open(ssoUrl, '_blank');
+                        }
+                        if (window.innerWidth <= 768) onToggle();
+                      }}
+                    >
+                      <NavIcon $collapsed={collapsed} $active={isActive}>
+                        <Icon />
+                      </NavIcon>
+                      <NavText $collapsed={collapsed}>{item.label}</NavText>
+                      {/* Estrela para remover dos favoritos */}
+                      <span style={{ marginLeft: 'auto', color: '#f7b731', cursor: 'pointer' }}
+                        onClick={e => { e.stopPropagation(); toggleFavorite(item); }}
+                        title="Remover dos favoritos"
+                      >
+                        <FaStar />
+                      </span>
+                    </NavItem>
+                  );
+                })}
+              </GroupContent>
+            </MenuGroup>
+          )}
+          {/* Menu normal filtrado */}
+          {filterMenu(menuGroups).map((group, groupIndex) => (
             <MenuGroup key={groupIndex}>
               <GroupHeader 
                 $collapsed={collapsed}
@@ -333,49 +432,35 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
-                  
-                  // Verificar se o usuário pode visualizar este item
                   const canViewItem = item.screen === 'dashboard' || canView(item.screen);
-                  
-                  if (!canViewItem) {
-                    return null;
-                  }
-                  
+                  if (!canViewItem) return null;
+                  const isFavorite = favorites.some(fav => fav.path === item.path);
                   return (
                     <NavItem 
                       key={item.path} 
                       to={item.path}
                       className={isActive ? 'active' : ''}
-                      onClick={(e) => {
-                        // Se for o item de cotação, abrir em nova aba com SSO
+                      onClick={e => {
                         if (item.path === '/cotacao') {
                           e.preventDefault();
                           const token = localStorage.getItem('token');
-                          console.log('🔍 Token encontrado no sistema principal:', token ? 'Sim' : 'Não');
-                          
-                          if (token) {
-                            // Passar o token como parâmetro na URL
-                            const ssoUrl = `http://82.29.57.43:3002?sso_token=${token}`;
-                            console.log('🔍 Abrindo URL SSO:', ssoUrl);
-                            window.open(ssoUrl, '_blank');
-                          } else {
-                            console.log('🔍 Nenhum token encontrado, abrindo sem SSO');
-                            window.open('http://82.29.57.43:3002', '_blank');
-                          }
+                          const ssoUrl = token ? `http://82.29.57.43:3002?sso_token=${token}` : 'http://82.29.57.43:3002';
+                          window.open(ssoUrl, '_blank');
                         }
-                        
-                        // Fechar sidebar no mobile quando clicar em um item
-                        if (window.innerWidth <= 768) {
-                          onToggle();
-                        }
+                        if (window.innerWidth <= 768) onToggle();
                       }}
                     >
                       <NavIcon $collapsed={collapsed} $active={isActive}>
                         <Icon />
                       </NavIcon>
-                      <NavText $collapsed={collapsed}>
-                        {item.label}
-                      </NavText>
+                      <NavText $collapsed={collapsed}>{item.label}</NavText>
+                      {/* Estrela para adicionar/remover dos favoritos */}
+                      <span style={{ marginLeft: 'auto', color: isFavorite ? '#f7b731' : '#bbb', cursor: 'pointer' }}
+                        onClick={e => { e.stopPropagation(); toggleFavorite(item); }}
+                        title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                      >
+                        {isFavorite ? <FaStar /> : <FaRegStar />}
+                      </span>
                     </NavItem>
                   );
                 })}
@@ -383,15 +468,12 @@ const Sidebar = ({ collapsed, onToggle }) => {
             </MenuGroup>
           ))}
         </Nav>
-
-        <LogoutButton onClick={handleLogout}>
-          <NavIcon $collapsed={collapsed}>
+        <SidebarFooter>
+          <LogoutButton onClick={handleLogout} $collapsed={collapsed}>
             <FaSignOutAlt />
-          </NavIcon>
-          <NavText $collapsed={collapsed}>
-            Sair
-          </NavText>
-        </LogoutButton>
+            {!collapsed && 'Sair'}
+          </LogoutButton>
+        </SidebarFooter>
       </SidebarContainer>
     </>
   );
