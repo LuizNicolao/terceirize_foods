@@ -651,6 +651,39 @@ const Filiais = () => {
   };
   const handleApplyAuditFilters = () => { loadAuditLogs(); };
 
+  // Consultar CNPJ
+  const handleConsultarCNPJ = async () => {
+    const cnpj = watch('cnpj');
+    if (!cnpj) {
+      toast.error('Digite um CNPJ para consultar');
+      return;
+    }
+
+    try {
+      const cnpjLimpo = cnpj.replace(/\D/g, '');
+      const response = await api.get(`/filiais/consulta-cnpj/${cnpjLimpo}`);
+      
+      if (response.data.success) {
+        const dados = response.data.data;
+        
+        // Preencher automaticamente os campos com os dados do CNPJ
+        setValue('nome', dados.razao_social || '');
+        setValue('logradouro', dados.logradouro || '');
+        setValue('numero', dados.numero || '');
+        setValue('bairro', dados.bairro || '');
+        setValue('cidade', dados.municipio || '');
+        setValue('estado', dados.uf || '');
+        setValue('cep', dados.cep || '');
+        
+        toast.success('Dados do CNPJ carregados com sucesso!');
+      }
+    } catch (error) {
+      console.error('Erro ao consultar CNPJ:', error);
+      const errorMessage = error.response?.data?.error || 'Erro ao consultar CNPJ';
+      toast.error(errorMessage);
+    }
+  };
+
   return (
     <Container>
       <Header>
@@ -701,6 +734,8 @@ const Filiais = () => {
           <Table>
             <thead>
               <tr>
+                <Th>Código</Th>
+                <Th>CNPJ</Th>
                 <Th>Nome</Th>
                 <Th>Cidade</Th>
                 <Th>Estado</Th>
@@ -711,6 +746,8 @@ const Filiais = () => {
             <tbody>
               {filteredFiliais.map(filial => (
                 <tr key={filial.id}>
+                  <Td>{filial.codigo_filial || '-'}</Td>
+                  <Td>{filial.cnpj || '-'}</Td>
                   <Td>{filial.nome}</Td>
                   <Td>{filial.cidade}</Td>
                   <Td>{filial.estado}</Td>
@@ -769,6 +806,38 @@ const Filiais = () => {
             </Tabs>
             {activeTab === 'dados' && (
               <Form onSubmit={handleSubmit(onSubmit)}>
+                <FormGroup>
+                  <Label>Código da Filial</Label>
+                  <Input type="text" placeholder="Código da filial" {...register('codigo_filial')} disabled={viewMode} />
+                </FormGroup>
+                <FormGroup>
+                  <Label>CNPJ</Label>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <Input 
+                      type="text" 
+                      placeholder="00.000.000/0000-00" 
+                      {...register('cnpj')} 
+                      disabled={viewMode}
+                      style={{ flex: 1 }}
+                    />
+                    {!viewMode && (
+                      <Button 
+                        type="button" 
+                        onClick={handleConsultarCNPJ}
+                        style={{ 
+                          background: 'var(--blue)', 
+                          color: 'white', 
+                          border: 'none', 
+                          padding: '8px 12px', 
+                          borderRadius: '4px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Consultar
+                      </Button>
+                    )}
+                  </div>
+                </FormGroup>
                 <FormGroup>
                   <Label>Nome *</Label>
                   <Input type="text" placeholder="Nome da filial" {...register('nome', { required: 'Nome é obrigatório' })} disabled={viewMode} />
@@ -833,26 +902,6 @@ const Filiais = () => {
                 <FormGroup>
                   <Label>Coordenação</Label>
                   <Input type="text" placeholder="Coordenação" {...register('coordenacao')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Centro de Distribuição</Label>
-                  <Input type="text" placeholder="Centro de Distribuição" {...register('centro_distribuicao')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Regional</Label>
-                  <Input type="text" placeholder="Regional" {...register('regional')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Rota ID</Label>
-                  <Input type="text" placeholder="Rota ID" {...register('rota_id')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Lote</Label>
-                  <Input type="text" placeholder="Lote" {...register('lote')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Abastecimento</Label>
-                  <Input type="text" placeholder="Abastecimento" {...register('abastecimento')} disabled={viewMode} />
                 </FormGroup>
                 <FormGroup>
                   <Label>Status</Label>

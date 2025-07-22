@@ -3,11 +3,99 @@ const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
+const axios = require('axios');
 
 const router = express.Router();
 
 // Aplicar autenticação em todas as rotas
 router.use(authenticateToken);
+
+// Consultar CNPJ
+router.get('/consulta-cnpj/:cnpj', checkPermission('visualizar'), async (req, res) => {
+  try {
+    const { cnpj } = req.params;
+    
+    // Limpar CNPJ (remover caracteres não numéricos)
+    const cnpjLimpo = cnpj.replace(/\D/g, '');
+    
+    if (cnpjLimpo.length !== 14) {
+      return res.status(400).json({ error: 'CNPJ deve ter 14 dígitos' });
+    }
+
+    // Tentar buscar dados do CNPJ usando Brasil API
+    let dadosCNPJ = null;
+    
+    try {
+      const response = await axios.get(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`, {
+        timeout: 8000,
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
+      
+      if (response.data && response.data.razao_social) {
+        dadosCNPJ = {
+          razao_social: response.data.razao_social,
+          nome_fantasia: response.data.nome_fantasia,
+          logradouro: response.data.logradouro,
+          numero: response.data.numero,
+          bairro: response.data.bairro,
+          municipio: response.data.municipio,
+          uf: response.data.uf,
+          cep: response.data.cep,
+          telefone: (() => {
+            let telefone = null;
+            
+            if (response.data.ddd_telefone_1 && response.data.telefone_1) {
+              telefone = `${response.data.ddd_telefone_1}${response.data.telefone_1}`;
+            } else if (response.data.telefone) {
+              telefone = response.data.telefone;
+            } else if (response.data.ddd_telefone_1) {
+              telefone = response.data.ddd_telefone_1;
+            }
+            
+            if (telefone) {
+              telefone = telefone.toString().replace(/undefined/g, '');
+              telefone = telefone.replace(/\D/g, '');
+              return telefone.length >= 10 ? telefone : null;
+            }
+            
+            return null;
+          })(),
+          email: response.data.email
+        };
+      }
+    } catch (error) {
+      console.log('Erro ao buscar CNPJ na API externa:', error.message);
+      
+      return res.status(503).json({
+        success: false,
+        error: 'Serviço de consulta CNPJ temporariamente indisponível. Tente novamente em alguns minutos.',
+        details: 'As APIs externas estão com problemas de conectividade.'
+      });
+    }
+
+    if (dadosCNPJ) {
+      res.json({
+        success: true,
+        data: dadosCNPJ
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'CNPJ não encontrado ou dados indisponíveis'
+      });
+    }
+
+  } catch (error) {
+    console.error('Erro ao buscar CNPJ:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+});
 
 // Listar filiais
 router.get('/', checkPermission('visualizar'), async (req, res) => {
@@ -15,17 +103,16 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     const { search = '' } = req.query;
 
     let query = `
-      SELECT id, nome, logradouro, numero, bairro, cep, cidade, estado, 
-             supervisao, coordenacao, centro_distribuicao, regional, rota_id, 
-             lote, abastecimento, status, criado_em, atualizado_em 
+      SELECT id, codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado, 
+             supervisao, coordenacao, status, criado_em, atualizado_em 
       FROM filiais 
       WHERE 1=1
     `;
     let params = [];
 
     if (search) {
-      query += ' AND (nome LIKE ? OR cidade LIKE ? OR estado LIKE ? OR supervisao LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+      query += ' AND (nome LIKE ? OR cidade LIKE ? OR estado LIKE ? OR supervisao LIKE ? OR codigo_filial LIKE ? OR cnpj LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
     query += ' ORDER BY nome ASC';
@@ -324,6 +411,16 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 router.post('/', [
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'filiais'),
+  body('codigo_filial').optional().isLength({ min: 1 }).withMessage('Código da filial deve ter pelo menos 1 caractere'),
+  body('cnpj').optional().custom((value) => {
+    if (value) {
+      const cnpjLimpo = value.replace(/\D/g, '');
+      if (cnpjLimpo.length !== 14) {
+        throw new Error('CNPJ deve ter 14 dígitos');
+      }
+    }
+    return true;
+  }).withMessage('CNPJ deve ter 14 dígitos'),
   body('nome').custom((value) => {
     if (!value || value.trim().length < 3) {
       throw new Error('Nome deve ter pelo menos 3 caracteres');
@@ -357,20 +454,17 @@ router.post('/', [
     }
 
     const {
-      nome, logradouro, numero, bairro, cep, cidade, estado,
-      supervisao, coordenacao, centro_distribuicao, regional,
-      rota_id, lote, abastecimento, status
+      codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado,
+      supervisao, coordenacao, status
     } = req.body;
 
     // Inserir filial
     const result = await executeQuery(
-      `INSERT INTO filiais (nome, logradouro, numero, bairro, cep, cidade, estado,
-                           supervisao, coordenacao, centro_distribuicao, regional,
-                           rota_id, lote, abastecimento, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [nome, logradouro, numero, bairro, cep, cidade, estado,
-       supervisao, coordenacao, centro_distribuicao, regional,
-       rota_id, lote, abastecimento, status || 1]
+      `INSERT INTO filiais (codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado,
+                           supervisao, coordenacao, status) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado,
+       supervisao, coordenacao, status || 1]
     );
 
     const newFilial = await executeQuery(
@@ -393,6 +487,16 @@ router.post('/', [
 router.put('/:id', [
   checkPermission('editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'filiais'),
+  body('codigo_filial').optional().isLength({ min: 1 }).withMessage('Código da filial deve ter pelo menos 1 caractere'),
+  body('cnpj').optional().custom((value) => {
+    if (value) {
+      const cnpjLimpo = value.replace(/\D/g, '');
+      if (cnpjLimpo.length !== 14) {
+        throw new Error('CNPJ deve ter 14 dígitos');
+      }
+    }
+    return true;
+  }).withMessage('CNPJ deve ter 14 dígitos'),
   body('nome').custom((value) => {
     if (!value || value.trim().length < 3) {
       throw new Error('Nome deve ter pelo menos 3 caracteres');
@@ -427,9 +531,8 @@ router.put('/:id', [
 
     const { id } = req.params;
     const {
-      nome, logradouro, numero, bairro, cep, cidade, estado,
-      supervisao, coordenacao, centro_distribuicao, regional,
-      rota_id, lote, abastecimento, status
+      codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado,
+      supervisao, coordenacao, status
     } = req.body;
 
     // Verificar se a filial existe
@@ -444,14 +547,12 @@ router.put('/:id', [
 
     // Atualizar filial
     await executeQuery(
-      `UPDATE filiais SET nome = ?, logradouro = ?, numero = ?, bairro = ?, cep = ?, 
+      `UPDATE filiais SET codigo_filial = ?, cnpj = ?, nome = ?, logradouro = ?, numero = ?, bairro = ?, cep = ?, 
                          cidade = ?, estado = ?, supervisao = ?, coordenacao = ?, 
-                         centro_distribuicao = ?, regional = ?, rota_id = ?, lote = ?, 
-                         abastecimento = ?, status = ?, atualizado_em = CURRENT_TIMESTAMP
+                         status = ?, atualizado_em = CURRENT_TIMESTAMP
        WHERE id = ?`,
-      [nome, logradouro, numero, bairro, cep, cidade, estado,
-       supervisao, coordenacao, centro_distribuicao, regional,
-       rota_id, lote, abastecimento, status, id]
+      [codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado,
+       supervisao, coordenacao, status, id]
     );
 
     const updatedFilial = await executeQuery(
