@@ -401,6 +401,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
     'Configurações': true
   });
 
+  // Estado para expandir/recolher favoritos
+  const [favoritesExpanded, setFavoritesExpanded] = useState(true);
+
   // Estado para busca
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -487,44 +490,48 @@ const Sidebar = ({ collapsed, onToggle }) => {
         {/* Seção de Favoritos */}
         {!collapsed && getFavoriteItems().length > 0 && (
           <FavoritesSection>
-            <FavoritesTitle>
+            <FavoritesTitle style={{ cursor: 'pointer' }} onClick={() => setFavoritesExpanded(exp => !exp)}>
               <FaStar style={{ color: '#ffc107' }} />
               Favoritos
+              <span style={{ marginLeft: 'auto' }}>
+                {favoritesExpanded ? <FaChevronUp /> : <FaChevronDown />}
+              </span>
             </FavoritesTitle>
-            <FavoritesList>
-              {getFavoriteItems().map((item) => {
-                const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                
-                return (
-                  <FavoriteItem 
-                    key={item.path} 
-                    to={item.path}
-                    className={isActive ? 'active' : ''}
-                    onClick={(e) => {
-                      if (item.path === '/cotacao') {
-                        e.preventDefault();
-                        const token = localStorage.getItem('token');
-                        if (token) {
-                          const ssoUrl = `http://82.29.57.43:3002?sso_token=${token}`;
-                          window.open(ssoUrl, '_blank');
-                        } else {
-                          window.open('http://82.29.57.43:3002', '_blank');
+            {favoritesExpanded && (
+              <FavoritesList>
+                {getFavoriteItems().map((item) => {
+                  const Icon = item.icon;
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <FavoriteItem 
+                      key={item.path} 
+                      to={item.path}
+                      className={isActive ? 'active' : ''}
+                      onClick={(e) => {
+                        if (item.path === '/cotacao') {
+                          e.preventDefault();
+                          const token = localStorage.getItem('token');
+                          if (token) {
+                            const ssoUrl = `http://82.29.57.43:3002?sso_token=${token}`;
+                            window.open(ssoUrl, '_blank');
+                          } else {
+                            window.open('http://82.29.57.43:3002', '_blank');
+                          }
                         }
-                      }
-                      if (window.innerWidth <= 768) {
-                        onToggle();
-                      }
-                    }}
-                  >
-                    <FavoriteIcon $active={isActive}>
-                      <Icon />
-                    </FavoriteIcon>
-                    <FavoriteText>{item.label}</FavoriteText>
-                  </FavoriteItem>
-                );
-              })}
-            </FavoritesList>
+                        if (window.innerWidth <= 768) {
+                          onToggle();
+                        }
+                      }}
+                    >
+                      <FavoriteIcon $active={isActive}>
+                        <Icon />
+                      </FavoriteIcon>
+                      <FavoriteText>{item.label}</FavoriteText>
+                    </FavoriteItem>
+                  );
+                })}
+              </FavoritesList>
+            )}
           </FavoritesSection>
         )}
         
