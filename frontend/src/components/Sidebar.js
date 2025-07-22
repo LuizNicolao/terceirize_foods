@@ -23,6 +23,7 @@ import {
   FaChevronUp,
   FaStore,
   FaClipboardList,
+  FaSearch,
   FaStar,
   FaRegStar
 } from 'react-icons/fa';
@@ -95,6 +96,88 @@ const ToggleButton = styled.button`
     width: 30px;
     height: 30px;
   }
+`;
+
+const SearchContainer = styled.div`
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-green);
+    background: white;
+    box-shadow: 0 0 0 2px rgba(0, 114, 62, 0.1);
+  }
+
+  &::placeholder {
+    color: #6c757d;
+  }
+`;
+
+const FavoritesSection = styled.div`
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0;
+`;
+
+const FavoritesTitle = styled.div`
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const FavoritesList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const FavoriteItem = styled(Link)`
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: var(--dark-gray);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 13px;
+
+  &:hover {
+    background: #f8f9fa;
+    color: var(--primary-green);
+  }
+
+  &.active {
+    background: var(--primary-green);
+    color: white;
+  }
+`;
+
+const FavoriteIcon = styled.div`
+  margin-right: 8px;
+  font-size: 12px;
+  color: ${props => props.$active ? 'white' : '#ffc107'};
+`;
+
+const FavoriteText = styled.span`
+  flex: 1;
 `;
 
 const Nav = styled.nav`
@@ -203,6 +286,33 @@ const NavText = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   display: ${props => props.$collapsed ? 'none' : 'block'};
+  flex: 1;
+`;
+
+const FavoriteButton = styled.button`
+  background: none;
+  border: none;
+  color: #ffc107;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  opacity: ${props => props.$collapsed ? '0' : '1'};
+  margin-left: 8px;
+  display: ${props => props.$collapsed ? 'none' : 'block'};
+
+  &:hover {
+    background: rgba(255, 193, 7, 0.1);
+    transform: scale(1.1);
+  }
+
+  &.favorited {
+    color: #ffc107;
+  }
+
+  &.not-favorited {
+    color: #e0e0e0;
+  }
 `;
 
 const LogoutButton = styled.button`
@@ -238,14 +348,6 @@ const Overlay = styled.div`
   @media (min-width: 769px) {
     display: none;
   }
-`;
-
-const SidebarFooter = styled.div`
-  padding: 16px 20px;
-  border-top: 1px solid #e0e0e0;
-  background: #fafafa;
-  text-align: center;
-  flex-shrink: 0;
 `;
 
 // Agrupamento dos itens do menu
@@ -300,47 +402,51 @@ const Sidebar = ({ collapsed, onToggle }) => {
   });
 
   // Estado para busca
-  const [search, setSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Estado para favoritos
+  // Estado para favoritos (carregar do localStorage)
   const [favorites, setFavorites] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('sidebarFavorites')) || [];
-    } catch {
-      return [];
-    }
+    const saved = localStorage.getItem('sidebarFavorites');
+    return saved ? JSON.parse(saved) : [];
   });
 
-  // Atualizar favoritos no localStorage sempre que mudar
-  React.useEffect(() => {
-    localStorage.setItem('sidebarFavorites', JSON.stringify(favorites));
-  }, [favorites]);
-
-  // Função para alternar favorito
+  // Função para adicionar/remover favorito
   const toggleFavorite = (item) => {
-    setFavorites((prev) => {
-      if (prev.some(fav => fav.path === item.path)) {
-        return prev.filter(fav => fav.path !== item.path);
-      } else {
-        return [...prev, item];
-      }
-    });
+    const itemKey = `${item.path}-${item.label}`;
+    const newFavorites = favorites.includes(itemKey)
+      ? favorites.filter(fav => fav !== itemKey)
+      : [...favorites, itemKey];
+    
+    setFavorites(newFavorites);
+    localStorage.setItem('sidebarFavorites', JSON.stringify(newFavorites));
   };
 
-  // Filtrar itens do menu conforme busca
-  const filterMenu = (groups) => {
-    if (!search.trim()) return groups;
-    const lower = search.toLowerCase();
-    return groups
-      .map(group => ({
-        ...group,
-        items: group.items.filter(item => item.label.toLowerCase().includes(lower))
-      }))
-      .filter(group => group.items.length > 0);
+  // Função para verificar se um item é favorito
+  const isFavorite = (item) => {
+    const itemKey = `${item.path}-${item.label}`;
+    return favorites.includes(itemKey);
   };
 
-  // Filtrar favoritos conforme busca
-  const filteredFavorites = favorites.filter(item => item.label.toLowerCase().includes(search.toLowerCase()));
+  // Função para obter itens favoritos
+  const getFavoriteItems = () => {
+    const allItems = menuGroups.flatMap(group => group.items);
+    return allItems.filter(item => isFavorite(item));
+  };
+
+  // Função para filtrar itens baseado na busca
+  const getFilteredGroups = () => {
+    if (!searchTerm.trim()) {
+      return menuGroups;
+    }
+
+    return menuGroups.map(group => ({
+      ...group,
+      items: group.items.filter(item =>
+        item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.path.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    })).filter(group => group.items.length > 0);
+  };
 
   const handleLogout = () => {
     logout();
@@ -365,63 +471,65 @@ const Sidebar = ({ collapsed, onToggle }) => {
             {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
           </ToggleButton>
         </SidebarHeader>
+
         {/* Campo de busca */}
         {!collapsed && (
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid #eee' }}>
-            <input
+          <SearchContainer>
+            <SearchInput
               type="text"
-              placeholder="Buscar..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #ddd', fontSize: 15 }}
+              placeholder="Buscar páginas..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
+          </SearchContainer>
         )}
-        <Nav>
-          {/* Favoritos */}
-          {!collapsed && filteredFavorites.length > 0 && (
-            <MenuGroup>
-              <GroupHeader $collapsed={collapsed} style={{ color: '#f7b731' }}>
-                <GroupTitle>Favoritos</GroupTitle>
-              </GroupHeader>
-              <GroupContent $expanded={true}>
-                {filteredFavorites.map(item => {
-                  const Icon = item.icon;
-                  const isActive = location.pathname === item.path;
-                  return (
-                    <NavItem
-                      key={item.path}
-                      to={item.path}
-                      className={isActive ? 'active' : ''}
-                      onClick={e => {
-                        if (item.path === '/cotacao') {
-                          e.preventDefault();
-                          const token = localStorage.getItem('token');
-                          const ssoUrl = token ? `http://82.29.57.43:3002?sso_token=${token}` : 'http://82.29.57.43:3002';
+
+        {/* Seção de Favoritos */}
+        {!collapsed && getFavoriteItems().length > 0 && (
+          <FavoritesSection>
+            <FavoritesTitle>
+              <FaStar style={{ color: '#ffc107' }} />
+              Favoritos
+            </FavoritesTitle>
+            <FavoritesList>
+              {getFavoriteItems().map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                
+                return (
+                  <FavoriteItem 
+                    key={item.path} 
+                    to={item.path}
+                    className={isActive ? 'active' : ''}
+                    onClick={(e) => {
+                      if (item.path === '/cotacao') {
+                        e.preventDefault();
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                          const ssoUrl = `http://82.29.57.43:3002?sso_token=${token}`;
                           window.open(ssoUrl, '_blank');
+                        } else {
+                          window.open('http://82.29.57.43:3002', '_blank');
                         }
-                        if (window.innerWidth <= 768) onToggle();
-                      }}
-                    >
-                      <NavIcon $collapsed={collapsed} $active={isActive}>
-                        <Icon />
-                      </NavIcon>
-                      <NavText $collapsed={collapsed}>{item.label}</NavText>
-                      {/* Estrela para remover dos favoritos */}
-                      <span style={{ marginLeft: 'auto', color: '#f7b731', cursor: 'pointer' }}
-                        onClick={e => { e.stopPropagation(); toggleFavorite(item); }}
-                        title="Remover dos favoritos"
-                      >
-                        <FaStar />
-                      </span>
-                    </NavItem>
-                  );
-                })}
-              </GroupContent>
-            </MenuGroup>
-          )}
-          {/* Menu normal filtrado */}
-          {filterMenu(menuGroups).map((group, groupIndex) => (
+                      }
+                      if (window.innerWidth <= 768) {
+                        onToggle();
+                      }
+                    }}
+                  >
+                    <FavoriteIcon $active={isActive}>
+                      <Icon />
+                    </FavoriteIcon>
+                    <FavoriteText>{item.label}</FavoriteText>
+                  </FavoriteItem>
+                );
+              })}
+            </FavoritesList>
+          </FavoritesSection>
+        )}
+        
+        <Nav>
+          {getFilteredGroups().map((group, groupIndex) => (
             <MenuGroup key={groupIndex}>
               <GroupHeader 
                 $collapsed={collapsed}
@@ -440,35 +548,61 @@ const Sidebar = ({ collapsed, onToggle }) => {
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
+                  
+                  // Verificar se o usuário pode visualizar este item
                   const canViewItem = item.screen === 'dashboard' || canView(item.screen);
-                  if (!canViewItem) return null;
-                  const isFavorite = favorites.some(fav => fav.path === item.path);
+                  
+                  if (!canViewItem) {
+                    return null;
+                  }
+                  
                   return (
                     <NavItem 
                       key={item.path} 
                       to={item.path}
                       className={isActive ? 'active' : ''}
-                      onClick={e => {
+                      onClick={(e) => {
+                        // Se for o item de cotação, abrir em nova aba com SSO
                         if (item.path === '/cotacao') {
                           e.preventDefault();
                           const token = localStorage.getItem('token');
-                          const ssoUrl = token ? `http://82.29.57.43:3002?sso_token=${token}` : 'http://82.29.57.43:3002';
-                          window.open(ssoUrl, '_blank');
+                          console.log('🔍 Token encontrado no sistema principal:', token ? 'Sim' : 'Não');
+                          
+                          if (token) {
+                            // Passar o token como parâmetro na URL
+                            const ssoUrl = `http://82.29.57.43:3002?sso_token=${token}`;
+                            console.log('🔍 Abrindo URL SSO:', ssoUrl);
+                            window.open(ssoUrl, '_blank');
+                          } else {
+                            console.log('🔍 Nenhum token encontrado, abrindo sem SSO');
+                            window.open('http://82.29.57.43:3002', '_blank');
+                          }
                         }
-                        if (window.innerWidth <= 768) onToggle();
+                        
+                        // Fechar sidebar no mobile quando clicar em um item
+                        if (window.innerWidth <= 768) {
+                          onToggle();
+                        }
                       }}
                     >
                       <NavIcon $collapsed={collapsed} $active={isActive}>
                         <Icon />
                       </NavIcon>
-                      <NavText $collapsed={collapsed}>{item.label}</NavText>
-                      {/* Estrela para adicionar/remover dos favoritos */}
-                      <span style={{ marginLeft: 'auto', color: isFavorite ? '#f7b731' : '#bbb', cursor: 'pointer' }}
-                        onClick={e => { e.stopPropagation(); toggleFavorite(item); }}
-                        title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                      <NavText $collapsed={collapsed}>
+                        {item.label}
+                      </NavText>
+                      <FavoriteButton
+                        $collapsed={collapsed}
+                        className={isFavorite(item) ? 'favorited' : 'not-favorited'}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          toggleFavorite(item);
+                        }}
+                        title={isFavorite(item) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                       >
-                        {isFavorite ? <FaStar /> : <FaRegStar />}
-                      </span>
+                        {isFavorite(item) ? <FaStar /> : <FaRegStar />}
+                      </FavoriteButton>
                     </NavItem>
                   );
                 })}
@@ -476,12 +610,15 @@ const Sidebar = ({ collapsed, onToggle }) => {
             </MenuGroup>
           ))}
         </Nav>
-        <SidebarFooter>
-          <LogoutButton onClick={handleLogout} $collapsed={collapsed}>
+
+        <LogoutButton onClick={handleLogout}>
+          <NavIcon $collapsed={collapsed}>
             <FaSignOutAlt />
-            {!collapsed && 'Sair'}
-          </LogoutButton>
-        </SidebarFooter>
+          </NavIcon>
+          <NavText $collapsed={collapsed}>
+            Sair
+          </NavText>
+        </LogoutButton>
       </SidebarContainer>
     </>
   );
