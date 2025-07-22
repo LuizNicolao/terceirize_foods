@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
+import CadastroFilterBar from '../components/CadastroFilterBar';
 
 const Container = styled.div`
   padding: 24px;
@@ -40,63 +41,6 @@ const AddButton = styled.button`
 
   &:hover {
     background: var(--dark-green);
-    transform: translateY(-1px);
-  }
-`;
-
-const SearchContainer = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  align-items: center;
-`;
-
-const SearchInput = styled.input`
-  flex: 1;
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const FilterSelect = styled.select`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white);
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-`;
-
-const ClearButton = styled.button`
-  background: var(--gray);
-  color: var(--white);
-  padding: 12px 16px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: var(--dark-gray);
     transform: translateY(-1px);
   }
 `;
@@ -1213,53 +1157,14 @@ const Produtos = () => {
         </div>
       </Header>
 
-      <SearchContainer>
-        <FilterSelect
-          value={searchField}
-          onChange={(e) => setSearchField(e.target.value)}
-          style={{ minWidth: '150px' }}
-        >
-          <option value="todos">Todos os campos</option>
-          <option value="nome">Nome</option>
-          <option value="codigo_barras">Código de Barras</option>
-          <option value="descricao">Descrição</option>
-        </FilterSelect>
-        <SearchInput
-          type="text"
-          placeholder={
-            searchField === 'todos' ? 'Buscar em todos os campos...' :
-            searchField === 'nome' ? 'Buscar por nome...' :
-            searchField === 'codigo_barras' ? 'Buscar por código de barras...' :
-            searchField === 'descricao' ? 'Buscar por descrição...' :
-            'Buscar...'
-          }
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <FilterSelect
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="todos">Todos os status</option>
-          <option value="1">Ativo</option>
-          <option value="0">Inativo</option>
-        </FilterSelect>
-        <FilterSelect
-          value={grupoFilter}
-          onChange={(e) => setGrupoFilter(e.target.value)}
-        >
-          <option value="todos">Todos os grupos</option>
-          {grupos.map(grupo => (
-            <option key={grupo.id} value={grupo.id}>{grupo.nome}</option>
-          ))}
-        </FilterSelect>
-        {(searchTerm || searchField !== 'todos' || statusFilter !== 'todos' || grupoFilter !== 'todos') && (
-          <ClearButton onClick={handleClearFilters}>
-            <FaTimes />
-            Limpar Filtros
-          </ClearButton>
-        )}
-      </SearchContainer>
+      <CadastroFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
+        placeholder="Buscar por nome, código ou grupo..."
+      />
 
       <TableContainer>
         <Table>

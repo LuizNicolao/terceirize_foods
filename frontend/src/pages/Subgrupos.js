@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
+import CadastroFilterBar from '../components/CadastroFilterBar';
 
 const Container = styled.div`
   padding: 24px;
@@ -41,43 +42,6 @@ const AddButton = styled.button`
   &:hover {
     background: var(--dark-green);
     transform: translateY(-1px);
-  }
-`;
-
-const SearchContainer = styled.div`
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
-  align-items: center;
-`;
-
-const SearchInput = styled.input`
-  flex: 1;
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const FilterSelect = styled.select`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white);
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
   }
 `;
 
@@ -749,25 +713,14 @@ const Subgrupos = () => {
         </div>
       </Header>
 
-      <SearchContainer>
-        <SearchInput
-          type="text"
-          placeholder="Buscar subgrupos..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <FilterSelect
-          value={selectedGrupo}
-          onChange={(e) => setSelectedGrupo(e.target.value)}
-        >
-          <option value="">Todos os grupos</option>
-          {grupos.map(grupo => (
-            <option key={grupo.id} value={grupo.id}>
-              {grupo.nome}
-            </option>
-          ))}
-        </FilterSelect>
-      </SearchContainer>
+      <CadastroFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        statusFilter={selectedGrupo} // Assuming statusFilter is the selectedGrupo for now
+        onStatusChange={setSelectedGrupo}
+        onClear={() => { setSearchTerm(''); setSelectedGrupo(''); }}
+        placeholder="Buscar por nome, grupo ou código..."
+      />
 
       {subgrupos.length === 0 ? (
         <EmptyState>Nenhum subgrupo encontrado</EmptyState>

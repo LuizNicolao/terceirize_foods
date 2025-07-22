@@ -374,12 +374,7 @@ const menuGroups = [
       { path: '/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
     ]
   },
-  {
-    title: 'Suprimentos',
-    items: [
-      { path: '/cotacao', icon: FaClipboardList, label: 'Cotação', screen: 'cotacao' },
-    ]
-  },
+
   {
     title: 'Configurações',
     items: [
@@ -397,7 +392,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const [expandedGroups, setExpandedGroups] = useState({
     'Principal': true,
     'Cadastros': true,
-    'Suprimentos': true,
     'Configurações': true
   });
 
