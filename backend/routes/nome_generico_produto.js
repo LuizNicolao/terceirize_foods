@@ -245,15 +245,25 @@ router.delete('/:id', [
     }
 
     // Verificar se nome genérico está sendo usado em produtos
-    const produtosUsingNomeGenerico = await executeQuery(
-      'SELECT COUNT(*) as count FROM produtos WHERE nome_generico_id = ?',
-      [id]
+    // Primeiro, vamos verificar se a coluna existe na tabela produtos
+    const tableStructure = await executeQuery(
+      "SHOW COLUMNS FROM produtos LIKE 'nome_generico%'"
     );
+    
+    if (tableStructure.length === 0) {
+      // Se não existe coluna nome_generico_id, não há produtos usando este nome genérico
+      console.log('Coluna nome_generico_id não existe na tabela produtos');
+    } else {
+      const produtosUsingNomeGenerico = await executeQuery(
+        'SELECT COUNT(*) as count FROM produtos WHERE nome_generico_id = ?',
+        [id]
+      );
 
-    if (produtosUsingNomeGenerico[0].count > 0) {
-      return res.status(400).json({ 
-        error: 'Não é possível excluir este nome genérico pois está sendo utilizado em produtos' 
-      });
+      if (produtosUsingNomeGenerico[0].count > 0) {
+        return res.status(400).json({ 
+          error: 'Não é possível excluir este nome genérico pois está sendo utilizado em produtos' 
+        });
+      }
     }
 
     await executeQuery('DELETE FROM nome_generico_produto WHERE id = ?', [id]);
