@@ -25,7 +25,8 @@ import {
   FaClipboardList,
   FaSearch,
   FaStar,
-  FaRegStar
+  FaRegStar,
+  FaRoute
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -365,6 +366,12 @@ const menuGroups = [
     ]
   },
   {
+    title: 'Logística',
+    items: [
+      { path: '/rotas', icon: FaRoute, label: 'Rotas', screen: 'rotas' },
+    ]
+  },
+  {
     title: 'Cadastros',
     items: [
       { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
@@ -398,6 +405,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const [expandedGroups, setExpandedGroups] = useState({
     'Principal': true,
     'Suprimentos': true,
+    'Logística': true,
     'Cadastros': true,
     'Configurações': true
   });

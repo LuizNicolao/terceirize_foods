@@ -1233,6 +1233,7 @@ const Permissoes = () => {
       case 'clientes': return 'Clientes';
       case 'filiais': return 'Filiais';
       case 'cotacao': return 'Cotação';
+      case 'rotas': return 'Rotas';
       default: return screen;
     }
   };

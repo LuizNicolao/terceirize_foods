@@ -10,6 +10,7 @@ import Usuarios from './pages/Usuarios';
 import Fornecedores from './pages/Fornecedores';
 import Clientes from './pages/Clientes';
 import Filiais from './pages/Filiais';
+import Rotas from './pages/Rotas';
 import Produtos from './pages/Produtos';
 import Grupos from './pages/Grupos';
 import Subgrupos from './pages/Subgrupos';
@@ -111,6 +112,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="filiais">
               <Filiais />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/rotas" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="rotas">
+              <Rotas />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 
