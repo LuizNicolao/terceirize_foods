@@ -47,7 +47,7 @@ app.use(cors({
       ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token', 'X-CSRF-Token']
 }));
 
 // Rate limiting mais flexível para sistema em produção
@@ -100,13 +100,67 @@ app.get('/api/csrf-token', (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
 
-// Exceções para rotas públicas (login, verify, health)
+// Rota para validar token do sistema de cotação (antes das rotas protegidas)
+app.post('/api/auth/validate-cotacao-token', async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ error: 'Token não fornecido' });
+    }
+
+    console.log('🔍 Validando token do sistema de cotação:', token.substring(0, 20) + '...');
+
+    // Verificar se o token é válido
+    const jwt = require('jsonwebtoken');
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET não definido nas variáveis de ambiente!');
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    console.log('✅ Token decodificado:', { userId: decoded.userId });
+    
+    // Buscar usuário
+    const { executeQuery } = require('./config/database');
+    const users = await executeQuery(
+      'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE id = ?',
+      [decoded.userId]
+    );
+
+    if (users.length === 0) {
+      console.log('❌ Usuário não encontrado:', decoded.userId);
+      return res.status(401).json({ error: 'Usuário não encontrado' });
+    }
+
+    const user = users[0];
+    console.log('✅ Usuário encontrado:', { id: user.id, nome: user.nome, status: user.status });
+
+    if (user.status !== 'ativo') {
+      console.log('❌ Usuário inativo:', user.status);
+      return res.status(401).json({ error: 'Usuário inativo' });
+    }
+
+    console.log('✅ Token validado com sucesso para usuário:', user.nome);
+    res.json({ 
+      valid: true, 
+      user: user 
+    });
+
+  } catch (error) {
+    console.error('❌ Erro ao validar token:', error);
+    res.status(401).json({ error: 'Token inválido' });
+  }
+});
+
+// Exceções para rotas públicas (login, verify, health, validate-cotacao-token)
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
-    // Permitir login, verify e health sem CSRF
+    // Permitir login, verify, health e validate-cotacao-token sem CSRF
     if (
       req.path === '/api/auth/login' ||
       req.path === '/api/auth/verify' ||
+      req.path === '/api/auth/validate-cotacao-token' ||
       req.path === '/api/health'
     ) {
       return next();
