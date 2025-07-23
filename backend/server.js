@@ -91,12 +91,7 @@ app.use(
   csurf({
     cookie: true,
     ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
-    ignorePaths: [
-      '/api/auth/validate-cotacao-token',
-      '/api/fornecedores/public',
-      '/api/health',
-      '/api/csrf-token'
-    ]
+    ignorePaths: ['/api/auth/validate-cotacao-token'] // Pular CSRF para validação de token
   })
 );
 
@@ -165,6 +160,10 @@ app.get('/api/fornecedores/public', async (req, res) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
     
+    if (!search || search.length < 2) {
+      return res.json([]);
+    }
+
     // Verificar se o token foi fornecido
     if (!token) {
       console.log('❌ Tentativa de acesso sem token');
@@ -185,13 +184,6 @@ app.get('/api/fornecedores/public', async (req, res) => {
     } catch (tokenError) {
       console.log('❌ Token inválido:', tokenError.message);
       return res.status(401).json({ error: 'Token inválido' });
-    }
-
-    const { executeQuery } = require('./config/database');
-    
-    // Busca por texto
-    if (!search || search.length < 2) {
-      return res.json([]);
     }
 
     console.log('🔍 Busca segura de fornecedores:', search);

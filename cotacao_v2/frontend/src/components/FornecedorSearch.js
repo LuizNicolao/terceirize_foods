@@ -119,64 +119,9 @@ const FornecedorSearch = ({
   useEffect(() => {
     // Se há um valor inicial, buscar os dados do fornecedor
     if (value && !selectedFornecedor) {
-      setSearchTerm(value || '');
-      
-      // Se temos um nome, tentar buscar o fornecedor completo na API
-      if (value && value.trim().length > 0) {
-        loadFornecedorByName(value);
-      }
+      setSearchTerm(value);
     }
   }, [value]);
-
-  // Função para carregar fornecedor por nome
-  const loadFornecedorByName = async (nome) => {
-    try {
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        console.error('Token não encontrado');
-        return;
-      }
-
-      console.log('🔍 Carregando fornecedor por nome:', nome);
-      
-      // Buscar fornecedor por nome (busca exata)
-      const response = await fetch(`${API_URL}/fornecedores/public?search=${encodeURIComponent(nome)}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        credentials: 'omit'
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.length > 0) {
-          // Procurar por correspondência exata
-          const fornecedorExato = data.find(f => 
-            f.razao_social === nome || 
-            f.nome_fantasia === nome ||
-            f.razao_social?.toLowerCase() === nome.toLowerCase() ||
-            f.nome_fantasia?.toLowerCase() === nome.toLowerCase()
-          );
-          
-          if (fornecedorExato) {
-            setSelectedFornecedor(fornecedorExato);
-            setSearchTerm(fornecedorExato.razao_social || fornecedorExato.nome_fantasia);
-            console.log('✅ Fornecedor encontrado por nome:', fornecedorExato.razao_social || fornecedorExato.nome_fantasia);
-          } else {
-            console.log('⚠️ Fornecedor não encontrado por nome exato, mantendo nome original');
-          }
-        }
-      } else {
-        console.error('❌ Erro ao carregar fornecedor por nome:', response.status);
-      }
-    } catch (error) {
-      console.error('❌ Erro ao carregar fornecedor por nome:', error);
-    }
-  };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
