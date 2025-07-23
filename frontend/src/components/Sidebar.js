@@ -356,7 +356,12 @@ const menuGroups = [
     title: 'Principal',
     items: [
       { path: '/', icon: FaHome, label: 'Dashboard', screen: 'dashboard' },
-      { path: '/cotacao', icon: FaClipboardList, label: 'Suprimentos', screen: 'cotacao' },
+    ]
+  },
+  {
+    title: 'Suprimentos',
+    items: [
+      { path: '/cotacao', icon: FaClipboardList, label: 'Cotação', screen: 'cotacao' },
     ]
   },
   {
@@ -392,6 +397,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   // Estado para controlar expansão dos grupos
   const [expandedGroups, setExpandedGroups] = useState({
     'Principal': true,
+    'Suprimentos': true,
     'Cadastros': true,
     'Configurações': true
   });
