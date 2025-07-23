@@ -157,10 +157,11 @@ const FornecedorSearch = ({
 
       console.log('🔍 Buscando fornecedores diretamente no sistema principal...');
       
-      // Buscar fornecedores usando rota pública
+      // Buscar fornecedores usando rota segura
       const response = await fetch(`${API_URL}/fornecedores/public?search=${encodeURIComponent(term)}`, {
         method: 'GET',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },

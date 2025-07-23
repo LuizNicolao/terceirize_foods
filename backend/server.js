@@ -153,28 +153,42 @@ app.post('/api/auth/validate-cotacao-token', async (req, res) => {
   }
 });
 
-// Rota pública para busca de fornecedores (para sistema de cotação)
+// Rota segura para busca de fornecedores (para sistema de cotação)
 app.get('/api/fornecedores/public', async (req, res) => {
   try {
     const { search } = req.query;
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
     
     if (!search || search.length < 2) {
       return res.json([]);
     }
 
-    console.log('🔍 Busca pública de fornecedores:', search);
+    // Verificar se o token foi fornecido
+    if (!token) {
+      console.log('❌ Tentativa de acesso sem token');
+      return res.status(401).json({ error: 'Token de acesso não fornecido' });
+    }
+
+    // Validar o token
+    try {
+      const jwt = require('jsonwebtoken');
+      const JWT_SECRET = process.env.JWT_SECRET;
+      if (!JWT_SECRET) {
+        throw new Error('JWT_SECRET não definido');
+      }
+
+      const decoded = jwt.verify(token, JWT_SECRET);
+      console.log('🔍 Token validado para usuário:', decoded.userId);
+      
+    } catch (tokenError) {
+      console.log('❌ Token inválido:', tokenError.message);
+      return res.status(401).json({ error: 'Token inválido' });
+    }
+
+    console.log('🔍 Busca segura de fornecedores:', search);
     
     const { executeQuery } = require('./config/database');
-    
-    // Primeiro, vamos verificar quantos fornecedores ativos existem
-    const countQuery = 'SELECT COUNT(*) as total FROM fornecedores WHERE status = 1';
-    const countResult = await executeQuery(countQuery);
-    console.log('📊 Total de fornecedores ativos:', countResult[0].total);
-    
-    // Buscar alguns fornecedores para debug
-    const debugQuery = 'SELECT id, razao_social, nome_fantasia, status FROM fornecedores WHERE status = 1 LIMIT 5';
-    const debugResult = await executeQuery(debugQuery);
-    console.log('🔍 Primeiros 5 fornecedores ativos:', debugResult);
     
     const query = `
       SELECT 
@@ -203,14 +217,9 @@ app.get('/api/fornecedores/public', async (req, res) => {
     `;
     
     const searchTerm = `%${search}%`;
-    console.log('🔍 Termo de busca:', searchTerm);
-    
     const fornecedores = await executeQuery(query, [searchTerm, searchTerm, searchTerm]);
     
     console.log('✅ Fornecedores encontrados:', fornecedores.length);
-    if (fornecedores.length > 0) {
-      console.log('🔍 Primeiro resultado:', fornecedores[0]);
-    }
     
     res.json(fornecedores);
     
@@ -220,35 +229,17 @@ app.get('/api/fornecedores/public', async (req, res) => {
   }
 });
 
-// Rota de teste para verificar fornecedores (antes das rotas protegidas)
-app.get('/api/fornecedores/test', async (req, res) => {
-  try {
-    const { executeQuery } = require('./config/database');
-    
-    const query = 'SELECT id, razao_social, nome_fantasia, status FROM fornecedores WHERE status = 1 LIMIT 10';
-    const fornecedores = await executeQuery(query);
-    
-    res.json({
-      total: fornecedores.length,
-      fornecedores: fornecedores
-    });
-    
-  } catch (error) {
-    console.error('❌ Erro ao buscar fornecedores de teste:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
 
-// Exceções para rotas públicas (login, verify, health, validate-cotacao-token, fornecedores-public, fornecedores-test)
+
+// Exceções para rotas públicas (login, verify, health, validate-cotacao-token, fornecedores-public)
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
-    // Permitir login, verify, health, validate-cotacao-token, fornecedores-public e fornecedores-test sem CSRF
+    // Permitir login, verify, health, validate-cotacao-token e fornecedores-public sem CSRF
     if (
       req.path === '/api/auth/login' ||
       req.path === '/api/auth/verify' ||
       req.path === '/api/auth/validate-cotacao-token' ||
       req.path === '/api/fornecedores/public' ||
-      req.path === '/api/fornecedores/test' ||
       req.path === '/api/health'
     ) {
       return next();
