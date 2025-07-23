@@ -72,37 +72,65 @@ router.get('/', authenticateToken, async (req, res) => {
   try {
     const connection = await pool.getConnection();
     
-    // Buscar o nome do usuário no banco
+    // Buscar o usuário no banco (incluindo role)
     const [users] = await connection.execute(`
-      SELECT name FROM users WHERE id = ?
+      SELECT name, role FROM users WHERE id = ?
     `, [req.user.id]);
     
     const userName = users.length > 0 ? users[0].name : 'Administrador';
+    const userRole = users.length > 0 ? users[0].role : 'comprador';
     
-
+    // Determinar se o usuário pode ver todas as cotações (supervisor, gestor, administrador)
+    const canViewAllCotacoes = ['supervisor', 'gestor', 'administrador'].includes(userRole);
     
-    const [rows] = await connection.execute(`
-      SELECT 
-        c.id,
-        c.comprador,
-        c.local_entrega,
-        c.tipo_compra,
-        c.motivo_emergencial,
-        c.justificativa,
-        c.motivo_final,
-        c.status,
-        c.data_criacao,
-        c.data_atualizacao,
-        JSON_OBJECT(
-          'totalProdutos', c.total_produtos,
-          'produtosDuplicados', c.produtos_duplicados,
-          'totalQuantidade', c.total_quantidade,
-          'fornecedores', c.total_fornecedores
-        ) as estatisticas
-      FROM cotacoes c
-      WHERE c.comprador = ?
-      ORDER BY c.data_criacao DESC
-    `, [userName]);
+    // Buscar cotações - se for supervisor/gestor/admin, pode ver todas, senão apenas as próprias
+    let rows;
+    if (canViewAllCotacoes) {
+      [rows] = await connection.execute(`
+        SELECT 
+          c.id,
+          c.comprador,
+          c.local_entrega,
+          c.tipo_compra,
+          c.motivo_emergencial,
+          c.justificativa,
+          c.motivo_final,
+          c.status,
+          c.data_criacao,
+          c.data_atualizacao,
+          JSON_OBJECT(
+            'totalProdutos', c.total_produtos,
+            'produtosDuplicados', c.produtos_duplicados,
+            'totalQuantidade', c.total_quantidade,
+            'fornecedores', c.total_fornecedores
+          ) as estatisticas
+        FROM cotacoes c
+        ORDER BY c.data_criacao DESC
+      `);
+    } else {
+      [rows] = await connection.execute(`
+        SELECT 
+          c.id,
+          c.comprador,
+          c.local_entrega,
+          c.tipo_compra,
+          c.motivo_emergencial,
+          c.justificativa,
+          c.motivo_final,
+          c.status,
+          c.data_criacao,
+          c.data_atualizacao,
+          JSON_OBJECT(
+            'totalProdutos', c.total_produtos,
+            'produtosDuplicados', c.produtos_duplicados,
+            'totalQuantidade', c.total_quantidade,
+            'fornecedores', c.total_fornecedores
+          ) as estatisticas
+        FROM cotacoes c
+        WHERE c.comprador = ?
+        ORDER BY c.data_criacao DESC
+      `, [userName]);
+    }
 
     await connection.release();
     
@@ -249,19 +277,28 @@ router.get('/:id', authenticateToken, async (req, res) => {
   try {
     const connection = await pool.getConnection();
     
-    // Buscar o nome do usuário no banco
+    // Buscar o usuário no banco (incluindo role)
     const [users] = await connection.execute(`
-      SELECT name FROM users WHERE id = ?
+      SELECT name, role FROM users WHERE id = ?
     `, [req.user.id]);
     
     const userName = users.length > 0 ? users[0].name : 'Administrador';
+    const userRole = users.length > 0 ? users[0].role : 'comprador';
     
-
+    // Determinar se o usuário pode ver todas as cotações (supervisor, gestor, administrador)
+    const canViewAllCotacoes = ['supervisor', 'gestor', 'administrador'].includes(userRole);
     
-    // Buscar cotação
-    const [cotacoes] = await connection.execute(`
-      SELECT * FROM cotacoes WHERE id = ? AND comprador = ?
-    `, [req.params.id, userName]);
+    // Buscar cotação - se for supervisor/gestor/admin, pode ver todas, senão apenas as próprias
+    let cotacoes;
+    if (canViewAllCotacoes) {
+      [cotacoes] = await connection.execute(`
+        SELECT * FROM cotacoes WHERE id = ?
+      `, [req.params.id]);
+    } else {
+      [cotacoes] = await connection.execute(`
+        SELECT * FROM cotacoes WHERE id = ? AND comprador = ?
+      `, [req.params.id, userName]);
+    }
 
     if (cotacoes.length === 0) {
       await connection.release();
