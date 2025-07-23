@@ -308,6 +308,7 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
       'nome_generico_produto',
       'unidades',
       'marcas',
+      'cotacao',
       'permissoes'
     ];
 
