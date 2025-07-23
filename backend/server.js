@@ -167,12 +167,12 @@ app.get('/api/fornecedores/public', async (req, res) => {
     const { executeQuery } = require('./config/database');
     
     // Primeiro, vamos verificar quantos fornecedores ativos existem
-    const countQuery = 'SELECT COUNT(*) as total FROM fornecedores WHERE status = "ativo"';
+    const countQuery = 'SELECT COUNT(*) as total FROM fornecedores WHERE status = 1';
     const countResult = await executeQuery(countQuery);
     console.log('📊 Total de fornecedores ativos:', countResult[0].total);
     
     // Buscar alguns fornecedores para debug
-    const debugQuery = 'SELECT id, razao_social, nome_fantasia, status FROM fornecedores WHERE status = "ativo" LIMIT 5';
+    const debugQuery = 'SELECT id, razao_social, nome_fantasia, status FROM fornecedores WHERE status = 1 LIMIT 5';
     const debugResult = await executeQuery(debugQuery);
     console.log('🔍 Primeiros 5 fornecedores ativos:', debugResult);
     
@@ -192,7 +192,7 @@ app.get('/api/fornecedores/public', async (req, res) => {
         cep,
         status
       FROM fornecedores 
-      WHERE status = 'ativo' 
+      WHERE status = 1 
         AND (
           razao_social LIKE ? OR 
           nome_fantasia LIKE ? OR 
@@ -225,7 +225,7 @@ app.get('/api/fornecedores/test', async (req, res) => {
   try {
     const { executeQuery } = require('./config/database');
     
-    const query = 'SELECT id, razao_social, nome_fantasia, status FROM fornecedores LIMIT 10';
+    const query = 'SELECT id, razao_social, nome_fantasia, status FROM fornecedores WHERE status = 1 LIMIT 10';
     const fornecedores = await executeQuery(query);
     
     res.json({
