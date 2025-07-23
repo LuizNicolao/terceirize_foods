@@ -417,51 +417,26 @@ const Rotas = () => {
   const loadAuditLogs = async () => {
     try {
       setAuditLoading(true);
-      
       const params = new URLSearchParams();
-      
-      // Aplicar filtro de período se selecionado
       if (auditFilters.periodo) {
         const hoje = new Date();
         let dataInicio = new Date();
-        
         switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
+          case '7dias': dataInicio.setDate(hoje.getDate() - 7); break;
+          case '30dias': dataInicio.setDate(hoje.getDate() - 30); break;
+          case '90dias': dataInicio.setDate(hoje.getDate() - 90); break;
+          default: break;
         }
-        
         if (auditFilters.periodo !== 'todos') {
           params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
         }
       } else {
-        // Usar filtros manuais se período não estiver selecionado
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+        if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para rotas
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
       params.append('recurso', 'rotas');
-      
       const response = await api.get(`/auditoria?${params.toString()}`);
       setAuditLogs(response.data.logs || []);
     } catch (error) {
@@ -558,15 +533,12 @@ const Rotas = () => {
     loadAuditLogs();
   };
 
-  // Fechar modal de auditoria
   const handleCloseAuditModal = () => {
     setShowAuditModal(false);
+    setAuditLogs([]);
+    setAuditFilters({ dataInicio: '', dataFim: '', acao: '', usuario_id: '', periodo: '' });
   };
-
-  // Aplicar filtros de auditoria
-  const handleApplyAuditFilters = () => { 
-    loadAuditLogs(); 
-  };
+  const handleApplyAuditFilters = () => { loadAuditLogs(); };
 
   // Filtrar rotas
   const filteredRotas = rotas.filter(rota => {
@@ -918,23 +890,31 @@ const Rotas = () => {
                       border: '1px solid #e0e0e0', 
                       borderRadius: '8px', 
                       padding: '16px', 
-                      marginBottom: '12px',
-                      backgroundColor: '#fafafa'
+                      marginBottom: '12px', 
+                      background: 'white' 
                     }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div style={{ fontWeight: '600', color: 'var(--dark-gray)' }}>
-                          {log.acao === 'create' ? 'Criação' : log.acao === 'update' ? 'Edição' : 'Exclusão'}
+                      <div style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        marginBottom: '8px' 
+                      }}>
+                        <div>
+                          <StatusBadge $status={log.acao === 'create' ? 'ativo' : 'inativo'}>
+                            {log.acao === 'create' ? 'Criar' : log.acao === 'update' ? 'Editar' : 'Excluir'}
+                          </StatusBadge>
+                          <span style={{ marginLeft: '8px', fontSize: '12px', color: 'var(--gray)' }}>
+                            por {log.usuario_nome || 'Usuário desconhecido'}
+                          </span>
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                          {new Date(log.created_at).toLocaleString('pt-BR')}
-                        </div>
+                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                          {new Date(log.timestamp).toLocaleString('pt-BR')}
+                        </span>
                       </div>
-                      <div style={{ fontSize: '14px', color: 'var(--dark-gray)', marginBottom: '4px' }}>
-                        <strong>Usuário:</strong> {log.usuario_nome || 'N/A'}
-                      </div>
+                      
                       {log.detalhes && (
-                        <div style={{ fontSize: '13px', color: 'var(--gray)', marginTop: '8px' }}>
-                          <strong>Detalhes:</strong> {log.detalhes}
+                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)', marginTop: '8px' }}>
+                          <strong>Detalhes da operação</strong>
                         </div>
                       )}
                     </div>
