@@ -446,11 +446,11 @@ const Modal = styled.div`
 `;
 
 const ModalContent = styled(Card)`
-  max-width: 600px;
-  width: 90%;
-  max-height: 80vh;
+  max-width: 900px;
+  width: 95%;
+  max-height: 90vh;
   overflow-y: auto;
-  padding: 24px;
+  padding: 32px;
 `;
 
 const ModalHeader = styled.div`
@@ -1075,9 +1075,9 @@ const AnalisarCotacaoSupervisor = () => {
           <Modal>
             <ModalContent>
               <ModalHeader>
-                <ModalTitle>
-                  {analiseData.decisao === 'enviar_gestor' ? 'Enviar para Gestor' : 'Solicitar Renegociação'}
-                </ModalTitle>
+                            <ModalTitle>
+              {analiseData.decisao === 'enviar_gestor' ? '📤 Enviar para Gestor' : '🔄 Solicitar Renegociação'}
+            </ModalTitle>
                 <CloseButton onClick={() => setShowModal(false)}>
                   <FaTimes />
                 </CloseButton>
@@ -1103,20 +1103,20 @@ const AnalisarCotacaoSupervisor = () => {
                   
                   {/* Campos de Busca */}
                   <div style={{ 
-                    display: 'flex', 
-                    gap: '10px', 
-                    marginBottom: '15px',
-                    flexWrap: 'wrap'
+                    display: 'grid', 
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '15px', 
+                    marginBottom: '20px'
                   }}>
-                    <div style={{ flex: '1', minWidth: '200px' }}>
+                    <div>
                       <label style={{ 
                         display: 'block', 
-                        marginBottom: '4px', 
-                        fontSize: '12px', 
-                        fontWeight: '500',
-                        color: '#666'
+                        marginBottom: '6px', 
+                        fontSize: '13px', 
+                        fontWeight: '600',
+                        color: '#333'
                       }}>
-                        Buscar Fornecedor:
+                        🔍 Buscar Fornecedor:
                       </label>
                       <input
                         type="text"
@@ -1125,22 +1125,25 @@ const AnalisarCotacaoSupervisor = () => {
                         onChange={(e) => setSearchFornecedor(e.target.value)}
                         style={{
                           width: '100%',
-                          padding: '8px 12px',
-                          border: '1px solid #ddd',
-                          borderRadius: '4px',
-                          fontSize: '13px'
+                          padding: '10px 12px',
+                          border: '2px solid #e0e0e0',
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                          transition: 'border-color 0.3s ease'
                         }}
+                        onFocus={(e) => e.target.style.borderColor = colors.primary.green}
+                        onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
                       />
                     </div>
-                    <div style={{ flex: '1', minWidth: '200px' }}>
+                    <div>
                       <label style={{ 
                         display: 'block', 
-                        marginBottom: '4px', 
-                        fontSize: '12px', 
-                        fontWeight: '500',
-                        color: '#666'
+                        marginBottom: '6px', 
+                        fontSize: '13px', 
+                        fontWeight: '600',
+                        color: '#333'
                       }}>
-                        Buscar Produto:
+                        🔍 Buscar Produto:
                       </label>
                       <input
                         type="text"
@@ -1149,16 +1152,24 @@ const AnalisarCotacaoSupervisor = () => {
                         onChange={(e) => setSearchProduto(e.target.value)}
                         style={{
                           width: '100%',
-                          padding: '8px 12px',
-                          border: '1px solid #ddd',
-                          borderRadius: '4px',
-                          fontSize: '13px'
+                          padding: '10px 12px',
+                          border: '2px solid #e0e0e0',
+                          borderRadius: '6px',
+                          fontSize: '14px',
+                          transition: 'border-color 0.3s ease'
                         }}
+                        onFocus={(e) => e.target.style.borderColor = colors.primary.green}
+                        onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
                       />
                     </div>
                   </div>
                   
-                  <div style={{ marginBottom: '10px' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '10px', 
+                    marginBottom: '15px',
+                    flexWrap: 'wrap'
+                  }}>
                     <Button 
                       onClick={() => {
                         // Selecionar todos os produtos filtrados
@@ -1171,9 +1182,12 @@ const AnalisarCotacaoSupervisor = () => {
                         setAnaliseData({...analiseData, produtosSelecionados: todosProdutos});
                       }}
                       variant="secondary"
-                      style={{ marginRight: '10px' }}
+                      style={{ 
+                        fontSize: '13px',
+                        padding: '8px 16px'
+                      }}
                     >
-                      Selecionar Filtrados
+                      ✅ Selecionar Filtrados
                     </Button>
                     <Button 
                       onClick={() => {
@@ -1191,24 +1205,31 @@ const AnalisarCotacaoSupervisor = () => {
                         setAnaliseData({...analiseData, produtosSelecionados: todosProdutos});
                       }}
                       variant="secondary"
-                      style={{ marginRight: '10px' }}
+                      style={{ 
+                        fontSize: '13px',
+                        padding: '8px 16px'
+                      }}
                     >
-                      Selecionar Todos
+                      ✅ Selecionar Todos
                     </Button>
                     <Button 
                       onClick={() => setAnaliseData({...analiseData, produtosSelecionados: []})}
                       variant="secondary"
+                      style={{ 
+                        fontSize: '13px',
+                        padding: '8px 16px'
+                      }}
                     >
-                      Limpar Seleção
+                      🗑️ Limpar Seleção
                     </Button>
                   </div>
                   
                   <div style={{ 
-                    maxHeight: '200px', 
+                    maxHeight: '350px', 
                     overflowY: 'auto', 
                     border: '1px solid #ddd', 
                     borderRadius: '4px',
-                    padding: '10px'
+                    padding: '15px'
                   }}>
                     {(() => {
                       const produtosFiltrados = getProdutosFiltrados();
@@ -1308,19 +1329,36 @@ const AnalisarCotacaoSupervisor = () => {
                   </div>
                   
                   <div style={{ 
-                    marginTop: '10px', 
-                    padding: '8px', 
-                    backgroundColor: '#f8f9fa', 
-                    borderRadius: '4px',
-                    fontSize: '12px',
+                    marginTop: '15px', 
+                    padding: '12px', 
+                    backgroundColor: analiseData.produtosSelecionados.length > 0 ? '#e8f5e8' : '#f8f9fa', 
+                    borderRadius: '8px',
+                    fontSize: '13px',
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    border: analiseData.produtosSelecionados.length > 0 ? '2px solid #4caf50' : '1px solid #e0e0e0'
                   }}>
-                    <div>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '8px',
+                      fontWeight: '600',
+                      color: analiseData.produtosSelecionados.length > 0 ? '#2e7d32' : '#666'
+                    }}>
+                      <span style={{ fontSize: '16px' }}>
+                        {analiseData.produtosSelecionados.length > 0 ? '✅' : '📋'}
+                      </span>
                       <strong>{analiseData.produtosSelecionados.length}</strong> produto(s) selecionado(s) para renegociação
                     </div>
-                    <div style={{ color: '#666' }}>
+                    <div style={{ 
+                      color: '#666',
+                      fontSize: '12px',
+                      backgroundColor: '#fff',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      border: '1px solid #e0e0e0'
+                    }}>
                       {(() => {
                         const produtosFiltrados = getProdutosFiltrados();
                         const totalProdutos = cotacao.fornecedores?.reduce((total, f) => 
