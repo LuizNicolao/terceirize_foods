@@ -1618,11 +1618,17 @@ const AnalisarCotacaoSupervisor = () => {
                           <div style={{ fontSize: '20px', fontWeight: '700', color: colors.primary.green }}>
                             {(() => {
                               const produtosSelecionados = analiseData.produtosSelecionados;
-                              const produtosCompletos = produtosFiltrados.filter(p => 
-                                produtosSelecionados.some(ps => 
-                                  ps.produto_id === p.produto_id && ps.fornecedor_nome === p.fornecedor_nome
-                                )
-                              );
+                              // Buscar os produtos completos da cotação
+                              const produtosCompletos = [];
+                              cotacao.fornecedores?.forEach(fornecedor => {
+                                fornecedor.produtos?.forEach(produto => {
+                                  if (produtosSelecionados.some(ps => 
+                                    ps.produto_id === produto.produto_id && ps.fornecedor_nome === fornecedor.nome
+                                  )) {
+                                    produtosCompletos.push(produto);
+                                  }
+                                });
+                              });
                               const valorTotal = produtosCompletos.reduce((total, p) => total + (parseFloat(p.total) || 0), 0);
                               return formatarValor(valorTotal);
                             })()}
