@@ -497,8 +497,8 @@ router.put('/:id', [
     }
     return true;
   }).withMessage('CNPJ deve ter 14 dígitos'),
-  body('nome').custom((value) => {
-    if (!value || value.trim().length < 3) {
+  body('nome').optional().custom((value) => {
+    if (value && value.trim().length < 3) {
       throw new Error('Nome deve ter pelo menos 3 caracteres');
     }
     return true;
@@ -545,14 +545,70 @@ router.put('/:id', [
       return res.status(404).json({ error: 'Filial não encontrada' });
     }
 
-    // Atualizar filial
+    // Construir query de atualização dinamicamente
+    const updateFields = [];
+    const updateParams = [];
+
+    if (codigo_filial !== undefined) {
+      updateFields.push('codigo_filial = ?');
+      updateParams.push(codigo_filial);
+    }
+    if (cnpj !== undefined) {
+      updateFields.push('cnpj = ?');
+      updateParams.push(cnpj);
+    }
+    if (nome !== undefined) {
+      updateFields.push('nome = ?');
+      updateParams.push(nome);
+    }
+    if (logradouro !== undefined) {
+      updateFields.push('logradouro = ?');
+      updateParams.push(logradouro);
+    }
+    if (numero !== undefined) {
+      updateFields.push('numero = ?');
+      updateParams.push(numero);
+    }
+    if (bairro !== undefined) {
+      updateFields.push('bairro = ?');
+      updateParams.push(bairro);
+    }
+    if (cep !== undefined) {
+      updateFields.push('cep = ?');
+      updateParams.push(cep);
+    }
+    if (cidade !== undefined) {
+      updateFields.push('cidade = ?');
+      updateParams.push(cidade);
+    }
+    if (estado !== undefined) {
+      updateFields.push('estado = ?');
+      updateParams.push(estado);
+    }
+    if (supervisao !== undefined) {
+      updateFields.push('supervisao = ?');
+      updateParams.push(supervisao);
+    }
+    if (coordenacao !== undefined) {
+      updateFields.push('coordenacao = ?');
+      updateParams.push(coordenacao);
+    }
+    if (status !== undefined) {
+      updateFields.push('status = ?');
+      updateParams.push(status);
+    }
+
+    // Sempre atualizar o timestamp
+    updateFields.push('atualizado_em = CURRENT_TIMESTAMP');
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'Nenhum campo para atualizar' });
+    }
+
+    updateParams.push(id);
     await executeQuery(
-      `UPDATE filiais SET codigo_filial = ?, cnpj = ?, nome = ?, logradouro = ?, numero = ?, bairro = ?, cep = ?, 
-                         cidade = ?, estado = ?, supervisao = ?, coordenacao = ?, 
-                         status = ?, atualizado_em = CURRENT_TIMESTAMP
-       WHERE id = ?`,
-      [codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado,
-       supervisao, coordenacao, status, id]
+      `UPDATE filiais SET ${updateFields.join(', ')} WHERE id = ?`,
+      updateParams
     );
 
     const updatedFilial = await executeQuery(
