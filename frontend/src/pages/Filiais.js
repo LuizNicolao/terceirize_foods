@@ -487,7 +487,9 @@ const Filiais = () => {
 
   // Filtros
   const filteredFiliais = filiais.filter(filial => {
-    const matchesSearch = filial.nome?.toLowerCase().includes(searchTerm.toLowerCase()) || filial.cidade?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = filial.filial?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         filial.razao_social?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         filial.cidade?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'todos' || filial.status === parseInt(statusFilter);
     return matchesSearch && matchesStatus;
   });
@@ -639,7 +641,8 @@ const Filiais = () => {
         const dados = response.data.data;
         
         // Preencher automaticamente os campos com os dados do CNPJ
-        setValue('nome', dados.razao_social || '');
+        setValue('razao_social', dados.razao_social || '');
+        setValue('filial', dados.nome_fantasia || dados.razao_social || '');
         setValue('logradouro', dados.logradouro || '');
         setValue('numero', dados.numero || '');
         setValue('bairro', dados.bairro || '');
@@ -700,7 +703,8 @@ const Filiais = () => {
               <tr>
                 <Th>Código</Th>
                 <Th>CNPJ</Th>
-                <Th>Nome</Th>
+                <Th>Filial</Th>
+                <Th>Razão Social</Th>
                 <Th>Cidade</Th>
                 <Th>Estado</Th>
                 <Th>Status</Th>
@@ -712,7 +716,8 @@ const Filiais = () => {
                 <tr key={filial.id}>
                   <Td>{filial.codigo_filial || '-'}</Td>
                   <Td>{filial.cnpj || '-'}</Td>
-                  <Td>{filial.nome}</Td>
+                  <Td>{filial.filial}</Td>
+                  <Td>{filial.razao_social}</Td>
                   <Td>{filial.cidade}</Td>
                   <Td>{filial.estado}</Td>
                   <Td>
@@ -814,9 +819,14 @@ const Filiais = () => {
                     </div>
                   </FormGroup>
                   <FormGroup>
-                    <Label>Nome *</Label>
-                    <Input type="text" placeholder="Nome da filial" {...register('nome', { required: 'Nome é obrigatório' })} disabled={viewMode} />
-                    {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
+                    <Label>Filial *</Label>
+                    <Input type="text" placeholder="Nome da filial" {...register('filial', { required: 'Nome da filial é obrigatório' })} disabled={viewMode} />
+                    {errors.filial && <span style={{ color: 'red', fontSize: '12px' }}>{errors.filial.message}</span>}
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Razão Social *</Label>
+                    <Input type="text" placeholder="Razão social da empresa" {...register('razao_social', { required: 'Razão social é obrigatória' })} disabled={viewMode} />
+                    {errors.razao_social && <span style={{ color: 'red', fontSize: '12px' }}>{errors.razao_social.message}</span>}
                   </FormGroup>
                   <FormGroup>
                     <Label>Logradouro</Label>

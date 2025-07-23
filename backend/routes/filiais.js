@@ -103,7 +103,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     const { search = '' } = req.query;
 
     let query = `
-      SELECT id, codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado, 
+      SELECT id, codigo_filial, cnpj, filial, razao_social, logradouro, numero, bairro, cep, cidade, estado, 
              supervisao, coordenacao, status, criado_em, atualizado_em 
       FROM filiais 
       WHERE 1=1
@@ -111,11 +111,11 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     let params = [];
 
     if (search) {
-      query += ' AND (nome LIKE ? OR cidade LIKE ? OR estado LIKE ? OR supervisao LIKE ? OR codigo_filial LIKE ? OR cnpj LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+      query += ' AND (filial LIKE ? OR razao_social LIKE ? OR cidade LIKE ? OR estado LIKE ? OR supervisao LIKE ? OR codigo_filial LIKE ? OR cnpj LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
-    query += ' ORDER BY nome ASC';
+    query += ' ORDER BY filial ASC';
 
     const filiais = await executeQuery(query, params);
 
@@ -421,12 +421,18 @@ router.post('/', [
     }
     return true;
   }).withMessage('CNPJ deve ter 14 dígitos'),
-  body('nome').custom((value) => {
+  body('filial').custom((value) => {
     if (!value || value.trim().length < 3) {
-      throw new Error('Nome deve ter pelo menos 3 caracteres');
+      throw new Error('Nome da filial deve ter pelo menos 3 caracteres');
     }
     return true;
-  }).withMessage('Nome deve ter pelo menos 3 caracteres'),
+  }).withMessage('Nome da filial deve ter pelo menos 3 caracteres'),
+  body('razao_social').custom((value) => {
+    if (!value || value.trim().length < 3) {
+      throw new Error('Razão social deve ter pelo menos 3 caracteres');
+    }
+    return true;
+  }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
   body('cidade').optional().custom((value) => {
     if (value && value.trim().length < 2) {
       throw new Error('Cidade deve ter pelo menos 2 caracteres');
@@ -454,16 +460,16 @@ router.post('/', [
     }
 
     const {
-      codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado,
+      codigo_filial, cnpj, filial, razao_social, logradouro, numero, bairro, cep, cidade, estado,
       supervisao, coordenacao, status
     } = req.body;
 
     // Inserir filial
     const result = await executeQuery(
-      `INSERT INTO filiais (codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado,
+      `INSERT INTO filiais (codigo_filial, cnpj, filial, razao_social, logradouro, numero, bairro, cep, cidade, estado,
                            supervisao, coordenacao, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [codigo_filial, cnpj, filial, razao_social, logradouro, numero, bairro, cep, cidade, estado,
        supervisao, coordenacao, status || 1]
     );
 
@@ -497,12 +503,18 @@ router.put('/:id', [
     }
     return true;
   }).withMessage('CNPJ deve ter 14 dígitos'),
-  body('nome').optional().custom((value) => {
+  body('filial').optional().custom((value) => {
     if (value && value.trim().length < 3) {
-      throw new Error('Nome deve ter pelo menos 3 caracteres');
+      throw new Error('Nome da filial deve ter pelo menos 3 caracteres');
     }
     return true;
-  }).withMessage('Nome deve ter pelo menos 3 caracteres'),
+  }).withMessage('Nome da filial deve ter pelo menos 3 caracteres'),
+  body('razao_social').optional().custom((value) => {
+    if (value && value.trim().length < 3) {
+      throw new Error('Razão social deve ter pelo menos 3 caracteres');
+    }
+    return true;
+  }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
   body('cidade').optional().custom((value) => {
     if (value && value.trim().length < 2) {
       throw new Error('Cidade deve ter pelo menos 2 caracteres');
@@ -531,17 +543,17 @@ router.put('/:id', [
 
     const { id } = req.params;
     const {
-      codigo_filial, cnpj, nome, logradouro, numero, bairro, cep, cidade, estado,
+      codigo_filial, cnpj, filial, razao_social, logradouro, numero, bairro, cep, cidade, estado,
       supervisao, coordenacao, status
     } = req.body;
 
     // Verificar se a filial existe
-    const filial = await executeQuery(
+    const existingFilial = await executeQuery(
       'SELECT * FROM filiais WHERE id = ?',
       [id]
     );
 
-    if (filial.length === 0) {
+    if (existingFilial.length === 0) {
       return res.status(404).json({ error: 'Filial não encontrada' });
     }
 
@@ -557,9 +569,13 @@ router.put('/:id', [
       updateFields.push('cnpj = ?');
       updateParams.push(cnpj);
     }
-    if (nome !== undefined) {
-      updateFields.push('nome = ?');
-      updateParams.push(nome);
+    if (filial !== undefined) {
+      updateFields.push('filial = ?');
+      updateParams.push(filial);
+    }
+    if (razao_social !== undefined) {
+      updateFields.push('razao_social = ?');
+      updateParams.push(razao_social);
     }
     if (logradouro !== undefined) {
       updateFields.push('logradouro = ?');
