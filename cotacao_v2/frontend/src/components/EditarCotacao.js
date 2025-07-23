@@ -851,7 +851,7 @@ const BadgeRenegociacao = styled.span`
 `;
 
 const ProdutoRenegociacaoNome = styled.span`
-  color: #D84315;
+  color: #424242;
   font-weight: 600;
 `;
 

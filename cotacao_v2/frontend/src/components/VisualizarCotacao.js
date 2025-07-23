@@ -205,7 +205,7 @@ const RenegociacaoMessage = styled.div`
   margin-bottom: 12px;
 
   strong {
-    color: #d84315;
+    color: #424242;
   }
 
   p {
@@ -244,12 +244,12 @@ const ProdutoRenegociarItem = styled.div`
 
 const ProdutoNome = styled.span`
   font-weight: 600;
-  color: #D84315;
+  color: #424242;
 `;
 
 const ProdutoFornecedor = styled.span`
   font-size: 12px;
-  color: #D84315;
+  color: #424242;
 `;
 
 const SectionHeader = styled.div`
