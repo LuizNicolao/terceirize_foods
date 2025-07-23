@@ -356,6 +356,7 @@ const menuGroups = [
     title: 'Principal',
     items: [
       { path: '/', icon: FaHome, label: 'Dashboard', screen: 'dashboard' },
+      { path: '/cotacao', icon: FaClipboardList, label: 'Suprimentos', screen: 'cotacao' },
     ]
   },
   {

@@ -24,6 +24,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -38,6 +39,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -52,6 +54,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: true },
       unidades: { visualizar: true, criar: true, editar: true, excluir: true },
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -68,6 +71,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -82,6 +86,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -96,6 +101,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: true },
       unidades: { visualizar: true, criar: true, editar: true, excluir: true },
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: true, criar: false, editar: false, excluir: false }
     }
   },
@@ -112,6 +118,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -126,6 +133,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: true, editar: false, excluir: false },
       unidades: { visualizar: true, criar: true, editar: false, excluir: false },
       marcas: { visualizar: true, criar: true, editar: false, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -140,6 +148,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -156,6 +165,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -170,6 +180,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -184,6 +195,7 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: true },
       unidades: { visualizar: true, criar: true, editar: true, excluir: true },
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -200,23 +212,10 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
-      usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
-      fornecedores: { visualizar: true, criar: true, editar: false, excluir: false },
-      clientes: { visualizar: true, criar: true, editar: false, excluir: false },
-      filiais: { visualizar: true, criar: true, editar: false, excluir: false },
-      produtos: { visualizar: true, criar: true, editar: false, excluir: false },
-      grupos: { visualizar: true, criar: true, editar: false, excluir: false },
-      subgrupos: { visualizar: true, criar: true, editar: false, excluir: false },
-      classes: { visualizar: true, criar: true, editar: false, excluir: false },
-      nome_generico_produto: { visualizar: true, criar: true, editar: false, excluir: false },
-      unidades: { visualizar: true, criar: true, editar: false, excluir: false },
-      marcas: { visualizar: true, criar: true, editar: false, excluir: false },
-      permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
-    },
-    III: {
       usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
       fornecedores: { visualizar: true, criar: true, editar: true, excluir: false },
       clientes: { visualizar: true, criar: true, editar: true, excluir: false },
@@ -228,6 +227,22 @@ const PERMISSOES_PADRAO = {
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
+      permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
+    },
+    III: {
+      usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
+      fornecedores: { visualizar: true, criar: true, editar: true, excluir: true },
+      clientes: { visualizar: true, criar: true, editar: true, excluir: true },
+      filiais: { visualizar: true, criar: true, editar: true, excluir: true },
+      produtos: { visualizar: true, criar: true, editar: true, excluir: true },
+      grupos: { visualizar: true, criar: true, editar: true, excluir: true },
+      subgrupos: { visualizar: true, criar: true, editar: true, excluir: true },
+      classes: { visualizar: true, criar: true, editar: true, excluir: true },
+      nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: true },
+      unidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      marcas: { visualizar: true, criar: true, editar: true, excluir: true },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -481,6 +496,7 @@ router.get('/telas', checkPermission('visualizar'), (req, res) => {
     { nome: 'nome_generico_produto', descricao: 'Gerenciamento de Nomes Genéricos de Produtos' },
     { nome: 'unidades', descricao: 'Gerenciamento de Unidades de Medida' },
     { nome: 'marcas', descricao: 'Gerenciamento de Marcas' },
+    { nome: 'cotacao', descricao: 'Sistema de Cotação' },
     { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
   ];
 
