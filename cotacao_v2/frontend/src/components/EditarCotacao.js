@@ -5,6 +5,7 @@ import Layout from './Layout';
 import { calcularMelhoresPrecos, temMelhorPreco } from '../utils/priceUtils';
 import * as XLSX from 'xlsx';
 import styled from 'styled-components';
+import FornecedorSearch from './FornecedorSearch';
 import { 
   FaSave, 
   FaTimes, 
@@ -1916,11 +1917,17 @@ const EditarCotacao = () => {
                     <FormRow>
                       <FormGroup>
                         <Label>Nome do Fornecedor *</Label>
-                        <Input
-                          type="text"
+                        <FornecedorSearch
                           value={fornecedor.nome || ''}
-                          onChange={(e) => updateFornecedor(fornecedor.id, 'nome', e.target.value)}
-                          placeholder="Nome do fornecedor"
+                          onChange={(value) => updateFornecedor(fornecedor.id, 'nome', value)}
+                          placeholder="Buscar fornecedor no sistema..."
+                          onSelect={(fornecedorSelecionado) => {
+                            if (fornecedorSelecionado) {
+                              updateFornecedor(fornecedor.id, 'nome', fornecedorSelecionado.razao_social || fornecedorSelecionado.nome_fantasia);
+                              updateFornecedor(fornecedor.id, 'fornecedor_id', fornecedorSelecionado.id);
+                              updateFornecedor(fornecedor.id, 'cnpj', fornecedorSelecionado.cnpj);
+                            }
+                          }}
                         />
                       </FormGroup>
                       

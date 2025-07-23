@@ -1,0 +1,8 @@
+# Configuração de ambiente para o sistema de cotação
+# Copie este arquivo para .env e ajuste as URLs conforme necessário
+
+# URL da API do sistema principal (onde estão os fornecedores)
+REACT_APP_MAIN_API_URL=http://localhost:3001/api
+
+# URL da API do sistema de cotação
+REACT_APP_API_URL=http://82.29.57.43:5000 
