@@ -673,7 +673,7 @@ const Rotas = () => {
   if (loading) {
     return (
       <Container>
-        <LoadingSpinner />
+        <LoadingSpinner inline={true} text="Carregando rotas..." />
       </Container>
     );
   }
