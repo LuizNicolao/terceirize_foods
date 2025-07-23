@@ -145,6 +145,16 @@ const ModalHeader = styled.div`
   grid-column: 1 / -1;
 `;
 
+const HeaderActions = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  
+  .close-button {
+    margin-left: 8px;
+  }
+`;
+
 const ModalTitle = styled.h2`
   color: var(--dark-gray);
   font-size: 20px;
@@ -168,7 +178,6 @@ const CloseButton = styled.button`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 16px;
   max-height: calc(95vh - 120px);
   overflow: hidden;
   padding-right: 8px;
@@ -180,6 +189,7 @@ const FormFields = styled.div`
   gap: 16px;
   flex: 1;
   overflow-y: auto;
+  padding: 16px 0;
   
   /* Estilizar scrollbar */
   &::-webkit-scrollbar {
@@ -253,18 +263,8 @@ const Select = styled.select`
   }
 `;
 
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 16px;
-  grid-column: 1 / -1;
-  border-top: 1px solid #e0e0e0;
-  padding-top: 16px;
-`;
-
 const Button = styled.button`
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
@@ -760,7 +760,17 @@ const Filiais = () => {
           <ModalContent onClick={e => e.stopPropagation()}>
             <ModalHeader>
               <ModalTitle>{viewMode ? 'Visualizar Filial' : editingFilial ? 'Editar Filial' : 'Adicionar Filial'}</ModalTitle>
-              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
+              <HeaderActions>
+                <Button type="button" className="secondary" onClick={handleCloseModal}>
+                  {viewMode ? 'Fechar' : 'Cancelar'}
+                </Button>
+                {!viewMode && (
+                  <Button type="submit" className="primary" form="filial-form">
+                    {editingFilial ? 'Atualizar' : 'Cadastrar'}
+                  </Button>
+                )}
+                <CloseButton onClick={handleCloseModal} className="close-button">&times;</CloseButton>
+              </HeaderActions>
             </ModalHeader>
             <Tabs>
               <Tab active={activeTab === 'dados'} onClick={() => setActiveTab('dados')}>Dados</Tab>
@@ -769,7 +779,7 @@ const Filiais = () => {
               )}
             </Tabs>
             {activeTab === 'dados' && (
-              <Form onSubmit={handleSubmit(onSubmit)}>
+              <Form onSubmit={handleSubmit(onSubmit)} id="filial-form">
                 <FormFields>
                   <FormGroup>
                     <Label>Código da Filial</Label>
@@ -877,16 +887,6 @@ const Filiais = () => {
                     {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
                   </FormGroup>
                 </FormFields>
-                <ButtonGroup>
-                  <Button type="button" className="secondary" onClick={handleCloseModal}>
-                    {viewMode ? 'Fechar' : 'Cancelar'}
-                  </Button>
-                  {!viewMode && (
-                    <Button type="submit" className="primary">
-                      {editingFilial ? 'Atualizar' : 'Cadastrar'}
-                    </Button>
-                  )}
-                </ButtonGroup>
               </Form>
             )}
             {activeTab === 'almoxarifados' && (
@@ -961,9 +961,17 @@ const Filiais = () => {
                 <ModalContent onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
                   <ModalHeader>
                     <ModalTitle>{editingAlmoxarifado ? 'Editar Almoxarifado' : 'Novo Almoxarifado'}</ModalTitle>
-                    <CloseButton onClick={() => setShowAlmoxarifadoModal(false)}>&times;</CloseButton>
+                    <HeaderActions>
+                      <Button type="button" className="secondary" onClick={() => setShowAlmoxarifadoModal(false)}>
+                        Cancelar
+                      </Button>
+                      <Button type="submit" className="primary" form="almoxarifado-form">
+                        {editingAlmoxarifado ? 'Atualizar' : 'Cadastrar'}
+                      </Button>
+                      <CloseButton onClick={() => setShowAlmoxarifadoModal(false)} className="close-button">&times;</CloseButton>
+                    </HeaderActions>
                   </ModalHeader>
-                  <Form onSubmit={handleSubmit(handleSaveAlmoxarifado)}>
+                  <Form onSubmit={handleSubmit(handleSaveAlmoxarifado)} id="almoxarifado-form">
                     <FormGroup>
                       <Label>Nome *</Label>
                       <Input 
@@ -985,14 +993,6 @@ const Filiais = () => {
                       </Select>
                       {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
                     </FormGroup>
-                    <ButtonGroup>
-                      <Button type="button" className="secondary" onClick={() => setShowAlmoxarifadoModal(false)}>
-                        Cancelar
-                      </Button>
-                      <Button type="submit" className="primary">
-                        {editingAlmoxarifado ? 'Atualizar' : 'Cadastrar'}
-                      </Button>
-                    </ButtonGroup>
                   </Form>
                 </ModalContent>
               </Modal>
