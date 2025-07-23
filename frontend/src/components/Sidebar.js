@@ -369,6 +369,7 @@ const menuGroups = [
     title: 'Logística',
     items: [
       { path: '/rotas', icon: FaRoute, label: 'Rotas', screen: 'rotas' },
+      { path: '/unidades-escolares', icon: FaBuilding, label: 'Unidades Escolares', screen: 'unidades_escolares' },
     ]
   },
   {

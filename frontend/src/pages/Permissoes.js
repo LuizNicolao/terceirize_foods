@@ -1226,6 +1226,7 @@ const Permissoes = () => {
       case 'grupos': return 'Grupos';
       case 'subgrupos': return 'Subgrupos';
       case 'unidades': return 'Unidades';
+      case 'unidades_escolares': return 'Unidades Escolares';
       case 'permissoes': return 'Permissões';
       case 'classes': return 'Classes';
       case 'marcas': return 'Marcas';

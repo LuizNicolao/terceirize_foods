@@ -24,6 +24,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       nome_generico_produto: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
+      unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -40,6 +41,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: true, editar: true, excluir: false },
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -56,6 +58,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: true, editar: true, excluir: true },
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: true },
       unidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: true },
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
@@ -74,6 +77,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       nome_generico_produto: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
+      unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -90,6 +94,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: true, editar: true, excluir: false },
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -106,6 +111,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: true, editar: true, excluir: true },
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: true },
       unidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: true },
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -124,6 +130,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       nome_generico_produto: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
+      unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -140,6 +147,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: true, editar: false, excluir: false },
       nome_generico_produto: { visualizar: true, criar: true, editar: false, excluir: false },
       unidades: { visualizar: true, criar: true, editar: false, excluir: false },
+      unidades_escolares: { visualizar: true, criar: true, editar: false, excluir: false },
       marcas: { visualizar: true, criar: true, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -156,6 +164,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: true, editar: true, excluir: false },
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -174,6 +183,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       nome_generico_produto: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
+      unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -190,6 +200,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: true, editar: true, excluir: false },
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -206,6 +217,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: true, editar: true, excluir: true },
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: true },
       unidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: true },
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -224,6 +236,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: false, editar: false, excluir: false },
       nome_generico_produto: { visualizar: true, criar: false, editar: false, excluir: false },
       unidades: { visualizar: true, criar: false, editar: false, excluir: false },
+      unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -240,6 +253,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: true, editar: true, excluir: false },
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: false },
       unidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -256,6 +270,7 @@ const PERMISSOES_PADRAO = {
       classes: { visualizar: true, criar: true, editar: true, excluir: true },
       nome_generico_produto: { visualizar: true, criar: true, editar: true, excluir: true },
       unidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: true },
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
@@ -323,6 +338,7 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
       'classes',
       'nome_generico_produto',
       'unidades',
+      'unidades_escolares',
       'marcas',
       'cotacao',
       'permissoes'
@@ -513,6 +529,7 @@ router.get('/telas', checkPermission('visualizar'), (req, res) => {
     { nome: 'classes', descricao: 'Gerenciamento de Classes' },
     { nome: 'nome_generico_produto', descricao: 'Gerenciamento de Nomes Genéricos de Produtos' },
     { nome: 'unidades', descricao: 'Gerenciamento de Unidades de Medida' },
+    { nome: 'unidades_escolares', descricao: 'Gerenciamento de Unidades Escolares' },
     { nome: 'marcas', descricao: 'Gerenciamento de Marcas' },
     { nome: 'cotacao', descricao: 'Sistema de Cotação' },
     { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }

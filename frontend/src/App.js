@@ -11,6 +11,7 @@ import Fornecedores from './pages/Fornecedores';
 import Clientes from './pages/Clientes';
 import Filiais from './pages/Filiais';
 import Rotas from './pages/Rotas';
+import UnidadesEscolares from './pages/UnidadesEscolares';
 import Produtos from './pages/Produtos';
 import Grupos from './pages/Grupos';
 import Subgrupos from './pages/Subgrupos';
@@ -123,6 +124,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="rotas">
               <Rotas />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/unidades-escolares" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="unidades_escolares">
+              <UnidadesEscolares />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 
