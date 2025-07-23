@@ -446,11 +446,11 @@ const Modal = styled.div`
 `;
 
 const ModalContent = styled(Card)`
-  max-width: 1350px;
-  width: 98%;
-  max-height: 95vh;
+  max-width: 1000px;
+  width: 95%;
+  max-height: 90vh;
   overflow-y: auto;
-  padding: 40px;
+  padding: 30px;
 `;
 
 const ModalHeader = styled.div`
@@ -1075,9 +1075,9 @@ const AnalisarCotacaoSupervisor = () => {
           <Modal>
             <ModalContent>
               <ModalHeader>
-                            <ModalTitle>
-              {analiseData.decisao === 'enviar_gestor' ? '📤 Enviar para Gestor' : '🔄 Solicitar Renegociação'}
-            </ModalTitle>
+                <ModalTitle>
+                  {analiseData.decisao === 'enviar_gestor' ? 'Enviar para Gestor' : 'Solicitar Renegociação'}
+                </ModalTitle>
                 <CloseButton onClick={() => setShowModal(false)}>
                   <FaTimes />
                 </CloseButton>
@@ -1096,60 +1096,17 @@ const AnalisarCotacaoSupervisor = () => {
               
               {/* Seção de Seleção de Produtos para Renegociação */}
               {analiseData.decisao === 'renegociacao' && (
-                <div style={{ 
-                  marginBottom: '30px',
-                  border: '2px solid #e0e0e0',
-                  borderRadius: '12px',
-                  padding: '25px',
-                  backgroundColor: '#fafafa'
-                }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '12px',
-                    marginBottom: '20px',
-                    paddingBottom: '15px',
-                    borderBottom: '2px solid #e0e0e0'
-                  }}>
-                    <div style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      backgroundColor: colors.primary.green,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      fontSize: '18px',
-                      fontWeight: 'bold'
-                    }}>
-                      📦
-                    </div>
-                    <div>
-                      <h3 style={{ 
-                        margin: '0 0 4px 0', 
-                        fontSize: '18px', 
-                        fontWeight: '700',
-                        color: colors.neutral.darkGray
-                      }}>
-                        Seleção de Produtos para Renegociação
-                      </h3>
-                      <p style={{ 
-                        margin: '0', 
-                        fontSize: '14px', 
-                        color: colors.neutral.gray
-                      }}>
-                        Selecione os produtos que precisam ser renegociados com os fornecedores
-                      </p>
-                    </div>
-                  </div>
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                    Produtos para Renegociação:
+                  </label>
                   
                   {/* Campos de Busca */}
                   <div style={{ 
                     display: 'grid', 
-                    gridTemplateColumns: '1fr 1fr 1fr',
-                    gap: '20px', 
-                    marginBottom: '25px'
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: '15px', 
+                    marginBottom: '20px'
                   }}>
                     <div>
                       <label style={{ 
@@ -1174,7 +1131,7 @@ const AnalisarCotacaoSupervisor = () => {
                           fontSize: '14px',
                           transition: 'border-color 0.3s ease'
                         }}
-                        onFocus={(e) => e.target.style.borderColor = colors.primary.green}
+                        onFocus={(e) => e.target.style.borderColor = '#00723e'}
                         onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
                       />
                     </div>
@@ -1188,63 +1145,30 @@ const AnalisarCotacaoSupervisor = () => {
                       }}>
                         🔍 Buscar Produto:
                       </label>
-                                              <input
-                          type="text"
-                          placeholder="Digite o nome do produto..."
-                          value={searchProduto}
-                          onChange={(e) => setSearchProduto(e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '10px 12px',
-                            border: '2px solid #e0e0e0',
-                            borderRadius: '6px',
-                            fontSize: '14px',
-                            transition: 'border-color 0.3s ease'
-                          }}
-                          onFocus={(e) => e.target.style.borderColor = colors.primary.green}
-                          onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ 
-                          display: 'block', 
-                          marginBottom: '6px', 
-                          fontSize: '13px', 
-                          fontWeight: '600',
-                          color: '#333'
-                        }}>
-                          📊 Estatísticas:
-                        </label>
-                        <div style={{
+                      <input
+                        type="text"
+                        placeholder="Digite o nome do produto..."
+                        value={searchProduto}
+                        onChange={(e) => setSearchProduto(e.target.value)}
+                        style={{
                           width: '100%',
                           padding: '10px 12px',
                           border: '2px solid #e0e0e0',
                           borderRadius: '6px',
                           fontSize: '14px',
-                          backgroundColor: '#f8f9fa',
-                          color: '#5a6c7d',
-                          textAlign: 'center',
-                          fontWeight: '500'
-                        }}>
-                          {(() => {
-                            const produtosFiltrados = getProdutosFiltrados();
-                            const totalProdutos = cotacao.fornecedores?.reduce((total, f) => 
-                              total + (f.produtos?.length || 0), 0) || 0;
-                            
-                            if (searchFornecedor || searchProduto) {
-                              return `${produtosFiltrados.length} de ${totalProdutos} produtos`;
-                            }
-                            return `${totalProdutos} produtos disponíveis`;
-                          })()}
-                        </div>
-                      </div>
+                          transition: 'border-color 0.3s ease'
+                        }}
+                        onFocus={(e) => e.target.style.borderColor = '#00723e'}
+                        onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+                      />
                     </div>
+                  </div>
                   
                   <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                    gap: '12px', 
-                    marginBottom: '20px'
+                    display: 'flex', 
+                    gap: '10px', 
+                    marginBottom: '15px',
+                    flexWrap: 'wrap'
                   }}>
                     <Button 
                       onClick={() => {
@@ -1259,10 +1183,8 @@ const AnalisarCotacaoSupervisor = () => {
                       }}
                       variant="secondary"
                       style={{ 
-                        fontSize: '14px',
-                        padding: '12px 20px',
-                        height: 'auto',
-                        minHeight: '45px'
+                        fontSize: '13px',
+                        padding: '8px 16px'
                       }}
                     >
                       ✅ Selecionar Filtrados
@@ -1284,10 +1206,8 @@ const AnalisarCotacaoSupervisor = () => {
                       }}
                       variant="secondary"
                       style={{ 
-                        fontSize: '14px',
-                        padding: '12px 20px',
-                        height: 'auto',
-                        minHeight: '45px'
+                        fontSize: '13px',
+                        padding: '8px 16px'
                       }}
                     >
                       ✅ Selecionar Todos
@@ -1296,10 +1216,8 @@ const AnalisarCotacaoSupervisor = () => {
                       onClick={() => setAnaliseData({...analiseData, produtosSelecionados: []})}
                       variant="secondary"
                       style={{ 
-                        fontSize: '14px',
-                        padding: '12px 20px',
-                        height: 'auto',
-                        minHeight: '45px'
+                        fontSize: '13px',
+                        padding: '8px 16px'
                       }}
                     >
                       🗑️ Limpar Seleção
@@ -1307,12 +1225,11 @@ const AnalisarCotacaoSupervisor = () => {
                   </div>
                   
                   <div style={{ 
-                    maxHeight: '500px', 
+                    maxHeight: '350px', 
                     overflowY: 'auto', 
-                    border: '2px solid #e0e0e0', 
-                    borderRadius: '8px',
-                    padding: '0',
-                    backgroundColor: 'white'
+                    border: '1px solid #ddd', 
+                    borderRadius: '4px',
+                    padding: '10px'
                   }}>
                     {(() => {
                       const produtosFiltrados = getProdutosFiltrados();
@@ -1321,14 +1238,13 @@ const AnalisarCotacaoSupervisor = () => {
                         return (
                           <div style={{ 
                             textAlign: 'center', 
-                            padding: '40px 20px', 
+                            padding: '20px', 
                             color: '#666',
-                            fontSize: '16px'
+                            fontSize: '14px'
                           }}>
-                            <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
                             {searchFornecedor || searchProduto ? 
                               'Nenhum produto encontrado com os filtros aplicados.' : 
-                              'Nenhum produto disponível para seleção.'
+                              'Nenhum produto disponível.'
                             }
                           </div>
                         );
@@ -1343,300 +1259,100 @@ const AnalisarCotacaoSupervisor = () => {
                         produtosPorFornecedor[produto.fornecedor_nome].push(produto);
                       });
                       
-                      return Object.entries(produtosPorFornecedor).map(([fornecedorNome, produtos], fornecedorIndex) => {
-                        // Calcular estatísticas do fornecedor
-                        const totalProdutos = produtos.length;
-                        const produtosSelecionados = produtos.filter(produto => 
-                          analiseData.produtosSelecionados.some(
-                            p => p.produto_id === produto.produto_id && p.fornecedor_nome === produto.fornecedor_nome
-                          )
-                        ).length;
-                        const valorTotal = produtos.reduce((total, p) => total + (parseFloat(p.total) || 0), 0);
-                        
-                        return (
-                          <div key={fornecedorIndex} style={{ 
-                            borderBottom: fornecedorIndex < Object.keys(produtosPorFornecedor).length - 1 ? '2px solid #f0f0f0' : 'none'
+                      return Object.entries(produtosPorFornecedor).map(([fornecedorNome, produtos], fornecedorIndex) => (
+                        <div key={fornecedorIndex} style={{ marginBottom: '15px' }}>
+                          <h4 style={{ 
+                            margin: '0 0 8px 0', 
+                            color: colors.primary.green,
+                            fontSize: '14px',
+                            fontWeight: '600'
                           }}>
-                            {/* Header do Fornecedor */}
-                            <div style={{ 
-                              padding: '15px 20px',
-                              backgroundColor: '#f8f9fa',
-                              borderBottom: '1px solid #e0e0e0',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center'
-                            }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{
-                                  width: '32px',
-                                  height: '32px',
-                                  borderRadius: '50%',
-                                  backgroundColor: colors.primary.green,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'white',
-                                  fontSize: '14px',
-                                  fontWeight: 'bold'
-                                }}>
-                                  🏢
-                                </div>
-                                <div>
-                                  <h4 style={{ 
-                                    margin: '0 0 2px 0', 
-                                    color: '#34495e',
-                                    fontSize: '16px',
-                                    fontWeight: '700'
-                                  }}>
-                                    {fornecedorNome}
-                                  </h4>
-                                                                     <div style={{ 
-                                     fontSize: '12px', 
-                                     color: '#5a6c7d',
-                                     display: 'flex',
-                                     gap: '15px'
-                                   }}>
-                                    <span>📦 {totalProdutos} produtos</span>
-                                    <span>✅ {produtosSelecionados} selecionados</span>
-                                    <span>💰 {formatarValor(valorTotal)}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              {/* Checkbox para selecionar todos do fornecedor */}
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {fornecedorNome}
+                          </h4>
+                          {produtos.map((produto, produtoIndex) => {
+                            const isSelected = analiseData.produtosSelecionados.some(
+                              p => p.produto_id === produto.produto_id && p.fornecedor_nome === produto.fornecedor_nome
+                            );
+                            
+                            return (
+                              <div key={produtoIndex} style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                padding: '8px',
+                                backgroundColor: isSelected ? '#f0f8f0' : 'transparent',
+                                borderRadius: '4px',
+                                marginBottom: '4px'
+                              }}>
                                 <input
                                   type="checkbox"
-                                  checked={produtosSelecionados === totalProdutos && totalProdutos > 0}
+                                  checked={isSelected}
                                   onChange={(e) => {
                                     if (e.target.checked) {
-                                      // Selecionar todos os produtos do fornecedor
-                                      const novosProdutos = produtos.map(produto => ({
-                                        produto_id: produto.produto_id,
-                                        produto_nome: produto.nome,
-                                        fornecedor_nome: produto.fornecedor_nome
-                                      }));
+                                      // Adicionar produto à seleção
                                       setAnaliseData({
-                                        ...analiseData,
+                                        ...analiseData, 
                                         produtosSelecionados: [
-                                          ...analiseData.produtosSelecionados.filter(p => p.fornecedor_nome !== fornecedorNome),
-                                          ...novosProdutos
+                                          ...analiseData.produtosSelecionados,
+                                          {
+                                            produto_id: produto.produto_id,
+                                            produto_nome: produto.nome,
+                                            fornecedor_nome: produto.fornecedor_nome
+                                          }
                                         ]
                                       });
                                     } else {
-                                      // Desmarcar todos os produtos do fornecedor
+                                      // Remover produto da seleção
                                       setAnaliseData({
                                         ...analiseData,
-                                        produtosSelecionados: analiseData.produtosSelecionados.filter(p => p.fornecedor_nome !== fornecedorNome)
+                                        produtosSelecionados: analiseData.produtosSelecionados.filter(
+                                          p => !(p.produto_id === produto.produto_id && p.fornecedor_nome === produto.fornecedor_nome)
+                                        )
                                       });
                                     }
                                   }}
-                                  style={{ marginRight: '4px' }}
+                                  style={{ marginRight: '10px' }}
                                 />
-                                                                 <span style={{ fontSize: '12px', color: '#5a6c7d', fontWeight: '500' }}>
-                                   Selecionar todos
-                                 </span>
-                              </div>
-                            </div>
-                            
-                            {/* Lista de Produtos */}
-                            <div style={{ padding: '0 20px' }}>
-                              {produtos.map((produto, produtoIndex) => {
-                                const isSelected = analiseData.produtosSelecionados.some(
-                                  p => p.produto_id === produto.produto_id && p.fornecedor_nome === produto.fornecedor_nome
-                                );
-                                
-                                return (
-                                  <div key={produtoIndex} style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    padding: '12px 0',
-                                    borderBottom: produtoIndex < produtos.length - 1 ? '1px solid #f5f5f5' : 'none',
-                                    backgroundColor: isSelected ? '#f0f8f0' : 'transparent',
-                                    borderRadius: '6px',
-                                    margin: '4px 0',
-                                    transition: 'all 0.2s ease'
-                                  }}>
-                                    <input
-                                      type="checkbox"
-                                      checked={isSelected}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          // Adicionar produto à seleção
-                                          setAnaliseData({
-                                            ...analiseData, 
-                                            produtosSelecionados: [
-                                              ...analiseData.produtosSelecionados,
-                                              {
-                                                produto_id: produto.produto_id,
-                                                produto_nome: produto.nome,
-                                                fornecedor_nome: produto.fornecedor_nome
-                                              }
-                                            ]
-                                          });
-                                        } else {
-                                          // Remover produto da seleção
-                                          setAnaliseData({
-                                            ...analiseData,
-                                            produtosSelecionados: analiseData.produtosSelecionados.filter(
-                                              p => !(p.produto_id === produto.produto_id && p.fornecedor_nome === produto.fornecedor_nome)
-                                            )
-                                          });
-                                        }
-                                      }}
-                                      style={{ marginRight: '15px' }}
-                                    />
-                                    <div style={{ flex: 1 }}>
-                                      <div style={{ 
-                                        fontWeight: '600', 
-                                        fontSize: '14px',
-                                        color: isSelected ? colors.primary.green : '#2c3e50',
-                                        marginBottom: '4px'
-                                      }}>
-                                        {produto.nome}
-                                        {isSelected && (
-                                          <span style={{
-                                            marginLeft: '8px',
-                                            backgroundColor: colors.primary.green,
-                                            color: 'white',
-                                            padding: '2px 6px',
-                                            borderRadius: '10px',
-                                            fontSize: '10px',
-                                            fontWeight: 'bold'
-                                          }}>
-                                            SELECIONADO
-                                          </span>
-                                        )}
-                                      </div>
-                                                                        <div style={{ 
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                                    gap: '8px',
-                                    fontSize: '12px', 
-                                    color: isSelected ? '#2c3e50' : '#7f8c8d'
-                                  }}>
-                                        <span>📦 Qtd: {produto.qtde} {produto.un}</span>
-                                        <span>💰 Valor: {formatarValor(produto.valor_unitario)}</span>
-                                        <span>📊 Total: {formatarValor(produto.total)}</span>
-                                        {produto.prazo_entrega && (
-                                          <span>🚚 Prazo: {produto.prazo_entrega}</span>
-                                        )}
-                                      </div>
-                                    </div>
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontWeight: '500', fontSize: '13px' }}>
+                                    {produto.nome}
                                   </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        );
-                      });
+                                  <div style={{ fontSize: '12px', color: '#666' }}>
+                                    Qtd: {produto.qtde} {produto.un} | Valor: {formatarValor(produto.valor_unitario)}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ));
                     })()}
                   </div>
                   
                   <div style={{ 
-                    marginTop: '25px', 
-                    padding: '20px', 
-                    backgroundColor: analiseData.produtosSelecionados.length > 0 ? '#e8f5e8' : '#f8f9fa', 
-                    borderRadius: '12px',
-                    fontSize: '14px',
-                    border: analiseData.produtosSelecionados.length > 0 ? '2px solid #4caf50' : '1px solid #e0e0e0'
+                    marginTop: '10px', 
+                    padding: '8px', 
+                    backgroundColor: '#f8f9fa', 
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
                   }}>
-                    <div style={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      marginBottom: analiseData.produtosSelecionados.length > 0 ? '15px' : '0'
-                    }}>
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '12px',
-                        fontWeight: '600',
-                        color: analiseData.produtosSelecionados.length > 0 ? '#2e7d32' : '#666'
-                      }}>
-                        <span style={{ fontSize: '20px' }}>
-                          {analiseData.produtosSelecionados.length > 0 ? '✅' : '📋'}
-                        </span>
-                        <div>
-                          <div style={{ fontSize: '16px', fontWeight: '700' }}>
-                            <strong>{analiseData.produtosSelecionados.length}</strong> produto(s) selecionado(s)
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#666' }}>
-                            Pronto para renegociação
-                          </div>
-                        </div>
-                      </div>
-                      <div style={{ 
-                        color: '#666',
-                        fontSize: '12px',
-                        backgroundColor: '#fff',
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: '1px solid #e0e0e0',
-                        fontWeight: '500'
-                      }}>
-                        {(() => {
-                          const produtosFiltrados = getProdutosFiltrados();
-                          const totalProdutos = cotacao.fornecedores?.reduce((total, f) => 
-                            total + (f.produtos?.length || 0), 0) || 0;
-                          
-                          if (searchFornecedor || searchProduto) {
-                            return `Exibindo ${produtosFiltrados.length} de ${totalProdutos} produtos`;
-                          }
-                          return `${totalProdutos} produtos disponíveis`;
-                        })()}
-                      </div>
+                    <div>
+                      <strong>{analiseData.produtosSelecionados.length}</strong> produto(s) selecionado(s) para renegociação
                     </div>
-                    
-                    {/* Estatísticas detalhadas quando há produtos selecionados */}
-                    {analiseData.produtosSelecionados.length > 0 && (
-                      <div style={{ 
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
-                        gap: '15px',
-                        padding: '15px',
-                        backgroundColor: 'white',
-                        borderRadius: '8px',
-                        border: '1px solid #e0e0e0'
-                      }}>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '20px', fontWeight: '700', color: colors.primary.green }}>
-                            {(() => {
-                              const fornecedoresUnicos = new Set(analiseData.produtosSelecionados.map(p => p.fornecedor_nome));
-                              return fornecedoresUnicos.size;
-                            })()}
-                          </div>
-                          <div style={{ fontSize: '11px', color: '#5a6c7d' }}>Fornecedores</div>
-                        </div>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '20px', fontWeight: '700', color: colors.primary.green }}>
-                            {analiseData.produtosSelecionados.length}
-                          </div>
-                          <div style={{ fontSize: '11px', color: '#5a6c7d' }}>Produtos</div>
-                        </div>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '20px', fontWeight: '700', color: colors.primary.green }}>
-                            {(() => {
-                              const produtosSelecionados = analiseData.produtosSelecionados;
-                              // Buscar os produtos completos da cotação
-                              const produtosCompletos = [];
-                              cotacao.fornecedores?.forEach(fornecedor => {
-                                fornecedor.produtos?.forEach(produto => {
-                                  if (produtosSelecionados.some(ps => 
-                                    ps.produto_id === produto.produto_id && ps.fornecedor_nome === fornecedor.nome
-                                  )) {
-                                    produtosCompletos.push(produto);
-                                  }
-                                });
-                              });
-                              const valorTotal = produtosCompletos.reduce((total, p) => total + (parseFloat(p.total) || 0), 0);
-                              return formatarValor(valorTotal);
-                            })()}
-                          </div>
-                          <div style={{ fontSize: '11px', color: '#5a6c7d' }}>Valor Total</div>
-                        </div>
-                      </div>
-                    )}
+                    <div style={{ color: '#666' }}>
+                      {(() => {
+                        const produtosFiltrados = getProdutosFiltrados();
+                        const totalProdutos = cotacao.fornecedores?.reduce((total, f) => 
+                          total + (f.produtos?.length || 0), 0) || 0;
+                        
+                        if (searchFornecedor || searchProduto) {
+                          return `Exibindo ${produtosFiltrados.length} de ${totalProdutos} produtos`;
+                        }
+                        return `${totalProdutos} produtos disponíveis`;
+                      })()}
+                    </div>
                   </div>
                 </div>
               )}
