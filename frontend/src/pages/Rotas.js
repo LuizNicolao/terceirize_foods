@@ -584,7 +584,7 @@ const Rotas = () => {
   // Obter nome da filial
   const getFilialName = (filialId) => {
     const filial = filiais.find(f => f.id === filialId);
-    return filial ? filial.nome : 'N/A';
+    return filial ? filial.filial : 'N/A';
   };
 
   // Formatar valor monetário
@@ -638,7 +638,7 @@ const Rotas = () => {
               { value: 'todos', label: 'Todas as filiais' },
               ...filiais.map(filial => ({
                 value: filial.id.toString(),
-                label: filial.nome
+                label: filial.filial
               }))
             ]
           }
@@ -748,7 +748,7 @@ const Rotas = () => {
                     <option value="">Selecione uma filial</option>
                     {filiais.map(filial => (
                       <option key={filial.id} value={filial.id}>
-                        {filial.nome}
+                        {filial.filial}
                       </option>
                     ))}
                   </Select>

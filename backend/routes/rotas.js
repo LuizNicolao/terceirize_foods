@@ -15,7 +15,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     const { search = '' } = req.query;
 
     let query = `
-      SELECT r.*, f.nome as filial_nome
+      SELECT r.*, f.filial as filial_nome
       FROM rotas r
       LEFT JOIN filiais f ON r.filial_id = f.id
       WHERE 1=1
@@ -45,7 +45,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
     const { id } = req.params;
 
     const rotas = await executeQuery(`
-      SELECT r.*, f.nome as filial_nome
+      SELECT r.*, f.filial as filial_nome
       FROM rotas r
       LEFT JOIN filiais f ON r.filial_id = f.id
       WHERE r.id = ?
@@ -117,7 +117,7 @@ router.post('/', [
     );
 
     const newRota = await executeQuery(
-      'SELECT r.*, f.nome as filial_nome FROM rotas r LEFT JOIN filiais f ON r.filial_id = f.id WHERE r.id = ?',
+      'SELECT r.*, f.filial as filial_nome FROM rotas r LEFT JOIN filiais f ON r.filial_id = f.id WHERE r.id = ?',
       [result.insertId]
     );
 
@@ -241,7 +241,7 @@ router.put('/:id', [
     );
 
     const updatedRota = await executeQuery(
-      'SELECT r.*, f.nome as filial_nome FROM rotas r LEFT JOIN filiais f ON r.filial_id = f.id WHERE r.id = ?',
+      'SELECT r.*, f.filial as filial_nome FROM rotas r LEFT JOIN filiais f ON r.filial_id = f.id WHERE r.id = ?',
       [id]
     );
 
