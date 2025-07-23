@@ -1322,7 +1322,7 @@ const AnalisarCotacaoSupervisor = () => {
                           <div style={{ 
                             textAlign: 'center', 
                             padding: '40px 20px', 
-                            color: '#666',
+                            color: '#5a6c7d',
                             fontSize: '16px'
                           }}>
                             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔍</div>
@@ -1392,7 +1392,7 @@ const AnalisarCotacaoSupervisor = () => {
                                   </h4>
                                   <div style={{ 
                                     fontSize: '12px', 
-                                    color: '#666',
+                                    color: '#5a6c7d',
                                     display: 'flex',
                                     gap: '15px'
                                   }}>
@@ -1433,7 +1433,7 @@ const AnalisarCotacaoSupervisor = () => {
                                   }}
                                   style={{ marginRight: '4px' }}
                                 />
-                                <span style={{ fontSize: '12px', color: '#666', fontWeight: '500' }}>
+                                <span style={{ fontSize: '12px', color: '#5a6c7d', fontWeight: '500' }}>
                                   Selecionar todos
                                 </span>
                               </div>
@@ -1490,7 +1490,7 @@ const AnalisarCotacaoSupervisor = () => {
                                       <div style={{ 
                                         fontWeight: '600', 
                                         fontSize: '14px',
-                                        color: isSelected ? colors.primary.green : colors.neutral.darkGray,
+                                        color: isSelected ? colors.primary.green : '#2c3e50',
                                         marginBottom: '4px'
                                       }}>
                                         {produto.nome}
@@ -1513,7 +1513,7 @@ const AnalisarCotacaoSupervisor = () => {
                                         gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
                                         gap: '8px',
                                         fontSize: '12px', 
-                                        color: '#666'
+                                        color: '#5a6c7d'
                                       }}>
                                         <span>📦 Qtd: {produto.qtde} {produto.un}</span>
                                         <span>💰 Valor: {formatarValor(produto.valor_unitario)}</span>
@@ -1561,20 +1561,20 @@ const AnalisarCotacaoSupervisor = () => {
                           <div style={{ fontSize: '16px', fontWeight: '700' }}>
                             <strong>{analiseData.produtosSelecionados.length}</strong> produto(s) selecionado(s)
                           </div>
-                          <div style={{ fontSize: '12px', color: '#666' }}>
+                          <div style={{ fontSize: '12px', color: '#5a6c7d' }}>
                             Pronto para renegociação
                           </div>
                         </div>
                       </div>
-                      <div style={{ 
-                        color: '#666',
-                        fontSize: '12px',
-                        backgroundColor: '#fff',
-                        padding: '6px 12px',
-                        borderRadius: '6px',
-                        border: '1px solid #e0e0e0',
-                        fontWeight: '500'
-                      }}>
+                                              <div style={{ 
+                          color: '#5a6c7d',
+                          fontSize: '12px',
+                          backgroundColor: '#fff',
+                          padding: '6px 12px',
+                          borderRadius: '6px',
+                          border: '1px solid #e0e0e0',
+                          fontWeight: '500'
+                        }}>
                         {(() => {
                           const produtosFiltrados = getProdutosFiltrados();
                           const totalProdutos = cotacao.fornecedores?.reduce((total, f) => 
@@ -1606,13 +1606,13 @@ const AnalisarCotacaoSupervisor = () => {
                               return fornecedoresUnicos.size;
                             })()}
                           </div>
-                          <div style={{ fontSize: '11px', color: '#666' }}>Fornecedores</div>
+                          <div style={{ fontSize: '11px', color: '#5a6c7d' }}>Fornecedores</div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: '20px', fontWeight: '700', color: colors.primary.green }}>
                             {analiseData.produtosSelecionados.length}
                           </div>
-                          <div style={{ fontSize: '11px', color: '#666' }}>Produtos</div>
+                          <div style={{ fontSize: '11px', color: '#5a6c7d' }}>Produtos</div>
                         </div>
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: '20px', fontWeight: '700', color: colors.primary.green }}>
@@ -1633,7 +1633,7 @@ const AnalisarCotacaoSupervisor = () => {
                               return formatarValor(valorTotal);
                             })()}
                           </div>
-                          <div style={{ fontSize: '11px', color: '#666' }}>Valor Total</div>
+                          <div style={{ fontSize: '11px', color: '#5a6c7d' }}>Valor Total</div>
                         </div>
                       </div>
                     )}
