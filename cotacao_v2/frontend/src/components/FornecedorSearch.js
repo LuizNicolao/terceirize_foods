@@ -204,10 +204,14 @@ const FornecedorSearch = ({
   };
 
   const handleSelectFornecedor = (fornecedor) => {
+    const nomeCompleto = fornecedor.razao_social || fornecedor.nome_fantasia;
     setSelectedFornecedor(fornecedor);
-    setSearchTerm(fornecedor.razao_social || fornecedor.nome_fantasia);
+    setSearchTerm(nomeCompleto);
     setShowDropdown(false);
     setFornecedores([]);
+    
+    // Chamar onChange com o nome completo do fornecedor
+    onChange(nomeCompleto);
     
     if (onSelect) {
       onSelect(fornecedor);
