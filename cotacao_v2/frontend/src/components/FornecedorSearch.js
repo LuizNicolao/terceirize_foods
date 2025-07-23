@@ -145,25 +145,64 @@ const FornecedorSearch = ({
 
     setLoading(true);
     try {
+      // Usar o token do sistema de cotação
       const token = localStorage.getItem('token');
+      
+      if (!token) {
+        console.error('Token não encontrado');
+        setFornecedores([]);
+        setShowDropdown(false);
+        return;
+      }
+
+      console.log('🔍 Buscando fornecedores com token:', token.substring(0, 20) + '...');
+      
+      // Primeiro, validar o token no sistema principal
+      const validateResponse = await fetch(`${API_URL}/auth/validate-cotacao-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ token }),
+        credentials: 'include'
+      });
+
+      if (!validateResponse.ok) {
+        console.error('❌ Token inválido no sistema principal');
+        setFornecedores([]);
+        setShowDropdown(false);
+        return;
+      }
+
+      console.log('✅ Token validado no sistema principal');
+      
+      // Agora buscar fornecedores
       const response = await fetch(`${API_URL}/fornecedores?search=${encodeURIComponent(term)}`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        credentials: 'include'
       });
+
+      console.log('🔍 Resposta da API:', { status: response.status, ok: response.ok });
 
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Fornecedores encontrados:', data.length);
         setFornecedores(data);
         setShowDropdown(data.length > 0);
       } else {
-        console.error('Erro ao buscar fornecedores:', response.statusText);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('❌ Erro ao buscar fornecedores:', response.status, errorData);
         setFornecedores([]);
         setShowDropdown(false);
       }
     } catch (error) {
-      console.error('Erro ao buscar fornecedores:', error);
+      console.error('❌ Erro ao buscar fornecedores:', error);
       setFornecedores([]);
       setShowDropdown(false);
     } finally {

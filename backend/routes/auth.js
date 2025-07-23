@@ -155,6 +155,51 @@ router.post('/logout', (req, res) => {
   res.json({ message: 'Logout realizado com sucesso' });
 });
 
+// Rota para validar token do sistema de cotação
+router.post('/validate-cotacao-token', async (req, res) => {
+  try {
+    const { token } = req.body;
+    
+    if (!token) {
+      return res.status(400).json({ error: 'Token não fornecido' });
+    }
+
+    // Verificar se o token é válido
+    const jwt = require('jsonwebtoken');
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET não definido nas variáveis de ambiente!');
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    // Buscar usuário
+    const users = await executeQuery(
+      'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE id = ?',
+      [decoded.userId]
+    );
+
+    if (users.length === 0) {
+      return res.status(401).json({ error: 'Usuário não encontrado' });
+    }
+
+    const user = users[0];
+
+    if (user.status !== 'ativo') {
+      return res.status(401).json({ error: 'Usuário inativo' });
+    }
+
+    res.json({ 
+      valid: true, 
+      user: user 
+    });
+
+  } catch (error) {
+    console.error('Erro ao validar token:', error);
+    res.status(401).json({ error: 'Token inválido' });
+  }
+});
+
 // Alterar senha
 router.post('/change-password', [
   body('senha_atual').isLength({ min: 6 }).withMessage('Senha atual deve ter pelo menos 6 caracteres'),

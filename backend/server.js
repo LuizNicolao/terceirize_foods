@@ -36,13 +36,18 @@ app.use(cors({
         'http://82.29.57.43', 
         'http://localhost:3000',
         'http://82.29.57.43:3001', // Sistema de cotação
-        'http://localhost:3001'    // Sistema de cotação local
+        'http://82.29.57.43:3002', // Sistema de cotação (porta 3002)
+        'http://localhost:3001',   // Sistema de cotação local
+        'http://localhost:3002'    // Sistema de cotação local (porta 3002)
       ] 
     : [
         'http://localhost:3000',
-        'http://localhost:3001'    // Sistema de cotação local
+        'http://localhost:3001',   // Sistema de cotação local
+        'http://localhost:3002'    // Sistema de cotação local (porta 3002)
       ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Rate limiting mais flexível para sistema em produção
