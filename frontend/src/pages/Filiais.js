@@ -166,12 +166,39 @@ const CloseButton = styled.button`
 `;
 
 const Form = styled.form`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
   max-height: calc(95vh - 120px);
   overflow: hidden;
   padding-right: 8px;
+`;
+
+const FormFields = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  flex: 1;
+  overflow-y: auto;
+  
+  /* Estilizar scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-green);
+  }
 `;
 
 const FormGroup = styled.div`
@@ -743,111 +770,113 @@ const Filiais = () => {
             </Tabs>
             {activeTab === 'dados' && (
               <Form onSubmit={handleSubmit(onSubmit)}>
-                <FormGroup>
-                  <Label>Código da Filial</Label>
-                  <Input type="text" placeholder="Código da filial" {...register('codigo_filial')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>CNPJ</Label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <Input 
-                      type="text" 
-                      placeholder="00.000.000/0000-00" 
-                      {...register('cnpj')} 
-                      disabled={viewMode}
-                      style={{ flex: 1 }}
-                    />
-                    {!viewMode && (
-                      <Button 
-                        type="button" 
-                        onClick={handleConsultarCNPJ}
-                        style={{ 
-                          background: 'var(--blue)', 
-                          color: 'white', 
-                          border: 'none', 
-                          padding: '8px 12px', 
-                          borderRadius: '4px',
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Consultar
-                      </Button>
-                    )}
-                  </div>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Nome *</Label>
-                  <Input type="text" placeholder="Nome da filial" {...register('nome', { required: 'Nome é obrigatório' })} disabled={viewMode} />
-                  {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-                </FormGroup>
-                <FormGroup>
-                  <Label>Logradouro</Label>
-                  <Input type="text" placeholder="Rua, avenida, etc." {...register('logradouro')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Número</Label>
-                  <Input type="text" placeholder="Número" {...register('numero')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Bairro</Label>
-                  <Input type="text" placeholder="Bairro" {...register('bairro')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>CEP</Label>
-                  <Input type="text" placeholder="00000-000" {...register('cep')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Cidade</Label>
-                  <Input type="text" placeholder="Cidade" {...register('cidade')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Estado</Label>
-                  <Select {...register('estado')} disabled={viewMode}>
-                    <option value="">Selecione...</option>
-                    <option value="AC">AC</option>
-                    <option value="AL">AL</option>
-                    <option value="AP">AP</option>
-                    <option value="AM">AM</option>
-                    <option value="BA">BA</option>
-                    <option value="CE">CE</option>
-                    <option value="DF">DF</option>
-                    <option value="ES">ES</option>
-                    <option value="GO">GO</option>
-                    <option value="MA">MA</option>
-                    <option value="MT">MT</option>
-                    <option value="MS">MS</option>
-                    <option value="MG">MG</option>
-                    <option value="PA">PA</option>
-                    <option value="PB">PB</option>
-                    <option value="PR">PR</option>
-                    <option value="PE">PE</option>
-                    <option value="PI">PI</option>
-                    <option value="RJ">RJ</option>
-                    <option value="RN">RN</option>
-                    <option value="RO">RO</option>
-                    <option value="RR">RR</option>
-                    <option value="SC">SC</option>
-                    <option value="SP">SP</option>
-                    <option value="SE">SE</option>
-                    <option value="TO">TO</option>
-                  </Select>
-                </FormGroup>
-                <FormGroup>
-                  <Label>Supervisão</Label>
-                  <Input type="text" placeholder="Supervisão" {...register('supervisao')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Coordenação</Label>
-                  <Input type="text" placeholder="Coordenação" {...register('coordenacao')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Status</Label>
-                  <Select {...register('status', { required: 'Status é obrigatório' })} disabled={viewMode}>
-                    <option value="1">Ativo</option>
-                    <option value="0">Inativo</option>
-                  </Select>
-                  {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
-                </FormGroup>
+                <FormFields>
+                  <FormGroup>
+                    <Label>Código da Filial</Label>
+                    <Input type="text" placeholder="Código da filial" {...register('codigo_filial')} disabled={viewMode} />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>CNPJ</Label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <Input 
+                        type="text" 
+                        placeholder="00.000.000/0000-00" 
+                        {...register('cnpj')} 
+                        disabled={viewMode}
+                        style={{ flex: 1 }}
+                      />
+                      {!viewMode && (
+                        <Button 
+                          type="button" 
+                          onClick={handleConsultarCNPJ}
+                          style={{ 
+                            background: 'var(--blue)', 
+                            color: 'white', 
+                            border: 'none', 
+                            padding: '8px 12px', 
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Consultar
+                        </Button>
+                      )}
+                    </div>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Nome *</Label>
+                    <Input type="text" placeholder="Nome da filial" {...register('nome', { required: 'Nome é obrigatório' })} disabled={viewMode} />
+                    {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Logradouro</Label>
+                    <Input type="text" placeholder="Rua, avenida, etc." {...register('logradouro')} disabled={viewMode} />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Número</Label>
+                    <Input type="text" placeholder="Número" {...register('numero')} disabled={viewMode} />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Bairro</Label>
+                    <Input type="text" placeholder="Bairro" {...register('bairro')} disabled={viewMode} />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>CEP</Label>
+                    <Input type="text" placeholder="00000-000" {...register('cep')} disabled={viewMode} />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Cidade</Label>
+                    <Input type="text" placeholder="Cidade" {...register('cidade')} disabled={viewMode} />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Estado</Label>
+                    <Select {...register('estado')} disabled={viewMode}>
+                      <option value="">Selecione...</option>
+                      <option value="AC">AC</option>
+                      <option value="AL">AL</option>
+                      <option value="AP">AP</option>
+                      <option value="AM">AM</option>
+                      <option value="BA">BA</option>
+                      <option value="CE">CE</option>
+                      <option value="DF">DF</option>
+                      <option value="ES">ES</option>
+                      <option value="GO">GO</option>
+                      <option value="MA">MA</option>
+                      <option value="MT">MT</option>
+                      <option value="MS">MS</option>
+                      <option value="MG">MG</option>
+                      <option value="PA">PA</option>
+                      <option value="PB">PB</option>
+                      <option value="PR">PR</option>
+                      <option value="PE">PE</option>
+                      <option value="PI">PI</option>
+                      <option value="RJ">RJ</option>
+                      <option value="RN">RN</option>
+                      <option value="RO">RO</option>
+                      <option value="RR">RR</option>
+                      <option value="SC">SC</option>
+                      <option value="SP">SP</option>
+                      <option value="SE">SE</option>
+                      <option value="TO">TO</option>
+                    </Select>
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Supervisão</Label>
+                    <Input type="text" placeholder="Supervisão" {...register('supervisao')} disabled={viewMode} />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Coordenação</Label>
+                    <Input type="text" placeholder="Coordenação" {...register('coordenacao')} disabled={viewMode} />
+                  </FormGroup>
+                  <FormGroup>
+                    <Label>Status</Label>
+                    <Select {...register('status', { required: 'Status é obrigatório' })} disabled={viewMode}>
+                      <option value="1">Ativo</option>
+                      <option value="0">Inativo</option>
+                    </Select>
+                    {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
+                  </FormGroup>
+                </FormFields>
                 <ButtonGroup>
                   <Button type="button" className="secondary" onClick={handleCloseModal}>
                     {viewMode ? 'Fechar' : 'Cancelar'}
