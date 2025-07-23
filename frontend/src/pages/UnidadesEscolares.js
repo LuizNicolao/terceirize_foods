@@ -384,7 +384,7 @@ const UnidadesEscolares = () => {
   const filteredUnidades = unidades.filter(unidade => {
     const matchesSearch = unidade.nome_escola?.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          unidade.cidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         unidade.codigo_teknis?.toLowerCase().includes(searchTerm.toLowerCase());
+                         unidade.codigo_teknisa?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'todos' || unidade.status === statusFilter;
     const matchesRota = rotaFilter === 'todos' || unidade.rota_id?.toString() === rotaFilter;
     return matchesSearch && matchesStatus && matchesRota;
@@ -574,7 +574,7 @@ const UnidadesEscolares = () => {
           }
         ]}
         onClear={() => { setSearchTerm(''); setStatusFilter('todos'); setRotaFilter('todos'); }}
-        placeholder="Buscar por nome, cidade ou código..."
+        placeholder="Buscar por nome, cidade ou código Teknisa..."
       />
 
       {filteredUnidades.length === 0 ? (
@@ -589,7 +589,7 @@ const UnidadesEscolares = () => {
           <Table>
             <thead>
               <tr>
-                <Th>Código Teknis</Th>
+                <Th>Código Teknisa</Th>
                 <Th>Nome da Escola</Th>
                 <Th>Cidade</Th>
                 <Th>Estado</Th>
@@ -602,7 +602,7 @@ const UnidadesEscolares = () => {
             <tbody>
               {filteredUnidades.map(unidade => (
                 <tr key={unidade.id}>
-                  <Td>{unidade.codigo_teknis}</Td>
+                  <Td>{unidade.codigo_teknisa}</Td>
                   <Td>{unidade.nome_escola}</Td>
                   <Td>{unidade.cidade}</Td>
                   <Td>{unidade.estado}</Td>
@@ -668,9 +668,9 @@ const UnidadesEscolares = () => {
             <Form onSubmit={handleSubmit(onSubmit)} id="unidade-form">
               <FormFields>
                 <FormGroup>
-                  <Label>Código Teknis *</Label>
-                  <Input type="text" placeholder="Código técnico da unidade" {...register('codigo_teknis', { required: 'Código Teknis é obrigatório' })} disabled={viewMode} />
-                  {errors.codigo_teknis && <span style={{ color: 'red', fontSize: '12px' }}>{errors.codigo_teknis.message}</span>}
+                  <Label>Código Teknisa *</Label>
+                  <Input type="text" placeholder="Código técnico da unidade" {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })} disabled={viewMode} />
+                  {errors.codigo_teknisa && <span style={{ color: 'red', fontSize: '12px' }}>{errors.codigo_teknisa.message}</span>}
                 </FormGroup>
                 <FormGroup>
                   <Label>Nome da Escola *</Label>

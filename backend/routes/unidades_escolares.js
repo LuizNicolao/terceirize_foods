@@ -23,7 +23,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     let params = [];
 
     if (search) {
-      query += ' AND (ue.nome_escola LIKE ? OR ue.cidade LIKE ? OR ue.estado LIKE ? OR ue.codigo_teknis LIKE ? OR ue.centro_distribuicao LIKE ?)';
+      query += ' AND (ue.nome_escola LIKE ? OR ue.cidade LIKE ? OR ue.estado LIKE ? OR ue.codigo_teknisa LIKE ? OR ue.centro_distribuicao LIKE ?)';
       params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
     }
 
@@ -67,7 +67,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
 router.post('/', [
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares'),
-  body('codigo_teknis').isLength({ min: 1, max: 50 }).withMessage('Código Teknis deve ter entre 1 e 50 caracteres'),
+  body('codigo_teknisa').isLength({ min: 1, max: 50 }).withMessage('Código Teknisa deve ter entre 1 e 50 caracteres'),
   body('nome_escola').isLength({ min: 3, max: 200 }).withMessage('Nome da escola deve ter entre 3 e 200 caracteres'),
   body('cidade').isLength({ min: 2, max: 100 }).withMessage('Cidade deve ter entre 2 e 100 caracteres'),
   body('estado').isLength({ min: 2, max: 50 }).withMessage('Estado deve ter entre 2 e 50 caracteres'),
@@ -86,7 +86,7 @@ router.post('/', [
     }
 
     const {
-      codigo_teknis, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
+      codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
       centro_distribuicao, rota_id, regional, lot, cc_senic, codigo_senio, abastecimento,
       ordem_entrega, status, observacoes
     } = req.body;
@@ -103,25 +103,25 @@ router.post('/', [
       }
     }
 
-    // Verificar se código teknis já existe
+    // Verificar se código teknisa já existe
     const existingUnidade = await executeQuery(
-      'SELECT id FROM unidades_escolares WHERE codigo_teknis = ?',
-      [codigo_teknis]
+      'SELECT id FROM unidades_escolares WHERE codigo_teknisa = ?',
+      [codigo_teknisa]
     );
 
     if (existingUnidade.length > 0) {
-      return res.status(400).json({ error: 'Código Teknis já cadastrado' });
+      return res.status(400).json({ error: 'Código Teknisa já cadastrado' });
     }
 
     // Inserir unidade escolar
     const result = await executeQuery(
       `INSERT INTO unidades_escolares (
-        codigo_teknis, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
+        codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
         centro_distribuicao, rota_id, regional, lot, cc_senic, codigo_senio, abastecimento,
         ordem_entrega, status, observacoes
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        codigo_teknis, nome_escola, cidade, estado, pais || 'Brasil', endereco, numero, bairro, cep,
+        codigo_teknisa, nome_escola, cidade, estado, pais || 'Brasil', endereco, numero, bairro, cep,
         centro_distribuicao, rota_id, regional, lot, cc_senic, codigo_senio, abastecimento,
         ordem_entrega || 0, status || 'ativo', observacoes
       ]
@@ -147,7 +147,7 @@ router.post('/', [
 router.put('/:id', [
   checkPermission('editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_escolares'),
-  body('codigo_teknis').optional().isLength({ min: 1, max: 50 }).withMessage('Código Teknis deve ter entre 1 e 50 caracteres'),
+  body('codigo_teknisa').optional().isLength({ min: 1, max: 50 }).withMessage('Código Teknisa deve ter entre 1 e 50 caracteres'),
   body('nome_escola').optional().isLength({ min: 3, max: 200 }).withMessage('Nome da escola deve ter entre 3 e 200 caracteres'),
   body('cidade').optional().isLength({ min: 2, max: 100 }).withMessage('Cidade deve ter entre 2 e 100 caracteres'),
   body('estado').optional().isLength({ min: 2, max: 50 }).withMessage('Estado deve ter entre 2 e 50 caracteres'),
@@ -167,7 +167,7 @@ router.put('/:id', [
 
     const { id } = req.params;
     const {
-      codigo_teknis, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
+      codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
       centro_distribuicao, rota_id, regional, lot, cc_senic, codigo_senio, abastecimento,
       ordem_entrega, status, observacoes
     } = req.body;
@@ -194,15 +194,15 @@ router.put('/:id', [
       }
     }
 
-    // Verificar se código teknis já existe (se estiver sendo alterado)
-    if (codigo_teknis) {
+    // Verificar se código teknisa já existe (se estiver sendo alterado)
+    if (codigo_teknisa) {
       const codigoCheck = await executeQuery(
-        'SELECT id FROM unidades_escolares WHERE codigo_teknis = ? AND id != ?',
-        [codigo_teknis, id]
+        'SELECT id FROM unidades_escolares WHERE codigo_teknisa = ? AND id != ?',
+        [codigo_teknisa, id]
       );
 
       if (codigoCheck.length > 0) {
-        return res.status(400).json({ error: 'Código Teknis já cadastrado' });
+        return res.status(400).json({ error: 'Código Teknisa já cadastrado' });
       }
     }
 
@@ -210,9 +210,9 @@ router.put('/:id', [
     const updateFields = [];
     const updateParams = [];
 
-    if (codigo_teknis !== undefined) {
-      updateFields.push('codigo_teknis = ?');
-      updateParams.push(codigo_teknis);
+    if (codigo_teknisa !== undefined) {
+      updateFields.push('codigo_teknisa = ?');
+      updateParams.push(codigo_teknisa);
     }
     if (nome_escola !== undefined) {
       updateFields.push('nome_escola = ?');
