@@ -1275,33 +1275,95 @@ const AnalisarCotacaoSupervisor = () => {
                           <div style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
+                            justifyContent: 'space-between',
                             marginBottom: '12px',
                             paddingBottom: '8px',
                             borderBottom: '2px solid #e8f5e8'
                           }}>
                             <div style={{ 
-                              backgroundColor: colors.primary.green,
-                              color: 'white',
-                              borderRadius: '50%',
-                              width: '24px',
-                              height: '24px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '12px',
-                              fontWeight: 'bold',
-                              marginRight: '10px'
+                              display: 'flex', 
+                              alignItems: 'center'
                             }}>
-                              {produtos.length}
+                              <div style={{ 
+                                backgroundColor: colors.primary.green,
+                                color: 'white',
+                                borderRadius: '50%',
+                                width: '24px',
+                                height: '24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '12px',
+                                fontWeight: 'bold',
+                                marginRight: '10px'
+                              }}>
+                                {produtos.length}
+                              </div>
+                              <h4 style={{ 
+                                margin: 0, 
+                                color: colors.primary.green,
+                                fontSize: '16px',
+                                fontWeight: '600'
+                              }}>
+                                {fornecedorNome}
+                              </h4>
                             </div>
-                            <h4 style={{ 
-                              margin: 0, 
-                              color: colors.primary.green,
-                              fontSize: '16px',
-                              fontWeight: '600'
-                            }}>
-                              {fornecedorNome}
-                            </h4>
+                            
+                            <Button 
+                              onClick={() => {
+                                // Verificar se todos os produtos do fornecedor já estão selecionados
+                                const produtosFornecedorSelecionados = analiseData.produtosSelecionados.filter(
+                                  p => p.fornecedor_nome === fornecedorNome
+                                );
+                                
+                                if (produtosFornecedorSelecionados.length === produtos.length) {
+                                  // Se todos estão selecionados, remover todos
+                                  setAnaliseData({
+                                    ...analiseData,
+                                    produtosSelecionados: analiseData.produtosSelecionados.filter(
+                                      p => p.fornecedor_nome !== fornecedorNome
+                                    )
+                                  });
+                                } else {
+                                  // Se não estão todos selecionados, adicionar todos
+                                  const produtosParaAdicionar = produtos.map(produto => ({
+                                    produto_id: produto.produto_id,
+                                    produto_nome: produto.nome,
+                                    fornecedor_nome: produto.fornecedor_nome
+                                  }));
+                                  
+                                  // Remover produtos existentes do fornecedor e adicionar todos
+                                  const produtosSemFornecedor = analiseData.produtosSelecionados.filter(
+                                    p => p.fornecedor_nome !== fornecedorNome
+                                  );
+                                  
+                                  setAnaliseData({
+                                    ...analiseData,
+                                    produtosSelecionados: [...produtosSemFornecedor, ...produtosParaAdicionar]
+                                  });
+                                }
+                              }}
+                              variant="secondary"
+                              style={{ 
+                                fontSize: '11px',
+                                padding: '6px 12px',
+                                minWidth: 'auto'
+                              }}
+                            >
+                              {(() => {
+                                const produtosFornecedorSelecionados = analiseData.produtosSelecionados.filter(
+                                  p => p.fornecedor_nome === fornecedorNome
+                                );
+                                
+                                if (produtosFornecedorSelecionados.length === produtos.length) {
+                                  return '🗑️ Desmarcar Todos';
+                                } else if (produtosFornecedorSelecionados.length > 0) {
+                                  return `✅ Selecionar Todos (${produtosFornecedorSelecionados.length}/${produtos.length})`;
+                                } else {
+                                  return '✅ Selecionar Todos';
+                                }
+                              })()}
+                            </Button>
                           </div>
                           
                           <div style={{ display: 'grid', gap: '8px' }}>
@@ -1630,7 +1692,30 @@ const AnalisarCotacaoSupervisor = () => {
                         paddingTop: '8px',
                         borderTop: '1px solid #e0e0e0'
                       }}>
-                        <strong>Produtos selecionados:</strong> {analiseData.produtosSelecionados.map(p => p.produto_nome).join(', ')}
+                        <div style={{ marginBottom: '6px' }}>
+                          <strong>Produtos selecionados por fornecedor:</strong>
+                        </div>
+                        {(() => {
+                          const selecaoPorFornecedor = {};
+                          analiseData.produtosSelecionados.forEach(p => {
+                            if (!selecaoPorFornecedor[p.fornecedor_nome]) {
+                              selecaoPorFornecedor[p.fornecedor_nome] = [];
+                            }
+                            selecaoPorFornecedor[p.fornecedor_nome].push(p.produto_nome);
+                          });
+                          
+                          return Object.entries(selecaoPorFornecedor).map(([fornecedor, produtos], index) => (
+                            <div key={index} style={{ 
+                              marginBottom: '4px',
+                              padding: '4px 8px',
+                              backgroundColor: '#f8f9fa',
+                              borderRadius: '4px',
+                              fontSize: '11px'
+                            }}>
+                              <strong>{fornecedor}:</strong> {produtos.join(', ')}
+                            </div>
+                          ));
+                        })()}
                       </div>
                     )}
                   </div>
