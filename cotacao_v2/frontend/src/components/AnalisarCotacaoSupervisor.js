@@ -446,11 +446,11 @@ const Modal = styled.div`
 `;
 
 const ModalContent = styled(Card)`
-  max-width: 1000px;
-  width: 95%;
-  max-height: 90vh;
+  max-width: 1200px;
+  width: 98%;
+  max-height: 95vh;
   overflow-y: auto;
-  padding: 30px;
+  padding: 35px;
 `;
 
 const ModalHeader = styled.div`
@@ -1225,7 +1225,7 @@ const AnalisarCotacaoSupervisor = () => {
                   </div>
                   
                   <div style={{ 
-                    maxHeight: '400px', 
+                    maxHeight: '500px', 
                     overflowY: 'auto', 
                     border: '2px solid #e0e0e0', 
                     borderRadius: '8px',
@@ -1315,13 +1315,14 @@ const AnalisarCotacaoSupervisor = () => {
                               return (
                                 <div key={produtoIndex} style={{ 
                                   display: 'flex', 
-                                  alignItems: 'center', 
-                                  padding: '12px',
+                                  alignItems: 'flex-start', 
+                                  padding: '15px',
                                   backgroundColor: isSelected ? '#f0f8f0' : '#f8f9fa',
-                                  borderRadius: '6px',
+                                  borderRadius: '8px',
                                   border: isSelected ? '2px solid #00723e' : '1px solid #e0e0e0',
                                   transition: 'all 0.2s ease',
-                                  cursor: 'pointer'
+                                  cursor: 'pointer',
+                                  marginBottom: '10px'
                                 }}
                                 onClick={() => {
                                   // Toggle seleção ao clicar no card
@@ -1373,64 +1374,178 @@ const AnalisarCotacaoSupervisor = () => {
                                       }
                                     }}
                                     style={{ 
-                                      marginRight: '12px',
-                                      transform: 'scale(1.2)'
+                                      marginRight: '15px',
+                                      marginTop: '2px',
+                                      transform: 'scale(1.3)'
                                     }}
                                   />
                                   
                                   <div style={{ flex: 1 }}>
                                     <div style={{ 
                                       fontWeight: '600', 
-                                      fontSize: '14px',
+                                      fontSize: '15px',
                                       color: '#333',
-                                      marginBottom: '4px'
+                                      marginBottom: '8px'
                                     }}>
                                       {produto.nome}
                                     </div>
                                     
-                                    <div style={{ 
-                                      display: 'grid',
-                                      gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                                      gap: '8px',
-                                      fontSize: '12px',
-                                      color: '#666'
-                                    }}>
-                                      <div style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center',
-                                        backgroundColor: '#fff',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #e0e0e0'
-                                      }}>
-                                        <span style={{ fontWeight: '600', marginRight: '4px' }}>📦</span>
-                                        <span>{produto.qtde} {produto.un}</span>
-                                      </div>
-                                      
-                                      <div style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center',
-                                        backgroundColor: '#fff',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #e0e0e0'
-                                      }}>
-                                        <span style={{ fontWeight: '600', marginRight: '4px' }}>💰</span>
-                                        <span>{formatarValor(produto.valor_unitario)}</span>
-                                      </div>
-                                      
-                                      <div style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center',
-                                        backgroundColor: '#fff',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #e0e0e0'
-                                      }}>
-                                        <span style={{ fontWeight: '600', marginRight: '4px' }}>💵</span>
-                                        <span>{formatarValor(valorTotal)}</span>
-                                      </div>
-                                    </div>
+                                                                         <div style={{ 
+                                       display: 'grid',
+                                       gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+                                       gap: '10px',
+                                       fontSize: '12px',
+                                       color: '#666'
+                                     }}>
+                                       <div style={{ 
+                                         display: 'flex', 
+                                         flexDirection: 'column',
+                                         backgroundColor: '#fff',
+                                         padding: '8px 10px',
+                                         borderRadius: '6px',
+                                         border: '1px solid #e0e0e0',
+                                         minHeight: '50px',
+                                         justifyContent: 'center'
+                                       }}>
+                                         <div style={{ 
+                                           fontSize: '10px', 
+                                           fontWeight: '600', 
+                                           color: '#999',
+                                           marginBottom: '2px',
+                                           textTransform: 'uppercase'
+                                         }}>
+                                           📦 Quantidade
+                                         </div>
+                                         <div style={{ fontWeight: '600', color: '#333' }}>
+                                           {produto.qtde} {produto.un}
+                                         </div>
+                                       </div>
+                                       
+                                       <div style={{ 
+                                         display: 'flex', 
+                                         flexDirection: 'column',
+                                         backgroundColor: '#fff',
+                                         padding: '8px 10px',
+                                         borderRadius: '6px',
+                                         border: '1px solid #e0e0e0',
+                                         minHeight: '50px',
+                                         justifyContent: 'center'
+                                       }}>
+                                         <div style={{ 
+                                           fontSize: '10px', 
+                                           fontWeight: '600', 
+                                           color: '#999',
+                                           marginBottom: '2px',
+                                           textTransform: 'uppercase'
+                                         }}>
+                                           💰 Valor Unitário
+                                         </div>
+                                         <div style={{ fontWeight: '600', color: '#333' }}>
+                                           {formatarValor(produto.valor_unitario)}
+                                         </div>
+                                       </div>
+                                       
+                                       <div style={{ 
+                                         display: 'flex', 
+                                         flexDirection: 'column',
+                                         backgroundColor: '#fff',
+                                         padding: '8px 10px',
+                                         borderRadius: '6px',
+                                         border: '1px solid #e0e0e0',
+                                         minHeight: '50px',
+                                         justifyContent: 'center'
+                                       }}>
+                                         <div style={{ 
+                                           fontSize: '10px', 
+                                           fontWeight: '600', 
+                                           color: '#999',
+                                           marginBottom: '2px',
+                                           textTransform: 'uppercase'
+                                         }}>
+                                           💵 Valor Total
+                                         </div>
+                                         <div style={{ fontWeight: '600', color: '#333' }}>
+                                           {formatarValor(valorTotal)}
+                                         </div>
+                                       </div>
+                                       
+                                       <div style={{ 
+                                         display: 'flex', 
+                                         flexDirection: 'column',
+                                         backgroundColor: '#fff',
+                                         padding: '8px 10px',
+                                         borderRadius: '6px',
+                                         border: '1px solid #e0e0e0',
+                                         minHeight: '50px',
+                                         justifyContent: 'center'
+                                       }}>
+                                         <div style={{ 
+                                           fontSize: '10px', 
+                                           fontWeight: '600', 
+                                           color: '#999',
+                                           marginBottom: '2px',
+                                           textTransform: 'uppercase'
+                                         }}>
+                                           🚚 Prazo Entrega
+                                         </div>
+                                         <div style={{ fontWeight: '600', color: '#333' }}>
+                                           {produto.prazo_entrega ? `${produto.prazo_entrega} dias` : 'Não informado'}
+                                         </div>
+                                       </div>
+                                       
+                                       <div style={{ 
+                                         display: 'flex', 
+                                         flexDirection: 'column',
+                                         backgroundColor: '#fff',
+                                         padding: '8px 10px',
+                                         borderRadius: '6px',
+                                         border: '1px solid #e0e0e0',
+                                         minHeight: '50px',
+                                         justifyContent: 'center'
+                                       }}>
+                                         <div style={{ 
+                                           fontSize: '10px', 
+                                           fontWeight: '600', 
+                                           color: '#999',
+                                           marginBottom: '2px',
+                                           textTransform: 'uppercase'
+                                         }}>
+                                           💳 Prazo Pagamento
+                                         </div>
+                                         <div style={{ fontWeight: '600', color: '#333' }}>
+                                           {produto.prazo_pagamento ? `${produto.prazo_pagamento} dias` : 'Não informado'}
+                                         </div>
+                                       </div>
+                                       
+                                       <div style={{ 
+                                         display: 'flex', 
+                                         flexDirection: 'column',
+                                         backgroundColor: '#fff',
+                                         padding: '8px 10px',
+                                         borderRadius: '6px',
+                                         border: '1px solid #e0e0e0',
+                                         minHeight: '50px',
+                                         justifyContent: 'center'
+                                       }}>
+                                         <div style={{ 
+                                           fontSize: '10px', 
+                                           fontWeight: '600', 
+                                           color: '#999',
+                                           marginBottom: '2px',
+                                           textTransform: 'uppercase'
+                                         }}>
+                                           📋 Observações
+                                         </div>
+                                         <div style={{ 
+                                           fontWeight: '500', 
+                                           color: '#333',
+                                           fontSize: '11px',
+                                           lineHeight: '1.3'
+                                         }}>
+                                           {produto.observacoes || 'Nenhuma observação'}
+                                         </div>
+                                       </div>
+                                     </div>
                                   </div>
                                   
                                   {isSelected && (
