@@ -679,9 +679,17 @@ const VisualizarCotacao = () => {
       return false;
     }
     
-    return cotacao.produtos_renegociar.some(
-      p => p.produto_id === produto.id.toString() || p.produto_id === produto.produto_id?.toString()
-    );
+    // Normalizar IDs para comparação
+    const produtoId = produto.id?.toString() || produto.produto_id?.toString() || '';
+    const produtoNome = produto.nome?.toLowerCase() || '';
+    
+    return cotacao.produtos_renegociar.some(p => {
+      const renegociacaoId = p.produto_id?.toString() || '';
+      const renegociacaoNome = p.produto_nome?.toLowerCase() || '';
+      
+      // Comparar por ID ou por nome (fallback)
+      return produtoId === renegociacaoId || produtoNome === renegociacaoNome;
+    });
   };
 
   const handleVoltar = () => {
