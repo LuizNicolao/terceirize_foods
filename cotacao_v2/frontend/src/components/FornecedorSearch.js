@@ -165,7 +165,7 @@ const FornecedorSearch = ({
           'Accept': 'application/json'
         },
         body: JSON.stringify({ token }),
-        credentials: 'include'
+        credentials: 'omit' // Não enviar cookies para evitar CSRF
       });
 
       if (!validateResponse.ok) {
@@ -185,7 +185,7 @@ const FornecedorSearch = ({
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        credentials: 'include'
+        credentials: 'omit' // Não enviar cookies para evitar CSRF
       });
 
       console.log('🔍 Resposta da API:', { status: response.status, ok: response.ok });

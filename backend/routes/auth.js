@@ -155,7 +155,7 @@ router.post('/logout', (req, res) => {
   res.json({ message: 'Logout realizado com sucesso' });
 });
 
-// Rota para validar token do sistema de cotação
+// Rota para validar token do sistema de cotação (sem CSRF)
 router.post('/validate-cotacao-token', async (req, res) => {
   try {
     const { token } = req.body;
@@ -163,6 +163,8 @@ router.post('/validate-cotacao-token', async (req, res) => {
     if (!token) {
       return res.status(400).json({ error: 'Token não fornecido' });
     }
+
+    console.log('🔍 Validando token do sistema de cotação:', token.substring(0, 20) + '...');
 
     // Verificar se o token é válido
     const jwt = require('jsonwebtoken');
@@ -172,6 +174,7 @@ router.post('/validate-cotacao-token', async (req, res) => {
     }
 
     const decoded = jwt.verify(token, JWT_SECRET);
+    console.log('✅ Token decodificado:', { userId: decoded.userId });
     
     // Buscar usuário
     const users = await executeQuery(
@@ -180,22 +183,26 @@ router.post('/validate-cotacao-token', async (req, res) => {
     );
 
     if (users.length === 0) {
+      console.log('❌ Usuário não encontrado:', decoded.userId);
       return res.status(401).json({ error: 'Usuário não encontrado' });
     }
 
     const user = users[0];
+    console.log('✅ Usuário encontrado:', { id: user.id, nome: user.nome, status: user.status });
 
     if (user.status !== 'ativo') {
+      console.log('❌ Usuário inativo:', user.status);
       return res.status(401).json({ error: 'Usuário inativo' });
     }
 
+    console.log('✅ Token validado com sucesso para usuário:', user.nome);
     res.json({ 
       valid: true, 
       user: user 
     });
 
   } catch (error) {
-    console.error('Erro ao validar token:', error);
+    console.error('❌ Erro ao validar token:', error);
     res.status(401).json({ error: 'Token inválido' });
   }
 });

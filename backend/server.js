@@ -91,6 +91,7 @@ app.use(
   csurf({
     cookie: true,
     ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
+    ignorePaths: ['/api/auth/validate-cotacao-token'] // Pular CSRF para validação de token
   })
 );
 
