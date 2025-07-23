@@ -835,17 +835,9 @@ const Unidades = () => {
       {/* Modal de Auditoria */}
       {showAuditModal && (
         <Modal onClick={handleCloseAuditModal}>
-          <ModalContent 
-            onClick={(e) => e.stopPropagation()}
-            style={{ 
-              maxWidth: '1200px', 
-              width: '95%', 
-              maxHeight: '90vh',
-              padding: '24px'
-            }}
-          >
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
             <ModalHeader>
-              <ModalTitle>Auditoria - Unidades</ModalTitle>
+              <ModalTitle>Relatório de Auditoria - Unidades</ModalTitle>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button
                   onClick={handleExportXLSX}
@@ -898,79 +890,78 @@ const Unidades = () => {
             </ModalHeader>
 
             {/* Filtros de Auditoria */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-              gap: '16px', 
-              marginBottom: '24px',
-              padding: '16px',
-              backgroundColor: '#f8f9fa',
-              borderRadius: '8px'
-            }}>
-              <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Período Rápido</Label>
-                <Select
-                  value={auditFilters.periodo}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, periodo: e.target.value }))}
-                  style={{ fontSize: '12px', padding: '8px' }}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="7dias">Últimos 7 dias</option>
-                  <option value="30dias">Últimos 30 dias</option>
-                  <option value="90dias">Últimos 90 dias</option>
-                  <option value="todos">Todos</option>
-                </Select>
-              </div>
-
-              <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Data Início</Label>
-                <Input
-                  type="date"
-                  value={auditFilters.dataInicio}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, dataInicio: e.target.value, periodo: '' }))}
-                  style={{ fontSize: '12px', padding: '8px' }}
-                />
-              </div>
-
-              <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Data Fim</Label>
-                <Input
-                  type="date"
-                  value={auditFilters.dataFim}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, dataFim: e.target.value, periodo: '' }))}
-                  style={{ fontSize: '12px', padding: '8px' }}
-                />
-              </div>
-
-              <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Ação</Label>
-                <Select
-                  value={auditFilters.acao}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, acao: e.target.value }))}
-                  style={{ fontSize: '12px', padding: '8px' }}
-                >
-                  <option value="">Todas</option>
-                  <option value="create">Criar</option>
-                  <option value="update">Editar</option>
-                  <option value="delete">Excluir</option>
-                </Select>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'end' }}>
-                <Button 
-                  onClick={handleApplyAuditFilters}
-                  style={{ 
-                    fontSize: '12px', 
-                    padding: '8px 16px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Aplicar Filtros
-                </Button>
+            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Início
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Fim
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Ação
+                  </label>
+                  <select
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Período
+                  </label>
+                  <select
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Período personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos os registros</option>
+                  </select>
+                </div>
+                <div>
+                  <button
+                    onClick={handleApplyAuditFilters}
+                    style={{
+                      marginTop: '20px',
+                      padding: '8px 16px',
+                      background: 'var(--primary-green)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Aplicar Filtros
+                  </button>
+                </div>
               </div>
             </div>
 

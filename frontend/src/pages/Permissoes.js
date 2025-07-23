@@ -9,6 +9,56 @@ const Container = styled.div`
   padding: 24px;
 `;
 
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: var(--white);
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+`;
+
+const ModalTitle = styled.h2`
+  color: var(--dark-gray);
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--gray);
+  padding: 4px;
+
+  &:hover {
+    color: var(--error-red);
+  }
+`;
+
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
@@ -1419,167 +1469,272 @@ const Permissoes = () => {
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <AuditModal>
-          <AuditModalContent>
-            <AuditModalHeader>
-              <AuditModalTitle>Auditoria de Permissões</AuditModalTitle>
+        <Modal onClick={handleCloseAuditModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
+            <ModalHeader>
+              <ModalTitle>Relatório de Auditoria - Permissões</ModalTitle>
               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <AuditExportButton onClick={handleExportXLSX} title="Exportar para Excel">
+                <button
+                  onClick={handleExportXLSX}
+                  title="Exportar para Excel"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
                   <FaFileExcel />
                   Excel
-                </AuditExportButton>
-                <AuditExportButton onClick={handleExportPDF} title="Exportar para PDF">
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  title="Exportar para PDF"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
                   <FaFilePdf />
                   PDF
-                </AuditExportButton>
-                <AuditModalClose onClick={handleCloseAuditModal}>
-                  <FaTimes />
-                </AuditModalClose>
+                </button>
+                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
               </div>
-            </AuditModalHeader>
+            </ModalHeader>
 
-            <AuditFiltersContainer>
-              <AuditFilterGroup>
-                <AuditFilterLabel>Período:</AuditFilterLabel>
-                <AuditFilterSelect
-                  value={auditFilters.periodo}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, periodo: e.target.value }))}
-                >
-                  <option value="">Selecionar período</option>
-                  <option value="7dias">Últimos 7 dias</option>
-                  <option value="30dias">Últimos 30 dias</option>
-                  <option value="90dias">Últimos 90 dias</option>
-                  <option value="todos">Todos</option>
-                </AuditFilterSelect>
-              </AuditFilterGroup>
+            {/* Filtros de Auditoria */}
+            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Início
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Fim
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Ação
+                  </label>
+                  <select
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
+                    <option value="login">Login</option>
+                    <option value="logout">Logout</option>
+                    <option value="view">Visualizar</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Período
+                  </label>
+                  <select
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Período personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos os registros</option>
+                  </select>
+                </div>
+                <div>
+                  <button
+                    onClick={handleApplyAuditFilters}
+                    style={{
+                      marginTop: '20px',
+                      padding: '8px 16px',
+                      background: 'var(--primary-green)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Aplicar Filtros
+                  </button>
+                </div>
+              </div>
+            </div>
 
-              <AuditFilterGroup>
-                <AuditFilterLabel>Data Início:</AuditFilterLabel>
-                <AuditFilterInput
-                  type="date"
-                  value={auditFilters.dataInicio}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, dataInicio: e.target.value }))}
-                  disabled={auditFilters.periodo !== ''}
-                />
-              </AuditFilterGroup>
-
-              <AuditFilterGroup>
-                <AuditFilterLabel>Data Fim:</AuditFilterLabel>
-                <AuditFilterInput
-                  type="date"
-                  value={auditFilters.dataFim}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, dataFim: e.target.value }))}
-                  disabled={auditFilters.periodo !== ''}
-                />
-              </AuditFilterGroup>
-
-              <AuditFilterGroup>
-                <AuditFilterLabel>Ação:</AuditFilterLabel>
-                <AuditFilterSelect
-                  value={auditFilters.acao}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, acao: e.target.value }))}
-                >
-                  <option value="">Todas as ações</option>
-                  <option value="create">Criar</option>
-                  <option value="update">Editar</option>
-                  <option value="delete">Excluir</option>
-                  <option value="login">Login</option>
-                  <option value="logout">Logout</option>
-                  <option value="view">Visualizar</option>
-                </AuditFilterSelect>
-              </AuditFilterGroup>
-
-              <AuditFilterGroup>
-                <AuditFilterLabel>Usuário:</AuditFilterLabel>
-                <AuditFilterSelect
-                  value={auditFilters.usuario_id}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, usuario_id: e.target.value }))}
-                >
-                  <option value="">Todos os usuários</option>
-                  {usuarios.map(user => (
-                    <option key={user.id} value={user.id}>
-                      {user.nome} ({user.email})
-                    </option>
-                  ))}
-                </AuditFilterSelect>
-              </AuditFilterGroup>
-
-              <AuditFilterButton onClick={handleApplyAuditFilters}>
-                <FaSearch />
-                Filtrar
-              </AuditFilterButton>
-            </AuditFiltersContainer>
-
-            <AuditContent>
+            {/* Lista de Logs */}
+            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
               {auditLoading ? (
-                <LoadingSpinner inline={true} text="Carregando logs de auditoria..." />
+                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
               ) : auditLogs.length === 0 ? (
-                <AuditEmpty>Nenhum log de auditoria encontrado</AuditEmpty>
+                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
+                  Nenhum log encontrado com os filtros aplicados
+                </div>
               ) : (
-                <AuditLogsContainer>
+                <div>
+                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
+                    {auditLogs.length} log(s) encontrado(s)
+                  </div>
                   {auditLogs.map((log, index) => (
-                    <AuditLogCard key={index}>
-                      <AuditLogHeader>
-                        <AuditLogAction action={log.acao}>
-                          {getActionLabel(log.acao)}
-                        </AuditLogAction>
-                        <AuditLogDate>{formatDate(log.timestamp)}</AuditLogDate>
-                      </AuditLogHeader>
-                      
-                      <AuditLogUser>
-                        <strong>Usuário:</strong> {log.usuario_nome || 'Usuário desconhecido'}
-                      </AuditLogUser>
-                      
-                      <AuditLogResource>
-                        <strong>Recurso:</strong> {log.recurso || 'Permissões'}
-                      </AuditLogResource>
+                    <div
+                      key={index}
+                      style={{
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        marginBottom: '12px',
+                        background: 'white'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            background: log.acao === 'create' ? '#e8f5e8' : 
+                                       log.acao === 'update' ? '#fff3cd' : 
+                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
+                            color: log.acao === 'create' ? '#2e7d32' : 
+                                   log.acao === 'update' ? '#856404' : 
+                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
+                          }}>
+                            {getActionLabel(log.acao)}
+                          </span>
+                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                            por {log.usuario_nome || 'Usuário desconhecido'}
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                          {formatDate(log.timestamp)}
+                        </span>
+                      </div>
                       
                       {log.detalhes && (
-                        <AuditLogDetails>
-                          <AuditLogDetailsTitle>Detalhes:</AuditLogDetailsTitle>
-                          <AuditLogDetailsContent>
-                            {log.detalhes.changes && Object.keys(log.detalhes.changes).length > 0 ? (
-                              <AuditChangesContainer>
-                                <AuditChangesTitle>Mudanças Realizadas:</AuditChangesTitle>
+                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
+                          {log.detalhes.changes && (
+                            <div style={{ marginBottom: '8px' }}>
+                              <strong>Mudanças Realizadas:</strong>
+                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
                                 {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <AuditChangeItem key={field}>
-                                    <AuditChangeField>{getFieldLabel(field)}:</AuditChangeField>
-                                    <AuditChangeValues>
-                                      <AuditChangeValue type="from">
-                                        {formatFieldValue(field, change.from)}
-                                      </AuditChangeValue>
-                                      <AuditChangeArrow>→</AuditChangeArrow>
-                                      <AuditChangeValue type="to">
-                                        {formatFieldValue(field, change.to)}
-                                      </AuditChangeValue>
-                                    </AuditChangeValues>
-                                  </AuditChangeItem>
+                                  <div key={field} style={{ 
+                                    marginBottom: '6px', 
+                                    padding: '8px', 
+                                    background: '#f8f9fa', 
+                                    borderRadius: '4px',
+                                    border: '1px solid #e9ecef'
+                                  }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
+                                      {getFieldLabel(field)}:
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
+                                      <span style={{ color: '#721c24' }}>
+                                        <strong>Antes:</strong> {formatFieldValue(field, change.from)}
+                                      </span>
+                                      <span style={{ color: '#6c757d' }}>→</span>
+                                      <span style={{ color: '#2e7d32' }}>
+                                        <strong>Depois:</strong> {formatFieldValue(field, change.to)}
+                                      </span>
+                                    </div>
+                                  </div>
                                 ))}
-                              </AuditChangesContainer>
-                            ) : (
-                              <AuditLogText>
-                                {typeof log.detalhes === 'object' 
-                                  ? JSON.stringify(log.detalhes, null, 2)
-                                  : log.detalhes
-                                }
-                              </AuditLogText>
-                            )}
-                          </AuditLogDetailsContent>
-                        </AuditLogDetails>
+                              </div>
+                            </div>
+                          )}
+                          {log.detalhes.requestBody && !log.detalhes.changes && (
+                            <div>
+                              <strong>Dados da Permissão:</strong>
+                              <div style={{ 
+                                marginLeft: '12px', 
+                                marginTop: '8px',
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '8px'
+                              }}>
+                                {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
+                                  <div key={field} style={{ 
+                                    padding: '6px 8px', 
+                                    background: '#f8f9fa', 
+                                    borderRadius: '4px',
+                                    border: '1px solid #e9ecef',
+                                    fontSize: '11px'
+                                  }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
+                                      {getFieldLabel(field)}:
+                                    </div>
+                                    <div style={{ color: '#2e7d32' }}>
+                                      {formatFieldValue(field, value)}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {log.detalhes.resourceId && (
+                            <div style={{ 
+                              marginTop: '8px', 
+                              padding: '6px 8px', 
+                              background: '#e3f2fd', 
+                              borderRadius: '4px',
+                              fontSize: '11px'
+                            }}>
+                              <strong>ID da Permissão:</strong> 
+                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
+                                #{log.detalhes.resourceId}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       )}
-                      
-                      {log.ip && (
-                        <AuditLogIP>
-                          <strong>IP:</strong> {log.ip}
-                        </AuditLogIP>
-                      )}
-                    </AuditLogCard>
+                    </div>
                   ))}
-                </AuditLogsContainer>
+                </div>
               )}
-            </AuditContent>
-          </AuditModalContent>
-        </AuditModal>
+            </div>
+          </ModalContent>
+        </Modal>
       )}
     </Container>
   );
