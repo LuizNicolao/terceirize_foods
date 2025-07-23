@@ -363,7 +363,6 @@ const Rotas = () => {
   const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
-  const [tipoFilter, setTipoFilter] = useState('todos');
   const [filialFilter, setFilialFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
@@ -577,14 +576,13 @@ const Rotas = () => {
       rota.id.toString().includes(searchTerm);
     
     const matchesStatus = statusFilter === 'todos' || rota.status === statusFilter;
-    const matchesTipo = tipoFilter === 'todos' || rota.tipo_rota === tipoFilter;
     const matchesFilial = filialFilter === 'todos' || rota.filial_id.toString() === filialFilter;
     
-    return matchesSearch && matchesStatus && matchesTipo && matchesFilial;
+    return matchesSearch && matchesStatus && matchesFilial;
   });
 
   // Obter nome da filial
-  const getFilialNome = (filialId) => {
+  const getFilialName = (filialId) => {
     const filial = filiais.find(f => f.id === filialId);
     return filial ? filial.nome : 'N/A';
   };
@@ -631,24 +629,7 @@ const Rotas = () => {
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        statusOptions={[
-          { value: 'todos', label: 'Todos os status' },
-          { value: 'ativo', label: 'Ativo' },
-          { value: 'inativo', label: 'Inativo' }
-        ]}
         additionalFilters={[
-          {
-            label: 'Tipo de Rota',
-            value: tipoFilter,
-            onChange: setTipoFilter,
-            options: [
-              { value: 'todos', label: 'Todos os tipos' },
-              { value: 'semanal', label: 'Semanal' },
-              { value: 'quinzenal', label: 'Quinzenal' },
-              { value: 'mensal', label: 'Mensal' },
-              { value: 'transferencia', label: 'Transferência' }
-            ]
-          },
           {
             label: 'Filial',
             value: filialFilter,
@@ -666,7 +647,7 @@ const Rotas = () => {
 
       {filteredRotas.length === 0 ? (
         <EmptyState>
-          {searchTerm || statusFilter !== 'todos' || tipoFilter !== 'todos' || filialFilter !== 'todos'
+          {searchTerm || statusFilter !== 'todos' || filialFilter !== 'todos' 
             ? 'Nenhuma rota encontrada com os filtros aplicados'
             : 'Nenhuma rota cadastrada'
           }
@@ -691,7 +672,7 @@ const Rotas = () => {
               {filteredRotas.map((rota) => (
                 <tr key={rota.id}>
                   <Td>{rota.id}</Td>
-                  <Td>{getFilialNome(rota.filial_id)}</Td>
+                  <Td>{getFilialName(rota.filial_id)}</Td>
                   <Td>{rota.codigo}</Td>
                   <Td>{rota.nome}</Td>
                   <Td>{rota.distancia_km}</Td>
@@ -764,7 +745,7 @@ const Rotas = () => {
                 <FormGroup>
                   <Label>Filial *</Label>
                   <Select {...register('filial_id', { required: 'Filial é obrigatória' })} disabled={viewMode}>
-                    <option value="">Selecione uma filial...</option>
+                    <option value="">Selecione uma filial</option>
                     {filiais.map(filial => (
                       <option key={filial.id} value={filial.id}>
                         {filial.nome}
@@ -773,7 +754,7 @@ const Rotas = () => {
                   </Select>
                   {errors.filial_id && <span style={{ color: 'red', fontSize: '12px' }}>{errors.filial_id.message}</span>}
                 </FormGroup>
-                
+
                 <FormGroup>
                   <Label>Código *</Label>
                   <Input 
@@ -784,7 +765,7 @@ const Rotas = () => {
                   />
                   {errors.codigo && <span style={{ color: 'red', fontSize: '12px' }}>{errors.codigo.message}</span>}
                 </FormGroup>
-                
+
                 <FormGroup>
                   <Label>Nome *</Label>
                   <Input 
@@ -795,7 +776,7 @@ const Rotas = () => {
                   />
                   {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
                 </FormGroup>
-                
+
                 <FormGroup>
                   <Label>Distância (km)</Label>
                   <Input 
@@ -806,7 +787,7 @@ const Rotas = () => {
                     disabled={viewMode} 
                   />
                 </FormGroup>
-                
+
                 <FormGroup>
                   <Label>Tipo de Rota</Label>
                   <Select {...register('tipo_rota')} disabled={viewMode}>
@@ -816,7 +797,7 @@ const Rotas = () => {
                     <option value="transferencia">Transferência</option>
                   </Select>
                 </FormGroup>
-                
+
                 <FormGroup>
                   <Label>Custo Estimado</Label>
                   <Input 
@@ -827,7 +808,7 @@ const Rotas = () => {
                     disabled={viewMode} 
                   />
                 </FormGroup>
-                
+
                 <FormGroup>
                   <Label>Status</Label>
                   <Select {...register('status')} disabled={viewMode}>
@@ -835,7 +816,7 @@ const Rotas = () => {
                     <option value="inativo">Inativo</option>
                   </Select>
                 </FormGroup>
-                
+
                 <FormGroup style={{ gridColumn: '1 / -1' }}>
                   <Label>Observações</Label>
                   <TextArea 
@@ -941,13 +922,15 @@ const Rotas = () => {
                       backgroundColor: '#fafafa'
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <strong style={{ color: 'var(--dark-gray)' }}>{log.acao}</strong>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                          {new Date(log.data_hora).toLocaleString('pt-BR')}
-                        </span>
+                        <div style={{ fontWeight: '600', color: 'var(--dark-gray)' }}>
+                          {log.acao === 'create' ? 'Criação' : log.acao === 'update' ? 'Edição' : 'Exclusão'}
+                        </div>
+                        <div style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                          {new Date(log.created_at).toLocaleString('pt-BR')}
+                        </div>
                       </div>
-                      <div style={{ fontSize: '14px', marginBottom: '4px' }}>
-                        <strong>Usuário:</strong> {log.usuario_nome}
+                      <div style={{ fontSize: '14px', color: 'var(--dark-gray)', marginBottom: '4px' }}>
+                        <strong>Usuário:</strong> {log.usuario_nome || 'N/A'}
                       </div>
                       {log.detalhes && (
                         <div style={{ fontSize: '13px', color: 'var(--gray)', marginTop: '8px' }}>

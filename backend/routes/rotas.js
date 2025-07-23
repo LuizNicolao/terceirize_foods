@@ -73,7 +73,8 @@ router.post('/', [
   body('distancia_km').optional().isFloat({ min: 0 }).withMessage('Distância deve ser um número positivo'),
   body('status').isIn(['ativo', 'inativo']).withMessage('Status deve ser ativo ou inativo'),
   body('tipo_rota').isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Tipo de rota inválido'),
-  body('custo_estimado').optional().isFloat({ min: 0 }).withMessage('Custo estimado deve ser um número positivo')
+  body('custo_estimado').optional().isFloat({ min: 0 }).withMessage('Custo estimado deve ser um número positivo'),
+  body('observacoes').optional().isLength({ max: 65535 }).withMessage('Observações muito longas')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -98,25 +99,25 @@ router.post('/', [
       return res.status(400).json({ error: 'Filial não encontrada' });
     }
 
-    // Verificar se o código já existe
+    // Verificar se código já existe
     const existingRota = await executeQuery(
       'SELECT id FROM rotas WHERE codigo = ?',
       [codigo]
     );
 
     if (existingRota.length > 0) {
-      return res.status(400).json({ error: 'Código de rota já existe' });
+      return res.status(400).json({ error: 'Código de rota já cadastrado' });
     }
 
     // Inserir rota
     const result = await executeQuery(
       `INSERT INTO rotas (filial_id, codigo, nome, distancia_km, status, tipo_rota, custo_estimado, observacoes) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [filial_id, codigo, nome, distancia_km || 0, status || 'ativo', tipo_rota || 'semanal', custo_estimado || 0, observacoes || null]
+      [filial_id, codigo, nome, distancia_km || 0, status, tipo_rota, custo_estimado || 0, observacoes]
     );
 
     const newRota = await executeQuery(
-      'SELECT * FROM rotas WHERE id = ?',
+      'SELECT r.*, f.nome as filial_nome FROM rotas r LEFT JOIN filiais f ON r.filial_id = f.id WHERE r.id = ?',
       [result.insertId]
     );
 
@@ -141,7 +142,8 @@ router.put('/:id', [
   body('distancia_km').optional().isFloat({ min: 0 }).withMessage('Distância deve ser um número positivo'),
   body('status').isIn(['ativo', 'inativo']).withMessage('Status deve ser ativo ou inativo'),
   body('tipo_rota').isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Tipo de rota inválido'),
-  body('custo_estimado').optional().isFloat({ min: 0 }).withMessage('Custo estimado deve ser um número positivo')
+  body('custo_estimado').optional().isFloat({ min: 0 }).withMessage('Custo estimado deve ser um número positivo'),
+  body('observacoes').optional().isLength({ max: 65535 }).withMessage('Observações muito longas')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -177,14 +179,16 @@ router.put('/:id', [
       return res.status(400).json({ error: 'Filial não encontrada' });
     }
 
-    // Verificar se o código já existe (exceto para a rota atual)
-    const codigoCheck = await executeQuery(
-      'SELECT id FROM rotas WHERE codigo = ? AND id != ?',
-      [codigo, id]
-    );
+    // Verificar se código já existe (se estiver sendo alterado)
+    if (codigo) {
+      const codigoCheck = await executeQuery(
+        'SELECT id FROM rotas WHERE codigo = ? AND id != ?',
+        [codigo, id]
+      );
 
-    if (codigoCheck.length > 0) {
-      return res.status(400).json({ error: 'Código de rota já existe' });
+      if (codigoCheck.length > 0) {
+        return res.status(400).json({ error: 'Código de rota já cadastrado' });
+      }
     }
 
     // Construir query de atualização
@@ -224,11 +228,11 @@ router.put('/:id', [
       updateParams.push(observacoes);
     }
 
-    // Se não há campos para atualizar, mostrar erro
     if (updateFields.length === 0) {
-      return res.status(400).json({ error: 'Nenhum campo foi alterado' });
+      return res.status(400).json({ error: 'Nenhum campo foi fornecido para atualização' });
     }
 
+    updateFields.push('updated_at = NOW()');
     updateParams.push(id);
 
     await executeQuery(
@@ -237,7 +241,7 @@ router.put('/:id', [
     );
 
     const updatedRota = await executeQuery(
-      'SELECT * FROM rotas WHERE id = ?',
+      'SELECT r.*, f.nome as filial_nome FROM rotas r LEFT JOIN filiais f ON r.filial_id = f.id WHERE r.id = ?',
       [id]
     );
 
@@ -262,7 +266,7 @@ router.delete('/:id', [
 
     // Verificar se a rota existe
     const rota = await executeQuery(
-      'SELECT id FROM rotas WHERE id = ?',
+      'SELECT id, nome FROM rotas WHERE id = ?',
       [id]
     );
 
@@ -273,7 +277,10 @@ router.delete('/:id', [
     // Excluir rota
     await executeQuery('DELETE FROM rotas WHERE id = ?', [id]);
 
-    res.json({ message: 'Rota excluída com sucesso' });
+    res.json({
+      message: 'Rota excluída com sucesso',
+      rota: rota[0]
+    });
 
   } catch (error) {
     console.error('Erro ao excluir rota:', error);

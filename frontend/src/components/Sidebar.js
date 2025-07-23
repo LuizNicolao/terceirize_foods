@@ -387,7 +387,6 @@ const menuGroups = [
       { path: '/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
     ]
   },
-
   {
     title: 'Configurações',
     items: [
