@@ -80,10 +80,11 @@ router.get('/', authenticateToken, async (req, res) => {
     const userName = users.length > 0 ? users[0].name : 'Administrador';
     const userRole = users.length > 0 ? users[0].role : 'comprador';
     
-    // Determinar se o usuário pode ver todas as cotações (supervisor, gestor, administrador)
-    const canViewAllCotacoes = ['supervisor', 'gestor', 'administrador'].includes(userRole);
+    // Determinar se o usuário pode ver todas as cotações (apenas gestor e administrador)
+    // Supervisor vê apenas suas próprias cotações na tela principal
+    const canViewAllCotacoes = ['gestor', 'administrador'].includes(userRole);
     
-    // Buscar cotações - se for supervisor/gestor/admin, pode ver todas, senão apenas as próprias
+    // Buscar cotações - gestor/admin vê todas, supervisor/comprador vê apenas as próprias
     let rows;
     if (canViewAllCotacoes) {
       [rows] = await connection.execute(`
@@ -503,9 +504,17 @@ router.put('/:id', authenticateToken, async (req, res) => {
   try {
     await connection.beginTransaction();
 
+    // Buscar o usuário no banco (incluindo role)
+    const [users] = await connection.execute(`
+      SELECT name, role FROM users WHERE id = ?
+    `, [req.user.id]);
+    
+    const userName = users.length > 0 ? users[0].name : 'Administrador';
+    const userRole = users.length > 0 ? users[0].role : 'comprador';
+
     // Verificar se a cotação existe e seu status atual
     const [cotacoes] = await connection.execute(`
-      SELECT id, status FROM cotacoes WHERE id = ?
+      SELECT id, status, comprador FROM cotacoes WHERE id = ?
     `, [req.params.id]);
 
     if (cotacoes.length === 0) {
@@ -514,6 +523,16 @@ router.put('/:id', authenticateToken, async (req, res) => {
     }
 
     const cotacao = cotacoes[0];
+    
+    // Verificar permissão para editar (apenas criador da cotação ou gestor/admin)
+    const canEditCotacao = ['gestor', 'administrador'].includes(userRole) || cotacao.comprador === userName;
+    
+    if (!canEditCotacao) {
+      await connection.rollback();
+      return res.status(403).json({ 
+        message: 'Você não tem permissão para editar esta cotação. Apenas o criador da cotação ou gestores/administradores podem editá-la.' 
+      });
+    }
     
     // Verificar se a cotação pode ser editada (apenas pendente ou renegociacao)
     if (cotacao.status !== 'pendente' && cotacao.status !== 'renegociacao') {
@@ -728,6 +747,36 @@ router.delete('/:id', authenticateToken, async (req, res) => {
   
   try {
     await connection.beginTransaction();
+
+    // Buscar o usuário no banco (incluindo role)
+    const [users] = await connection.execute(`
+      SELECT name, role FROM users WHERE id = ?
+    `, [req.user.id]);
+    
+    const userName = users.length > 0 ? users[0].name : 'Administrador';
+    const userRole = users.length > 0 ? users[0].role : 'comprador';
+
+    // Verificar se a cotação existe e quem a criou
+    const [cotacoes] = await connection.execute(`
+      SELECT id, comprador FROM cotacoes WHERE id = ?
+    `, [req.params.id]);
+
+    if (cotacoes.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ message: 'Cotação não encontrada' });
+    }
+
+    const cotacao = cotacoes[0];
+    
+    // Verificar permissão para excluir (apenas criador da cotação ou gestor/admin)
+    const canDeleteCotacao = ['gestor', 'administrador'].includes(userRole) || cotacao.comprador === userName;
+    
+    if (!canDeleteCotacao) {
+      await connection.rollback();
+      return res.status(403).json({ 
+        message: 'Você não tem permissão para excluir esta cotação. Apenas o criador da cotação ou gestores/administradores podem excluí-la.' 
+      });
+    }
 
     // Excluir produtos dos fornecedores
     await connection.execute(`

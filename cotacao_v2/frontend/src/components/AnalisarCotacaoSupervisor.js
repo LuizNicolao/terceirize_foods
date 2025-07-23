@@ -765,6 +765,12 @@ const AnalisarCotacaoSupervisor = () => {
       return;
     }
 
+    // Validar se produtos foram selecionados para renegociação
+    if (analiseData.decisao === 'renegociacao' && analiseData.produtosSelecionados.length === 0) {
+      alert('Por favor, selecione pelo menos um produto para renegociação.');
+      return;
+    }
+
     setSaving(true);
     
     try {
@@ -1050,6 +1056,130 @@ const AnalisarCotacaoSupervisor = () => {
                 />
               </div>
               
+              {/* Seção de Seleção de Produtos para Renegociação */}
+              {analiseData.decisao === 'renegociacao' && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
+                    Produtos para Renegociação:
+                  </label>
+                  <div style={{ marginBottom: '10px' }}>
+                    <Button 
+                      onClick={() => {
+                        // Selecionar todos os produtos
+                        const todosProdutos = [];
+                        cotacao.fornecedores?.forEach(fornecedor => {
+                          fornecedor.produtos?.forEach(produto => {
+                            todosProdutos.push({
+                              produto_id: produto.produto_id,
+                              produto_nome: produto.nome,
+                              fornecedor_nome: fornecedor.nome
+                            });
+                          });
+                        });
+                        setAnaliseData({...analiseData, produtosSelecionados: todosProdutos});
+                      }}
+                      variant="secondary"
+                      style={{ marginRight: '10px' }}
+                    >
+                      Selecionar Todos
+                    </Button>
+                    <Button 
+                      onClick={() => setAnaliseData({...analiseData, produtosSelecionados: []})}
+                      variant="secondary"
+                    >
+                      Limpar Seleção
+                    </Button>
+                  </div>
+                  
+                  <div style={{ 
+                    maxHeight: '200px', 
+                    overflowY: 'auto', 
+                    border: '1px solid #ddd', 
+                    borderRadius: '4px',
+                    padding: '10px'
+                  }}>
+                    {cotacao.fornecedores?.map((fornecedor, fornecedorIndex) => (
+                      <div key={fornecedorIndex} style={{ marginBottom: '15px' }}>
+                        <h4 style={{ 
+                          margin: '0 0 8px 0', 
+                          color: colors.primary.green,
+                          fontSize: '14px',
+                          fontWeight: '600'
+                        }}>
+                          {fornecedor.nome}
+                        </h4>
+                        {fornecedor.produtos?.map((produto, produtoIndex) => {
+                          const isSelected = analiseData.produtosSelecionados.some(
+                            p => p.produto_id === produto.produto_id && p.fornecedor_nome === fornecedor.nome
+                          );
+                          
+                          return (
+                            <div key={produtoIndex} style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              padding: '8px',
+                              backgroundColor: isSelected ? '#f0f8f0' : 'transparent',
+                              borderRadius: '4px',
+                              marginBottom: '4px'
+                            }}>
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    // Adicionar produto à seleção
+                                    setAnaliseData({
+                                      ...analiseData, 
+                                      produtosSelecionados: [
+                                        ...analiseData.produtosSelecionados,
+                                        {
+                                          produto_id: produto.produto_id,
+                                          produto_nome: produto.nome,
+                                          fornecedor_nome: fornecedor.nome
+                                        }
+                                      ]
+                                    });
+                                  } else {
+                                    // Remover produto da seleção
+                                    setAnaliseData({
+                                      ...analiseData,
+                                      produtosSelecionados: analiseData.produtosSelecionados.filter(
+                                        p => !(p.produto_id === produto.produto_id && p.fornecedor_nome === fornecedor.nome)
+                                      )
+                                    });
+                                  }
+                                }}
+                                style={{ marginRight: '10px' }}
+                              />
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontWeight: '500', fontSize: '13px' }}>
+                                  {produto.nome}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#666' }}>
+                                  Qtd: {produto.qtde} {produto.un} | Valor: {formatarValor(produto.valor_unitario)}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {analiseData.produtosSelecionados.length > 0 && (
+                    <div style={{ 
+                      marginTop: '10px', 
+                      padding: '8px', 
+                      backgroundColor: '#e8f5e8', 
+                      borderRadius: '4px',
+                      fontSize: '12px'
+                    }}>
+                      <strong>{analiseData.produtosSelecionados.length}</strong> produto(s) selecionado(s) para renegociação
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
                   Justificativa *
@@ -1074,7 +1204,7 @@ const AnalisarCotacaoSupervisor = () => {
                 </Button>
                 <Button 
                   onClick={handleSubmit}
-                  disabled={saving}
+                  disabled={saving || (analiseData.decisao === 'renegociacao' && analiseData.produtosSelecionados.length === 0)}
                   variant="primary"
                 >
                   {saving ? 'Processando...' : 'Confirmar'}
