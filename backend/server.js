@@ -174,9 +174,11 @@ app.get('/api/fornecedores/public', async (req, res) => {
         cnpj, 
         telefone, 
         email, 
-        endereco, 
-        cidade, 
-        estado, 
+        logradouro, 
+        numero, 
+        bairro, 
+        municipio, 
+        uf, 
         cep,
         status
       FROM fornecedores 
