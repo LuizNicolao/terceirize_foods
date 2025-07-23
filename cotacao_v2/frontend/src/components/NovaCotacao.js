@@ -1300,8 +1300,6 @@ const NovaCotacao = () => {
                           onSelect={(fornecedorSelecionado) => {
                             if (fornecedorSelecionado) {
                               updateFornecedor(fornecedor.id, 'nome', fornecedorSelecionado.razao_social || fornecedorSelecionado.nome_fantasia);
-                              updateFornecedor(fornecedor.id, 'fornecedor_id', fornecedorSelecionado.id);
-                              updateFornecedor(fornecedor.id, 'cnpj', fornecedorSelecionado.cnpj);
                             }
                           }}
                         />
