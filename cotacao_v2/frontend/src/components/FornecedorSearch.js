@@ -155,33 +155,12 @@ const FornecedorSearch = ({
         return;
       }
 
-      console.log('🔍 Buscando fornecedores com token:', token.substring(0, 20) + '...');
+      console.log('🔍 Buscando fornecedores diretamente no sistema principal...');
       
-      // Primeiro, validar o token no sistema principal
-      const validateResponse = await fetch(`${API_URL}/auth/validate-cotacao-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ token }),
-        credentials: 'omit' // Não enviar cookies para evitar CSRF
-      });
-
-      if (!validateResponse.ok) {
-        console.error('❌ Token inválido no sistema principal');
-        setFornecedores([]);
-        setShowDropdown(false);
-        return;
-      }
-
-      console.log('✅ Token validado no sistema principal');
-      
-      // Agora buscar fornecedores
-      const response = await fetch(`${API_URL}/fornecedores?search=${encodeURIComponent(term)}`, {
+      // Buscar fornecedores usando rota pública
+      const response = await fetch(`${API_URL}/fornecedores/public?search=${encodeURIComponent(term)}`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },

@@ -153,14 +153,65 @@ app.post('/api/auth/validate-cotacao-token', async (req, res) => {
   }
 });
 
-// Exceções para rotas públicas (login, verify, health, validate-cotacao-token)
+// Rota pública para busca de fornecedores (para sistema de cotação)
+app.get('/api/fornecedores/public', async (req, res) => {
+  try {
+    const { search } = req.query;
+    
+    if (!search || search.length < 2) {
+      return res.json([]);
+    }
+
+    console.log('🔍 Busca pública de fornecedores:', search);
+    
+    const { executeQuery } = require('./config/database');
+    
+    const query = `
+      SELECT 
+        id, 
+        razao_social, 
+        nome_fantasia, 
+        cnpj, 
+        telefone, 
+        email, 
+        endereco, 
+        cidade, 
+        estado, 
+        cep,
+        status
+      FROM fornecedores 
+      WHERE status = 'ativo' 
+        AND (
+          razao_social LIKE ? OR 
+          nome_fantasia LIKE ? OR 
+          cnpj LIKE ?
+        )
+      ORDER BY razao_social 
+      LIMIT 20
+    `;
+    
+    const searchTerm = `%${search}%`;
+    const fornecedores = await executeQuery(query, [searchTerm, searchTerm, searchTerm]);
+    
+    console.log('✅ Fornecedores encontrados:', fornecedores.length);
+    
+    res.json(fornecedores);
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar fornecedores:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// Exceções para rotas públicas (login, verify, health, validate-cotacao-token, fornecedores-public)
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
-    // Permitir login, verify, health e validate-cotacao-token sem CSRF
+    // Permitir login, verify, health, validate-cotacao-token e fornecedores-public sem CSRF
     if (
       req.path === '/api/auth/login' ||
       req.path === '/api/auth/verify' ||
       req.path === '/api/auth/validate-cotacao-token' ||
+      req.path === '/api/fornecedores/public' ||
       req.path === '/api/health'
     ) {
       return next();
