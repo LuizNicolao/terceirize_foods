@@ -540,6 +540,10 @@ const AnalisarCotacaoSupervisor = () => {
     produtosSelecionados: []
   });
   const [saving, setSaving] = useState(false);
+  
+  // Estados para busca e filtros
+  const [searchFornecedor, setSearchFornecedor] = useState('');
+  const [searchProduto, setSearchProduto] = useState('');
 
   useEffect(() => {
     fetchCotacao();
@@ -654,6 +658,37 @@ const AnalisarCotacaoSupervisor = () => {
       totalQuantidade,
       valorTotal
     };
+  };
+
+  // Função para filtrar produtos baseado nos termos de busca
+  const getProdutosFiltrados = () => {
+    if (!cotacao || !cotacao.fornecedores) return [];
+    
+    const produtosFiltrados = [];
+    
+    cotacao.fornecedores.forEach(fornecedor => {
+      // Filtrar por fornecedor
+      const fornecedorMatch = !searchFornecedor || 
+        fornecedor.nome?.toLowerCase().includes(searchFornecedor.toLowerCase());
+      
+      if (fornecedorMatch && fornecedor.produtos) {
+        fornecedor.produtos.forEach(produto => {
+          // Filtrar por produto
+          const produtoMatch = !searchProduto || 
+            produto.nome?.toLowerCase().includes(searchProduto.toLowerCase());
+          
+          if (produtoMatch) {
+            produtosFiltrados.push({
+              ...produto,
+              fornecedor_nome: fornecedor.nome,
+              fornecedor_id: fornecedor.id
+            });
+          }
+        });
+      }
+    });
+    
+    return produtosFiltrados;
   };
 
   const calcularAnaliseComparativa = () => {
@@ -812,6 +847,9 @@ const AnalisarCotacaoSupervisor = () => {
         justificativa: '',
         produtosSelecionados: []
       });
+      // Limpar campos de busca
+      setSearchFornecedor('');
+      setSearchProduto('');
     }
   };
 
@@ -1062,10 +1100,84 @@ const AnalisarCotacaoSupervisor = () => {
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>
                     Produtos para Renegociação:
                   </label>
+                  
+                  {/* Campos de Busca */}
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '10px', 
+                    marginBottom: '15px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <div style={{ flex: '1', minWidth: '200px' }}>
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px', 
+                        fontSize: '12px', 
+                        fontWeight: '500',
+                        color: '#666'
+                      }}>
+                        Buscar Fornecedor:
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Digite o nome do fornecedor..."
+                        value={searchFornecedor}
+                        onChange={(e) => setSearchFornecedor(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          fontSize: '13px'
+                        }}
+                      />
+                    </div>
+                    <div style={{ flex: '1', minWidth: '200px' }}>
+                      <label style={{ 
+                        display: 'block', 
+                        marginBottom: '4px', 
+                        fontSize: '12px', 
+                        fontWeight: '500',
+                        color: '#666'
+                      }}>
+                        Buscar Produto:
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Digite o nome do produto..."
+                        value={searchProduto}
+                        onChange={(e) => setSearchProduto(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          border: '1px solid #ddd',
+                          borderRadius: '4px',
+                          fontSize: '13px'
+                        }}
+                      />
+                    </div>
+                  </div>
+                  
                   <div style={{ marginBottom: '10px' }}>
                     <Button 
                       onClick={() => {
-                        // Selecionar todos os produtos
+                        // Selecionar todos os produtos filtrados
+                        const produtosFiltrados = getProdutosFiltrados();
+                        const todosProdutos = produtosFiltrados.map(produto => ({
+                          produto_id: produto.produto_id,
+                          produto_nome: produto.nome,
+                          fornecedor_nome: produto.fornecedor_nome
+                        }));
+                        setAnaliseData({...analiseData, produtosSelecionados: todosProdutos});
+                      }}
+                      variant="secondary"
+                      style={{ marginRight: '10px' }}
+                    >
+                      Selecionar Filtrados
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        // Selecionar todos os produtos (sem filtro)
                         const todosProdutos = [];
                         cotacao.fornecedores?.forEach(fornecedor => {
                           fornecedor.produtos?.forEach(produto => {
@@ -1098,85 +1210,129 @@ const AnalisarCotacaoSupervisor = () => {
                     borderRadius: '4px',
                     padding: '10px'
                   }}>
-                    {cotacao.fornecedores?.map((fornecedor, fornecedorIndex) => (
-                      <div key={fornecedorIndex} style={{ marginBottom: '15px' }}>
-                        <h4 style={{ 
-                          margin: '0 0 8px 0', 
-                          color: colors.primary.green,
-                          fontSize: '14px',
-                          fontWeight: '600'
-                        }}>
-                          {fornecedor.nome}
-                        </h4>
-                        {fornecedor.produtos?.map((produto, produtoIndex) => {
-                          const isSelected = analiseData.produtosSelecionados.some(
-                            p => p.produto_id === produto.produto_id && p.fornecedor_nome === fornecedor.nome
-                          );
-                          
-                          return (
-                            <div key={produtoIndex} style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              padding: '8px',
-                              backgroundColor: isSelected ? '#f0f8f0' : 'transparent',
-                              borderRadius: '4px',
-                              marginBottom: '4px'
-                            }}>
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    // Adicionar produto à seleção
-                                    setAnaliseData({
-                                      ...analiseData, 
-                                      produtosSelecionados: [
-                                        ...analiseData.produtosSelecionados,
-                                        {
-                                          produto_id: produto.produto_id,
-                                          produto_nome: produto.nome,
-                                          fornecedor_nome: fornecedor.nome
-                                        }
-                                      ]
-                                    });
-                                  } else {
-                                    // Remover produto da seleção
-                                    setAnaliseData({
-                                      ...analiseData,
-                                      produtosSelecionados: analiseData.produtosSelecionados.filter(
-                                        p => !(p.produto_id === produto.produto_id && p.fornecedor_nome === fornecedor.nome)
-                                      )
-                                    });
-                                  }
-                                }}
-                                style={{ marginRight: '10px' }}
-                              />
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontWeight: '500', fontSize: '13px' }}>
-                                  {produto.nome}
-                                </div>
-                                <div style={{ fontSize: '12px', color: '#666' }}>
-                                  Qtd: {produto.qtde} {produto.un} | Valor: {formatarValor(produto.valor_unitario)}
+                    {(() => {
+                      const produtosFiltrados = getProdutosFiltrados();
+                      
+                      if (produtosFiltrados.length === 0) {
+                        return (
+                          <div style={{ 
+                            textAlign: 'center', 
+                            padding: '20px', 
+                            color: '#666',
+                            fontSize: '14px'
+                          }}>
+                            {searchFornecedor || searchProduto ? 
+                              'Nenhum produto encontrado com os filtros aplicados.' : 
+                              'Nenhum produto disponível.'
+                            }
+                          </div>
+                        );
+                      }
+                      
+                      // Agrupar produtos por fornecedor
+                      const produtosPorFornecedor = {};
+                      produtosFiltrados.forEach(produto => {
+                        if (!produtosPorFornecedor[produto.fornecedor_nome]) {
+                          produtosPorFornecedor[produto.fornecedor_nome] = [];
+                        }
+                        produtosPorFornecedor[produto.fornecedor_nome].push(produto);
+                      });
+                      
+                      return Object.entries(produtosPorFornecedor).map(([fornecedorNome, produtos], fornecedorIndex) => (
+                        <div key={fornecedorIndex} style={{ marginBottom: '15px' }}>
+                          <h4 style={{ 
+                            margin: '0 0 8px 0', 
+                            color: colors.primary.green,
+                            fontSize: '14px',
+                            fontWeight: '600'
+                          }}>
+                            {fornecedorNome}
+                          </h4>
+                          {produtos.map((produto, produtoIndex) => {
+                            const isSelected = analiseData.produtosSelecionados.some(
+                              p => p.produto_id === produto.produto_id && p.fornecedor_nome === produto.fornecedor_nome
+                            );
+                            
+                            return (
+                              <div key={produtoIndex} style={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                padding: '8px',
+                                backgroundColor: isSelected ? '#f0f8f0' : 'transparent',
+                                borderRadius: '4px',
+                                marginBottom: '4px'
+                              }}>
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      // Adicionar produto à seleção
+                                      setAnaliseData({
+                                        ...analiseData, 
+                                        produtosSelecionados: [
+                                          ...analiseData.produtosSelecionados,
+                                          {
+                                            produto_id: produto.produto_id,
+                                            produto_nome: produto.nome,
+                                            fornecedor_nome: produto.fornecedor_nome
+                                          }
+                                        ]
+                                      });
+                                    } else {
+                                      // Remover produto da seleção
+                                      setAnaliseData({
+                                        ...analiseData,
+                                        produtosSelecionados: analiseData.produtosSelecionados.filter(
+                                          p => !(p.produto_id === produto.produto_id && p.fornecedor_nome === produto.fornecedor_nome)
+                                        )
+                                      });
+                                    }
+                                  }}
+                                  style={{ marginRight: '10px' }}
+                                />
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontWeight: '500', fontSize: '13px' }}>
+                                    {produto.nome}
+                                  </div>
+                                  <div style={{ fontSize: '12px', color: '#666' }}>
+                                    Qtd: {produto.qtde} {produto.un} | Valor: {formatarValor(produto.valor_unitario)}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ))}
+                            );
+                          })}
+                        </div>
+                      ));
+                    })()}
                   </div>
                   
-                  {analiseData.produtosSelecionados.length > 0 && (
-                    <div style={{ 
-                      marginTop: '10px', 
-                      padding: '8px', 
-                      backgroundColor: '#e8f5e8', 
-                      borderRadius: '4px',
-                      fontSize: '12px'
-                    }}>
+                  <div style={{ 
+                    marginTop: '10px', 
+                    padding: '8px', 
+                    backgroundColor: '#f8f9fa', 
+                    borderRadius: '4px',
+                    fontSize: '12px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div>
                       <strong>{analiseData.produtosSelecionados.length}</strong> produto(s) selecionado(s) para renegociação
                     </div>
-                  )}
+                    <div style={{ color: '#666' }}>
+                      {(() => {
+                        const produtosFiltrados = getProdutosFiltrados();
+                        const totalProdutos = cotacao.fornecedores?.reduce((total, f) => 
+                          total + (f.produtos?.length || 0), 0) || 0;
+                        
+                        if (searchFornecedor || searchProduto) {
+                          return `Exibindo ${produtosFiltrados.length} de ${totalProdutos} produtos`;
+                        }
+                        return `${totalProdutos} produtos disponíveis`;
+                      })()}
+                    </div>
+                  </div>
                 </div>
               )}
               
@@ -1197,7 +1353,12 @@ const AnalisarCotacaoSupervisor = () => {
               
               <ActionButtons>
                 <Button 
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    // Limpar campos de busca
+                    setSearchFornecedor('');
+                    setSearchProduto('');
+                  }}
                   variant="secondary"
                 >
                   Cancelar
