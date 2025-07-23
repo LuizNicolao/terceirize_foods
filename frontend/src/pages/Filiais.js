@@ -134,7 +134,7 @@ const ModalContent = styled.div`
   max-width: 90vw;
   width: 1000px;
   max-height: 95vh;
-  overflow-y: auto;
+  overflow: hidden;
 `;
 
 const ModalHeader = styled.div`
@@ -170,27 +170,8 @@ const Form = styled.form`
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   max-height: calc(95vh - 120px);
-  overflow-y: auto;
+  overflow: hidden;
   padding-right: 8px;
-
-  /* Estilizar scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--primary-green);
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--dark-green);
-  }
 `;
 
 const FormGroup = styled.div`
