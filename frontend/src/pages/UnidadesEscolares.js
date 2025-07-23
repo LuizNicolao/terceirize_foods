@@ -760,20 +760,16 @@ const UnidadesEscolares = () => {
                   <Input type="text" placeholder="Lote da unidade" {...register('lot')} disabled={viewMode} />
                 </FormGroup>
                 <FormGroup>
-                  <Label>C.C. Senic</Label>
-                  <Input type="text" placeholder="C.C. Senic" {...register('cc_senic')} disabled={viewMode} />
+                  <Label>C.C. Senior</Label>
+                  <Input type="text" placeholder="C.C. Senior" {...register('cc_senic')} disabled={viewMode} />
                 </FormGroup>
                 <FormGroup>
-                  <Label>Código Senio</Label>
-                  <Input type="text" placeholder="Código Senio" {...register('codigo_senio')} disabled={viewMode} />
+                  <Label>Código Senior</Label>
+                  <Input type="text" placeholder="Código Senior" {...register('codigo_senio')} disabled={viewMode} />
                 </FormGroup>
                 <FormGroup>
                   <Label>Abastecimento</Label>
                   <Input type="text" placeholder="Tipo de abastecimento" {...register('abastecimento')} disabled={viewMode} />
-                </FormGroup>
-                <FormGroup>
-                  <Label>Statl</Label>
-                  <Input type="text" placeholder="Status da unidade" {...register('statl')} disabled={viewMode} />
                 </FormGroup>
                 <FormGroup>
                   <Label>Ordem de Entrega</Label>

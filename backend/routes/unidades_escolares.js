@@ -88,7 +88,7 @@ router.post('/', [
     const {
       codigo_teknis, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
       centro_distribuicao, rota_id, regional, lot, cc_senic, codigo_senio, abastecimento,
-      statl, ordem_entrega, status, observacoes
+      ordem_entrega, status, observacoes
     } = req.body;
 
     // Verificar se a rota existe (se fornecida)
@@ -118,12 +118,12 @@ router.post('/', [
       `INSERT INTO unidades_escolares (
         codigo_teknis, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
         centro_distribuicao, rota_id, regional, lot, cc_senic, codigo_senio, abastecimento,
-        statl, ordem_entrega, status, observacoes
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ordem_entrega, status, observacoes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         codigo_teknis, nome_escola, cidade, estado, pais || 'Brasil', endereco, numero, bairro, cep,
         centro_distribuicao, rota_id, regional, lot, cc_senic, codigo_senio, abastecimento,
-        statl, ordem_entrega || 0, status || 'ativo', observacoes
+        ordem_entrega || 0, status || 'ativo', observacoes
       ]
     );
 
@@ -169,7 +169,7 @@ router.put('/:id', [
     const {
       codigo_teknis, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
       centro_distribuicao, rota_id, regional, lot, cc_senic, codigo_senio, abastecimento,
-      statl, ordem_entrega, status, observacoes
+      ordem_entrega, status, observacoes
     } = req.body;
 
     // Verificar se a unidade existe
@@ -273,10 +273,6 @@ router.put('/:id', [
     if (abastecimento !== undefined) {
       updateFields.push('abastecimento = ?');
       updateParams.push(abastecimento);
-    }
-    if (statl !== undefined) {
-      updateFields.push('statl = ?');
-      updateParams.push(statl);
     }
     if (ordem_entrega !== undefined) {
       updateFields.push('ordem_entrega = ?');
