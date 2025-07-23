@@ -220,36 +220,35 @@ app.get('/api/fornecedores/public', async (req, res) => {
   }
 });
 
-// Rota de teste para verificar fornecedores (apenas em desenvolvimento)
-if (process.env.NODE_ENV !== 'production') {
-  app.get('/api/fornecedores/test', async (req, res) => {
-    try {
-      const { executeQuery } = require('./config/database');
-      
-      const query = 'SELECT id, razao_social, nome_fantasia, status FROM fornecedores LIMIT 10';
-      const fornecedores = await executeQuery(query);
-      
-      res.json({
-        total: fornecedores.length,
-        fornecedores: fornecedores
-      });
-      
-    } catch (error) {
-      console.error('❌ Erro ao buscar fornecedores de teste:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-  });
-}
+// Rota de teste para verificar fornecedores (antes das rotas protegidas)
+app.get('/api/fornecedores/test', async (req, res) => {
+  try {
+    const { executeQuery } = require('./config/database');
+    
+    const query = 'SELECT id, razao_social, nome_fantasia, status FROM fornecedores LIMIT 10';
+    const fornecedores = await executeQuery(query);
+    
+    res.json({
+      total: fornecedores.length,
+      fornecedores: fornecedores
+    });
+    
+  } catch (error) {
+    console.error('❌ Erro ao buscar fornecedores de teste:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
 
-// Exceções para rotas públicas (login, verify, health, validate-cotacao-token, fornecedores-public)
+// Exceções para rotas públicas (login, verify, health, validate-cotacao-token, fornecedores-public, fornecedores-test)
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
-    // Permitir login, verify, health, validate-cotacao-token e fornecedores-public sem CSRF
+    // Permitir login, verify, health, validate-cotacao-token, fornecedores-public e fornecedores-test sem CSRF
     if (
       req.path === '/api/auth/login' ||
       req.path === '/api/auth/verify' ||
       req.path === '/api/auth/validate-cotacao-token' ||
       req.path === '/api/fornecedores/public' ||
+      req.path === '/api/fornecedores/test' ||
       req.path === '/api/health'
     ) {
       return next();
