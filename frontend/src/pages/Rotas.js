@@ -670,6 +670,17 @@ const Rotas = () => {
     }).format(value || 0);
   };
 
+  // Formatar tipo de rota
+  const formatTipoRota = (tipo) => {
+    const tipos = {
+      'semanal': 'Semanal',
+      'quinzenal': 'Quinzenal',
+      'mensal': 'Mensal',
+      'transferencia': 'Transferência'
+    };
+    return tipos[tipo] || tipo;
+  };
+
   if (loading) {
     return (
       <Container>
@@ -753,7 +764,7 @@ const Rotas = () => {
                   <Td>{rota.distancia_km}</Td>
                   <Td>
                     <TipoRotaBadge $tipo={rota.tipo_rota}>
-                      {rota.tipo_rota}
+                      {formatTipoRota(rota.tipo_rota)}
                     </TipoRotaBadge>
                   </Td>
                   <Td>{formatCurrency(rota.custo_estimado)}</Td>
