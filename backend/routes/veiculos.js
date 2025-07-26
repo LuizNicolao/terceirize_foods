@@ -7,6 +7,56 @@ const { logAction } = require('../utils/audit');
 // Middleware de autenticação para todas as rotas
 router.use(authenticateToken);
 
+// GET /api/veiculos/export/xlsx - Exportar veículos para XLSX
+router.get('/export/xlsx', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        v.*,
+        f.nome as filial_nome
+      FROM veiculos v
+      LEFT JOIN filiais f ON v.filial_id = f.id
+      ORDER BY v.placa
+    `;
+    
+    const veiculos = await executeQuery(query);
+    
+    // Aqui você implementaria a lógica de exportação para XLSX
+    // Por enquanto, retornamos um JSON
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=veiculos.xlsx');
+    res.json(veiculos);
+  } catch (error) {
+    console.error('Erro ao exportar veículos:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
+// GET /api/veiculos/export/pdf - Exportar veículos para PDF
+router.get('/export/pdf', async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        v.*,
+        f.nome as filial_nome
+      FROM veiculos v
+      LEFT JOIN filiais f ON v.filial_id = f.id
+      ORDER BY v.placa
+    `;
+    
+    const veiculos = await executeQuery(query);
+    
+    // Aqui você implementaria a lógica de exportação para PDF
+    // Por enquanto, retornamos um JSON
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=veiculos.pdf');
+    res.json(veiculos);
+  } catch (error) {
+    console.error('Erro ao exportar veículos:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // GET /api/veiculos - Listar todos os veículos
 router.get('/', async (req, res) => {
   try {
@@ -241,56 +291,6 @@ router.delete('/:id', async (req, res) => {
     res.json({ message: 'Veículo excluído com sucesso' });
   } catch (error) {
     console.error('Erro ao excluir veículo:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// GET /api/veiculos/export/xlsx - Exportar veículos para XLSX
-router.get('/export/xlsx', async (req, res) => {
-  try {
-    const query = `
-      SELECT 
-        v.*,
-        f.nome as filial_nome
-      FROM veiculos v
-      LEFT JOIN filiais f ON v.filial_id = f.id
-      ORDER BY v.placa
-    `;
-    
-    const veiculos = await executeQuery(query);
-    
-    // Aqui você implementaria a lógica de exportação para XLSX
-    // Por enquanto, retornamos um JSON
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename=veiculos.xlsx');
-    res.json(veiculos);
-  } catch (error) {
-    console.error('Erro ao exportar veículos:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// GET /api/veiculos/export/pdf - Exportar veículos para PDF
-router.get('/export/pdf', async (req, res) => {
-  try {
-    const query = `
-      SELECT 
-        v.*,
-        f.nome as filial_nome
-      FROM veiculos v
-      LEFT JOIN filiais f ON v.filial_id = f.id
-      ORDER BY v.placa
-    `;
-    
-    const veiculos = await executeQuery(query);
-    
-    // Aqui você implementaria a lógica de exportação para PDF
-    // Por enquanto, retornamos um JSON
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'attachment; filename=veiculos.pdf');
-    res.json(veiculos);
-  } catch (error) {
-    console.error('Erro ao exportar veículos:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });

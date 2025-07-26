@@ -294,7 +294,7 @@ const Veiculos = () => {
 
   useEffect(() => {
     loadVeiculos();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadVeiculos = async () => {
     try {
