@@ -13,7 +13,7 @@ router.get('/export/xlsx', async (req, res) => {
     const query = `
       SELECT 
         v.*,
-        f.nome as filial_nome
+        f.filial as filial_nome
       FROM veiculos v
       LEFT JOIN filiais f ON v.filial_id = f.id
       ORDER BY v.placa
@@ -38,7 +38,7 @@ router.get('/export/pdf', async (req, res) => {
     const query = `
       SELECT 
         v.*,
-        f.nome as filial_nome
+        f.filial as filial_nome
       FROM veiculos v
       LEFT JOIN filiais f ON v.filial_id = f.id
       ORDER BY v.placa
@@ -63,7 +63,7 @@ router.get('/', async (req, res) => {
     const query = `
       SELECT 
         v.*,
-        f.nome as filial_nome
+        f.filial as filial_nome
       FROM veiculos v
       LEFT JOIN filiais f ON v.filial_id = f.id
       ORDER BY v.placa
@@ -85,7 +85,7 @@ router.get('/:id', async (req, res) => {
     const query = `
       SELECT 
         v.*,
-        f.nome as filial_nome
+        f.filial as filial_nome
       FROM veiculos v
       LEFT JOIN filiais f ON v.filial_id = f.id
       WHERE v.id = ?
