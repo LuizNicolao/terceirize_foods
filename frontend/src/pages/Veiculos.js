@@ -667,8 +667,11 @@ const Veiculos = () => {
       <Header>
         <Title>Gestão de Veículos</Title>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <AddButton onClick={handleOpenAuditModal}>
-            <FaHistory />
+          <AddButton 
+            onClick={handleOpenAuditModal}
+            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+          >
+            <FaQuestionCircle />
             Auditoria
           </AddButton>
           {canCreate('veiculos') && (
