@@ -132,10 +132,29 @@ const ModalContent = styled.div`
   background: var(--white);
   border-radius: 12px;
   padding: 32px;
-  width: 100%;
-  max-width: 600px;
+  width: 95%;
+  max-width: 1400px;
   max-height: 90vh;
   overflow-y: auto;
+  
+  /* Personalizar scrollbar */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-green);
+  }
 `;
 
 const ModalHeader = styled.div`
@@ -275,9 +294,10 @@ const TextArea = styled.textarea`
 
 const FormGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  align-items: stretch;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex: 1;
 `;
 
 const FormGrid2 = styled.div`
@@ -299,7 +319,7 @@ const FormSection = styled.div`
   border-radius: 8px;
   padding: 14px;
   background: #fafafa;
-  min-height: 300px;
+  min-height: 400px;
   display: flex;
   flex-direction: column;
 `;
@@ -316,15 +336,16 @@ const SectionTitle = styled.h3`
 const FirstRow = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  align-items: stretch;
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 16px;
 `;
 
 const SecondRow = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  align-items: stretch;
+  gap: 16px;
+  align-items: start;
 `;
 
 const Veiculos = () => {
@@ -350,10 +371,11 @@ const Veiculos = () => {
     try {
       setLoading(true);
       const response = await api.get('/veiculos');
-      setVeiculos(response.data);
+      setVeiculos(response.data || []);
     } catch (error) {
       console.error('Erro ao carregar veículos:', error);
       toast.error('Erro ao carregar veículos');
+      setVeiculos([]);
     } finally {
       setLoading(false);
     }
@@ -633,12 +655,9 @@ const Veiculos = () => {
     return matchesSearch && matchesStatus;
   });
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
   return (
     <Container>
+      {loading && <LoadingSpinner />}
       <Header>
         <Title>Gestão de Veículos</Title>
         <div style={{ display: 'flex', gap: '12px' }}>
