@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { executeQuery } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
-const { logAudit } = require('../utils/auditLogger');
+const { logAction } = require('../utils/audit');
 
 // Middleware de autenticação para todas as rotas
 router.use(authenticateToken);
@@ -13,11 +13,9 @@ router.get('/', async (req, res) => {
     const query = `
       SELECT 
         v.*,
-        f.nome as filial_nome,
-        m.nome as motorista_nome
+        f.nome as filial_nome
       FROM veiculos v
       LEFT JOIN filiais f ON v.filial_id = f.id
-      LEFT JOIN motoristas m ON v.motorista_id = m.id
       ORDER BY v.placa
     `;
     
@@ -37,11 +35,9 @@ router.get('/:id', async (req, res) => {
     const query = `
       SELECT 
         v.*,
-        f.nome as filial_nome,
-        m.nome as motorista_nome
+        f.nome as filial_nome
       FROM veiculos v
       LEFT JOIN filiais f ON v.filial_id = f.id
-      LEFT JOIN motoristas m ON v.motorista_id = m.id
       WHERE v.id = ?
     `;
     
@@ -110,8 +106,9 @@ router.post('/', async (req, res) => {
     ]);
 
     // Log de auditoria
-    await logAudit(req.user.id, 'CREATE', 'veiculos', result.insertId, {
-      requestBody: req.body
+    await logAction(req.user.id, 'CREATE', 'veiculos', {
+      requestBody: req.body,
+      resourceId: result.insertId
     });
 
     res.status(201).json({ 
@@ -204,8 +201,9 @@ router.put('/:id', async (req, res) => {
 
     // Log de auditoria
     if (Object.keys(changes).length > 0) {
-      await logAudit(req.user.id, 'UPDATE', 'veiculos', id, {
-        changes: changes
+      await logAction(req.user.id, 'UPDATE', 'veiculos', {
+        changes: changes,
+        resourceId: id
       });
     }
 
@@ -235,8 +233,9 @@ router.delete('/:id', async (req, res) => {
     await executeQuery('DELETE FROM veiculos WHERE id = ?', [id]);
 
     // Log de auditoria
-    await logAudit(req.user.id, 'DELETE', 'veiculos', id, {
-      deletedData: existingVeiculo[0]
+    await logAction(req.user.id, 'DELETE', 'veiculos', {
+      deletedData: existingVeiculo[0],
+      resourceId: id
     });
 
     res.json({ message: 'Veículo excluído com sucesso' });
@@ -252,11 +251,9 @@ router.get('/export/xlsx', async (req, res) => {
     const query = `
       SELECT 
         v.*,
-        f.nome as filial_nome,
-        m.nome as motorista_nome
+        f.nome as filial_nome
       FROM veiculos v
       LEFT JOIN filiais f ON v.filial_id = f.id
-      LEFT JOIN motoristas m ON v.motorista_id = m.id
       ORDER BY v.placa
     `;
     
@@ -279,11 +276,9 @@ router.get('/export/pdf', async (req, res) => {
     const query = `
       SELECT 
         v.*,
-        f.nome as filial_nome,
-        m.nome as motorista_nome
+        f.nome as filial_nome
       FROM veiculos v
       LEFT JOIN filiais f ON v.filial_id = f.id
-      LEFT JOIN motoristas m ON v.motorista_id = m.id
       ORDER BY v.placa
     `;
     

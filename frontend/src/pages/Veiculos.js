@@ -297,8 +297,6 @@ const Veiculos = () => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadVeiculos = async () => {
-    if (loading) return; // Evitar múltiplas chamadas simultâneas
-    
     try {
       setLoading(true);
       const response = await api.get('/veiculos');
