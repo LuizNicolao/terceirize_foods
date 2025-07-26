@@ -133,10 +133,27 @@ const ModalContent = styled.div`
   padding: 24px;
   width: 95%;
   max-width: 1400px;
-  max-height: 98vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  max-height: 95vh;
+  overflow-y: auto;
+  
+  /* Personalizar scrollbar */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-green);
+  }
 `;
 
 const ModalHeader = styled.div`
@@ -170,27 +187,6 @@ const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  flex: 1;
-  overflow-y: auto;
-  
-  /* Personalizar scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: var(--primary-green);
-    border-radius: 3px;
-  }
-  
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--dark-green);
-  }
 `;
 
 const FormGroup = styled.div`
@@ -322,7 +318,7 @@ const FormSection = styled.div`
   border-radius: 8px;
   padding: 12px;
   background: #fafafa;
-  height: 400px;
+  min-height: 350px;
   display: flex;
   flex-direction: column;
 `;
@@ -767,7 +763,7 @@ const Veiculos = () => {
 
       {showModal && (
         <Modal onClick={handleCloseModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxHeight: '95vh' }}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
             <ModalHeader>
               <ModalTitle>
                 {isViewMode ? 'Visualizar Veículo' : editingVeiculo ? 'Editar Veículo' : 'Adicionar Veículo'}
