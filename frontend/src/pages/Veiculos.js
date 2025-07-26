@@ -46,26 +46,6 @@ const AddButton = styled.button`
   }
 `;
 
-const AuditButton = styled.button`
-  background: var(--blue);
-  color: var(--white);
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: #1976d2;
-    transform: translateY(-1px);
-  }
-`;
-
 const TableContainer = styled.div`
   background: var(--white);
   border-radius: 12px;
@@ -300,11 +280,10 @@ const Veiculos = () => {
     try {
       setLoading(true);
       const response = await api.get('/veiculos');
-      setVeiculos(response.data || []);
+      setVeiculos(response.data);
     } catch (error) {
       console.error('Erro ao carregar veículos:', error);
       toast.error('Erro ao carregar veículos');
-      setVeiculos([]);
     } finally {
       setLoading(false);
     }
@@ -593,10 +572,10 @@ const Veiculos = () => {
       <Header>
         <Title>Gestão de Veículos</Title>
         <div style={{ display: 'flex', gap: '12px' }}>
-          <AuditButton onClick={handleOpenAuditModal}>
+          <AddButton onClick={handleOpenAuditModal}>
             <FaHistory />
             Auditoria
-          </AuditButton>
+          </AddButton>
           {canCreate('veiculos') && (
             <AddButton onClick={handleAddVeiculo}>
               <FaPlus />
