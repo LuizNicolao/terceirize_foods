@@ -131,30 +131,13 @@ const Modal = styled.div`
 const ModalContent = styled.div`
   background: var(--white);
   border-radius: 12px;
-  padding: 32px;
+  padding: 24px;
   width: 95%;
   max-width: 1400px;
-  max-height: 90vh;
-  overflow-y: auto;
-  
-  /* Personalizar scrollbar */
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: var(--primary-green);
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--dark-green);
-  }
+  max-height: 98vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 `;
 
 const ModalHeader = styled.div`
@@ -187,7 +170,28 @@ const CloseButton = styled.button`
 const Form = styled.form`
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
+  flex: 1;
+  overflow-y: auto;
+  
+  /* Personalizar scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-green);
+  }
 `;
 
 const FormGroup = styled.div`
@@ -199,14 +203,14 @@ const FormGroup = styled.div`
 const Label = styled.label`
   color: var(--dark-gray);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
 `;
 
 const Input = styled.input`
-  padding: 12px 16px;
+  padding: 8px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   transition: all 0.3s ease;
 
   &:focus {
@@ -217,10 +221,10 @@ const Input = styled.input`
 `;
 
 const Select = styled.select`
-  padding: 12px 16px;
+  padding: 8px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   background: var(--white);
   transition: all 0.3s ease;
 
@@ -277,12 +281,12 @@ const EmptyState = styled.div`
 `;
 
 const TextArea = styled.textarea`
-  padding: 12px 16px;
+  padding: 8px 12px;
   border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
+  border-radius: 6px;
+  font-size: 14px;
   resize: vertical;
-  min-height: 100px;
+  min-height: 60px;
   transition: all 0.3s ease;
 
   &:focus {
@@ -295,16 +299,16 @@ const TextArea = styled.textarea`
 const FormGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
   flex: 1;
 `;
 
 const FormGrid2 = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
 `;
 
 const FormGrid3 = styled.div`
@@ -317,40 +321,40 @@ const FormGrid3 = styled.div`
 const FormSection = styled.div`
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  padding: 14px;
+  padding: 12px;
   background: #fafafa;
-  min-height: 400px;
+  min-height: 320px;
   display: flex;
   flex-direction: column;
 `;
 
 const SectionTitle = styled.h3`
   color: var(--dark-gray);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  margin: 0 0 10px 0;
-  padding-bottom: 6px;
+  margin: 0 0 8px 0;
+  padding-bottom: 4px;
   border-bottom: 2px solid var(--primary-green);
 `;
 
 const FirstRow = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 12px;
   align-items: start;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `;
 
 const SecondRow = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 12px;
   align-items: start;
 `;
 
 const Veiculos = () => {
   const [veiculos, setVeiculos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Mudado para false inicialmente
   const [showModal, setShowModal] = useState(false);
   const [editingVeiculo, setEditingVeiculo] = useState(null);
   const [isViewMode, setIsViewMode] = useState(false);
@@ -657,7 +661,6 @@ const Veiculos = () => {
 
   return (
     <Container>
-      {loading && <LoadingSpinner />}
       <Header>
         <Title>Gestão de Veículos</Title>
         <div style={{ display: 'flex', gap: '12px' }}>
@@ -683,81 +686,87 @@ const Veiculos = () => {
         placeholder="Buscar por placa, modelo, marca ou número da frota..."
       />
 
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Placa</Th>
-              <Th>Modelo</Th>
-              <Th>Marca</Th>
-              <Th>Tipo</Th>
-              <Th>Categoria</Th>
-              <Th>Status</Th>
-              <Th>Ações</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredVeiculos.length === 0 ? (
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
+          <LoadingSpinner />
+        </div>
+      ) : (
+        <TableContainer>
+          <Table>
+            <thead>
               <tr>
-                <Td colSpan="7">
-                  <EmptyState>
-                    {searchTerm || statusFilter !== 'todos' 
-                      ? 'Nenhum veículo encontrado com os filtros aplicados'
-                      : 'Nenhum veículo cadastrado'
-                    }
-                  </EmptyState>
-                </Td>
+                <Th>Placa</Th>
+                <Th>Modelo</Th>
+                <Th>Marca</Th>
+                <Th>Tipo</Th>
+                <Th>Categoria</Th>
+                <Th>Status</Th>
+                <Th>Ações</Th>
               </tr>
-            ) : (
-              filteredVeiculos.map((veiculo) => (
-                <tr key={veiculo.id}>
-                  <Td>{veiculo.placa}</Td>
-                  <Td>{veiculo.modelo || '-'}</Td>
-                  <Td>{veiculo.marca || '-'}</Td>
-                  <Td>{getTipoVeiculoLabel(veiculo.tipo_veiculo)}</Td>
-                  <Td>{getCategoriaLabel(veiculo.categoria)}</Td>
-                  <Td>
-                    <StatusBadge status={veiculo.status}>
-                      {getStatusLabel(veiculo.status)}
-                    </StatusBadge>
-                  </Td>
-                  <Td>
-                    <ActionButton
-                      className="view"
-                      title="Visualizar"
-                      onClick={() => handleViewVeiculo(veiculo)}
-                    >
-                      <FaEye />
-                    </ActionButton>
-                    {canEdit('veiculos') && (
-                      <ActionButton
-                        className="edit"
-                        title="Editar"
-                        onClick={() => handleEditVeiculo(veiculo)}
-                      >
-                        <FaEdit />
-                      </ActionButton>
-                    )}
-                    {canDelete('veiculos') && (
-                      <ActionButton
-                        className="delete"
-                        title="Excluir"
-                        onClick={() => handleDeleteVeiculo(veiculo.id)}
-                      >
-                        <FaTrash />
-                      </ActionButton>
-                    )}
+            </thead>
+            <tbody>
+              {filteredVeiculos.length === 0 ? (
+                <tr>
+                  <Td colSpan="7">
+                    <EmptyState>
+                      {searchTerm || statusFilter !== 'todos' 
+                        ? 'Nenhum veículo encontrado com os filtros aplicados'
+                        : 'Nenhum veículo cadastrado'
+                      }
+                    </EmptyState>
                   </Td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </TableContainer>
+              ) : (
+                filteredVeiculos.map((veiculo) => (
+                  <tr key={veiculo.id}>
+                    <Td>{veiculo.placa}</Td>
+                    <Td>{veiculo.modelo || '-'}</Td>
+                    <Td>{veiculo.marca || '-'}</Td>
+                    <Td>{getTipoVeiculoLabel(veiculo.tipo_veiculo)}</Td>
+                    <Td>{getCategoriaLabel(veiculo.categoria)}</Td>
+                    <Td>
+                      <StatusBadge status={veiculo.status}>
+                        {getStatusLabel(veiculo.status)}
+                      </StatusBadge>
+                    </Td>
+                    <Td>
+                      <ActionButton
+                        className="view"
+                        title="Visualizar"
+                        onClick={() => handleViewVeiculo(veiculo)}
+                      >
+                        <FaEye />
+                      </ActionButton>
+                      {canEdit('veiculos') && (
+                        <ActionButton
+                          className="edit"
+                          title="Editar"
+                          onClick={() => handleEditVeiculo(veiculo)}
+                        >
+                          <FaEdit />
+                        </ActionButton>
+                      )}
+                      {canDelete('veiculos') && (
+                        <ActionButton
+                          className="delete"
+                          title="Excluir"
+                          onClick={() => handleDeleteVeiculo(veiculo.id)}
+                        >
+                          <FaTrash />
+                        </ActionButton>
+                      )}
+                    </Td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        </TableContainer>
+      )}
 
       {showModal && (
         <Modal onClick={handleCloseModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxHeight: '95vh' }}>
             <ModalHeader>
               <ModalTitle>
                 {isViewMode ? 'Visualizar Veículo' : editingVeiculo ? 'Editar Veículo' : 'Adicionar Veículo'}
