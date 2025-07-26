@@ -257,6 +257,76 @@ const EmptyState = styled.div`
   color: var(--gray);
 `;
 
+const TextArea = styled.textarea`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
+  }
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+`;
+
+const FormGrid2 = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+`;
+
+const FormGrid3 = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+`;
+
+const FormSection = styled.div`
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 14px;
+  background: #fafafa;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+`;
+
+const SectionTitle = styled.h3`
+  color: var(--dark-gray);
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--primary-green);
+`;
+
+const FirstRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  align-items: stretch;
+`;
+
+const SecondRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  align-items: stretch;
+`;
+
 const Veiculos = () => {
   const [veiculos, setVeiculos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -677,407 +747,508 @@ const Veiculos = () => {
             </ModalHeader>
 
             <Form onSubmit={handleSubmit(onSubmit)}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <FormGroup>
-                  <Label>Placa *</Label>
-                  <Input
-                    {...register('placa', { required: 'Placa é obrigatória' })}
-                    disabled={isViewMode}
-                    placeholder="ABC-1234"
-                  />
-                  {errors.placa && <span style={{ color: 'red', fontSize: '12px' }}>{errors.placa.message}</span>}
-                </FormGroup>
+              {/* Primeira Linha - 3 Cards */}
+              <FirstRow>
+                {/* Card 1: Informações Básicas */}
+                <FormSection>
+                  <SectionTitle>Informações Básicas</SectionTitle>
+                  <FormGrid>
+                    <FormGroup>
+                      <Label>Placa *</Label>
+                      <Input
+                        type="text"
+                        placeholder="Ex: ABC-1234"
+                        disabled={isViewMode}
+                        {...register('placa', { required: 'Placa é obrigatória' })}
+                      />
+                      {errors.placa && <span style={{ color: 'red', fontSize: '11px' }}>{errors.placa.message}</span>}
+                    </FormGroup>
 
-                <FormGroup>
-                  <Label>RENAVAM</Label>
-                  <Input
-                    {...register('renavam')}
-                    disabled={isViewMode}
-                    placeholder="12345678901"
-                  />
-                </FormGroup>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>RENAVAM</Label>
+                        <Input
+                          type="text"
+                          placeholder="RENAVAM"
+                          disabled={isViewMode}
+                          {...register('renavam')}
+                        />
+                        {errors.renavam && <span style={{ color: 'red', fontSize: '11px' }}>{errors.renavam.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Chassi</Label>
-                  <Input
-                    {...register('chassi')}
-                    disabled={isViewMode}
-                    placeholder="9BWZZZ377VT004251"
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Chassi</Label>
+                        <Input
+                          type="text"
+                          placeholder="Chassi"
+                          disabled={isViewMode}
+                          {...register('chassi')}
+                        />
+                        {errors.chassi && <span style={{ color: 'red', fontSize: '11px' }}>{errors.chassi.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Modelo</Label>
-                  <Input
-                    {...register('modelo')}
-                    disabled={isViewMode}
-                    placeholder="Civic"
-                  />
-                </FormGroup>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Marca</Label>
+                        <Input
+                          type="text"
+                          placeholder="Ex: Ford"
+                          disabled={isViewMode}
+                          {...register('marca')}
+                        />
+                        {errors.marca && <span style={{ color: 'red', fontSize: '11px' }}>{errors.marca.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Marca</Label>
-                  <Input
-                    {...register('marca')}
-                    disabled={isViewMode}
-                    placeholder="Honda"
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Modelo</Label>
+                        <Input
+                          type="text"
+                          placeholder="Ex: Fiesta"
+                          disabled={isViewMode}
+                          {...register('modelo')}
+                        />
+                        {errors.modelo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.modelo.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Fabricante</Label>
-                  <Input
-                    {...register('fabricante')}
-                    disabled={isViewMode}
-                    placeholder="Honda Motor Co."
-                  />
-                </FormGroup>
+                    <FormGroup>
+                      <Label>Fabricante</Label>
+                      <Input
+                        type="text"
+                        placeholder="Fabricante"
+                        disabled={isViewMode}
+                        {...register('fabricante')}
+                      />
+                      {errors.fabricante && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fabricante.message}</span>}
+                    </FormGroup>
 
-                <FormGroup>
-                  <Label>Ano de Fabricação</Label>
-                  <Input
-                    type="number"
-                    {...register('ano_fabricacao')}
-                    disabled={isViewMode}
-                    placeholder="2020"
-                  />
-                </FormGroup>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Ano de Fabricação</Label>
+                        <Input
+                          type="number"
+                          placeholder="Ex: 2020"
+                          disabled={isViewMode}
+                          {...register('ano_fabricacao')}
+                        />
+                        {errors.ano_fabricacao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.ano_fabricacao.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Tipo de Veículo</Label>
-                  <Select {...register('tipo_veiculo')} disabled={isViewMode}>
-                    <option value="">Selecione...</option>
-                    <option value="passeio">Passeio</option>
-                    <option value="caminhao">Caminhão</option>
-                    <option value="moto">Moto</option>
-                    <option value="utilitario">Utilitário</option>
-                  </Select>
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Tipo de Veículo</Label>
+                        <Select disabled={isViewMode} {...register('tipo_veiculo')}>
+                          <option value="">Selecione...</option>
+                          <option value="passeio">Passeio</option>
+                          <option value="caminhao">Caminhão</option>
+                          <option value="moto">Moto</option>
+                          <option value="utilitario">Utilitário</option>
+                        </Select>
+                        {errors.tipo_veiculo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.tipo_veiculo.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Carroceria</Label>
-                  <Select {...register('carroceria')} disabled={isViewMode}>
-                    <option value="">Selecione...</option>
-                    <option value="Bau">Baú</option>
-                    <option value="Refrigerado">Refrigerado</option>
-                    <option value="Bipartido">Bipartido</option>
-                    <option value="Grade Baixa">Grade Baixa</option>
-                    <option value="Sider">Sider</option>
-                    <option value="Graneleiro">Graneleiro</option>
-                    <option value="Tanque">Tanque</option>
-                    <option value="Cacamba">Caçamba</option>
-                  </Select>
-                </FormGroup>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Carroceria</Label>
+                        <Select disabled={isViewMode} {...register('carroceria')}>
+                          <option value="">Selecione...</option>
+                          <option value="Bau">Baú</option>
+                          <option value="Refrigerado">Refrigerado</option>
+                          <option value="Bipartido">Bipartido</option>
+                          <option value="Grade Baixa">Grade Baixa</option>
+                          <option value="Sider">Sider</option>
+                          <option value="Graneleiro">Graneleiro</option>
+                          <option value="Tanque">Tanque</option>
+                          <option value="Cacamba">Caçamba</option>
+                        </Select>
+                        {errors.carroceria && <span style={{ color: 'red', fontSize: '11px' }}>{errors.carroceria.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Combustível</Label>
-                  <Select {...register('combustivel')} disabled={isViewMode}>
-                    <option value="">Selecione...</option>
-                    <option value="gasolina">Gasolina</option>
-                    <option value="diesel">Diesel</option>
-                    <option value="etanol">Etanol</option>
-                    <option value="flex">Flex</option>
-                    <option value="GNV">GNV</option>
-                    <option value="eletrico">Elétrico</option>
-                  </Select>
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Combustível</Label>
+                        <Select disabled={isViewMode} {...register('combustivel')}>
+                          <option value="">Selecione...</option>
+                          <option value="gasolina">Gasolina</option>
+                          <option value="diesel">Diesel</option>
+                          <option value="etanol">Etanol</option>
+                          <option value="flex">Flex</option>
+                          <option value="GNV">GNV</option>
+                          <option value="eletrico">Elétrico</option>
+                        </Select>
+                        {errors.combustivel && <span style={{ color: 'red', fontSize: '11px' }}>{errors.combustivel.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Categoria</Label>
-                  <Select {...register('categoria')} disabled={isViewMode}>
-                    <option value="">Selecione...</option>
-                    <option value="Frota">Frota</option>
-                    <option value="Agregado">Agregado</option>
-                    <option value="Terceiro">Terceiro</option>
-                  </Select>
-                </FormGroup>
+                    <FormGroup>
+                      <Label>Categoria</Label>
+                      <Select disabled={isViewMode} {...register('categoria')}>
+                        <option value="">Selecione...</option>
+                        <option value="Frota">Frota</option>
+                        <option value="Agregado">Agregado</option>
+                        <option value="Terceiro">Terceiro</option>
+                      </Select>
+                      {errors.categoria && <span style={{ color: 'red', fontSize: '11px' }}>{errors.categoria.message}</span>}
+                    </FormGroup>
+                  </FormGrid>
+                </FormSection>
 
-                <FormGroup>
-                  <Label>Capacidade de Carga (kg)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register('capacidade_carga')}
-                    disabled={isViewMode}
-                    placeholder="1000.00"
-                  />
-                </FormGroup>
+                {/* Card 2: Capacidades e Especificações */}
+                <FormSection>
+                  <SectionTitle>Capacidades e Especificações</SectionTitle>
+                  <FormGrid>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Capacidade de Carga (kg)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 1000.00"
+                          disabled={isViewMode}
+                          {...register('capacidade_carga')}
+                        />
+                        {errors.capacidade_carga && <span style={{ color: 'red', fontSize: '11px' }}>{errors.capacidade_carga.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Capacidade de Volume (m³)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register('capacidade_volume')}
-                    disabled={isViewMode}
-                    placeholder="10.00"
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Capacidade de Volume (m³)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 10.00"
+                          disabled={isViewMode}
+                          {...register('capacidade_volume')}
+                        />
+                        {errors.capacidade_volume && <span style={{ color: 'red', fontSize: '11px' }}>{errors.capacidade_volume.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Número de Eixos</Label>
-                  <Input
-                    type="number"
-                    {...register('numero_eixos')}
-                    disabled={isViewMode}
-                    placeholder="2"
-                  />
-                </FormGroup>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Número de Eixos</Label>
+                        <Input
+                          type="number"
+                          placeholder="Ex: 2"
+                          disabled={isViewMode}
+                          {...register('numero_eixos')}
+                        />
+                        {errors.numero_eixos && <span style={{ color: 'red', fontSize: '11px' }}>{errors.numero_eixos.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Tara (kg)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register('tara')}
-                    disabled={isViewMode}
-                    placeholder="1500.00"
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Tipo de Tração</Label>
+                        <Select disabled={isViewMode} {...register('tipo_tracao')}>
+                          <option value="">Selecione...</option>
+                          <option value="4x2">4x2</option>
+                          <option value="4x4">4x4</option>
+                          <option value="dianteira">Dianteira</option>
+                          <option value="traseira">Traseira</option>
+                        </Select>
+                        {errors.tipo_tracao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.tipo_tracao.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Peso Bruto Total (kg)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register('peso_bruto_total')}
-                    disabled={isViewMode}
-                    placeholder="3500.00"
-                  />
-                </FormGroup>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Tara (kg)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 2000.00"
+                          disabled={isViewMode}
+                          {...register('tara')}
+                        />
+                        {errors.tara && <span style={{ color: 'red', fontSize: '11px' }}>{errors.tara.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Potência do Motor (cv)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register('potencia_motor')}
-                    disabled={isViewMode}
-                    placeholder="120.00"
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Peso Bruto Total (kg)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 5000.00"
+                          disabled={isViewMode}
+                          {...register('peso_bruto_total')}
+                        />
+                        {errors.peso_bruto_total && <span style={{ color: 'red', fontSize: '11px' }}>{errors.peso_bruto_total.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Tipo de Tração</Label>
-                  <Select {...register('tipo_tracao')} disabled={isViewMode}>
-                    <option value="">Selecione...</option>
-                    <option value="4x2">4x2</option>
-                    <option value="4x4">4x4</option>
-                    <option value="dianteira">Dianteira</option>
-                    <option value="traseira">Traseira</option>
-                  </Select>
-                </FormGroup>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Potência do Motor (cv)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 100.00"
+                          disabled={isViewMode}
+                          {...register('potencia_motor')}
+                        />
+                        {errors.potencia_motor && <span style={{ color: 'red', fontSize: '11px' }}>{errors.potencia_motor.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Quilometragem Atual (km)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register('quilometragem_atual')}
-                    disabled={isViewMode}
-                    placeholder="50000.00"
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Quilometragem Atual (km)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 50000.00"
+                          disabled={isViewMode}
+                          {...register('quilometragem_atual')}
+                        />
+                        {errors.quilometragem_atual && <span style={{ color: 'red', fontSize: '11px' }}>{errors.quilometragem_atual.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Data de Emplacamento</Label>
-                  <Input
-                    type="date"
-                    {...register('data_emplacamento')}
-                    disabled={isViewMode}
-                  />
-                </FormGroup>
+                    <FormGroup>
+                      <Label>Número da Frota</Label>
+                      <Input
+                        type="text"
+                        placeholder="Ex: F001"
+                        disabled={isViewMode}
+                        {...register('numero_frota')}
+                      />
+                      {errors.numero_frota && <span style={{ color: 'red', fontSize: '11px' }}>{errors.numero_frota.message}</span>}
+                    </FormGroup>
+                  </FormGrid>
+                </FormSection>
 
-                <FormGroup>
-                  <Label>Vencimento do Licenciamento</Label>
-                  <Input
-                    type="date"
-                    {...register('vencimento_licenciamento')}
-                    disabled={isViewMode}
-                  />
-                </FormGroup>
+                {/* Card 3: Documentação e Vencimentos */}
+                <FormSection>
+                  <SectionTitle>Documentação e Vencimentos</SectionTitle>
+                  <FormGrid>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Data de Emplacamento</Label>
+                        <Input
+                          type="date"
+                          disabled={isViewMode}
+                          {...register('data_emplacamento')}
+                        />
+                        {errors.data_emplacamento && <span style={{ color: 'red', fontSize: '11px' }}>{errors.data_emplacamento.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Vencimento do IPVA</Label>
-                  <Input
-                    type="date"
-                    {...register('vencimento_ipva')}
-                    disabled={isViewMode}
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Vencimento Licenciamento</Label>
+                        <Input
+                          type="date"
+                          disabled={isViewMode}
+                          {...register('vencimento_licenciamento')}
+                        />
+                        {errors.vencimento_licenciamento && <span style={{ color: 'red', fontSize: '11px' }}>{errors.vencimento_licenciamento.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Vencimento do DPVAT</Label>
-                  <Input
-                    type="date"
-                    {...register('vencimento_dpvat')}
-                    disabled={isViewMode}
-                  />
-                </FormGroup>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Vencimento IPVA</Label>
+                        <Input
+                          type="date"
+                          disabled={isViewMode}
+                          {...register('vencimento_ipva')}
+                        />
+                        {errors.vencimento_ipva && <span style={{ color: 'red', fontSize: '11px' }}>{errors.vencimento_ipva.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Número da Apólice de Seguro</Label>
-                  <Input
-                    {...register('numero_apolice_seguro')}
-                    disabled={isViewMode}
-                    placeholder="123456789"
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Vencimento DPVAT</Label>
+                        <Input
+                          type="date"
+                          disabled={isViewMode}
+                          {...register('vencimento_dpvat')}
+                        />
+                        {errors.vencimento_dpvat && <span style={{ color: 'red', fontSize: '11px' }}>{errors.vencimento_dpvat.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Situação Documental</Label>
-                  <Select {...register('situacao_documental')} disabled={isViewMode}>
-                    <option value="">Selecione...</option>
-                    <option value="regular">Regular</option>
-                    <option value="alienado">Alienado</option>
-                    <option value="bloqueado">Bloqueado</option>
-                  </Select>
-                </FormGroup>
+                    <FormGroup>
+                      <Label>Número da Apólice de Seguro</Label>
+                      <Input
+                        type="text"
+                        placeholder="Número da apólice"
+                        disabled={isViewMode}
+                        {...register('numero_apolice_seguro')}
+                      />
+                      {errors.numero_apolice_seguro && <span style={{ color: 'red', fontSize: '11px' }}>{errors.numero_apolice_seguro.message}</span>}
+                    </FormGroup>
 
-                <FormGroup>
-                  <Label>Data da Última Revisão</Label>
-                  <Input
-                    type="date"
-                    {...register('data_ultima_revisao')}
-                    disabled={isViewMode}
-                  />
-                </FormGroup>
+                    <FormGroup>
+                      <Label>Situação Documental</Label>
+                      <Select disabled={isViewMode} {...register('situacao_documental')}>
+                        <option value="">Selecione...</option>
+                        <option value="regular">Regular</option>
+                        <option value="alienado">Alienado</option>
+                        <option value="bloqueado">Bloqueado</option>
+                      </Select>
+                      {errors.situacao_documental && <span style={{ color: 'red', fontSize: '11px' }}>{errors.situacao_documental.message}</span>}
+                    </FormGroup>
 
-                <FormGroup>
-                  <Label>Quilometragem da Próxima Revisão (km)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register('quilometragem_proxima_revisao')}
-                    disabled={isViewMode}
-                    placeholder="60000.00"
-                  />
-                </FormGroup>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Próxima Inspeção Veicular</Label>
+                        <Input
+                          type="date"
+                          disabled={isViewMode}
+                          {...register('proxima_inspecao_veicular')}
+                        />
+                        {errors.proxima_inspecao_veicular && <span style={{ color: 'red', fontSize: '11px' }}>{errors.proxima_inspecao_veicular.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Data da Última Troca de Óleo</Label>
-                  <Input
-                    type="date"
-                    {...register('data_ultima_troca_oleo')}
-                    disabled={isViewMode}
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Vencimento Alinhamento/Balanceamento</Label>
+                        <Input
+                          type="date"
+                          disabled={isViewMode}
+                          {...register('vencimento_alinhamento_balanceamento')}
+                        />
+                        {errors.vencimento_alinhamento_balanceamento && <span style={{ color: 'red', fontSize: '11px' }}>{errors.vencimento_alinhamento_balanceamento.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
+                  </FormGrid>
+                </FormSection>
+              </FirstRow>
 
-                <FormGroup>
-                  <Label>Vencimento do Alinhamento/Balanceamento</Label>
-                  <Input
-                    type="date"
-                    {...register('vencimento_alinhamento_balanceamento')}
-                    disabled={isViewMode}
-                  />
-                </FormGroup>
+              {/* Segunda Linha - 2 Cards */}
+              <SecondRow>
+                {/* Card 4: Manutenção e Status */}
+                <FormSection>
+                  <SectionTitle>Manutenção e Status</SectionTitle>
+                  <FormGrid>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Data da Última Revisão</Label>
+                        <Input
+                          type="date"
+                          disabled={isViewMode}
+                          {...register('data_ultima_revisao')}
+                        />
+                        {errors.data_ultima_revisao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.data_ultima_revisao.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Próxima Inspeção Veicular</Label>
-                  <Input
-                    type="date"
-                    {...register('proxima_inspecao_veicular')}
-                    disabled={isViewMode}
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Data da Última Troca de Óleo</Label>
+                        <Input
+                          type="date"
+                          disabled={isViewMode}
+                          {...register('data_ultima_troca_oleo')}
+                        />
+                        {errors.data_ultima_troca_oleo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.data_ultima_troca_oleo.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Status</Label>
-                  <Select {...register('status')} disabled={isViewMode}>
-                    <option value="ativo">Ativo</option>
-                    <option value="inativo">Inativo</option>
-                    <option value="manutencao">Em Manutenção</option>
-                  </Select>
-                </FormGroup>
+                    <FormGroup>
+                      <Label>Quilometragem Próxima Revisão (km)</Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="Ex: 60000.00"
+                        disabled={isViewMode}
+                        {...register('quilometragem_proxima_revisao')}
+                      />
+                      {errors.quilometragem_proxima_revisao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.quilometragem_proxima_revisao.message}</span>}
+                    </FormGroup>
 
-                <FormGroup>
-                  <Label>Status Detalhado</Label>
-                  <Select {...register('status_detalhado')} disabled={isViewMode}>
-                    <option value="">Selecione...</option>
-                    <option value="Ativo">Ativo</option>
-                    <option value="Em manutencao">Em Manutenção</option>
-                    <option value="Alugado">Alugado</option>
-                    <option value="Vendido">Vendido</option>
-                  </Select>
-                </FormGroup>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Status</Label>
+                        <Select disabled={isViewMode} {...register('status')}>
+                          <option value="">Selecione...</option>
+                          <option value="ativo">Ativo</option>
+                          <option value="inativo">Inativo</option>
+                          <option value="manutencao">Em Manutenção</option>
+                        </Select>
+                        {errors.status && <span style={{ color: 'red', fontSize: '11px' }}>{errors.status.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Data de Aquisição</Label>
-                  <Input
-                    type="date"
-                    {...register('data_aquisicao')}
-                    disabled={isViewMode}
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Status Detalhado</Label>
+                        <Select disabled={isViewMode} {...register('status_detalhado')}>
+                          <option value="">Selecione...</option>
+                          <option value="Ativo">Ativo</option>
+                          <option value="Em manutencao">Em Manutenção</option>
+                          <option value="Alugado">Alugado</option>
+                          <option value="Vendido">Vendido</option>
+                        </Select>
+                        {errors.status_detalhado && <span style={{ color: 'red', fontSize: '11px' }}>{errors.status_detalhado.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
+                  </FormGrid>
+                </FormSection>
 
-                <FormGroup>
-                  <Label>Valor de Compra (R$)</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    {...register('valor_compra')}
-                    disabled={isViewMode}
-                    placeholder="50000.00"
-                  />
-                </FormGroup>
+                {/* Card 5: Financeiro e Observações */}
+                <FormSection>
+                  <SectionTitle>Financeiro e Observações</SectionTitle>
+                  <FormGrid>
+                    <FormGrid2>
+                      <FormGroup>
+                        <Label>Data de Aquisição</Label>
+                        <Input
+                          type="date"
+                          disabled={isViewMode}
+                          {...register('data_aquisicao')}
+                        />
+                        {errors.data_aquisicao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.data_aquisicao.message}</span>}
+                      </FormGroup>
 
-                <FormGroup>
-                  <Label>Fornecedor</Label>
-                  <Input
-                    {...register('fornecedor')}
-                    disabled={isViewMode}
-                    placeholder="Concessionária ABC"
-                  />
-                </FormGroup>
+                      <FormGroup>
+                        <Label>Valor de Compra (R$)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="Ex: 50000.00"
+                          disabled={isViewMode}
+                          {...register('valor_compra')}
+                        />
+                        {errors.valor_compra && <span style={{ color: 'red', fontSize: '11px' }}>{errors.valor_compra.message}</span>}
+                      </FormGroup>
+                    </FormGrid2>
 
-                <FormGroup>
-                  <Label>Número da Frota</Label>
-                  <Input
-                    {...register('numero_frota')}
-                    disabled={isViewMode}
-                    placeholder="F001"
-                  />
-                </FormGroup>
+                    <FormGroup>
+                      <Label>Fornecedor</Label>
+                      <Input
+                        type="text"
+                        placeholder="Nome do fornecedor"
+                        disabled={isViewMode}
+                        {...register('fornecedor')}
+                      />
+                      {errors.fornecedor && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fornecedor.message}</span>}
+                    </FormGroup>
 
-                <FormGroup>
-                  <Label>Situação Financeira</Label>
-                  <Select {...register('situacao_financeira')} disabled={isViewMode}>
-                    <option value="">Selecione...</option>
-                    <option value="Proprio">Próprio</option>
-                    <option value="Financiado">Financiado</option>
-                    <option value="leasing">Leasing</option>
-                  </Select>
-                </FormGroup>
-              </div>
+                    <FormGroup>
+                      <Label>Situação Financeira</Label>
+                      <Select disabled={isViewMode} {...register('situacao_financeira')}>
+                        <option value="">Selecione...</option>
+                        <option value="Proprio">Próprio</option>
+                        <option value="Financiado">Financiado</option>
+                        <option value="leasing">Leasing</option>
+                      </Select>
+                      {errors.situacao_financeira && <span style={{ color: 'red', fontSize: '11px' }}>{errors.situacao_financeira.message}</span>}
+                    </FormGroup>
 
-              <FormGroup>
-                <Label>Observações</Label>
-                <textarea
-                  {...register('observacoes')}
-                  disabled={isViewMode}
-                  placeholder="Observações sobre o veículo..."
-                  style={{
-                    padding: '12px 16px',
-                    border: '2px solid #e0e0e0',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    minHeight: '100px',
-                    resize: 'vertical',
-                    fontFamily: 'inherit'
-                  }}
-                />
-              </FormGroup>
+                    <FormGroup>
+                      <Label>Observações</Label>
+                      <TextArea
+                        placeholder="Observações sobre o veículo..."
+                        disabled={isViewMode}
+                        {...register('observacoes')}
+                      />
+                      {errors.observacoes && <span style={{ color: 'red', fontSize: '11px' }}>{errors.observacoes.message}</span>}
+                    </FormGroup>
+                  </FormGrid>
+                </FormSection>
+              </SecondRow>
 
-              {!isViewMode && (
-                <ButtonGroup>
-                  <Button type="button" className="secondary" onClick={handleCloseModal}>
-                    Cancelar
-                  </Button>
+              {/* Botões */}
+              <ButtonGroup>
+                {!isViewMode && (
                   <Button type="submit" className="primary">
-                    {editingVeiculo ? 'Atualizar' : 'Criar'}
+                    {editingVeiculo ? 'Atualizar' : 'Salvar'}
                   </Button>
-                </ButtonGroup>
-              )}
+                )}
+                <Button type="button" onClick={handleCloseModal} className="secondary">
+                  {isViewMode ? 'Fechar' : 'Cancelar'}
+                </Button>
+              </ButtonGroup>
             </Form>
           </ModalContent>
         </Modal>
