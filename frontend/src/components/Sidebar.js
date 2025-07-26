@@ -27,7 +27,8 @@ import {
   FaStar,
   FaRegStar,
   FaRoute,
-  FaCar
+  FaCar,
+  FaUserTie
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -377,6 +378,7 @@ const menuGroups = [
     title: 'Frotas',
     items: [
       { path: '/veiculos', icon: FaCar, label: 'Veículos', screen: 'veiculos' },
+      { path: '/motoristas', icon: FaUserTie, label: 'Motoristas', screen: 'motoristas' },
     ]
   },
   {
