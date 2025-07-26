@@ -709,6 +709,14 @@ const NovaCotacao = () => {
   };
 
   const updateFornecedor = (fornecedorId, field, value) => {
+    console.log('🔍 updateFornecedor chamado:', {
+      fornecedorId: fornecedorId,
+      field: field,
+      value: value,
+      valueType: typeof value,
+      valueLength: value ? value.length : 0
+    });
+    
     setFornecedores(fornecedores.map(f => 
       f.id === fornecedorId ? { ...f, [field]: value } : f
     ));

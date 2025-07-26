@@ -193,7 +193,9 @@ const FornecedorSearch = ({
   const handleInputChange = (e) => {
     const term = e.target.value;
     setSearchTerm(term);
-    onChange(term);
+    
+    // Não chamar onChange aqui para evitar sobrescrever o nome completo
+    // onChange será chamado apenas quando um fornecedor for selecionado
     
     if (term.length >= 2) {
       searchFornecedores(term);
@@ -204,13 +206,23 @@ const FornecedorSearch = ({
   };
 
   const handleSelectFornecedor = (fornecedor) => {
+    // Sempre usar o nome completo: razão social ou nome fantasia
     const nomeCompleto = fornecedor.razao_social || fornecedor.nome_fantasia;
+    
+    console.log('🔍 Fornecedor selecionado:', {
+      fornecedor: fornecedor,
+      razao_social: fornecedor.razao_social,
+      nome_fantasia: fornecedor.nome_fantasia,
+      nomeCompleto: nomeCompleto
+    });
+    
     setSelectedFornecedor(fornecedor);
     setSearchTerm(nomeCompleto);
     setShowDropdown(false);
     setFornecedores([]);
     
     // Chamar onChange com o nome completo do fornecedor
+    console.log('🔍 Chamando onChange com nome completo:', nomeCompleto);
     onChange(nomeCompleto);
     
     if (onSelect) {
@@ -223,6 +235,8 @@ const FornecedorSearch = ({
     setSelectedFornecedor(null);
     setFornecedores([]);
     setShowDropdown(false);
+    
+    // Limpar o valor no componente pai
     onChange('');
     
     if (onSelect) {
