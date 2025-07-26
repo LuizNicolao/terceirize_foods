@@ -26,7 +26,8 @@ import {
   FaSearch,
   FaStar,
   FaRegStar,
-  FaRoute
+  FaRoute,
+  FaCar
 } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -369,8 +370,13 @@ const menuGroups = [
     title: 'Logística',
     items: [
       { path: '/rotas', icon: FaRoute, label: 'Rotas', screen: 'rotas' },
-      { path: '/frotas', icon: FaTruck, label: 'Frotas', screen: 'frotas' },
       { path: '/unidades-escolares', icon: FaBuilding, label: 'Unidades Escolares', screen: 'unidades_escolares' },
+    ]
+  },
+  {
+    title: 'Frotas',
+    items: [
+      
     ]
   },
   {
@@ -407,6 +413,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     'Principal': true,
     'Suprimentos': true,
     'Logística': true,
+    'Frotas': true,
     'Cadastros': true,
     'Configurações': true
   });
