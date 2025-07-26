@@ -6,7 +6,6 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import CadastroFilterBar from '../components/CadastroFilterBar';
-import LoadingSpinner from '../components/LoadingSpinner';
 
 const Container = styled.div`
   padding: 24px;
@@ -323,7 +322,7 @@ const FormSection = styled.div`
   border-radius: 8px;
   padding: 12px;
   background: #fafafa;
-  min-height: 320px;
+  height: 400px;
   display: flex;
   flex-direction: column;
 `;
@@ -354,7 +353,7 @@ const SecondRow = styled.div`
 
 const Veiculos = () => {
   const [veiculos, setVeiculos] = useState([]);
-  const [loading, setLoading] = useState(false); // Mudado para false inicialmente
+  const [loading, setLoading] = useState(true); // Voltado para true como nas outras páginas
   const [showModal, setShowModal] = useState(false);
   const [editingVeiculo, setEditingVeiculo] = useState(null);
   const [isViewMode, setIsViewMode] = useState(false);
@@ -659,6 +658,14 @@ const Veiculos = () => {
     return matchesSearch && matchesStatus;
   });
 
+  if (loading) {
+    return (
+      <Container>
+        <div>Carregando veículos...</div>
+      </Container>
+    );
+  }
+
   return (
     <Container>
       <Header>
@@ -686,83 +693,77 @@ const Veiculos = () => {
         placeholder="Buscar por placa, modelo, marca ou número da frota..."
       />
 
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '50px' }}>
-          <LoadingSpinner />
-        </div>
-      ) : (
-        <TableContainer>
-          <Table>
-            <thead>
+      <TableContainer>
+        <Table>
+          <thead>
+            <tr>
+              <Th>Placa</Th>
+              <Th>Modelo</Th>
+              <Th>Marca</Th>
+              <Th>Tipo</Th>
+              <Th>Categoria</Th>
+              <Th>Status</Th>
+              <Th>Ações</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredVeiculos.length === 0 ? (
               <tr>
-                <Th>Placa</Th>
-                <Th>Modelo</Th>
-                <Th>Marca</Th>
-                <Th>Tipo</Th>
-                <Th>Categoria</Th>
-                <Th>Status</Th>
-                <Th>Ações</Th>
+                <Td colSpan="7">
+                  <EmptyState>
+                    {searchTerm || statusFilter !== 'todos' 
+                      ? 'Nenhum veículo encontrado com os filtros aplicados'
+                      : 'Nenhum veículo cadastrado'
+                    }
+                  </EmptyState>
+                </Td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredVeiculos.length === 0 ? (
-                <tr>
-                  <Td colSpan="7">
-                    <EmptyState>
-                      {searchTerm || statusFilter !== 'todos' 
-                        ? 'Nenhum veículo encontrado com os filtros aplicados'
-                        : 'Nenhum veículo cadastrado'
-                      }
-                    </EmptyState>
+            ) : (
+              filteredVeiculos.map((veiculo) => (
+                <tr key={veiculo.id}>
+                  <Td>{veiculo.placa}</Td>
+                  <Td>{veiculo.modelo || '-'}</Td>
+                  <Td>{veiculo.marca || '-'}</Td>
+                  <Td>{getTipoVeiculoLabel(veiculo.tipo_veiculo)}</Td>
+                  <Td>{getCategoriaLabel(veiculo.categoria)}</Td>
+                  <Td>
+                    <StatusBadge status={veiculo.status}>
+                      {getStatusLabel(veiculo.status)}
+                    </StatusBadge>
+                  </Td>
+                  <Td>
+                    <ActionButton
+                      className="view"
+                      title="Visualizar"
+                      onClick={() => handleViewVeiculo(veiculo)}
+                    >
+                      <FaEye />
+                    </ActionButton>
+                    {canEdit('veiculos') && (
+                      <ActionButton
+                        className="edit"
+                        title="Editar"
+                        onClick={() => handleEditVeiculo(veiculo)}
+                      >
+                        <FaEdit />
+                      </ActionButton>
+                    )}
+                    {canDelete('veiculos') && (
+                      <ActionButton
+                        className="delete"
+                        title="Excluir"
+                        onClick={() => handleDeleteVeiculo(veiculo.id)}
+                      >
+                        <FaTrash />
+                      </ActionButton>
+                    )}
                   </Td>
                 </tr>
-              ) : (
-                filteredVeiculos.map((veiculo) => (
-                  <tr key={veiculo.id}>
-                    <Td>{veiculo.placa}</Td>
-                    <Td>{veiculo.modelo || '-'}</Td>
-                    <Td>{veiculo.marca || '-'}</Td>
-                    <Td>{getTipoVeiculoLabel(veiculo.tipo_veiculo)}</Td>
-                    <Td>{getCategoriaLabel(veiculo.categoria)}</Td>
-                    <Td>
-                      <StatusBadge status={veiculo.status}>
-                        {getStatusLabel(veiculo.status)}
-                      </StatusBadge>
-                    </Td>
-                    <Td>
-                      <ActionButton
-                        className="view"
-                        title="Visualizar"
-                        onClick={() => handleViewVeiculo(veiculo)}
-                      >
-                        <FaEye />
-                      </ActionButton>
-                      {canEdit('veiculos') && (
-                        <ActionButton
-                          className="edit"
-                          title="Editar"
-                          onClick={() => handleEditVeiculo(veiculo)}
-                        >
-                          <FaEdit />
-                        </ActionButton>
-                      )}
-                      {canDelete('veiculos') && (
-                        <ActionButton
-                          className="delete"
-                          title="Excluir"
-                          onClick={() => handleDeleteVeiculo(veiculo.id)}
-                        >
-                          <FaTrash />
-                        </ActionButton>
-                      )}
-                    </Td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-        </TableContainer>
-      )}
+              ))
+            )}
+          </tbody>
+        </Table>
+      </TableContainer>
 
       {showModal && (
         <Modal onClick={handleCloseModal}>
