@@ -1285,6 +1285,7 @@ const Permissoes = () => {
       case 'filiais': return 'Filiais';
       case 'rotas': return 'Rotas';
       case 'cotacao': return 'Cotação';
+      case 'veiculos': return 'Veículos';
       default: return screen;
     }
   };

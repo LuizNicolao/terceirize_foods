@@ -376,7 +376,7 @@ const menuGroups = [
   {
     title: 'Frotas',
     items: [
-      
+      { path: '/veiculos', icon: FaCar, label: 'Veículos', screen: 'veiculos' },
     ]
   },
   {

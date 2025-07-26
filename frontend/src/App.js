@@ -20,6 +20,7 @@ import Marcas from './pages/Marcas';
 import Classes from './pages/Classes';
 import NomeGenericoProduto from './pages/NomeGenericoProduto';
 import Permissoes from './pages/Permissoes';
+import Veiculos from './pages/Veiculos';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -212,6 +213,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="nome_generico_produto">
               <NomeGenericoProduto />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/veiculos" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="veiculos">
+              <Veiculos />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 
