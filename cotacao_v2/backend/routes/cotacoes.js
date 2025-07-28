@@ -1166,6 +1166,75 @@ router.post('/:id/renegociar', authenticateToken, async (req, res) => {
   }
 });
 
+// GET /api/cotacoes/:id/melhor-preco - Buscar melhores preços da cotação
+router.get('/:id/melhor-preco', authenticateToken, async (req, res) => {
+  try {
+    const cotacaoId = req.params.id;
+    const connection = await pool.getConnection();
+
+    // Buscar produtos com melhores preços
+    const [melhoresPrecos] = await connection.execute(`
+      SELECT 
+        p.id as produto_id,
+        p.nome as produto,
+        p.qtde,
+        p.un,
+        MIN(pf.valor_unitario) as menor_valor,
+        f.nome as fornecedor_menor_preco,
+        f.id as fornecedor_id,
+        AVG(pf.valor_unitario) as valor_medio,
+        MAX(pf.valor_unitario) as maior_valor,
+        COUNT(DISTINCT f.id) as total_fornecedores,
+        ROUND(((MAX(pf.valor_unitario) - MIN(pf.valor_unitario)) / MIN(pf.valor_unitario)) * 100, 2) as economia_percentual,
+        ROUND((p.qtde * (MAX(pf.valor_unitario) - MIN(pf.valor_unitario))), 2) as economia_total
+      FROM produtos p
+      JOIN produtos_fornecedores pf ON p.id = pf.produto_id
+      JOIN fornecedores f ON pf.fornecedor_id = f.id
+      WHERE p.cotacao_id = ?
+      GROUP BY p.id, p.nome, p.qtde, p.un
+      HAVING COUNT(DISTINCT f.id) > 1
+      ORDER BY economia_percentual DESC, economia_total DESC
+    `, [cotacaoId]);
+
+    // Calcular estatísticas gerais
+    const [estatisticas] = await connection.execute(`
+      SELECT 
+        COUNT(DISTINCT p.id) as total_produtos,
+        SUM(p.qtde * MIN(pf.valor_unitario)) as valor_total_menor,
+        SUM(p.qtde * MAX(pf.valor_unitario)) as valor_total_maior,
+        ROUND(SUM(p.qtde * (MAX(pf.valor_unitario) - MIN(pf.valor_unitario))), 2) as economia_total_geral,
+        ROUND(((SUM(p.qtde * MAX(pf.valor_unitario)) - SUM(p.qtde * MIN(pf.valor_unitario))) / SUM(p.qtde * MIN(pf.valor_unitario))) * 100, 2) as economia_percentual_geral
+      FROM produtos p
+      JOIN produtos_fornecedores pf ON p.id = pf.produto_id
+      JOIN fornecedores f ON pf.fornecedor_id = f.id
+      WHERE p.cotacao_id = ?
+      GROUP BY p.id, p.qtde
+      HAVING COUNT(DISTINCT f.id) > 1
+    `, [cotacaoId]);
+
+    await connection.release();
+
+    // Calcular totais das estatísticas
+    const totalEconomia = estatisticas.reduce((sum, stat) => sum + (stat.economia_total_geral || 0), 0);
+    const totalProdutos = estatisticas.reduce((sum, stat) => sum + (stat.total_produtos || 0), 0);
+    const economiaPercentual = estatisticas.length > 0 ? estatisticas[0].economia_percentual_geral : 0;
+
+    res.json({
+      produtos: melhoresPrecos,
+      estatisticas: {
+        totalProdutos,
+        economiaTotal: totalEconomia,
+        economiaPercentual,
+        produtosComEconomia: melhoresPrecos.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Erro ao buscar melhores preços:', error);
+    res.status(500).json({ message: 'Erro interno do servidor' });
+  }
+});
+
 // Função para criar registro de Saving
 async function criarRegistroSaving(connection, cotacaoId, usuarioId, cotacao, motivo) {
   try {

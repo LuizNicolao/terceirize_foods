@@ -558,9 +558,9 @@ const ProdutoRenegociacaoRow = styled(TableRow)`
 `;
 
 const VisualizarCotacao = () => {
-  const navigate = useNavigate();
   const { id } = useParams();
-  const { user: authUser } = useAuth();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   
   const [cotacao, setCotacao] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -568,6 +568,8 @@ const VisualizarCotacao = () => {
   const [produtosExpanded, setProdutosExpanded] = useState(false);
   const [searchFornecedor, setSearchFornecedor] = useState('');
   const [searchProduto, setSearchProduto] = useState('');
+  const [expandedFornecedores, setExpandedFornecedores] = useState({});
+  const [activeTab, setActiveTab] = useState('padrao'); // Novo estado para abas
 
   const fetchCotacao = useCallback(async () => {
     try {
@@ -692,6 +694,341 @@ const VisualizarCotacao = () => {
     navigate(`/editar-cotacao/${id}`);
   };
 
+  // Componentes de Aba
+  const TabContainer = styled.div`
+    margin-bottom: 24px;
+  `;
+
+  const TabList = styled.div`
+    display: flex;
+    border-bottom: 2px solid ${colors.neutral.lightGray};
+    margin-bottom: 24px;
+  `;
+
+  const TabButton = styled.button`
+    padding: 12px 24px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: ${props => props.active ? colors.primary.green : colors.neutral.gray};
+    border-bottom: 2px solid ${props => props.active ? colors.primary.green : 'transparent'};
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+
+    &:hover {
+      color: ${colors.primary.green};
+    }
+  `;
+
+  const TabContent = styled.div`
+    display: ${props => props.active ? 'block' : 'none'};
+  `;
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'melhor-preco':
+        return <MelhorPreco cotacaoId={id} />;
+      case 'analise-comparativa':
+        return <AnaliseComparativa cotacao={cotacao} />;
+      case 'melhor-prazo-entrega':
+        return <MelhorPrazoEntrega cotacao={cotacao} />;
+      case 'melhor-prazo-pagamento':
+        return <MelhorPrazoPagamento cotacao={cotacao} />;
+      default:
+        return (
+          <>
+            {/* Conteúdo padrão da cotação */}
+            {/* Seção 1: Informações Básicas */}
+            <InfoSection>
+              <SectionTitle>Informações Básicas</SectionTitle>
+              
+              <InfoGrid>
+                <InfoItem>
+                  <InfoLabel>Comprador</InfoLabel>
+                  <InfoValue>{cotacao.comprador}</InfoValue>
+                </InfoItem>
+                
+                <InfoItem>
+                  <InfoLabel>Local de Entrega</InfoLabel>
+                  <InfoValue>{cotacao.local_entrega}</InfoValue>
+                </InfoItem>
+                
+                <InfoItem>
+                  <InfoLabel>Tipo de Compra</InfoLabel>
+                  <InfoValue>{cotacao.tipo_compra === 'programada' ? 'Compra Programada' : 'Compra Emergencial'}</InfoValue>
+                </InfoItem>
+                
+                {cotacao.tipo_compra === 'emergencial' && (
+                  <InfoItem className="full-width">
+                    <InfoLabel>Motivo Emergencial</InfoLabel>
+                    <InfoValue>{cotacao.motivo_final}</InfoValue>
+                  </InfoItem>
+                )}
+              </InfoGrid>
+            </InfoSection>
+
+            {/* Seção 1.5: Justificativa do Supervisor */}
+            {cotacao.justificativa && (
+              <JustificativaSection>
+                <SectionTitle>Justificativa e Observações do Supervisor</SectionTitle>
+                <JustificativaContent>
+                  <JustificativaIcon>
+                    <FaExclamationTriangle />
+                  </JustificativaIcon>
+                  <JustificativaText>
+                    {cotacao.justificativa}
+                  </JustificativaText>
+                </JustificativaContent>
+              </JustificativaSection>
+            )}
+
+            {/* Seção 1.6: Renegociação */}
+            {cotacao.produtos_renegociar && cotacao.produtos_renegociar.length > 0 && (
+              <RenegociacaoSection>
+                <SectionTitle>Produtos em Renegociação</SectionTitle>
+                <RenegociacaoContent>
+                  <RenegociacaoIcon>
+                    <FaExclamationTriangle />
+                  </RenegociacaoIcon>
+                  <RenegociacaoInfo>
+                    <RenegociacaoMessage>
+                      <strong>Renegociação em andamento</strong>
+                      <p>Os seguintes produtos estão sendo renegociados com os fornecedores:</p>
+                    </RenegociacaoMessage>
+                    <ProdutosRenegociar>
+                      <ProdutosRenegociarTitle>Produtos em renegociação:</ProdutosRenegociarTitle>
+                      <ProdutosLista>
+                        {cotacao.produtos_renegociar.map((item, index) => (
+                          <ProdutoRenegociarItem key={index}>
+                            <ProdutoNome>{item.nome_produto}</ProdutoNome>
+                            <ProdutoFornecedor>Fornecedor: {item.nome_fornecedor}</ProdutoFornecedor>
+                          </ProdutoRenegociarItem>
+                        ))}
+                      </ProdutosLista>
+                    </ProdutosRenegociar>
+                  </RenegociacaoInfo>
+                </RenegociacaoContent>
+              </RenegociacaoSection>
+            )}
+
+            {/* Seção 2: Produtos */}
+            <InfoSection>
+              <SectionHeader>
+                <SectionTitle>Produtos ({cotacao.produtos?.length || 0})</SectionTitle>
+                <ToggleButton
+                  type="button"
+                  onClick={() => setProdutosExpanded(!produtosExpanded)}
+                  title={produtosExpanded ? 'Recolher produtos' : 'Expandir produtos'}
+                >
+                  {produtosExpanded ? <FaChevronUp /> : <FaChevronDown />}
+                </ToggleButton>
+              </SectionHeader>
+              
+              {produtosExpanded && cotacao.produtos && cotacao.produtos.length > 0 && (
+                <TableWrapper>
+                  <ProdutosTable>
+                    <thead>
+                      <tr>
+                        <TableHeader>Produto</TableHeader>
+                        <TableHeader>Qtd</TableHeader>
+                        <TableHeader>UN</TableHeader>
+                        <TableHeader>Prazo Entrega</TableHeader>
+                        <TableHeader>Ult. Vlr. Aprovado</TableHeader>
+                        <TableHeader>Ult. Fornecedor Aprovado</TableHeader>
+                        <TableHeader>Valor Anterior</TableHeader>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cotacao.produtos.map((produto, index) => (
+                        <TableRow key={produto.id || index}>
+                          <TableCell>{produto.nome}</TableCell>
+                          <TableCell>{produto.qtde}</TableCell>
+                          <TableCell>{produto.un}</TableCell>
+                          <TableCell>{produto.prazo_entrega || '-'}</TableCell>
+                          <TableCell>{produto.ult_valor_aprovado || '-'}</TableCell>
+                          <TableCell>{produto.ult_fornecedor_aprovado || '-'}</TableCell>
+                          <TableCell>{produto.valor_anterior || '-'}</TableCell>
+                        </TableRow>
+                      ))}
+                    </tbody>
+                  </ProdutosTable>
+                </TableWrapper>
+              )}
+            </InfoSection>
+
+            {/* Seção 3: Fornecedores */}
+            <InfoSection>
+              <SectionHeader>
+                <SectionTitle>Fornecedores ({cotacao.fornecedores?.length || 0})</SectionTitle>
+                <Legend>
+                  <LegendItem>
+                    <LegendColor color={colors.primary.green}></LegendColor>
+                    Melhor preço
+                  </LegendItem>
+                </Legend>
+              </SectionHeader>
+              
+              {/* Barra de pesquisa de fornecedores */}
+              {cotacao.fornecedores && cotacao.fornecedores.length > 0 && (
+                <SearchContainer>
+                  <SearchBox>
+                    <SearchInput
+                      type="text"
+                      placeholder="🔍 Pesquisar fornecedor..."
+                      value={searchFornecedor}
+                      onChange={(e) => setSearchFornecedor(e.target.value)}
+                    />
+                    {searchFornecedor && (
+                      <SearchClear
+                        type="button"
+                        onClick={() => setSearchFornecedor('')}
+                        title="Limpar pesquisa"
+                      >
+                        ✕
+                      </SearchClear>
+                    )}
+                  </SearchBox>
+                  {searchFornecedor && (
+                    <SearchInfo>
+                      {filteredFornecedores.length} de {cotacao.fornecedores.length} fornecedores encontrados
+                    </SearchInfo>
+                  )}
+                </SearchContainer>
+              )}
+              
+              {cotacao.fornecedores && cotacao.fornecedores.length > 0 && (
+                <FornecedoresList>
+                  {filteredFornecedores.map((fornecedor, index) => (
+                    <FornecedorCard key={fornecedor.id}>
+                      <FornecedorHeader>
+                        <FornecedorTitle>Fornecedor {index + 1}: {fornecedor.nome}</FornecedorTitle>
+                        <FornecedorInfo>
+                          <FornecedorInfoItem>Prazo: {fornecedor.prazo_pagamento || '-'}</FornecedorInfoItem>
+                          <FornecedorInfoItem>Frete: {fornecedor.tipo_frete || '-'}</FornecedorInfoItem>
+                          <FornecedorInfoItem>Valor Frete: {formatarValor(fornecedor.valor_frete)}</FornecedorInfoItem>
+                        </FornecedorInfo>
+                      </FornecedorHeader>
+                      
+                      {fornecedor.produtos && fornecedor.produtos.length > 0 && (
+                        <div>
+                          <h4 style={{ color: colors.neutral.darkGray, fontSize: '16px', fontWeight: 600, margin: '0 0 16px 0' }}>Produtos do Fornecedor</h4>
+                          
+                          {/* Barra de pesquisa de produtos */}
+                          {fornecedor.produtos.length > 0 && (
+                            <SearchContainer>
+                              <SearchBox>
+                                <SearchInput
+                                  type="text"
+                                  placeholder="🔍 Pesquisar produto..."
+                                  value={searchProduto}
+                                  onChange={(e) => setSearchProduto(e.target.value)}
+                                />
+                                {searchProduto && (
+                                  <SearchClear
+                                    type="button"
+                                    onClick={() => setSearchProduto('')}
+                                    title="Limpar pesquisa"
+                                  >
+                                    ✕
+                                  </SearchClear>
+                                )}
+                              </SearchBox>
+                              {searchProduto && (
+                                <SearchInfo>
+                                  {filteredProdutos(fornecedor.id).length} de {fornecedor.produtos.length} produtos encontrados
+                                </SearchInfo>
+                              )}
+                            </SearchContainer>
+                          )}
+                          
+                          <TableWrapper>
+                            <ProdutosTable>
+                              <thead>
+                                <tr>
+                                  <TableHeader>Produto</TableHeader>
+                                  <TableHeader>Qtd</TableHeader>
+                                  <TableHeader>UN</TableHeader>
+                                  <TableHeader>Prazo Entrega</TableHeader>
+                                  <TableHeader>Valor Unit.</TableHeader>
+                                  <TableHeader>Difal</TableHeader>
+                                  <TableHeader>IPI</TableHeader>
+                                  <TableHeader>Data Entrega Fn</TableHeader>
+                                  <TableHeader>Total</TableHeader>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {filteredProdutos(fornecedor.id).map((produto, prodIndex) => {
+                                  // Verifica se o produto está em renegociação
+                                  const emRenegociacao = isProdutoEmRenegociacao(produto);
+                                  return (
+                                    <TableRow key={produto.id || prodIndex} className={emRenegociacao ? 'produto-renegociacao-row' : ''}>
+                                      <TableCell>
+                                        <ProdutoNome className={emRenegociacao ? 'produto-renegociacao-nome' : ''}>
+                                          {produto.nome}
+                                          {emRenegociacao && (
+                                            <BadgeRenegociacao>Renegociação</BadgeRenegociacao>
+                                          )}
+                                        </ProdutoNome>
+                                      </TableCell>
+                                      <TableCell>{produto.qtde}</TableCell>
+                                      <TableCell>{produto.un}</TableCell>
+                                      <TableCell>{produto.prazo_entrega || '-'}</TableCell>
+                                      <BestPriceCell className={temMelhorPreco(produto, fornecedor, melhoresPrecos) ? 'best-price' : ''}>
+                                        {formatarValor(produto.valorUnitario)}
+                                      </BestPriceCell>
+                                      <TableCell>{formatarValor(produto.difal)}</TableCell>
+                                      <TableCell>{formatarValor(produto.ipi)}</TableCell>
+                                      <TableCell>{produto.data_entrega_fn || '-'}</TableCell>
+                                      <TotalCell>{formatarValor(produto.total)}</TotalCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </tbody>
+                            </ProdutosTable>
+                          </TableWrapper>
+                        </div>
+                      )}
+                    </FornecedorCard>
+                  ))}
+                </FornecedoresList>
+              )}
+            </InfoSection>
+
+            {/* Seção 4: Estatísticas */}
+            {cotacao.metadata && (
+              <InfoSection>
+                <SectionTitle>Estatísticas</SectionTitle>
+                
+                <StatsGrid>
+                  <StatItem>
+                    <StatLabel>Total de Produtos Únicos</StatLabel>
+                    <StatValue>{cotacao.metadata.total_produtos_unicos || 0}</StatValue>
+                  </StatItem>
+                  
+                  <StatItem>
+                    <StatLabel>Produtos Duplicados Consolidados</StatLabel>
+                    <StatValue>{cotacao.metadata.produtos_duplicados_consolidados || 0}</StatValue>
+                  </StatItem>
+                  
+                  <StatItem>
+                    <StatLabel>Total de Quantidade</StatLabel>
+                    <StatValue>{cotacao.metadata.total_quantidade || 0}</StatValue>
+                  </StatItem>
+                  
+                  <StatItem>
+                    <StatLabel>Total de Fornecedores</StatLabel>
+                    <StatValue>{cotacao.metadata.total_fornecedores || 0}</StatValue>
+                  </StatItem>
+                </StatsGrid>
+              </InfoSection>
+            )}
+          </>
+        );
+    }
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -731,325 +1068,74 @@ const VisualizarCotacao = () => {
     );
   }
 
+  const getTipoCompraLabel = (tipo) => {
+    if (tipo === 'programada') return 'Compra Programada';
+    if (tipo === 'emergencial') return 'Compra Emergencial';
+    return tipo;
+  };
+
   return (
     <Layout>
-              <Container>
-          <Header>
-            <Title>Visualizar Cotação #{cotacao.id}</Title>
-            <Subtitle>Detalhes da cotação e seus fornecedores</Subtitle>
-            <HeaderActions>
-              <Button onClick={handleVoltar} variant="secondary">
-                <FaArrowLeft /> Voltar
-              </Button>
-              <Button 
-                onClick={() => {
-                  if (cotacao.status === 'pendente' || cotacao.status === 'renegociacao') {
-                    handleEditar();
-                  } else {
-                    alert(`Não é possível editar uma cotação com status "${cotacao.status}". Apenas cotações pendentes ou em renegociação podem ser editadas.`);
-                  }
-                }}
-                variant={cotacao.status !== 'pendente' && cotacao.status !== 'renegociacao' ? 'disabled' : 'primary'}
-                title={cotacao.status !== 'pendente' && cotacao.status !== 'renegociacao' ? 'Apenas cotações pendentes ou em renegociação podem ser editadas' : 'Editar cotação'}
-                disabled={cotacao.status !== 'pendente' && cotacao.status !== 'renegociacao'}
-              >
+      <Container>
+        <Header>
+          <div>
+            <Title>Cotação #{id}</Title>
+            <Subtitle>
+              {cotacao.comprador} • {cotacao.local_entrega} • {getTipoCompraLabel(cotacao.tipo_compra)}
+            </Subtitle>
+          </div>
+          
+          <HeaderActions>
+            <Button variant="secondary" onClick={handleVoltar}>
+              <FaArrowLeft /> Voltar
+            </Button>
+            {user && (user.role === 'admin' || user.role === 'comprador') && (
+              <Button variant="primary" onClick={handleEditar}>
                 <FaEdit /> Editar
               </Button>
-            </HeaderActions>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginTop: '16px' }}>
-              <StatusBadge status={cotacao.status}>
-                {getStatusLabel(cotacao.status)}
-              </StatusBadge>
-              <DataCriacao>
-                Criada em: {formatDate(cotacao.data_criacao)}
-              </DataCriacao>
-            </div>
-          </Header>
-
-        {/* Seção 1: Informações Básicas */}
-        <InfoSection>
-          <SectionTitle>Informações Básicas</SectionTitle>
-          
-          <InfoGrid>
-            <InfoItem>
-              <InfoLabel>Comprador</InfoLabel>
-              <InfoValue>{cotacao.comprador}</InfoValue>
-            </InfoItem>
-            
-            <InfoItem>
-              <InfoLabel>Local de Entrega</InfoLabel>
-              <InfoValue>{cotacao.local_entrega}</InfoValue>
-            </InfoItem>
-            
-            <InfoItem>
-              <InfoLabel>Tipo de Compra</InfoLabel>
-              <InfoValue>{cotacao.tipo_compra === 'programada' ? 'Compra Programada' : 'Compra Emergencial'}</InfoValue>
-            </InfoItem>
-            
-            {cotacao.tipo_compra === 'emergencial' && (
-              <InfoItem className="full-width">
-                <InfoLabel>Motivo Emergencial</InfoLabel>
-                <InfoValue>{cotacao.motivo_final}</InfoValue>
-              </InfoItem>
             )}
-          </InfoGrid>
-        </InfoSection>
+          </HeaderActions>
+        </Header>
 
-        {/* Seção 1.5: Justificativa do Supervisor */}
-        {cotacao.justificativa && (
-          <JustificativaSection>
-            <SectionTitle>Justificativa e Observações do Supervisor</SectionTitle>
-            <JustificativaContent>
-              <JustificativaIcon>
-                <FaExclamationTriangle />
-              </JustificativaIcon>
-              <JustificativaText>
-                {cotacao.justificativa}
-              </JustificativaText>
-            </JustificativaContent>
-          </JustificativaSection>
-        )}
-
-        {/* Seção 1.6: Renegociação */}
-        {cotacao.produtos_renegociar && cotacao.produtos_renegociar.length > 0 && (
-          <RenegociacaoSection>
-            <SectionTitle>Produtos em Renegociação</SectionTitle>
-            <RenegociacaoContent>
-              <RenegociacaoIcon>
-                <FaExclamationTriangle />
-              </RenegociacaoIcon>
-              <RenegociacaoInfo>
-                <RenegociacaoMessage>
-                  <strong>Renegociação em andamento</strong>
-                  <p>Os seguintes produtos estão sendo renegociados com os fornecedores:</p>
-                </RenegociacaoMessage>
-                <ProdutosRenegociar>
-                  <ProdutosRenegociarTitle>Produtos em renegociação:</ProdutosRenegociarTitle>
-                  <ProdutosLista>
-                    {cotacao.produtos_renegociar.map((item, index) => (
-                      <ProdutoRenegociarItem key={index}>
-                        <ProdutoNome>{item.nome_produto}</ProdutoNome>
-                        <ProdutoFornecedor>Fornecedor: {item.nome_fornecedor}</ProdutoFornecedor>
-                      </ProdutoRenegociarItem>
-                    ))}
-                  </ProdutosLista>
-                </ProdutosRenegociar>
-              </RenegociacaoInfo>
-            </RenegociacaoContent>
-          </RenegociacaoSection>
-        )}
-
-        {/* Seção 2: Produtos */}
-        <InfoSection>
-          <SectionHeader>
-            <SectionTitle>Produtos ({cotacao.produtos?.length || 0})</SectionTitle>
-            <ToggleButton
-              type="button"
-              onClick={() => setProdutosExpanded(!produtosExpanded)}
-              title={produtosExpanded ? 'Recolher produtos' : 'Expandir produtos'}
+        {/* Sistema de Abas */}
+        <TabContainer>
+          <TabList>
+            <TabButton 
+              active={activeTab === 'padrao'} 
+              onClick={() => setActiveTab('padrao')}
             >
-              {produtosExpanded ? <FaChevronUp /> : <FaChevronDown />}
-            </ToggleButton>
-          </SectionHeader>
+              Visão Geral
+            </TabButton>
+            <TabButton 
+              active={activeTab === 'melhor-preco'} 
+              onClick={() => setActiveTab('melhor-preco')}
+            >
+              Melhor Preço
+            </TabButton>
+            <TabButton 
+              active={activeTab === 'analise-comparativa'} 
+              onClick={() => setActiveTab('analise-comparativa')}
+            >
+              Análise Comparativa
+            </TabButton>
+            <TabButton 
+              active={activeTab === 'melhor-prazo-entrega'} 
+              onClick={() => setActiveTab('melhor-prazo-entrega')}
+            >
+              Melhor Prazo Entrega
+            </TabButton>
+            <TabButton 
+              active={activeTab === 'melhor-prazo-pagamento'} 
+              onClick={() => setActiveTab('melhor-prazo-pagamento')}
+            >
+              Melhor Prazo Pagamento
+            </TabButton>
+          </TabList>
           
-          {produtosExpanded && cotacao.produtos && cotacao.produtos.length > 0 && (
-            <TableWrapper>
-              <ProdutosTable>
-                <thead>
-                  <tr>
-                    <TableHeader>Produto</TableHeader>
-                    <TableHeader>Qtd</TableHeader>
-                    <TableHeader>UN</TableHeader>
-                    <TableHeader>Prazo Entrega</TableHeader>
-                    <TableHeader>Ult. Vlr. Aprovado</TableHeader>
-                    <TableHeader>Ult. Fornecedor Aprovado</TableHeader>
-                    <TableHeader>Valor Anterior</TableHeader>
-                  </tr>
-                </thead>
-                <tbody>
-                  {cotacao.produtos.map((produto, index) => (
-                    <TableRow key={produto.id || index}>
-                      <TableCell>{produto.nome}</TableCell>
-                      <TableCell>{produto.qtde}</TableCell>
-                      <TableCell>{produto.un}</TableCell>
-                      <TableCell>{produto.prazo_entrega || '-'}</TableCell>
-                      <TableCell>{produto.ult_valor_aprovado || '-'}</TableCell>
-                      <TableCell>{produto.ult_fornecedor_aprovado || '-'}</TableCell>
-                      <TableCell>{produto.valor_anterior || '-'}</TableCell>
-                    </TableRow>
-                  ))}
-                </tbody>
-              </ProdutosTable>
-            </TableWrapper>
-          )}
-        </InfoSection>
-
-        {/* Seção 3: Fornecedores */}
-        <InfoSection>
-          <SectionHeader>
-            <SectionTitle>Fornecedores ({cotacao.fornecedores?.length || 0})</SectionTitle>
-            <Legend>
-              <LegendItem>
-                <LegendColor color={colors.primary.green}></LegendColor>
-                Melhor preço
-              </LegendItem>
-            </Legend>
-          </SectionHeader>
-          
-          {/* Barra de pesquisa de fornecedores */}
-          {cotacao.fornecedores && cotacao.fornecedores.length > 0 && (
-            <SearchContainer>
-              <SearchBox>
-                <SearchInput
-                  type="text"
-                  placeholder="🔍 Pesquisar fornecedor..."
-                  value={searchFornecedor}
-                  onChange={(e) => setSearchFornecedor(e.target.value)}
-                />
-                {searchFornecedor && (
-                  <SearchClear
-                    type="button"
-                    onClick={() => setSearchFornecedor('')}
-                    title="Limpar pesquisa"
-                  >
-                    ✕
-                  </SearchClear>
-                )}
-              </SearchBox>
-              {searchFornecedor && (
-                <SearchInfo>
-                  {filteredFornecedores.length} de {cotacao.fornecedores.length} fornecedores encontrados
-                </SearchInfo>
-              )}
-            </SearchContainer>
-          )}
-          
-          {cotacao.fornecedores && cotacao.fornecedores.length > 0 && (
-            <FornecedoresList>
-              {filteredFornecedores.map((fornecedor, index) => (
-                <FornecedorCard key={fornecedor.id}>
-                  <FornecedorHeader>
-                    <FornecedorTitle>Fornecedor {index + 1}: {fornecedor.nome}</FornecedorTitle>
-                    <FornecedorInfo>
-                      <FornecedorInfoItem>Prazo: {fornecedor.prazo_pagamento || '-'}</FornecedorInfoItem>
-                      <FornecedorInfoItem>Frete: {fornecedor.tipo_frete || '-'}</FornecedorInfoItem>
-                      <FornecedorInfoItem>Valor Frete: {formatarValor(fornecedor.valor_frete)}</FornecedorInfoItem>
-                    </FornecedorInfo>
-                  </FornecedorHeader>
-                  
-                  {fornecedor.produtos && fornecedor.produtos.length > 0 && (
-                    <div>
-                      <h4 style={{ color: colors.neutral.darkGray, fontSize: '16px', fontWeight: 600, margin: '0 0 16px 0' }}>Produtos do Fornecedor</h4>
-                      
-                      {/* Barra de pesquisa de produtos */}
-                      {fornecedor.produtos.length > 0 && (
-                        <SearchContainer>
-                          <SearchBox>
-                            <SearchInput
-                              type="text"
-                              placeholder="🔍 Pesquisar produto..."
-                              value={searchProduto}
-                              onChange={(e) => setSearchProduto(e.target.value)}
-                            />
-                            {searchProduto && (
-                              <SearchClear
-                                type="button"
-                                onClick={() => setSearchProduto('')}
-                                title="Limpar pesquisa"
-                              >
-                                ✕
-                              </SearchClear>
-                            )}
-                          </SearchBox>
-                          {searchProduto && (
-                            <SearchInfo>
-                              {filteredProdutos(fornecedor.id).length} de {fornecedor.produtos.length} produtos encontrados
-                            </SearchInfo>
-                          )}
-                        </SearchContainer>
-                      )}
-                      
-                      <TableWrapper>
-                        <ProdutosTable>
-                          <thead>
-                            <tr>
-                              <TableHeader>Produto</TableHeader>
-                              <TableHeader>Qtd</TableHeader>
-                              <TableHeader>UN</TableHeader>
-                              <TableHeader>Prazo Entrega</TableHeader>
-                              <TableHeader>Valor Unit.</TableHeader>
-                              <TableHeader>Difal</TableHeader>
-                              <TableHeader>IPI</TableHeader>
-                              <TableHeader>Data Entrega Fn</TableHeader>
-                              <TableHeader>Total</TableHeader>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {filteredProdutos(fornecedor.id).map((produto, prodIndex) => {
-                              // Verifica se o produto está em renegociação
-                              const emRenegociacao = isProdutoEmRenegociacao(produto);
-                              return (
-                                <TableRow key={produto.id || prodIndex} className={emRenegociacao ? 'produto-renegociacao-row' : ''}>
-                                  <TableCell>
-                                    <ProdutoNome className={emRenegociacao ? 'produto-renegociacao-nome' : ''}>
-                                      {produto.nome}
-                                      {emRenegociacao && (
-                                        <BadgeRenegociacao>Renegociação</BadgeRenegociacao>
-                                      )}
-                                    </ProdutoNome>
-                                  </TableCell>
-                                  <TableCell>{produto.qtde}</TableCell>
-                                  <TableCell>{produto.un}</TableCell>
-                                  <TableCell>{produto.prazo_entrega || '-'}</TableCell>
-                                  <BestPriceCell className={temMelhorPreco(produto, fornecedor, melhoresPrecos) ? 'best-price' : ''}>
-                                    {formatarValor(produto.valorUnitario)}
-                                  </BestPriceCell>
-                                  <TableCell>{formatarValor(produto.difal)}</TableCell>
-                                  <TableCell>{formatarValor(produto.ipi)}</TableCell>
-                                  <TableCell>{produto.data_entrega_fn || '-'}</TableCell>
-                                  <TotalCell>{formatarValor(produto.total)}</TotalCell>
-                                </TableRow>
-                              );
-                            })}
-                          </tbody>
-                        </ProdutosTable>
-                      </TableWrapper>
-                    </div>
-                  )}
-                </FornecedorCard>
-              ))}
-            </FornecedoresList>
-          )}
-        </InfoSection>
-
-        {/* Seção 4: Estatísticas */}
-        {cotacao.metadata && (
-          <InfoSection>
-            <SectionTitle>Estatísticas</SectionTitle>
-            
-            <StatsGrid>
-              <StatItem>
-                <StatLabel>Total de Produtos Únicos</StatLabel>
-                <StatValue>{cotacao.metadata.total_produtos_unicos || 0}</StatValue>
-              </StatItem>
-              
-              <StatItem>
-                <StatLabel>Produtos Duplicados Consolidados</StatLabel>
-                <StatValue>{cotacao.metadata.produtos_duplicados_consolidados || 0}</StatValue>
-              </StatItem>
-              
-              <StatItem>
-                <StatLabel>Total de Quantidade</StatLabel>
-                <StatValue>{cotacao.metadata.total_quantidade || 0}</StatValue>
-              </StatItem>
-              
-              <StatItem>
-                <StatLabel>Total de Fornecedores</StatLabel>
-                <StatValue>{cotacao.metadata.total_fornecedores || 0}</StatValue>
-              </StatItem>
-            </StatsGrid>
-          </InfoSection>
-        )}
+          <TabContent active={true}>
+            {renderTabContent()}
+          </TabContent>
+        </TabContainer>
       </Container>
     </Layout>
   );
