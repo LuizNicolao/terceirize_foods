@@ -709,9 +709,16 @@ const NovaCotacao = () => {
   };
 
   const updateFornecedor = (fornecedorId, field, value) => {
-    setFornecedores(fornecedores.map(f => 
-      f.id === fornecedorId ? { ...f, [field]: value } : f
-    ));
+    console.log('🔍 Atualizando fornecedor:', { fornecedorId, field, value });
+    
+    setFornecedores(fornecedores.map(f => {
+      if (f.id === fornecedorId) {
+        const updated = { ...f, [field]: value };
+        console.log('🔍 Fornecedor atualizado:', updated);
+        return updated;
+      }
+      return f;
+    }));
   };
 
   const updateProdutoFornecedor = (fornecedorId, produtoId, field, value) => {
@@ -784,16 +791,22 @@ const NovaCotacao = () => {
       newErrors.planilha = 'É necessário carregar uma planilha com os produtos';
     }
 
+    console.log('🔍 Validando fornecedores:', fornecedores);
+    console.log('🔍 Fornecedores com nome:', fornecedores.map(f => ({ id: f.id, nome: f.nome, nomeLength: f.nome ? f.nome.length : 0 })));
+
     if (fornecedores.length === 0) {
       newErrors.fornecedores = 'É necessário adicionar pelo menos um fornecedor';
     } else {
       // Verifica se pelo menos um fornecedor tem nome preenchido
       const fornecedoresComNome = fornecedores.filter(f => f.nome && f.nome.trim() !== '');
+      console.log('🔍 Fornecedores com nome válido:', fornecedoresComNome.length);
+      
       if (fornecedoresComNome.length === 0) {
         newErrors.fornecedores = 'Pelo menos um fornecedor deve ter o nome preenchido';
       }
     }
 
+    console.log('🔍 Erros de validação:', newErrors);
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
