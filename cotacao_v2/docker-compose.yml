@@ -28,6 +28,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
+      - PORT=5000
       - DB_HOST=82.29.57.43
       - DB_USER=root
       - DB_PASSWORD=foods123456
