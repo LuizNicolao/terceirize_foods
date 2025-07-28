@@ -28,6 +28,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
       veiculos: { visualizar: true, criar: false, editar: false, excluir: false },
       motoristas: { visualizar: true, criar: false, editar: false, excluir: false },
+      ajudantes: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -47,6 +48,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
       veiculos: { visualizar: true, criar: true, editar: true, excluir: false },
       motoristas: { visualizar: true, criar: true, editar: true, excluir: false },
+      ajudantes: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -66,6 +68,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
       veiculos: { visualizar: true, criar: true, editar: true, excluir: true },
       motoristas: { visualizar: true, criar: true, editar: true, excluir: true },
+      ajudantes: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
@@ -87,6 +90,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
       veiculos: { visualizar: true, criar: false, editar: false, excluir: false },
       motoristas: { visualizar: true, criar: false, editar: false, excluir: false },
+      ajudantes: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -106,6 +110,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
       veiculos: { visualizar: true, criar: true, editar: true, excluir: false },
       motoristas: { visualizar: true, criar: true, editar: true, excluir: false },
+      ajudantes: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -125,6 +130,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
       veiculos: { visualizar: true, criar: true, editar: true, excluir: true },
       motoristas: { visualizar: true, criar: true, editar: true, excluir: true },
+      ajudantes: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -146,6 +152,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
       veiculos: { visualizar: true, criar: false, editar: false, excluir: false },
       motoristas: { visualizar: true, criar: false, editar: false, excluir: false },
+      ajudantes: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -165,6 +172,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: true, editar: false, excluir: false },
       veiculos: { visualizar: true, criar: true, editar: false, excluir: false },
       motoristas: { visualizar: true, criar: true, editar: false, excluir: false },
+      
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -184,6 +192,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
       veiculos: { visualizar: true, criar: true, editar: true, excluir: false },
       motoristas: { visualizar: true, criar: true, editar: true, excluir: false },
+
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -205,6 +214,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
       veiculos: { visualizar: true, criar: false, editar: false, excluir: false },
       motoristas: { visualizar: true, criar: false, editar: false, excluir: false },
+      ajudantes: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -224,6 +234,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
       veiculos: { visualizar: true, criar: true, editar: true, excluir: false },
       motoristas: { visualizar: true, criar: true, editar: true, excluir: false },
+      ajudantes: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -243,6 +254,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
       veiculos: { visualizar: true, criar: true, editar: true, excluir: true },
       motoristas: { visualizar: true, criar: true, editar: true, excluir: true },
+      ajudantes: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -264,6 +276,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: false, editar: false, excluir: false },
       veiculos: { visualizar: true, criar: false, editar: false, excluir: false },
       motoristas: { visualizar: true, criar: false, editar: false, excluir: false },
+      ajudantes: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -283,6 +296,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: true, editar: true, excluir: false },
       veiculos: { visualizar: true, criar: true, editar: true, excluir: false },
       motoristas: { visualizar: true, criar: true, editar: true, excluir: false },
+      ajudantes: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
@@ -302,6 +316,7 @@ const PERMISSOES_PADRAO = {
       marcas: { visualizar: true, criar: true, editar: true, excluir: true },
       veiculos: { visualizar: true, criar: true, editar: true, excluir: true },
       motoristas: { visualizar: true, criar: true, editar: true, excluir: true },
+      ajudantes: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
@@ -372,6 +387,7 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
       'marcas',
       'veiculos',
       'motoristas',
+      'ajudantes',
       'cotacao',
       'permissoes'
     ];
@@ -565,6 +581,7 @@ router.get('/telas', checkPermission('visualizar'), (req, res) => {
     { nome: 'marcas', descricao: 'Gerenciamento de Marcas' },
     { nome: 'veiculos', descricao: 'Gerenciamento de Veículos' },
     { nome: 'motoristas', descricao: 'Gerenciamento de Motoristas' },
+    { nome: 'ajudantes', descricao: 'Gerenciamento de Ajudantes' },
     { nome: 'cotacao', descricao: 'Sistema de Cotação' },
     { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
   ];

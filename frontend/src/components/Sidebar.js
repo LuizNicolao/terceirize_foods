@@ -379,6 +379,7 @@ const menuGroups = [
     items: [
       { path: '/veiculos', icon: FaCar, label: 'Veículos', screen: 'veiculos' },
       { path: '/motoristas', icon: FaUserTie, label: 'Motoristas', screen: 'motoristas' },
+      { path: '/ajudantes', icon: FaUserTie, label: 'Ajudantes', screen: 'ajudantes' },
     ]
   },
   {

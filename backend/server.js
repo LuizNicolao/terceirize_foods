@@ -25,6 +25,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const auditoriaRoutes = require('./routes/auditoria');
 const veiculosRoutes = require('./routes/veiculos');
 const motoristasRoutes = require('./routes/motoristas');
+const ajudantesRoutes = require('./routes/ajudantes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -279,6 +280,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auditoria', auditoriaRoutes);
 app.use('/api/veiculos', veiculosRoutes);
 app.use('/api/motoristas', motoristasRoutes);
+app.use('/api/ajudantes', ajudantesRoutes);
 
 // Rota de health check
 app.get('/api/health', (req, res) => {
