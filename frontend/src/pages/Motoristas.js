@@ -967,7 +967,7 @@ const Motoristas = () => {
                     Cancelar
                   </Button>
                   <Button type="submit" className="primary">
-                    {editingMotorista ? 'Atualizar' : 'Criar'} Motorista
+                    {editingMotorista ? 'Atualizar' : 'Criar'}
                   </Button>
                 </ButtonGroup>
               )}
