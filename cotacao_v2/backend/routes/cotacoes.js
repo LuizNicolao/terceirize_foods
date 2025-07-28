@@ -711,6 +711,13 @@ router.put('/:id', authenticateToken, async (req, res) => {
               produtoFornecedorId
             ];
 
+            console.log('🔍 Atualizando produto:', {
+              id: produtoFornecedorId,
+              valorUnitario,
+              valorAnterior: produtoSanitizado.valor_anterior,
+              rodadasAtual: produtoSanitizado.rodadas || 0
+            });
+
             // Verificar se algum parâmetro é undefined
             const undefinedParams = params.map((param, index) => ({ param, index })).filter(({ param }) => param === undefined);
             if (undefinedParams.length > 0) {
@@ -740,6 +747,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 END
               WHERE id = ?
             `, params);
+
+            console.log('✅ Produto atualizado com sucesso');
           }
         }
       }
