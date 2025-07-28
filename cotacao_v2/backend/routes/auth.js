@@ -2,7 +2,21 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { executeQuery } = require('../config/database');
+const mysql = require('mysql2/promise');
+
+// Configuração do banco de dados
+const dbConfig = {
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'password',
+  database: process.env.DB_NAME || 'cotacao_db',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
+};
+
+// Pool de conexões
+const pool = mysql.createPool(dbConfig);
 
 // Middleware de autenticação
 const authenticateToken = (req, res, next) => {
@@ -41,10 +55,13 @@ router.post('/sso', async (req, res) => {
     console.log('🔍 Token decodificado:', decoded);
 
     // Buscar usuário no banco do cotacao_v2 pelo userId (assumindo que os IDs são iguais)
-    const users = await executeQuery(`
+    const connection = await pool.getConnection();
+    const [users] = await connection.execute(`
       SELECT id, name, email, role, status
       FROM users WHERE id = ?
     `, [decoded.userId]);
+    
+    await connection.release();
 
     console.log('🔍 Usuários encontrados:', users.length);
 
@@ -75,14 +92,16 @@ router.post('/sso', async (req, res) => {
     );
 
     // Salvar sessão no banco
-    await executeQuery(`
+    const connection2 = await pool.getConnection();
+    await connection2.execute(`
       DELETE FROM user_sessions WHERE user_id = ?
     `, [user.id]);
     
-    await executeQuery(`
+    await connection2.execute(`
       INSERT INTO user_sessions (user_id, token, expires_at)
       VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))
     `, [user.id, newToken]);
+    await connection2.release();
 
     // Remover senha do objeto de resposta
     const { password: _, ...userWithoutPassword } = user;
@@ -111,14 +130,18 @@ router.post('/login', async (req, res) => {
     }
 
     console.log('🔍 Conectando ao banco...');
+    const connection = await pool.getConnection();
+    console.log('✅ Conexão obtida com sucesso');
     
     console.log('🔍 Executando query para buscar usuário...');
-    const users = await executeQuery(`
+    const [users] = await connection.execute(`
       SELECT id, name, email, password, role, status
       FROM users WHERE email = ?
     `, [email]);
     
     console.log('🔍 Resultado da query:', { encontrados: users.length });
+
+    await connection.release();
 
     if (users.length === 0) {
       return res.status(401).json({ message: 'Email ou senha inválidos' });
@@ -153,15 +176,17 @@ router.post('/login', async (req, res) => {
     );
 
     // Remover sessão antiga se existir
-    await executeQuery(`
+    const connection2 = await pool.getConnection();
+    await connection2.execute(`
       DELETE FROM user_sessions WHERE user_id = ?
     `, [user.id]);
     
     // Salvar nova sessão no banco
-    await executeQuery(`
+    await connection2.execute(`
       INSERT INTO user_sessions (user_id, token, expires_at)
       VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 24 HOUR))
     `, [user.id, token]);
+    await connection2.release();
 
     // Remover senha do objeto de resposta
     const { password: _, ...userWithoutPassword } = user;
@@ -181,10 +206,14 @@ router.post('/login', async (req, res) => {
 // GET /api/auth/me - Verificar status de autenticação
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const users = await executeQuery(`
+    const connection = await pool.getConnection();
+    
+    const [users] = await connection.execute(`
       SELECT id, name, email, role, status, created_at, updated_at
       FROM users WHERE id = ?
     `, [req.user.id]);
+
+    await connection.release();
 
     if (users.length === 0) {
       return res.status(404).json({ message: 'Usuário não encontrado' });
@@ -212,10 +241,14 @@ router.post('/logout', authenticateToken, async (req, res) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
+      const connection = await pool.getConnection();
+      
       // Remover sessão do banco
-      await executeQuery(`
+      await connection.execute(`
         DELETE FROM user_sessions WHERE token = ?
       `, [token]);
+
+      await connection.release();
     }
 
     res.json({ message: 'Logout realizado com sucesso' });

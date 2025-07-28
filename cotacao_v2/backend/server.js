@@ -2,9 +2,10 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const path = require('path');
 
 // Carregar variáveis de ambiente
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // Debug: verificar se as variáveis estão carregadas
 console.log('🔧 Variáveis de ambiente carregadas:');
@@ -73,26 +74,6 @@ app.get('/api/health', (req, res) => {
     message: 'Sistema de Cotação API funcionando!',
     timestamp: new Date().toISOString()
   });
-});
-
-// Rota de teste do banco de dados
-app.get('/api/test-db', async (req, res) => {
-  try {
-    const { executeQuery } = require('./config/database');
-    const result = await executeQuery('SELECT 1 as test');
-    res.json({ 
-      message: 'Conexão com banco de dados OK!',
-      result: result,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error('Erro no teste do banco:', error);
-    res.status(500).json({ 
-      message: 'Erro na conexão com banco de dados',
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
 });
 
 // Middleware de tratamento de erros

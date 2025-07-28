@@ -6,19 +6,18 @@ RUN adduser -S nodejs -u 1001
 
 WORKDIR /app
 
-# Copiar package.json primeiro para aproveitar o cache do Docker
 COPY package*.json ./
 
-# Instalar dependências
+# Instalar dependências como root
 RUN npm install
 
-# Copiar o resto dos arquivos
+# Copiar arquivos do projeto
 COPY . .
 
 # Mudar propriedade dos arquivos para o usuário nodejs
 RUN chown -R nodejs:nodejs /app
 
-# Mudar para o usuário nodejs
+# Mudar para usuário não-root
 USER nodejs
 
 EXPOSE 5000
