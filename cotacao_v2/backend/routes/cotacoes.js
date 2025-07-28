@@ -700,13 +700,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
             // Verificar se todos os parâmetros são válidos
             const params = [
-              valorUnitario, // Para comparação
+              valorUnitario, // Para comparação do valor_anterior
               valorUnitario, // Novo valor unitário
-              valorUnitario, // Para verificar se > 0
+              valorUnitario, // Para verificar se > 0 (primeiro_valor)
               valorUnitario, // Para primeiro_valor (apenas se for > 0)
               prazoEntrega, 
               dataEntregaFn, 
               total,
+              valorUnitario, // Para comparação das rodadas
               produtoFornecedorId
             ];
 
@@ -738,7 +739,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
                   ELSE rodadas 
                 END
               WHERE id = ?
-            `, [...params, valorUnitario, produtoFornecedorId]);
+            `, params);
           }
         }
       }
