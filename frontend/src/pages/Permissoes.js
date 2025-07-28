@@ -220,11 +220,61 @@ const UserSelect = styled.select`
   }
 `;
 
-const PermissionsTable = styled.div`
+const PermissionsContainer = styled.div`
   background: var(--white);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  margin-bottom: 24px;
+`;
+
+const PermissionGroup = styled.div`
+  border-bottom: 1px solid #e0e0e0;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const GroupHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #e0e0e0;
+
+  &:hover {
+    background: #e9ecef;
+  }
+`;
+
+const GroupTitle = styled.div`
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--dark-gray);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const GroupToggle = styled.div`
+  font-size: 14px;
+  color: var(--gray);
+  transition: all 0.3s ease;
+`;
+
+const GroupContent = styled.div`
+  overflow: hidden;
+  transition: all 0.3s ease;
+  max-height: ${props => props.$expanded ? '1000px' : '0'};
+  opacity: ${props => props.$expanded ? '1' : '0'};
+`;
+
+const PermissionsTable = styled.div`
+  background: var(--white);
 `;
 
 const TableHeader = styled.div`
@@ -261,6 +311,9 @@ const ScreenName = styled.div`
   font-weight: 600;
   color: var(--dark-gray);
   font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 const PermissionCell = styled.div`
@@ -739,6 +792,7 @@ const Permissoes = () => {
     usuario_id: '',
     periodo: ''
   });
+  const [expandedGroups, setExpandedGroups] = useState({});
 
   useEffect(() => {
     loadUsuarios();
@@ -1268,8 +1322,37 @@ const Permissoes = () => {
     }
   };
 
+  // Estrutura de grupos baseada na sidebar
+  const permissionGroups = [
+    {
+      title: 'Principal',
+      screens: ['dashboard']
+    },
+    {
+      title: 'Suprimentos',
+      screens: ['cotacao']
+    },
+    {
+      title: 'Logística',
+      screens: ['rotas', 'unidades_escolares']
+    },
+    {
+      title: 'Frotas',
+      screens: ['veiculos', 'motoristas', 'ajudantes']
+    },
+    {
+      title: 'Cadastros',
+      screens: ['usuarios', 'fornecedores', 'clientes', 'filiais', 'produtos', 'grupos', 'subgrupos', 'classes', 'nome_generico_produto', 'unidades', 'marcas']
+    },
+    {
+      title: 'Sistema',
+      screens: ['permissoes']
+    }
+  ];
+
   const getScreenLabel = (screen) => {
     switch (screen) {
+      case 'dashboard': return 'Dashboard';
       case 'usuarios': return 'Usuários';
       case 'fornecedores': return 'Fornecedores';
       case 'produtos': return 'Produtos';
@@ -1280,15 +1363,60 @@ const Permissoes = () => {
       case 'permissoes': return 'Permissões';
       case 'classes': return 'Classes';
       case 'marcas': return 'Marcas';
-      case 'nome_generico_produto': return 'Nome Genérico Produto';
+      case 'nome_generico_produto': return 'Nomes Genéricos';
       case 'clientes': return 'Clientes';
       case 'filiais': return 'Filiais';
       case 'rotas': return 'Rotas';
       case 'cotacao': return 'Cotação';
       case 'veiculos': return 'Veículos';
       case 'motoristas': return 'Motoristas';
+      case 'ajudantes': return 'Ajudantes';
       default: return screen;
     }
+  };
+
+  const getScreenIcon = (screen) => {
+    switch (screen) {
+      case 'dashboard': return '🏠';
+      case 'usuarios': return '👥';
+      case 'fornecedores': return '🚛';
+      case 'produtos': return '📦';
+      case 'grupos': return '📚';
+      case 'subgrupos': return '🔗';
+      case 'unidades': return '📏';
+      case 'unidades_escolares': return '🏢';
+      case 'permissoes': return '🔐';
+      case 'classes': return '📊';
+      case 'marcas': return '🏷️';
+      case 'nome_generico_produto': return '📄';
+      case 'clientes': return '🏢';
+      case 'filiais': return '🏪';
+      case 'rotas': return '🛣️';
+      case 'cotacao': return '📋';
+      case 'veiculos': return '🚗';
+      case 'motoristas': return '👨‍💼';
+      case 'ajudantes': return '👨‍💼';
+      default: return '📄';
+    }
+  };
+
+  const toggleGroup = (groupTitle) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupTitle]: !prev[groupTitle]
+    }));
+  };
+
+  const expandAllGroups = () => {
+    const allExpanded = {};
+    permissionGroups.forEach(group => {
+      allExpanded[group.title] = true;
+    });
+    setExpandedGroups(allExpanded);
+  };
+
+  const collapseAllGroups = () => {
+    setExpandedGroups({});
   };
 
   if (loading) {
@@ -1393,49 +1521,129 @@ const Permissoes = () => {
           </UserSelector>
 
           {selectedUser && userPermissions.permissoes && (
-            <PermissionsTable>
-              <TableHeader>
-                <div>Tela</div>
-                <div style={{ textAlign: 'center' }}>Visualizar</div>
-                <div style={{ textAlign: 'center' }}>Criar</div>
-                <div style={{ textAlign: 'center' }}>Editar</div>
-                <div style={{ textAlign: 'center' }}>Excluir</div>
-              </TableHeader>
+            <div>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center', 
+                marginBottom: '16px',
+                padding: '12px 16px',
+                background: '#f8f9fa',
+                borderRadius: '8px',
+                border: '1px solid #e0e0e0'
+              }}>
+                <div style={{ fontSize: '14px', color: 'var(--dark-gray)', fontWeight: '500' }}>
+                  Gerenciar permissões para: <strong>{selectedUser.nome}</strong>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    onClick={expandAllGroups}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      background: 'var(--primary-green)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Expandir Todos
+                  </button>
+                  <button
+                    onClick={collapseAllGroups}
+                    style={{
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      background: 'var(--light-gray)',
+                      color: 'var(--dark-gray)',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Colapsar Todos
+                  </button>
+                </div>
+              </div>
+              
+              <PermissionsContainer>
+              {permissionGroups.map((group, groupIndex) => {
+                // Filtrar permissões que pertencem a este grupo
+                const groupPermissions = userPermissions.permissoes.filter(perm => 
+                  group.screens.includes(perm.tela)
+                );
 
-              {userPermissions.permissoes.map(perm => (
-                <TableRow key={perm.tela}>
-                  <ScreenName>{getScreenLabel(perm.tela)}</ScreenName>
-                  <PermissionCell>
-                    <Checkbox
-                      type="checkbox"
-                      checked={editingPermissions[perm.tela]?.pode_visualizar || false}
-                      onChange={(e) => handlePermissionChange(perm.tela, 'pode_visualizar', e.target.checked)}
-                    />
-                  </PermissionCell>
-                  <PermissionCell>
-                    <Checkbox
-                      type="checkbox"
-                      checked={editingPermissions[perm.tela]?.pode_criar || false}
-                      onChange={(e) => handlePermissionChange(perm.tela, 'pode_criar', e.target.checked)}
-                    />
-                  </PermissionCell>
-                  <PermissionCell>
-                    <Checkbox
-                      type="checkbox"
-                      checked={editingPermissions[perm.tela]?.pode_editar || false}
-                      onChange={(e) => handlePermissionChange(perm.tela, 'pode_editar', e.target.checked)}
-                    />
-                  </PermissionCell>
-                  <PermissionCell>
-                    <Checkbox
-                      type="checkbox"
-                      checked={editingPermissions[perm.tela]?.pode_excluir || false}
-                      onChange={(e) => handlePermissionChange(perm.tela, 'pode_excluir', e.target.checked)}
-                    />
-                  </PermissionCell>
-                </TableRow>
-              ))}
-            </PermissionsTable>
+                // Se não há permissões neste grupo, não renderizar
+                if (groupPermissions.length === 0) return null;
+
+                return (
+                  <PermissionGroup key={groupIndex}>
+                    <GroupHeader onClick={() => toggleGroup(group.title)}>
+                      <GroupTitle>
+                        {group.title}
+                        <span style={{ fontSize: '12px', color: 'var(--gray)', fontWeight: 'normal' }}>
+                          ({groupPermissions.length} tela{groupPermissions.length !== 1 ? 's' : ''})
+                        </span>
+                      </GroupTitle>
+                      <GroupToggle>
+                        {expandedGroups[group.title] ? '▼' : '▶'}
+                      </GroupToggle>
+                    </GroupHeader>
+                    
+                    <GroupContent $expanded={expandedGroups[group.title]}>
+                      <PermissionsTable>
+                        <TableHeader>
+                          <div>Tela</div>
+                          <div style={{ textAlign: 'center' }}>Visualizar</div>
+                          <div style={{ textAlign: 'center' }}>Criar</div>
+                          <div style={{ textAlign: 'center' }}>Editar</div>
+                          <div style={{ textAlign: 'center' }}>Excluir</div>
+                        </TableHeader>
+
+                        {groupPermissions.map(perm => (
+                          <TableRow key={perm.tela}>
+                            <ScreenName>
+                              <span style={{ fontSize: '16px' }}>{getScreenIcon(perm.tela)}</span>
+                              {getScreenLabel(perm.tela)}
+                            </ScreenName>
+                            <PermissionCell>
+                              <Checkbox
+                                type="checkbox"
+                                checked={editingPermissions[perm.tela]?.pode_visualizar || false}
+                                onChange={(e) => handlePermissionChange(perm.tela, 'pode_visualizar', e.target.checked)}
+                              />
+                            </PermissionCell>
+                            <PermissionCell>
+                              <Checkbox
+                                type="checkbox"
+                                checked={editingPermissions[perm.tela]?.pode_criar || false}
+                                onChange={(e) => handlePermissionChange(perm.tela, 'pode_criar', e.target.checked)}
+                              />
+                            </PermissionCell>
+                            <PermissionCell>
+                              <Checkbox
+                                type="checkbox"
+                                checked={editingPermissions[perm.tela]?.pode_editar || false}
+                                onChange={(e) => handlePermissionChange(perm.tela, 'pode_editar', e.target.checked)}
+                              />
+                            </PermissionCell>
+                            <PermissionCell>
+                              <Checkbox
+                                type="checkbox"
+                                checked={editingPermissions[perm.tela]?.pode_excluir || false}
+                                onChange={(e) => handlePermissionChange(perm.tela, 'pode_excluir', e.target.checked)}
+                              />
+                            </PermissionCell>
+                          </TableRow>
+                        ))}
+                      </PermissionsTable>
+                    </GroupContent>
+                  </PermissionGroup>
+                );
+              })}
+            </PermissionsContainer>
+            </div>
           )}
 
           {selectedUser && userPermissions.permissoes && (
