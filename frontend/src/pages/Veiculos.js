@@ -358,6 +358,12 @@ const Veiculos = () => {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [auditFilters, setAuditFilters] = useState({
+    dataInicio: '',
+    dataFim: '',
+    acao: '',
+    usuario: ''
+  });
   const { canView, canCreate, canEdit, canDelete } = usePermissions();
   
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
@@ -383,16 +389,19 @@ const Veiculos = () => {
   const loadAuditLogs = async () => {
     try {
       setAuditLoading(true);
-      const response = await api.get('/audit-logs', {
-        params: {
-          table: 'veiculos',
-          limit: 100
-        }
-      });
-      setAuditLogs(response.data);
+      const params = new URLSearchParams();
+      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
+      params.append('recurso', 'veiculos');
+
+      const response = await api.get(`/auditoria?${params.toString()}`);
+      setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
+      setAuditLogs([]);
     } finally {
       setAuditLoading(false);
     }
@@ -406,6 +415,12 @@ const Veiculos = () => {
   const handleCloseAuditModal = () => {
     setShowAuditModal(false);
     setAuditLogs([]);
+    setAuditFilters({
+      dataInicio: '',
+      dataFim: '',
+      acao: '',
+      usuario: ''
+    });
   };
 
   const handleApplyAuditFilters = () => {
@@ -414,43 +429,59 @@ const Veiculos = () => {
 
   const handleExportXLSX = async () => {
     try {
-      const response = await api.get('/veiculos/export/xlsx', {
+      const params = new URLSearchParams();
+      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
+      params.append('recurso', 'veiculos');
+
+      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
         responseType: 'blob'
       });
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'veiculos.xlsx');
+      link.setAttribute('download', `auditoria_veiculos_${new Date().toISOString().split('T')[0]}.xlsx`);
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
-      toast.success('Exportação XLSX realizada com sucesso!');
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Relatório exportado com sucesso!');
     } catch (error) {
-      console.error('Erro na exportação XLSX:', error);
-      toast.error('Erro na exportação XLSX');
+      console.error('Erro ao exportar auditoria:', error);
+      toast.error('Erro ao exportar relatório');
     }
   };
 
   const handleExportPDF = async () => {
     try {
-      const response = await api.get('/veiculos/export/pdf', {
+      const params = new URLSearchParams();
+      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
+      params.append('recurso', 'veiculos');
+
+      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
         responseType: 'blob'
       });
-      
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'veiculos.pdf');
+      link.setAttribute('download', `auditoria_veiculos_${new Date().toISOString().split('T')[0]}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
-      
-      toast.success('Exportação PDF realizada com sucesso!');
+      window.URL.revokeObjectURL(url);
+
+      toast.success('Relatório exportado com sucesso!');
     } catch (error) {
-      console.error('Erro na exportação PDF:', error);
-      toast.error('Erro na exportação PDF');
+      console.error('Erro ao exportar auditoria:', error);
+      toast.error('Erro ao exportar relatório');
     }
   };
 
@@ -1284,64 +1315,183 @@ const Veiculos = () => {
 
       {showAuditModal && (
         <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
             <ModalHeader>
-              <ModalTitle>Logs de Auditoria - Veículos</ModalTitle>
-              <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
+              <ModalTitle>Relatório de Auditoria - Veículos</ModalTitle>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={handleExportXLSX}
+                  title="Exportar para Excel"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
+                  <FaFileExcel />
+                  Excel
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  title="Exportar para PDF"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
+                  <FaFilePdf />
+                  PDF
+                </button>
+                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
+              </div>
             </ModalHeader>
 
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-                <Button onClick={handleExportXLSX} className="primary">
-                  <FaFileExcel style={{ marginRight: '8px' }} />
-                  Exportar XLSX
-                </Button>
-                <Button onClick={handleExportPDF} className="primary">
-                  <FaFilePdf style={{ marginRight: '8px' }} />
-                  Exportar PDF
-                </Button>
+            {/* Filtros de Auditoria */}
+            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Início
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Fim
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Ação
+                  </label>
+                  <select
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Usuário
+                  </label>
+                  <input
+                    type="text"
+                    value={auditFilters.usuario}
+                    onChange={(e) => setAuditFilters({...auditFilters, usuario: e.target.value})}
+                    placeholder="Nome do usuário"
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    &nbsp;
+                  </label>
+                  <button
+                    onClick={handleApplyAuditFilters}
+                    style={{
+                      width: '100%',
+                      padding: '8px 16px',
+                      background: 'var(--primary-green)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Aplicar Filtros
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div>
+            {/* Lista de Logs */}
+            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
               {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '40px' }}>
-                  Carregando logs de auditoria...
-                </div>
+                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
               ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--gray)' }}>
-                  Nenhum log de auditoria encontrado
+                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
+                  Nenhum log encontrado com os filtros aplicados
                 </div>
               ) : (
-                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                  {auditLogs.map((log, index) => (
-                    <div key={index} style={{ 
-                      padding: '16px', 
-                      border: '1px solid #e0e0e0', 
-                      borderRadius: '8px', 
-                      marginBottom: '12px',
-                      background: '#f9f9f9'
-                    }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div>
-                          <span style={{ 
-                            padding: '4px 8px', 
-                            borderRadius: '4px', 
-                            fontSize: '12px', 
-                            fontWeight: 'bold',
-                            background: log.acao === 'CREATE' ? '#d4edda' : log.acao === 'UPDATE' ? '#fff3cd' : '#f8d7da',
-                            color: log.acao === 'CREATE' ? '#155724' : log.acao === 'UPDATE' ? '#856404' : '#721c24'
-                          }}>
-                            {getActionLabel(log.acao)}
-                          </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)', marginLeft: '8px' }}>
-                            por {log.usuario_nome || 'Usuário desconhecido'}
+                <div>
+                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
+                    {auditLogs.length} log(s) encontrado(s)
+                  </div>
+                                      {auditLogs.map((log, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          border: '1px solid #e0e0e0',
+                          borderRadius: '8px',
+                          padding: '16px',
+                          marginBottom: '12px',
+                          background: 'white'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '12px',
+                              fontWeight: 'bold',
+                              background: log.acao === 'create' ? '#e8f5e8' : 
+                                         log.acao === 'update' ? '#fff3cd' : 
+                                         log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
+                              color: log.acao === 'create' ? '#2e7d32' : 
+                                     log.acao === 'update' ? '#856404' : 
+                                     log.acao === 'delete' ? '#721c24' : '#1976d2'
+                            }}>
+                              {getActionLabel(log.acao)}
+                            </span>
+                            <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                              por {log.usuario_nome || 'Usuário desconhecido'}
+                            </span>
+                          </div>
+                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                            {formatDate(log.timestamp)}
                           </span>
                         </div>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                          {formatDate(log.timestamp)}
-                        </span>
-                      </div>
                       
                       {log.detalhes && (
                         <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
@@ -1403,18 +1553,16 @@ const Veiculos = () => {
                               </div>
                             </div>
                           )}
-                          {log.detalhes.resourceId && (
+                          {log.resource_id && (
                             <div style={{ 
                               marginTop: '8px', 
                               padding: '6px 8px', 
                               background: '#e3f2fd', 
                               borderRadius: '4px',
+                              border: '1px solid #bbdefb',
                               fontSize: '11px'
                             }}>
-                              <strong>ID do Veículo:</strong> 
-                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
-                                #{log.detalhes.resourceId}
-                              </span>
+                              <strong>ID do Veículo:</strong> {log.resource_id}
                             </div>
                           )}
                         </div>

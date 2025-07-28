@@ -1110,7 +1110,7 @@ const Motoristas = () => {
 
             {/* Lista de Logs */}
             <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-              {auditLogs.length === 0 ? (
+                  {auditLogs.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
                   Nenhum log encontrado com os filtros aplicados
                 </div>
