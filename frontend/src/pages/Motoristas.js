@@ -152,178 +152,128 @@ const Modal = styled.div`
 `;
 
 const ModalContent = styled.div`
-  background: white;
-  border-radius: 8px;
+  background: var(--white);
+  border-radius: 12px;
+  padding: 24px;
   width: 100%;
-  max-width: 800px;
+  max-width: 90vw;
+  width: 1200px;
   max-height: 95vh;
   overflow-y: auto;
-  position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-  }
 `;
 
 const ModalHeader = styled.div`
-  padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 10;
+  margin-bottom: 16px;
+  grid-column: 1 / -1;
 `;
 
 const ModalTitle = styled.h2`
-  margin: 0;
-  color: var(--primary-green);
+  color: var(--dark-gray);
   font-size: 20px;
-  font-weight: 600;
+  font-weight: 700;
+  margin: 0;
 `;
 
 const CloseButton = styled.button`
   background: none;
   border: none;
-  font-size: 20px;
+  font-size: 24px;
   cursor: pointer;
-  color: #666;
+  color: var(--gray);
   padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
 
   &:hover {
-    background: #f5f5f5;
-    color: #333;
+    color: var(--error-red);
   }
 `;
 
 const Form = styled.form`
-  padding: 24px;
-`;
-
-const FormGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-`;
-
-const FormGrid2 = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 16px;
+  max-height: calc(95vh - 120px);
+  overflow-y: auto;
+  padding-right: 8px;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+  /* Estilizar scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--primary-green);
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--dark-green);
   }
 `;
 
-const FormSection = styled.div`
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 20px;
-  min-height: 350px;
-`;
 
-const SectionTitle = styled.h3`
-  margin: 0 0 16px 0;
-  color: var(--primary-green);
-  font-size: 16px;
-  font-weight: 600;
-  border-bottom: 2px solid var(--primary-green);
-  padding-bottom: 8px;
-`;
 
 const FormGroup = styled.div`
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 `;
 
 const Label = styled.label`
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 500;
-  color: #495057;
-  font-size: 14px;
+  color: var(--dark-gray);
+  font-weight: 600;
+  font-size: 13px;
 `;
 
 const Input = styled.input`
-  width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 2px solid #e0e0e0;
   border-radius: 6px;
   font-size: 14px;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
 
   &:focus {
-    outline: none;
     border-color: var(--primary-green);
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-  }
-
-  &:disabled {
-    background: #f5f5f5;
-    color: #666;
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
   }
 `;
 
 const Select = styled.select`
-  width: 100%;
   padding: 10px 12px;
-  border: 1px solid #ddd;
+  border: 2px solid #e0e0e0;
   border-radius: 6px;
   font-size: 14px;
-  background: white;
-  transition: border-color 0.3s ease;
+  background: var(--white);
+  transition: all 0.3s ease;
 
   &:focus {
-    outline: none;
     border-color: var(--primary-green);
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-  }
-
-  &:disabled {
-    background: #f5f5f5;
-    color: #666;
+    outline: none;
   }
 `;
 
 const TextArea = styled.textarea`
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  min-height: 80px;
-  resize: vertical;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
   font-family: inherit;
-  transition: border-color 0.3s ease;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
 
   &:focus {
-    outline: none;
     border-color: var(--primary-green);
-    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-  }
-
-  &:disabled {
-    background: #f5f5f5;
-    color: #666;
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
   }
 `;
 
@@ -332,8 +282,7 @@ const ButtonGroup = styled.div`
   gap: 12px;
   justify-content: flex-end;
   margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #e0e0e0;
+  grid-column: 1 / -1;
 `;
 
 const Button = styled.button`
@@ -912,117 +861,105 @@ const Motoristas = () => {
               </CloseButton>
             </ModalHeader>
             <Form onSubmit={handleSubmit(onSubmit)}>
-              <FormGrid>
-                <FormSection>
-                  <SectionTitle>Informações Pessoais</SectionTitle>
-                  <FormGrid2>
-                    <FormGroup>
-                      <Label>Nome *</Label>
-                      <Input
-                        {...register('nome', { required: 'Nome é obrigatório' })}
-                        disabled={!!viewingMotorista}
-                        placeholder="Nome completo"
-                      />
-                      {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>CPF</Label>
-                      <Input
-                        {...register('cpf')}
-                        disabled={!!viewingMotorista}
-                        placeholder="000.000.000-00"
-                      />
-                    </FormGroup>
-                  </FormGrid2>
-                  <FormGrid2>
-                    <FormGroup>
-                      <Label>CNH</Label>
-                      <Input
-                        {...register('cnh')}
-                        disabled={!!viewingMotorista}
-                        placeholder="Número da CNH"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>Categoria CNH</Label>
-                      <Select {...register('categoria_cnh')} disabled={!!viewingMotorista}>
-                        <option value="">Selecione</option>
-                        <option value="A">A</option>
-                        <option value="B">B</option>
-                        <option value="C">C</option>
-                        <option value="D">D</option>
-                        <option value="E">E</option>
-                        <option value="AB">AB</option>
-                        <option value="AC">AC</option>
-                        <option value="AD">AD</option>
-                        <option value="AE">AE</option>
-                      </Select>
-                    </FormGroup>
-                  </FormGrid2>
-                </FormSection>
+              <FormGroup>
+                <Label>Nome *</Label>
+                <Input
+                  {...register('nome', { required: 'Nome é obrigatório' })}
+                  disabled={!!viewingMotorista}
+                  placeholder="Nome completo"
+                />
+                {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
+              </FormGroup>
 
-                <FormSection>
-                  <SectionTitle>Contato e Localização</SectionTitle>
-                  <FormGrid2>
-                    <FormGroup>
-                      <Label>Telefone</Label>
-                      <Input
-                        {...register('telefone')}
-                        disabled={!!viewingMotorista}
-                        placeholder="(00) 00000-0000"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>Email</Label>
-                      <Input
-                        {...register('email')}
-                        type="email"
-                        disabled={!!viewingMotorista}
-                        placeholder="email@exemplo.com"
-                      />
-                    </FormGroup>
-                  </FormGrid2>
-                  <FormGroup>
-                    <Label>Endereço</Label>
-                    <TextArea
-                      {...register('endereco')}
-                      disabled={!!viewingMotorista}
-                      placeholder="Endereço completo"
-                    />
-                  </FormGroup>
-                </FormSection>
+              <FormGroup>
+                <Label>CPF</Label>
+                <Input
+                  {...register('cpf')}
+                  disabled={!!viewingMotorista}
+                  placeholder="000.000.000-00"
+                />
+              </FormGroup>
 
-                <FormSection>
-                  <SectionTitle>Informações Profissionais</SectionTitle>
-                  <FormGrid2>
-                    <FormGroup>
-                      <Label>Status</Label>
-                      <Select {...register('status')} disabled={!!viewingMotorista}>
-                        <option value="ativo">Ativo</option>
-                        <option value="inativo">Inativo</option>
-                        <option value="ferias">Férias</option>
-                        <option value="licenca">Licença</option>
-                      </Select>
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>Data de Admissão</Label>
-                      <Input
-                        {...register('data_admissao')}
-                        type="date"
-                        disabled={!!viewingMotorista}
-                      />
-                    </FormGroup>
-                  </FormGrid2>
-                  <FormGroup>
-                    <Label>Observações</Label>
-                    <TextArea
-                      {...register('observacoes')}
-                      disabled={!!viewingMotorista}
-                      placeholder="Observações adicionais"
-                    />
-                  </FormGroup>
-                </FormSection>
-              </FormGrid>
+              <FormGroup>
+                <Label>CNH</Label>
+                <Input
+                  {...register('cnh')}
+                  disabled={!!viewingMotorista}
+                  placeholder="Número da CNH"
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Categoria CNH</Label>
+                <Select {...register('categoria_cnh')} disabled={!!viewingMotorista}>
+                  <option value="">Selecione</option>
+                  <option value="A">A</option>
+                  <option value="B">B</option>
+                  <option value="C">C</option>
+                  <option value="D">D</option>
+                  <option value="E">E</option>
+                  <option value="AB">AB</option>
+                  <option value="AC">AC</option>
+                  <option value="AD">AD</option>
+                  <option value="AE">AE</option>
+                </Select>
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Telefone</Label>
+                <Input
+                  {...register('telefone')}
+                  disabled={!!viewingMotorista}
+                  placeholder="(00) 00000-0000"
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Email</Label>
+                <Input
+                  {...register('email')}
+                  type="email"
+                  disabled={!!viewingMotorista}
+                  placeholder="email@exemplo.com"
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Endereço</Label>
+                <TextArea
+                  {...register('endereco')}
+                  disabled={!!viewingMotorista}
+                  placeholder="Endereço completo"
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Status</Label>
+                <Select {...register('status')} disabled={!!viewingMotorista}>
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                  <option value="ferias">Férias</option>
+                  <option value="licenca">Licença</option>
+                </Select>
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Data de Admissão</Label>
+                <Input
+                  {...register('data_admissao')}
+                  type="date"
+                  disabled={!!viewingMotorista}
+                />
+              </FormGroup>
+
+              <FormGroup>
+                <Label>Observações</Label>
+                <TextArea
+                  {...register('observacoes')}
+                  disabled={!!viewingMotorista}
+                  placeholder="Observações adicionais"
+                />
+              </FormGroup>
 
               {!viewingMotorista && (
                 <ButtonGroup>
