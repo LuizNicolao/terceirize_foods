@@ -436,6 +436,15 @@ router.post('/', authenticateToken, async (req, res) => {
 
     // Inserir fornecedores
     for (const fornecedor of fornecedores) {
+      console.log('🔍 Salvando fornecedor:', {
+        id: fornecedor.id,
+        nome: fornecedor.nome,
+        nomeLength: fornecedor.nome ? fornecedor.nome.length : 0,
+        tipoFrete: fornecedor.tipoFrete,
+        valorFrete: fornecedor.valorFrete,
+        prazoPagamento: fornecedor.prazoPagamento
+      });
+
       const [fornecedorResult] = await connection.execute(`
         INSERT INTO fornecedores (
           cotacao_id, fornecedor_id, nome, tipo_frete, valor_frete, prazo_pagamento, frete
@@ -449,6 +458,8 @@ router.post('/', authenticateToken, async (req, res) => {
         fornecedor.prazoPagamento || null, 
         fornecedor.frete || null
       ]);
+
+      console.log('✅ Fornecedor salvo com ID:', fornecedorResult.insertId);
 
       const fornecedorDbId = fornecedorResult.insertId;
 
