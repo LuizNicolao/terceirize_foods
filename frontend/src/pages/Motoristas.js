@@ -20,63 +20,47 @@ import { usePermissions } from '../contexts/PermissionsContext';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 
 const Container = styled.div`
-  padding: 20px;
-  margin-left: 250px;
-  min-height: 100vh;
-  background: #f5f5f5;
-
-  @media (max-width: 768px) {
-    margin-left: 0;
-    padding: 10px;
-  }
+  padding: 24px;
 `;
 
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 10px;
+  margin-bottom: 24px;
 `;
 
 const Title = styled.h1`
-  color: var(--primary-green);
+  color: var(--dark-gray);
+  font-size: 28px;
+  font-weight: 700;
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
 `;
 
 const AddButton = styled.button`
   background: var(--primary-green);
-  color: white;
+  color: var(--white);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
   border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
   cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
 
   &:hover {
     background: var(--dark-green);
     transform: translateY(-1px);
   }
-
-  &:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-    transform: none;
-  }
 `;
 
 const TableContainer = styled.div`
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 `;
 
@@ -86,69 +70,64 @@ const Table = styled.table`
 `;
 
 const Th = styled.th`
-  background: #f8f9fa;
-  padding: 12px 16px;
+  background-color: #f5f5f5;
+  padding: 16px 12px;
   text-align: left;
   font-weight: 600;
-  color: #495057;
-  border-bottom: 1px solid #dee2e6;
+  color: var(--dark-gray);
   font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
 `;
 
 const Td = styled.td`
-  padding: 12px 16px;
-  border-bottom: 1px solid #dee2e6;
+  padding: 16px 12px;
+  border-bottom: 1px solid #f0f0f0;
   font-size: 14px;
-  color: #495057;
+  color: var(--dark-gray);
 `;
 
 const ActionButton = styled.button`
   background: none;
   border: none;
-  padding: 6px;
-  margin: 0 2px;
-  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  color: #6c757d;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  margin-right: 8px;
+  color: var(--gray);
 
-  &.view:hover {
-    background: #e3f2fd;
-    color: #1976d2;
+  &:hover {
+    background-color: var(--light-gray);
   }
 
-  &.edit:hover {
-    background: #fff3e0;
-    color: #f57c00;
+  &.edit {
+    color: var(--blue);
   }
 
-  &.delete:hover {
-    background: #ffebee;
-    color: #d32f2f;
+  &.delete {
+    color: var(--error-red);
+  }
+
+  &.view {
+    color: var(--primary-green);
   }
 `;
 
 const StatusBadge = styled.span`
-  padding: 4px 8px;
-  border-radius: 12px;
+  padding: 4px 12px;
+  border-radius: 20px;
   font-size: 12px;
-  font-weight: 500;
-  text-transform: capitalize;
-
-  ${props => {
-    switch (props.status) {
-      case 'ativo':
-        return 'background: #e8f5e8; color: #2e7d32;';
-      case 'inativo':
-        return 'background: #ffebee; color: #c62828;';
-      case 'ferias':
-        return 'background: #fff3e0; color: #ef6c00;';
-      case 'licenca':
-        return 'background: #f3e5f5; color: #7b1fa2;';
-      default:
-        return 'background: #f5f5f5; color: #757575;';
-    }
-  }}
+  font-weight: 600;
+  background: ${props =>
+    props.status === 'ativo' ? 'var(--success-green)' :
+    props.status === 'inativo' ? '#ffebee' :
+    props.status === 'ferias' ? 'var(--warning-yellow)' :
+    props.status === 'licenca' ? '#f3e5f5' : '#f5f5f5'};
+  color: ${props =>
+    props.status === 'ativo' ? 'white' :
+    props.status === 'inativo' ? 'var(--error-red)' :
+    props.status === 'ferias' ? 'var(--dark-gray)' :
+    props.status === 'licenca' ? '#7b1fa2' : '#757575'};
 `;
 
 const EmptyState = styled.div`
