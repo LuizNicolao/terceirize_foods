@@ -14,7 +14,7 @@ import {
   FaFileExcel,
   FaFilePdf
 } from 'react-icons/fa';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import api from '../services/api';
 import { usePermissions } from '../contexts/PermissionsContext';
 import CadastroFilterBar from '../components/CadastroFilterBar';
