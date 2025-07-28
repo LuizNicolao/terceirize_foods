@@ -19,6 +19,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const cotacoesRoutes = require('./routes/cotacoes');
 const savingRoutes = require('./routes/saving');
+const dashboardRoutes = require('./routes/dashboard');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -61,6 +62,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/cotacoes', cotacoesRoutes);
 app.use('/api/saving', savingRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Log das rotas carregadas
 console.log('🚀 Rotas de saving carregadas - Endpoints disponíveis:');

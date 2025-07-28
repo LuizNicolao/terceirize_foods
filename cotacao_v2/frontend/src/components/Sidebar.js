@@ -186,6 +186,13 @@ const Sidebar = () => {
 
   const menuItems = [
     {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: FaChartLine,
+      path: '/dashboard',
+      screen: 'dashboard'
+    },
+    {
       id: 'usuarios',
       label: 'Usuários',
       icon: FaUsers,
