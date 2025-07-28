@@ -1312,9 +1312,26 @@ const NovaCotacao = () => {
                           placeholder="Buscar fornecedor no sistema..."
                           onSelect={(fornecedorSelecionado) => {
                             if (fornecedorSelecionado) {
-                              updateFornecedor(fornecedor.id, 'nome', fornecedorSelecionado.razao_social || fornecedorSelecionado.nome_fantasia);
-                              updateFornecedor(fornecedor.id, 'fornecedor_id', fornecedorSelecionado.id);
-                              updateFornecedor(fornecedor.id, 'cnpj', fornecedorSelecionado.cnpj);
+                              // Atualizar todos os campos do fornecedor em uma única operação
+                              const nomeCompleto = fornecedorSelecionado.razao_social || fornecedorSelecionado.nome_fantasia;
+                              console.log('🔍 Atualizando fornecedor completo:', {
+                                id: fornecedor.id,
+                                nome: nomeCompleto,
+                                fornecedor_id: fornecedorSelecionado.id,
+                                cnpj: fornecedorSelecionado.cnpj
+                              });
+                              
+                              setFornecedores(fornecedores.map(f => {
+                                if (f.id === fornecedor.id) {
+                                  return {
+                                    ...f,
+                                    nome: nomeCompleto,
+                                    fornecedor_id: fornecedorSelecionado.id,
+                                    cnpj: fornecedorSelecionado.cnpj
+                                  };
+                                }
+                                return f;
+                              }));
                             }
                           }}
                         />
