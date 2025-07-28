@@ -8,11 +8,15 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# Instalar dependências como root
+# Instalar dependências e nodemon globalmente
 RUN npm install
+RUN npm install -g nodemon
 
 # Copiar arquivos do projeto
 COPY . .
+
+# Dar permissões de execução
+RUN chmod +x /app/node_modules/.bin/nodemon
 
 # Mudar propriedade dos arquivos para o usuário nodejs
 RUN chown -R nodejs:nodejs /app
