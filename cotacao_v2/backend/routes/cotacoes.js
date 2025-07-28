@@ -732,9 +732,13 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 END,
                 prazo_entrega = ?, 
                 data_entrega_fn = ?,
-                total = ?
+                total = ?,
+                rodadas = CASE 
+                  WHEN valor_unitario != ? AND valor_unitario > 0 THEN rodadas + 1 
+                  ELSE rodadas 
+                END
               WHERE id = ?
-            `, params);
+            `, [...params, valorUnitario, produtoFornecedorId]);
           }
         }
       }

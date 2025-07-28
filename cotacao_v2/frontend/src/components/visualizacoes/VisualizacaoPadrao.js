@@ -90,6 +90,7 @@ const VisualizacaoPadrao = ({ cotacao, active, formatarValor }) => {
               <Th>Prazo Pagamento</Th>
               <Th>Últ. Valor Aprovado</Th>
               <Th>Variação</Th>
+              <Th>Rodadas</Th>
             </tr>
           </thead>
           <tbody>
@@ -115,6 +116,7 @@ const VisualizacaoPadrao = ({ cotacao, active, formatarValor }) => {
                     <VariacaoCell variacao={variacao}>
                       {ultimoValor > 0 ? `${variacao > 0 ? '+' : ''}${variacao.toFixed(2)}%` : '-'}
                     </VariacaoCell>
+                    <Td>{produto.rodadas || 0}</Td>
                   </tr>
                 );
               })
