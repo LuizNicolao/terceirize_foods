@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -390,6 +390,8 @@ const Ajudantes = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [filiais, setFiliais] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
   const [auditFilters, setAuditFilters] = useState({
     startDate: '',
     endDate: '',
@@ -437,10 +439,11 @@ const Ajudantes = () => {
       params.append('table', 'ajudantes');
 
       const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data);
+      setAuditLogs(response.data || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
+      setAuditLogs([]);
     }
   };
 
@@ -463,55 +466,7 @@ const Ajudantes = () => {
     loadAuditLogs();
   };
 
-  const handleExportXLSX = async () => {
-    try {
-      const response = await api.get('/ajudantes', {
-        responseType: 'blob',
-        headers: {
-          'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        }
-      });
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'ajudantes.xlsx');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar relatório:', error);
-      toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  const handleExportPDF = async () => {
-    try {
-      const response = await api.get('/ajudantes', {
-        responseType: 'blob',
-        headers: {
-          'Accept': 'application/pdf'
-        }
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'ajudantes.pdf');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar relatório:', error);
-      toast.error('Erro ao exportar relatório');
-    }
-  };
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -652,6 +607,18 @@ const Ajudantes = () => {
     return statusLabels[status] || status;
   };
 
+  // Filtrar ajudantes
+  const filteredAjudantes = ajudantes.filter(ajudante => {
+    const matchesSearch = !searchTerm || 
+      ajudante.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ajudante.cpf?.includes(searchTerm) ||
+      ajudante.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'todos' || ajudante.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
   if (!canView('ajudantes')) {
     return (
       <Container>
@@ -666,30 +633,39 @@ const Ajudantes = () => {
   return (
     <Container>
       <Header>
-        <Title>Ajudantes</Title>
+        <Title>Gestão de Ajudantes</Title>
         <div style={{ display: 'flex', gap: '12px' }}>
+          <AddButton 
+            onClick={handleOpenAuditModal}
+            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+          >
+            <FaQuestionCircle />
+            Auditoria
+          </AddButton>
           {canCreate('ajudantes') && (
             <AddButton onClick={handleAddAjudante}>
               <FaPlus />
-              Novo Ajudante
+              Adicionar Ajudante
             </AddButton>
           )}
-          <AddButton onClick={handleOpenAuditModal} style={{ background: 'var(--primary-blue)' }}>
-            <FaHistory />
-            Auditoria
-          </AddButton>
-          <AddButton onClick={handleExportXLSX} style={{ background: 'var(--success-green)' }}>
-            <FaFileExcel />
-            Exportar XLSX
-          </AddButton>
-          <AddButton onClick={handleExportPDF} style={{ background: 'var(--error-red)' }}>
-            <FaFilePdf />
-            Exportar PDF
-          </AddButton>
         </div>
       </Header>
 
-      <CadastroFilterBar />
+      <CadastroFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
+        placeholder="Buscar por nome, CPF ou email..."
+        statusOptions={[
+          { value: 'todos', label: 'Todos' },
+          { value: 'ativo', label: 'Ativo' },
+          { value: 'inativo', label: 'Inativo' },
+          { value: 'ferias', label: 'Férias' },
+          { value: 'licenca', label: 'Licença' }
+        ]}
+      />
 
       <TableContainer>
         <Table>
@@ -706,7 +682,19 @@ const Ajudantes = () => {
             </tr>
           </thead>
           <tbody>
-            {ajudantes.map((ajudante) => (
+            {filteredAjudantes.length === 0 ? (
+              <tr>
+                <Td colSpan="8">
+                  <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
+                    {searchTerm || statusFilter !== 'todos' 
+                      ? 'Nenhum ajudante encontrado com os filtros aplicados'
+                      : 'Nenhum ajudante cadastrado'
+                    }
+                  </div>
+                </Td>
+              </tr>
+            ) : (
+              filteredAjudantes.map((ajudante) => (
               <tr key={ajudante.id}>
                 <Td>{ajudante.nome}</Td>
                 <Td>{ajudante.cpf || '-'}</Td>
@@ -747,7 +735,8 @@ const Ajudantes = () => {
                   )}
                 </Td>
               </tr>
-            ))}
+            ))
+            )}
           </tbody>
         </Table>
       </TableContainer>
@@ -944,7 +933,7 @@ const Ajudantes = () => {
                 </tr>
               </thead>
               <tbody>
-                {auditLogs.map((log, index) => (
+                {(auditLogs || []).map((log, index) => (
                   <tr key={index}>
                     <AuditTd>{new Date(log.created_at).toLocaleString('pt-BR')}</AuditTd>
                     <AuditTd>{log.user_name}</AuditTd>
