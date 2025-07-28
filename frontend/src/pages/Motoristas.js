@@ -476,14 +476,14 @@ const Motoristas = () => {
   const loadAuditLogs = async () => {
     try {
       const params = new URLSearchParams();
-      if (auditFilters.dataInicio) params.append('dataInicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('dataFim', auditFilters.dataFim);
+      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
       if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario) params.append('usuario', auditFilters.usuario);
-      params.append('tabela', 'motoristas');
+      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
+      params.append('recurso', 'motoristas');
 
       const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data);
+      setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -1050,9 +1050,9 @@ const Motoristas = () => {
                     <AuditTh>Data/Hora</AuditTh>
                     <AuditTh>Usuário</AuditTh>
                     <AuditTh>Ação</AuditTh>
-                    <AuditTh>Campo</AuditTh>
-                    <AuditTh>Valor Anterior</AuditTh>
-                    <AuditTh>Novo Valor</AuditTh>
+                    <AuditTh>Recurso</AuditTh>
+                    <AuditTh>Detalhes</AuditTh>
+                    <AuditTh>ID do Recurso</AuditTh>
                   </tr>
                 </thead>
                 <tbody>
@@ -1065,12 +1065,12 @@ const Motoristas = () => {
                   ) : (
                     auditLogs.map((log, index) => (
                       <tr key={index}>
-                        <AuditTd>{formatDate(log.data_hora)}</AuditTd>
-                        <AuditTd>{log.usuario_nome}</AuditTd>
+                        <AuditTd>{new Date(log.timestamp).toLocaleString('pt-BR')}</AuditTd>
+                        <AuditTd>{log.usuario_nome || 'Usuário desconhecido'}</AuditTd>
                         <AuditTd>{getActionLabel(log.acao)}</AuditTd>
-                        <AuditTd>{getFieldLabel(log.campo)}</AuditTd>
-                        <AuditTd>{formatFieldValue(log.campo, log.valor_anterior)}</AuditTd>
-                        <AuditTd>{formatFieldValue(log.campo, log.novo_valor)}</AuditTd>
+                        <AuditTd>{log.recurso}</AuditTd>
+                        <AuditTd>{log.detalhes ? JSON.stringify(log.detalhes) : '-'}</AuditTd>
+                        <AuditTd>{log.resource_id || '-'}</AuditTd>
                       </tr>
                     ))
                   )}
