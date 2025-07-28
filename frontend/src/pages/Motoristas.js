@@ -525,11 +525,11 @@ const Motoristas = () => {
   const handleExportXLSX = async () => {
     try {
       const params = new URLSearchParams();
-      if (auditFilters.dataInicio) params.append('dataInicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('dataFim', auditFilters.dataFim);
+      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
       if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario) params.append('usuario', auditFilters.usuario);
-      params.append('tabela', 'motoristas');
+      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
+      params.append('recurso', 'motoristas');
 
       const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
         responseType: 'blob'
@@ -555,11 +555,11 @@ const Motoristas = () => {
   const handleExportPDF = async () => {
     try {
       const params = new URLSearchParams();
-      if (auditFilters.dataInicio) params.append('dataInicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('dataFim', auditFilters.dataFim);
+      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
       if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario) params.append('usuario', auditFilters.usuario);
-      params.append('tabela', 'motoristas');
+      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
+      params.append('recurso', 'motoristas');
 
       const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
         responseType: 'blob'
@@ -982,7 +982,55 @@ const Motoristas = () => {
           <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
             <ModalHeader>
               <ModalTitle>Relatório de Auditoria - Motoristas</ModalTitle>
-              <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={handleExportXLSX}
+                  title="Exportar para Excel"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
+                  <FaFileExcel />
+                  Excel
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  title="Exportar para PDF"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
+                  <FaFilePdf />
+                  PDF
+                </button>
+                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
+              </div>
             </ModalHeader>
 
             {/* Filtros de Auditoria */}
