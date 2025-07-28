@@ -17,7 +17,7 @@ router.get('/', checkPermission('visualizar'), async (req, res) => {
     let query = `
       SELECT a.id, a.nome, a.cpf, a.telefone, a.email, a.endereco, a.status, 
              a.data_admissao, a.observacoes, a.criado_em, a.atualizado_em,
-             f.nome as filial_nome
+             f.filial as filial_nome
       FROM ajudantes a
       LEFT JOIN filiais f ON a.filial_id = f.id
       WHERE 1=1
@@ -49,7 +49,7 @@ router.get('/:id', checkPermission('visualizar'), async (req, res) => {
     const ajudantes = await executeQuery(
       `SELECT a.id, a.nome, a.cpf, a.telefone, a.email, a.endereco, a.status, 
               a.data_admissao, a.observacoes, a.criado_em, a.atualizado_em,
-              f.nome as filial_nome, a.filial_id
+              f.filial as filial_nome, a.filial_id
        FROM ajudantes a
        LEFT JOIN filiais f ON a.filial_id = f.id
        WHERE a.id = ?`,
@@ -134,7 +134,7 @@ router.post('/', [
     const newAjudante = await executeQuery(
       `SELECT a.id, a.nome, a.cpf, a.telefone, a.email, a.endereco, a.status, 
               a.data_admissao, a.observacoes, a.criado_em, a.atualizado_em,
-              f.nome as filial_nome
+              f.filial as filial_nome
        FROM ajudantes a
        LEFT JOIN filiais f ON a.filial_id = f.id
        WHERE a.id = ?`,
@@ -228,7 +228,7 @@ router.put('/:id', [
     const updatedAjudante = await executeQuery(
       `SELECT a.id, a.nome, a.cpf, a.telefone, a.email, a.endereco, a.status, 
               a.data_admissao, a.observacoes, a.criado_em, a.atualizado_em,
-              f.nome as filial_nome
+              f.filial as filial_nome
        FROM ajudantes a
        LEFT JOIN filiais f ON a.filial_id = f.id
        WHERE a.id = ?`,
@@ -275,7 +275,7 @@ router.delete('/:id', [
 router.get('/filiais/options', checkPermission('visualizar'), async (req, res) => {
   try {
     const filiais = await executeQuery(
-      'SELECT id, nome FROM filiais WHERE status = "ativo" ORDER BY nome ASC'
+      'SELECT id, filial as nome FROM filiais WHERE status = 1 ORDER BY filial ASC'
     );
 
     res.json(filiais);
