@@ -3,7 +3,7 @@ const router = express.Router();
 const { executeQuery } = require('../config/database');
 
 // Middleware de autenticação
-const auth = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
 
 // GET /api/dashboard/stats - Buscar estatísticas do dashboard
 router.get('/stats', auth, async (req, res) => {
