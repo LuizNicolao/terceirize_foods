@@ -73,7 +73,7 @@ router.post('/', [
   body('distancia_km').optional().isFloat({ min: 0 }).withMessage('Distância deve ser um número positivo'),
   body('status').isIn(['ativo', 'inativo']).withMessage('Status deve ser ativo ou inativo'),
   body('tipo_rota').isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Tipo de rota inválido'),
-  body('custo_estimado').optional().isFloat({ min: 0 }).withMessage('Custo estimado deve ser um número positivo'),
+  body('custo_diario').optional().isFloat({ min: 0 }).withMessage('Custo diário deve ser um número positivo'),
   body('observacoes').optional().isLength({ max: 65535 }).withMessage('Observações muito longas')
 ], async (req, res) => {
   try {
@@ -86,7 +86,7 @@ router.post('/', [
     }
 
     const {
-      filial_id, codigo, nome, distancia_km, status, tipo_rota, custo_estimado, observacoes
+      filial_id, codigo, nome, distancia_km, status, tipo_rota, custo_diario, observacoes
     } = req.body;
 
     // Verificar se a filial existe
@@ -111,9 +111,9 @@ router.post('/', [
 
     // Inserir rota
     const result = await executeQuery(
-      `INSERT INTO rotas (filial_id, codigo, nome, distancia_km, status, tipo_rota, custo_estimado, observacoes) 
+      `INSERT INTO rotas (filial_id, codigo, nome, distancia_km, status, tipo_rota, custo_diario, observacoes) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [filial_id, codigo, nome, distancia_km || 0, status, tipo_rota, custo_estimado || 0, observacoes]
+      [filial_id, codigo, nome, distancia_km || 0, status, tipo_rota, custo_diario || 0, observacoes]
     );
 
     const newRota = await executeQuery(
@@ -142,7 +142,7 @@ router.put('/:id', [
   body('distancia_km').optional().isFloat({ min: 0 }).withMessage('Distância deve ser um número positivo'),
   body('status').isIn(['ativo', 'inativo']).withMessage('Status deve ser ativo ou inativo'),
   body('tipo_rota').isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Tipo de rota inválido'),
-  body('custo_estimado').optional().isFloat({ min: 0 }).withMessage('Custo estimado deve ser um número positivo'),
+  body('custo_diario').optional().isFloat({ min: 0 }).withMessage('Custo diário deve ser um número positivo'),
   body('observacoes').optional().isLength({ max: 65535 }).withMessage('Observações muito longas')
 ], async (req, res) => {
   try {
@@ -156,7 +156,7 @@ router.put('/:id', [
 
     const { id } = req.params;
     const {
-      filial_id, codigo, nome, distancia_km, status, tipo_rota, custo_estimado, observacoes
+      filial_id, codigo, nome, distancia_km, status, tipo_rota, custo_diario, observacoes
     } = req.body;
 
     // Verificar se a rota existe
@@ -219,9 +219,9 @@ router.put('/:id', [
       updateFields.push('tipo_rota = ?');
       updateParams.push(tipo_rota);
     }
-    if (custo_estimado !== undefined) {
-      updateFields.push('custo_estimado = ?');
-      updateParams.push(custo_estimado);
+    if (custo_diario !== undefined) {
+      updateFields.push('custo_diario = ?');
+      updateParams.push(custo_diario);
     }
     if (observacoes !== undefined) {
       updateFields.push('observacoes = ?');

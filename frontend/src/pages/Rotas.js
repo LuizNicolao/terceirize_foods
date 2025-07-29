@@ -465,7 +465,7 @@ const Rotas = () => {
     setValue('distancia_km', rota.distancia_km);
     setValue('status', rota.status);
     setValue('tipo_rota', rota.tipo_rota);
-    setValue('custo_estimado', rota.custo_estimado);
+    setValue('custo_diario', rota.custo_diario);
     setValue('observacoes', rota.observacoes);
     setViewMode(true);
     setShowModal(true);
@@ -480,7 +480,7 @@ const Rotas = () => {
     setValue('distancia_km', rota.distancia_km);
     setValue('status', rota.status);
     setValue('tipo_rota', rota.tipo_rota);
-    setValue('custo_estimado', rota.custo_estimado);
+    setValue('custo_diario', rota.custo_diario);
     setValue('observacoes', rota.observacoes);
     setViewMode(false);
     setShowModal(true);
@@ -562,6 +562,7 @@ const Rotas = () => {
       'nome': 'Nome',
       'filial_id': 'Filial',
       'status': 'Status',
+      'custo_diario': 'Custo Diário',
       'observacoes': 'Observações'
     };
     return labels[field] || field;
@@ -576,6 +577,10 @@ const Rotas = () => {
     
     if (field === 'filial_id') {
       return getFilialName(parseInt(value));
+    }
+    
+    if (field === 'custo_diario') {
+      return formatCurrency(value);
     }
     
     return String(value);
@@ -749,7 +754,7 @@ const Rotas = () => {
                 <Th>Nome</Th>
                 <Th>Distância (km)</Th>
                 <Th>Tipo</Th>
-                <Th>Custo Estimado</Th>
+                <Th>Custo Diário</Th>
                 <Th>Status</Th>
                 <Th>Ações</Th>
               </tr>
@@ -767,7 +772,7 @@ const Rotas = () => {
                       {formatTipoRota(rota.tipo_rota)}
                     </TipoRotaBadge>
                   </Td>
-                  <Td>{formatCurrency(rota.custo_estimado)}</Td>
+                  <Td>{formatCurrency(rota.custo_diario)}</Td>
                   <Td>
                     <StatusBadge $status={rota.status}>
                       {rota.status === 'ativo' ? 'Ativo' : 'Inativo'}
@@ -885,12 +890,12 @@ const Rotas = () => {
                 </FormGroup>
 
                 <FormGroup>
-                  <Label>Custo Estimado</Label>
+                  <Label>Custo Diário</Label>
                   <Input 
                     type="number" 
                     step="0.01"
                     placeholder="0.00" 
-                    {...register('custo_estimado')} 
+                    {...register('custo_diario')} 
                     disabled={viewMode} 
                   />
                 </FormGroup>
