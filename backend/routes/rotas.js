@@ -288,6 +288,39 @@ router.delete('/:id', [
   }
 });
 
+// Buscar total de unidades escolares vinculadas a uma rota
+router.get('/:id/unidades-escolares/total', checkPermission('visualizar'), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verificar se a rota existe
+    const rota = await executeQuery(
+      'SELECT id, nome FROM rotas WHERE id = ?',
+      [id]
+    );
+
+    if (rota.length === 0) {
+      return res.status(404).json({ error: 'Rota não encontrada' });
+    }
+
+    // Buscar total de unidades
+    const totalResult = await executeQuery(`
+      SELECT COUNT(*) as total
+      FROM unidades_escolares ue
+      WHERE ue.rota_id = ?
+    `, [id]);
+
+    res.json({
+      rota: rota[0],
+      total: totalResult[0].total
+    });
+
+  } catch (error) {
+    console.error('Erro ao buscar total de unidades escolares da rota:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 // Buscar unidades escolares vinculadas a uma rota
 router.get('/:id/unidades-escolares', checkPermission('visualizar'), async (req, res) => {
   try {
@@ -319,9 +352,17 @@ router.get('/:id/unidades-escolares', checkPermission('visualizar'), async (req,
       ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
     `, [id]);
 
+    // Buscar total de unidades
+    const totalResult = await executeQuery(`
+      SELECT COUNT(*) as total
+      FROM unidades_escolares ue
+      WHERE ue.rota_id = ?
+    `, [id]);
+
     res.json({
       rota: rota[0],
-      unidades: unidades
+      unidades: unidades,
+      total: totalResult[0].total
     });
 
   } catch (error) {
