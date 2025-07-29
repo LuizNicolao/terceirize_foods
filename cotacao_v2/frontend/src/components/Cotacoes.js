@@ -136,13 +136,13 @@ const CardIcon = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: ${props => props.bgColor};
+  background: ${props => props.$bgColor};
   display: flex;
   align-items: center;
   justify-content: center;
   color: ${colors.neutral.white};
   font-size: 20px;
-  box-shadow: 0 4px 12px ${props => props.bgColor}40;
+  box-shadow: 0 4px 12px ${props => props.$bgColor}40;
 `;
 
 const CardTitle = styled.h3`
@@ -597,7 +597,7 @@ const Cotacoes = () => {
               onClick={() => handleCardClick(card.id)}
             >
               <CardHeader>
-                <CardIcon bgColor={card.bgColor}>
+                <CardIcon $bgColor={card.bgColor}>
                   {card.icon}
                 </CardIcon>
                 <CardTitle>{card.title}</CardTitle>

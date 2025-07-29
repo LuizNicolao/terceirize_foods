@@ -114,13 +114,13 @@ const CardIcon = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: ${props => props.bgColor};
+  background: ${props => props.$bgColor};
   display: flex;
   align-items: center;
   justify-content: center;
   color: ${colors.neutral.white};
   font-size: 20px;
-  box-shadow: 0 4px 12px ${props => props.bgColor}40;
+  box-shadow: 0 4px 12px ${props => props.$bgColor}40;
 `;
 
 const CardInfo = styled.div`
@@ -657,7 +657,7 @@ const Aprovacoes = () => {
             onClick={() => handleCardClick('aguardando_aprovacao')}
           >
             <CardContent>
-              <CardIcon bgColor={colors.status.warning}>
+              <CardIcon $bgColor={colors.status.warning}>
                 <FaFileInvoice />
               </CardIcon>
               <CardInfo>
@@ -673,7 +673,7 @@ const Aprovacoes = () => {
             onClick={() => handleCardClick('aguardando_aprovacao_supervisor')}
           >
             <CardContent>
-              <CardIcon bgColor={colors.secondary.blue}>
+              <CardIcon $bgColor={colors.secondary.blue}>
                 <FaUserShield />
               </CardIcon>
               <CardInfo>
@@ -689,7 +689,7 @@ const Aprovacoes = () => {
             onClick={() => handleCardClick('aprovado')}
           >
             <CardContent>
-              <CardIcon bgColor={colors.status.success}>
+              <CardIcon $bgColor={colors.status.success}>
                 <FaCheckCircle />
               </CardIcon>
               <CardInfo>
@@ -705,7 +705,7 @@ const Aprovacoes = () => {
             onClick={() => handleCardClick('rejeitado')}
           >
             <CardContent>
-              <CardIcon bgColor={colors.status.error}>
+              <CardIcon $bgColor={colors.status.error}>
                 <FaTimesCircle />
               </CardIcon>
               <CardInfo>
@@ -721,7 +721,7 @@ const Aprovacoes = () => {
             onClick={() => handleCardClick('renegociacao')}
           >
             <CardContent>
-              <CardIcon bgColor={colors.secondary.orange}>
+              <CardIcon $bgColor={colors.secondary.orange}>
                 <FaSyncAlt />
               </CardIcon>
               <CardInfo>
