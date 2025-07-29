@@ -288,4 +288,46 @@ router.delete('/:id', [
   }
 });
 
+// Buscar unidades escolares vinculadas a uma rota
+router.get('/:id/unidades-escolares', checkPermission('visualizar'), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verificar se a rota existe
+    const rota = await executeQuery(
+      'SELECT id, nome FROM rotas WHERE id = ?',
+      [id]
+    );
+
+    if (rota.length === 0) {
+      return res.status(404).json({ error: 'Rota não encontrada' });
+    }
+
+    // Buscar unidades escolares vinculadas
+    const unidades = await executeQuery(`
+      SELECT 
+        ue.id,
+        ue.codigo_teknisa,
+        ue.nome_escola,
+        ue.cidade,
+        ue.estado,
+        ue.centro_distribuicao,
+        ue.ordem_entrega,
+        ue.status
+      FROM unidades_escolares ue
+      WHERE ue.rota_id = ?
+      ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
+    `, [id]);
+
+    res.json({
+      rota: rota[0],
+      unidades: unidades
+    });
+
+  } catch (error) {
+    console.error('Erro ao buscar unidades escolares da rota:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+});
+
 module.exports = router; 

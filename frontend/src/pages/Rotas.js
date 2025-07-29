@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle, FaFileExcel, FaFilePdf, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -353,6 +353,84 @@ const EmptyState = styled.div`
   font-size: 16px;
 `;
 
+const UnidadesSection = styled.div`
+  margin-top: 24px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 16px;
+`;
+
+const UnidadesHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #e9ecef;
+  }
+`;
+
+const UnidadesTitle = styled.h3`
+  color: var(--dark-gray);
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const UnidadesCount = styled.span`
+  background: var(--primary-green);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+`;
+
+const UnidadesContent = styled.div`
+  max-height: ${props => props.$expanded ? '400px' : '0'};
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+`;
+
+const UnidadesTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+`;
+
+const UnidadesTh = styled.th`
+  background-color: #f5f5f5;
+  padding: 10px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--dark-gray);
+  font-size: 12px;
+  border-bottom: 1px solid #e0e0e0;
+`;
+
+const UnidadesTd = styled.td`
+  padding: 10px 8px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+  color: var(--dark-gray);
+`;
+
+const UnidadesEmpty = styled.div`
+  text-align: center;
+  padding: 20px;
+  color: var(--gray);
+  font-size: 14px;
+  font-style: italic;
+`;
+
 const Rotas = () => {
   const { canCreate, canEdit, canDelete } = usePermissions();
   const [rotas, setRotas] = useState([]);
@@ -374,6 +452,9 @@ const Rotas = () => {
     usuario_id: '',
     periodo: ''
   });
+  const [unidadesEscolares, setUnidadesEscolares] = useState([]);
+  const [loadingUnidades, setLoadingUnidades] = useState(false);
+  const [showUnidades, setShowUnidades] = useState(false);
 
   const {
     register,
@@ -405,6 +486,20 @@ const Rotas = () => {
       setFiliais(response.data);
     } catch (error) {
       console.error('Erro ao carregar filiais:', error);
+    }
+  };
+
+  // Carregar unidades escolares vinculadas a uma rota
+  const loadUnidadesEscolares = async (rotaId) => {
+    try {
+      setLoadingUnidades(true);
+      const response = await api.get(`/rotas/${rotaId}/unidades-escolares`);
+      setUnidadesEscolares(response.data.unidades || []);
+    } catch (error) {
+      console.error('Erro ao carregar unidades escolares:', error);
+      setUnidadesEscolares([]);
+    } finally {
+      setLoadingUnidades(false);
     }
   };
 
@@ -469,6 +564,8 @@ const Rotas = () => {
     setValue('observacoes', rota.observacoes);
     setViewMode(true);
     setShowModal(true);
+    setShowUnidades(false);
+    setUnidadesEscolares([]);
   };
 
   // Abrir modal para editar rota
@@ -491,6 +588,8 @@ const Rotas = () => {
     setShowModal(false);
     setEditingRota(null);
     setViewMode(false);
+    setShowUnidades(false);
+    setUnidadesEscolares([]);
     reset();
   };
 
@@ -917,6 +1016,71 @@ const Rotas = () => {
                   />
                 </FormGroup>
               </FormFields>
+              
+              {/* Seção de Unidades Escolares Vinculadas */}
+              {viewMode && (
+                <UnidadesSection>
+                  <UnidadesHeader 
+                    onClick={() => {
+                      if (!showUnidades && unidadesEscolares.length === 0) {
+                        loadUnidadesEscolares(editingRota.id);
+                      }
+                      setShowUnidades(!showUnidades);
+                    }}
+                  >
+                    <UnidadesTitle>
+                      Unidades Escolares Vinculadas
+                      {unidadesEscolares.length > 0 && (
+                        <UnidadesCount>{unidadesEscolares.length}</UnidadesCount>
+                      )}
+                    </UnidadesTitle>
+                    {showUnidades ? <FaChevronUp /> : <FaChevronDown />}
+                  </UnidadesHeader>
+                  
+                  <UnidadesContent $expanded={showUnidades}>
+                    {loadingUnidades ? (
+                      <div style={{ textAlign: 'center', padding: '20px' }}>
+                        Carregando unidades escolares...
+                      </div>
+                    ) : unidadesEscolares.length === 0 ? (
+                      <UnidadesEmpty>
+                        Nenhuma unidade escolar vinculada a esta rota
+                      </UnidadesEmpty>
+                    ) : (
+                      <UnidadesTable>
+                        <thead>
+                          <tr>
+                            <UnidadesTh>Ordem</UnidadesTh>
+                            <UnidadesTh>Código</UnidadesTh>
+                            <UnidadesTh>Nome da Escola</UnidadesTh>
+                            <UnidadesTh>Cidade</UnidadesTh>
+                            <UnidadesTh>Estado</UnidadesTh>
+                            <UnidadesTh>Centro Distribuição</UnidadesTh>
+                            <UnidadesTh>Status</UnidadesTh>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {unidadesEscolares.map((unidade) => (
+                            <tr key={unidade.id}>
+                              <UnidadesTd>{unidade.ordem_entrega || '-'}</UnidadesTd>
+                              <UnidadesTd>{unidade.codigo_teknisa}</UnidadesTd>
+                              <UnidadesTd>{unidade.nome_escola}</UnidadesTd>
+                              <UnidadesTd>{unidade.cidade}</UnidadesTd>
+                              <UnidadesTd>{unidade.estado}</UnidadesTd>
+                              <UnidadesTd>{unidade.centro_distribuicao || '-'}</UnidadesTd>
+                              <UnidadesTd>
+                                <StatusBadge $status={unidade.status}>
+                                  {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                                </StatusBadge>
+                              </UnidadesTd>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </UnidadesTable>
+                    )}
+                  </UnidadesContent>
+                </UnidadesSection>
+              )}
             </Form>
           </ModalContent>
         </Modal>
