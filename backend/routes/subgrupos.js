@@ -1,267 +1,73 @@
+/**
+ * Rotas de Subgrupos
+ * Implementa padrões RESTful com HATEOAS, paginação e validação
+ */
+
 const express = require('express');
-const { body, validationResult } = require('express-validator');
-const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
-const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
+const { subgrupoValidations, commonValidations } = require('../middleware/validation');
+const { paginationMiddleware } = require('../middleware/pagination');
+const { hateoasMiddleware } = require('../middleware/hateoas');
+const { auditMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
+const SubgruposController = require('../controllers/subgruposController');
 
 const router = express.Router();
 
-// Aplicar autenticação em todas as rotas
+// Aplicar middlewares globais
 router.use(authenticateToken);
+router.use(paginationMiddleware);
+router.use(hateoasMiddleware('subgrupos'));
 
-// Listar subgrupos
-router.get('/', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { search = '', grupo_id } = req.query;
+// GET /api/subgrupos - Listar subgrupos com paginação e busca
+router.get('/', 
+  checkPermission('visualizar'),
+  commonValidations.search,
+  commonValidations.pagination,
+  SubgruposController.listarSubgrupos
+);
 
-    let query = `
-      SELECT sg.*, g.nome as grupo_nome
-      FROM subgrupos sg
-      LEFT JOIN grupos g ON sg.grupo_id = g.id
-      WHERE 1=1
-    `;
-    let params = [];
+// GET /api/subgrupos/:id - Buscar subgrupo por ID
+router.get('/:id', 
+  checkPermission('visualizar'),
+  commonValidations.id,
+  SubgruposController.buscarSubgrupoPorId
+);
 
-    if (search) {
-      query += ' AND sg.nome LIKE ?';
-      params.push(`%${search}%`);
-    }
-
-    if (grupo_id) {
-      query += ' AND sg.grupo_id = ?';
-      params.push(grupo_id);
-    }
-
-    query += ' ORDER BY sg.nome ASC';
-
-    const subgrupos = await executeQuery(query, params);
-
-    res.json(subgrupos);
-
-  } catch (error) {
-    console.error('Erro ao listar subgrupos:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Buscar subgrupo por ID
-router.get('/:id', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const subgrupos = await executeQuery(
-      'SELECT sg.*, g.nome as grupo_nome FROM subgrupos sg LEFT JOIN grupos g ON sg.grupo_id = g.id WHERE sg.id = ?',
-      [id]
-    );
-
-    if (subgrupos.length === 0) {
-      return res.status(404).json({ error: 'Subgrupo não encontrado' });
-    }
-
-    res.json(subgrupos[0]);
-
-  } catch (error) {
-    console.error('Erro ao buscar subgrupo:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Criar subgrupo
-router.post('/', [
+// POST /api/subgrupos - Criar novo subgrupo
+router.post('/', 
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'subgrupos'),
-  body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('grupo_id').isInt({ min: 1 }).withMessage('ID do grupo é obrigatório')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
+  subgrupoValidations.create,
+  SubgruposController.criarSubgrupo
+);
 
-    const { nome, grupo_id } = req.body;
-
-    // Verificar se grupo existe
-    const grupo = await executeQuery(
-      'SELECT id FROM grupos WHERE id = ?',
-      [grupo_id]
-    );
-
-    if (grupo.length === 0) {
-      return res.status(400).json({ error: 'Grupo não encontrado' });
-    }
-
-    // Verificar se nome já existe no grupo
-    const existingSubgrupo = await executeQuery(
-      'SELECT id FROM subgrupos WHERE nome = ? AND grupo_id = ?',
-      [nome, grupo_id]
-    );
-
-    if (existingSubgrupo.length > 0) {
-      return res.status(400).json({ error: 'Nome do subgrupo já existe neste grupo' });
-    }
-
-    // Inserir subgrupo
-    const result = await executeQuery(
-      'INSERT INTO subgrupos (nome, grupo_id) VALUES (?, ?)',
-      [nome, grupo_id]
-    );
-
-    const newSubgrupo = await executeQuery(
-      'SELECT sg.*, g.nome as grupo_nome FROM subgrupos sg LEFT JOIN grupos g ON sg.grupo_id = g.id WHERE sg.id = ?',
-      [result.insertId]
-    );
-
-    res.status(201).json({
-      message: 'Subgrupo criado com sucesso',
-      subgrupo: newSubgrupo[0]
-    });
-
-  } catch (error) {
-    console.error('Erro ao criar subgrupo:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Atualizar subgrupo
-router.put('/:id', [
+// PUT /api/subgrupos/:id - Atualizar subgrupo
+router.put('/:id', 
   checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'subgrupos'),
-  body('nome').optional().isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('grupo_id').optional().isInt({ min: 1 }).withMessage('ID do grupo deve ser um número válido'),
-  body('status').optional().isIn([0, 1]).withMessage('Status deve ser 0 ou 1')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'subgrupos'),
+  subgrupoValidations.update,
+  SubgruposController.atualizarSubgrupo
+);
 
-    const { id } = req.params;
-    const { nome, grupo_id, status } = req.body;
-
-    // Verificar se subgrupo existe
-    const existingSubgrupo = await executeQuery(
-      'SELECT id FROM subgrupos WHERE id = ?',
-      [id]
-    );
-
-    if (existingSubgrupo.length === 0) {
-      return res.status(404).json({ error: 'Subgrupo não encontrado' });
-    }
-
-    // Verificar se grupo existe (se estiver sendo alterado)
-    if (grupo_id) {
-      const grupo = await executeQuery(
-        'SELECT id FROM grupos WHERE id = ?',
-        [grupo_id]
-      );
-
-      if (grupo.length === 0) {
-        return res.status(400).json({ error: 'Grupo não encontrado' });
-      }
-    }
-
-    // Verificar se nome já existe no grupo (se estiver sendo alterado)
-    if (nome) {
-      const nomeCheck = await executeQuery(
-        'SELECT id FROM subgrupos WHERE nome = ? AND grupo_id = ? AND id != ?',
-        [nome, grupo_id || (await executeQuery('SELECT grupo_id FROM subgrupos WHERE id = ?', [id]))[0].grupo_id, id]
-      );
-
-      if (nomeCheck.length > 0) {
-        return res.status(400).json({ error: 'Nome do subgrupo já existe neste grupo' });
-      }
-    }
-
-    // Construir query de atualização
-    const updateFields = [];
-    const updateParams = [];
-
-    if (nome) {
-      updateFields.push('nome = ?');
-      updateParams.push(nome);
-    }
-    if (grupo_id) {
-      updateFields.push('grupo_id = ?');
-      updateParams.push(grupo_id);
-    }
-    if (status !== undefined) {
-      updateFields.push('status = ?');
-      updateParams.push(status);
-    }
-
-    if (updateFields.length === 0) {
-      return res.status(400).json({ error: 'Nenhum campo para atualizar' });
-    }
-
-    updateParams.push(id);
-    await executeQuery(
-      `UPDATE subgrupos SET ${updateFields.join(', ')} WHERE id = ?`,
-      updateParams
-    );
-
-    // Buscar subgrupo atualizado
-    const updatedSubgrupo = await executeQuery(
-      'SELECT sg.*, g.nome as grupo_nome FROM subgrupos sg LEFT JOIN grupos g ON sg.grupo_id = g.id WHERE sg.id = ?',
-      [id]
-    );
-
-    res.json({
-      message: 'Subgrupo atualizado com sucesso',
-      subgrupo: updatedSubgrupo[0]
-    });
-
-  } catch (error) {
-    console.error('Erro ao atualizar subgrupo:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Excluir subgrupo
-router.delete('/:id', [
+// DELETE /api/subgrupos/:id - Excluir subgrupo (soft delete)
+router.delete('/:id', 
   checkPermission('excluir'),
-  auditMiddleware(AUDIT_ACTIONS.DELETE, 'subgrupos')
-], async (req, res) => {
-  try {
-    const { id } = req.params;
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'subgrupos'),
+  commonValidations.id,
+  SubgruposController.excluirSubgrupo
+);
 
-    // Verificar se subgrupo existe
-    const existingSubgrupo = await executeQuery(
-      'SELECT id FROM subgrupos WHERE id = ?',
-      [id]
-    );
+// GET /api/subgrupos/ativos - Buscar subgrupos ativos
+router.get('/ativos',
+  checkPermission('visualizar'),
+  SubgruposController.buscarAtivos
+);
 
-    if (existingSubgrupo.length === 0) {
-      return res.status(404).json({ error: 'Subgrupo não encontrado' });
-    }
-
-    // Verificar se há produtos vinculados
-    const produtosVinculados = await executeQuery(
-      'SELECT id FROM produtos WHERE subgrupo_id = ?',
-      [id]
-    );
-
-    if (produtosVinculados.length > 0) {
-      return res.status(400).json({ 
-        error: 'Não é possível excluir subgrupo com produtos vinculados' 
-      });
-    }
-
-    await executeQuery('DELETE FROM subgrupos WHERE id = ?', [id]);
-
-    res.json({ message: 'Subgrupo excluído com sucesso' });
-
-  } catch (error) {
-    console.error('Erro ao excluir subgrupo:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
+// GET /api/subgrupos/grupo/:grupo_id - Buscar subgrupos por grupo
+router.get('/grupo/:grupo_id',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  SubgruposController.buscarPorGrupo
+);
 
 module.exports = router; 

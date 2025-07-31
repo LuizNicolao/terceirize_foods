@@ -4,128 +4,100 @@ const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 const axios = require('axios');
+const { filialValidations, filialAtualizacaoValidations } = require('../middleware/validation');
+const { paginationMiddleware } = require('../middleware/pagination');
+const { hateoasMiddleware } = require('../middleware/hateoas');
+const { handleValidationErrors } = require('../middleware/responseHandler');
+const filiaisController = require('../controllers/filiaisController');
 
 const router = express.Router();
 
 // Aplicar autenticação em todas as rotas
 router.use(authenticateToken);
 
-// Consultar CNPJ
-router.get('/consulta-cnpj/:cnpj', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { cnpj } = req.params;
-    
-    // Limpar CNPJ (remover caracteres não numéricos)
-    const cnpjLimpo = cnpj.replace(/\D/g, '');
-    
-    if (cnpjLimpo.length !== 14) {
-      return res.status(400).json({ error: 'CNPJ deve ter 14 dígitos' });
-    }
+// ===== ROTAS PRINCIPAIS DE FILIAIS =====
 
-    // Tentar buscar dados do CNPJ usando Brasil API
-    let dadosCNPJ = null;
-    
-    try {
-      const response = await axios.get(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`, {
-        timeout: 8000,
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      });
-      
-      if (response.data && response.data.razao_social) {
-        dadosCNPJ = {
-          razao_social: response.data.razao_social,
-          nome_fantasia: response.data.nome_fantasia,
-          logradouro: response.data.logradouro,
-          numero: response.data.numero,
-          bairro: response.data.bairro,
-          municipio: response.data.municipio,
-          uf: response.data.uf,
-          cep: response.data.cep,
-          telefone: (() => {
-            let telefone = null;
-            
-            if (response.data.ddd_telefone_1 && response.data.telefone_1) {
-              telefone = `${response.data.ddd_telefone_1}${response.data.telefone_1}`;
-            } else if (response.data.telefone) {
-              telefone = response.data.telefone;
-            } else if (response.data.ddd_telefone_1) {
-              telefone = response.data.ddd_telefone_1;
-            }
-            
-            if (telefone) {
-              telefone = telefone.toString().replace(/undefined/g, '');
-              telefone = telefone.replace(/\D/g, '');
-              return telefone.length >= 10 ? telefone : null;
-            }
-            
-            return null;
-          })(),
-          email: response.data.email
-        };
-      }
-    } catch (error) {
-      console.log('Erro ao buscar CNPJ na API externa:', error.message);
-      
-      return res.status(503).json({
-        success: false,
-        error: 'Serviço de consulta CNPJ temporariamente indisponível. Tente novamente em alguns minutos.',
-        details: 'As APIs externas estão com problemas de conectividade.'
-      });
-    }
+// Listar filiais com paginação, busca e filtros
+router.get('/', 
+  checkPermission('visualizar'),
+  paginationMiddleware,
+  filiaisController.listarFiliais,
+  hateoasMiddleware
+);
 
-    if (dadosCNPJ) {
-      res.json({
-        success: true,
-        data: dadosCNPJ
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        error: 'CNPJ não encontrado ou dados indisponíveis'
-      });
-    }
+// ===== ROTAS ESPECÍFICAS =====
 
-  } catch (error) {
-    console.error('Erro ao buscar CNPJ:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Erro interno do servidor'
-    });
-  }
-});
+// Buscar filiais ativas
+router.get('/ativas/listar', 
+  checkPermission('visualizar'),
+  filiaisController.buscarFiliaisAtivas,
+  hateoasMiddleware
+);
 
-// Listar filiais
-router.get('/', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { search = '' } = req.query;
+// Buscar filiais por estado
+router.get('/estado/:estado', 
+  checkPermission('visualizar'),
+  filiaisController.buscarFiliaisPorEstado,
+  hateoasMiddleware
+);
 
-    let query = `
-      SELECT id, codigo_filial, cnpj, filial, razao_social, logradouro, numero, bairro, cep, cidade, estado, 
-             supervisao, coordenacao, status, criado_em, atualizado_em 
-      FROM filiais 
-      WHERE 1=1
-    `;
-    let params = [];
+// Listar estados disponíveis
+router.get('/estados/listar', 
+  checkPermission('visualizar'),
+  filiaisController.listarEstados,
+  hateoasMiddleware
+);
 
-    if (search) {
-      query += ' AND (filial LIKE ? OR razao_social LIKE ? OR cidade LIKE ? OR estado LIKE ? OR supervisao LIKE ? OR codigo_filial LIKE ? OR cnpj LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
-    }
+// Listar supervisões disponíveis
+router.get('/supervisoes/listar', 
+  checkPermission('visualizar'),
+  filiaisController.listarSupervisoes,
+  hateoasMiddleware
+);
 
-    query += ' ORDER BY filial ASC';
+// Listar coordenações disponíveis
+router.get('/coordenacoes/listar', 
+  checkPermission('visualizar'),
+  filiaisController.listarCoordenacoes,
+  hateoasMiddleware
+);
 
-    const filiais = await executeQuery(query, params);
+// Consultar CNPJ na API externa
+router.get('/consulta-cnpj/:cnpj', 
+  checkPermission('visualizar'),
+  filiaisController.consultarCNPJ
+);
 
-    res.json(filiais);
+// ===== ROTAS CRUD PRINCIPAIS =====
 
-  } catch (error) {
-    console.error('Erro ao listar filiais:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
+// Buscar filial por ID
+router.get('/:id', 
+  checkPermission('visualizar'),
+  filiaisController.buscarFilialPorId,
+  hateoasMiddleware
+);
+
+// Criar filial
+router.post('/', [
+  checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'filiais'),
+  filialValidations,
+  handleValidationErrors
+], filiaisController.criarFilial);
+
+// Atualizar filial
+router.put('/:id', [
+  checkPermission('editar'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'filiais'),
+  filialAtualizacaoValidations,
+  handleValidationErrors
+], filiaisController.atualizarFilial);
+
+// Excluir filial
+router.delete('/:id', [
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'filiais')
+], filiaisController.excluirFilial);
 
 // ===== ROTAS PARA ALMOXARIFADOS =====
 
@@ -140,10 +112,17 @@ router.get('/:filialId/almoxarifados', checkPermission('visualizar'), async (req
       ORDER BY nome ASC
     `;
     const almoxarifados = await executeQuery(query, [filialId]);
-    res.json(almoxarifados);
+    res.json({
+      success: true,
+      data: almoxarifados
+    });
   } catch (error) {
     console.error('Erro ao listar almoxarifados:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Não foi possível listar os almoxarifados'
+    });
   }
 });
 
@@ -156,12 +135,23 @@ router.get('/almoxarifados/:id', checkPermission('visualizar'), async (req, res)
       [id]
     );
     if (almoxarifados.length === 0) {
-      return res.status(404).json({ error: 'Almoxarifado não encontrado' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Almoxarifado não encontrado',
+        message: 'O almoxarifado especificado não foi encontrado'
+      });
     }
-    res.json(almoxarifados[0]);
+    res.json({
+      success: true,
+      data: almoxarifados[0]
+    });
   } catch (error) {
     console.error('Erro ao buscar almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Não foi possível buscar o almoxarifado'
+    });
   }
 });
 
@@ -170,36 +160,46 @@ router.post('/:filialId/almoxarifados', [
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'almoxarifados'),
   body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
+  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1'),
+  handleValidationErrors
 ], async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: 'Dados inválidos', details: errors.array() });
-    }
     const { filialId } = req.params;
     const { nome, status } = req.body;
+    
     // Verificar se a filial existe
     const filial = await executeQuery('SELECT id FROM filiais WHERE id = ?', [filialId]);
     if (filial.length === 0) {
-      return res.status(404).json({ error: 'Filial não encontrada' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Filial não encontrada',
+        message: 'A filial especificada não foi encontrada'
+      });
     }
+    
     // Inserir almoxarifado
     const result = await executeQuery(
       `INSERT INTO almoxarifados (filial_id, nome, status) VALUES (?, ?, ?)`,
       [filialId, nome, status || 1]
     );
+    
     const newAlmoxarifado = await executeQuery(
       'SELECT id, filial_id, nome, status, criado_em, atualizado_em FROM almoxarifados WHERE id = ?',
       [result.insertId]
     );
+    
     res.status(201).json({
+      success: true,
       message: 'Almoxarifado criado com sucesso',
-      almoxarifado: newAlmoxarifado[0]
+      data: newAlmoxarifado[0]
     });
   } catch (error) {
     console.error('Erro ao criar almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Não foi possível criar o almoxarifado'
+    });
   }
 });
 
@@ -208,36 +208,46 @@ router.put('/almoxarifados/:id', [
   checkPermission('editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'almoxarifados'),
   body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
-  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
+  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1'),
+  handleValidationErrors
 ], async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ error: 'Dados inválidos', details: errors.array() });
-    }
     const { id } = req.params;
     const { nome, status } = req.body;
+    
     // Verificar se o almoxarifado existe
     const almoxarifado = await executeQuery('SELECT id FROM almoxarifados WHERE id = ?', [id]);
     if (almoxarifado.length === 0) {
-      return res.status(404).json({ error: 'Almoxarifado não encontrado' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Almoxarifado não encontrado',
+        message: 'O almoxarifado especificado não foi encontrado'
+      });
     }
+    
     // Atualizar almoxarifado
     await executeQuery(
       `UPDATE almoxarifados SET nome = ?, status = ?, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?`,
       [nome, status, id]
     );
+    
     const updatedAlmoxarifado = await executeQuery(
       'SELECT id, filial_id, nome, status, criado_em, atualizado_em FROM almoxarifados WHERE id = ?',
       [id]
     );
+    
     res.json({
+      success: true,
       message: 'Almoxarifado atualizado com sucesso',
-      almoxarifado: updatedAlmoxarifado[0]
+      data: updatedAlmoxarifado[0]
     });
   } catch (error) {
     console.error('Erro ao atualizar almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Não foi possível atualizar o almoxarifado'
+    });
   }
 });
 
@@ -248,21 +258,42 @@ router.delete('/almoxarifados/:id', [
 ], async (req, res) => {
   try {
     const { id } = req.params;
+    
     // Verificar se o almoxarifado existe
     const almoxarifado = await executeQuery('SELECT id FROM almoxarifados WHERE id = ?', [id]);
     if (almoxarifado.length === 0) {
-      return res.status(404).json({ error: 'Almoxarifado não encontrado' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Almoxarifado não encontrado',
+        message: 'O almoxarifado especificado não foi encontrado'
+      });
     }
+    
     // Verificar se há itens vinculados
     const itens = await executeQuery('SELECT id FROM almoxarifado_itens WHERE almoxarifado_id = ?', [id]);
     if (itens.length > 0) {
-      return res.status(400).json({ error: 'Não é possível excluir o almoxarifado. Existem itens vinculados a ele.' });
+      return res.status(400).json({ 
+        success: false,
+        error: 'Almoxarifado possui dependências',
+        message: 'Não é possível excluir o almoxarifado. Existem itens vinculados a ele.',
+        dependencies: {
+          itens: itens.length
+        }
+      });
     }
+    
     await executeQuery('DELETE FROM almoxarifados WHERE id = ?', [id]);
-    res.json({ message: 'Almoxarifado excluído com sucesso' });
+    res.json({ 
+      success: true,
+      message: 'Almoxarifado excluído com sucesso' 
+    });
   } catch (error) {
     console.error('Erro ao excluir almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Não foi possível excluir o almoxarifado'
+    });
   }
 });
 
@@ -283,11 +314,18 @@ router.get('/almoxarifados/:almoxarifadoId/itens', checkPermission('visualizar')
       [almoxarifadoId]
     );
 
-    res.json(itens);
+    res.json({
+      success: true,
+      data: itens
+    });
 
   } catch (error) {
     console.error('Erro ao listar itens do almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Não foi possível listar os itens do almoxarifado'
+    });
   }
 });
 
@@ -295,17 +333,10 @@ router.get('/almoxarifados/:almoxarifadoId/itens', checkPermission('visualizar')
 router.post('/almoxarifados/:almoxarifadoId/itens', [
   checkPermission('editar'),
   body('produto_id').isInt({ min: 1 }).withMessage('ID do produto é obrigatório'),
-  body('quantidade').isNumeric().withMessage('Quantidade deve ser um número válido')
+  body('quantidade').isNumeric().withMessage('Quantidade deve ser um número válido'),
+  handleValidationErrors
 ], async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
-
     const { almoxarifadoId } = req.params;
     const { produto_id, quantidade } = req.body;
 
@@ -316,7 +347,11 @@ router.post('/almoxarifados/:almoxarifadoId/itens', [
     );
 
     if (almoxarifado.length === 0) {
-      return res.status(404).json({ error: 'Almoxarifado não encontrado' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Almoxarifado não encontrado',
+        message: 'O almoxarifado especificado não foi encontrado'
+      });
     }
 
     // Verificar se o produto existe
@@ -326,7 +361,11 @@ router.post('/almoxarifados/:almoxarifadoId/itens', [
     );
 
     if (produto.length === 0) {
-      return res.status(404).json({ error: 'Produto não encontrado' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Produto não encontrado',
+        message: 'O produto especificado não foi encontrado'
+      });
     }
 
     // Verificar se o item já existe
@@ -349,11 +388,18 @@ router.post('/almoxarifados/:almoxarifadoId/itens', [
       );
     }
 
-    res.status(201).json({ message: 'Item adicionado ao almoxarifado com sucesso' });
+    res.status(201).json({ 
+      success: true,
+      message: 'Item adicionado ao almoxarifado com sucesso' 
+    });
 
   } catch (error) {
     console.error('Erro ao adicionar item ao almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Não foi possível adicionar o item ao almoxarifado'
+    });
   }
 });
 
@@ -369,7 +415,11 @@ router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId', checkPermission('e
     );
 
     if (item.length === 0) {
-      return res.status(404).json({ error: 'Item não encontrado' });
+      return res.status(404).json({ 
+        success: false,
+        error: 'Item não encontrado',
+        message: 'O item especificado não foi encontrado'
+      });
     }
 
     await executeQuery(
@@ -377,309 +427,18 @@ router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId', checkPermission('e
       [itemId]
     );
 
-    res.json({ message: 'Item removido do almoxarifado com sucesso' });
+    res.json({ 
+      success: true,
+      message: 'Item removido do almoxarifado com sucesso' 
+    });
 
   } catch (error) {
     console.error('Erro ao remover item do almoxarifado:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Buscar filial por ID
-router.get('/:id', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const filiais = await executeQuery(
-      'SELECT * FROM filiais WHERE id = ?',
-      [id]
-    );
-
-    if (filiais.length === 0) {
-      return res.status(404).json({ error: 'Filial não encontrada' });
-    }
-
-    res.json(filiais[0]);
-
-  } catch (error) {
-    console.error('Erro ao buscar filial:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Criar filial
-router.post('/', [
-  checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'filiais'),
-  body('codigo_filial').optional().isLength({ min: 1 }).withMessage('Código da filial deve ter pelo menos 1 caractere'),
-  body('cnpj').optional().custom((value) => {
-    if (value) {
-      const cnpjLimpo = value.replace(/\D/g, '');
-      if (cnpjLimpo.length !== 14) {
-        throw new Error('CNPJ deve ter 14 dígitos');
-      }
-    }
-    return true;
-  }).withMessage('CNPJ deve ter 14 dígitos'),
-  body('filial').custom((value) => {
-    if (!value || value.trim().length < 3) {
-      throw new Error('Nome da filial deve ter pelo menos 3 caracteres');
-    }
-    return true;
-  }).withMessage('Nome da filial deve ter pelo menos 3 caracteres'),
-  body('razao_social').custom((value) => {
-    if (!value || value.trim().length < 3) {
-      throw new Error('Razão social deve ter pelo menos 3 caracteres');
-    }
-    return true;
-  }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
-  body('cidade').optional().custom((value) => {
-    if (value && value.trim().length < 2) {
-      throw new Error('Cidade deve ter pelo menos 2 caracteres');
-    }
-    return true;
-  }).withMessage('Cidade deve ter pelo menos 2 caracteres'),
-  body('estado').optional().isLength({ min: 2, max: 2 }).withMessage('Estado deve ter 2 caracteres'),
-  body('status').optional().custom((value) => {
-    if (value !== undefined && value !== null && value !== '') {
-      const statusValue = value.toString();
-      if (!['0', '1'].includes(statusValue)) {
-        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
-      }
-    }
-    return true;
-  }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
-
-    const {
-      codigo_filial, cnpj, filial, razao_social, logradouro, numero, bairro, cep, cidade, estado,
-      supervisao, coordenacao, status
-    } = req.body;
-
-    // Inserir filial
-    const result = await executeQuery(
-      `INSERT INTO filiais (codigo_filial, cnpj, filial, razao_social, logradouro, numero, bairro, cep, cidade, estado,
-                           supervisao, coordenacao, status) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [codigo_filial, cnpj, filial, razao_social, logradouro, numero, bairro, cep, cidade, estado,
-       supervisao, coordenacao, status || 1]
-    );
-
-    const newFilial = await executeQuery(
-      'SELECT * FROM filiais WHERE id = ?',
-      [result.insertId]
-    );
-
-    res.status(201).json({
-      message: 'Filial criada com sucesso',
-      filial: newFilial[0]
+    res.status(500).json({ 
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Não foi possível remover o item do almoxarifado'
     });
-
-  } catch (error) {
-    console.error('Erro ao criar filial:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Atualizar filial
-router.put('/:id', [
-  checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'filiais'),
-  body('codigo_filial').optional().isLength({ min: 1 }).withMessage('Código da filial deve ter pelo menos 1 caractere'),
-  body('cnpj').optional().custom((value) => {
-    if (value) {
-      const cnpjLimpo = value.replace(/\D/g, '');
-      if (cnpjLimpo.length !== 14) {
-        throw new Error('CNPJ deve ter 14 dígitos');
-      }
-    }
-    return true;
-  }).withMessage('CNPJ deve ter 14 dígitos'),
-  body('filial').optional().custom((value) => {
-    if (value && value.trim().length < 3) {
-      throw new Error('Nome da filial deve ter pelo menos 3 caracteres');
-    }
-    return true;
-  }).withMessage('Nome da filial deve ter pelo menos 3 caracteres'),
-  body('razao_social').optional().custom((value) => {
-    if (value && value.trim().length < 3) {
-      throw new Error('Razão social deve ter pelo menos 3 caracteres');
-    }
-    return true;
-  }).withMessage('Razão social deve ter pelo menos 3 caracteres'),
-  body('cidade').optional().custom((value) => {
-    if (value && value.trim().length < 2) {
-      throw new Error('Cidade deve ter pelo menos 2 caracteres');
-    }
-    return true;
-  }).withMessage('Cidade deve ter pelo menos 2 caracteres'),
-  body('estado').optional().isLength({ min: 2, max: 2 }).withMessage('Estado deve ter 2 caracteres'),
-  body('status').optional().custom((value) => {
-    if (value !== undefined && value !== null && value !== '') {
-      const statusValue = value.toString();
-      if (!['0', '1'].includes(statusValue)) {
-        throw new Error('Status deve ser 0 (Inativo) ou 1 (Ativo)');
-      }
-    }
-    return true;
-  }).withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
-
-    const { id } = req.params;
-    const {
-      codigo_filial, cnpj, filial, razao_social, logradouro, numero, bairro, cep, cidade, estado,
-      supervisao, coordenacao, status
-    } = req.body;
-
-    // Verificar se a filial existe
-    const existingFilial = await executeQuery(
-      'SELECT * FROM filiais WHERE id = ?',
-      [id]
-    );
-
-    if (existingFilial.length === 0) {
-      return res.status(404).json({ error: 'Filial não encontrada' });
-    }
-
-    // Construir query de atualização dinamicamente
-    const updateFields = [];
-    const updateParams = [];
-
-    if (codigo_filial !== undefined) {
-      updateFields.push('codigo_filial = ?');
-      updateParams.push(codigo_filial);
-    }
-    if (cnpj !== undefined) {
-      updateFields.push('cnpj = ?');
-      updateParams.push(cnpj);
-    }
-    if (filial !== undefined) {
-      updateFields.push('filial = ?');
-      updateParams.push(filial);
-    }
-    if (razao_social !== undefined) {
-      updateFields.push('razao_social = ?');
-      updateParams.push(razao_social);
-    }
-    if (logradouro !== undefined) {
-      updateFields.push('logradouro = ?');
-      updateParams.push(logradouro);
-    }
-    if (numero !== undefined) {
-      updateFields.push('numero = ?');
-      updateParams.push(numero);
-    }
-    if (bairro !== undefined) {
-      updateFields.push('bairro = ?');
-      updateParams.push(bairro);
-    }
-    if (cep !== undefined) {
-      updateFields.push('cep = ?');
-      updateParams.push(cep);
-    }
-    if (cidade !== undefined) {
-      updateFields.push('cidade = ?');
-      updateParams.push(cidade);
-    }
-    if (estado !== undefined) {
-      updateFields.push('estado = ?');
-      updateParams.push(estado);
-    }
-    if (supervisao !== undefined) {
-      updateFields.push('supervisao = ?');
-      updateParams.push(supervisao);
-    }
-    if (coordenacao !== undefined) {
-      updateFields.push('coordenacao = ?');
-      updateParams.push(coordenacao);
-    }
-    if (status !== undefined) {
-      updateFields.push('status = ?');
-      updateParams.push(status);
-    }
-
-    // Sempre atualizar o timestamp
-    updateFields.push('atualizado_em = CURRENT_TIMESTAMP');
-
-    if (updateFields.length === 0) {
-      return res.status(400).json({ error: 'Nenhum campo para atualizar' });
-    }
-
-    updateParams.push(id);
-    await executeQuery(
-      `UPDATE filiais SET ${updateFields.join(', ')} WHERE id = ?`,
-      updateParams
-    );
-
-    const updatedFilial = await executeQuery(
-      'SELECT * FROM filiais WHERE id = ?',
-      [id]
-    );
-
-    res.json({
-      message: 'Filial atualizada com sucesso',
-      filial: updatedFilial[0]
-    });
-
-  } catch (error) {
-    console.error('Erro ao atualizar filial:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Excluir filial
-router.delete('/:id', [
-  checkPermission('excluir'),
-  auditMiddleware(AUDIT_ACTIONS.DELETE, 'filiais')
-], async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // Verificar se a filial existe
-    const filial = await executeQuery(
-      'SELECT id FROM filiais WHERE id = ?',
-      [id]
-    );
-
-    if (filial.length === 0) {
-      return res.status(404).json({ error: 'Filial não encontrada' });
-    }
-
-    // Verificar se há almoxarifados vinculados
-    const almoxarifados = await executeQuery(
-      'SELECT id FROM almoxarifados WHERE filial_id = ?',
-      [id]
-    );
-
-    if (almoxarifados.length > 0) {
-      return res.status(400).json({
-        error: 'Não é possível excluir a filial. Existem almoxarifados vinculados a ela.'
-      });
-    }
-
-    // Excluir filial
-    await executeQuery('DELETE FROM filiais WHERE id = ?', [id]);
-    res.json({ message: 'Filial excluída com sucesso' });
-
-  } catch (error) {
-    console.error('Erro ao excluir filial:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
   }
 });
 

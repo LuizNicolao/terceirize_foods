@@ -1,324 +1,79 @@
+/**
+ * Rotas de Classes
+ * Implementa padrões RESTful com HATEOAS, paginação e validação
+ */
+
 const express = require('express');
-const { body, validationResult } = require('express-validator');
-const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
-const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
+const { classeValidations, commonValidations } = require('../middleware/validation');
+const { paginationMiddleware } = require('../middleware/pagination');
+const { hateoasMiddleware } = require('../middleware/hateoas');
+const { auditMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
+const ClassesController = require('../controllers/classesController');
 
 const router = express.Router();
 
-// Aplicar autenticação em todas as rotas
+// Aplicar middlewares globais
 router.use(authenticateToken);
+router.use(paginationMiddleware);
+router.use(hateoasMiddleware('classes'));
 
-// Listar classes
-router.get('/', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { search = '', status = '', subgrupo_id = '' } = req.query;
+// GET /api/classes - Listar classes com paginação e busca
+router.get('/', 
+  checkPermission('visualizar'),
+  commonValidations.search,
+  commonValidations.pagination,
+  ClassesController.listarClasses
+);
 
-    let query = `
-      SELECT c.*, s.nome as subgrupo_nome, g.nome as grupo_nome
-      FROM classes c
-      LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
-      LEFT JOIN grupos g ON s.grupo_id = g.id
-      WHERE 1=1
-    `;
-    let params = [];
+// GET /api/classes/:id - Buscar classe por ID
+router.get('/:id', 
+  checkPermission('visualizar'),
+  commonValidations.id,
+  ClassesController.buscarClassePorId
+);
 
-    if (search) {
-      query += ' AND c.nome LIKE ?';
-      params.push(`%${search}%`);
-    }
-
-    if (status !== '') {
-      query += ' AND c.status = ?';
-      params.push(parseInt(status));
-    }
-
-    if (subgrupo_id) {
-      query += ' AND c.subgrupo_id = ?';
-      params.push(parseInt(subgrupo_id));
-    }
-
-    query += ' ORDER BY c.nome ASC';
-
-    const classes = await executeQuery(query, params);
-    res.json(classes);
-
-  } catch (error) {
-    console.error('Erro ao listar classes:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Buscar classe por ID
-router.get('/:id', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const classes = await executeQuery(
-      `SELECT c.*, s.nome as subgrupo_nome, g.nome as grupo_nome
-       FROM classes c
-       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
-       LEFT JOIN grupos g ON s.grupo_id = g.id
-       WHERE c.id = ?`,
-      [id]
-    );
-
-    if (classes.length === 0) {
-      return res.status(404).json({ error: 'Classe não encontrada' });
-    }
-
-    res.json(classes[0]);
-
-  } catch (error) {
-    console.error('Erro ao buscar classe:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Criar classe
-router.post('/', [
+// POST /api/classes - Criar nova classe
+router.post('/', 
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'classes'),
-  body('nome').isLength({ min: 2 }).withMessage('Nome deve ter pelo menos 2 caracteres'),
-  body('subgrupo_id').notEmpty().withMessage('Subgrupo é obrigatório'),
-  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
+  classeValidations.create,
+  ClassesController.criarClasse
+);
 
-    const {
-      nome, subgrupo_id, status = 1
-    } = req.body;
-
-    // Converter subgrupo_id para número se necessário
-    const subgrupoId = parseInt(subgrupo_id);
-
-    // Verificar se subgrupo existe
-    const subgrupo = await executeQuery(
-      'SELECT id FROM subgrupos WHERE id = ?',
-      [subgrupoId]
-    );
-
-    if (subgrupo.length === 0) {
-      return res.status(400).json({ error: 'Subgrupo não encontrado' });
-    }
-
-    // Verificar se classe já existe no mesmo subgrupo
-    const existingClasse = await executeQuery(
-      'SELECT id FROM classes WHERE nome = ? AND subgrupo_id = ?',
-      [nome, subgrupoId]
-    );
-
-    if (existingClasse.length > 0) {
-      return res.status(400).json({ error: 'Classe já cadastrada neste subgrupo' });
-    }
-
-    // Inserir classe
-    const result = await executeQuery(
-      `INSERT INTO classes (nome, subgrupo_id, status)
-       VALUES (?, ?, ?)`,
-      [nome, subgrupoId, status]
-    );
-
-    const newClasse = await executeQuery(
-      `SELECT c.*, s.nome as subgrupo_nome, g.nome as grupo_nome
-       FROM classes c
-       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
-       LEFT JOIN grupos g ON s.grupo_id = g.id
-       WHERE c.id = ?`,
-      [result.insertId]
-    );
-
-    res.status(201).json({
-      message: 'Classe criada com sucesso',
-      classe: newClasse[0]
-    });
-
-  } catch (error) {
-    console.error('Erro ao criar classe:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Atualizar classe
-router.put('/:id', [
+// PUT /api/classes/:id - Atualizar classe
+router.put('/:id', 
   checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'classes'),
-  body('nome').optional().isLength({ min: 2 }).withMessage('Nome deve ter pelo menos 2 caracteres'),
-  body('subgrupo_id').optional().notEmpty().withMessage('Subgrupo deve ser válido'),
-  body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ 
-        error: 'Dados inválidos',
-        details: errors.array() 
-      });
-    }
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'classes'),
+  classeValidations.update,
+  ClassesController.atualizarClasse
+);
 
-    const { id } = req.params;
-    const updateData = req.body;
-
-    // Verificar se classe existe
-    const existingClasse = await executeQuery(
-      'SELECT id FROM classes WHERE id = ?',
-      [id]
-    );
-
-    if (existingClasse.length === 0) {
-      return res.status(404).json({ error: 'Classe não encontrada' });
-    }
-
-    // Verificar se subgrupo existe (se estiver sendo alterado)
-    if (updateData.subgrupo_id) {
-      const subgrupo = await executeQuery(
-        'SELECT id FROM subgrupos WHERE id = ?',
-        [updateData.subgrupo_id]
-      );
-
-      if (subgrupo.length === 0) {
-        return res.status(400).json({ error: 'Subgrupo não encontrado' });
-      }
-    }
-
-    // Verificar se classe já existe no mesmo subgrupo (se estiver sendo alterada)
-    if (updateData.nome || updateData.subgrupo_id) {
-      const nome = updateData.nome || (await executeQuery('SELECT nome FROM classes WHERE id = ?', [id]))[0].nome;
-      const subgrupoId = updateData.subgrupo_id || (await executeQuery('SELECT subgrupo_id FROM classes WHERE id = ?', [id]))[0].subgrupo_id;
-      
-      const classeCheck = await executeQuery(
-        'SELECT id FROM classes WHERE nome = ? AND subgrupo_id = ? AND id != ?',
-        [nome, subgrupoId, id]
-      );
-
-      if (classeCheck.length > 0) {
-        return res.status(400).json({ error: 'Classe já cadastrada neste subgrupo' });
-      }
-    }
-
-    // Construir query de atualização
-    const updateFields = [];
-    const updateParams = [];
-
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] !== undefined) {
-        updateFields.push(`${key} = ?`);
-        updateParams.push(updateData[key]);
-      }
-    });
-
-    if (updateFields.length === 0) {
-      return res.status(400).json({ error: 'Nenhum campo para atualizar' });
-    }
-
-    updateParams.push(id);
-    await executeQuery(
-      `UPDATE classes SET ${updateFields.join(', ')} WHERE id = ?`,
-      updateParams
-    );
-
-    // Buscar classe atualizada
-    const updatedClasse = await executeQuery(
-      `SELECT c.*, s.nome as subgrupo_nome, g.nome as grupo_nome
-       FROM classes c
-       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
-       LEFT JOIN grupos g ON s.grupo_id = g.id
-       WHERE c.id = ?`,
-      [id]
-    );
-
-    res.json({
-      message: 'Classe atualizada com sucesso',
-      classe: updatedClasse[0]
-    });
-
-  } catch (error) {
-    console.error('Erro ao atualizar classe:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
-
-// Excluir classe
-router.delete('/:id', [
+// DELETE /api/classes/:id - Excluir classe (soft delete)
+router.delete('/:id', 
   checkPermission('excluir'),
-  auditMiddleware(AUDIT_ACTIONS.DELETE, 'classes')
-], async (req, res) => {
-  try {
-    console.log('=== EXCLUSÃO DE CLASSE ===');
-    const { id } = req.params;
-    console.log('ID da classe a excluir:', id);
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'classes'),
+  commonValidations.id,
+  ClassesController.excluirClasse
+);
 
-    // Verificar se classe existe
-    const existingClasse = await executeQuery(
-      'SELECT id, nome FROM classes WHERE id = ?',
-      [id]
-    );
+// GET /api/classes/ativas - Buscar classes ativas
+router.get('/ativas',
+  checkPermission('visualizar'),
+  ClassesController.buscarAtivas
+);
 
-    console.log('Classe encontrada:', existingClasse);
+// GET /api/classes/subgrupo/:subgrupo_id - Buscar classes por subgrupo
+router.get('/subgrupo/:subgrupo_id',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  ClassesController.buscarPorSubgrupo
+);
 
-    if (existingClasse.length === 0) {
-      return res.status(404).json({ error: 'Classe não encontrada' });
-    }
-
-    // Verificar se classe está sendo usada em produtos (comentado temporariamente)
-    // console.log('Verificando se classe está sendo usada em produtos...');
-    // const produtosUsingClasse = await executeQuery(
-    //   'SELECT COUNT(*) as count FROM produtos WHERE classe = ?',
-    //   [existingClasse[0].nome]
-    // );
-
-    // console.log('Produtos usando a classe:', produtosUsingClasse);
-
-    // if (produtosUsingClasse[0].count > 0) {
-    //   return res.status(400).json({ 
-    //     error: 'Não é possível excluir esta classe pois está sendo utilizada em produtos' 
-    //   });
-    // }
-
-    console.log('Tentando excluir classe...');
-    await executeQuery('DELETE FROM classes WHERE id = ?', [id]);
-    console.log('Classe excluída com sucesso');
-
-    res.json({ message: 'Classe excluída com sucesso' });
-
-  } catch (error) {
-    console.error('=== ERRO NA EXCLUSÃO ===');
-    console.error('Erro ao excluir classe:', error);
-    console.error('Stack trace:', error.stack);
-    console.error('Error code:', error.code);
-    console.error('SQL State:', error.sqlState);
-    res.status(500).json({ 
-      error: 'Erro interno do servidor',
-      message: error.message,
-      code: error.code
-    });
-  }
-});
-
-// Buscar subgrupos para o select
-router.get('/subgrupos/list', checkPermission('visualizar'), async (req, res) => {
-  try {
-    const subgrupos = await executeQuery(
-      `SELECT s.id, s.nome, g.nome as grupo_nome
-       FROM subgrupos s
-       LEFT JOIN grupos g ON s.grupo_id = g.id
-       WHERE s.status = 1
-       ORDER BY g.nome, s.nome`
-    );
-
-    res.json(subgrupos);
-
-  } catch (error) {
-    console.error('Erro ao listar subgrupos:', error);
-    res.status(500).json({ error: 'Erro interno do servidor' });
-  }
-});
+// GET /api/classes/subgrupos/list - Listar subgrupos para select
+router.get('/subgrupos/list',
+  checkPermission('visualizar'),
+  ClassesController.listarSubgrupos
+);
 
 module.exports = router; 

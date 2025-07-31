@@ -320,14 +320,9 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// Middleware de tratamento de erros
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    error: 'Erro interno do servidor',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Algo deu errado'
-  });
-});
+// Middleware de tratamento de erros padronizado
+const { errorHandler } = require('./middleware/responseHandler');
+app.use(errorHandler);
 
 // Rota 404
 app.use('*', (req, res) => {
