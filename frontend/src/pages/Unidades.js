@@ -277,6 +277,7 @@ const Unidades = () => {
     try {
       setLoading(true);
       const response = await api.get('/unidades');
+      console.log('Debug - Dados carregados:', response.data);
       setUnidades(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar unidades:', error);
@@ -659,7 +660,7 @@ const Unidades = () => {
   const filteredUnidades = unidades.filter(unidade => {
     const matchesSearch = unidade.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          unidade.sigla?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || unidade.status === parseInt(statusFilter);
+    const matchesStatus = statusFilter === 'todos' || unidade.status === (statusFilter === 'ativo' ? 1 : 0);
     return matchesSearch && matchesStatus;
   });
 
