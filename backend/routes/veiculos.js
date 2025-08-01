@@ -84,9 +84,27 @@ router.post('/', [
 
 // Atualizar veículo
 router.put('/:id', [
+  (req, res, next) => {
+    console.log('Debug - Rota PUT /veiculos/:id chamada');
+    console.log('Debug - ID:', req.params.id);
+    console.log('Debug - Body:', JSON.stringify(req.body, null, 2));
+    next();
+  },
   checkPermission('editar'),
+  (req, res, next) => {
+    console.log('Debug - Passou pelo checkPermission');
+    next();
+  },
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'veiculos'),
+  (req, res, next) => {
+    console.log('Debug - Passou pelo auditChangesMiddleware');
+    next();
+  },
   veiculoAtualizacaoValidations,
+  (req, res, next) => {
+    console.log('Debug - Passou pelas validações');
+    next();
+  },
   handleValidationErrors
 ], veiculosController.atualizarVeiculo);
 
