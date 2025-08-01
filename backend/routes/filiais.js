@@ -4,10 +4,9 @@ const { executeQuery } = require('../config/database');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 const axios = require('axios');
-const { filialValidations, filialAtualizacaoValidations } = require('../middleware/validation');
+const { filialValidations, filialAtualizacaoValidations, handleValidationErrors } = require('../middleware/validation');
 const { paginationMiddleware } = require('../middleware/pagination');
 const { hateoasMiddleware } = require('../middleware/hateoas');
-const { handleValidationErrors } = require('../middleware/responseHandler');
 const filiaisController = require('../controllers/filiaisController');
 
 const router = express.Router();

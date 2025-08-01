@@ -1,10 +1,9 @@
 const express = require('express');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
-const { nomeGenericoProdutoValidations, nomeGenericoProdutoAtualizacaoValidations } = require('../middleware/validation');
+const { nomeGenericoProdutoValidations, nomeGenericoProdutoAtualizacaoValidations, handleValidationErrors } = require('../middleware/validation');
 const { paginationMiddleware } = require('../middleware/pagination');
 const { hateoasMiddleware } = require('../middleware/hateoas');
-const { handleValidationErrors } = require('../middleware/responseHandler');
 const nomeGenericoProdutoController = require('../controllers/nomeGenericoProdutoController');
 
 const router = express.Router();

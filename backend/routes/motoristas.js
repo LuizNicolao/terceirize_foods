@@ -1,10 +1,9 @@
 const express = require('express');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
-const { motoristaValidations, motoristaAtualizacaoValidations } = require('../middleware/validation');
+const { motoristaValidations, motoristaAtualizacaoValidations, handleValidationErrors } = require('../middleware/validation');
 const { paginationMiddleware } = require('../middleware/pagination');
 const { hateoasMiddleware } = require('../middleware/hateoas');
-const { handleValidationErrors } = require('../middleware/responseHandler');
 const motoristasController = require('../controllers/motoristasController');
 
 const router = express.Router();

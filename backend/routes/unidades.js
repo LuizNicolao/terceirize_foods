@@ -1,10 +1,9 @@
 const express = require('express');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
-const { unidadeValidations, unidadeAtualizacaoValidations } = require('../middleware/validation');
+const { unidadeValidations, unidadeAtualizacaoValidations, handleValidationErrors } = require('../middleware/validation');
 const { paginationMiddleware } = require('../middleware/pagination');
 const { hateoasMiddleware } = require('../middleware/hateoas');
-const { handleValidationErrors } = require('../middleware/responseHandler');
 const unidadesController = require('../controllers/unidadesController');
 
 const router = express.Router();
