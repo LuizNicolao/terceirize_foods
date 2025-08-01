@@ -1584,30 +1584,30 @@ const veiculoAtualizacaoValidations = [
     .isFloat({ min: 0 })
     .withMessage('Quilometragem atual deve ser um número positivo'),
   
-  body('data_licenciamento')
+  body('data_emplacamento')
     .optional()
     .isISO8601()
-    .withMessage('Data de licenciamento deve ser uma data válida'),
+    .withMessage('Data de emplacamento deve ser uma data válida'),
   
-  body('data_vencimento_licenciamento')
+  body('vencimento_licenciamento')
     .optional()
     .isISO8601()
     .withMessage('Data de vencimento do licenciamento deve ser uma data válida'),
   
-  body('data_inspecao_veicular')
+  body('proxima_inspecao_veicular')
     .optional()
     .isISO8601()
-    .withMessage('Data de inspeção veicular deve ser uma data válida'),
+    .withMessage('Data da próxima inspeção veicular deve ser uma data válida'),
   
-  body('data_vencimento_inspecao')
+  body('vencimento_ipva')
     .optional()
     .isISO8601()
-    .withMessage('Data de vencimento da inspeção deve ser uma data válida'),
+    .withMessage('Data de vencimento do IPVA deve ser uma data válida'),
   
-  body('data_vencimento_documentacao')
+  body('vencimento_dpvat')
     .optional()
     .isISO8601()
-    .withMessage('Data de vencimento da documentação deve ser uma data válida'),
+    .withMessage('Data de vencimento do DPVAT deve ser uma data válida'),
   
   body('status')
     .optional()
@@ -1648,22 +1648,22 @@ const veiculoAtualizacaoValidations = [
     .withMessage('Situação financeira deve ter no máximo 50 caracteres')
     .trim(),
   
-  body('foto_veiculo')
+  body('foto_frente')
     .optional()
     .isLength({ max: 255 })
-    .withMessage('Caminho da foto do veículo deve ter no máximo 255 caracteres')
+    .withMessage('Caminho da foto frontal deve ter no máximo 255 caracteres')
     .trim(),
   
-  body('foto_documentacao')
+  body('foto_traseira')
     .optional()
     .isLength({ max: 255 })
-    .withMessage('Caminho da foto da documentação deve ter no máximo 255 caracteres')
+    .withMessage('Caminho da foto traseira deve ter no máximo 255 caracteres')
     .trim(),
   
-  body('foto_inspecao')
+  body('foto_lateral')
     .optional()
     .isLength({ max: 255 })
-    .withMessage('Caminho da foto da inspeção deve ter no máximo 255 caracteres')
+    .withMessage('Caminho da foto lateral deve ter no máximo 255 caracteres')
     .trim(),
   
   body('observacoes')
