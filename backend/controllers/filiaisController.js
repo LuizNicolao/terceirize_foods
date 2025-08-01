@@ -72,12 +72,12 @@ class FiliaisController {
         LIMIT ? OFFSET ?
       `;
 
-      const filiais = await executeQuery(query, [...params, Number(limit), Number(offset)]);
+      const filiais = await executeQuery(query, [...params, parseInt(limit) || 10, parseInt(offset) || 0]);
 
       // Calcular metadados de paginação
-      const totalPages = Math.ceil(total / limit);
-      const hasNextPage = page < totalPages;
-      const hasPrevPage = page > 1;
+      const totalPages = Math.ceil(total / (parseInt(limit) || 10));
+      const hasNextPage = parseInt(page) < totalPages;
+      const hasPrevPage = parseInt(page) > 1;
 
       res.json({
         success: true,
