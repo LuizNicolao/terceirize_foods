@@ -61,7 +61,7 @@ class FiliaisController {
       const countResult = await executeQuery(countQuery, params);
       const total = countResult[0].total;
 
-      // Query principal - sem LIMIT e OFFSET para teste
+      // Query principal com LIMIT e OFFSET como valores diretos
       const query = `
         SELECT 
           id, codigo_filial, cnpj, filial, razao_social, 
@@ -71,9 +71,10 @@ class FiliaisController {
         FROM filiais 
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY filial ASC
+        LIMIT ${limitNum} OFFSET ${offset}
       `;
 
-      console.log('Debug - Query sem LIMIT/OFFSET');
+      console.log('Debug - Query com LIMIT/OFFSET diretos:', { limitNum, offset });
       
       const filiais = await executeQuery(query, params);
 
