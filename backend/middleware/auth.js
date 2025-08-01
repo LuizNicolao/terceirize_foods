@@ -70,6 +70,52 @@ const checkPermission = (permission) => {
   };
 };
 
+// Middleware para verificar permissões por tela (screen)
+const checkScreenPermission = (screen, permission) => {
+  return async (req, res, next) => {
+    try {
+      const user = req.user;
+      
+      // Administradores têm todas as permissões
+      if (user.tipo_de_acesso === 'administrador') {
+        return next();
+      }
+
+      // Buscar permissões do usuário para a tela específica
+      const permissoes = await executeQuery(
+        `SELECT pode_visualizar, pode_criar, pode_editar, pode_excluir 
+         FROM permissoes_usuario 
+         WHERE usuario_id = ? AND tela = ?`,
+        [user.id, screen]
+      );
+
+      if (permissoes.length === 0) {
+        return res.status(403).json({ error: 'Sem permissão para acessar esta tela' });
+      }
+
+      const permissao = permissoes[0];
+      
+      // Mapear permissões
+      const permissionMap = {
+        'visualizar': permissao.pode_visualizar,
+        'criar': permissao.pode_criar,
+        'editar': permissao.pode_editar,
+        'excluir': permissao.pode_excluir
+      };
+
+      if (permissionMap[permission]) {
+        return next();
+      }
+
+      return res.status(403).json({ error: 'Permissão insuficiente para esta ação' });
+      
+    } catch (error) {
+      console.error('Erro ao verificar permissões da tela:', error);
+      return res.status(500).json({ error: 'Erro interno ao verificar permissões' });
+    }
+  };
+};
+
 // Middleware para verificar tipo de acesso
 const checkAccessType = (allowedTypes) => {
   return (req, res, next) => {
@@ -91,6 +137,7 @@ const generateToken = (userId) => {
 module.exports = {
   authenticateToken,
   checkPermission,
+  checkScreenPermission,
   checkAccessType,
   generateToken
 }; 

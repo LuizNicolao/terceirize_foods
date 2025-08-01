@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../middleware/auth');
+const { authenticateToken, checkScreenPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 const { rotaValidations, rotaAtualizacaoValidations, handleValidationErrors } = require('../middleware/validation');
 const { paginationMiddleware } = require('../middleware/pagination');
@@ -15,7 +15,7 @@ router.use(authenticateToken);
 
 // Listar rotas com paginação, busca e filtros
 router.get('/', 
-  checkPermission('visualizar'),
+  checkScreenPermission('rotas', 'visualizar'),
   paginationMiddleware,
   rotasController.listarRotas,
   hateoasMiddleware
@@ -25,42 +25,42 @@ router.get('/',
 
 // Buscar rotas ativas
 router.get('/ativas/listar', 
-  checkPermission('visualizar'),
+  checkScreenPermission('rotas', 'visualizar'),
   rotasController.buscarRotasAtivas,
   hateoasMiddleware
 );
 
 // Buscar rotas por filial
 router.get('/filial/:filialId', 
-  checkPermission('visualizar'),
+  checkScreenPermission('rotas', 'visualizar'),
   rotasController.buscarRotasPorFilial,
   hateoasMiddleware
 );
 
 // Buscar rotas por tipo
 router.get('/tipo/:tipo', 
-  checkPermission('visualizar'),
+  checkScreenPermission('rotas', 'visualizar'),
   rotasController.buscarRotasPorTipo,
   hateoasMiddleware
 );
 
 // Listar tipos de rota
 router.get('/tipos/listar', 
-  checkPermission('visualizar'),
+  checkScreenPermission('rotas', 'visualizar'),
   rotasController.listarTiposRota,
   hateoasMiddleware
 );
 
 // Buscar estatísticas das rotas
 router.get('/estatisticas', 
-  checkPermission('visualizar'),
+  checkScreenPermission('rotas', 'visualizar'),
   rotasController.buscarEstatisticasRotas,
   hateoasMiddleware
 );
 
 // Buscar unidades escolares de uma rota
 router.get('/:id/unidades-escolares', 
-  checkPermission('visualizar'),
+  checkScreenPermission('rotas', 'visualizar'),
   rotasController.buscarUnidadesEscolaresRota,
   hateoasMiddleware
 );
@@ -69,14 +69,14 @@ router.get('/:id/unidades-escolares',
 
 // Buscar rota por ID
 router.get('/:id', 
-  checkPermission('visualizar'),
+  checkScreenPermission('rotas', 'visualizar'),
   rotasController.buscarRotaPorId,
   hateoasMiddleware
 );
 
 // Criar rota
 router.post('/', [
-  checkPermission('criar'),
+  checkScreenPermission('rotas', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'rotas'),
   rotaValidations,
   handleValidationErrors
@@ -84,7 +84,7 @@ router.post('/', [
 
 // Atualizar rota
 router.put('/:id', [
-  checkPermission('editar'),
+  checkScreenPermission('rotas', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'rotas'),
   rotaAtualizacaoValidations,
   handleValidationErrors
@@ -92,7 +92,7 @@ router.put('/:id', [
 
 // Excluir rota
 router.delete('/:id', [
-  checkPermission('excluir'),
+  checkScreenPermission('rotas', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'rotas')
 ], rotasController.excluirRota);
 

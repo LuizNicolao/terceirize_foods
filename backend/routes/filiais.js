@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
-const { authenticateToken, checkPermission } = require('../middleware/auth');
+const { authenticateToken, checkScreenPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 const axios = require('axios');
 const { filialValidations, filialAtualizacaoValidations, handleValidationErrors } = require('../middleware/validation');
@@ -18,7 +18,7 @@ router.use(authenticateToken);
 
 // Listar filiais com paginação, busca e filtros
 router.get('/', 
-  checkPermission('visualizar'),
+  checkScreenPermission('filiais', 'visualizar'),
   paginationMiddleware,
   filiaisController.listarFiliais,
   hateoasMiddleware
@@ -28,42 +28,42 @@ router.get('/',
 
 // Buscar filiais ativas
 router.get('/ativas/listar', 
-  checkPermission('visualizar'),
+  checkScreenPermission('filiais', 'visualizar'),
   filiaisController.buscarFiliaisAtivas,
   hateoasMiddleware
 );
 
 // Buscar filiais por estado
 router.get('/estado/:estado', 
-  checkPermission('visualizar'),
+  checkScreenPermission('filiais', 'visualizar'),
   filiaisController.buscarFiliaisPorEstado,
   hateoasMiddleware
 );
 
 // Listar estados disponíveis
 router.get('/estados/listar', 
-  checkPermission('visualizar'),
+  checkScreenPermission('filiais', 'visualizar'),
   filiaisController.listarEstados,
   hateoasMiddleware
 );
 
 // Listar supervisões disponíveis
 router.get('/supervisoes/listar', 
-  checkPermission('visualizar'),
+  checkScreenPermission('filiais', 'visualizar'),
   filiaisController.listarSupervisoes,
   hateoasMiddleware
 );
 
 // Listar coordenações disponíveis
 router.get('/coordenacoes/listar', 
-  checkPermission('visualizar'),
+  checkScreenPermission('filiais', 'visualizar'),
   filiaisController.listarCoordenacoes,
   hateoasMiddleware
 );
 
 // Consultar CNPJ na API externa
 router.get('/consulta-cnpj/:cnpj', 
-  checkPermission('visualizar'),
+  checkScreenPermission('filiais', 'visualizar'),
   filiaisController.consultarCNPJ
 );
 
@@ -71,14 +71,14 @@ router.get('/consulta-cnpj/:cnpj',
 
 // Buscar filial por ID
 router.get('/:id', 
-  checkPermission('visualizar'),
+  checkScreenPermission('filiais', 'visualizar'),
   filiaisController.buscarFilialPorId,
   hateoasMiddleware
 );
 
 // Criar filial
 router.post('/', [
-  checkPermission('criar'),
+  checkScreenPermission('filiais', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'filiais'),
   filialValidations,
   handleValidationErrors
@@ -86,7 +86,7 @@ router.post('/', [
 
 // Atualizar filial
 router.put('/:id', [
-  checkPermission('editar'),
+  checkScreenPermission('filiais', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'filiais'),
   filialAtualizacaoValidations,
   handleValidationErrors
@@ -94,7 +94,7 @@ router.put('/:id', [
 
 // Excluir filial
 router.delete('/:id', [
-  checkPermission('excluir'),
+  checkScreenPermission('filiais', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'filiais')
 ], filiaisController.excluirFilial);
 

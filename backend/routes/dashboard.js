@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../middleware/auth');
+const { authenticateToken, checkScreenPermission } = require('../middleware/auth');
 const { hateoasMiddleware } = require('../middleware/hateoas');
 const dashboardController = require('../controllers/dashboardController');
 
@@ -12,7 +12,7 @@ router.use(authenticateToken);
 
 // Obter estatísticas gerais da dashboard
 router.get('/stats', 
-  checkPermission('visualizar'),
+  checkScreenPermission('dashboard', 'visualizar'),
   dashboardController.obterEstatisticas,
   hateoasMiddleware
 );
