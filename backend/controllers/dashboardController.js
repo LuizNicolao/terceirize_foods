@@ -476,11 +476,13 @@ class DashboardController {
         console.error('Erro ao buscar atividades recentes:', error.message);
       }
 
-      // Retornar resposta mais simples para debug
       res.json({
-        stats,
-        recentes,
-        atividades
+        success: true,
+        data: {
+          stats,
+          recentes,
+          atividades
+        }
       });
 
     } catch (error) {

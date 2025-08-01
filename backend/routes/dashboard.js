@@ -12,9 +12,9 @@ router.use(authenticateToken);
 
 // Obter estatísticas gerais da dashboard
 router.get('/stats', 
-  // checkPermission('visualizar'), // Temporariamente removido para debug
-  dashboardController.obterEstatisticas
-  // hateoasMiddleware // Temporariamente removido para debug
+  checkPermission('visualizar'),
+  dashboardController.obterEstatisticas,
+  hateoasMiddleware
 );
 
 // Obter estatísticas por filial

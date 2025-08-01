@@ -180,7 +180,10 @@ const Dashboard = () => {
       console.log('Resposta da API dashboard:', response.data);
       
       // Verificar se a resposta tem a estrutura esperada
-      if (response.data && response.data.stats) {
+      if (response.data && response.data.data && response.data.data.stats) {
+        setDashboardData(response.data.data);
+      } else if (response.data && response.data.stats) {
+        // Fallback para estrutura direta
         setDashboardData(response.data);
       } else {
         console.error('Estrutura de resposta inesperada:', response.data);
