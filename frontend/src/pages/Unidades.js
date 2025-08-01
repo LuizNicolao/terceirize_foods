@@ -277,7 +277,7 @@ const Unidades = () => {
     try {
       setLoading(true);
       const response = await api.get('/unidades');
-      setUnidades(response.data);
+      setUnidades(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar unidades:', error);
       toast.error('Erro ao carregar unidades');

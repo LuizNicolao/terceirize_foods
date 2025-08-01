@@ -11,7 +11,9 @@ class UnidadesController {
         status 
       } = req.query;
 
-      const offset = (page - 1) * limit;
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 10;
+      const offset = (pageNum - 1) * limitNum;
       let whereConditions = ['1=1'];
       let params = [];
 
@@ -45,22 +47,22 @@ class UnidadesController {
         FROM unidades_medida 
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY nome ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${limitNum} OFFSET ${offset}
       `;
 
-      const unidades = await executeQuery(query, [...params, parseInt(limit), offset]);
+      const unidades = await executeQuery(query, params);
 
       // Calcular metadados de paginação
-      const totalPages = Math.ceil(total / limit);
-      const hasNextPage = page < totalPages;
-      const hasPrevPage = page > 1;
+      const totalPages = Math.ceil(total / limitNum);
+      const hasNextPage = pageNum < totalPages;
+      const hasPrevPage = pageNum > 1;
 
       res.json({
         success: true,
         data: unidades,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: pageNum,
+          limit: limitNum,
           total,
           totalPages,
           hasNextPage,

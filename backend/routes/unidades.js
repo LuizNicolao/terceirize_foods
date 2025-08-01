@@ -63,17 +63,13 @@ router.get('/:id',
 // Criar unidade
 router.post('/', [
   checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_medida'),
-  unidadeValidations,
-  handleValidationErrors
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_medida')
 ], unidadesController.criarUnidade);
 
 // Atualizar unidade
 router.put('/:id', [
   checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_medida'),
-  unidadeAtualizacaoValidations,
-  handleValidationErrors
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_medida')
 ], unidadesController.atualizarUnidade);
 
 // Excluir unidade
