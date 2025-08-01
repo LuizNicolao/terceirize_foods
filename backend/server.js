@@ -102,10 +102,13 @@ app.use(
 
 // Middleware para capturar erros CSRF
 app.use((err, req, res, next) => {
+  console.log('Debug - Middleware de erro chamado');
+  console.log('Debug - err.code:', err.code);
+  console.log('Debug - req.path:', req.path);
+  console.log('Debug - req.method:', req.method);
+  
   if (err.code === 'EBADCSRFTOKEN') {
     console.log('Debug - Erro CSRF detectado');
-    console.log('Debug - req.path:', req.path);
-    console.log('Debug - req.method:', req.method);
     console.log('Debug - req.headers:', req.headers);
     
     // Permitir login, verify, health, validate-cotacao-token e fornecedores-public sem CSRF
@@ -264,6 +267,8 @@ app.get('/api/fornecedores/public', async (req, res) => {
 // Middleware de logging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  console.log('Debug - Headers:', req.headers);
+  
   if (req.method === 'PUT' && req.path.includes('/veiculos/')) {
     console.log('Debug - Requisição PUT para veículos detectada');
     console.log('Debug - Body:', JSON.stringify(req.body, null, 2));
