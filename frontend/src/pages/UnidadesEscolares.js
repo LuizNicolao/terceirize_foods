@@ -356,7 +356,7 @@ const UnidadesEscolares = () => {
     try {
       setLoading(true);
       const response = await api.get('/unidades-escolares');
-      setUnidades(response.data);
+      setUnidades(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar unidades escolares:', error);
       toast.error('Erro ao carregar unidades escolares');
@@ -369,7 +369,7 @@ const UnidadesEscolares = () => {
   const loadRotas = async () => {
     try {
       const response = await api.get('/rotas');
-      setRotas(response.data);
+      setRotas(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar rotas:', error);
     }

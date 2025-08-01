@@ -70,17 +70,13 @@ router.get('/:id',
 // Criar unidade escolar
 router.post('/', [
   checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares'),
-  unidadeEscolarValidations,
-  handleValidationErrors
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares')
 ], unidadesEscolaresController.criarUnidadeEscolar);
 
 // Atualizar unidade escolar
 router.put('/:id', [
   checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_escolares'),
-  unidadeEscolarAtualizacaoValidations,
-  handleValidationErrors
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_escolares')
 ], unidadesEscolaresController.atualizarUnidadeEscolar);
 
 // Excluir unidade escolar
