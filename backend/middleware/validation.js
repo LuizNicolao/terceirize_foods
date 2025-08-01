@@ -10,6 +10,8 @@ const { validationResponse } = require('./responseHandler');
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log('Debug - Erros de validação:', JSON.stringify(errors.array(), null, 2));
+    console.log('Debug - Dados recebidos:', JSON.stringify(req.body, null, 2));
     return validationResponse(res, errors.array());
   }
   next();
@@ -1290,8 +1292,8 @@ const veiculoValidations = [
     .withMessage('Placa é obrigatória')
     .isLength({ min: 6, max: 10 })
     .withMessage('Placa deve ter entre 6 e 10 caracteres')
-    .matches(/^[A-Z]{3}[0-9][0-9A-Z][0-9]{2}$|^[A-Z]{3}[0-9]{4}$/)
-    .withMessage('Placa deve estar no formato Mercosul (ABC1D23) ou antigo (ABC1234)')
+    .matches(/^[A-Z]{3}[0-9A-Z]{3,7}$/)
+    .withMessage('Placa deve começar com 3 letras seguidas de números e/ou letras')
     .trim(),
   
   body('renavam')
@@ -1485,8 +1487,8 @@ const veiculoAtualizacaoValidations = [
     .optional()
     .isLength({ min: 6, max: 10 })
     .withMessage('Placa deve ter entre 6 e 10 caracteres')
-    .matches(/^[A-Z]{3}[0-9][0-9A-Z][0-9]{2}$|^[A-Z]{3}[0-9]{4}$/)
-    .withMessage('Placa deve estar no formato Mercosul (ABC1D23) ou antigo (ABC1234)')
+    .matches(/^[A-Z]{3}[0-9A-Z]{3,7}$/)
+    .withMessage('Placa deve começar com 3 letras seguidas de números e/ou letras')
     .trim(),
   
   body('renavam')
