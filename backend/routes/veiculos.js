@@ -77,17 +77,13 @@ router.get('/:id',
 // Criar veículo
 router.post('/', [
   checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'veiculos'),
-  veiculoValidations,
-  handleValidationErrors
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'veiculos')
 ], veiculosController.criarVeiculo);
 
 // Atualizar veículo
 router.put('/:id', [
   checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'veiculos'),
-  veiculoAtualizacaoValidations,
-  handleValidationErrors
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'veiculos')
 ], veiculosController.atualizarVeiculo);
 
 // Excluir veículo
