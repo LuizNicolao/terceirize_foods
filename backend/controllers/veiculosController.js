@@ -165,6 +165,8 @@ class VeiculosController {
   // Criar veículo
   async criarVeiculo(req, res) {
     try {
+      console.log('Debug - Dados recebidos para criar veículo:', JSON.stringify(req.body, null, 2));
+      
       const {
         placa,
         renavam,
@@ -337,6 +339,9 @@ class VeiculosController {
     try {
       const { id } = req.params;
       const updateData = req.body;
+      
+      console.log('Debug - Dados recebidos para atualizar veículo ID:', id);
+      console.log('Debug - Dados de atualização:', JSON.stringify(updateData, null, 2));
 
       // Verificar se o veículo existe
       const existingVeiculo = await executeQuery(
