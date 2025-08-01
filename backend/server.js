@@ -100,6 +100,29 @@ app.use(
   })
 );
 
+// Middleware para capturar erros CSRF
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    console.log('Debug - Erro CSRF detectado');
+    console.log('Debug - req.path:', req.path);
+    console.log('Debug - req.method:', req.method);
+    console.log('Debug - req.headers:', req.headers);
+    
+    // Permitir login, verify, health, validate-cotacao-token e fornecedores-public sem CSRF
+    if (
+      req.path === '/api/auth/login' ||
+      req.path === '/api/auth/verify' ||
+      req.path === '/api/auth/validate-cotacao-token' ||
+      req.path === '/api/fornecedores/public' ||
+      req.path === '/api/health'
+    ) {
+      return next();
+    }
+    return res.status(403).json({ error: 'Token CSRF inválido ou ausente.' });
+  }
+  next(err);
+});
+
 // Rota para fornecer o token CSRF ao frontend
 app.get('/api/csrf-token', (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
@@ -236,23 +259,7 @@ app.get('/api/fornecedores/public', async (req, res) => {
 
 
 
-// Exceções para rotas públicas (login, verify, health, validate-cotacao-token, fornecedores-public)
-app.use((err, req, res, next) => {
-  if (err.code === 'EBADCSRFTOKEN') {
-    // Permitir login, verify, health, validate-cotacao-token e fornecedores-public sem CSRF
-    if (
-      req.path === '/api/auth/login' ||
-      req.path === '/api/auth/verify' ||
-      req.path === '/api/auth/validate-cotacao-token' ||
-      req.path === '/api/fornecedores/public' ||
-      req.path === '/api/health'
-    ) {
-      return next();
-    }
-    return res.status(403).json({ error: 'Token CSRF inválido ou ausente.' });
-  }
-  next(err);
-});
+
 
 // Middleware de logging
 app.use((req, res, next) => {
