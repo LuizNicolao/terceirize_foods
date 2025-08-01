@@ -73,7 +73,7 @@ class PaginationHelper {
   applyPagination(query, params = []) {
     return {
       query: `${query} LIMIT ? OFFSET ?`,
-      params: [...params, Number(this.limit), Number(this.offset)]
+      params: [...params, this.limit, this.offset]
     };
   }
 

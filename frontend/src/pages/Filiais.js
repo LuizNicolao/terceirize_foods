@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CadastroFilterBar from '../components/CadastroFilterBar';
+import { extractApiData, extractErrorMessage } from '../utils/apiResponseHandler';
 
 const Container = styled.div`
   padding: 24px;
@@ -363,10 +364,11 @@ const Filiais = () => {
     try {
       setLoading(true);
       const response = await api.get('/filiais');
-      setFiliais(response.data);
+      const data = extractApiData(response);
+      setFiliais(data || []);
     } catch (error) {
       console.error('Erro ao carregar filiais:', error);
-      toast.error('Erro ao carregar filiais');
+      toast.error(extractErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -377,9 +379,10 @@ const Filiais = () => {
     setLoadingAlmoxarifados(true);
     try {
       const res = await api.get(`/filiais/${filialId}/almoxarifados`);
-      setAlmoxarifados(res.data);
+      const data = extractApiData(res);
+      setAlmoxarifados(data || []);
     } catch (err) {
-      toast.error('Erro ao carregar almoxarifados');
+      toast.error(extractErrorMessage(err));
     } finally {
       setLoadingAlmoxarifados(false);
     }
@@ -389,7 +392,8 @@ const Filiais = () => {
   const loadProdutos = async (search = '') => {
     try {
       const res = await api.get(`/produtos?search=${search}`);
-      setProdutos(res.data);
+      const data = extractApiData(res);
+      setProdutos(data || []);
     } catch (err) {
       console.error('Erro ao carregar produtos:', err);
     }
@@ -400,9 +404,10 @@ const Filiais = () => {
     setLoadingItens(true);
     try {
       const res = await api.get(`/filiais/almoxarifados/${almoxarifadoId}/itens`);
-      setItensAlmoxarifado(res.data);
+      const data = extractApiData(res);
+      setItensAlmoxarifado(data || []);
     } catch (err) {
-      toast.error('Erro ao carregar itens do almoxarifado');
+      toast.error(extractErrorMessage(err));
     } finally {
       setLoadingItens(false);
     }
@@ -606,7 +611,8 @@ const Filiais = () => {
       if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
       params.append('recurso', 'filiais');
       const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
+      const data = extractApiData(response);
+      setAuditLogs(data?.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
