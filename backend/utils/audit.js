@@ -98,6 +98,11 @@ const auditMiddleware = (action, resource) => {
 // Middleware para auditoria com comparação de mudanças
 const auditChangesMiddleware = (action, resource) => {
   return async (req, res, next) => {
+    console.log('Debug - auditChangesMiddleware iniciado');
+    console.log('Debug - action:', action);
+    console.log('Debug - resource:', resource);
+    console.log('Debug - params:', req.params);
+    
     let originalData = null;
     
     // Capturar dados originais antes da modificação
@@ -132,6 +137,9 @@ const auditChangesMiddleware = (action, resource) => {
             break;
           case 'nome_generico_produto':
             tableName = 'nome_generico_produto';
+            break;
+          case 'veiculos':
+            tableName = 'veiculos';
             break;
           case 'permissoes':
             tableName = 'permissoes_usuario';
