@@ -614,62 +614,11 @@ const Veiculos = () => {
 
   const onSubmit = async (data) => {
     try {
-      // Limpar dados antes de enviar
-      const cleanedData = { ...data };
-      
-      // Converter strings vazias para null em campos numéricos
-      const numericFields = [
-        'ano_fabricacao', 'capacidade_carga', 'capacidade_volume', 
-        'numero_eixos', 'tara', 'peso_bruto_total', 'potencia_motor',
-        'quilometragem_atual', 'quilometragem_proxima_revisao', 'valor_compra'
-      ];
-      
-      numericFields.forEach(field => {
-        if (cleanedData[field] === '' || cleanedData[field] === null) {
-          cleanedData[field] = null;
-        } else if (typeof cleanedData[field] === 'string') {
-          const num = parseFloat(cleanedData[field]);
-          cleanedData[field] = isNaN(num) ? null : num;
-        }
-      });
-      
-      // Converter strings vazias para null em campos de enum
-      const enumFields = [
-        'tipo_veiculo', 'carroceria', 'combustivel', 'categoria',
-        'tipo_tracao', 'status', 'status_detalhado', 'situacao_financeira'
-      ];
-      
-      enumFields.forEach(field => {
-        if (cleanedData[field] === '' || cleanedData[field] === null) {
-          cleanedData[field] = null;
-        }
-      });
-      
-      // Converter strings vazias para null em campos de data
-      const dateFields = [
-        'data_emplacamento', 'vencimento_licenciamento', 'vencimento_ipva',
-        'vencimento_dpvat', 'proxima_inspecao_veicular', 'data_ultima_revisao',
-        'data_ultima_troca_oleo', 'vencimento_alinhamento_balanceamento',
-        'data_aquisicao'
-      ];
-      
-      dateFields.forEach(field => {
-        if (cleanedData[field] === '' || cleanedData[field] === null) {
-          cleanedData[field] = null;
-        }
-      });
-      
-      console.log('Debug - Frontend: Dados limpos:', cleanedData);
-      
       if (editingVeiculo) {
-        console.log('Debug - Frontend: Fazendo PUT para:', `/veiculos/${editingVeiculo.id}`);
-        const response = await api.put(`/veiculos/${editingVeiculo.id}`, cleanedData);
-        console.log('Debug - Frontend: Resposta do PUT:', response);
+        await api.put(`/veiculos/${editingVeiculo.id}`, data);
         toast.success('Veículo atualizado com sucesso!');
       } else {
-        console.log('Debug - Frontend: Fazendo POST para:', '/veiculos');
-        const response = await api.post('/veiculos', cleanedData);
-        console.log('Debug - Frontend: Resposta do POST:', response);
+        await api.post('/veiculos', data);
         toast.success('Veículo criado com sucesso!');
       }
       

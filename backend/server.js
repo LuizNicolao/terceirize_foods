@@ -100,32 +100,6 @@ app.use(
   })
 );
 
-// Middleware para capturar erros CSRF
-app.use((err, req, res, next) => {
-  console.log('Debug - Middleware de erro chamado');
-  console.log('Debug - err.code:', err.code);
-  console.log('Debug - req.path:', req.path);
-  console.log('Debug - req.method:', req.method);
-  
-  if (err.code === 'EBADCSRFTOKEN') {
-    console.log('Debug - Erro CSRF detectado');
-    console.log('Debug - req.headers:', req.headers);
-    
-    // Permitir login, verify, health, validate-cotacao-token e fornecedores-public sem CSRF
-    if (
-      req.path === '/api/auth/login' ||
-      req.path === '/api/auth/verify' ||
-      req.path === '/api/auth/validate-cotacao-token' ||
-      req.path === '/api/fornecedores/public' ||
-      req.path === '/api/health'
-    ) {
-      return next();
-    }
-    return res.status(403).json({ error: 'Token CSRF inválido ou ausente.' });
-  }
-  next(err);
-});
-
 // Rota para fornecer o token CSRF ao frontend
 app.get('/api/csrf-token', (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
@@ -262,17 +236,27 @@ app.get('/api/fornecedores/public', async (req, res) => {
 
 
 
-
+// Exceções para rotas públicas (login, verify, health, validate-cotacao-token, fornecedores-public)
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    // Permitir login, verify, health, validate-cotacao-token e fornecedores-public sem CSRF
+    if (
+      req.path === '/api/auth/login' ||
+      req.path === '/api/auth/verify' ||
+      req.path === '/api/auth/validate-cotacao-token' ||
+      req.path === '/api/fornecedores/public' ||
+      req.path === '/api/health'
+    ) {
+      return next();
+    }
+    return res.status(403).json({ error: 'Token CSRF inválido ou ausente.' });
+  }
+  next(err);
+});
 
 // Middleware de logging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
-  console.log('Debug - Headers:', req.headers);
-  
-  if (req.method === 'PUT' && req.path.includes('/veiculos/')) {
-    console.log('Debug - Requisição PUT para veículos detectada');
-    console.log('Debug - Body:', JSON.stringify(req.body, null, 2));
-  }
   next();
 });
 
@@ -350,5 +334,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`📊 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 URL: http://localhost:${PORT}`);
   console.log(`🌐 URL Externa: http://82.29.57.43:${PORT}`);
-  console.log('🔧 Debug: Código atualizado - logs de debug ativos');
 }); 

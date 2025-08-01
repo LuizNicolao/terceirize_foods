@@ -46,15 +46,10 @@ const authenticateToken = async (req, res, next) => {
 // Middleware para verificar permissões específicas
 const checkPermission = (permission) => {
   return (req, res, next) => {
-    console.log('Debug - checkPermission chamado');
-    console.log('Debug - permission:', permission);
-    console.log('Debug - user:', req.user);
-    
     const user = req.user;
     
     // Administradores têm todas as permissões
     if (user.tipo_de_acesso === 'administrador') {
-      console.log('Debug - Usuário é administrador, permitindo acesso');
       return next();
     }
 
@@ -66,15 +61,11 @@ const checkPermission = (permission) => {
     };
 
     const userPermissions = accessLevels[user.nivel_de_acesso] || [];
-    console.log('Debug - userPermissions:', userPermissions);
-    console.log('Debug - user.nivel_de_acesso:', user.nivel_de_acesso);
     
     if (userPermissions.includes(permission)) {
-      console.log('Debug - Permissão concedida');
       return next();
     }
 
-    console.log('Debug - Permissão negada');
     return res.status(403).json({ error: 'Permissão insuficiente' });
   };
 };

@@ -87,12 +87,7 @@ const asyncHandler = (fn) => {
 
 // Middleware para tratamento global de erros
 const errorHandler = (err, req, res, next) => {
-  console.error('Debug - errorHandler chamado');
-  console.error('Debug - req.path:', req.path);
-  console.error('Debug - req.method:', req.method);
-  console.error('Debug - err:', err);
-  console.error('Debug - err.name:', err.name);
-  console.error('Debug - err.code:', err.code);
+  console.error('Erro na API:', err);
 
   // Erros de validação do express-validator
   if (err.name === 'ValidationError') {

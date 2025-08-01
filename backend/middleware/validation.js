@@ -10,8 +10,6 @@ const { validationResponse } = require('./responseHandler');
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log('Debug - Erros de validação:', JSON.stringify(errors.array(), null, 2));
-    console.log('Debug - Dados recebidos:', JSON.stringify(req.body, null, 2));
     return validationResponse(res, errors.array());
   }
   next();
@@ -1292,8 +1290,8 @@ const veiculoValidations = [
     .withMessage('Placa é obrigatória')
     .isLength({ min: 6, max: 10 })
     .withMessage('Placa deve ter entre 6 e 10 caracteres')
-    .matches(/^[A-Z]{3}[0-9A-Z]{3,7}$/)
-    .withMessage('Placa deve começar com 3 letras seguidas de números e/ou letras')
+    .matches(/^[A-Z]{3}[0-9][0-9A-Z][0-9]{2}$|^[A-Z]{3}[0-9]{4}$/)
+    .withMessage('Placa deve estar no formato Mercosul (ABC1D23) ou antigo (ABC1234)')
     .trim(),
   
   body('renavam')
@@ -1329,23 +1327,27 @@ const veiculoValidations = [
   
   body('tipo_veiculo')
     .optional()
-    .isIn(['passeio', 'caminhao', 'moto', 'utilitario'])
-    .withMessage('Tipo de veículo deve ser passeio, caminhao, moto ou utilitario'),
+    .isLength({ max: 50 })
+    .withMessage('Tipo de veículo deve ter no máximo 50 caracteres')
+    .trim(),
   
   body('carroceria')
     .optional()
-    .isIn(['Bau', 'Refrigerado', 'Bipartido', 'Grade Baixa', 'Sider', 'Graneleiro', 'Tanque', 'Cacamba'])
-    .withMessage('Carroceria deve ser um dos tipos válidos'),
+    .isLength({ max: 50 })
+    .withMessage('Carroceria deve ter no máximo 50 caracteres')
+    .trim(),
   
   body('combustivel')
     .optional()
-    .isIn(['gasolina', 'diesel', 'etanol', 'flex', 'GNV', 'eletrico'])
-    .withMessage('Combustível deve ser um dos tipos válidos'),
+    .isLength({ max: 30 })
+    .withMessage('Combustível deve ter no máximo 30 caracteres')
+    .trim(),
   
   body('categoria')
     .optional()
-    .isIn(['Frota', 'Agregado', 'Terceiro'])
-    .withMessage('Categoria deve ser Frota, Agregado ou Terceiro'),
+    .isLength({ max: 30 })
+    .withMessage('Categoria deve ter no máximo 30 caracteres')
+    .trim(),
   
   body('capacidade_carga')
     .optional()
@@ -1487,8 +1489,8 @@ const veiculoAtualizacaoValidations = [
     .optional()
     .isLength({ min: 6, max: 10 })
     .withMessage('Placa deve ter entre 6 e 10 caracteres')
-    .matches(/^[A-Z]{3}[0-9A-Z]{3,7}$/)
-    .withMessage('Placa deve começar com 3 letras seguidas de números e/ou letras')
+    .matches(/^[A-Z]{3}[0-9][0-9A-Z][0-9]{2}$|^[A-Z]{3}[0-9]{4}$/)
+    .withMessage('Placa deve estar no formato Mercosul (ABC1D23) ou antigo (ABC1234)')
     .trim(),
   
   body('renavam')
@@ -1524,23 +1526,27 @@ const veiculoAtualizacaoValidations = [
   
   body('tipo_veiculo')
     .optional()
-    .isIn(['passeio', 'caminhao', 'moto', 'utilitario'])
-    .withMessage('Tipo de veículo deve ser passeio, caminhao, moto ou utilitario'),
+    .isLength({ max: 50 })
+    .withMessage('Tipo de veículo deve ter no máximo 50 caracteres')
+    .trim(),
   
   body('carroceria')
     .optional()
-    .isIn(['Bau', 'Refrigerado', 'Bipartido', 'Grade Baixa', 'Sider', 'Graneleiro', 'Tanque', 'Cacamba'])
-    .withMessage('Carroceria deve ser um dos tipos válidos'),
+    .isLength({ max: 50 })
+    .withMessage('Carroceria deve ter no máximo 50 caracteres')
+    .trim(),
   
   body('combustivel')
     .optional()
-    .isIn(['gasolina', 'diesel', 'etanol', 'flex', 'GNV', 'eletrico'])
-    .withMessage('Combustível deve ser um dos tipos válidos'),
+    .isLength({ max: 30 })
+    .withMessage('Combustível deve ter no máximo 30 caracteres')
+    .trim(),
   
   body('categoria')
     .optional()
-    .isIn(['Frota', 'Agregado', 'Terceiro'])
-    .withMessage('Categoria deve ser Frota, Agregado ou Terceiro'),
+    .isLength({ max: 30 })
+    .withMessage('Categoria deve ter no máximo 30 caracteres')
+    .trim(),
   
   body('capacidade_carga')
     .optional()
@@ -1578,30 +1584,30 @@ const veiculoAtualizacaoValidations = [
     .isFloat({ min: 0 })
     .withMessage('Quilometragem atual deve ser um número positivo'),
   
-  body('data_emplacamento')
+  body('data_licenciamento')
     .optional()
     .isISO8601()
-    .withMessage('Data de emplacamento deve ser uma data válida'),
+    .withMessage('Data de licenciamento deve ser uma data válida'),
   
-  body('vencimento_licenciamento')
+  body('data_vencimento_licenciamento')
     .optional()
     .isISO8601()
     .withMessage('Data de vencimento do licenciamento deve ser uma data válida'),
   
-  body('proxima_inspecao_veicular')
+  body('data_inspecao_veicular')
     .optional()
     .isISO8601()
-    .withMessage('Data da próxima inspeção veicular deve ser uma data válida'),
+    .withMessage('Data de inspeção veicular deve ser uma data válida'),
   
-  body('vencimento_ipva')
+  body('data_vencimento_inspecao')
     .optional()
     .isISO8601()
-    .withMessage('Data de vencimento do IPVA deve ser uma data válida'),
+    .withMessage('Data de vencimento da inspeção deve ser uma data válida'),
   
-  body('vencimento_dpvat')
+  body('data_vencimento_documentacao')
     .optional()
     .isISO8601()
-    .withMessage('Data de vencimento do DPVAT deve ser uma data válida'),
+    .withMessage('Data de vencimento da documentação deve ser uma data válida'),
   
   body('status')
     .optional()
@@ -1642,22 +1648,22 @@ const veiculoAtualizacaoValidations = [
     .withMessage('Situação financeira deve ter no máximo 50 caracteres')
     .trim(),
   
-  body('foto_frente')
+  body('foto_veiculo')
     .optional()
     .isLength({ max: 255 })
-    .withMessage('Caminho da foto frontal deve ter no máximo 255 caracteres')
+    .withMessage('Caminho da foto do veículo deve ter no máximo 255 caracteres')
     .trim(),
   
-  body('foto_traseira')
+  body('foto_documentacao')
     .optional()
     .isLength({ max: 255 })
-    .withMessage('Caminho da foto traseira deve ter no máximo 255 caracteres')
+    .withMessage('Caminho da foto da documentação deve ter no máximo 255 caracteres')
     .trim(),
   
-  body('foto_lateral')
+  body('foto_inspecao')
     .optional()
     .isLength({ max: 255 })
-    .withMessage('Caminho da foto lateral deve ter no máximo 255 caracteres')
+    .withMessage('Caminho da foto da inspeção deve ter no máximo 255 caracteres')
     .trim(),
   
   body('observacoes')
