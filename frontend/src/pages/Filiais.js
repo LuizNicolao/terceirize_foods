@@ -611,8 +611,7 @@ const Filiais = () => {
       if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
       params.append('recurso', 'filiais');
       const response = await api.get(`/auditoria?${params.toString()}`);
-      const data = extractApiData(response);
-      setAuditLogs(data?.logs || []);
+      setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
