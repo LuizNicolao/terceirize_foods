@@ -45,7 +45,7 @@ class DashboardController {
         veiculos: []
       };
 
-      const atividades = [];
+      let atividades = [];
 
       // ===== ESTATÍSTICAS GERAIS =====
 

@@ -21,7 +21,7 @@ router.get('/',
   checkScreenPermission('filiais', 'visualizar'),
   paginationMiddleware,
   filiaisController.listarFiliais,
-  hateoasMiddleware
+  hateoasMiddleware('filiais')
 );
 
 // ===== ROTAS ESPECÍFICAS =====
@@ -30,35 +30,35 @@ router.get('/',
 router.get('/ativas/listar', 
   checkScreenPermission('filiais', 'visualizar'),
   filiaisController.buscarFiliaisAtivas,
-  hateoasMiddleware
+  hateoasMiddleware('filiais')
 );
 
 // Buscar filiais por estado
 router.get('/estado/:estado', 
   checkScreenPermission('filiais', 'visualizar'),
   filiaisController.buscarFiliaisPorEstado,
-  hateoasMiddleware
+  hateoasMiddleware('filiais')
 );
 
 // Listar estados disponíveis
 router.get('/estados/listar', 
   checkScreenPermission('filiais', 'visualizar'),
   filiaisController.listarEstados,
-  hateoasMiddleware
+  hateoasMiddleware('filiais')
 );
 
 // Listar supervisões disponíveis
 router.get('/supervisoes/listar', 
   checkScreenPermission('filiais', 'visualizar'),
   filiaisController.listarSupervisoes,
-  hateoasMiddleware
+  hateoasMiddleware('filiais')
 );
 
 // Listar coordenações disponíveis
 router.get('/coordenacoes/listar', 
   checkScreenPermission('filiais', 'visualizar'),
   filiaisController.listarCoordenacoes,
-  hateoasMiddleware
+  hateoasMiddleware('filiais')
 );
 
 // Consultar CNPJ na API externa
@@ -73,7 +73,7 @@ router.get('/consulta-cnpj/:cnpj',
 router.get('/:id', 
   checkScreenPermission('filiais', 'visualizar'),
   filiaisController.buscarFilialPorId,
-  hateoasMiddleware
+  hateoasMiddleware('filiais')
 );
 
 // Criar filial
