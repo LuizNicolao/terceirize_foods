@@ -165,8 +165,6 @@ class VeiculosController {
   // Criar veículo
   async criarVeiculo(req, res) {
     try {
-      console.log('Debug - Dados recebidos para criar veículo:', JSON.stringify(req.body, null, 2));
-      
       const {
         placa,
         renavam,
@@ -274,42 +272,54 @@ class VeiculosController {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
+      // Função auxiliar para converter string vazia em null
+      const toNullIfEmpty = (value) => {
+        if (value === '' || value === undefined || value === null) return null;
+        return value;
+      };
+
+      // Função auxiliar para converter string vazia em null para números
+      const toNullIfEmptyNumber = (value) => {
+        if (value === '' || value === undefined || value === null || value === 0) return null;
+        return value;
+      };
+
       const result = await executeQuery(insertQuery, [
         placa.trim().toUpperCase(),
-        renavam ? renavam.trim() : null,
-        chassi ? chassi.trim() : null,
-        modelo ? modelo.trim() : null,
-        marca ? marca.trim() : null,
-        ano_fabricacao,
-        tipo_veiculo,
-        carroceria ? carroceria.trim() : null,
-        combustivel ? combustivel.trim() : null,
-        categoria ? categoria.trim() : null,
-        capacidade_carga,
-        numero_eixos,
-        tara,
-        peso_bruto_total,
-        potencia_motor,
-        tipo_tracao ? tipo_tracao.trim() : null,
-        quilometragem_atual,
-        data_emplacamento,
-        vencimento_licenciamento,
-        proxima_inspecao_veicular,
-        vencimento_ipva,
-        vencimento_dpvat,
-        status,
-        status_detalhado ? status_detalhado.trim() : null,
-        data_aquisicao,
-        valor_compra,
-        fornecedor ? fornecedor.trim() : null,
-        numero_frota ? numero_frota.trim() : null,
-        situacao_financeira ? situacao_financeira.trim() : null,
-        foto_frente ? foto_frente.trim() : null,
-        foto_traseira ? foto_traseira.trim() : null,
-        foto_lateral ? foto_lateral.trim() : null,
-        observacoes ? observacoes.trim() : null,
-        filial_id,
-        motorista_id
+        toNullIfEmpty(renavam),
+        toNullIfEmpty(chassi),
+        toNullIfEmpty(modelo),
+        toNullIfEmpty(marca),
+        toNullIfEmptyNumber(ano_fabricacao),
+        toNullIfEmpty(tipo_veiculo),
+        toNullIfEmpty(carroceria),
+        toNullIfEmpty(combustivel),
+        toNullIfEmpty(categoria),
+        toNullIfEmptyNumber(capacidade_carga),
+        toNullIfEmptyNumber(numero_eixos),
+        toNullIfEmptyNumber(tara),
+        toNullIfEmptyNumber(peso_bruto_total),
+        toNullIfEmptyNumber(potencia_motor),
+        toNullIfEmpty(tipo_tracao),
+        toNullIfEmptyNumber(quilometragem_atual),
+        toNullIfEmpty(data_emplacamento),
+        toNullIfEmpty(vencimento_licenciamento),
+        toNullIfEmpty(proxima_inspecao_veicular),
+        toNullIfEmpty(vencimento_ipva),
+        toNullIfEmpty(vencimento_dpvat),
+        toNullIfEmpty(status) || 'ativo',
+        toNullIfEmpty(status_detalhado),
+        toNullIfEmpty(data_aquisicao),
+        toNullIfEmptyNumber(valor_compra),
+        toNullIfEmpty(fornecedor),
+        toNullIfEmpty(numero_frota),
+        toNullIfEmpty(situacao_financeira),
+        toNullIfEmpty(foto_frente),
+        toNullIfEmpty(foto_traseira),
+        toNullIfEmpty(foto_lateral),
+        toNullIfEmpty(observacoes),
+        toNullIfEmptyNumber(filial_id),
+        toNullIfEmptyNumber(motorista_id)
       ]);
 
       // Buscar veículo criado
@@ -339,9 +349,6 @@ class VeiculosController {
     try {
       const { id } = req.params;
       const updateData = req.body;
-      
-      console.log('Debug - Dados recebidos para atualizar veículo ID:', id);
-      console.log('Debug - Dados de atualização:', JSON.stringify(updateData, null, 2));
 
       // Verificar se o veículo existe
       const existingVeiculo = await executeQuery(
@@ -432,13 +439,27 @@ class VeiculosController {
         'foto_lateral', 'observacoes', 'filial_id', 'motorista_id'
       ];
 
+      // Função auxiliar para converter string vazia em null
+      const toNullIfEmpty = (value) => {
+        if (value === '' || value === undefined || value === null) return null;
+        return value;
+      };
+
+      // Função auxiliar para converter string vazia em null para números
+      const toNullIfEmptyNumber = (value) => {
+        if (value === '' || value === undefined || value === null || value === 0) return null;
+        return value;
+      };
+
       allowedFields.forEach(field => {
         if (updateData[field] !== undefined) {
           updateFields.push(`${field} = ?`);
           if (field === 'placa') {
             updateParams.push(updateData[field].trim().toUpperCase());
           } else if (typeof updateData[field] === 'string') {
-            updateParams.push(updateData[field].trim());
+            updateParams.push(toNullIfEmpty(updateData[field]));
+          } else if (typeof updateData[field] === 'number') {
+            updateParams.push(toNullIfEmptyNumber(updateData[field]));
           } else {
             updateParams.push(updateData[field]);
           }
