@@ -335,6 +335,9 @@ class VeiculosController {
   // Atualizar veículo
   async atualizarVeiculo(req, res) {
     try {
+      console.log('Debug - Dados recebidos para atualização:', req.body);
+      console.log('Debug - ID do veículo:', req.params.id);
+      
       const { id } = req.params;
       const updateData = req.body;
 
@@ -353,7 +356,9 @@ class VeiculosController {
       }
 
       // Validações específicas
+      console.log('Debug - Validando placa:', updateData.placa);
       if (updateData.placa && updateData.placa.trim().length < 6) {
+        console.log('Debug - Placa inválida detectada');
         return res.status(400).json({
           success: false,
           error: 'Placa inválida',
@@ -463,6 +468,7 @@ class VeiculosController {
         [id]
       );
 
+      console.log('Debug - Veículo atualizado com sucesso');
       res.json({
         success: true,
         message: 'Veículo atualizado com sucesso',
