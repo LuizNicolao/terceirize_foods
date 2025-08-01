@@ -10,6 +10,8 @@ const { validationResponse } = require('./responseHandler');
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
+    console.log('Debug - Erros de validação:', errors.array());
+    console.log('Debug - Dados recebidos:', req.body);
     return validationResponse(res, errors.array());
   }
   next();
