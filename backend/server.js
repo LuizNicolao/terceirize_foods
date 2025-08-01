@@ -257,6 +257,10 @@ app.use((err, req, res, next) => {
 // Middleware de logging
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+  if (req.method === 'PUT' && req.path.includes('/veiculos/')) {
+    console.log('Debug - Requisição PUT para veículos detectada');
+    console.log('Debug - Body:', JSON.stringify(req.body, null, 2));
+  }
   next();
 });
 
