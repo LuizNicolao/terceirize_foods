@@ -880,16 +880,16 @@ const unidadeEscolarValidations = [
     .withMessage('LOT deve ter no máximo 50 caracteres')
     .trim(),
   
-  body('cc_senic')
+  body('cc_senior')
     .optional()
     .isLength({ max: 50 })
-    .withMessage('CC Senic deve ter no máximo 50 caracteres')
+    .withMessage('CC Senior deve ter no máximo 50 caracteres')
     .trim(),
   
-  body('codigo_senio')
+  body('codigo_senior')
     .optional()
     .isLength({ max: 50 })
-    .withMessage('Código Senio deve ter no máximo 50 caracteres')
+    .withMessage('Código Senior deve ter no máximo 50 caracteres')
     .trim(),
   
   body('abastecimento')
@@ -998,16 +998,16 @@ const unidadeEscolarAtualizacaoValidations = [
     .withMessage('LOT deve ter no máximo 50 caracteres')
     .trim(),
   
-  body('cc_senic')
+  body('cc_senior')
     .optional()
     .isLength({ max: 50 })
-    .withMessage('CC Senic deve ter no máximo 50 caracteres')
+    .withMessage('CC Senior deve ter no máximo 50 caracteres')
     .trim(),
   
-  body('codigo_senio')
+  body('codigo_senior')
     .optional()
     .isLength({ max: 50 })
-    .withMessage('Código Senio deve ter no máximo 50 caracteres')
+    .withMessage('Código Senior deve ter no máximo 50 caracteres')
     .trim(),
   
   body('abastecimento')

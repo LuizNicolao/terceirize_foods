@@ -74,7 +74,7 @@ class UnidadesEscolaresController {
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
           ue.pais, ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, ue.rota_id, ue.regional, ue.lot, 
-          ue.cc_senic, ue.codigo_senio, ue.abastecimento, ue.ordem_entrega, 
+          ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
           ue.status, ue.observacoes, ue.created_at, ue.updated_at,
           r.nome as rota_nome
         FROM unidades_escolares ue
@@ -132,7 +132,7 @@ class UnidadesEscolaresController {
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
           ue.pais, ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, ue.rota_id, ue.regional, ue.lot, 
-          ue.cc_senic, ue.codigo_senio, ue.abastecimento, ue.ordem_entrega, 
+          ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
           ue.status, ue.observacoes, ue.created_at, ue.updated_at,
           r.nome as rota_nome
         FROM unidades_escolares ue
@@ -182,8 +182,8 @@ class UnidadesEscolaresController {
         rota_id,
         regional,
         lot,
-        cc_senic,
-        codigo_senio,
+        cc_senior,
+        codigo_senior,
         abastecimento,
         ordem_entrega = 0,
         status = 'ativo',
@@ -265,7 +265,7 @@ class UnidadesEscolaresController {
       const insertQuery = `
         INSERT INTO unidades_escolares (
           codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
-          centro_distribuicao, rota_id, regional, lot, cc_senic, codigo_senio, abastecimento,
+          centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
           ordem_entrega, status, observacoes
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
@@ -332,8 +332,8 @@ class UnidadesEscolaresController {
         rota_id,
         regional,
         lot,
-        cc_senic,
-        codigo_senio,
+        cc_senior,
+        codigo_senior,
         abastecimento,
         ordem_entrega,
         status,
@@ -483,13 +483,13 @@ class UnidadesEscolaresController {
         updateFields.push('lot = ?');
         updateParams.push(lot);
       }
-      if (cc_senic !== undefined) {
-        updateFields.push('cc_senic = ?');
-        updateParams.push(cc_senic);
+      if (cc_senior !== undefined) {
+        updateFields.push('cc_senior = ?');
+        updateParams.push(cc_senior);
       }
-      if (codigo_senio !== undefined) {
-        updateFields.push('codigo_senio = ?');
-        updateParams.push(codigo_senio);
+      if (codigo_senior !== undefined) {
+        updateFields.push('codigo_senior = ?');
+        updateParams.push(codigo_senior);
       }
       if (abastecimento !== undefined) {
         updateFields.push('abastecimento = ?');

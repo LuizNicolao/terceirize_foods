@@ -551,8 +551,8 @@ const UnidadesEscolares = () => {
       'estado': 'Estado',
       'rota_id': 'Rota',
       'centro_distribuicao': 'Centro Distribuição',
-      'cc_senic': 'C.C. Senior',
-      'codigo_senio': 'Código Senior',
+      'cc_senior': 'C.C. Senior',
+      'codigo_senior': 'Código Senior',
       'status': 'Status'
     };
     return labels[field] || field;
@@ -868,11 +868,11 @@ const UnidadesEscolares = () => {
                 </FormGroup>
                 <FormGroup>
                   <Label>C.C. Senior</Label>
-                  <Input type="text" placeholder="C.C. Senior" {...register('cc_senic')} disabled={viewMode} />
+                  <Input type="text" placeholder="C.C. Senior" {...register('cc_senior')} disabled={viewMode} />
                 </FormGroup>
                 <FormGroup>
                   <Label>Código Senior</Label>
-                  <Input type="text" placeholder="Código Senior" {...register('codigo_senio')} disabled={viewMode} />
+                  <Input type="text" placeholder="Código Senior" {...register('codigo_senior')} disabled={viewMode} />
                 </FormGroup>
                 <FormGroup>
                   <Label>Abastecimento</Label>
