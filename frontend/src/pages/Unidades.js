@@ -6,6 +6,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import CadastroFilterBar from '../components/CadastroFilterBar';
+import Pagination from '../components/Pagination';
 
 const Container = styled.div`
   padding: 24px;
@@ -257,6 +258,10 @@ const Unidades = () => {
   const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage] = useState(10);
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
@@ -273,12 +278,27 @@ const Unidades = () => {
   const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
   // Carregar unidades
-  const loadUnidades = async () => {
+  const loadUnidades = async (page = 1) => {
     try {
       setLoading(true);
-      const response = await api.get('/unidades');
-      console.log('Debug - Dados carregados:', response.data);
+      const params = new URLSearchParams();
+      params.append('page', page);
+      params.append('limit', itemsPerPage);
+      
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+      
+      if (statusFilter !== 'todos') {
+        params.append('status', statusFilter === 'ativo' ? '1' : '0');
+      }
+      
+      const response = await api.get(`/unidades?${params.toString()}`);
+      
       setUnidades(response.data.data || []);
+      setTotalPages(response.data.pagination?.totalPages || 1);
+      setTotalItems(response.data.pagination?.total || 0);
+      setCurrentPage(page);
     } catch (error) {
       console.error('Erro ao carregar unidades:', error);
       toast.error('Erro ao carregar unidades');
@@ -288,8 +308,18 @@ const Unidades = () => {
   };
 
   useEffect(() => {
-    loadUnidades();
+    loadUnidades(1);
   }, []);
+
+  // Função para lidar com mudança de página
+  const handlePageChange = (page) => {
+    loadUnidades(page);
+  };
+
+  // Função para lidar com mudança de filtros
+  const handleFilterChange = () => {
+    loadUnidades(1);
+  };
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
@@ -635,7 +665,7 @@ const Unidades = () => {
       }
       
       handleCloseModal();
-      loadUnidades();
+      loadUnidades(1);
     } catch (error) {
       console.error('Erro ao salvar unidade:', error);
       toast.error(error.response?.data?.error || 'Erro ao salvar unidade');
@@ -648,7 +678,7 @@ const Unidades = () => {
       try {
         await api.delete(`/unidades/${unidadeId}`);
         toast.success('Unidade excluída com sucesso!');
-        loadUnidades();
+        loadUnidades(1);
       } catch (error) {
         console.error('Erro ao excluir unidade:', error);
         toast.error(error.response?.data?.error || 'Erro ao excluir unidade');
@@ -656,13 +686,8 @@ const Unidades = () => {
     }
   };
 
-  // Filtrar unidades
-  const filteredUnidades = unidades.filter(unidade => {
-    const matchesSearch = unidade.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         unidade.sigla?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || unidade.status === (statusFilter === 'ativo' ? 1 : 0);
-    return matchesSearch && matchesStatus;
-  });
+  // Usar unidades diretamente (filtros são aplicados no backend)
+  const filteredUnidades = unidades;
 
   if (loading) {
     return (
@@ -695,11 +720,11 @@ const Unidades = () => {
 
       <CadastroFilterBar
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={(value) => { setSearchTerm(value); handleFilterChange(); }}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
-        placeholder="Buscar por nome ou código..."
+        onStatusChange={(value) => { setStatusFilter(value); handleFilterChange(); }}
+        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); handleFilterChange(); }}
+        placeholder="Buscar por nome ou sigla..."
       />
 
       <TableContainer>
@@ -767,6 +792,14 @@ const Unidades = () => {
           </tbody>
         </Table>
       </TableContainer>
+      
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+      />
 
       {showModal && (
         <Modal onClick={handleCloseModal}>
