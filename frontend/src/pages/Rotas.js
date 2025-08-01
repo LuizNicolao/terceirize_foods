@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CadastroFilterBar from '../components/CadastroFilterBar';
+import { extractApiData, extractPaginatedData, extractErrorMessage } from '../utils/apiResponseHandler';
 
 const Container = styled.div`
   padding: 24px;
@@ -495,10 +496,11 @@ const Rotas = () => {
     try {
       setLoading(true);
       const response = await api.get('/rotas');
-      setRotas(response.data);
+      const data = extractApiData(response);
+      setRotas(data || []);
     } catch (error) {
       console.error('Erro ao carregar rotas:', error);
-      toast.error('Erro ao carregar rotas');
+      toast.error(extractErrorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -508,7 +510,8 @@ const Rotas = () => {
   const loadFiliais = async () => {
     try {
       const response = await api.get('/filiais');
-      setFiliais(response.data);
+      const data = extractApiData(response);
+      setFiliais(data || []);
     } catch (error) {
       console.error('Erro ao carregar filiais:', error);
     }
@@ -518,7 +521,8 @@ const Rotas = () => {
   const loadTotalUnidades = async (rotaId) => {
     try {
       const response = await api.get(`/rotas/${rotaId}/unidades-escolares/total`);
-      setTotalUnidades(response.data.total || 0);
+      const data = extractApiData(response);
+      setTotalUnidades(data?.total || 0);
     } catch (error) {
       console.error('Erro ao carregar total de unidades escolares:', error);
       setTotalUnidades(0);
@@ -530,8 +534,9 @@ const Rotas = () => {
     try {
       setLoadingUnidades(true);
       const response = await api.get(`/rotas/${rotaId}/unidades-escolares`);
-      setUnidadesEscolares(response.data.unidades || []);
-      setTotalUnidades(response.data.total || 0);
+      const data = extractApiData(response);
+      setUnidadesEscolares(data?.unidades || []);
+      setTotalUnidades(data?.total || 0);
     } catch (error) {
       console.error('Erro ao carregar unidades escolares:', error);
       setUnidadesEscolares([]);
@@ -571,7 +576,8 @@ const Rotas = () => {
       if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
       params.append('recurso', 'rotas');
       const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
+      const data = extractApiData(response);
+      setAuditLogs(data?.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { FaUsers, FaTruck, FaBox, FaLayerGroup, FaChartLine, FaExclamationTriangle, FaDollarSign, FaRuler } from 'react-icons/fa';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { extractApiData, extractErrorMessage } from '../utils/apiResponseHandler';
 
 const DashboardContainer = styled.div`
   padding: 24px;
@@ -179,22 +180,16 @@ const Dashboard = () => {
       const response = await api.get('/dashboard/stats');
       console.log('Resposta da API dashboard:', response.data);
       
-      // Verificar se a resposta tem a estrutura esperada
-      if (response.data && response.data.stats) {
-        setDashboardData(response.data);
+      const data = extractApiData(response);
+      if (data && data.stats) {
+        setDashboardData(data);
       } else {
         console.error('Estrutura de resposta inesperada:', response.data);
         toast.error('Estrutura de dados inesperada');
       }
     } catch (error) {
       console.error('Erro ao carregar dados da dashboard:', error);
-      if (error.response?.status === 403) {
-        toast.error('Sem permissão para acessar o dashboard');
-      } else if (error.response?.status === 401) {
-        toast.error('Sessão expirada. Faça login novamente.');
-      } else {
-        toast.error('Erro ao carregar dados da dashboard');
-      }
+      toast.error(extractErrorMessage(error));
     } finally {
       setLoading(false);
     }
