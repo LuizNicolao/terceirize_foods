@@ -181,11 +181,11 @@ class VeiculosController {
         potencia_motor,
         tipo_tracao,
         quilometragem_atual,
-        data_licenciamento,
-        data_vencimento_licenciamento,
-        data_inspecao_veicular,
-        data_vencimento_inspecao,
-        data_vencimento_documentacao,
+        data_emplacamento,
+        vencimento_licenciamento,
+        proxima_inspecao_veicular,
+        vencimento_ipva,
+        vencimento_dpvat,
         status,
         status_detalhado,
         data_aquisicao,
@@ -262,8 +262,8 @@ class VeiculosController {
           placa, renavam, chassi, modelo, marca, ano_fabricacao, tipo_veiculo,
           carroceria, combustivel, categoria, capacidade_carga, numero_eixos,
           tara, peso_bruto_total, potencia_motor, tipo_tracao, quilometragem_atual,
-          data_licenciamento, data_vencimento_licenciamento, data_inspecao_veicular,
-          data_vencimento_inspecao, data_vencimento_documentacao, status,
+          data_emplacamento, vencimento_licenciamento, proxima_inspecao_veicular,
+          vencimento_ipva, vencimento_dpvat, status,
           status_detalhado, data_aquisicao, valor_compra, fornecedor, numero_frota,
           situacao_financeira, foto_veiculo, foto_documentacao, foto_inspecao,
           observacoes, filial_id, motorista_id
@@ -288,11 +288,11 @@ class VeiculosController {
         potencia_motor,
         tipo_tracao ? tipo_tracao.trim() : null,
         quilometragem_atual,
-        data_licenciamento,
-        data_vencimento_licenciamento,
-        data_inspecao_veicular,
-        data_vencimento_inspecao,
-        data_vencimento_documentacao,
+        data_emplacamento,
+        vencimento_licenciamento,
+        proxima_inspecao_veicular,
+        vencimento_ipva,
+        vencimento_dpvat,
         status,
         status_detalhado ? status_detalhado.trim() : null,
         data_aquisicao,
@@ -417,9 +417,9 @@ class VeiculosController {
         'tipo_veiculo', 'carroceria', 'combustivel', 'categoria',
         'capacidade_carga', 'numero_eixos', 'tara', 'peso_bruto_total',
         'potencia_motor', 'tipo_tracao', 'quilometragem_atual',
-        'data_licenciamento', 'data_vencimento_licenciamento',
-        'data_inspecao_veicular', 'data_vencimento_inspecao',
-        'data_vencimento_documentacao', 'status', 'status_detalhado',
+        'data_emplacamento', 'vencimento_licenciamento',
+        'proxima_inspecao_veicular', 'vencimento_ipva',
+        'vencimento_dpvat', 'status', 'status_detalhado',
         'data_aquisicao', 'valor_compra', 'fornecedor', 'numero_frota',
         'situacao_financeira', 'foto_veiculo', 'foto_documentacao',
         'foto_inspecao', 'observacoes', 'filial_id', 'motorista_id'
@@ -679,17 +679,17 @@ class VeiculosController {
       const query = `
         SELECT 
           v.id, v.placa, v.modelo, v.marca, v.tipo_veiculo,
-          v.data_vencimento_licenciamento, v.data_vencimento_inspecao,
-          v.data_vencimento_documentacao, v.status,
+          v.vencimento_licenciamento, v.proxima_inspecao_veicular,
+          v.vencimento_ipva, v.status,
           f.filial as filial_nome
         FROM veiculos v
         LEFT JOIN filiais f ON v.filial_id = f.id
         WHERE (
-          (v.data_vencimento_licenciamento IS NOT NULL AND v.data_vencimento_licenciamento <= DATE_ADD(CURDATE(), INTERVAL ? DAY)) OR
-          (v.data_vencimento_inspecao IS NOT NULL AND v.data_vencimento_inspecao <= DATE_ADD(CURDATE(), INTERVAL ? DAY)) OR
-          (v.data_vencimento_documentacao IS NOT NULL AND v.data_vencimento_documentacao <= DATE_ADD(CURDATE(), INTERVAL ? DAY))
+          (v.vencimento_licenciamento IS NOT NULL AND v.vencimento_licenciamento <= DATE_ADD(CURDATE(), INTERVAL ? DAY)) OR
+          (v.proxima_inspecao_veicular IS NOT NULL AND v.proxima_inspecao_veicular <= DATE_ADD(CURDATE(), INTERVAL ? DAY)) OR
+          (v.vencimento_ipva IS NOT NULL AND v.vencimento_ipva <= DATE_ADD(CURDATE(), INTERVAL ? DAY))
         )
-        ORDER BY v.data_vencimento_licenciamento ASC, v.data_vencimento_inspecao ASC, v.data_vencimento_documentacao ASC
+        ORDER BY v.vencimento_licenciamento ASC, v.proxima_inspecao_veicular ASC, v.vencimento_ipva ASC
       `;
 
       const veiculos = await executeQuery(query, [dias, dias, dias]);

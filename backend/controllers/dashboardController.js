@@ -244,17 +244,8 @@ class DashboardController {
 
       // ===== ESTATÍSTICAS DE VENCIMENTO =====
 
-      try {
-        // Produtos vencendo (se houver campo de validade)
-        const produtosVencendo = await executeQuery(
-          `SELECT COUNT(*) as total FROM produtos 
-           WHERE status = 1 AND data_validade IS NOT NULL 
-           AND data_validade <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)`
-        );
-        stats.produtosVencendo = produtosVencendo[0].total;
-      } catch (error) {
-        console.error('Erro ao contar produtos vencendo:', error.message);
-      }
+      // Produtos vencendo - removido pois a tabela produtos não tem coluna data_validade
+      stats.produtosVencendo = 0;
 
       try {
         // Veículos com documentação vencendo
@@ -651,21 +642,8 @@ class DashboardController {
         console.error('Erro ao buscar produtos sem estoque:', error.message);
       }
 
-      try {
-        // Produtos vencendo
-        const produtosVencendo = await executeQuery(
-          `SELECT p.id, p.nome, p.data_validade, f.razao_social as fornecedor
-           FROM produtos p
-           LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-           WHERE p.status = 1 AND p.data_validade IS NOT NULL 
-           AND p.data_validade <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-           ORDER BY p.data_validade ASC
-           LIMIT 10`
-        );
-        alertas.produtosVencendo = produtosVencendo;
-      } catch (error) {
-        console.error('Erro ao buscar produtos vencendo:', error.message);
-      }
+      // Produtos vencendo - removido pois a tabela produtos não tem coluna data_validade
+      alertas.produtosVencendo = [];
 
       try {
         // Veículos com documentação vencendo

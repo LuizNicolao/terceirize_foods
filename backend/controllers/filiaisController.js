@@ -74,8 +74,6 @@ class FiliaisController {
         LIMIT ${limitNum} OFFSET ${offset}
       `;
 
-      console.log('Debug - Query com LIMIT/OFFSET diretos:', { limitNum, offset });
-      
       const filiais = await executeQuery(query, params);
 
       // Calcular metadados de paginação
