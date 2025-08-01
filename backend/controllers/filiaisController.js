@@ -15,7 +15,9 @@ class FiliaisController {
         coordenacao 
       } = req.query;
 
-      const offset = (page - 1) * limit;
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 10;
+      const offset = (pageNum - 1) * limitNum;
       let whereConditions = ['1=1'];
       let params = [];
 
@@ -72,19 +74,19 @@ class FiliaisController {
         LIMIT ? OFFSET ?
       `;
 
-      const filiais = await executeQuery(query, [...params, parseInt(limit) || 10, parseInt(offset) || 0]);
+      const filiais = await executeQuery(query, [...params, limitNum, offset]);
 
       // Calcular metadados de paginação
-      const totalPages = Math.ceil(total / (parseInt(limit) || 10));
-      const hasNextPage = parseInt(page) < totalPages;
-      const hasPrevPage = parseInt(page) > 1;
+      const totalPages = Math.ceil(total / limitNum);
+      const hasNextPage = pageNum < totalPages;
+      const hasPrevPage = pageNum > 1;
 
       res.json({
         success: true,
         data: filiais,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: pageNum,
+          limit: limitNum,
           total,
           totalPages,
           hasNextPage,
