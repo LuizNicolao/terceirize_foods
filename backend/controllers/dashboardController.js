@@ -261,9 +261,9 @@ class DashboardController {
         const veiculosDocumentacaoVencendo = await executeQuery(
           `SELECT COUNT(*) as total FROM veiculos 
            WHERE status = "ativo" AND (
-             (data_vencimento_licenciamento IS NOT NULL AND data_vencimento_licenciamento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
-             (data_vencimento_inspecao IS NOT NULL AND data_vencimento_inspecao <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
-             (data_vencimento_documentacao IS NOT NULL AND data_vencimento_documentacao <= DATE_ADD(CURDATE(), INTERVAL 30 DAY))
+             (vencimento_licenciamento IS NOT NULL AND vencimento_licenciamento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
+             (proxima_inspecao_veicular IS NOT NULL AND proxima_inspecao_veicular <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
+             (vencimento_ipva IS NOT NULL AND vencimento_ipva <= DATE_ADD(CURDATE(), INTERVAL 30 DAY))
            )`
         );
         stats.veiculosDocumentacaoVencendo = veiculosDocumentacaoVencendo[0].total;
@@ -373,7 +373,7 @@ class DashboardController {
       try {
         // Últimas rotas criadas
         const ultimasRotas = await executeQuery(
-          `SELECT id, codigo, nome, criado_em
+          `SELECT id, codigo, nome, created_at as criado_em
            FROM rotas
            WHERE status = "ativo"
            ORDER BY created_at DESC
@@ -387,10 +387,10 @@ class DashboardController {
       try {
         // Últimas unidades escolares criadas
         const ultimasUnidadesEscolares = await executeQuery(
-          `SELECT id, nome_escola, criado_em
+          `SELECT id, nome_escola, created_at as criado_em
            FROM unidades_escolares
            WHERE status = "ativo"
-           ORDER BY criado_em DESC
+           ORDER BY created_at DESC
            LIMIT 5`
         );
         recentes.unidades_escolares = ultimasUnidadesEscolares;
@@ -570,9 +570,9 @@ class DashboardController {
         const veiculosDocumentacaoVencendo = await executeQuery(
           `SELECT COUNT(*) as total FROM veiculos 
            WHERE filial_id = ? AND status = "ativo" AND (
-             (data_vencimento_licenciamento IS NOT NULL AND data_vencimento_licenciamento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
-             (data_vencimento_inspecao IS NOT NULL AND data_vencimento_inspecao <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
-             (data_vencimento_documentacao IS NOT NULL AND data_vencimento_documentacao <= DATE_ADD(CURDATE(), INTERVAL 30 DAY))
+             (vencimento_licenciamento IS NOT NULL AND vencimento_licenciamento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
+             (proxima_inspecao_veicular IS NOT NULL AND proxima_inspecao_veicular <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
+             (vencimento_ipva IS NOT NULL AND vencimento_ipva <= DATE_ADD(CURDATE(), INTERVAL 30 DAY))
            )`,
           [filialId]
         );
@@ -670,17 +670,17 @@ class DashboardController {
       try {
         // Veículos com documentação vencendo
         const veiculosDocumentacaoVencendo = await executeQuery(
-          `SELECT v.id, v.placa, v.modelo, v.data_vencimento_licenciamento, 
-                  v.data_vencimento_inspecao, v.data_vencimento_documentacao,
+          `SELECT v.id, v.placa, v.modelo, v.vencimento_licenciamento, 
+                  v.proxima_inspecao_veicular, v.vencimento_ipva,
                   f.filial as filial_nome
            FROM veiculos v
            LEFT JOIN filiais f ON v.filial_id = f.id
            WHERE v.status = "ativo" AND (
-             (v.data_vencimento_licenciamento IS NOT NULL AND v.data_vencimento_licenciamento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
-             (v.data_vencimento_inspecao IS NOT NULL AND v.data_vencimento_inspecao <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
-             (v.data_vencimento_documentacao IS NOT NULL AND v.data_vencimento_documentacao <= DATE_ADD(CURDATE(), INTERVAL 30 DAY))
+             (v.vencimento_licenciamento IS NOT NULL AND v.vencimento_licenciamento <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
+             (v.proxima_inspecao_veicular IS NOT NULL AND v.proxima_inspecao_veicular <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)) OR
+             (v.vencimento_ipva IS NOT NULL AND v.vencimento_ipva <= DATE_ADD(CURDATE(), INTERVAL 30 DAY))
            )
-           ORDER BY v.data_vencimento_licenciamento ASC, v.data_vencimento_inspecao ASC, v.data_vencimento_documentacao ASC
+           ORDER BY v.vencimento_licenciamento ASC, v.proxima_inspecao_veicular ASC, v.vencimento_ipva ASC
            LIMIT 10`
         );
         alertas.veiculosDocumentacaoVencendo = veiculosDocumentacaoVencendo;
