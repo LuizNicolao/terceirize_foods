@@ -18,20 +18,30 @@ export const setCSRFToken = async () => {
 // Interceptor para garantir o envio do token CSRF em métodos protegidos
 api.interceptors.request.use(
   async (config) => {
+    console.log('Debug - Interceptor: Config inicial:', config);
+    
     const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+      console.log('Debug - Interceptor: Token adicionado');
     }
+    
     // Sempre enviar cookies
     config.withCredentials = true;
+    
     // Adicionar CSRF em métodos protegidos
     if (['post', 'put', 'delete', 'patch'].includes(config.method)) {
+      console.log('Debug - Interceptor: Método protegido detectado, buscando CSRF');
       await setCSRFToken();
       config.headers['X-CSRF-Token'] = api.defaults.headers['X-CSRF-Token'];
+      console.log('Debug - Interceptor: CSRF adicionado:', api.defaults.headers['X-CSRF-Token']);
     }
+    
+    console.log('Debug - Interceptor: Config final:', config);
     return config;
   },
   (error) => {
+    console.log('Debug - Interceptor: Erro:', error);
     return Promise.reject(error);
   }
 );

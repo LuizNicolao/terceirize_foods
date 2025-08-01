@@ -659,11 +659,17 @@ const Veiculos = () => {
         }
       });
       
+      console.log('Debug - Frontend: Dados limpos:', cleanedData);
+      
       if (editingVeiculo) {
-        await api.put(`/veiculos/${editingVeiculo.id}`, cleanedData);
+        console.log('Debug - Frontend: Fazendo PUT para:', `/veiculos/${editingVeiculo.id}`);
+        const response = await api.put(`/veiculos/${editingVeiculo.id}`, cleanedData);
+        console.log('Debug - Frontend: Resposta do PUT:', response);
         toast.success('Veículo atualizado com sucesso!');
       } else {
-        await api.post('/veiculos', cleanedData);
+        console.log('Debug - Frontend: Fazendo POST para:', '/veiculos');
+        const response = await api.post('/veiculos', cleanedData);
+        console.log('Debug - Frontend: Resposta do POST:', response);
         toast.success('Veículo criado com sucesso!');
       }
       
