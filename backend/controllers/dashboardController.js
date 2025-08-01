@@ -445,19 +445,19 @@ class DashboardController {
       try {
         // Atividades recentes (combinação de diferentes entidades)
         const atividadesRecentes = await executeQuery(
-          `(SELECT 'produto' as tipo, id, nome COLLATE utf8mb4_general_ci as titulo, criado_em as data, 'Produto criado' as acao
+          `(SELECT 'produto' as tipo, id, nome as titulo, criado_em as data, 'Produto criado' as acao
            FROM produtos 
            WHERE status = 1)
            UNION ALL
-           (SELECT 'fornecedor' as tipo, id, razao_social COLLATE utf8mb4_general_ci as titulo, criado_em as data, 'Fornecedor criado' as acao
+           (SELECT 'fornecedor' as tipo, id, razao_social as titulo, criado_em as data, 'Fornecedor criado' as acao
            FROM fornecedores 
            WHERE status = 1)
            UNION ALL
-           (SELECT 'cliente' as tipo, id, razao_social COLLATE utf8mb4_general_ci as titulo, criado_em as data, 'Cliente criado' as acao
+           (SELECT 'cliente' as tipo, id, razao_social as titulo, criado_em as data, 'Cliente criado' as acao
            FROM clientes 
            WHERE status = 1)
            UNION ALL
-           (SELECT 'usuario' as tipo, id, nome COLLATE utf8mb4_general_ci as titulo, criado_em as data, 'Usuário criado' as acao
+           (SELECT 'usuario' as tipo, id, nome as titulo, criado_em as data, 'Usuário criado' as acao
            FROM usuarios 
            WHERE status = "ativo")
            ORDER BY data DESC 
