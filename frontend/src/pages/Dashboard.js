@@ -177,10 +177,24 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const response = await api.get('/dashboard/stats');
-      setDashboardData(response.data);
+      console.log('Resposta da API dashboard:', response.data);
+      
+      // Verificar se a resposta tem a estrutura esperada
+      if (response.data && response.data.stats) {
+        setDashboardData(response.data);
+      } else {
+        console.error('Estrutura de resposta inesperada:', response.data);
+        toast.error('Estrutura de dados inesperada');
+      }
     } catch (error) {
       console.error('Erro ao carregar dados da dashboard:', error);
-      toast.error('Erro ao carregar dados da dashboard');
+      if (error.response?.status === 403) {
+        toast.error('Sem permissão para acessar o dashboard');
+      } else if (error.response?.status === 401) {
+        toast.error('Sessão expirada. Faça login novamente.');
+      } else {
+        toast.error('Erro ao carregar dados da dashboard');
+      }
     } finally {
       setLoading(false);
     }
