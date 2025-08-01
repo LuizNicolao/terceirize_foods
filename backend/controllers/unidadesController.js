@@ -48,7 +48,7 @@ class UnidadesController {
         LIMIT ? OFFSET ?
       `;
 
-      const unidades = await executeQuery(query, [...params, parseInt(limit), offset]);
+      const unidades = await executeQuery(query, [...params, Number(limit), Number(offset)]);
 
       // Calcular metadados de paginação
       const totalPages = Math.ceil(total / limit);
@@ -509,7 +509,7 @@ class UnidadesController {
         LIMIT ?
       `;
 
-      const unidades = await executeQuery(query, [parseInt(limit)]);
+      const unidades = await executeQuery(query, [Number(limit)]);
 
       res.json({
         success: true,

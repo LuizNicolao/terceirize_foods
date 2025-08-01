@@ -66,7 +66,7 @@ class MotoristasController {
         LIMIT ? OFFSET ?
       `;
 
-      const motoristas = await executeQuery(query, [...params, parseInt(limit), offset]);
+      const motoristas = await executeQuery(query, [...params, Number(limit), Number(offset)]);
 
       // Calcular metadados de paginação
       const totalPages = Math.ceil(total / limit);

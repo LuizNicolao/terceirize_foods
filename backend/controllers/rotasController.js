@@ -65,7 +65,7 @@ class RotasController {
         LIMIT ? OFFSET ?
       `;
 
-      const rotas = await executeQuery(query, [...params, parseInt(limit), offset]);
+      const rotas = await executeQuery(query, [...params, Number(limit), Number(offset)]);
 
       // Calcular metadados de paginação
       const totalPages = Math.ceil(total / limit);

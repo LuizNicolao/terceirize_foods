@@ -81,7 +81,7 @@ class VeiculosController {
         LIMIT ? OFFSET ?
       `;
 
-      const veiculos = await executeQuery(query, [...params, parseInt(limit), offset]);
+      const veiculos = await executeQuery(query, [...params, Number(limit), Number(offset)]);
 
       // Calcular metadados de paginação
       const totalPages = Math.ceil(total / limit);
