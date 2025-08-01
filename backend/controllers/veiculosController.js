@@ -15,7 +15,9 @@ class VeiculosController {
         motorista_id
       } = req.query;
 
-      const offset = (page - 1) * limit;
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 10;
+      const offset = (pageNum - 1) * limitNum;
       let whereConditions = ['1=1'];
       let params = [];
 
@@ -78,22 +80,22 @@ class VeiculosController {
         LEFT JOIN motoristas m ON v.motorista_id = m.id
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY v.placa ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${limitNum} OFFSET ${offset}
       `;
 
-      const veiculos = await executeQuery(query, [...params, Number(limit), Number(offset)]);
+      const veiculos = await executeQuery(query, params);
 
       // Calcular metadados de paginação
-      const totalPages = Math.ceil(total / limit);
-      const hasNextPage = page < totalPages;
-      const hasPrevPage = page > 1;
+      const totalPages = Math.ceil(total / limitNum);
+      const hasNextPage = pageNum < totalPages;
+      const hasPrevPage = pageNum > 1;
 
       res.json({
         success: true,
         data: veiculos,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: pageNum,
+          limit: limitNum,
           total,
           totalPages,
           hasNextPage,
@@ -193,9 +195,9 @@ class VeiculosController {
         fornecedor,
         numero_frota,
         situacao_financeira,
-        foto_veiculo,
-        foto_documentacao,
-        foto_inspecao,
+        foto_frente,
+        foto_traseira,
+        foto_lateral,
         observacoes,
         filial_id,
         motorista_id
@@ -265,7 +267,7 @@ class VeiculosController {
           data_emplacamento, vencimento_licenciamento, proxima_inspecao_veicular,
           vencimento_ipva, vencimento_dpvat, status,
           status_detalhado, data_aquisicao, valor_compra, fornecedor, numero_frota,
-          situacao_financeira, foto_veiculo, foto_documentacao, foto_inspecao,
+          situacao_financeira, foto_frente, foto_traseira, foto_lateral,
           observacoes, filial_id, motorista_id
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
@@ -300,9 +302,9 @@ class VeiculosController {
         fornecedor ? fornecedor.trim() : null,
         numero_frota ? numero_frota.trim() : null,
         situacao_financeira ? situacao_financeira.trim() : null,
-        foto_veiculo ? foto_veiculo.trim() : null,
-        foto_documentacao ? foto_documentacao.trim() : null,
-        foto_inspecao ? foto_inspecao.trim() : null,
+        foto_frente ? foto_frente.trim() : null,
+        foto_traseira ? foto_traseira.trim() : null,
+        foto_lateral ? foto_lateral.trim() : null,
         observacoes ? observacoes.trim() : null,
         filial_id,
         motorista_id
@@ -421,8 +423,8 @@ class VeiculosController {
         'proxima_inspecao_veicular', 'vencimento_ipva',
         'vencimento_dpvat', 'status', 'status_detalhado',
         'data_aquisicao', 'valor_compra', 'fornecedor', 'numero_frota',
-        'situacao_financeira', 'foto_veiculo', 'foto_documentacao',
-        'foto_inspecao', 'observacoes', 'filial_id', 'motorista_id'
+        'situacao_financeira', 'foto_frente', 'foto_traseira',
+        'foto_lateral', 'observacoes', 'filial_id', 'motorista_id'
       ];
 
       allowedFields.forEach(field => {
