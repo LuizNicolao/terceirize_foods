@@ -101,7 +101,7 @@ router.delete('/:id', [
 // ===== ROTAS PARA ALMOXARIFADOS =====
 
 // Listar almoxarifados de uma filial
-router.get('/:filialId/almoxarifados', checkPermission('visualizar'), async (req, res) => {
+router.get('/:filialId/almoxarifados', checkScreenPermission('filiais', 'visualizar'), async (req, res) => {
   try {
     const { filialId } = req.params;
     const query = `
@@ -126,7 +126,7 @@ router.get('/:filialId/almoxarifados', checkPermission('visualizar'), async (req
 });
 
 // Buscar almoxarifado por ID
-router.get('/almoxarifados/:id', checkPermission('visualizar'), async (req, res) => {
+router.get('/almoxarifados/:id', checkScreenPermission('filiais', 'visualizar'), async (req, res) => {
   try {
     const { id } = req.params;
     const almoxarifados = await executeQuery(
@@ -156,7 +156,7 @@ router.get('/almoxarifados/:id', checkPermission('visualizar'), async (req, res)
 
 // Criar almoxarifado
 router.post('/:filialId/almoxarifados', [
-  checkPermission('criar'),
+  checkScreenPermission('filiais', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'almoxarifados'),
   body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1'),
@@ -204,7 +204,7 @@ router.post('/:filialId/almoxarifados', [
 
 // Atualizar almoxarifado
 router.put('/almoxarifados/:id', [
-  checkPermission('editar'),
+  checkScreenPermission('filiais', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'almoxarifados'),
   body('nome').isLength({ min: 3 }).withMessage('Nome deve ter pelo menos 3 caracteres'),
   body('status').optional().isIn(['0', '1']).withMessage('Status deve ser 0 ou 1'),
@@ -252,7 +252,7 @@ router.put('/almoxarifados/:id', [
 
 // Excluir almoxarifado
 router.delete('/almoxarifados/:id', [
-  checkPermission('excluir'),
+  checkScreenPermission('filiais', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'almoxarifados')
 ], async (req, res) => {
   try {
@@ -299,7 +299,7 @@ router.delete('/almoxarifados/:id', [
 // ===== ROTAS PARA ITENS DO ALMOXARIFADO =====
 
 // Listar itens de um almoxarifado
-router.get('/almoxarifados/:almoxarifadoId/itens', checkPermission('visualizar'), async (req, res) => {
+router.get('/almoxarifados/:almoxarifadoId/itens', checkScreenPermission('filiais', 'visualizar'), async (req, res) => {
   try {
     const { almoxarifadoId } = req.params;
 
@@ -330,7 +330,7 @@ router.get('/almoxarifados/:almoxarifadoId/itens', checkPermission('visualizar')
 
 // Adicionar item ao almoxarifado
 router.post('/almoxarifados/:almoxarifadoId/itens', [
-  checkPermission('editar'),
+  checkScreenPermission('filiais', 'editar'),
   body('produto_id').isInt({ min: 1 }).withMessage('ID do produto é obrigatório'),
   body('quantidade').isNumeric().withMessage('Quantidade deve ser um número válido'),
   handleValidationErrors
@@ -403,7 +403,7 @@ router.post('/almoxarifados/:almoxarifadoId/itens', [
 });
 
 // Remover item do almoxarifado
-router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId', checkPermission('editar'), async (req, res) => {
+router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId', checkScreenPermission('filiais', 'editar'), async (req, res) => {
   try {
     const { almoxarifadoId, itemId } = req.params;
 

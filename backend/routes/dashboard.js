@@ -19,14 +19,14 @@ router.get('/stats',
 
 // Obter estatísticas por filial
 router.get('/filial/:filialId/stats', 
-  checkPermission('visualizar'),
+  checkScreenPermission('dashboard', 'visualizar'),
   dashboardController.obterEstatisticasPorFilial,
   hateoasMiddleware
 );
 
 // Obter alertas do sistema
 router.get('/alertas', 
-  checkPermission('visualizar'),
+  checkScreenPermission('dashboard', 'visualizar'),
   dashboardController.obterAlertas,
   hateoasMiddleware
 );
