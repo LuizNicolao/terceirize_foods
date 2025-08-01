@@ -83,13 +83,7 @@ class VeiculosController {
         LIMIT ${limitNum} OFFSET ${offset}
       `;
 
-      console.log('Debug - Query veículos:', query);
-      console.log('Debug - Parâmetros veículos:', params);
-      
       const veiculos = await executeQuery(query, params);
-      
-      console.log('Debug - Veículos encontrados:', veiculos.length);
-      console.log('Debug - Primeiro veículo:', veiculos[0]);
 
       // Calcular metadados de paginação
       const totalPages = Math.ceil(total / limitNum);

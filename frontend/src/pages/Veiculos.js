@@ -376,7 +376,7 @@ const Veiculos = () => {
     try {
       setLoading(true);
       const response = await api.get('/veiculos');
-      setVeiculos(response.data || []);
+      setVeiculos(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar veículos:', error);
       toast.error('Erro ao carregar veículos');
