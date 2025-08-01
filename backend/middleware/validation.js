@@ -1329,27 +1329,23 @@ const veiculoValidations = [
   
   body('tipo_veiculo')
     .optional()
-    .isLength({ max: 50 })
-    .withMessage('Tipo de veículo deve ter no máximo 50 caracteres')
-    .trim(),
+    .isIn(['passeio', 'caminhao', 'moto', 'utilitario'])
+    .withMessage('Tipo de veículo deve ser passeio, caminhao, moto ou utilitario'),
   
   body('carroceria')
     .optional()
-    .isLength({ max: 50 })
-    .withMessage('Carroceria deve ter no máximo 50 caracteres')
-    .trim(),
+    .isIn(['Bau', 'Refrigerado', 'Bipartido', 'Grade Baixa', 'Sider', 'Graneleiro', 'Tanque', 'Cacamba'])
+    .withMessage('Carroceria deve ser um dos tipos válidos'),
   
   body('combustivel')
     .optional()
-    .isLength({ max: 30 })
-    .withMessage('Combustível deve ter no máximo 30 caracteres')
-    .trim(),
+    .isIn(['gasolina', 'diesel', 'etanol', 'flex', 'GNV', 'eletrico'])
+    .withMessage('Combustível deve ser um dos tipos válidos'),
   
   body('categoria')
     .optional()
-    .isLength({ max: 30 })
-    .withMessage('Categoria deve ter no máximo 30 caracteres')
-    .trim(),
+    .isIn(['Frota', 'Agregado', 'Terceiro'])
+    .withMessage('Categoria deve ser Frota, Agregado ou Terceiro'),
   
   body('capacidade_carga')
     .optional()
@@ -1528,27 +1524,23 @@ const veiculoAtualizacaoValidations = [
   
   body('tipo_veiculo')
     .optional()
-    .isLength({ max: 50 })
-    .withMessage('Tipo de veículo deve ter no máximo 50 caracteres')
-    .trim(),
+    .isIn(['passeio', 'caminhao', 'moto', 'utilitario'])
+    .withMessage('Tipo de veículo deve ser passeio, caminhao, moto ou utilitario'),
   
   body('carroceria')
     .optional()
-    .isLength({ max: 50 })
-    .withMessage('Carroceria deve ter no máximo 50 caracteres')
-    .trim(),
+    .isIn(['Bau', 'Refrigerado', 'Bipartido', 'Grade Baixa', 'Sider', 'Graneleiro', 'Tanque', 'Cacamba'])
+    .withMessage('Carroceria deve ser um dos tipos válidos'),
   
   body('combustivel')
     .optional()
-    .isLength({ max: 30 })
-    .withMessage('Combustível deve ter no máximo 30 caracteres')
-    .trim(),
+    .isIn(['gasolina', 'diesel', 'etanol', 'flex', 'GNV', 'eletrico'])
+    .withMessage('Combustível deve ser um dos tipos válidos'),
   
   body('categoria')
     .optional()
-    .isLength({ max: 30 })
-    .withMessage('Categoria deve ter no máximo 30 caracteres')
-    .trim(),
+    .isIn(['Frota', 'Agregado', 'Terceiro'])
+    .withMessage('Categoria deve ser Frota, Agregado ou Terceiro'),
   
   body('capacidade_carga')
     .optional()
