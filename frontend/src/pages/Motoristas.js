@@ -462,7 +462,7 @@ const Motoristas = () => {
     try {
       setLoading(true);
       const response = await api.get('/motoristas');
-      setMotoristas(response.data);
+      setMotoristas(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar motoristas:', error);
       toast.error('Erro ao carregar motoristas');

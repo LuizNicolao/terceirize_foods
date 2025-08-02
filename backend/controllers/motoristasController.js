@@ -63,10 +63,10 @@ class MotoristasController {
         LEFT JOIN filiais f ON m.filial_id = f.id
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY m.nome ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${Number(limit)} OFFSET ${Number(offset)}
       `;
 
-      const motoristas = await executeQuery(query, [...params, Number(limit), Number(offset)]);
+      const motoristas = await executeQuery(query, params);
 
       // Calcular metadados de paginação
       const totalPages = Math.ceil(total / limit);
