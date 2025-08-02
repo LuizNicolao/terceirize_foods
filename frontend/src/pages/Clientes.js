@@ -493,8 +493,9 @@ const Clientes = () => {
   const loadClientes = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/clientes');
-      setClientes(response.data);
+      // Carregar todos os clientes (limit=1000 para pegar todos)
+      const response = await api.get('/clientes?limit=1000');
+      setClientes(response.data.data.items || []);
     } catch (error) {
       console.error('Erro ao carregar clientes:', error);
       toast.error('Erro ao carregar clientes');
