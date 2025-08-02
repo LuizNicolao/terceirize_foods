@@ -49,7 +49,7 @@ class ProdutosController {
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-      LEFT JOIN unidades u ON p.unidade_id = u.id
+      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
       WHERE 1=1
     `;
     
@@ -144,7 +144,7 @@ class ProdutosController {
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-       LEFT JOIN unidades u ON p.unidade_id = u.id
+       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
        WHERE p.id = ?`,
       [id]
     );
@@ -227,7 +227,7 @@ class ProdutosController {
     // Verificar se unidade existe (se fornecida)
     if (unidade_id) {
       const unidade = await executeQuery(
-        'SELECT id FROM unidades WHERE id = ?',
+        'SELECT id FROM unidades_medida WHERE id = ?',
         [unidade_id]
       );
 
@@ -287,7 +287,7 @@ class ProdutosController {
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-       LEFT JOIN unidades u ON p.unidade_id = u.id
+       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
        WHERE p.id = ?`,
       [novoProdutoId]
     );
@@ -374,7 +374,7 @@ class ProdutosController {
     // Verificar se unidade existe (se fornecida)
     if (updateData.unidade_id) {
       const unidade = await executeQuery(
-        'SELECT id FROM unidades WHERE id = ?',
+        'SELECT id FROM unidades_medida WHERE id = ?',
         [updateData.unidade_id]
       );
 
@@ -446,7 +446,7 @@ class ProdutosController {
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-       LEFT JOIN unidades u ON p.unidade_id = u.id
+       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
        WHERE p.id = ?`,
       [id]
     );
@@ -544,18 +544,20 @@ class ProdutosController {
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-      LEFT JOIN unidades u ON p.unidade_id = u.id
+      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
       WHERE p.grupo_id = ? AND p.status = 'ativo'
     `;
     
     let params = [grupo_id];
     baseQuery += ' ORDER BY p.nome ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const produtos = await executeQuery(query, paginatedParams);
+    const produtos = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE grupo_id = ? AND status = 'ativo'`;
@@ -619,18 +621,20 @@ class ProdutosController {
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-      LEFT JOIN unidades u ON p.unidade_id = u.id
+      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
       WHERE p.fornecedor_id = ? AND p.status = 'ativo'
     `;
     
     let params = [fornecedor_id];
     baseQuery += ' ORDER BY p.nome ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const produtos = await executeQuery(query, paginatedParams);
+    const produtos = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE fornecedor_id = ? AND status = 'ativo'`;
