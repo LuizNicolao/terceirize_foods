@@ -37,7 +37,7 @@ class ClassesController {
       FROM classes c
       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
       LEFT JOIN grupos g ON s.grupo_id = g.id
-      LEFT JOIN produtos p ON c.nome = p.classe
+      LEFT JOIN produtos p ON c.id = p.classe_id
       WHERE 1=1
     `;
     
@@ -115,7 +115,8 @@ class ClassesController {
        FROM classes c
        LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
        LEFT JOIN grupos g ON s.grupo_id = g.id
-       LEFT JOIN produtos p ON c.nome = p.classe
+       LEFT JOIN produtos p ON c.id = p.classe_id
+       
        WHERE c.id = ?
        GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome`,
       [id]
@@ -188,7 +189,7 @@ class ClassesController {
        FROM classes c
        LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
        LEFT JOIN grupos g ON s.grupo_id = g.id
-       LEFT JOIN produtos p ON c.nome = p.classe
+       LEFT JOIN produtos p ON c.id = p.classe_id
        WHERE c.id = ?
        GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome`,
       [novaClasseId]
@@ -303,7 +304,7 @@ class ClassesController {
        FROM classes c
        LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
        LEFT JOIN grupos g ON s.grupo_id = g.id
-       LEFT JOIN produtos p ON c.nome = p.classe
+       LEFT JOIN produtos p ON c.id = p.classe_id
        WHERE c.id = ?
        GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome`,
       [id]
@@ -341,8 +342,8 @@ class ClassesController {
 
     // Verificar se classe está sendo usada em produtos ATIVOS
     const produtos = await executeQuery(
-      'SELECT id, nome, status FROM produtos WHERE classe = ? AND status = 1',
-      [existingClasse[0].nome]
+      'SELECT id, nome, status FROM produtos WHERE classe_id = ? AND status = 1',
+      [existingClasse[0].id]
     );
 
     if (produtos.length > 0) {
@@ -383,7 +384,7 @@ class ClassesController {
       FROM classes c
       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
       LEFT JOIN grupos g ON s.grupo_id = g.id
-      LEFT JOIN produtos p ON c.nome = p.classe
+      LEFT JOIN produtos p ON c.id = p.classe_id
       WHERE c.status = 1
       GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome
     `;
@@ -449,7 +450,7 @@ class ClassesController {
       FROM classes c
       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
       LEFT JOIN grupos g ON s.grupo_id = g.id
-      LEFT JOIN produtos p ON c.nome = p.classe
+      LEFT JOIN produtos p ON c.id = p.classe_id
       WHERE c.subgrupo_id = ?
       GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome
     `;
