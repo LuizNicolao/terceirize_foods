@@ -62,10 +62,10 @@ class RotasController {
         LEFT JOIN filiais f ON r.filial_id = f.id
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY r.codigo ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${Number(limit)} OFFSET ${Number(offset)}
       `;
 
-      const rotas = await executeQuery(query, [...params, Number(limit), Number(offset)]);
+      const rotas = await executeQuery(query, params);
 
       // Calcular metadados de paginação
       const totalPages = Math.ceil(total / limit);
