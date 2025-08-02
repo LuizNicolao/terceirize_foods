@@ -591,7 +591,10 @@ class RotasController {
 
       res.json({
         success: true,
-        data: unidades
+        data: {
+          unidades: unidades,
+          total: unidades.length
+        }
       });
 
     } catch (error) {

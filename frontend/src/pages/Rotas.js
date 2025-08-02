@@ -520,7 +520,7 @@ const Rotas = () => {
   // Carregar total de unidades escolares vinculadas a uma rota
   const loadTotalUnidades = async (rotaId) => {
     try {
-      const response = await api.get(`/rotas/${rotaId}/unidades-escolares/total`);
+      const response = await api.get(`/rotas/${rotaId}/unidades-escolares`);
       const data = extractApiData(response);
       setTotalUnidades(data?.total || 0);
     } catch (error) {
