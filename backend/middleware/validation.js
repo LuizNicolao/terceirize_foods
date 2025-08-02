@@ -57,23 +57,14 @@ const commonValidations = {
 
   // Validação de senha
   password: body('senha')
-    .isLength({ min: 8 })
-    .withMessage('Senha deve ter pelo menos 8 caracteres')
-    .matches(/[a-z]/)
-    .withMessage('Senha deve conter pelo menos uma letra minúscula')
-    .matches(/[A-Z]/)
-    .withMessage('Senha deve conter pelo menos uma letra maiúscula')
-    .matches(/[0-9]/)
-    .withMessage('Senha deve conter pelo menos um número')
-    .matches(/[^A-Za-z0-9]/)
-    .withMessage('Senha deve conter pelo menos um caractere especial'),
+    .isLength({ min: 6 })
+    .withMessage('Senha deve ter pelo menos 6 caracteres'),
 
   // Validação de nome
   name: body('nome')
     .isLength({ min: 3, max: 100 })
     .withMessage('Nome deve ter entre 3 e 100 caracteres')
-    .matches(/^[a-zA-ZÀ-ÿ\s]+$/)
-    .withMessage('Nome deve conter apenas letras e espaços'),
+    .trim(),
 
   // Validação de telefone
   phone: body('telefone')
