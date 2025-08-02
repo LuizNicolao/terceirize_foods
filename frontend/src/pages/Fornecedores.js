@@ -549,7 +549,8 @@ const Fornecedores = () => {
   const loadFornecedores = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/fornecedores');
+      // Carregar todos os fornecedores (limit=1000 para pegar todos)
+      const response = await api.get('/fornecedores?limit=1000');
       setFornecedores(response.data.data.items || []);
     } catch (error) {
       console.error('Erro ao carregar fornecedores:', error);

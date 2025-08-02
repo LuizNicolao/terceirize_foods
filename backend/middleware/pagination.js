@@ -8,7 +8,7 @@ const { executeQuery } = require('../config/database');
 // Configurações padrão de paginação
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 20;
-const MAX_LIMIT = 100;
+const MAX_LIMIT = 1000;
 
 // Classe para gerenciar paginação
 class PaginationHelper {
