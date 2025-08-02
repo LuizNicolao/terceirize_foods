@@ -235,10 +235,10 @@ class MotoristasController {
         email ? email.trim() : null,
         endereco ? endereco.trim() : null,
         status,
-        data_admissao,
+        data_admissao ? data_admissao.split('T')[0] : null,
         observacoes ? observacoes.trim() : null,
         filial_id,
-        cnh_validade
+        cnh_validade ? cnh_validade.split('T')[0] : null
       ]);
 
       // Buscar motorista criado
@@ -391,7 +391,7 @@ class MotoristasController {
       }
       if (data_admissao !== undefined) {
         updateFields.push('data_admissao = ?');
-        updateParams.push(data_admissao);
+        updateParams.push(data_admissao ? data_admissao.split('T')[0] : null);
       }
       if (observacoes !== undefined) {
         updateFields.push('observacoes = ?');
@@ -403,7 +403,7 @@ class MotoristasController {
       }
       if (cnh_validade !== undefined) {
         updateFields.push('cnh_validade = ?');
-        updateParams.push(cnh_validade);
+        updateParams.push(cnh_validade ? cnh_validade.split('T')[0] : null);
       }
 
       // Sempre atualizar o timestamp
