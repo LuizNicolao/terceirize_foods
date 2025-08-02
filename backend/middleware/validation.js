@@ -1046,8 +1046,16 @@ const motoristaValidations = [
   
   body('cpf')
     .optional()
-    .matches(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)
-    .withMessage('CPF deve estar no formato 000.000.000-00'),
+    .custom((value) => {
+      if (value) {
+        const cpfLimpo = value.replace(/\D/g, '');
+        if (cpfLimpo.length !== 11) {
+          throw new Error('CPF deve ter 11 dígitos');
+        }
+      }
+      return true;
+    })
+    .withMessage('CPF deve ter 11 dígitos'),
   
   body('cnh')
     .optional()
@@ -1063,14 +1071,29 @@ const motoristaValidations = [
   
   body('telefone')
     .optional()
-    .matches(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)
-    .withMessage('Telefone deve estar no formato (00) 00000-0000'),
+    .custom((value) => {
+      if (value) {
+        const telefoneLimpo = value.replace(/\D/g, '');
+        if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
+          throw new Error('Telefone deve ter 10 ou 11 dígitos');
+        }
+      }
+      return true;
+    })
+    .withMessage('Telefone deve ter 10 ou 11 dígitos'),
   
   body('email')
     .optional()
-    .isEmail()
-    .withMessage('Email deve ser um email válido')
-    .normalizeEmail(),
+    .custom((value) => {
+      if (value && value.trim() !== '') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          throw new Error('Email deve ser um email válido');
+        }
+      }
+      return true;
+    })
+    .withMessage('Email deve ser um email válido'),
   
   body('endereco')
     .optional()
@@ -1085,7 +1108,15 @@ const motoristaValidations = [
   
   body('data_admissao')
     .optional()
-    .isISO8601()
+    .custom((value) => {
+      if (value) {
+        const data = new Date(value);
+        if (isNaN(data.getTime())) {
+          throw new Error('Data de admissão deve ser uma data válida');
+        }
+      }
+      return true;
+    })
     .withMessage('Data de admissão deve ser uma data válida'),
   
   body('observacoes')
@@ -1101,7 +1132,15 @@ const motoristaValidations = [
   
   body('cnh_validade')
     .optional()
-    .isISO8601()
+    .custom((value) => {
+      if (value) {
+        const data = new Date(value);
+        if (isNaN(data.getTime())) {
+          throw new Error('Data de validade da CNH deve ser uma data válida');
+        }
+      }
+      return true;
+    })
     .withMessage('Data de validade da CNH deve ser uma data válida')
 ];
 
@@ -1116,8 +1155,16 @@ const motoristaAtualizacaoValidations = [
   
   body('cpf')
     .optional()
-    .matches(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)
-    .withMessage('CPF deve estar no formato 000.000.000-00'),
+    .custom((value) => {
+      if (value) {
+        const cpfLimpo = value.replace(/\D/g, '');
+        if (cpfLimpo.length !== 11) {
+          throw new Error('CPF deve ter 11 dígitos');
+        }
+      }
+      return true;
+    })
+    .withMessage('CPF deve ter 11 dígitos'),
   
   body('cnh')
     .optional()
@@ -1133,14 +1180,29 @@ const motoristaAtualizacaoValidations = [
   
   body('telefone')
     .optional()
-    .matches(/^\(\d{2}\)\s\d{4,5}-\d{4}$/)
-    .withMessage('Telefone deve estar no formato (00) 00000-0000'),
+    .custom((value) => {
+      if (value) {
+        const telefoneLimpo = value.replace(/\D/g, '');
+        if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
+          throw new Error('Telefone deve ter 10 ou 11 dígitos');
+        }
+      }
+      return true;
+    })
+    .withMessage('Telefone deve ter 10 ou 11 dígitos'),
   
   body('email')
     .optional()
-    .isEmail()
-    .withMessage('Email deve ser um email válido')
-    .normalizeEmail(),
+    .custom((value) => {
+      if (value && value.trim() !== '') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          throw new Error('Email deve ser um email válido');
+        }
+      }
+      return true;
+    })
+    .withMessage('Email deve ser um email válido'),
   
   body('endereco')
     .optional()
@@ -1155,7 +1217,15 @@ const motoristaAtualizacaoValidations = [
   
   body('data_admissao')
     .optional()
-    .isISO8601()
+    .custom((value) => {
+      if (value) {
+        const data = new Date(value);
+        if (isNaN(data.getTime())) {
+          throw new Error('Data de admissão deve ser uma data válida');
+        }
+      }
+      return true;
+    })
     .withMessage('Data de admissão deve ser uma data válida'),
   
   body('observacoes')
