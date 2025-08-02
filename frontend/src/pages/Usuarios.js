@@ -291,6 +291,8 @@ const Usuarios = () => {
     try {
       setLoading(true);
       const response = await api.get('/usuarios');
+      console.log('Response completa:', response);
+      console.log('Response.data:', response.data);
       setUsuarios(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
@@ -658,7 +660,7 @@ const Usuarios = () => {
   };
 
   // Filtrar usuários
-  const filteredUsuarios = usuarios.filter(user => {
+  const filteredUsuarios = (Array.isArray(usuarios) ? usuarios : []).filter(user => {
     const matchesSearch = user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'todos' || user.status === statusFilter;
