@@ -692,7 +692,7 @@ const Motoristas = () => {
       loadMotoristas();
     } catch (error) {
       console.error('Erro ao salvar motorista:', error);
-      const errorMessage = error.response?.data?.error || 'Erro ao salvar motorista';
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao salvar motorista';
       toast.error(errorMessage);
     }
   };
