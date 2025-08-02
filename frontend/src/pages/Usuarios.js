@@ -291,7 +291,7 @@ const Usuarios = () => {
     try {
       setLoading(true);
       const response = await api.get('/usuarios');
-      setUsuarios(response.data);
+      setUsuarios(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       toast.error('Erro ao carregar usuários');
@@ -633,7 +633,13 @@ const Usuarios = () => {
       loadUsuarios();
     } catch (error) {
       console.error('Erro ao salvar usuário:', error);
-      toast.error(error.response?.data?.error || 'Erro ao salvar usuário');
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else if (error.response?.data?.error) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error('Erro ao salvar usuário');
+      }
     }
   };
 

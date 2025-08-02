@@ -44,9 +44,16 @@ const commonValidations = {
 
   // Validação de email
   email: body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Email inválido'),
+    .custom((value) => {
+      if (value && value.trim() !== '') {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          throw new Error('Email deve ser um email válido');
+        }
+      }
+      return true;
+    })
+    .withMessage('Email deve ser um email válido'),
 
   // Validação de senha
   password: body('senha')
