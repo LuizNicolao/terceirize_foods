@@ -591,8 +591,9 @@ const Subgrupos = () => {
   const loadSubgrupos = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/subgrupos');
-      setSubgrupos(response.data);
+      // Carregar todos os subgrupos (limit=1000 para pegar todos)
+      const response = await api.get('/subgrupos?limit=1000');
+      setSubgrupos(response.data.data.items || []);
     } catch (error) {
       console.error('Erro ao carregar subgrupos:', error);
       toast.error('Erro ao carregar subgrupos');
@@ -603,8 +604,9 @@ const Subgrupos = () => {
 
   const loadGrupos = async () => {
     try {
-      const response = await api.get('/grupos');
-      setGrupos(response.data);
+      // Carregar todos os grupos (limit=1000 para pegar todos)
+      const response = await api.get('/grupos?limit=1000');
+      setGrupos(response.data.data.items || []);
     } catch (error) {
       console.error('Erro ao carregar grupos:', error);
     }

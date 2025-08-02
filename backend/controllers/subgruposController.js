@@ -162,7 +162,7 @@ class SubgruposController {
     // Inserir subgrupo
     const result = await executeQuery(
       'INSERT INTO subgrupos (nome, grupo_id, status, criado_em) VALUES (?, ?, ?, NOW())',
-      [nome, grupo_id, status || 1]
+      [nome && nome.trim() ? nome.trim() : null, grupo_id, status || 1]
     );
 
     const novoSubgrupoId = result.insertId;
@@ -248,8 +248,20 @@ class SubgruposController {
 
     Object.keys(updateData).forEach(key => {
       if (updateData[key] !== undefined) {
+        let value = updateData[key];
+        
+        // Tratar valores vazios ou undefined
+        if (value === '' || value === null || value === undefined) {
+          value = null;
+        } else if (typeof value === 'string') {
+          value = value.trim();
+          if (value === '') {
+            value = null;
+          }
+        }
+        
         updateFields.push(`${key} = ?`);
-        updateParams.push(updateData[key]);
+        updateParams.push(value);
       }
     });
 
