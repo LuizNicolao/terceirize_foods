@@ -228,16 +228,16 @@ class MotoristasController {
 
       const result = await executeQuery(insertQuery, [
         nome.trim(),
-        cpf ? cpf.trim() : null,
-        cnh ? cnh.trim() : null,
-        categoria_cnh ? categoria_cnh.trim() : null,
-        telefone ? telefone.trim() : null,
-        email ? email.trim() : null,
-        endereco ? endereco.trim() : null,
-        status,
+        cpf && cpf.trim() ? cpf.trim() : null,
+        cnh && cnh.trim() ? cnh.trim() : null,
+        categoria_cnh && categoria_cnh.trim() ? categoria_cnh.trim() : null,
+        telefone && telefone.trim() ? telefone.trim() : null,
+        email && email.trim() ? email.trim() : null,
+        endereco && endereco.trim() ? endereco.trim() : null,
+        status || 'ativo',
         data_admissao ? data_admissao.split('T')[0] : null,
-        observacoes ? observacoes.trim() : null,
-        filial_id,
+        observacoes && observacoes.trim() ? observacoes.trim() : null,
+        filial_id || null,
         cnh_validade ? cnh_validade.split('T')[0] : null
       ]);
 
