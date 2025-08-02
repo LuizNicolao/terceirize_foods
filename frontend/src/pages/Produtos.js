@@ -461,14 +461,14 @@ const Produtos = () => {
     try {
       setLoading(true);
       const [produtosRes, gruposRes, unidadesRes] = await Promise.all([
-        api.get('/produtos'),
-        api.get('/grupos'),
-        api.get('/unidades')
+        api.get('/produtos?limit=1000'),
+        api.get('/grupos?limit=1000'),
+        api.get('/unidades?limit=1000')
       ]);
 
-      setProdutos(produtosRes.data);
-      setGrupos(gruposRes.data);
-      setUnidades(unidadesRes.data);
+      setProdutos(produtosRes.data.data.items || []);
+      setGrupos(gruposRes.data.data.items || []);
+      setUnidades(unidadesRes.data.data.items || []);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar dados');

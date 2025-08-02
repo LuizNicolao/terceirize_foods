@@ -78,11 +78,13 @@ class ProdutosController {
 
     baseQuery += ' ORDER BY p.nome ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const produtos = await executeQuery(query, paginatedParams);
+    const produtos = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM produtos p WHERE 1=1${search ? ' AND (p.nome LIKE ? OR p.descricao LIKE ? OR p.codigo_barras LIKE ?)' : ''}${grupo_id ? ' AND p.grupo_id = ?' : ''}${fornecedor_id ? ' AND p.fornecedor_id = ?' : ''}${status ? ' AND p.status = ?' : ''}`;
@@ -239,8 +241,21 @@ class ProdutosController {
       `INSERT INTO produtos (nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, 
                             estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, unidade_id, status, criado_em)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-      [nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, estoque_atual, estoque_minimo, 
-       fornecedor_id, grupo_id, subgrupo_id, unidade_id, status || 'ativo']
+      [
+        nome, 
+        descricao && descricao.trim() ? descricao.trim() : null,
+        codigo_barras && codigo_barras.trim() ? codigo_barras.trim() : null,
+        fator_conversao || 1.000,
+        preco_custo || null,
+        preco_venda || null,
+        estoque_atual || 0,
+        estoque_minimo || 0,
+        fornecedor_id || null,
+        grupo_id || null,
+        subgrupo_id || null,
+        unidade_id || null,
+        status || 1
+      ]
     );
 
     const novoProdutoId = result.insertId;
@@ -374,8 +389,20 @@ class ProdutosController {
 
     Object.keys(updateData).forEach(key => {
       if (updateData[key] !== undefined) {
+        let value = updateData[key];
+        
+        // Tratar valores vazios ou undefined
+        if (value === '' || value === null || value === undefined) {
+          value = null;
+        } else if (typeof value === 'string') {
+          value = value.trim();
+          if (value === '') {
+            value = null;
+          }
+        }
+        
         updateFields.push(`${key} = ?`);
-        updateParams.push(updateData[key]);
+        updateParams.push(value);
       }
     });
 
