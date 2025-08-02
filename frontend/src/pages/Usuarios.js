@@ -291,9 +291,7 @@ const Usuarios = () => {
     try {
       setLoading(true);
       const response = await api.get('/usuarios');
-      console.log('Response completa:', response);
-      console.log('Response.data:', response.data);
-      setUsuarios(response.data.data || []);
+      setUsuarios(response.data.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       toast.error('Erro ao carregar usuários');
