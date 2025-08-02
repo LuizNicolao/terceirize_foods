@@ -201,13 +201,13 @@ class AjudantesController {
 
       const result = await executeQuery(insertQuery, [
         nome.trim(),
-        cpf ? cpf.trim() : null,
-        telefone ? telefone.trim() : null,
-        email ? email.trim() : null,
-        endereco ? endereco.trim() : null,
+        cpf && cpf.trim() ? cpf.trim() : null,
+        telefone && telefone.trim() ? telefone.trim() : null,
+        email && email.trim() ? email.trim() : null,
+        endereco && endereco.trim() ? endereco.trim() : null,
         status,
-        data_admissao,
-        observacoes ? observacoes.trim() : null,
+        data_admissao ? data_admissao.split('T')[0] : null,
+        observacoes && observacoes.trim() ? observacoes.trim() : null,
         filial_id
       ]);
 
@@ -314,19 +314,19 @@ class AjudantesController {
       }
       if (cpf !== undefined) {
         updateFields.push('cpf = ?');
-        updateParams.push(cpf ? cpf.trim() : null);
+        updateParams.push(cpf && cpf.trim() ? cpf.trim() : null);
       }
       if (telefone !== undefined) {
         updateFields.push('telefone = ?');
-        updateParams.push(telefone ? telefone.trim() : null);
+        updateParams.push(telefone && telefone.trim() ? telefone.trim() : null);
       }
       if (email !== undefined) {
         updateFields.push('email = ?');
-        updateParams.push(email ? email.trim() : null);
+        updateParams.push(email && email.trim() ? email.trim() : null);
       }
       if (endereco !== undefined) {
         updateFields.push('endereco = ?');
-        updateParams.push(endereco ? endereco.trim() : null);
+        updateParams.push(endereco && endereco.trim() ? endereco.trim() : null);
       }
       if (status !== undefined) {
         updateFields.push('status = ?');
@@ -334,11 +334,11 @@ class AjudantesController {
       }
       if (data_admissao !== undefined) {
         updateFields.push('data_admissao = ?');
-        updateParams.push(data_admissao);
+        updateParams.push(data_admissao ? data_admissao.split('T')[0] : null);
       }
       if (observacoes !== undefined) {
         updateFields.push('observacoes = ?');
-        updateParams.push(observacoes ? observacoes.trim() : null);
+        updateParams.push(observacoes && observacoes.trim() ? observacoes.trim() : null);
       }
       if (filial_id !== undefined) {
         updateFields.push('filial_id = ?');
