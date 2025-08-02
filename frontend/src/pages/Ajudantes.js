@@ -107,7 +107,7 @@ const ActionButton = styled.button`
   }
 
   &.edit {
-    color: var(--primary-blue);
+    color: var(--blue);
     &:hover {
       background: #e3f2fd;
     }
@@ -248,6 +248,7 @@ const Select = styled.select`
   border-radius: 8px;
   font-size: 14px;
   background: white;
+  color: var(--dark-gray);
   transition: border-color 0.3s ease;
 
   &:focus {
@@ -257,6 +258,11 @@ const Select = styled.select`
 
   &.error {
     border-color: var(--error-red);
+  }
+
+  option {
+    color: var(--dark-gray);
+    background: white;
   }
 `;
 
