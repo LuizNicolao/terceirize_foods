@@ -314,8 +314,9 @@ const Grupos = () => {
   const loadGrupos = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/grupos');
-      setGrupos(response.data);
+      // Carregar todos os grupos (limit=1000 para pegar todos)
+      const response = await api.get('/grupos?limit=1000');
+      setGrupos(response.data.data.items || []);
     } catch (error) {
       console.error('Erro ao carregar grupos:', error);
       toast.error('Erro ao carregar grupos');

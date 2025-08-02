@@ -143,7 +143,7 @@ class GruposController {
     // Inserir grupo
     const result = await executeQuery(
       'INSERT INTO grupos (nome, status, criado_em) VALUES (?, ?, NOW())',
-      [nome, status || 1]
+      [nome && nome.trim() ? nome.trim() : null, status || 1]
     );
 
     const novoGrupoId = result.insertId;
@@ -213,8 +213,20 @@ class GruposController {
 
     Object.keys(updateData).forEach(key => {
       if (updateData[key] !== undefined) {
+        let value = updateData[key];
+        
+        // Tratar valores vazios ou undefined
+        if (value === '' || value === null || value === undefined) {
+          value = null;
+        } else if (typeof value === 'string') {
+          value = value.trim();
+          if (value === '') {
+            value = null;
+          }
+        }
+        
         updateFields.push(`${key} = ?`);
-        updateParams.push(updateData[key]);
+        updateParams.push(value);
       }
     });
 
