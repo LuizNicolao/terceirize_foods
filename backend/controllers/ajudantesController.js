@@ -56,10 +56,10 @@ class AjudantesController {
         LEFT JOIN filiais f ON a.filial_id = f.id
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY a.nome ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${Number(limit)} OFFSET ${Number(offset)}
       `;
 
-      const ajudantes = await executeQuery(query, [...params, Number(limit), Number(offset)]);
+      const ajudantes = await executeQuery(query, params);
 
       // Calcular metadados de paginação
       const totalPages = Math.ceil(total / limit);
