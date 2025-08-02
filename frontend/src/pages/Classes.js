@@ -358,9 +358,11 @@ const Classes = () => {
   const loadSubgrupos = async () => {
     try {
       const response = await api.get('/classes/subgrupos/list?limit=1000');
-      setSubgrupos(response.data.data || []);
+      const subgruposData = response.data.data.items || response.data.data || [];
+      setSubgrupos(subgruposData);
     } catch (error) {
       console.error('Erro ao carregar subgrupos:', error);
+      setSubgrupos([]); // Garantir que seja sempre um array
     }
   };
 
@@ -846,7 +848,7 @@ const Classes = () => {
                   <Label>Subgrupo *</Label>
                   <Select disabled={viewMode} {...register('subgrupo_id', { required: 'Subgrupo é obrigatório' })}>
                     <option value="">Selecione um subgrupo</option>
-                    {subgrupos.map(subgrupo => (
+                    {(Array.isArray(subgrupos) ? subgrupos : []).map(subgrupo => (
                       <option key={subgrupo.id} value={subgrupo.id}>
                         {subgrupo.grupo_nome} - {subgrupo.nome}
                       </option>
