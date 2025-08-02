@@ -146,6 +146,8 @@ class MotoristasController {
   // Criar motorista
   async criarMotorista(req, res) {
     try {
+      console.log('Dados recebidos para criar motorista:', req.body);
+      
       const {
         nome,
         cpf,
@@ -163,6 +165,7 @@ class MotoristasController {
 
       // Validações específicas
       if (!nome || nome.trim().length < 3) {
+        console.log('Erro: Nome inválido -', nome);
         return res.status(400).json({
           success: false,
           error: 'Nome inválido',
@@ -178,6 +181,7 @@ class MotoristasController {
         );
 
         if (existingCpf.length > 0) {
+          console.log('Erro: CPF já cadastrado -', cpf);
           return res.status(400).json({
             success: false,
             error: 'CPF já cadastrado',
@@ -194,6 +198,7 @@ class MotoristasController {
         );
 
         if (existingCnh.length > 0) {
+          console.log('Erro: CNH já cadastrada -', cnh);
           return res.status(400).json({
             success: false,
             error: 'CNH já cadastrada',
@@ -210,6 +215,7 @@ class MotoristasController {
         );
 
         if (filial.length === 0) {
+          console.log('Erro: Filial não encontrada -', filial_id);
           return res.status(400).json({
             success: false,
             error: 'Filial não encontrada',
