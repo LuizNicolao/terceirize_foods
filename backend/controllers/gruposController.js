@@ -289,52 +289,30 @@ class GruposController {
       return notFoundResponse(res, 'Grupo não encontrado');
     }
 
-    // Verificar se grupo está sendo usado em produtos
+    // Verificar se grupo está sendo usado em produtos ATIVOS
     const produtos = await executeQuery(
-      'SELECT id, nome, status FROM produtos WHERE grupo_id = ?',
+      'SELECT id, nome, status FROM produtos WHERE grupo_id = ? AND status = 1',
       [id]
     );
 
     if (produtos.length > 0) {
-      const produtosAtivos = produtos.filter(p => p.status === 1);
-      const produtosInativos = produtos.filter(p => p.status === 0);
-      
-      let mensagem = `Grupo não pode ser excluído pois possui ${produtos.length} produto(s) vinculado(s):`;
-      
-      if (produtosAtivos.length > 0) {
-        mensagem += `\n- ${produtosAtivos.length} produto(s) ativo(s): ${produtosAtivos.map(p => p.nome).join(', ')}`;
-      }
-      
-      if (produtosInativos.length > 0) {
-        mensagem += `\n- ${produtosInativos.length} produto(s) inativo(s): ${produtosInativos.map(p => p.nome).join(', ')}`;
-      }
-      
-      mensagem += '\n\nPara excluir o grupo, primeiro exclua ou desative todos os produtos vinculados.';
+      let mensagem = `Grupo não pode ser excluído pois possui ${produtos.length} produto(s) ativo(s) vinculado(s):`;
+      mensagem += `\n- ${produtos.map(p => p.nome).join(', ')}`;
+      mensagem += '\n\nPara excluir o grupo, primeiro desative todos os produtos vinculados.';
       
       return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
 
-    // Verificar se grupo possui subgrupos
+    // Verificar se grupo possui subgrupos ATIVOS
     const subgrupos = await executeQuery(
-      'SELECT id, nome, status FROM subgrupos WHERE grupo_id = ?',
+      'SELECT id, nome, status FROM subgrupos WHERE grupo_id = ? AND status = 1',
       [id]
     );
 
     if (subgrupos.length > 0) {
-      const subgruposAtivos = subgrupos.filter(sg => sg.status === 1);
-      const subgruposInativos = subgrupos.filter(sg => sg.status === 0);
-      
-      let mensagem = `Grupo não pode ser excluído pois possui ${subgrupos.length} subgrupo(s) vinculado(s):`;
-      
-      if (subgruposAtivos.length > 0) {
-        mensagem += `\n- ${subgruposAtivos.length} subgrupo(s) ativo(s): ${subgruposAtivos.map(sg => sg.nome).join(', ')}`;
-      }
-      
-      if (subgruposInativos.length > 0) {
-        mensagem += `\n- ${subgruposInativos.length} subgrupo(s) inativo(s): ${subgruposInativos.map(sg => sg.nome).join(', ')}`;
-      }
-      
-      mensagem += '\n\nPara excluir o grupo, primeiro exclua ou desative todos os subgrupos vinculados.';
+      let mensagem = `Grupo não pode ser excluído pois possui ${subgrupos.length} subgrupo(s) ativo(s) vinculado(s):`;
+      mensagem += `\n- ${subgrupos.map(sg => sg.nome).join(', ')}`;
+      mensagem += '\n\nPara excluir o grupo, primeiro desative todos os subgrupos vinculados.';
       
       return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }

@@ -6,6 +6,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import CadastroFilterBar from '../components/CadastroFilterBar';
+import ErrorModal from '../components/ErrorModal';
 
 const Container = styled.div`
   padding: 24px;
@@ -297,6 +298,8 @@ const Subgrupos = () => {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [auditFilters, setAuditFilters] = useState({
     dataInicio: '',
     dataFim: '',
@@ -641,13 +644,14 @@ const Subgrupos = () => {
       loadSubgrupos();
     } catch (error) {
       console.error('Erro ao excluir subgrupo:', error);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir subgrupo';
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir subgrupo';
       
-      // Se a mensagem contém quebras de linha, mostrar em um alert mais legível
-      if (errorMessage.includes('\n')) {
-        alert(errorMessage);
+      // Se a mensagem contém quebras de linha, mostrar no modal customizado
+      if (errorMsg.includes('\n')) {
+        setErrorMessage(errorMsg);
+        setShowErrorModal(true);
       } else {
-        toast.error(errorMessage);
+        toast.error(errorMsg);
       }
     } finally {
       setSaving(false);
@@ -1142,6 +1146,13 @@ const Subgrupos = () => {
           </ModalContent>
         </Modal>
       )}
+
+      {/* Modal de Erro Customizado */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
     </Container>
   );
 };

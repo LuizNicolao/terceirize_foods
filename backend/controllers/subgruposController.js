@@ -329,27 +329,16 @@ class SubgruposController {
       return notFoundResponse(res, 'Subgrupo não encontrado');
     }
 
-    // Verificar se subgrupo está sendo usado em produtos
+    // Verificar se subgrupo está sendo usado em produtos ATIVOS
     const produtos = await executeQuery(
-      'SELECT id, nome, status FROM produtos WHERE subgrupo_id = ?',
+      'SELECT id, nome, status FROM produtos WHERE subgrupo_id = ? AND status = 1',
       [id]
     );
 
     if (produtos.length > 0) {
-      const produtosAtivos = produtos.filter(p => p.status === 1);
-      const produtosInativos = produtos.filter(p => p.status === 0);
-      
-      let mensagem = `Subgrupo não pode ser excluído pois possui ${produtos.length} produto(s) vinculado(s):`;
-      
-      if (produtosAtivos.length > 0) {
-        mensagem += `\n- ${produtosAtivos.length} produto(s) ativo(s): ${produtosAtivos.map(p => p.nome).join(', ')}`;
-      }
-      
-      if (produtosInativos.length > 0) {
-        mensagem += `\n- ${produtosInativos.length} produto(s) inativo(s): ${produtosInativos.map(p => p.nome).join(', ')}`;
-      }
-      
-      mensagem += '\n\nPara excluir o subgrupo, primeiro exclua ou desative todos os produtos vinculados.';
+      let mensagem = `Subgrupo não pode ser excluído pois possui ${produtos.length} produto(s) ativo(s) vinculado(s):`;
+      mensagem += `\n- ${produtos.map(p => p.nome).join(', ')}`;
+      mensagem += '\n\nPara excluir o subgrupo, primeiro desative todos os produtos vinculados.';
       
       return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
