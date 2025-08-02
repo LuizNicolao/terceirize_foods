@@ -67,7 +67,19 @@ class SubgruposController {
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(DISTINCT sg.id) as total FROM subgrupos sg WHERE 1=1${search ? ' AND sg.nome LIKE ?' : ''}${grupo_id ? ' AND sg.grupo_id = ?' : ''}${status !== undefined ? ' AND sg.status = ?' : ''}`;
-    const countParams = [...params];
+    const countParams = [];
+    
+    // Adicionar parâmetros de filtro para contagem (sem paginação)
+    if (search) {
+      countParams.push(`%${search}%`);
+    }
+    if (grupo_id) {
+      countParams.push(grupo_id);
+    }
+    if (status !== undefined) {
+      countParams.push(status);
+    }
+    
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 

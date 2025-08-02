@@ -59,7 +59,16 @@ class GruposController {
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(DISTINCT g.id) as total FROM grupos g WHERE 1=1${search ? ' AND g.nome LIKE ?' : ''}${status !== undefined ? ' AND g.status = ?' : ''}`;
-    const countParams = [...params];
+    const countParams = [];
+    
+    // Adicionar parâmetros de filtro para contagem (sem paginação)
+    if (search) {
+      countParams.push(`%${search}%`);
+    }
+    if (status !== undefined) {
+      countParams.push(status);
+    }
+    
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 
