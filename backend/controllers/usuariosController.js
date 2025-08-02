@@ -22,7 +22,7 @@ class UsuariosController {
    * Listar usuários com paginação, busca e HATEOAS
    */
   static listarUsuarios = asyncHandler(async (req, res) => {
-    const { search = '', page = 1, limit = 20 } = req.query;
+    const { search = '', page = 1 } = req.query;
     const pagination = req.pagination;
 
     // Query base
@@ -50,11 +50,13 @@ class UsuariosController {
 
     baseQuery += ' ORDER BY nome ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const usuarios = await executeQuery(query, paginatedParams);
+    const usuarios = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM usuarios WHERE 1=1${search ? ' AND (nome LIKE ? OR email LIKE ?)' : ''}`;
