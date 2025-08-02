@@ -65,11 +65,13 @@ class FornecedoresController {
 
     baseQuery += ' ORDER BY razao_social ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const fornecedores = await executeQuery(query, paginatedParams);
+    const fornecedores = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM fornecedores WHERE 1=1${search ? ' AND (razao_social LIKE ? OR nome_fantasia LIKE ? OR cnpj LIKE ?)' : ''}${status !== undefined ? ' AND status = ?' : ''}${uf ? ' AND uf = ?' : ''}`;
@@ -163,8 +165,20 @@ class FornecedoresController {
       `INSERT INTO fornecedores (cnpj, razao_social, nome_fantasia, logradouro, numero, bairro, 
                                  municipio, uf, cep, email, telefone, status, criado_em)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
-      [cnpjLimpo, razao_social, nome_fantasia, logradouro, numero, bairro, 
-       municipio, uf?.toUpperCase(), cep, email, telefone, status || 1]
+      [
+        cnpjLimpo, 
+        razao_social, 
+        nome_fantasia && nome_fantasia.trim() ? nome_fantasia.trim() : null,
+        logradouro && logradouro.trim() ? logradouro.trim() : null,
+        numero && numero.trim() ? numero.trim() : null,
+        bairro && bairro.trim() ? bairro.trim() : null,
+        municipio && municipio.trim() ? municipio.trim() : null,
+        uf && uf.trim() ? uf.trim().toUpperCase() : null,
+        cep && cep.trim() ? cep.trim() : null,
+        email && email.trim() ? email.trim() : null,
+        telefone && telefone.trim() ? telefone.trim() : null,
+        status || 1
+      ]
     );
 
     const novoFornecedorId = result.insertId;
@@ -238,12 +252,24 @@ class FornecedoresController {
 
     Object.keys(updateData).forEach(key => {
       if (updateData[key] !== undefined) {
-        if (key === 'uf' && updateData[key]) {
+        let value = updateData[key];
+        
+        // Tratar valores vazios ou undefined
+        if (value === '' || value === null || value === undefined) {
+          value = null;
+        } else if (typeof value === 'string') {
+          value = value.trim();
+          if (value === '') {
+            value = null;
+          }
+        }
+        
+        if (key === 'uf' && value) {
           updateFields.push(`${key} = ?`);
-          updateParams.push(updateData[key].toUpperCase());
+          updateParams.push(value.toUpperCase());
         } else {
           updateFields.push(`${key} = ?`);
-          updateParams.push(updateData[key]);
+          updateParams.push(value);
         }
       }
     });

@@ -550,7 +550,7 @@ const Fornecedores = () => {
     try {
       setLoading(true);
       const response = await api.get('/fornecedores');
-      setFornecedores(response.data);
+      setFornecedores(response.data.data.items || []);
     } catch (error) {
       console.error('Erro ao carregar fornecedores:', error);
       toast.error('Erro ao carregar fornecedores');

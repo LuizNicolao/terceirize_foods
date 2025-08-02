@@ -69,20 +69,44 @@ const commonValidations = {
   // Validação de telefone
   phone: body('telefone')
     .optional()
-    .matches(/^[\d\s\(\)\-\+]+$/)
-    .withMessage('Telefone deve conter apenas números, espaços, parênteses, hífens e +'),
+    .custom((value) => {
+      if (value && value.trim() !== '') {
+        const telefoneLimpo = value.replace(/\D/g, '');
+        if (telefoneLimpo.length < 8 || telefoneLimpo.length > 15) {
+          throw new Error('Telefone deve ter entre 8 e 15 dígitos');
+        }
+      }
+      return true;
+    })
+    .withMessage('Telefone deve ter entre 8 e 15 dígitos'),
 
   // Validação de CNPJ
   cnpj: body('cnpj')
     .optional()
-    .matches(/^\d{2}\.\d{3}\.\d{3}\/\d{4}\-\d{2}$/)
-    .withMessage('CNPJ deve estar no formato XX.XXX.XXX/XXXX-XX'),
+    .custom((value) => {
+      if (value && value.trim() !== '') {
+        const cnpjLimpo = value.replace(/\D/g, '');
+        if (cnpjLimpo.length !== 14) {
+          throw new Error('CNPJ deve ter 14 dígitos');
+        }
+      }
+      return true;
+    })
+    .withMessage('CNPJ deve ter 14 dígitos'),
 
   // Validação de CEP
   cep: body('cep')
     .optional()
-    .matches(/^\d{5}\-\d{3}$/)
-    .withMessage('CEP deve estar no formato XXXXX-XXX'),
+    .custom((value) => {
+      if (value && value.trim() !== '') {
+        const cepLimpo = value.replace(/\D/g, '');
+        if (cepLimpo.length !== 8) {
+          throw new Error('CEP deve ter 8 dígitos');
+        }
+      }
+      return true;
+    })
+    .withMessage('CEP deve ter 8 dígitos'),
 
   // Validação de status
   status: body('status')

@@ -117,7 +117,6 @@ class UsuariosController {
    * Criar novo usuário
    */
   static criarUsuario = asyncHandler(async (req, res) => {
-    console.log('Dados recebidos para criar usuário:', req.body);
     const { nome, email, senha, nivel_de_acesso, tipo_de_acesso } = req.body;
 
     // Verificar se email já existe
