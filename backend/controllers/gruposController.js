@@ -49,15 +49,13 @@ class GruposController {
       params.push(status);
     }
 
-    baseQuery += ' GROUP BY g.id, g.nome, g.status, g.criado_em, g.atualizado_em ORDER BY g.nome ASC';
+    baseQuery += ' GROUP BY g.id, g.nome, g.status, g.criado_em, g.atualizado_em ORDER BY g.nome ASC LIMIT ? OFFSET ?';
 
-    // Aplicar paginação manualmente
-    const limit = pagination.limit;
-    const offset = pagination.offset;
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    // Adicionar parâmetros de paginação
+    params.push(pagination.limit, pagination.offset);
     
     // Executar query paginada
-    const grupos = await executeQuery(query, params);
+    const grupos = await executeQuery(baseQuery, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(DISTINCT g.id) as total FROM grupos g WHERE 1=1${search ? ' AND g.nome LIKE ?' : ''}${status !== undefined ? ' AND g.status = ?' : ''}`;
@@ -340,15 +338,13 @@ class GruposController {
     `;
     
     let params = [];
-    baseQuery += ' ORDER BY g.nome ASC';
+    baseQuery += ' ORDER BY g.nome ASC LIMIT ? OFFSET ?';
 
-    // Aplicar paginação manualmente
-    const limit = pagination.limit;
-    const offset = pagination.offset;
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    // Adicionar parâmetros de paginação
+    params.push(pagination.limit, pagination.offset);
     
     // Executar query paginada
-    const grupos = await executeQuery(query, params);
+    const grupos = await executeQuery(baseQuery, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM grupos WHERE status = 1`;
@@ -398,15 +394,13 @@ class GruposController {
     `;
     
     let params = [id];
-    baseQuery += ' ORDER BY sg.nome ASC';
+    baseQuery += ' ORDER BY sg.nome ASC LIMIT ? OFFSET ?';
 
-    // Aplicar paginação manualmente
-    const limit = pagination.limit;
-    const offset = pagination.offset;
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    // Adicionar parâmetros de paginação
+    params.push(pagination.limit, pagination.offset);
     
     // Executar query paginada
-    const subgrupos = await executeQuery(query, params);
+    const subgrupos = await executeQuery(baseQuery, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM subgrupos WHERE grupo_id = ?`;
