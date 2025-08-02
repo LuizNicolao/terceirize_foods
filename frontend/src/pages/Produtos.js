@@ -468,7 +468,7 @@ const Produtos = () => {
 
       setProdutos(produtosRes.data.data.items || []);
       setGrupos(gruposRes.data.data.items || []);
-      setUnidades(unidadesRes.data.data.items || []);
+      setUnidades(unidadesRes.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar dados');
