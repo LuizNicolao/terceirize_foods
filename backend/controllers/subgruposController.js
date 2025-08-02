@@ -57,29 +57,19 @@ class SubgruposController {
       params.push(status);
     }
 
-    baseQuery += ' GROUP BY sg.id, sg.nome, sg.grupo_id, sg.status, sg.criado_em, sg.atualizado_em, g.nome ORDER BY sg.nome ASC LIMIT ? OFFSET ?';
+    baseQuery += ' GROUP BY sg.id, sg.nome, sg.grupo_id, sg.status, sg.criado_em, sg.atualizado_em, g.nome ORDER BY sg.nome ASC';
 
-    // Adicionar parâmetros de paginação
-    params.push(pagination.limit, pagination.offset);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const subgrupos = await executeQuery(baseQuery, params);
+    const subgrupos = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(DISTINCT sg.id) as total FROM subgrupos sg WHERE 1=1${search ? ' AND sg.nome LIKE ?' : ''}${grupo_id ? ' AND sg.grupo_id = ?' : ''}${status !== undefined ? ' AND sg.status = ?' : ''}`;
-    const countParams = [];
-    
-    // Adicionar parâmetros de filtro para contagem (sem paginação)
-    if (search) {
-      countParams.push(`%${search}%`);
-    }
-    if (grupo_id) {
-      countParams.push(grupo_id);
-    }
-    if (status !== undefined) {
-      countParams.push(status);
-    }
-    
+    const countParams = [...params];
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 
@@ -174,7 +164,7 @@ class SubgruposController {
     // Inserir subgrupo
     const result = await executeQuery(
       'INSERT INTO subgrupos (nome, grupo_id, status, criado_em) VALUES (?, ?, ?, NOW())',
-      [nome && nome.trim() ? nome.trim() : null, grupo_id, status || 1]
+      [nome && nome.trim() ? nome.trim() : null, grupo_id || null, status || 1]
     );
 
     const novoSubgrupoId = result.insertId;
@@ -383,13 +373,15 @@ class SubgruposController {
     `;
     
     let params = [];
-    baseQuery += ' ORDER BY sg.nome ASC LIMIT ? OFFSET ?';
+    baseQuery += ' ORDER BY sg.nome ASC';
 
-    // Adicionar parâmetros de paginação
-    params.push(pagination.limit, pagination.offset);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const subgrupos = await executeQuery(baseQuery, params);
+    const subgrupos = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM subgrupos WHERE status = 1`;
@@ -445,13 +437,15 @@ class SubgruposController {
     `;
     
     let params = [grupo_id];
-    baseQuery += ' ORDER BY sg.nome ASC LIMIT ? OFFSET ?';
+    baseQuery += ' ORDER BY sg.nome ASC';
 
-    // Adicionar parâmetros de paginação
-    params.push(pagination.limit, pagination.offset);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const subgrupos = await executeQuery(baseQuery, params);
+    const subgrupos = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM subgrupos WHERE grupo_id = ?`;

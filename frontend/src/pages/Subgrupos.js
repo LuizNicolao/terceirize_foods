@@ -604,7 +604,6 @@ const Subgrupos = () => {
 
   const loadGrupos = async () => {
     try {
-      // Carregar todos os grupos (limit=1000 para pegar todos)
       const response = await api.get('/grupos?limit=1000');
       setGrupos(response.data.data.items || []);
     } catch (error) {
