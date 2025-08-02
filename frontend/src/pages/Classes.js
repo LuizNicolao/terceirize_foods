@@ -6,6 +6,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import CadastroFilterBar from '../components/CadastroFilterBar';
+import ErrorModal from '../components/ErrorModal';
 
 const Container = styled.div`
   padding: 24px;
@@ -306,6 +307,8 @@ const Classes = () => {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [auditFilters, setAuditFilters] = useState({
     dataInicio: '',
     dataFim: '',
@@ -341,8 +344,8 @@ const Classes = () => {
         params.append('subgrupo_id', subgrupoFilter);
       }
       
-      const response = await api.get(`/classes?${params.toString()}`);
-      setClasses(response.data);
+      const response = await api.get(`/classes?${params.toString()}&limit=1000`);
+      setClasses(response.data.data.items || []);
     } catch (error) {
       console.error('Erro ao carregar classes:', error);
       toast.error('Erro ao carregar classes');
@@ -354,8 +357,8 @@ const Classes = () => {
   // Carregar subgrupos
   const loadSubgrupos = async () => {
     try {
-      const response = await api.get('/classes/subgrupos/list');
-      setSubgrupos(response.data);
+      const response = await api.get('/classes/subgrupos/list?limit=1000');
+      setSubgrupos(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar subgrupos:', error);
     }
@@ -675,20 +678,14 @@ const Classes = () => {
         loadClasses();
       } catch (error) {
         console.error('Erro ao excluir classe:', error);
-        console.error('Erro detalhado:', error.response?.data);
+        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir classe';
         
-        let errorMessage = 'Erro ao excluir classe';
-        if (error.response?.data?.message) {
-          errorMessage = `${errorMessage}: ${error.response.data.message}`;
-        } else if (error.response?.data?.error) {
-          errorMessage = error.response.data.error;
-        }
-        
-        toast.error(errorMessage);
-        
-        // Mostrar erro detalhado no console para debug
-        if (error.response?.data) {
-          console.log('Erro completo:', error.response.data);
+        // Se a mensagem contém quebras de linha, mostrar no modal customizado
+        if (errorMsg.includes('\n')) {
+          setErrorMessage(errorMsg);
+          setShowErrorModal(true);
+        } else {
+          toast.error(errorMsg);
         }
       }
     }
@@ -1167,6 +1164,13 @@ const Classes = () => {
           </ModalContent>
         </Modal>
       )}
+
+      {/* Modal de Erro Customizado */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
     </Container>
   );
 };

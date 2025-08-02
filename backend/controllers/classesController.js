@@ -61,11 +61,13 @@ class ClassesController {
 
     baseQuery += ' GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome ORDER BY c.nome ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const classes = await executeQuery(query, paginatedParams);
+    const classes = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(DISTINCT c.id) as total FROM classes c WHERE 1=1${search ? ' AND c.nome LIKE ?' : ''}${status !== undefined ? ' AND c.status = ?' : ''}${subgrupo_id ? ' AND c.subgrupo_id = ?' : ''}`;
@@ -166,7 +168,7 @@ class ClassesController {
     // Inserir classe
     const result = await executeQuery(
       'INSERT INTO classes (nome, subgrupo_id, status, criado_em) VALUES (?, ?, ?, NOW())',
-      [nome, subgrupo_id, status || 1]
+      [nome && nome.trim() ? nome.trim() : null, subgrupo_id || null, status || 1]
     );
 
     const novaClasseId = result.insertId;
@@ -256,8 +258,20 @@ class ClassesController {
 
     Object.keys(updateData).forEach(key => {
       if (updateData[key] !== undefined) {
+        let value = updateData[key];
+        
+        // Tratar valores vazios ou undefined
+        if (value === '' || value === null || value === undefined) {
+          value = null;
+        } else if (typeof value === 'string') {
+          value = value.trim();
+          if (value === '') {
+            value = null;
+          }
+        }
+        
         updateFields.push(`${key} = ?`);
-        updateParams.push(updateData[key]);
+        updateParams.push(value);
       }
     });
 
@@ -325,14 +339,18 @@ class ClassesController {
       return notFoundResponse(res, 'Classe não encontrada');
     }
 
-    // Verificar se classe está sendo usada em produtos
-    const hasProducts = await executeQuery(
-      'SELECT COUNT(*) as count FROM produtos WHERE classe = ?',
+    // Verificar se classe está sendo usada em produtos ATIVOS
+    const produtos = await executeQuery(
+      'SELECT id, nome, status FROM produtos WHERE classe = ? AND status = 1',
       [existingClasse[0].nome]
     );
 
-    if (hasProducts[0].count > 0) {
-      return errorResponse(res, 'Classe não pode ser excluída pois está sendo utilizada em produtos', STATUS_CODES.BAD_REQUEST);
+    if (produtos.length > 0) {
+      let mensagem = `Classe não pode ser excluída pois possui ${produtos.length} produto(s) ativo(s) vinculado(s):`;
+      mensagem += `\n- ${produtos.map(p => p.nome).join(', ')}`;
+      mensagem += '\n\nPara excluir a classe, primeiro desative todos os produtos vinculados.';
+      
+      return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
 
     // Excluir classe (soft delete - alterar status para 0)
@@ -373,11 +391,13 @@ class ClassesController {
     let params = [];
     baseQuery += ' ORDER BY c.nome ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const classes = await executeQuery(query, paginatedParams);
+    const classes = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM classes WHERE status = 1`;
@@ -437,11 +457,13 @@ class ClassesController {
     let params = [subgrupo_id];
     baseQuery += ' ORDER BY c.nome ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
-    const classes = await executeQuery(query, paginatedParams);
+    const classes = await executeQuery(query, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM classes WHERE subgrupo_id = ?`;
