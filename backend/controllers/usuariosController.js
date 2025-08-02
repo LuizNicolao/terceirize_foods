@@ -56,7 +56,10 @@ class UsuariosController {
     const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
     // Executar query paginada
+    console.log('Query executada:', query);
+    console.log('Parâmetros:', params);
     const usuarios = await executeQuery(query, params);
+    console.log('Usuários retornados:', usuarios);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM usuarios WHERE 1=1${search ? ' AND (nome LIKE ? OR email LIKE ?)' : ''}`;
