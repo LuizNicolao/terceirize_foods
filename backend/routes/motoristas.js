@@ -70,13 +70,17 @@ router.get('/:id',
 // Criar motorista
 router.post('/', [
   checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'motoristas')
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'motoristas'),
+  motoristaValidations,
+  handleValidationErrors
 ], motoristasController.criarMotorista);
 
 // Atualizar motorista
 router.put('/:id', [
   checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'motoristas')
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'motoristas'),
+  motoristaAtualizacaoValidations,
+  handleValidationErrors
 ], motoristasController.atualizarMotorista);
 
 // Excluir motorista

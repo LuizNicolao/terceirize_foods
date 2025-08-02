@@ -1047,15 +1047,15 @@ const motoristaValidations = [
   body('cpf')
     .optional()
     .custom((value) => {
-      if (value) {
+      if (value && value.trim() !== '') {
         const cpfLimpo = value.replace(/\D/g, '');
-        if (cpfLimpo.length !== 11) {
-          throw new Error('CPF deve ter 11 dígitos');
+        if (cpfLimpo.length < 9 || cpfLimpo.length > 14) {
+          throw new Error('CPF deve ter entre 9 e 14 dígitos');
         }
       }
       return true;
     })
-    .withMessage('CPF deve ter 11 dígitos'),
+    .withMessage('CPF deve ter entre 9 e 14 dígitos'),
   
   body('cnh')
     .optional()
@@ -1072,15 +1072,15 @@ const motoristaValidations = [
   body('telefone')
     .optional()
     .custom((value) => {
-      if (value) {
+      if (value && value.trim() !== '') {
         const telefoneLimpo = value.replace(/\D/g, '');
-        if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
-          throw new Error('Telefone deve ter 10 ou 11 dígitos');
+        if (telefoneLimpo.length < 8 || telefoneLimpo.length > 15) {
+          throw new Error('Telefone deve ter entre 8 e 15 dígitos');
         }
       }
       return true;
     })
-    .withMessage('Telefone deve ter 10 ou 11 dígitos'),
+    .withMessage('Telefone deve ter entre 8 e 15 dígitos'),
   
   body('email')
     .optional()
