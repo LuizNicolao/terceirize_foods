@@ -689,7 +689,14 @@ const Grupos = () => {
         loadGrupos();
       } catch (error) {
         console.error('Erro ao excluir grupo:', error);
-        toast.error(error.response?.data?.error || 'Erro ao excluir grupo');
+        const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir grupo';
+        
+        // Se a mensagem contém quebras de linha, mostrar em um alert mais legível
+        if (errorMessage.includes('\n')) {
+          alert(errorMessage);
+        } else {
+          toast.error(errorMessage);
+        }
       }
     }
   };

@@ -278,8 +278,6 @@ class GruposController {
    */
   static excluirGrupo = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    
-    console.log('Tentando excluir grupo ID:', id);
 
     // Verificar se grupo existe
     const existingGrupo = await executeQuery(
@@ -288,34 +286,57 @@ class GruposController {
     );
 
     if (existingGrupo.length === 0) {
-      console.log('Grupo não encontrado');
       return notFoundResponse(res, 'Grupo não encontrado');
     }
 
     // Verificar se grupo está sendo usado em produtos
-    const hasProducts = await executeQuery(
-      'SELECT COUNT(*) as count FROM produtos WHERE grupo_id = ?',
+    const produtos = await executeQuery(
+      'SELECT id, nome, status FROM produtos WHERE grupo_id = ?',
       [id]
     );
 
-    console.log('Produtos encontrados:', hasProducts[0].count);
-
-    if (hasProducts[0].count > 0) {
-      console.log('Grupo não pode ser excluído - possui produtos');
-      return errorResponse(res, 'Grupo não pode ser excluído pois possui produtos cadastrados', STATUS_CODES.BAD_REQUEST);
+    if (produtos.length > 0) {
+      const produtosAtivos = produtos.filter(p => p.status === 1);
+      const produtosInativos = produtos.filter(p => p.status === 0);
+      
+      let mensagem = `Grupo não pode ser excluído pois possui ${produtos.length} produto(s) vinculado(s):`;
+      
+      if (produtosAtivos.length > 0) {
+        mensagem += `\n- ${produtosAtivos.length} produto(s) ativo(s): ${produtosAtivos.map(p => p.nome).join(', ')}`;
+      }
+      
+      if (produtosInativos.length > 0) {
+        mensagem += `\n- ${produtosInativos.length} produto(s) inativo(s): ${produtosInativos.map(p => p.nome).join(', ')}`;
+      }
+      
+      mensagem += '\n\nPara excluir o grupo, primeiro exclua ou desative todos os produtos vinculados.';
+      
+      return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
 
     // Verificar se grupo possui subgrupos
-    const hasSubgrupos = await executeQuery(
-      'SELECT COUNT(*) as count FROM subgrupos WHERE grupo_id = ?',
+    const subgrupos = await executeQuery(
+      'SELECT id, nome, status FROM subgrupos WHERE grupo_id = ?',
       [id]
     );
 
-    console.log('Subgrupos encontrados:', hasSubgrupos[0].count);
-
-    if (hasSubgrupos[0].count > 0) {
-      console.log('Grupo não pode ser excluído - possui subgrupos');
-      return errorResponse(res, 'Grupo não pode ser excluído pois possui subgrupos cadastrados', STATUS_CODES.BAD_REQUEST);
+    if (subgrupos.length > 0) {
+      const subgruposAtivos = subgrupos.filter(sg => sg.status === 1);
+      const subgruposInativos = subgrupos.filter(sg => sg.status === 0);
+      
+      let mensagem = `Grupo não pode ser excluído pois possui ${subgrupos.length} subgrupo(s) vinculado(s):`;
+      
+      if (subgruposAtivos.length > 0) {
+        mensagem += `\n- ${subgruposAtivos.length} subgrupo(s) ativo(s): ${subgruposAtivos.map(sg => sg.nome).join(', ')}`;
+      }
+      
+      if (subgruposInativos.length > 0) {
+        mensagem += `\n- ${subgruposInativos.length} subgrupo(s) inativo(s): ${subgruposInativos.map(sg => sg.nome).join(', ')}`;
+      }
+      
+      mensagem += '\n\nPara excluir o grupo, primeiro exclua ou desative todos os subgrupos vinculados.';
+      
+      return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
 
     // Excluir grupo (soft delete - alterar status para 0)
@@ -324,7 +345,6 @@ class GruposController {
       [id]
     );
 
-    console.log('Grupo excluído com sucesso');
     return successResponse(res, null, 'Grupo excluído com sucesso', STATUS_CODES.NO_CONTENT);
   });
 

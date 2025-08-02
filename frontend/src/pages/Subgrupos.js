@@ -641,7 +641,14 @@ const Subgrupos = () => {
       loadSubgrupos();
     } catch (error) {
       console.error('Erro ao excluir subgrupo:', error);
-      toast.error(error.response?.data?.error || 'Erro ao excluir subgrupo');
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir subgrupo';
+      
+      // Se a mensagem contém quebras de linha, mostrar em um alert mais legível
+      if (errorMessage.includes('\n')) {
+        alert(errorMessage);
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setSaving(false);
     }

@@ -330,13 +330,28 @@ class SubgruposController {
     }
 
     // Verificar se subgrupo está sendo usado em produtos
-    const hasProducts = await executeQuery(
-      'SELECT COUNT(*) as count FROM produtos WHERE subgrupo_id = ?',
+    const produtos = await executeQuery(
+      'SELECT id, nome, status FROM produtos WHERE subgrupo_id = ?',
       [id]
     );
 
-    if (hasProducts[0].count > 0) {
-      return errorResponse(res, 'Subgrupo não pode ser excluído pois possui produtos cadastrados', STATUS_CODES.BAD_REQUEST);
+    if (produtos.length > 0) {
+      const produtosAtivos = produtos.filter(p => p.status === 1);
+      const produtosInativos = produtos.filter(p => p.status === 0);
+      
+      let mensagem = `Subgrupo não pode ser excluído pois possui ${produtos.length} produto(s) vinculado(s):`;
+      
+      if (produtosAtivos.length > 0) {
+        mensagem += `\n- ${produtosAtivos.length} produto(s) ativo(s): ${produtosAtivos.map(p => p.nome).join(', ')}`;
+      }
+      
+      if (produtosInativos.length > 0) {
+        mensagem += `\n- ${produtosInativos.length} produto(s) inativo(s): ${produtosInativos.map(p => p.nome).join(', ')}`;
+      }
+      
+      mensagem += '\n\nPara excluir o subgrupo, primeiro exclua ou desative todos os produtos vinculados.';
+      
+      return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
 
     // Excluir subgrupo (soft delete - alterar status para 0)
