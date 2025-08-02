@@ -278,6 +278,8 @@ class GruposController {
    */
   static excluirGrupo = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    
+    console.log('Tentando excluir grupo ID:', id);
 
     // Verificar se grupo existe
     const existingGrupo = await executeQuery(
@@ -286,6 +288,7 @@ class GruposController {
     );
 
     if (existingGrupo.length === 0) {
+      console.log('Grupo não encontrado');
       return notFoundResponse(res, 'Grupo não encontrado');
     }
 
@@ -295,7 +298,10 @@ class GruposController {
       [id]
     );
 
+    console.log('Produtos encontrados:', hasProducts[0].count);
+
     if (hasProducts[0].count > 0) {
+      console.log('Grupo não pode ser excluído - possui produtos');
       return errorResponse(res, 'Grupo não pode ser excluído pois possui produtos cadastrados', STATUS_CODES.BAD_REQUEST);
     }
 
@@ -305,7 +311,10 @@ class GruposController {
       [id]
     );
 
+    console.log('Subgrupos encontrados:', hasSubgrupos[0].count);
+
     if (hasSubgrupos[0].count > 0) {
+      console.log('Grupo não pode ser excluído - possui subgrupos');
       return errorResponse(res, 'Grupo não pode ser excluído pois possui subgrupos cadastrados', STATUS_CODES.BAD_REQUEST);
     }
 
@@ -315,6 +324,7 @@ class GruposController {
       [id]
     );
 
+    console.log('Grupo excluído com sucesso');
     return successResponse(res, null, 'Grupo excluído com sucesso', STATUS_CODES.NO_CONTENT);
   });
 
