@@ -146,6 +146,8 @@ class MotoristasController {
   // Criar motorista
   async criarMotorista(req, res) {
     try {
+      console.log('Dados recebidos para criar motorista:', req.body);
+      
       const {
         nome,
         cpf,
