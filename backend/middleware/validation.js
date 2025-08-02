@@ -304,10 +304,9 @@ const clienteValidations = {
 const grupoValidations = {
   create: [
     body('nome')
-      .isLength({ min: 3, max: 100 })
-      .withMessage('Nome do grupo deve ter entre 3 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ\s]+$/)
-      .withMessage('Nome deve conter apenas letras e espaços'),
+      .trim()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('Nome do grupo deve ter entre 1 e 100 caracteres'),
     body('status')
       .optional()
       .isIn([0, 1])
@@ -319,10 +318,9 @@ const grupoValidations = {
     commonValidations.id,
     body('nome')
       .optional()
-      .isLength({ min: 3, max: 100 })
-      .withMessage('Nome do grupo deve ter entre 3 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ\s]+$/)
-      .withMessage('Nome deve conter apenas letras e espaços'),
+      .trim()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('Nome do grupo deve ter entre 1 e 100 caracteres'),
     body('status')
       .optional()
       .isIn([0, 1])
@@ -335,10 +333,9 @@ const grupoValidations = {
 const subgrupoValidations = {
   create: [
     body('nome')
-      .isLength({ min: 3, max: 100 })
-      .withMessage('Nome do subgrupo deve ter entre 3 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ\s]+$/)
-      .withMessage('Nome deve conter apenas letras e espaços'),
+      .trim()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('Nome do subgrupo deve ter entre 1 e 100 caracteres'),
     body('grupo_id')
       .isInt({ min: 1 })
       .withMessage('ID do grupo é obrigatório e deve ser um número válido'),
@@ -353,10 +350,9 @@ const subgrupoValidations = {
     commonValidations.id,
     body('nome')
       .optional()
-      .isLength({ min: 3, max: 100 })
-      .withMessage('Nome do subgrupo deve ter entre 3 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ\s]+$/)
-      .withMessage('Nome deve conter apenas letras e espaços'),
+      .trim()
+      .isLength({ min: 1, max: 100 })
+      .withMessage('Nome do subgrupo deve ter entre 1 e 100 caracteres'),
     body('grupo_id')
       .optional()
       .isInt({ min: 1 })

@@ -672,7 +672,8 @@ const Subgrupos = () => {
       loadSubgrupos();
     } catch (error) {
       console.error('Erro ao salvar subgrupo:', error);
-      toast.error(error.response?.data?.error || 'Erro ao salvar subgrupo');
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao salvar subgrupo';
+      toast.error(errorMessage);
     } finally {
       setSaving(false);
     }

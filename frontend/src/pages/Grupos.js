@@ -675,7 +675,8 @@ const Grupos = () => {
       loadGrupos();
     } catch (error) {
       console.error('Erro ao salvar grupo:', error);
-      toast.error(error.response?.data?.error || 'Erro ao salvar grupo');
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao salvar grupo';
+      toast.error(errorMessage);
     }
   };
 
