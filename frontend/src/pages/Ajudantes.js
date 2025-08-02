@@ -422,8 +422,8 @@ const Ajudantes = () => {
 
   const loadFiliais = async () => {
     try {
-      const response = await api.get('/ajudantes/filiais/options');
-      setFiliais(response.data);
+      const response = await api.get('/filiais');
+      setFiliais(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar filiais:', error);
     }

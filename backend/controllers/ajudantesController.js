@@ -138,6 +138,8 @@ class AjudantesController {
   // Criar ajudante
   async criarAjudante(req, res) {
     try {
+      console.log('Dados recebidos para criar ajudante:', req.body);
+      
       const {
         nome,
         cpf,
