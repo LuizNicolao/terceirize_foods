@@ -26,6 +26,7 @@ const UnidadesEscolares = () => {
     total_estados: 0,
     total_cidades: 0
   });
+  const [searchTerm, setSearchTerm] = useState('');
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
@@ -326,9 +327,15 @@ const UnidadesEscolares = () => {
 
                     {/* Filtros */}
        <CadastroFilterBar
-         searchTerm=""
-         onSearchChange={(search) => loadUnidades({ search })}
-         onClear={() => loadUnidades()}
+         searchTerm={searchTerm}
+         onSearchChange={(search) => {
+           setSearchTerm(search);
+           loadUnidades({ search });
+         }}
+         onClear={() => {
+           setSearchTerm('');
+           loadUnidades();
+         }}
          placeholder="Buscar por nome, cidade ou código..."
        />
 
