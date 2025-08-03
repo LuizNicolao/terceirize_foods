@@ -6,6 +6,7 @@ const Input = ({
   type = 'text', 
   size = 'md',
   className = '',
+  children,
   ...props 
 }) => {
   const baseClasses = 'w-full border border-gray-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent';
@@ -18,6 +19,32 @@ const Input = ({
 
   const inputClasses = `${baseClasses} ${sizes[size]} ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`;
 
+  const renderInput = () => {
+    switch (type) {
+      case 'select':
+        return (
+          <select className={inputClasses} {...props}>
+            {children}
+          </select>
+        );
+      case 'textarea':
+        return (
+          <textarea 
+            className={`${inputClasses} resize-vertical min-h-[80px]`}
+            {...props}
+          />
+        );
+      default:
+        return (
+          <input 
+            type={type}
+            className={inputClasses}
+            {...props}
+          />
+        );
+    }
+  };
+
   return (
     <div className="w-full">
       {label && (
@@ -25,11 +52,7 @@ const Input = ({
           {label}
         </label>
       )}
-      <input 
-        type={type}
-        className={inputClasses}
-        {...props}
-      />
+      {renderInput()}
       {error && (
         <p className="mt-1 text-sm text-red-600">
           {error}

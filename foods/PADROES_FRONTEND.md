@@ -53,6 +53,49 @@ import { Button, Input, Modal, Table } from '../components/ui';
 <div className="flex flex-col sm:flex-row justify-between">
 ```
 
+### 🎯 **REGRAS IMPORTANTES - NÃO CRIAR/EXCLUIR CARDS:**
+
+#### **⚠️ REGRA FUNDAMENTAL:**
+- **✅ MANTER:** Todos os cards/estatísticas que já existem
+- **✅ NÃO CRIAR:** Novos cards que não existem no backend
+- **✅ NÃO EXCLUIR:** Cards existentes, apenas padronizar
+- **✅ APENAS MODERNIZAR:** Layout, cores, responsividade
+
+#### **📊 EXEMPLO DASHBOARD:**
+```javascript
+// ✅ CORRETO - Manter todos os cards existentes
+const statsData = {
+  totalUsuarios: dashboardData.usuarios || 0,
+  totalFornecedores: dashboardData.fornecedores || 0,
+  totalClientes: dashboardData.clientes || 0,
+  totalProdutos: dashboardData.produtos || 0,
+  totalGrupos: dashboardData.grupos || 0,
+  totalSubgrupos: dashboardData.subgrupos || 0,
+  totalClasses: dashboardData.classes || 0,
+  totalMarcas: dashboardData.marcas || 0,
+  totalFiliais: dashboardData.filiais || 0,
+  totalRotas: dashboardData.rotas || 0,
+  totalMotoristas: dashboardData.motoristas || 0,
+  totalAjudantes: dashboardData.ajudantes || 0,
+  totalVeiculos: dashboardData.veiculos || 0,
+  totalUnidadesEscolares: dashboardData.unidades_escolares || 0,
+  totalUnidades: dashboardData.unidades || 0,
+  totalNomeGenerico: dashboardData.nome_generico_produto || 0,
+  valorEstoque: dashboardData.valorEstoque || 0,
+  produtosEstoqueBaixo: dashboardData.produtosEstoqueBaixo || 0,
+  produtosSemEstoque: dashboardData.produtosSemEstoque || 0,
+  produtosVencendo: dashboardData.produtosVencendo || 0,
+  veiculosDocumentacaoVencendo: dashboardData.veiculosDocumentacaoVencendo || 0,
+  motoristasCnhVencendo: dashboardData.motoristasCnhVencendo || 0
+};
+
+// ❌ INCORRETO - Criar cards que não existem
+const statsData = {
+  totalUsuarios: dashboardData.usuarios || 0,
+  // ❌ NÃO CRIAR: totalNovoCard: 0, // se não existir no backend
+};
+```
+
 ### 🎯 **CONFIGURAÇÃO DO TAILWIND CSS (OBRIGATÓRIO):**
 
 #### **1. ✅ DEPENDÊNCIAS (package.json):**
@@ -109,13 +152,16 @@ module.exports = {
 **🔧 SOLUÇÃO:** Verificar se Tailwind CSS está instalado e configurado
 
 #### **❌ PROBLEMA: Quadrado verde piscando**
-**🔧 SOLUÇÃO:** Modernizar LoadingSpinner com Tailwind CSS
+**🔧 SOLUÇÃO:** Usar loading inline simples com Tailwind CSS
 
 #### **❌ PROBLEMA: Erro de proxy favicon.ico**
 **🔧 SOLUÇÃO:** Ignorar - não afeta funcionalidade
 
 #### **❌ PROBLEMA: Rotas 404**
 **🔧 SOLUÇÃO:** Verificar rotas corretas do backend antes de implementar
+
+#### **❌ PROBLEMA: Cards faltando ou extras**
+**🔧 SOLUÇÃO:** Manter exatamente os cards que existem no backend
 
 ### 🎯 **CHECKLIST PARA CADA PÁGINA:**
 
@@ -124,6 +170,7 @@ module.exports = {
 2. **Verificar estrutura de dados** - Como o backend retorna?
 3. **Verificar validações** - Quais campos são obrigatórios?
 4. **Verificar se Tailwind está configurado** - Evitar layout quebrado
+5. **Mapear cards/estatísticas existentes** - Não criar/excluir
 
 #### **✅ DURANTE A MODERNIZAÇÃO:**
 1. **Criar service** - Separar lógica de API
@@ -131,14 +178,16 @@ module.exports = {
 3. **Aplicar Tailwind CSS** - Remover styled-components
 4. **Implementar responsividade** - Mobile-first
 5. **Manter funcionalidades** - CRUD, filtros, paginação
-6. **Modernizar LoadingSpinner** - Usar Tailwind CSS
+6. **Manter cards existentes** - Não criar/excluir, apenas padronizar
+7. **Usar loading inline** - Evitar quadrado verde
 
 #### **✅ APÓS MODERNIZAÇÃO:**
 1. **Testar todas as funcionalidades** - CRUD, filtros, validações
 2. **Verificar responsividade** - Mobile, tablet, desktop
 3. **Verificar erros** - Console, network, validações
 4. **Verificar layout** - Grid, cards, espaçamentos
-5. **Documentar mudanças** - Atualizar este arquivo
+5. **Verificar cards** - Todos os existentes estão presentes
+6. **Documentar mudanças** - Atualizar este arquivo
 
 ### 🎯 **EXEMPLOS DE ROTAS CORRETAS:**
 
@@ -177,12 +226,12 @@ module.exports = {
 ```
 
 ### 🎯 **ORDEM DE MODERNIZAÇÃO:**
-1. **Dashboard** ✅ (Concluído - Tailwind configurado)
+1. **Dashboard** ✅ (Concluído - Tailwind configurado, loading corrigido)
 2. **Filiais** 🔄 (Próximo)
 3. **Veículos**
 4. **Unidades**
 5. **Unidades Escolares**
-6. **Rotas**
+6. **Rotas** ✅ (Concluído - Service criado, componentes UI, estatísticas, loading inline)
 7. **Motoristas**
 8. **Ajudantes**
 9. **Usuários**
@@ -204,7 +253,21 @@ module.exports = {
 - `StatCard` - Cards de estatísticas
 - `ActivityCard` - Cards de atividades
 - `ChartCard` - Containers para gráficos
-- `LoadingSpinner` - Spinner modernizado com Tailwind
+
+### 🎯 **LOADING PADRÃO (SEM QUADRADO VERDE):**
+```javascript
+// ✅ CORRETO - Loading inline simples
+if (loading) {
+  return (
+    <div className="flex justify-center items-center h-screen bg-gray-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Carregando...</p>
+      </div>
+    </div>
+  );
+}
+```
 
 ### 🎯 **COMANDOS IMPORTANTES:**
 ```bash
@@ -213,10 +276,16 @@ npm install
 
 # Reiniciar container após mudanças
 docker restart foods_frontend
+
+# Resolver conflitos Git
+git add package.json
+git commit -m "fix: resolver conflito package.json"
 ```
 
 ### 🎯 **ÚLTIMA ATUALIZAÇÃO:**
 **Data:** 03/08/2025
-**Status:** Dashboard modernizado com Tailwind CSS configurado
+**Status:** Rotas modernizada com Service criado, componentes UI, estatísticas e loading inline
 **Próximo:** Filiais
-**Problemas Resolvidos:** Layout quebrado, LoadingSpinner, configuração Tailwind 
+**Problemas Resolvidos:** Layout quebrado, LoadingSpinner, configuração Tailwind, quadrado verde, styled-components removido
+**Regra Importante:** Manter todos os cards existentes, não criar/excluir, apenas padronizar
+**Componentes Atualizados:** Input (select/textarea), StatCard, Modal, Table, Button 

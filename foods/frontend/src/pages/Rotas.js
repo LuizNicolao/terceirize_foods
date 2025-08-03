@@ -1,460 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle, FaFileExcel, FaFilePdf, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle, FaFileExcel, FaFilePdf, FaChevronDown, FaChevronUp, FaRoute, FaMapMarkedAlt, FaTruck, FaMoneyBillWave, FaChartLine } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
-import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { Button, Input, Modal, Table, StatCard } from '../components/ui';
+import RotasService from '../services/rotas';
 import CadastroFilterBar from '../components/CadastroFilterBar';
-import { extractApiData, extractPaginatedData, extractErrorMessage } from '../utils/apiResponseHandler';
-
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h1`
-  color: var(--dark-gray);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const AddButton = styled.button`
-  background: var(--primary-green);
-  color: var(--white);
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: var(--dark-green);
-    transform: translateY(-1px);
-  }
-`;
-
-const TableContainer = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  background-color: #f5f5f5;
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const Td = styled.td`
-  padding: 16px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  color: var(--dark-gray);
-`;
-
-const StatusBadge = styled.span.withConfig({
-  shouldForwardProp: (prop) => prop !== '$status'
-})`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
-`;
-
-const TipoRotaBadge = styled.span.withConfig({
-  shouldForwardProp: (prop) => prop !== '$tipo'
-})`
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  background: ${props => {
-    switch (props.$tipo) {
-      case 'semanal': return '#e3f2fd';
-      case 'quinzenal': return '#f3e5f5';
-      case 'mensal': return '#e8f5e8';
-      case 'transferencia': return '#fff3e0';
-      default: return '#f5f5f5';
-    }
-  }};
-  color: ${props => {
-    switch (props.$tipo) {
-      case 'semanal': return '#1976d2';
-      case 'quinzenal': return '#7b1fa2';
-      case 'mensal': return '#388e3c';
-      case 'transferencia': return '#f57c00';
-      default: return '#666';
-    }
-  }};
-`;
-
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  margin-right: 8px;
-  color: var(--gray);
-
-  &:hover {
-    background-color: var(--light-gray);
-  }
-
-  &.edit {
-    color: var(--primary-green);
-  }
-
-  &.delete {
-    color: var(--error-red);
-  }
-
-  &.view {
-    color: var(--primary-green);
-  }
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 24px;
-  width: 100%;
-  max-width: 95vw;
-  width: 1000px;
-  max-height: 95vh;
-  overflow: hidden;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  grid-column: 1 / -1;
-`;
-
-const HeaderActions = styled.div`
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  
-  .close-button {
-    margin-left: 8px;
-  }
-`;
-
-const ModalTitle = styled.h2`
-  color: var(--dark-gray);
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--gray);
-  padding: 4px;
-
-  &:hover {
-    color: var(--error-red);
-  }
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  max-height: calc(95vh - 120px);
-  overflow: hidden;
-  padding-right: 8px;
-`;
-
-const FormFields = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 0;
-  
-  /* Estilizar scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--primary-green);
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--dark-green);
-  }
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
-const Label = styled.label`
-  color: var(--dark-gray);
-  font-weight: 600;
-  font-size: 13px;
-`;
-
-const Input = styled.input`
-  padding: 10px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-
-  &:disabled {
-    background-color: #f5f5f5;
-    color: var(--gray);
-    cursor: not-allowed;
-  }
-`;
-
-const Select = styled.select`
-  padding: 10px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  background: var(--white);
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-
-  &:disabled {
-    background-color: #f5f5f5;
-    color: var(--gray);
-    cursor: not-allowed;
-  }
-`;
-
-const TextArea = styled.textarea`
-  padding: 10px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  font-family: inherit;
-  resize: vertical;
-  min-height: 80px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-
-  &:disabled {
-    background-color: #f5f5f5;
-    color: var(--gray);
-    cursor: not-allowed;
-  }
-`;
-
-const Button = styled.button`
-  padding: 8px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &.primary {
-    background: var(--primary-green);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-green);
-    }
-  }
-
-  &.secondary {
-    background: var(--light-gray);
-    color: var(--dark-gray);
-
-    &:hover {
-      background: #d0d0d0;
-    }
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--gray);
-  font-size: 16px;
-`;
-
-const UnidadesSection = styled.div`
-  margin-top: 24px;
-  border-top: 1px solid #e0e0e0;
-  padding-top: 16px;
-`;
-
-const UnidadesHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  padding: 12px 16px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: #e9ecef;
-  }
-`;
-
-const UnidadesTitle = styled.h3`
-  color: var(--dark-gray);
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const UnidadesCount = styled.span`
-  background: var(--primary-green);
-  color: white;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-`;
-
-const UnidadesContent = styled.div`
-  max-height: ${props => props.$expanded ? '500px' : '0'};
-  overflow: hidden;
-  transition: max-height 0.3s ease;
-`;
-
-const UnidadesTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-`;
-
-const UnidadesTableContainer = styled.div`
-  max-height: 400px;
-  overflow-y: auto;
-  
-  /* Estilizar scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--primary-green);
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--dark-green);
-  }
-`;
-
-const UnidadesTh = styled.th`
-  background-color: #f5f5f5;
-  padding: 10px 8px;
-  text-align: left;
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 12px;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const UnidadesTd = styled.td`
-  padding: 10px 8px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 12px;
-  color: var(--dark-gray);
-`;
-
-const UnidadesEmpty = styled.div`
-  text-align: center;
-  padding: 20px;
-  color: var(--gray);
-  font-size: 14px;
-  font-style: italic;
-`;
 
 const Rotas = () => {
   const { canCreate, canEdit, canDelete } = usePermissions();
@@ -481,6 +32,7 @@ const Rotas = () => {
   const [loadingUnidades, setLoadingUnidades] = useState(false);
   const [showUnidades, setShowUnidades] = useState(false);
   const [totalUnidades, setTotalUnidades] = useState(0);
+  const [estatisticas, setEstatisticas] = useState({});
 
   const {
     register,
@@ -495,12 +47,15 @@ const Rotas = () => {
   const loadRotas = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/rotas');
-      const data = extractApiData(response);
-      setRotas(data || []);
+      const result = await RotasService.listar();
+      if (result.success) {
+        setRotas(result.data || []);
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
       console.error('Erro ao carregar rotas:', error);
-      toast.error(extractErrorMessage(error));
+      toast.error('Erro ao carregar rotas');
     } finally {
       setLoading(false);
     }
@@ -509,20 +64,33 @@ const Rotas = () => {
   // Carregar filiais
   const loadFiliais = async () => {
     try {
-      const response = await api.get('/filiais');
-      const data = extractApiData(response);
-      setFiliais(data || []);
+      const response = await fetch('/api/filiais');
+      const data = await response.json();
+      setFiliais(data.data || []);
     } catch (error) {
       console.error('Erro ao carregar filiais:', error);
+    }
+  };
+
+  // Carregar estatísticas
+  const loadEstatisticas = async () => {
+    try {
+      const result = await RotasService.buscarEstatisticas();
+      if (result.success) {
+        setEstatisticas(result.data || {});
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
     }
   };
 
   // Carregar total de unidades escolares vinculadas a uma rota
   const loadTotalUnidades = async (rotaId) => {
     try {
-      const response = await api.get(`/rotas/${rotaId}/unidades-escolares`);
-      const data = extractApiData(response);
-      setTotalUnidades(data?.total || 0);
+      const result = await RotasService.buscarUnidadesEscolares(rotaId);
+      if (result.success) {
+        setTotalUnidades(result.data.total || 0);
+      }
     } catch (error) {
       console.error('Erro ao carregar total de unidades escolares:', error);
       setTotalUnidades(0);
@@ -533,10 +101,11 @@ const Rotas = () => {
   const loadUnidadesEscolares = async (rotaId) => {
     try {
       setLoadingUnidades(true);
-      const response = await api.get(`/rotas/${rotaId}/unidades-escolares`);
-      const data = extractApiData(response);
-      setUnidadesEscolares(data?.unidades || []);
-      setTotalUnidades(data?.total || 0);
+      const result = await RotasService.buscarUnidadesEscolares(rotaId);
+      if (result.success) {
+        setUnidadesEscolares(result.data.unidades || []);
+        setTotalUnidades(result.data.total || 0);
+      }
     } catch (error) {
       console.error('Erro ao carregar unidades escolares:', error);
       setUnidadesEscolares([]);
@@ -549,6 +118,7 @@ const Rotas = () => {
   useEffect(() => {
     loadRotas();
     loadFiliais();
+    loadEstatisticas();
   }, []);
 
   // Carregar logs de auditoria
@@ -575,9 +145,10 @@ const Rotas = () => {
       if (auditFilters.acao) params.append('acao', auditFilters.acao);
       if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
       params.append('recurso', 'rotas');
-      const response = await api.get(`/auditoria?${params.toString()}`);
-      const data = extractApiData(response);
-      setAuditLogs(data?.logs || []);
+      
+      const response = await fetch(`/api/auditoria?${params.toString()}`);
+      const data = await response.json();
+      setAuditLogs(data.data?.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -645,19 +216,24 @@ const Rotas = () => {
   // Salvar rota
   const onSubmit = async (data) => {
     try {
+      let result;
       if (editingRota) {
-        await api.put(`/rotas/${editingRota.id}`, data);
-        toast.success('Rota atualizada com sucesso!');
+        result = await RotasService.atualizar(editingRota.id, data);
       } else {
-        await api.post('/rotas', data);
-        toast.success('Rota criada com sucesso!');
+        result = await RotasService.criar(data);
       }
       
-      handleCloseModal();
-      loadRotas();
+      if (result.success) {
+        toast.success(result.message);
+        handleCloseModal();
+        loadRotas();
+        loadEstatisticas();
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
       console.error('Erro ao salvar rota:', error);
-      toast.error(error.response?.data?.error || 'Erro ao salvar rota');
+      toast.error('Erro ao salvar rota');
     }
   };
 
@@ -665,12 +241,17 @@ const Rotas = () => {
   const handleDeleteRota = async (rotaId) => {
     if (window.confirm('Tem certeza que deseja excluir esta rota?')) {
       try {
-        await api.delete(`/rotas/${rotaId}`);
-        toast.success('Rota excluída com sucesso!');
-        loadRotas();
+        const result = await RotasService.excluir(rotaId);
+        if (result.success) {
+          toast.success(result.message);
+          loadRotas();
+          loadEstatisticas();
+        } else {
+          toast.error(result.error);
+        }
       } catch (error) {
         console.error('Erro ao excluir rota:', error);
-        toast.error(error.response?.data?.error || 'Erro ao excluir rota');
+        toast.error('Erro ao excluir rota');
       }
     }
   };
@@ -686,7 +267,10 @@ const Rotas = () => {
     setAuditLogs([]);
     setAuditFilters({ dataInicio: '', dataFim: '', acao: '', usuario_id: '', periodo: '' });
   };
-  const handleApplyAuditFilters = () => { loadAuditLogs(); };
+  
+  const handleApplyAuditFilters = () => { 
+    loadAuditLogs(); 
+  };
 
   // Funções auxiliares para auditoria
   const formatDate = (dateString) => {
@@ -745,11 +329,10 @@ const Rotas = () => {
       if (auditFilters.periodo) params.append('periodo', auditFilters.periodo);
       params.append('tabela', 'rotas');
 
-      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
-        responseType: 'blob'
-      });
+      const response = await fetch(`/api/auditoria/export/xlsx?${params.toString()}`);
+      const blob = await response.blob();
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `auditoria_rotas_${new Date().toISOString().split('T')[0]}.xlsx`);
@@ -776,11 +359,10 @@ const Rotas = () => {
       if (auditFilters.periodo) params.append('periodo', auditFilters.periodo);
       params.append('tabela', 'rotas');
 
-      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
-        responseType: 'blob'
-      });
+      const response = await fetch(`/api/auditoria/export/pdf?${params.toString()}`);
+      const blob = await response.blob();
 
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `auditoria_rotas_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -834,35 +416,70 @@ const Rotas = () => {
     return tipos[tipo] || tipo;
   };
 
+  // Loading inline simples (sem quadrado verde)
   if (loading) {
     return (
-      <Container>
-        <LoadingSpinner inline={true} text="Carregando rotas..." />
-      </Container>
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando rotas...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <Header>
-        <Title>Rotas</Title>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <AddButton 
+    <div className="p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h1 className="text-2xl font-bold text-gray-800">Rotas</h1>
+        <div className="flex gap-3">
+          <Button
             onClick={handleOpenAuditModal}
-            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+            variant="secondary"
+            className="text-xs px-3 py-2"
           >
-            <FaQuestionCircle />
+            <FaQuestionCircle className="mr-2" />
             Auditoria
-          </AddButton>
+          </Button>
           {canCreate('rotas') && (
-            <AddButton onClick={handleAddRota}>
-              <FaPlus />
+            <Button onClick={handleAddRota}>
+              <FaPlus className="mr-2" />
               Adicionar Rota
-            </AddButton>
+            </Button>
           )}
         </div>
-      </Header>
+      </div>
 
+      {/* Cards de Estatísticas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <StatCard
+          title="Total de Rotas"
+          value={estatisticas.total_rotas || 0}
+          icon={FaRoute}
+          color="blue"
+        />
+        <StatCard
+          title="Rotas Ativas"
+          value={estatisticas.rotas_ativas || 0}
+          icon={FaMapMarkedAlt}
+          color="green"
+        />
+        <StatCard
+          title="Distância Total"
+          value={`${(estatisticas.distancia_total || 0).toFixed(1)} km`}
+          icon={FaTruck}
+          color="purple"
+        />
+        <StatCard
+          title="Custo Total Diário"
+          value={formatCurrency(estatisticas.custo_total_diario || 0)}
+          icon={FaMoneyBillWave}
+          color="orange"
+        />
+      </div>
+
+      {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -884,477 +501,411 @@ const Rotas = () => {
         ]}
       />
 
+      {/* Tabela */}
       {filteredRotas.length === 0 ? (
-        <EmptyState>
+        <div className="text-center py-12 text-gray-500">
           {searchTerm || statusFilter !== 'todos' || filialFilter !== 'todos' 
             ? 'Nenhuma rota encontrada com os filtros aplicados'
             : 'Nenhuma rota cadastrada'
           }
-        </EmptyState>
+        </div>
       ) : (
-        <TableContainer>
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <Table>
-            <thead>
-              <tr>
-                <Th>ID</Th>
-                <Th>Filial</Th>
-                <Th>Código</Th>
-                <Th>Nome</Th>
-                <Th>Distância (km)</Th>
-                <Th>Tipo</Th>
-                <Th>Custo Diário</Th>
-                <Th>Status</Th>
-                <Th>Ações</Th>
-              </tr>
-            </thead>
-            <tbody>
+            <Table.Header>
+              <Table.Row>
+                <Table.HeaderCell>ID</Table.HeaderCell>
+                <Table.HeaderCell>Filial</Table.HeaderCell>
+                <Table.HeaderCell>Código</Table.HeaderCell>
+                <Table.HeaderCell>Nome</Table.HeaderCell>
+                <Table.HeaderCell>Distância (km)</Table.HeaderCell>
+                <Table.HeaderCell>Tipo</Table.HeaderCell>
+                <Table.HeaderCell>Custo Diário</Table.HeaderCell>
+                <Table.HeaderCell>Status</Table.HeaderCell>
+                <Table.HeaderCell>Ações</Table.HeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {filteredRotas.map((rota) => (
-                <tr key={rota.id}>
-                  <Td>{rota.id}</Td>
-                  <Td>{getFilialName(rota.filial_id)}</Td>
-                  <Td>{rota.codigo}</Td>
-                  <Td>{rota.nome}</Td>
-                  <Td>{rota.distancia_km}</Td>
-                  <Td>
-                    <TipoRotaBadge $tipo={rota.tipo_rota}>
+                <Table.Row key={rota.id}>
+                  <Table.Cell>{rota.id}</Table.Cell>
+                  <Table.Cell>{getFilialName(rota.filial_id)}</Table.Cell>
+                  <Table.Cell>{rota.codigo}</Table.Cell>
+                  <Table.Cell>{rota.nome}</Table.Cell>
+                  <Table.Cell>{rota.distancia_km}</Table.Cell>
+                  <Table.Cell>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      rota.tipo_rota === 'semanal' ? 'bg-blue-100 text-blue-800' :
+                      rota.tipo_rota === 'quinzenal' ? 'bg-purple-100 text-purple-800' :
+                      rota.tipo_rota === 'mensal' ? 'bg-green-100 text-green-800' :
+                      rota.tipo_rota === 'transferencia' ? 'bg-orange-100 text-orange-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
                       {formatTipoRota(rota.tipo_rota)}
-                    </TipoRotaBadge>
-                  </Td>
-                  <Td>{formatCurrency(rota.custo_diario)}</Td>
-                  <Td>
-                    <StatusBadge $status={rota.status}>
+                    </span>
+                  </Table.Cell>
+                  <Table.Cell>{formatCurrency(rota.custo_diario)}</Table.Cell>
+                  <Table.Cell>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      rota.status === 'ativo' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
                       {rota.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                    </StatusBadge>
-                  </Td>
-                  <Td>
-                    <ActionButton 
-                      className="view" 
-                      title="Visualizar" 
-                      onClick={() => handleViewRota(rota)}
-                    >
-                      <FaEye />
-                    </ActionButton>
-                    {canEdit('rotas') && (
-                      <ActionButton 
-                        className="edit" 
-                        title="Editar" 
-                        onClick={() => handleEditRota(rota)}
+                    </span>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewRota(rota)}
+                        title="Visualizar"
                       >
-                        <FaEdit />
-                      </ActionButton>
-                    )}
-                    {canDelete('rotas') && (
-                      <ActionButton 
-                        className="delete" 
-                        title="Excluir" 
-                        onClick={() => handleDeleteRota(rota.id)}
-                      >
-                        <FaTrash />
-                      </ActionButton>
-                    )}
-                  </Td>
-                </tr>
+                        <FaEye className="text-green-600" />
+                      </Button>
+                      {canEdit('rotas') && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditRota(rota)}
+                          title="Editar"
+                        >
+                          <FaEdit className="text-blue-600" />
+                        </Button>
+                      )}
+                      {canDelete('rotas') && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteRota(rota.id)}
+                          title="Excluir"
+                        >
+                          <FaTrash className="text-red-600" />
+                        </Button>
+                      )}
+                    </div>
+                  </Table.Cell>
+                </Table.Row>
               ))}
-            </tbody>
+            </Table.Body>
           </Table>
-        </TableContainer>
+        </div>
       )}
 
       {/* Modal de Cadastro/Edição/Visualização */}
       {showModal && (
-        <Modal onClick={handleCloseModal}>
-          <ModalContent onClick={e => e.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>{viewMode ? 'Visualizar Rota' : editingRota ? 'Editar Rota' : 'Adicionar Rota'}</ModalTitle>
-              <HeaderActions>
-                <Button type="button" className="secondary" onClick={handleCloseModal}>
-                  {viewMode ? 'Fechar' : 'Cancelar'}
-                </Button>
-                {!viewMode && (
-                  <Button type="submit" className="primary" form="rota-form">
-                    {editingRota ? 'Atualizar' : 'Cadastrar'}
-                  </Button>
-                )}
-                <CloseButton onClick={handleCloseModal} className="close-button">&times;</CloseButton>
-              </HeaderActions>
-            </ModalHeader>
+        <Modal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          title={viewMode ? 'Visualizar Rota' : editingRota ? 'Editar Rota' : 'Adicionar Rota'}
+          size="lg"
+        >
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input
+                label="Filial *"
+                type="select"
+                {...register('filial_id', { required: 'Filial é obrigatória' })}
+                error={errors.filial_id?.message}
+                disabled={viewMode}
+              >
+                <option value="">Selecione uma filial</option>
+                {filiais.map(filial => (
+                  <option key={filial.id} value={filial.id}>
+                    {filial.filial}
+                  </option>
+                ))}
+              </Input>
+
+              <Input
+                label="Código *"
+                type="text"
+                placeholder="Código da rota"
+                {...register('codigo', { required: 'Código é obrigatório' })}
+                error={errors.codigo?.message}
+                disabled={viewMode}
+              />
+
+              <Input
+                label="Nome *"
+                type="text"
+                placeholder="Nome da rota"
+                {...register('nome', { required: 'Nome é obrigatório' })}
+                error={errors.nome?.message}
+                disabled={viewMode}
+              />
+
+              <Input
+                label="Distância (km)"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                {...register('distancia_km')}
+                disabled={viewMode}
+              />
+
+              <Input
+                label="Tipo de Rota"
+                type="select"
+                {...register('tipo_rota')}
+                disabled={viewMode}
+              >
+                <option value="semanal">Semanal</option>
+                <option value="quinzenal">Quinzenal</option>
+                <option value="mensal">Mensal</option>
+                <option value="transferencia">Transferência</option>
+              </Input>
+
+              <Input
+                label="Custo Diário"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                {...register('custo_diario')}
+                disabled={viewMode}
+              />
+
+              <Input
+                label="Status"
+                type="select"
+                {...register('status')}
+                disabled={viewMode}
+              >
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </Input>
+            </div>
+
+            <Input
+              label="Observações"
+              type="textarea"
+              placeholder="Observações sobre a rota..."
+              {...register('observacoes')}
+              disabled={viewMode}
+              className="col-span-full"
+            />
             
-            <Form onSubmit={handleSubmit(onSubmit)} id="rota-form">
-              <FormFields>
-                <FormGroup>
-                  <Label>Filial *</Label>
-                  <Select {...register('filial_id', { required: 'Filial é obrigatória' })} disabled={viewMode}>
-                    <option value="">Selecione uma filial</option>
-                    {filiais.map(filial => (
-                      <option key={filial.id} value={filial.id}>
-                        {filial.filial}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.filial_id && <span style={{ color: 'red', fontSize: '12px' }}>{errors.filial_id.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Código *</Label>
-                  <Input 
-                    type="text" 
-                    placeholder="Código da rota" 
-                    {...register('codigo', { required: 'Código é obrigatório' })} 
-                    disabled={viewMode} 
-                  />
-                  {errors.codigo && <span style={{ color: 'red', fontSize: '12px' }}>{errors.codigo.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Nome *</Label>
-                  <Input 
-                    type="text" 
-                    placeholder="Nome da rota" 
-                    {...register('nome', { required: 'Nome é obrigatório' })} 
-                    disabled={viewMode} 
-                  />
-                  {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Distância (km)</Label>
-                  <Input 
-                    type="number" 
-                    step="0.01"
-                    placeholder="0.00" 
-                    {...register('distancia_km')} 
-                    disabled={viewMode} 
-                  />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Tipo de Rota</Label>
-                  <Select {...register('tipo_rota')} disabled={viewMode}>
-                    <option value="semanal">Semanal</option>
-                    <option value="quinzenal">Quinzenal</option>
-                    <option value="mensal">Mensal</option>
-                    <option value="transferencia">Transferência</option>
-                  </Select>
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Custo Diário</Label>
-                  <Input 
-                    type="number" 
-                    step="0.01"
-                    placeholder="0.00" 
-                    {...register('custo_diario')} 
-                    disabled={viewMode} 
-                  />
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Status</Label>
-                  <Select {...register('status')} disabled={viewMode}>
-                    <option value="ativo">Ativo</option>
-                    <option value="inativo">Inativo</option>
-                  </Select>
-                </FormGroup>
-
-                <FormGroup style={{ gridColumn: '1 / -1' }}>
-                  <Label>Observações</Label>
-                  <TextArea 
-                    placeholder="Observações sobre a rota..." 
-                    {...register('observacoes')} 
-                    disabled={viewMode} 
-                  />
-                </FormGroup>
-              </FormFields>
-              
-              {/* Seção de Unidades Escolares Vinculadas */}
-              {viewMode && (
-                <UnidadesSection>
-                  <UnidadesHeader 
-                    onClick={() => {
-                      if (!showUnidades && unidadesEscolares.length === 0) {
-                        loadUnidadesEscolares(editingRota.id);
-                      }
-                      setShowUnidades(!showUnidades);
-                    }}
-                  >
-                    <UnidadesTitle>
-                      Unidades Escolares Vinculadas
-                      {totalUnidades > 0 && (
-                        <UnidadesCount>{totalUnidades}</UnidadesCount>
-                      )}
-                    </UnidadesTitle>
-                    {showUnidades ? <FaChevronUp /> : <FaChevronDown />}
-                  </UnidadesHeader>
-                  
-                  <UnidadesContent $expanded={showUnidades}>
+            {/* Seção de Unidades Escolares Vinculadas */}
+            {viewMode && (
+              <div className="border-t pt-6">
+                <div 
+                  className="flex justify-between items-center cursor-pointer p-4 bg-gray-50 rounded-lg mb-4"
+                  onClick={() => {
+                    if (!showUnidades && unidadesEscolares.length === 0) {
+                      loadUnidadesEscolares(editingRota.id);
+                    }
+                    setShowUnidades(!showUnidades);
+                  }}
+                >
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    Unidades Escolares Vinculadas
+                    {totalUnidades > 0 && (
+                      <span className="bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium">
+                        {totalUnidades}
+                      </span>
+                    )}
+                  </h3>
+                  {showUnidades ? <FaChevronUp /> : <FaChevronDown />}
+                </div>
+                
+                {showUnidades && (
+                  <div className="max-h-96 overflow-y-auto">
                     {loadingUnidades ? (
-                      <div style={{ textAlign: 'center', padding: '20px' }}>
-                        Carregando unidades escolares...
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+                        <p className="text-gray-600">Carregando unidades escolares...</p>
                       </div>
                     ) : unidadesEscolares.length === 0 ? (
-                      <UnidadesEmpty>
+                      <div className="text-center py-8 text-gray-500 italic">
                         Nenhuma unidade escolar vinculada a esta rota
-                      </UnidadesEmpty>
+                      </div>
                     ) : (
-                      <UnidadesTableContainer>
-                        <UnidadesTable>
-                          <thead>
-                            <tr>
-                              <UnidadesTh>Ordem</UnidadesTh>
-                              <UnidadesTh>Código</UnidadesTh>
-                              <UnidadesTh>Nome da Escola</UnidadesTh>
-                              <UnidadesTh>Cidade</UnidadesTh>
-                              <UnidadesTh>Estado</UnidadesTh>
-                              <UnidadesTh>Centro Distribuição</UnidadesTh>
-                              <UnidadesTh>Status</UnidadesTh>
-                            </tr>
-                          </thead>
-                          <tbody>
+                      <div className="bg-white rounded-lg border overflow-hidden">
+                        <Table>
+                          <Table.Header>
+                            <Table.Row>
+                              <Table.HeaderCell>Ordem</Table.HeaderCell>
+                              <Table.HeaderCell>Código</Table.HeaderCell>
+                              <Table.HeaderCell>Nome da Escola</Table.HeaderCell>
+                              <Table.HeaderCell>Cidade</Table.HeaderCell>
+                              <Table.HeaderCell>Estado</Table.HeaderCell>
+                              <Table.HeaderCell>Centro Distribuição</Table.HeaderCell>
+                              <Table.HeaderCell>Status</Table.HeaderCell>
+                            </Table.Row>
+                          </Table.Header>
+                          <Table.Body>
                             {unidadesEscolares.map((unidade) => (
-                              <tr key={unidade.id}>
-                                <UnidadesTd>{unidade.ordem_entrega || '-'}</UnidadesTd>
-                                <UnidadesTd>{unidade.codigo_teknisa}</UnidadesTd>
-                                <UnidadesTd>{unidade.nome_escola}</UnidadesTd>
-                                <UnidadesTd>{unidade.cidade}</UnidadesTd>
-                                <UnidadesTd>{unidade.estado}</UnidadesTd>
-                                <UnidadesTd>{unidade.centro_distribuicao || '-'}</UnidadesTd>
-                                <UnidadesTd>
-                                  <StatusBadge $status={unidade.status}>
+                              <Table.Row key={unidade.id}>
+                                <Table.Cell>{unidade.ordem_entrega || '-'}</Table.Cell>
+                                <Table.Cell>{unidade.codigo_teknisa}</Table.Cell>
+                                <Table.Cell>{unidade.nome_escola}</Table.Cell>
+                                <Table.Cell>{unidade.cidade}</Table.Cell>
+                                <Table.Cell>{unidade.estado}</Table.Cell>
+                                <Table.Cell>{unidade.centro_distribuicao || '-'}</Table.Cell>
+                                <Table.Cell>
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    unidade.status === 'ativo' 
+                                      ? 'bg-green-100 text-green-800' 
+                                      : 'bg-red-100 text-red-800'
+                                  }`}>
                                     {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                                  </StatusBadge>
-                                </UnidadesTd>
-                              </tr>
+                                  </span>
+                                </Table.Cell>
+                              </Table.Row>
                             ))}
-                          </tbody>
-                        </UnidadesTable>
-                      </UnidadesTableContainer>
+                          </Table.Body>
+                        </Table>
+                      </div>
                     )}
                     {unidadesEscolares.length > 0 && (
-                      <div style={{ 
-                        marginTop: '12px', 
-                        padding: '8px 12px', 
-                        background: '#f8f9fa', 
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        color: 'var(--gray)',
-                        textAlign: 'center'
-                      }}>
+                      <div className="mt-3 p-3 bg-gray-50 rounded-lg text-center text-sm text-gray-600">
                         Exibindo {unidadesEscolares.length} de {totalUnidades} unidades escolares
                       </div>
                     )}
-                  </UnidadesContent>
-                </UnidadesSection>
-              )}
-            </Form>
-          </ModalContent>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {!viewMode && (
+              <div className="flex justify-end gap-3 pt-6 border-t">
+                <Button type="button" variant="secondary" onClick={handleCloseModal}>
+                  Cancelar
+                </Button>
+                <Button type="submit">
+                  {editingRota ? 'Atualizar' : 'Cadastrar'}
+                </Button>
+              </div>
+            )}
+          </form>
         </Modal>
       )}
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
-            <ModalHeader>
-              <ModalTitle>Relatório de Auditoria - Rotas</ModalTitle>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={handleExportXLSX}
-                  title="Exportar para Excel"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFileExcel />
-                  Excel
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  title="Exportar para PDF"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFilePdf />
-                  PDF
-                </button>
-                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
-              </div>
-            </ModalHeader>
-
+        <Modal
+          isOpen={showAuditModal}
+          onClose={handleCloseAuditModal}
+          title="Relatório de Auditoria - Rotas"
+          size="xl"
+        >
+          <div className="space-y-6">
             {/* Filtros de Auditoria */}
-            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataInicio}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataFim}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Ação
-                  </label>
-                  <select
-                    value={auditFilters.acao}
-                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todas as ações</option>
-                    <option value="create">Criar</option>
-                    <option value="update">Editar</option>
-                    <option value="delete">Excluir</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Período
-                  </label>
-                  <select
-                    value={auditFilters.periodo}
-                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Período personalizado</option>
-                    <option value="7dias">Últimos 7 dias</option>
-                    <option value="30dias">Últimos 30 dias</option>
-                    <option value="90dias">Últimos 90 dias</option>
-                    <option value="todos">Todos os registros</option>
-                  </select>
-                </div>
-                <div>
-                  <button
-                    onClick={handleApplyAuditFilters}
-                    style={{
-                      marginTop: '20px',
-                      padding: '8px 16px',
-                      background: 'var(--primary-green)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Filtros</h3>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <Input
+                  label="Data Início"
+                  type="date"
+                  value={auditFilters.dataInicio}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                />
+                <Input
+                  label="Data Fim"
+                  type="date"
+                  value={auditFilters.dataFim}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                />
+                <Input
+                  label="Ação"
+                  type="select"
+                  value={auditFilters.acao}
+                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                >
+                  <option value="">Todas as ações</option>
+                  <option value="create">Criar</option>
+                  <option value="update">Editar</option>
+                  <option value="delete">Excluir</option>
+                </Input>
+                <Input
+                  label="Período"
+                  type="select"
+                  value={auditFilters.periodo}
+                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                >
+                  <option value="">Período personalizado</option>
+                  <option value="7dias">Últimos 7 dias</option>
+                  <option value="30dias">Últimos 30 dias</option>
+                  <option value="90dias">Últimos 90 dias</option>
+                  <option value="todos">Todos os registros</option>
+                </Input>
+                <div className="flex items-end">
+                  <Button onClick={handleApplyAuditFilters} className="w-full">
                     Aplicar Filtros
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
+
+            {/* Botões de Exportação */}
+            <div className="flex gap-3">
+              <Button onClick={handleExportXLSX} variant="secondary">
+                <FaFileExcel className="mr-2" />
+                Exportar Excel
+              </Button>
+              <Button onClick={handleExportPDF} variant="secondary">
+                <FaFilePdf className="mr-2" />
+                Exportar PDF
+              </Button>
+            </div>
             
             {/* Lista de Logs */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            <div className="max-h-96 overflow-y-auto">
               {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+                  <p className="text-gray-600">Carregando logs...</p>
+                </div>
               ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
+                <div className="text-center py-8 text-gray-500">
                   Nenhum log encontrado com os filtros aplicados
                 </div>
               ) : (
-                <div>
-                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
+                <div className="space-y-4">
+                  <div className="text-sm text-gray-600">
                     {auditLogs.length} log(s) encontrado(s)
                   </div>
                   {auditLogs.map((log, index) => (
                     <div
                       key={index}
-                      style={{
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        marginBottom: '12px',
-                        background: 'white'
-                      }}
+                      className="border border-gray-200 rounded-lg p-4 bg-white"
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            background: log.acao === 'create' ? '#e8f5e8' : 
-                                       log.acao === 'update' ? '#fff3cd' : 
-                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
-                            color: log.acao === 'create' ? '#2e7d32' : 
-                                   log.acao === 'update' ? '#856404' : 
-                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
-                          }}>
+                      <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center gap-3">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            log.acao === 'create' ? 'bg-green-100 text-green-800' : 
+                            log.acao === 'update' ? 'bg-yellow-100 text-yellow-800' : 
+                            log.acao === 'delete' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
                             {getActionLabel(log.acao)}
                           </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                          <span className="text-sm text-gray-600">
                             por {log.usuario_nome || 'Usuário desconhecido'}
                           </span>
                         </div>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                        <span className="text-sm text-gray-600">
                           {formatDate(log.timestamp)}
                         </span>
                       </div>
                       
                       {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
+                        <div className="text-sm text-gray-800">
                           {log.detalhes.changes && (
-                            <div style={{ marginBottom: '8px' }}>
+                            <div className="mb-3">
                               <strong>Mudanças Realizadas:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
+                              <div className="mt-2 space-y-2">
                                 {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} style={{ 
-                                    marginBottom: '6px', 
-                                    padding: '8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
+                                  <div key={field} className="p-3 bg-gray-50 rounded-lg border">
+                                    <div className="font-semibold text-gray-800 mb-2">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                      <span style={{ color: '#721c24' }}>
+                                    <div className="flex items-center gap-3 text-xs">
+                                      <span className="text-red-600">
                                         <strong>Antes:</strong> {formatFieldValue(field, change.from)}
                                       </span>
-                                      <span style={{ color: '#6c757d' }}>→</span>
-                                      <span style={{ color: '#2e7d32' }}>
+                                      <span className="text-gray-500">→</span>
+                                      <span className="text-green-600">
                                         <strong>Depois:</strong> {formatFieldValue(field, change.to)}
                                       </span>
                                     </div>
@@ -1366,25 +917,13 @@ const Rotas = () => {
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
                               <strong>Dados da Rota:</strong>
-                              <div style={{ 
-                                marginLeft: '12px', 
-                                marginTop: '8px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '8px'
-                              }}>
+                              <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
                                 {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} style={{ 
-                                    padding: '6px 8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef',
-                                    fontSize: '11px'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
+                                  <div key={field} className="p-2 bg-gray-50 rounded border text-xs">
+                                    <div className="font-semibold text-gray-800 mb-1">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ color: '#2e7d32' }}>
+                                    <div className="text-green-600">
                                       {formatFieldValue(field, value)}
                                     </div>
                                   </div>
@@ -1393,15 +932,9 @@ const Rotas = () => {
                             </div>
                           )}
                           {log.detalhes.resourceId && (
-                            <div style={{ 
-                              marginTop: '8px', 
-                              padding: '6px 8px', 
-                              background: '#e3f2fd', 
-                              borderRadius: '4px',
-                              fontSize: '11px'
-                            }}>
+                            <div className="mt-3 p-2 bg-blue-50 rounded border text-xs">
                               <strong>ID da Rota:</strong> 
-                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
+                              <span className="text-blue-600 ml-1">
                                 #{log.detalhes.resourceId}
                               </span>
                             </div>
@@ -1413,10 +946,10 @@ const Rotas = () => {
                 </div>
               )}
             </div>
-          </ModalContent>
+          </div>
         </Modal>
       )}
-    </Container>
+    </div>
   );
 };
 
