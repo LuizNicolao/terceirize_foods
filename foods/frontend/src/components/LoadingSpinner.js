@@ -1,42 +1,23 @@
 import React from 'react';
-import styled from 'styled-components';
-
-const SpinnerContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: ${props => props.$inline ? 'auto' : '100vh'};
-  background: ${props => props.$inline ? 'transparent' : 'linear-gradient(135deg, var(--primary-green) 0%, var(--dark-green) 100%)'};
-  padding: ${props => props.$inline ? '20px' : '0'};
-`;
-
-const Spinner = styled.div`
-  width: ${props => props.$inline ? '30px' : '50px'};
-  height: ${props => props.$inline ? '30px' : '50px'};
-  border: ${props => props.$inline ? '3px' : '5px'} solid ${props => props.$inline ? 'rgba(0, 114, 62, 0.3)' : 'rgba(255, 255, 255, 0.3)'};
-  border-radius: 50%;
-  border-top-color: ${props => props.$inline ? 'var(--primary-green)' : 'var(--white)'};
-  animation: spin 1s ease-in-out infinite;
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const SpinnerText = styled.div`
-  margin-left: 12px;
-  color: ${props => props.$inline ? 'var(--gray)' : 'var(--white)'};
-  font-size: 14px;
-`;
 
 const LoadingSpinner = ({ inline = false, text = '' }) => {
+  const containerClasses = inline 
+    ? 'flex justify-center items-center p-5'
+    : 'flex justify-center items-center h-screen bg-gradient-to-br from-green-500 to-green-700';
+
+  const spinnerClasses = inline
+    ? 'w-8 h-8 border-3 border-green-200 border-t-green-500 rounded-full animate-spin'
+    : 'w-12 h-12 border-4 border-white/30 border-t-white rounded-full animate-spin';
+
+  const textClasses = inline
+    ? 'ml-3 text-gray-600 text-sm'
+    : 'ml-3 text-white text-sm';
+
   return (
-    <SpinnerContainer $inline={inline}>
-      <Spinner $inline={inline} />
-      {text && <SpinnerText $inline={inline}>{text}</SpinnerText>}
-    </SpinnerContainer>
+    <div className={containerClasses}>
+      <div className={spinnerClasses} />
+      {text && <div className={textClasses}>{text}</div>}
+    </div>
   );
 };
 
