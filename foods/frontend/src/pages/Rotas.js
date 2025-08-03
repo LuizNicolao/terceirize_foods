@@ -77,10 +77,34 @@ const Rotas = () => {
     try {
       const result = await RotasService.buscarEstatisticas();
       if (result.success) {
-        setEstatisticas(result.data || {});
+        // Garantir que os valores sejam números
+        const stats = result.data || {};
+        setEstatisticas({
+          total_rotas: parseInt(stats.total_rotas) || 0,
+          rotas_ativas: parseInt(stats.rotas_ativas) || 0,
+          rotas_inativas: parseInt(stats.rotas_inativas) || 0,
+          rotas_semanais: parseInt(stats.rotas_semanais) || 0,
+          rotas_quinzenais: parseInt(stats.rotas_quinzenais) || 0,
+          rotas_mensais: parseInt(stats.rotas_mensais) || 0,
+          rotas_transferencia: parseInt(stats.rotas_transferencia) || 0,
+          distancia_total: parseFloat(stats.distancia_total) || 0,
+          custo_total_diario: parseFloat(stats.custo_total_diario) || 0
+        });
       }
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
+      // Definir valores padrão em caso de erro
+      setEstatisticas({
+        total_rotas: 0,
+        rotas_ativas: 0,
+        rotas_inativas: 0,
+        rotas_semanais: 0,
+        rotas_quinzenais: 0,
+        rotas_mensais: 0,
+        rotas_transferencia: 0,
+        distancia_total: 0,
+        custo_total_diario: 0
+      });
     }
   };
 
@@ -455,25 +479,25 @@ const Rotas = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <StatCard
           title="Total de Rotas"
-          value={estatisticas.total_rotas || 0}
+          value={estatisticas.total_rotas}
           icon={FaRoute}
           color="blue"
         />
         <StatCard
           title="Rotas Ativas"
-          value={estatisticas.rotas_ativas || 0}
+          value={estatisticas.rotas_ativas}
           icon={FaMapMarkedAlt}
           color="green"
         />
         <StatCard
           title="Distância Total"
-          value={`${(estatisticas.distancia_total || 0).toFixed(1)} km`}
+          value={`${estatisticas.distancia_total.toFixed(1)} km`}
           icon={FaTruck}
           color="purple"
         />
         <StatCard
           title="Custo Total Diário"
-          value={formatCurrency(estatisticas.custo_total_diario || 0)}
+          value={formatCurrency(estatisticas.custo_total_diario)}
           icon={FaMoneyBillWave}
           color="orange"
         />
