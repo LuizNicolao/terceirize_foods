@@ -264,7 +264,7 @@ class MarcasController {
   });
 
   /**
-   * Excluir marca
+   * Desativar marca (soft delete)
    */
   static excluirMarca = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -279,14 +279,18 @@ class MarcasController {
       return notFoundResponse(res, 'Marca não encontrada');
     }
 
-    // Verificar se marca está sendo usada em produtos
-    const hasProducts = await executeQuery(
-      'SELECT COUNT(*) as count FROM produtos WHERE marca = ?',
+    // Verificar se marca está sendo usada em produtos ATIVOS
+    const produtos = await executeQuery(
+      'SELECT id, nome, status FROM produtos WHERE marca = ? AND status = 1',
       [existingMarca[0].marca]
     );
 
-    if (hasProducts[0].count > 0) {
-      return errorResponse(res, 'Marca não pode ser excluída pois está sendo utilizada em produtos', STATUS_CODES.BAD_REQUEST);
+    if (produtos.length > 0) {
+      let mensagem = `Marca não pode ser desativada pois possui ${produtos.length} produto(s) ativo(s) vinculado(s):`;
+      mensagem += `\n- ${produtos.map(p => p.nome).join(', ')}`;
+      mensagem += '\n\nPara desativar a marca, primeiro desative todos os produtos vinculados.';
+      
+      return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
 
     // Excluir marca (soft delete - alterar status para 0)
@@ -295,7 +299,7 @@ class MarcasController {
       [id]
     );
 
-    return successResponse(res, null, 'Marca excluída com sucesso', STATUS_CODES.NO_CONTENT);
+    return successResponse(res, null, 'Marca desativada com sucesso', STATUS_CODES.NO_CONTENT);
   });
 
   /**

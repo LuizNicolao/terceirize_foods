@@ -6,6 +6,7 @@ import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import CadastroFilterBar from '../components/CadastroFilterBar';
+import ErrorModal from '../components/ErrorModal';
 
 const Container = styled.div`
   padding: 24px;
@@ -294,6 +295,8 @@ const Marcas = () => {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [auditFilters, setAuditFilters] = useState({
     dataInicio: '',
     dataFim: '',
@@ -317,11 +320,12 @@ const Marcas = () => {
   const loadMarcas = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/marcas');
-      setMarcas(response.data);
+      const response = await api.get('/marcas?limit=1000');
+      setMarcas(response.data.data.items || response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar marcas:', error);
       toast.error('Erro ao carregar marcas');
+      setMarcas([]);
     } finally {
       setLoading(false);
     }
@@ -714,16 +718,24 @@ const Marcas = () => {
     }
   };
 
-  // Excluir marca
+  // Desativar marca
   const handleDeleteMarca = async (marcaId) => {
-    if (window.confirm('Tem certeza que deseja excluir esta marca?')) {
+    if (window.confirm('Tem certeza que deseja desativar esta marca?')) {
       try {
         await api.delete(`/marcas/${marcaId}`);
-        toast.success('Marca excluída com sucesso!');
+        toast.success('Marca desativada com sucesso!');
         loadMarcas();
       } catch (error) {
-        console.error('Erro ao excluir marca:', error);
-        toast.error(error.response?.data?.error || 'Erro ao excluir marca');
+        console.error('Erro ao desativar marca:', error);
+        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao desativar marca';
+        
+        // Se a mensagem contém quebras de linha, mostrar no modal customizado
+        if (errorMsg.includes('\n')) {
+          setErrorMessage(errorMsg);
+          setShowErrorModal(true);
+        } else {
+          toast.error(errorMsg);
+        }
       }
     }
   };
@@ -827,7 +839,7 @@ const Marcas = () => {
                     {canDelete('marcas') && (
                       <ActionButton
                         className="delete"
-                        title="Excluir"
+                        title="Desativar"
                         onClick={() => handleDeleteMarca(marca.id)}
                       >
                         <FaTrash />
@@ -1184,6 +1196,13 @@ const Marcas = () => {
           </ModalContent>
         </Modal>
       )}
+
+      {/* Modal de Erro Customizado */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
     </Container>
   );
 };
