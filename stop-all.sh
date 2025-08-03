@@ -10,21 +10,21 @@ echo "=============================================="
 echo ""
 echo "📊 1. Parando Sistema de Cotações..."
 cd cotacao_v2
-docker-compose down
+docker compose down
 echo "✅ Sistema de Cotações parado!"
 
 # 2. Parar Sistema Foods
 echo ""
 echo "🍽️ 2. Parando Sistema Foods..."
 cd ../foods
-docker-compose down
+docker compose down
 echo "✅ Sistema Foods parado!"
 
 # 3. Parar Banco de Dados (ÚLTIMO)
 echo ""
 echo "🗄️ 3. Parando Banco de Dados Centralizado..."
 cd ../database
-docker-compose down
+docker compose down
 echo "✅ Banco de dados parado!"
 
 # 4. Verificar Status Final

@@ -37,7 +37,7 @@ check_container() {
 echo ""
 echo "🗄️ 1. Iniciando Banco de Dados Centralizado..."
 cd database
-docker-compose up -d
+docker compose up -d --build
 
 if [ $? -eq 0 ]; then
     echo "✅ Banco de dados iniciado com sucesso!"
@@ -57,7 +57,7 @@ fi
 echo ""
 echo "🍽️ 2. Iniciando Sistema Foods..."
 cd ../foods
-docker-compose up -d
+docker compose up -d --build
 
 if [ $? -eq 0 ]; then
     echo "✅ Sistema Foods iniciado com sucesso!"
@@ -76,7 +76,7 @@ fi
 echo ""
 echo "📊 3. Iniciando Sistema de Cotações..."
 cd ../cotacao_v2
-docker-compose up -d
+docker compose up -d --build
 
 if [ $? -eq 0 ]; then
     echo "✅ Sistema de Cotações iniciado com sucesso!"
