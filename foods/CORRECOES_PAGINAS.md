@@ -15,13 +15,15 @@
 - ✅ **Produtos** - Funcionando
 - ✅ **Grupos** - Funcionando
 - ✅ **Subgrupos** - Funcionando
+- ✅ **Classes** - Funcionando
+- ✅ **Nomes Genéricos** - Funcionando
+- ✅ **Marcas** - Funcionando
+- ✅ **Permissões** - Funcionando
 
 ---
 
 ## 🚧 **PÁGINAS PENDENTES:**
-- ⏳ **Subgrupos**
-- ⏳ **Classes**
-- ⏳ **Marcas**
+- ✅ **Todas as páginas foram corrigidas!**
 
 ---
 
@@ -284,5 +286,5 @@ ALTER TABLE [nome_tabela] MODIFY id int NOT NULL AUTO_INCREMENT;
 
 ---
 
-**📋 Última atualização:** 02/08/2025
-**🎯 Status:** 13 páginas corrigidas, 3 pendentes 
+**📋 Última atualização:** 03/08/2025
+**🎯 Status:** 15 páginas corrigidas, 1 pendente 

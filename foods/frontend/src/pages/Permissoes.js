@@ -848,7 +848,8 @@ const Permissoes = () => {
       params.append('recurso', 'permissoes');
       
       const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
+      const auditData = response.data.data || response.data;
+      setAuditLogs(auditData.logs || auditData || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -1096,9 +1097,9 @@ const Permissoes = () => {
   useEffect(() => {
     // Filtrar usuários baseado no termo de busca
     if (searchTerm.trim() === '') {
-      setFilteredUsuarios(usuarios);
+      setFilteredUsuarios(Array.isArray(usuarios) ? usuarios : []);
     } else {
-      const filtered = usuarios.filter(user => 
+      const filtered = (Array.isArray(usuarios) ? usuarios : []).filter(user => 
         user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         getAccessTypeLabel(user.tipo_de_acesso).toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1112,7 +1113,7 @@ const Permissoes = () => {
   useEffect(() => {
     if (selectedUser && selectedUserId) {
       // Verificar se os dados do usuário mudaram (tipo ou nível de acesso)
-      const currentUser = usuarios.find(u => u.id === selectedUser.id);
+      const currentUser = (Array.isArray(usuarios) ? usuarios : []).find(u => u.id === selectedUser.id);
       
       if (currentUser && (
         currentUser.tipo_de_acesso !== selectedUser.tipo_de_acesso ||
@@ -1131,12 +1132,15 @@ const Permissoes = () => {
   const loadUsuarios = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/usuarios');
-      setUsuarios(response.data);
-      setFilteredUsuarios(response.data);
+      const response = await api.get('/usuarios?limit=1000');
+      const usuariosData = response.data.data.items || response.data.data || [];
+      setUsuarios(usuariosData);
+      setFilteredUsuarios(usuariosData);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       toast.error('Erro ao carregar usuários');
+      setUsuarios([]);
+      setFilteredUsuarios([]);
     } finally {
       setLoading(false);
     }
@@ -1145,23 +1149,28 @@ const Permissoes = () => {
   const loadUserPermissions = async (userId) => {
     try {
       const response = await api.get(`/permissoes/usuario/${userId}`);
-      setUserPermissions(response.data);
+      const permissionsData = response.data.data || response.data;
+      setUserPermissions(permissionsData);
       setEditingPermissions({});
       
       // Inicializar permissões de edição
       const initialPermissions = {};
-      response.data.permissoes.forEach(perm => {
-        initialPermissions[perm.tela] = {
-          pode_visualizar: perm.pode_visualizar === 1,
-          pode_criar: perm.pode_criar === 1,
-          pode_editar: perm.pode_editar === 1,
-          pode_excluir: perm.pode_excluir === 1
-        };
-      });
+      if (permissionsData.permissoes && Array.isArray(permissionsData.permissoes)) {
+        permissionsData.permissoes.forEach(perm => {
+          initialPermissions[perm.tela] = {
+            pode_visualizar: perm.pode_visualizar === 1,
+            pode_criar: perm.pode_criar === 1,
+            pode_editar: perm.pode_editar === 1,
+            pode_excluir: perm.pode_excluir === 1
+          };
+        });
+      }
       setEditingPermissions(initialPermissions);
     } catch (error) {
       console.error('Erro ao carregar permissões:', error);
       toast.error('Erro ao carregar permissões do usuário');
+      setUserPermissions({});
+      setEditingPermissions({});
     }
   };
 
@@ -1172,7 +1181,7 @@ const Permissoes = () => {
   };
 
   const handleUserSelect = (userId) => {
-    const user = usuarios.find(u => u.id === parseInt(userId));
+    const user = (Array.isArray(usuarios) ? usuarios : []).find(u => u.id === parseInt(userId));
     setSelectedUserId(userId);
     setSelectedUser(user);
     setSearchTerm(user ? `${user.nome} - ${getAccessTypeLabel(user.tipo_de_acesso)} (${getAccessLevelLabel(user.nivel_de_acesso)})` : '');
@@ -1246,7 +1255,8 @@ const Permissoes = () => {
       loadUserPermissions(selectedUser.id);
     } catch (error) {
       console.error('Erro ao salvar permissões:', error);
-      toast.error(error.response?.data?.error || 'Erro ao salvar permissões');
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao salvar permissões';
+      toast.error(errorMsg);
     } finally {
       setSaving(false);
     }
@@ -1259,7 +1269,8 @@ const Permissoes = () => {
       // Buscar permissões padrão baseadas no tipo e nível do usuário
       const response = await api.get(`/permissoes/padrao/${selectedUser.tipo_de_acesso}/${selectedUser.nivel_de_acesso}`);
       
-      const permissoesArray = response.data.permissoes.map(perm => ({
+      const permissoesData = response.data.data || response.data;
+      const permissoesArray = (permissoesData.permissoes || []).map(perm => ({
         tela: perm.tela,
         pode_visualizar: perm.pode_visualizar === 1,
         pode_criar: perm.pode_criar === 1,
@@ -1287,7 +1298,8 @@ const Permissoes = () => {
       
       const response = await api.post('/permissoes/sincronizar');
       
-      toast.success(`Sincronização concluída! ${response.data.usuarios_atualizados} usuários atualizados, ${response.data.telas_adicionadas} telas adicionadas.`);
+      const syncData = response.data.data || response.data;
+      toast.success(`Sincronização concluída! ${syncData.usuarios_atualizados} usuários atualizados, ${syncData.telas_adicionadas} telas adicionadas.`);
       
       // Recarregar permissões do usuário atual se houver
       if (selectedUserId) {
