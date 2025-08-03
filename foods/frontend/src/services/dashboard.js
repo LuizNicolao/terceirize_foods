@@ -2,7 +2,7 @@ import api from './api';
 
 class DashboardService {
   /**
-   * Carregar dados do dashboard
+   * Carregar dados do dashboard (estatísticas principais)
    */
   static async carregarDados() {
     try {
@@ -28,7 +28,7 @@ class DashboardService {
       const response = await api.get('/dashboard/stats');
       return {
         success: true,
-        data: response.data.data || response.data
+        data: response.data.data?.stats || {}
       };
     } catch (error) {
       return {
@@ -44,16 +44,35 @@ class DashboardService {
    */
   static async carregarAtividadesRecentes(limit = 10) {
     try {
-      // Por enquanto, retornar dados vazios até implementar a rota
+      const response = await api.get('/dashboard/stats');
       return {
         success: true,
-        data: []
+        data: response.data.data?.atividades || []
       };
     } catch (error) {
       return {
         success: false,
         error: error.response?.data?.message || 'Erro ao carregar atividades',
         data: []
+      };
+    }
+  }
+
+  /**
+   * Carregar dados recentes (produtos, fornecedores, etc.)
+   */
+  static async carregarDadosRecentes() {
+    try {
+      const response = await api.get('/dashboard/stats');
+      return {
+        success: true,
+        data: response.data.data?.recentes || {}
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar dados recentes',
+        data: {}
       };
     }
   }

@@ -27,6 +27,7 @@ const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({});
   const [atividades, setAtividades] = useState([]);
   const [alertas, setAlertas] = useState([]);
+  const [dadosRecentes, setDadosRecentes] = useState({});
 
   // Carregar dados iniciais
   useEffect(() => {
@@ -38,8 +39,8 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
-      // Carregar dados principais
-      const result = await DashboardService.carregarDados();
+      // Carregar dados principais (estatísticas)
+      const result = await DashboardService.carregarEstatisticas();
       if (result.success) {
         setDashboardData(result.data);
       } else {
@@ -50,6 +51,12 @@ const Dashboard = () => {
       const atividadesResult = await DashboardService.carregarAtividadesRecentes(5);
       if (atividadesResult.success) {
         setAtividades(atividadesResult.data);
+      }
+
+      // Carregar dados recentes
+      const recentesResult = await DashboardService.carregarDadosRecentes();
+      if (recentesResult.success) {
+        setDadosRecentes(recentesResult.data);
       }
 
       // Carregar alertas
@@ -91,26 +98,34 @@ const Dashboard = () => {
 
   const getActivityIcon = (tipo) => {
     const icons = {
-      'CREATE': FaPlus,
-      'UPDATE': FaEdit,
-      'DELETE': FaTrash,
-      'VIEW': FaEye,
-      'USER': FaUser,
-      'BUILDING': FaBuilding,
-      'ROUTE': FaRoute
+      'produto': FaBox,
+      'fornecedor': FaTruck,
+      'cliente': FaUser,
+      'grupo': FaLayerGroup,
+      'usuario': FaUsers,
+      'filial': FaBuilding,
+      'rota': FaRoute,
+      'unidade_escolar': FaRuler,
+      'motorista': FaUser,
+      'ajudante': FaUser,
+      'veiculo': FaTruck
     };
     return icons[tipo] || FaChartLine;
   };
 
   const getActivityColor = (tipo) => {
     const colors = {
-      'CREATE': 'bg-green-500',
-      'UPDATE': 'bg-blue-500',
-      'DELETE': 'bg-red-500',
-      'VIEW': 'bg-gray-500',
-      'USER': 'bg-purple-500',
-      'BUILDING': 'bg-orange-500',
-      'ROUTE': 'bg-indigo-500'
+      'produto': 'bg-purple-500',
+      'fornecedor': 'bg-green-500',
+      'cliente': 'bg-blue-500',
+      'grupo': 'bg-orange-500',
+      'usuario': 'bg-indigo-500',
+      'filial': 'bg-teal-500',
+      'rota': 'bg-pink-500',
+      'unidade_escolar': 'bg-red-500',
+      'motorista': 'bg-yellow-500',
+      'ajudante': 'bg-gray-500',
+      'veiculo': 'bg-cyan-500'
     };
     return colors[tipo] || 'bg-gray-500';
   };
@@ -124,16 +139,30 @@ const Dashboard = () => {
     return colors[nivel] || 'bg-gray-100 text-gray-800';
   };
 
-  // Dados de exemplo (quando API não retorna dados)
+  // Dados de estatísticas do backend
   const statsData = {
-    totalUsuarios: dashboardData.total_usuarios || 0,
-    totalVeiculos: dashboardData.total_veiculos || 0,
-    totalProdutos: dashboardData.total_produtos || 0,
-    totalGrupos: dashboardData.total_grupos || 0,
-    totalFiliais: dashboardData.total_filiais || 0,
-    totalRotas: dashboardData.total_rotas || 0,
-    totalMotoristas: dashboardData.total_motoristas || 0,
-    totalUnidadesEscolares: dashboardData.total_unidades_escolares || 0
+    totalUsuarios: dashboardData.usuarios || 0,
+    totalVeiculos: dashboardData.veiculos || 0,
+    totalProdutos: dashboardData.produtos || 0,
+    totalGrupos: dashboardData.grupos || 0,
+    totalFiliais: dashboardData.filiais || 0,
+    totalRotas: dashboardData.rotas || 0,
+    totalMotoristas: dashboardData.motoristas || 0,
+    totalUnidadesEscolares: dashboardData.unidades_escolares || 0,
+    totalFornecedores: dashboardData.fornecedores || 0,
+    totalClientes: dashboardData.clientes || 0,
+    totalSubgrupos: dashboardData.subgrupos || 0,
+    totalClasses: dashboardData.classes || 0,
+    totalMarcas: dashboardData.marcas || 0,
+    totalUnidades: dashboardData.unidades || 0,
+    totalAjudantes: dashboardData.ajudantes || 0,
+    totalNomeGenerico: dashboardData.nome_generico_produto || 0,
+    valorEstoque: dashboardData.valorEstoque || 0,
+    produtosEstoqueBaixo: dashboardData.produtosEstoqueBaixo || 0,
+    produtosSemEstoque: dashboardData.produtosSemEstoque || 0,
+    produtosVencendo: dashboardData.produtosVencendo || 0,
+    veiculosDocumentacaoVencendo: dashboardData.veiculosDocumentacaoVencendo || 0,
+    motoristasCnhVencendo: dashboardData.motoristasCnhVencendo || 0
   };
 
   // Renderização
@@ -153,7 +182,7 @@ const Dashboard = () => {
         </p>
       </div>
 
-      {/* Cards de Estatísticas */}
+      {/* Cards de Estatísticas - Primeira Linha */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Usuários"
@@ -161,16 +190,22 @@ const Dashboard = () => {
           subtitle="Total de usuários ativos"
           icon={FaUsers}
           color="bg-blue-500"
-          trend={5}
         />
         
         <StatCard
-          title="Veículos"
-          value={statsData.totalVeiculos}
-          subtitle="Veículos disponíveis"
+          title="Fornecedores"
+          value={statsData.totalFornecedores}
+          subtitle="Fornecedores ativos"
           icon={FaTruck}
           color="bg-green-500"
-          trend={12}
+        />
+        
+        <StatCard
+          title="Clientes"
+          value={statsData.totalClientes}
+          subtitle="Clientes ativos"
+          icon={FaUser}
+          color="bg-purple-500"
         />
         
         <StatCard
@@ -178,28 +213,53 @@ const Dashboard = () => {
           value={statsData.totalProdutos}
           subtitle="Produtos cadastrados"
           icon={FaBox}
-          color="bg-purple-500"
-          trend={-2}
+          color="bg-orange-500"
         />
-        
+      </div>
+
+      {/* Cards de Estatísticas - Segunda Linha */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Grupos"
           value={statsData.totalGrupos}
           subtitle="Grupos de produtos"
           icon={FaLayerGroup}
-          color="bg-orange-500"
-          trend={8}
+          color="bg-indigo-500"
+        />
+        
+        <StatCard
+          title="Subgrupos"
+          value={statsData.totalSubgrupos}
+          subtitle="Subgrupos ativos"
+          icon={FaLayerGroup}
+          color="bg-teal-500"
+        />
+        
+        <StatCard
+          title="Classes"
+          value={statsData.totalClasses}
+          subtitle="Classes ativas"
+          icon={FaLayerGroup}
+          color="bg-pink-500"
+        />
+        
+        <StatCard
+          title="Marcas"
+          value={statsData.totalMarcas}
+          subtitle="Marcas cadastradas"
+          icon={FaBox}
+          color="bg-red-500"
         />
       </div>
 
-      {/* Segunda linha de estatísticas */}
+      {/* Cards de Estatísticas - Terceira Linha */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Filiais"
           value={statsData.totalFiliais}
           subtitle="Filiais ativas"
           icon={FaBuilding}
-          color="bg-indigo-500"
+          color="bg-cyan-500"
         />
         
         <StatCard
@@ -207,7 +267,7 @@ const Dashboard = () => {
           value={statsData.totalRotas}
           subtitle="Rotas configuradas"
           icon={FaRoute}
-          color="bg-teal-500"
+          color="bg-yellow-500"
         />
         
         <StatCard
@@ -215,7 +275,26 @@ const Dashboard = () => {
           value={statsData.totalMotoristas}
           subtitle="Motoristas ativos"
           icon={FaUser}
-          color="bg-pink-500"
+          color="bg-gray-500"
+        />
+        
+        <StatCard
+          title="Ajudantes"
+          value={statsData.totalAjudantes}
+          subtitle="Ajudantes ativos"
+          icon={FaUser}
+          color="bg-lime-500"
+        />
+      </div>
+
+      {/* Cards de Estatísticas - Quarta Linha */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard
+          title="Veículos"
+          value={statsData.totalVeiculos}
+          subtitle="Veículos disponíveis"
+          icon={FaTruck}
+          color="bg-emerald-500"
         />
         
         <StatCard
@@ -223,7 +302,23 @@ const Dashboard = () => {
           value={statsData.totalUnidadesEscolares}
           subtitle="Unidades atendidas"
           icon={FaRuler}
-          color="bg-red-500"
+          color="bg-violet-500"
+        />
+        
+        <StatCard
+          title="Unidades"
+          value={statsData.totalUnidades}
+          subtitle="Unidades de medida"
+          icon={FaRuler}
+          color="bg-amber-500"
+        />
+        
+        <StatCard
+          title="Nomes Genéricos"
+          value={statsData.totalNomeGenerico}
+          subtitle="Nomes genéricos"
+          icon={FaBox}
+          color="bg-slate-500"
         />
       </div>
 
@@ -238,9 +333,9 @@ const Dashboard = () => {
                 atividades.map((atividade, index) => (
                   <ActivityCard
                     key={index}
-                    title={atividade.titulo || 'Atividade do sistema'}
-                    subtitle={atividade.descricao || 'Descrição da atividade'}
-                    time={formatDate(atividade.data_hora)}
+                    title={`${atividade.acao}: ${atividade.titulo}`}
+                    subtitle={`ID: ${atividade.id}`}
+                    time={formatDate(atividade.data)}
                     icon={getActivityIcon(atividade.tipo)}
                     color={getActivityColor(atividade.tipo)}
                   />
@@ -259,30 +354,30 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-gray-900">
-                  {dashboardData.performance?.uptime || '99.9'}%
+                  {formatCurrency(statsData.valorEstoque)}
                 </div>
-                <div className="text-sm text-gray-600">Uptime do Sistema</div>
+                <div className="text-sm text-gray-600">Valor Total em Estoque</div>
               </div>
               
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-gray-900">
-                  {dashboardData.performance?.response_time || '120'}ms
+                  {statsData.produtosEstoqueBaixo}
                 </div>
-                <div className="text-sm text-gray-600">Tempo de Resposta</div>
+                <div className="text-sm text-gray-600">Produtos com Estoque Baixo</div>
               </div>
               
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-gray-900">
-                  {dashboardData.performance?.active_sessions || '45'}
+                  {statsData.produtosSemEstoque}
                 </div>
-                <div className="text-sm text-gray-600">Sessões Ativas</div>
+                <div className="text-sm text-gray-600">Produtos Sem Estoque</div>
               </div>
               
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="text-2xl font-bold text-gray-900">
-                  {dashboardData.performance?.total_requests || '1.2k'}
+                  {statsData.produtosVencendo}
                 </div>
-                <div className="text-sm text-gray-600">Requisições Hoje</div>
+                <div className="text-sm text-gray-600">Produtos Vencendo</div>
               </div>
             </div>
           </ChartCard>
@@ -328,16 +423,16 @@ const Dashboard = () => {
           <ChartCard title="Informações do Sistema">
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Versão</span>
+                <span className="text-sm text-gray-600">Veículos Doc. Vencendo</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {dashboardData.sistema?.versao || '1.0.0'}
+                  {statsData.veiculosDocumentacaoVencendo}
                 </span>
               </div>
               
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Última Atualização</span>
+                <span className="text-sm text-gray-600">Motoristas CNH Vencendo</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {formatDate(dashboardData.sistema?.ultima_atualizacao)}
+                  {statsData.motoristasCnhVencendo}
                 </span>
               </div>
               
