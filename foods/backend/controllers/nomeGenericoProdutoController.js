@@ -75,10 +75,10 @@ class NomeGenericoProdutoController {
         LEFT JOIN classes c ON ngp.classe_id = c.id
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY ngp.nome ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${Number(limit)} OFFSET ${Number(offset)}
       `;
 
-      const nomesGenericos = await executeQuery(query, [...params, Number(limit), Number(offset)]);
+      const nomesGenericos = await executeQuery(query, params);
 
       // Calcular metadados de paginação
       const totalPages = Math.ceil(total / limit);
@@ -126,7 +126,7 @@ class NomeGenericoProdutoController {
           g.nome as grupo_nome,
           sg.nome as subgrupo_nome,
           c.nome as classe_nome,
-          (SELECT COUNT(*) FROM produtos p WHERE p.nome_generico_id = ngp.id AND p.status = 1) as total_produtos
+          0 as total_produtos
         FROM nome_generico_produto ngp
         LEFT JOIN grupos g ON ngp.grupo_id = g.id
         LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
