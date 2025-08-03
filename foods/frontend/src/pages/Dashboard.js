@@ -347,7 +347,7 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-          </ChartCard>
+        </ChartCard>
 
           {/* Métricas de Performance */}
           <ChartCard title="Métricas de Performance">

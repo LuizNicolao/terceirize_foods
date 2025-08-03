@@ -53,12 +53,77 @@ import { Button, Input, Modal, Table } from '../components/ui';
 <div className="flex flex-col sm:flex-row justify-between">
 ```
 
+### 🎯 **CONFIGURAÇÃO DO TAILWIND CSS (OBRIGATÓRIO):**
+
+#### **1. ✅ DEPENDÊNCIAS (package.json):**
+```json
+"devDependencies": {
+  "tailwindcss": "^3.3.0",
+  "autoprefixer": "^10.4.14",
+  "postcss": "^8.4.24"
+}
+```
+
+#### **2. ✅ CONFIGURAÇÃO (tailwind.config.js):**
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./public/index.html"
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: { /* cores personalizadas */ },
+        green: { /* cores personalizadas */ }
+      }
+    },
+  },
+  plugins: [],
+}
+```
+
+#### **3. ✅ POSTCSS (postcss.config.js):**
+```javascript
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+```
+
+#### **4. ✅ CSS GLOBAL (global.css):**
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Resto do CSS personalizado */
+```
+
+### 🎯 **PROBLEMAS COMUNS E SOLUÇÕES:**
+
+#### **❌ PROBLEMA: Layout quebrado, dados empilhados**
+**🔧 SOLUÇÃO:** Verificar se Tailwind CSS está instalado e configurado
+
+#### **❌ PROBLEMA: Quadrado verde piscando**
+**🔧 SOLUÇÃO:** Modernizar LoadingSpinner com Tailwind CSS
+
+#### **❌ PROBLEMA: Erro de proxy favicon.ico**
+**🔧 SOLUÇÃO:** Ignorar - não afeta funcionalidade
+
+#### **❌ PROBLEMA: Rotas 404**
+**🔧 SOLUÇÃO:** Verificar rotas corretas do backend antes de implementar
+
 ### 🎯 **CHECKLIST PARA CADA PÁGINA:**
 
 #### **✅ ANTES DE MODERNIZAR:**
 1. **Verificar rotas do backend** - Quais existem?
 2. **Verificar estrutura de dados** - Como o backend retorna?
 3. **Verificar validações** - Quais campos são obrigatórios?
+4. **Verificar se Tailwind está configurado** - Evitar layout quebrado
 
 #### **✅ DURANTE A MODERNIZAÇÃO:**
 1. **Criar service** - Separar lógica de API
@@ -66,12 +131,14 @@ import { Button, Input, Modal, Table } from '../components/ui';
 3. **Aplicar Tailwind CSS** - Remover styled-components
 4. **Implementar responsividade** - Mobile-first
 5. **Manter funcionalidades** - CRUD, filtros, paginação
+6. **Modernizar LoadingSpinner** - Usar Tailwind CSS
 
 #### **✅ APÓS MODERNIZAÇÃO:**
 1. **Testar todas as funcionalidades** - CRUD, filtros, validações
 2. **Verificar responsividade** - Mobile, tablet, desktop
 3. **Verificar erros** - Console, network, validações
-4. **Documentar mudanças** - Atualizar este arquivo
+4. **Verificar layout** - Grid, cards, espaçamentos
+5. **Documentar mudanças** - Atualizar este arquivo
 
 ### 🎯 **EXEMPLOS DE ROTAS CORRETAS:**
 
@@ -110,7 +177,7 @@ import { Button, Input, Modal, Table } from '../components/ui';
 ```
 
 ### 🎯 **ORDEM DE MODERNIZAÇÃO:**
-1. **Dashboard** ✅ (Concluído)
+1. **Dashboard** ✅ (Concluído - Tailwind configurado)
 2. **Filiais** 🔄 (Próximo)
 3. **Veículos**
 4. **Unidades**
@@ -137,8 +204,19 @@ import { Button, Input, Modal, Table } from '../components/ui';
 - `StatCard` - Cards de estatísticas
 - `ActivityCard` - Cards de atividades
 - `ChartCard` - Containers para gráficos
+- `LoadingSpinner` - Spinner modernizado com Tailwind
+
+### 🎯 **COMANDOS IMPORTANTES:**
+```bash
+# Instalar dependências do Tailwind
+npm install
+
+# Reiniciar container após mudanças
+docker restart foods_frontend
+```
 
 ### 🎯 **ÚLTIMA ATUALIZAÇÃO:**
 **Data:** 03/08/2025
-**Status:** Dashboard modernizado com sucesso
-**Próximo:** Filiais 
+**Status:** Dashboard modernizado com Tailwind CSS configurado
+**Próximo:** Filiais
+**Problemas Resolvidos:** Layout quebrado, LoadingSpinner, configuração Tailwind 
