@@ -469,24 +469,8 @@ class NomeGenericoProdutoController {
         });
       }
 
-      // Verificar se há produtos ATIVOS vinculados (por grupo, subgrupo ou classe)
-      const produtos = await executeQuery(
-        `SELECT id, nome, status FROM produtos 
-         WHERE (grupo_id = ? OR subgrupo_id = ? OR classe_id = ?) AND status = 1`,
-        [nomeGenerico[0].grupo_id, nomeGenerico[0].subgrupo_id, nomeGenerico[0].classe_id]
-      );
-
-      if (produtos.length > 0) {
-        let mensagem = `Nome genérico não pode ser desativado pois possui ${produtos.length} produto(s) ativo(s) vinculado(s):`;
-        mensagem += `\n- ${produtos.map(p => p.nome).join(', ')}`;
-        mensagem += '\n\nPara desativar o nome genérico, primeiro desative todos os produtos vinculados.';
-        
-        return res.status(400).json({
-          success: false,
-          error: 'Nome genérico em uso',
-          message: mensagem
-        });
-      }
+      // Soft delete permite desativar mesmo com vínculos
+      // Não é necessário validar vínculos pois o registro permanece no banco
 
       // Soft delete - marcar como inativo
       await executeQuery(
