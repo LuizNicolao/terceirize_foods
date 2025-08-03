@@ -1,3 +1,6 @@
+-- Usar banco de dados do sistema principal (foods)
+USE foods_db;
+
 -- phpMyAdmin SQL Dump
 -- version 5.2.2
 -- https://www.phpmyadmin.net/

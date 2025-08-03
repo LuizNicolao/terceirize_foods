@@ -1,3 +1,6 @@
+-- Usar banco de dados do sistema de cotações
+USE cotacao_db;
+
 -- phpMyAdmin SQL Dump
 -- version 5.2.2
 -- https://www.phpmyadmin.net/
