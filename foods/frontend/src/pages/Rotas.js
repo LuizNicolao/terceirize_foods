@@ -33,6 +33,7 @@ const Rotas = () => {
   const [showUnidades, setShowUnidades] = useState(false);
   const [totalUnidades, setTotalUnidades] = useState(0);
   const [estatisticas, setEstatisticas] = useState({});
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
 
   const {
     register,
@@ -64,11 +65,25 @@ const Rotas = () => {
   // Carregar filiais
   const loadFiliais = async () => {
     try {
-      const response = await fetch('/api/filiais');
+      setLoadingFiliais(true);
+      const response = await fetch('/api/filiais', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       setFiliais(data.data || []);
     } catch (error) {
       console.error('Erro ao carregar filiais:', error);
+      setFiliais([]);
+      toast.error('Erro ao carregar filiais');
+    } finally {
+      setLoadingFiliais(false);
     }
   };
 
@@ -417,8 +432,9 @@ const Rotas = () => {
 
   // Obter nome da filial
   const getFilialName = (filialId) => {
-    const filial = filiais.find(f => f.id === filialId);
-    return filial ? filial.filial : 'N/A';
+    if (!filialId) return 'N/A';
+    const filial = filiais.find(f => f.id === parseInt(filialId));
+    return filial ? filial.filial : 'Filial não encontrada';
   };
 
   // Formatar valor monetário
@@ -509,20 +525,20 @@ const Rotas = () => {
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        additionalFilters={[
-          {
-            label: 'Filial',
-            value: filialFilter,
-            onChange: setFilialFilter,
-            options: [
-              { value: 'todos', label: 'Todas as filiais' },
-              ...filiais.map(filial => ({
-                value: filial.id.toString(),
-                label: filial.filial
-              }))
-            ]
-          }
-        ]}
+                 additionalFilters={[
+           {
+             label: 'Filial',
+             value: filialFilter,
+             onChange: setFilialFilter,
+             options: [
+               { value: 'todos', label: loadingFiliais ? 'Carregando...' : 'Todas as filiais' },
+               ...filiais.map(filial => ({
+                 value: filial.id.toString(),
+                 label: filial.filial
+               }))
+             ]
+           }
+         ]}
       />
 
       {/* Tabela */}
@@ -534,87 +550,93 @@ const Rotas = () => {
           }
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <Table>
-            <Table.Header>
-              <Table.Row>
-                <Table.HeaderCell>ID</Table.HeaderCell>
-                <Table.HeaderCell>Filial</Table.HeaderCell>
-                <Table.HeaderCell>Código</Table.HeaderCell>
-                <Table.HeaderCell>Nome</Table.HeaderCell>
-                <Table.HeaderCell>Distância (km)</Table.HeaderCell>
-                <Table.HeaderCell>Tipo</Table.HeaderCell>
-                <Table.HeaderCell>Custo Diário</Table.HeaderCell>
-                <Table.HeaderCell>Status</Table.HeaderCell>
-                <Table.HeaderCell>Ações</Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {filteredRotas.map((rota) => (
-                <Table.Row key={rota.id}>
-                  <Table.Cell>{rota.id}</Table.Cell>
-                  <Table.Cell>{getFilialName(rota.filial_id)}</Table.Cell>
-                  <Table.Cell>{rota.codigo}</Table.Cell>
-                  <Table.Cell>{rota.nome}</Table.Cell>
-                  <Table.Cell>{rota.distancia_km}</Table.Cell>
-                  <Table.Cell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      rota.tipo_rota === 'semanal' ? 'bg-blue-100 text-blue-800' :
-                      rota.tipo_rota === 'quinzenal' ? 'bg-purple-100 text-purple-800' :
-                      rota.tipo_rota === 'mensal' ? 'bg-green-100 text-green-800' :
-                      rota.tipo_rota === 'transferencia' ? 'bg-orange-100 text-orange-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {formatTipoRota(rota.tipo_rota)}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>{formatCurrency(rota.custo_diario)}</Table.Cell>
-                  <Table.Cell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      rota.status === 'ativo' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {rota.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewRota(rota)}
-                        title="Visualizar"
-                      >
-                        <FaEye className="text-green-600" />
-                      </Button>
-                      {canEdit('rotas') && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditRota(rota)}
-                          title="Editar"
-                        >
-                          <FaEdit className="text-blue-600" />
-                        </Button>
-                      )}
-                      {canDelete('rotas') && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteRota(rota.id)}
-                          title="Excluir"
-                        >
-                          <FaTrash className="text-red-600" />
-                        </Button>
-                      )}
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
-        </div>
+                 <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+           <Table>
+             <thead className="bg-gray-50">
+               <tr>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distância (km)</th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Custo Diário</th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+               </tr>
+             </thead>
+             <tbody className="bg-white divide-y divide-gray-200">
+               {filteredRotas.map((rota) => (
+                 <tr key={rota.id} className="hover:bg-gray-50">
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.id}</td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                     {loadingFiliais ? (
+                       <span className="text-gray-400">Carregando...</span>
+                     ) : (
+                       getFilialName(rota.filial_id)
+                     )}
+                   </td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.codigo}</td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.nome}</td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.distancia_km}</td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                       rota.tipo_rota === 'semanal' ? 'bg-blue-100 text-blue-800' :
+                       rota.tipo_rota === 'quinzenal' ? 'bg-purple-100 text-purple-800' :
+                       rota.tipo_rota === 'mensal' ? 'bg-green-100 text-green-800' :
+                       rota.tipo_rota === 'transferencia' ? 'bg-orange-100 text-orange-800' :
+                       'bg-gray-100 text-gray-800'
+                     }`}>
+                       {formatTipoRota(rota.tipo_rota)}
+                     </span>
+                   </td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(rota.custo_diario)}</td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                       rota.status === 'ativo' 
+                         ? 'bg-green-100 text-green-800' 
+                         : 'bg-red-100 text-red-800'
+                     }`}>
+                       {rota.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                     </span>
+                   </td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                     <div className="flex gap-2">
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         onClick={() => handleViewRota(rota)}
+                         title="Visualizar"
+                       >
+                         <FaEye className="text-green-600" />
+                       </Button>
+                       {canEdit('rotas') && (
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => handleEditRota(rota)}
+                           title="Editar"
+                         >
+                           <FaEdit className="text-blue-600" />
+                         </Button>
+                       )}
+                       {canDelete('rotas') && (
+                         <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => handleDeleteRota(rota.id)}
+                           title="Excluir"
+                         >
+                           <FaTrash className="text-red-600" />
+                         </Button>
+                       )}
+                     </div>
+                   </td>
+                 </tr>
+               ))}
+             </tbody>
+           </Table>
+         </div>
       )}
 
       {/* Modal de Cadastro/Edição/Visualização */}
@@ -627,20 +649,22 @@ const Rotas = () => {
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Input
-                label="Filial *"
-                type="select"
-                {...register('filial_id', { required: 'Filial é obrigatória' })}
-                error={errors.filial_id?.message}
-                disabled={viewMode}
-              >
-                <option value="">Selecione uma filial</option>
-                {filiais.map(filial => (
-                  <option key={filial.id} value={filial.id}>
-                    {filial.filial}
-                  </option>
-                ))}
-              </Input>
+                             <Input
+                 label="Filial *"
+                 type="select"
+                 {...register('filial_id', { required: 'Filial é obrigatória' })}
+                 error={errors.filial_id?.message}
+                 disabled={viewMode || loadingFiliais}
+               >
+                 <option value="">
+                   {loadingFiliais ? 'Carregando filiais...' : 'Selecione uma filial'}
+                 </option>
+                 {filiais.map(filial => (
+                   <option key={filial.id} value={filial.id}>
+                     {filial.filial}
+                   </option>
+                 ))}
+               </Input>
 
               <Input
                 label="Código *"
@@ -745,42 +769,42 @@ const Rotas = () => {
                         Nenhuma unidade escolar vinculada a esta rota
                       </div>
                     ) : (
-                      <div className="bg-white rounded-lg border overflow-hidden">
-                        <Table>
-                          <Table.Header>
-                            <Table.Row>
-                              <Table.HeaderCell>Ordem</Table.HeaderCell>
-                              <Table.HeaderCell>Código</Table.HeaderCell>
-                              <Table.HeaderCell>Nome da Escola</Table.HeaderCell>
-                              <Table.HeaderCell>Cidade</Table.HeaderCell>
-                              <Table.HeaderCell>Estado</Table.HeaderCell>
-                              <Table.HeaderCell>Centro Distribuição</Table.HeaderCell>
-                              <Table.HeaderCell>Status</Table.HeaderCell>
-                            </Table.Row>
-                          </Table.Header>
-                          <Table.Body>
-                            {unidadesEscolares.map((unidade) => (
-                              <Table.Row key={unidade.id}>
-                                <Table.Cell>{unidade.ordem_entrega || '-'}</Table.Cell>
-                                <Table.Cell>{unidade.codigo_teknisa}</Table.Cell>
-                                <Table.Cell>{unidade.nome_escola}</Table.Cell>
-                                <Table.Cell>{unidade.cidade}</Table.Cell>
-                                <Table.Cell>{unidade.estado}</Table.Cell>
-                                <Table.Cell>{unidade.centro_distribuicao || '-'}</Table.Cell>
-                                <Table.Cell>
-                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                    unidade.status === 'ativo' 
-                                      ? 'bg-green-100 text-green-800' 
-                                      : 'bg-red-100 text-red-800'
-                                  }`}>
-                                    {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                                  </span>
-                                </Table.Cell>
-                              </Table.Row>
-                            ))}
-                          </Table.Body>
-                        </Table>
-                      </div>
+                                             <div className="bg-white rounded-lg border overflow-hidden">
+                         <table className="min-w-full divide-y divide-gray-200">
+                           <thead className="bg-gray-50">
+                             <tr>
+                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ordem</th>
+                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome da Escola</th>
+                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade</th>
+                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Centro Distribuição</th>
+                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                             </tr>
+                           </thead>
+                           <tbody className="bg-white divide-y divide-gray-200">
+                             {unidadesEscolares.map((unidade) => (
+                               <tr key={unidade.id} className="hover:bg-gray-50">
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.ordem_entrega || '-'}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.codigo_teknisa}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.cidade}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.estado}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.centro_distribuicao || '-'}</td>
+                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                     unidade.status === 'ativo' 
+                                       ? 'bg-green-100 text-green-800' 
+                                       : 'bg-red-100 text-red-800'
+                                   }`}>
+                                     {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                                   </span>
+                                 </td>
+                               </tr>
+                             ))}
+                           </tbody>
+                         </table>
+                       </div>
                     )}
                     {unidadesEscolares.length > 0 && (
                       <div className="mt-3 p-3 bg-gray-50 rounded-lg text-center text-sm text-gray-600">
