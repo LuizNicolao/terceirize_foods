@@ -1,0 +1,1 @@
+ C:\\xampp\\htdocs\\terceirize_foods\\conect_foods_app\\.dart_tool\\flutter_build\\f697b41f9437a60fcfe55336c7fe1f1e\\native_assets.json: 
