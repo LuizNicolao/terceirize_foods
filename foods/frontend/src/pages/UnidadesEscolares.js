@@ -390,34 +390,34 @@ const UnidadesEscolares = () => {
                       {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
-                      {canView('unidades_escolares') && (
-                        <button
-                          onClick={() => handleViewUnidade(unidade)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <FaEye />
-                        </button>
-                      )}
-                      {canEdit('unidades_escolares') && (
-                        <button
-                          onClick={() => handleEditUnidade(unidade)}
-                          className="text-indigo-600 hover:text-indigo-900"
-                        >
-                          <FaEdit />
-                        </button>
-                      )}
-                      {canDelete('unidades_escolares') && (
-                        <button
-                          onClick={() => handleDeleteUnidade(unidade.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <FaTrash />
-                        </button>
-                      )}
-                    </div>
-                  </td>
+                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                     <div className="flex space-x-2">
+                       {canView('unidades_escolares') && (
+                         <button
+                           onClick={() => handleViewUnidade(unidade)}
+                           className="text-green-600 hover:text-green-900"
+                         >
+                           <FaEye />
+                         </button>
+                       )}
+                       {canEdit('unidades_escolares') && (
+                         <button
+                           onClick={() => handleEditUnidade(unidade)}
+                           className="text-blue-600 hover:text-blue-900"
+                         >
+                           <FaEdit />
+                         </button>
+                       )}
+                       {canDelete('unidades_escolares') && (
+                         <button
+                           onClick={() => handleDeleteUnidade(unidade.id)}
+                           className="text-red-600 hover:text-red-900"
+                         >
+                           <FaTrash />
+                         </button>
+                       )}
+                     </div>
+                   </td>
                 </tr>
               ))}
             </tbody>
@@ -425,15 +425,15 @@ const UnidadesEscolares = () => {
         </div>
       </div>
 
-      {/* Modal de Unidade Escolar */}
-      <Modal
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-        size="lg"
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             {/* Modal de Unidade Escolar */}
+       <Modal
+         isOpen={showModal}
+         onClose={handleCloseModal}
+         title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
+         size={viewMode ? "xl" : "lg"}
+       >
+                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'md:grid-cols-2'} gap-6`}>
             <Input
               label="Nome da Escola"
               {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
