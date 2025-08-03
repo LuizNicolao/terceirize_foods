@@ -230,7 +230,7 @@ module.exports = {
 2. **Filiais** 🔄 (Próximo)
 3. **Veículos**
 4. **Unidades**
-5. **Unidades Escolares**
+5. **Unidades Escolares** ✅ (Concluído - Service criado, componentes UI, estatísticas, loading inline)
 6. **Rotas** ✅ (Concluído - Service criado, componentes UI, estatísticas, loading inline)
 7. **Motoristas**
 8. **Ajudantes**
@@ -284,7 +284,7 @@ git commit -m "fix: resolver conflito package.json"
 
 ### 🎯 **ÚLTIMA ATUALIZAÇÃO:**
 **Data:** 03/08/2025
-**Status:** Rotas modernizada com Service criado, componentes UI, estatísticas e loading inline
+**Status:** Unidades Escolares modernizada com Service criado, componentes UI, estatísticas e loading inline
 **Próximo:** Filiais
 **Problemas Resolvidos:** Layout quebrado, LoadingSpinner, configuração Tailwind, quadrado verde, styled-components removido
 **Regra Importante:** Manter todos os cards existentes, não criar/excluir, apenas padronizar
