@@ -469,8 +469,9 @@ class NomeGenericoProdutoController {
         });
       }
 
-      // Soft delete permite desativar mesmo com vínculos
-      // Não é necessário validar vínculos pois o registro permanece no banco
+      // Soft delete permite desativar nomes genéricos sem validação de vínculos
+      // pois não há relação direta entre produtos e nomes genéricos
+      // Os nomes genéricos são referências conceituais que podem ser reativadas
 
       // Soft delete - marcar como inativo
       await executeQuery(

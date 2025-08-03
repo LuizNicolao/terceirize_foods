@@ -78,9 +78,8 @@ const StatusBadge = styled.span`
   border-radius: 20px;
   font-size: 12px;
   font-weight: 600;
-  text-transform: uppercase;
-  background: ${props => props.$status === 'ativo' ? 'var(--success-light)' : 'var(--error-light)'};
-  color: ${props => props.$status === 'ativo' ? 'var(--success)' : 'var(--error)'};
+  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
+  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
 `;
 
 const ActionButton = styled.button`
@@ -793,7 +792,7 @@ const NomeGenericoProduto = () => {
                          nomeGenerico.grupo_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          nomeGenerico.subgrupo_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          nomeGenerico.classe_nome?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || Number(nomeGenerico.status) === parseInt(statusFilter);
+    const matchesStatus = statusFilter === 'todos' || nomeGenerico.status === parseInt(statusFilter);
     return matchesSearch && matchesStatus;
   });
 
@@ -867,8 +866,8 @@ const NomeGenericoProduto = () => {
                   <Td>{nomeGenerico.subgrupo_nome || 'Não informado'}</Td>
                   <Td>{nomeGenerico.classe_nome || 'Não informado'}</Td>
                   <Td>
-                    <StatusBadge $status={Number(nomeGenerico.status) === 1 ? 'ativo' : 'inativo'}>
-                      {Number(nomeGenerico.status) === 1 ? 'Ativo' : 'Inativo'}
+                    <StatusBadge $status={nomeGenerico.status === 1 ? 'ativo' : 'inativo'}>
+                      {nomeGenerico.status === 1 ? 'Ativo' : 'Inativo'}
                     </StatusBadge>
                   </Td>
                   <Td>
