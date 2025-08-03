@@ -27,12 +27,20 @@ const UnidadesEscolares = () => {
     total_cidades: 0
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchTimeout, setSearchTimeout] = useState(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   useEffect(() => {
     loadUnidades();
     loadRotas();
+    
+    // Cleanup timeout ao desmontar componente
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+    };
   }, []);
 
   const loadUnidades = async (params = {}) => {
@@ -330,10 +338,24 @@ const UnidadesEscolares = () => {
          searchTerm={searchTerm}
          onSearchChange={(search) => {
            setSearchTerm(search);
-           loadUnidades({ search });
+           
+           // Limpar timeout anterior
+           if (searchTimeout) {
+             clearTimeout(searchTimeout);
+           }
+           
+           // Criar novo timeout para debounce
+           const timeout = setTimeout(() => {
+             loadUnidades({ search });
+           }, 500); // 500ms de delay
+           
+           setSearchTimeout(timeout);
          }}
          onClear={() => {
            setSearchTerm('');
+           if (searchTimeout) {
+             clearTimeout(searchTimeout);
+           }
            loadUnidades();
          }}
          placeholder="Buscar por nome, cidade ou código..."
