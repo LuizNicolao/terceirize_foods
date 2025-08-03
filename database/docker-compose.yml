@@ -43,8 +43,9 @@ services:
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306
-      PMA_USER: ${DB_USER:-foods_user}
-      PMA_PASSWORD: ${DB_PASSWORD:-foods123456}
+      # Removendo login automático para exigir autenticação
+      # PMA_USER: ${DB_USER:-foods_user}
+      # PMA_PASSWORD: ${DB_PASSWORD:-foods123456}
       UPLOAD_LIMIT: 100M
       MEMORY_LIMIT: 256M
     ports:
