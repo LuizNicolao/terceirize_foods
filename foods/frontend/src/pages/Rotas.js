@@ -32,7 +32,17 @@ const Rotas = () => {
   const [loadingUnidades, setLoadingUnidades] = useState(false);
   const [showUnidades, setShowUnidades] = useState(false);
   const [totalUnidades, setTotalUnidades] = useState(0);
-  const [estatisticas, setEstatisticas] = useState({});
+  const [estatisticas, setEstatisticas] = useState({
+    total_rotas: 0,
+    rotas_ativas: 0,
+    rotas_inativas: 0,
+    rotas_semanais: 0,
+    rotas_quinzenais: 0,
+    rotas_mensais: 0,
+    rotas_transferencia: 0,
+    distancia_total: 0,
+    custo_total_diario: 0
+  });
   const [loadingFiliais, setLoadingFiliais] = useState(false);
 
   const {
@@ -505,18 +515,18 @@ const Rotas = () => {
           icon={FaMapMarkedAlt}
           color="green"
         />
-        <StatCard
-          title="Distância Total"
-          value={`${estatisticas.distancia_total.toFixed(1)} km`}
-          icon={FaTruck}
-          color="purple"
-        />
-        <StatCard
-          title="Custo Total Diário"
-          value={formatCurrency(estatisticas.custo_total_diario)}
-          icon={FaMoneyBillWave}
-          color="orange"
-        />
+                 <StatCard
+           title="Distância Total"
+           value={`${(estatisticas.distancia_total || 0).toFixed(1)} km`}
+           icon={FaTruck}
+           color="purple"
+         />
+                 <StatCard
+           title="Custo Total Diário"
+           value={formatCurrency(estatisticas.custo_total_diario || 0)}
+           icon={FaMoneyBillWave}
+           color="orange"
+         />
       </div>
 
       {/* Filtros */}
@@ -645,10 +655,10 @@ const Rotas = () => {
            isOpen={showModal}
            onClose={handleCloseModal}
            title={viewMode ? 'Visualizar Rota' : editingRota ? 'Editar Rota' : 'Adicionar Rota'}
-           size={viewMode ? "xl" : "lg"}
+                       size={viewMode ? "full" : "lg"}
          >
                      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-             <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3' : 'md:grid-cols-2'} gap-6`}>
+                           <div className={`grid grid-cols-1 ${viewMode ? 'xl:grid-cols-4 lg:grid-cols-3' : 'md:grid-cols-2'} gap-6`}>
                              <Input
                  label="Filial *"
                  type="select"
@@ -771,28 +781,28 @@ const Rotas = () => {
                     ) : (
                                              <div className="bg-white rounded-lg border overflow-hidden">
                          <div className="overflow-x-auto">
-                           <table className="min-w-full divide-y divide-gray-200">
-                           <thead className="bg-gray-50">
-                             <tr>
-                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ordem</th>
-                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome da Escola</th>
-                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade</th>
-                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Centro Distribuição</th>
-                               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                             </tr>
-                           </thead>
+                                                       <table className="w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Ordem</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Código</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome da Escola</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Cidade</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Estado</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Centro Distribuição</th>
+                                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Status</th>
+                              </tr>
+                            </thead>
                            <tbody className="bg-white divide-y divide-gray-200">
-                             {unidadesEscolares.map((unidade) => (
-                               <tr key={unidade.id} className="hover:bg-gray-50">
-                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.ordem_entrega || '-'}</td>
-                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.codigo_teknisa}</td>
-                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
-                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.cidade}</td>
-                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.estado}</td>
-                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.centro_distribuicao || '-'}</td>
-                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                                           {unidadesEscolares.map((unidade) => (
+                                <tr key={unidade.id} className="hover:bg-gray-50">
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.ordem_entrega || '-'}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.codigo_teknisa}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.cidade}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.estado}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.centro_distribuicao || '-'}</td>
+                                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                                      unidade.status === 'ativo' 
                                        ? 'bg-green-100 text-green-800' 
