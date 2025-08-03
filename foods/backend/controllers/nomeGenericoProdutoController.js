@@ -68,7 +68,7 @@ class NomeGenericoProdutoController {
           g.nome as grupo_nome,
           sg.nome as subgrupo_nome,
           c.nome as classe_nome,
-          (SELECT COUNT(*) FROM produtos p WHERE p.nome_generico_id = ngp.id AND p.status = 1) as total_produtos
+          0 as total_produtos
         FROM nome_generico_produto ngp
         LEFT JOIN grupos g ON ngp.grupo_id = g.id
         LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
@@ -469,10 +469,11 @@ class NomeGenericoProdutoController {
         });
       }
 
-      // Verificar se há produtos ATIVOS vinculados
+      // Verificar se há produtos ATIVOS vinculados (por grupo, subgrupo ou classe)
       const produtos = await executeQuery(
-        'SELECT id, nome, status FROM produtos WHERE nome_generico_id = ? AND status = 1',
-        [id]
+        `SELECT id, nome, status FROM produtos 
+         WHERE (grupo_id = ? OR subgrupo_id = ? OR classe_id = ?) AND status = 1`,
+        [nomeGenerico[0].grupo_id, nomeGenerico[0].subgrupo_id, nomeGenerico[0].classe_id]
       );
 
       if (produtos.length > 0) {
@@ -514,7 +515,7 @@ class NomeGenericoProdutoController {
           g.nome as grupo_nome,
           sg.nome as subgrupo_nome,
           c.nome as classe_nome,
-          (SELECT COUNT(*) FROM produtos p WHERE p.nome_generico_id = ngp.id AND p.status = 1) as total_produtos
+          0 as total_produtos
         FROM nome_generico_produto ngp
         LEFT JOIN grupos g ON ngp.grupo_id = g.id
         LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
