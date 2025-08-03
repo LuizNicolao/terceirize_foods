@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Input = ({ 
+const Input = React.forwardRef(({ 
   label, 
   error, 
   type = 'text', 
@@ -8,7 +8,7 @@ const Input = ({
   className = '',
   children,
   ...props 
-}) => {
+}, ref) => {
   const baseClasses = 'w-full border border-gray-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent';
   
   const sizes = {
@@ -23,13 +23,14 @@ const Input = ({
     switch (type) {
       case 'select':
         return (
-          <select className={inputClasses} {...props}>
+          <select ref={ref} className={inputClasses} {...props}>
             {children}
           </select>
         );
       case 'textarea':
         return (
           <textarea 
+            ref={ref}
             className={`${inputClasses} resize-vertical min-h-[80px]`}
             {...props}
           />
@@ -37,6 +38,7 @@ const Input = ({
       default:
         return (
           <input 
+            ref={ref}
             type={type}
             className={inputClasses}
             {...props}
@@ -60,6 +62,6 @@ const Input = ({
       )}
     </div>
   );
-};
+});
 
 export default Input; 

@@ -641,14 +641,14 @@ const Rotas = () => {
 
       {/* Modal de Cadastro/Edição/Visualização */}
       {showModal && (
-        <Modal
-          isOpen={showModal}
-          onClose={handleCloseModal}
-          title={viewMode ? 'Visualizar Rota' : editingRota ? 'Editar Rota' : 'Adicionar Rota'}
-          size="lg"
-        >
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <Modal
+           isOpen={showModal}
+           onClose={handleCloseModal}
+           title={viewMode ? 'Visualizar Rota' : editingRota ? 'Editar Rota' : 'Adicionar Rota'}
+           size={viewMode ? "xl" : "lg"}
+         >
+                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+             <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3' : 'md:grid-cols-2'} gap-6`}>
                              <Input
                  label="Filial *"
                  type="select"
@@ -757,8 +757,8 @@ const Rotas = () => {
                   {showUnidades ? <FaChevronUp /> : <FaChevronDown />}
                 </div>
                 
-                {showUnidades && (
-                  <div className="max-h-96 overflow-y-auto">
+                                 {showUnidades && (
+                   <div className="max-h-[500px] overflow-y-auto">
                     {loadingUnidades ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
@@ -770,7 +770,8 @@ const Rotas = () => {
                       </div>
                     ) : (
                                              <div className="bg-white rounded-lg border overflow-hidden">
-                         <table className="min-w-full divide-y divide-gray-200">
+                         <div className="overflow-x-auto">
+                           <table className="min-w-full divide-y divide-gray-200">
                            <thead className="bg-gray-50">
                              <tr>
                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ordem</th>
@@ -802,8 +803,9 @@ const Rotas = () => {
                                  </td>
                                </tr>
                              ))}
-                           </tbody>
-                         </table>
+                                                        </tbody>
+                           </table>
+                         </div>
                        </div>
                     )}
                     {unidadesEscolares.length > 0 && (
