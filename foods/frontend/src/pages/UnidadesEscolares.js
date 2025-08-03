@@ -324,14 +324,27 @@ const UnidadesEscolares = () => {
         />
       </div>
 
-      {/* Filtros */}
-      <CadastroFilterBar
-        onSearch={(search) => loadUnidades({ search })}
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+                    {/* Filtros */}
+       <CadastroFilterBar
+         searchTerm=""
+         onSearchChange={(search) => loadUnidades({ search })}
+         onClear={() => loadUnidades()}
+         placeholder="Buscar por nome, cidade ou código..."
+       />
 
-      {/* Tabela */}
+       {/* Ações */}
+       <div className="flex justify-end gap-3 mb-4">
+         <Button onClick={handleExportXLSX} variant="outline" size="sm">
+           <FaFileExcel className="mr-2" />
+           Exportar XLSX
+         </Button>
+         <Button onClick={handleExportPDF} variant="outline" size="sm">
+           <FaFilePdf className="mr-2" />
+           Exportar PDF
+         </Button>
+       </div>
+
+       {/* Tabela */}
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
