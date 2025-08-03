@@ -484,14 +484,14 @@ const Rotas = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold text-gray-800">Rotas</h1>
         <div className="flex gap-3">
-          <Button
-            onClick={handleOpenAuditModal}
-            variant="secondary"
-            className="text-xs px-3 py-2"
-          >
-            <FaQuestionCircle className="mr-2" />
-            Auditoria
-          </Button>
+                     <Button
+             onClick={handleOpenAuditModal}
+             variant="ghost"
+             className="text-xs px-3 py-2"
+           >
+             <FaQuestionCircle className="mr-2" />
+             Auditoria
+           </Button>
           {canCreate('rotas') && (
             <Button onClick={handleAddRota}>
               <FaPlus className="mr-2" />
