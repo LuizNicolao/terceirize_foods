@@ -425,15 +425,15 @@ const UnidadesEscolares = () => {
         </div>
       </div>
 
-             {/* Modal de Unidade Escolar */}
+                    {/* Modal de Unidade Escolar */}
        <Modal
          isOpen={showModal}
          onClose={handleCloseModal}
          title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-         size={viewMode ? "xl" : "lg"}
+         size="xl"
        >
-                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'md:grid-cols-2'} gap-6`}>
+         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'lg:grid-cols-3 md:grid-cols-2'} gap-6`}>
             <Input
               label="Nome da Escola"
               {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
