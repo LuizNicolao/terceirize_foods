@@ -39,6 +39,9 @@ const Dashboard = () => {
     try {
       setLoading(true);
       
+      // Delay mínimo para evitar flash
+      const startTime = Date.now();
+      
       // Carregar dados principais (estatísticas)
       const result = await DashboardService.carregarEstatisticas();
       if (result.success) {
@@ -63,6 +66,12 @@ const Dashboard = () => {
       const alertasResult = await DashboardService.carregarAlertas();
       if (alertasResult.success) {
         setAlertas(alertasResult.data);
+      }
+
+      // Garantir que o loading dure pelo menos 500ms
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime < 500) {
+        await new Promise(resolve => setTimeout(resolve, 500 - elapsedTime));
       }
 
     } catch (error) {
@@ -347,7 +356,7 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
-        </ChartCard>
+          </ChartCard>
 
           {/* Métricas de Performance */}
           <ChartCard title="Métricas de Performance">
