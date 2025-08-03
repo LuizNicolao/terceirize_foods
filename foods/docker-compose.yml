@@ -15,8 +15,7 @@ services:
       DB_USER: foods_user
       DB_PASSWORD: foods123456
       JWT_SECRET: foods_jwt_secret_key_2024
-    depends_on:
-      - terceirize_mysql
+    depends_on: []
     networks:
       - terceirize_network
     volumes:
