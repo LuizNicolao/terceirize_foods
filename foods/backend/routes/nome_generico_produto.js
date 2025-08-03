@@ -90,7 +90,7 @@ router.put('/:id', [
   handleValidationErrors
 ], nomeGenericoProdutoController.atualizarNomeGenerico);
 
-// Excluir nome genérico
+// Desativar nome genérico (soft delete)
 router.delete('/:id', [
   checkPermission('excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'nome_generico_produto')

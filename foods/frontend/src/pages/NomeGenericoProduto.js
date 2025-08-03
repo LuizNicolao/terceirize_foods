@@ -765,16 +765,16 @@ const NomeGenericoProduto = () => {
     }
   };
 
-  // Excluir nome genérico
+  // Desativar nome genérico
   const handleDeleteNomeGenerico = async (nomeGenericoId) => {
-    if (window.confirm('Tem certeza que deseja excluir este nome genérico?')) {
+    if (window.confirm('Tem certeza que deseja desativar este nome genérico?')) {
       try {
         await api.delete(`/nome-generico-produto/${nomeGenericoId}`);
-        toast.success('Nome genérico excluído com sucesso!');
+        toast.success('Nome genérico desativado com sucesso!');
         loadNomesGenericos();
       } catch (error) {
-        console.error('Erro ao excluir nome genérico:', error);
-        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir nome genérico';
+        console.error('Erro ao desativar nome genérico:', error);
+        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao desativar nome genérico';
         
         // Se a mensagem contém quebras de linha, mostrar no modal customizado
         if (errorMsg.includes('\n')) {
@@ -891,7 +891,7 @@ const NomeGenericoProduto = () => {
                     {canDelete('nome_generico_produto') && (
                       <ActionButton
                         className="delete"
-                        title="Excluir"
+                        title="Desativar"
                         onClick={() => handleDeleteNomeGenerico(nomeGenerico.id)}
                       >
                         <FaTrash />

@@ -450,7 +450,7 @@ class NomeGenericoProdutoController {
     }
   }
 
-  // Excluir nome genérico
+  // Desativar nome genérico (soft delete)
   async excluirNomeGenerico(req, res) {
     try {
       const { id } = req.params;
@@ -477,9 +477,9 @@ class NomeGenericoProdutoController {
       );
 
       if (produtos.length > 0) {
-        let mensagem = `Nome genérico não pode ser excluído pois possui ${produtos.length} produto(s) ativo(s) vinculado(s):`;
+        let mensagem = `Nome genérico não pode ser desativado pois possui ${produtos.length} produto(s) ativo(s) vinculado(s):`;
         mensagem += `\n- ${produtos.map(p => p.nome).join(', ')}`;
-        mensagem += '\n\nPara excluir o nome genérico, primeiro desative todos os produtos vinculados.';
+        mensagem += '\n\nPara desativar o nome genérico, primeiro desative todos os produtos vinculados.';
         
         return res.status(400).json({
           success: false,
@@ -488,20 +488,23 @@ class NomeGenericoProdutoController {
         });
       }
 
-      // Excluir nome genérico
-      await executeQuery('DELETE FROM nome_generico_produto WHERE id = ?', [id]);
+      // Soft delete - marcar como inativo
+      await executeQuery(
+        'UPDATE nome_generico_produto SET status = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?', 
+        [id]
+      );
 
       res.json({
         success: true,
-        message: 'Nome genérico excluído com sucesso'
+        message: 'Nome genérico desativado com sucesso'
       });
 
     } catch (error) {
-      console.error('Erro ao excluir nome genérico:', error);
+      console.error('Erro ao desativar nome genérico:', error);
       res.status(500).json({
         success: false,
         error: 'Erro interno do servidor',
-        message: 'Não foi possível excluir o nome genérico'
+        message: 'Não foi possível desativar o nome genérico'
       });
     }
   }
