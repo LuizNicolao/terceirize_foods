@@ -52,13 +52,11 @@ class MarcasController {
 
     baseQuery += ' GROUP BY m.id, m.marca, m.fabricante, m.status, m.criado_em, m.atualizado_em ORDER BY m.marca ASC';
 
-    // Aplicar paginação diretamente na query (correção do erro ER_WRONG_ARGUMENTS)
-    const limit = Number(pagination.limit);
-    const offset = Number(pagination.offset);
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    // Aplicar paginação
+    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
     
     // Executar query paginada
-    const marcas = await executeQuery(query, params);
+    const marcas = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(DISTINCT m.id) as total FROM marcas m WHERE 1=1${search ? ' AND (m.marca LIKE ? OR m.fabricante LIKE ?)' : ''}${status !== undefined ? ' AND m.status = ?' : ''}`;
@@ -329,13 +327,11 @@ class MarcasController {
     let params = [];
     baseQuery += ' ORDER BY m.marca ASC';
 
-    // Aplicar paginação diretamente na query (correção do erro ER_WRONG_ARGUMENTS)
-    const limit = Number(pagination.limit);
-    const offset = Number(pagination.offset);
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    // Aplicar paginação
+    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
     
     // Executar query paginada
-    const marcas = await executeQuery(query, params);
+    const marcas = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM marcas WHERE status = 1`;
@@ -381,13 +377,11 @@ class MarcasController {
     let params = [`%${fabricante}%`];
     baseQuery += ' ORDER BY m.marca ASC';
 
-    // Aplicar paginação diretamente na query (correção do erro ER_WRONG_ARGUMENTS)
-    const limit = Number(pagination.limit);
-    const offset = Number(pagination.offset);
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    // Aplicar paginação
+    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
     
     // Executar query paginada
-    const marcas = await executeQuery(query, params);
+    const marcas = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM marcas WHERE fabricante LIKE ?`;

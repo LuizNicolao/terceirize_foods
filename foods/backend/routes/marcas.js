@@ -37,6 +37,7 @@ router.get('/:id',
 router.post('/', 
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'marcas'),
+  marcaValidations.create,
   MarcasController.criarMarca
 );
 
@@ -44,6 +45,7 @@ router.post('/',
 router.put('/:id', 
   checkPermission('editar'),
   auditMiddleware(AUDIT_ACTIONS.UPDATE, 'marcas'),
+  marcaValidations.update,
   MarcasController.atualizarMarca
 );
 
