@@ -1,40 +1,6 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:8.0
-    container_name: foods_mysql
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: foods123456
-      MYSQL_DATABASE: foods_db
-      MYSQL_USER: foods_user
-      MYSQL_PASSWORD: foods123456
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./foods_db.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - foods_network
-
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: foods_phpmyadmin
-    restart: always
-    environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-      # Removendo login automático para exigir autenticação
-      # PMA_USER: foods_user
-      # PMA_PASSWORD: foods123456
-    ports:
-      - "8080:80"
-    depends_on:
-      - mysql
-    networks:
-      - foods_network
-
   backend:
     build: ./backend
     container_name: foods_backend
@@ -43,19 +9,37 @@ services:
       - "3001:3001"
     environment:
       NODE_ENV: production
-      DB_HOST: mysql
+      DB_HOST: terceirize_mysql
       DB_PORT: 3306
       DB_NAME: foods_db
       DB_USER: foods_user
       DB_PASSWORD: foods123456
       JWT_SECRET: foods_jwt_secret_key_2024
     depends_on:
-      - mysql
+      - terceirize_mysql
     networks:
-      - foods_network
+      - terceirize_network
     volumes:
       - ./backend:/app
       - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   frontend:
     build: ./frontend
@@ -68,14 +52,29 @@ services:
     depends_on:
       - backend
     networks:
-      - foods_network
+      - terceirize_network
     volumes:
       - ./frontend:/app
       - /app/node_modules
-
-volumes:
-  mysql_data:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
 networks:
-  foods_network:
-    driver: bridge 
+  terceirize_network:
+    external: true 
