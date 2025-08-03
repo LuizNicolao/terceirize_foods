@@ -63,6 +63,17 @@ const UnidadesEscolares = () => {
     }
   };
 
+  // Filtrar unidades escolares (client-side como na tela Rotas)
+  const filteredUnidades = unidades.filter(unidade => {
+    const matchesSearch = !searchTerm || 
+      unidade.nome_escola.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      unidade.codigo_teknisa.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      unidade.cidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      unidade.estado.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
+
   const loadRotas = async () => {
     setLoadingRotas(true);
     try {
@@ -328,14 +339,8 @@ const UnidadesEscolares = () => {
                     {/* Filtros */}
        <CadastroFilterBar
          searchTerm={searchTerm}
-         onSearchChange={(search) => {
-           setSearchTerm(search);
-           loadUnidades({ search });
-         }}
-         onClear={() => {
-           setSearchTerm('');
-           loadUnidades();
-         }}
+         onSearchChange={setSearchTerm}
+         onClear={() => setSearchTerm('')}
          placeholder="Buscar por nome, cidade ou código..."
        />
 
@@ -351,10 +356,18 @@ const UnidadesEscolares = () => {
          </Button>
        </div>
 
-       {/* Tabela */}
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+               {/* Tabela */}
+       {filteredUnidades.length === 0 ? (
+         <div className="text-center py-12 text-gray-500">
+           {searchTerm 
+             ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
+             : 'Nenhuma unidade escolar cadastrada'
+           }
+         </div>
+       ) : (
+         <div className="bg-white rounded-lg shadow-md overflow-hidden">
+           <div className="overflow-x-auto">
+             <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -380,8 +393,8 @@ const UnidadesEscolares = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {unidades.map((unidade) => (
+                         <tbody className="bg-white divide-y divide-gray-200">
+               {filteredUnidades.map((unidade) => (
                 <tr key={unidade.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -440,10 +453,11 @@ const UnidadesEscolares = () => {
                    </td>
                 </tr>
               ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                         </tbody>
+           </table>
+         </div>
+       </div>
+       )}
 
                     {/* Modal de Unidade Escolar */}
        <Modal
