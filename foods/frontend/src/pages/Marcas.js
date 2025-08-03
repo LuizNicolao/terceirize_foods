@@ -321,10 +321,18 @@ const Marcas = () => {
     try {
       setLoading(true);
       const response = await api.get('/marcas?limit=1000');
-      setMarcas(response.data.data.items || response.data.data || []);
+      setMarcas(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar marcas:', error);
-      toast.error('Erro ao carregar marcas');
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao carregar marcas';
+      
+      // Se a mensagem contém quebras de linha, mostrar no modal customizado
+      if (errorMsg.includes('\n')) {
+        setErrorMessage(errorMsg);
+        setShowErrorModal(true);
+      } else {
+        toast.error(errorMsg);
+      }
       setMarcas([]);
     } finally {
       setLoading(false);
@@ -615,12 +623,6 @@ const Marcas = () => {
     setViewMode(false);
     setValue('marca', marca.marca);
     setValue('fabricante', marca.fabricante);
-    setValue('descricao', marca.descricao);
-    setValue('cnpj', marca.cnpj);
-    setValue('telefone', marca.telefone);
-    setValue('email', marca.email);
-    setValue('website', marca.website);
-    setValue('endereco', marca.endereco);
     setValue('status', marca.status);
     setShowModal(true);
   };
@@ -631,12 +633,6 @@ const Marcas = () => {
     setViewMode(true);
     setValue('marca', marca.marca);
     setValue('fabricante', marca.fabricante);
-    setValue('descricao', marca.descricao);
-    setValue('cnpj', marca.cnpj);
-    setValue('telefone', marca.telefone);
-    setValue('email', marca.email);
-    setValue('website', marca.website);
-    setValue('endereco', marca.endereco);
     setValue('status', marca.status);
     setShowModal(true);
   };
@@ -662,30 +658,6 @@ const Marcas = () => {
         
         if (data.fabricante !== editingMarca.fabricante) {
           updateData.fabricante = data.fabricante;
-        }
-        
-        if (data.descricao !== editingMarca.descricao) {
-          updateData.descricao = data.descricao;
-        }
-        
-        if (data.cnpj !== editingMarca.cnpj) {
-          updateData.cnpj = data.cnpj;
-        }
-        
-        if (data.telefone !== editingMarca.telefone) {
-          updateData.telefone = data.telefone;
-        }
-        
-        if (data.email !== editingMarca.email) {
-          updateData.email = data.email;
-        }
-        
-        if (data.website !== editingMarca.website) {
-          updateData.website = data.website;
-        }
-        
-        if (data.endereco !== editingMarca.endereco) {
-          updateData.endereco = data.endereco;
         }
         
         if (data.status !== editingMarca.status) {
@@ -714,7 +686,15 @@ const Marcas = () => {
       loadMarcas();
     } catch (error) {
       console.error('Erro ao salvar marca:', error);
-      toast.error(error.response?.data?.error || 'Erro ao salvar marca');
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao salvar marca';
+      
+      // Se a mensagem contém quebras de linha, mostrar no modal customizado
+      if (errorMsg.includes('\n')) {
+        setErrorMessage(errorMsg);
+        setShowErrorModal(true);
+      } else {
+        toast.error(errorMsg);
+      }
     }
   };
 
@@ -743,8 +723,7 @@ const Marcas = () => {
   // Filtrar marcas
   const filteredMarcas = marcas.filter(marca => {
     const matchesSearch = marca.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         marca.fabricante?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         marca.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+                         marca.fabricante?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'todos' || marca.status === parseInt(statusFilter);
     return matchesSearch && matchesStatus;
   });
@@ -784,7 +763,7 @@ const Marcas = () => {
         statusFilter={statusFilter}
         onStatusChange={setStatusFilter}
         onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
-        placeholder="Buscar por nome ou código..."
+        placeholder="Buscar por marca ou fabricante..."
       />
 
       <TableContainer>
