@@ -655,10 +655,10 @@ const Rotas = () => {
            isOpen={showModal}
            onClose={handleCloseModal}
            title={viewMode ? 'Visualizar Rota' : editingRota ? 'Editar Rota' : 'Adicionar Rota'}
-                       size={viewMode ? "full" : "lg"}
+                       size={viewMode ? "xl" : "lg"}
          >
                      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                           <div className={`grid grid-cols-1 ${viewMode ? 'xl:grid-cols-4 lg:grid-cols-3' : 'md:grid-cols-2'} gap-6`}>
+                           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'md:grid-cols-2'} gap-6`}>
                              <Input
                  label="Filial *"
                  type="select"
@@ -768,7 +768,7 @@ const Rotas = () => {
                 </div>
                 
                                  {showUnidades && (
-                   <div className="max-h-[500px] overflow-y-auto">
+                   <div className="max-h-[400px] overflow-y-auto">
                     {loadingUnidades ? (
                       <div className="text-center py-8">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
