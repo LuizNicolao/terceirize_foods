@@ -511,15 +511,15 @@ const UnidadesEscolares = () => {
           isOpen={showModal}
           onClose={handleCloseModal}
           title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-          size="xl"
+          size="2xl"
         >
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 max-h-[70vh] overflow-y-auto">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
             {/* Primeira Linha - 2 Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Card 1: Informações Básicas */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2 border-b pb-2">Informações Básicas</h3>
-                <div className="space-y-2">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Básicas</h3>
+                <div className="space-y-3">
                   <Input
                     label="Nome da Escola *"
                     {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
@@ -536,11 +536,11 @@ const UnidadesEscolares = () => {
               </div>
 
               {/* Card 2: Endereço */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2 border-b pb-2">Endereço</h3>
-                <div className="space-y-2">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Endereço</h3>
+                <div className="space-y-3">
                   {/* Cidade e Estado lado a lado */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Input
                       label="Cidade *"
                       {...register('cidade', { required: 'Cidade é obrigatória' })}
@@ -560,7 +560,7 @@ const UnidadesEscolares = () => {
                     disabled={viewMode}
                   />
                   {/* Número e CEP lado a lado */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Input
                       label="Número"
                       {...register('numero')}
@@ -587,11 +587,11 @@ const UnidadesEscolares = () => {
             </div>
 
             {/* Segunda Linha - 3 Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Card 3: Configurações */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2 border-b pb-2">Configurações</h3>
-                <div className="space-y-2">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Configurações</h3>
+                <div className="space-y-3">
                   <Input
                     label="Centro de Distribuição"
                     {...register('centro_distribuicao')}
@@ -603,7 +603,7 @@ const UnidadesEscolares = () => {
                     disabled={viewMode}
                   />
                   {/* LOT e CC Senior lado a lado */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Input
                       label="LOT"
                       {...register('lot')}
@@ -629,9 +629,9 @@ const UnidadesEscolares = () => {
               </div>
 
               {/* Card 4: Rota e Status */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2 border-b pb-2">Rota e Status</h3>
-                <div className="space-y-2">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Rota e Status</h3>
+                <div className="space-y-3">
                   <Input
                     label="Rota"
                     type="select"
@@ -646,7 +646,7 @@ const UnidadesEscolares = () => {
                     ))}
                   </Input>
                   {/* Ordem de Entrega e Status lado a lado */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <Input
                       label="Ordem de Entrega"
                       type="number"
@@ -669,14 +669,14 @@ const UnidadesEscolares = () => {
               </div>
 
               {/* Card 5: Observações */}
-              <div className="bg-gray-50 p-3 rounded-lg">
-                <h3 className="text-sm font-semibold text-gray-700 mb-2 border-b pb-2">Observações</h3>
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Observações</h3>
                 <Input
                   label="Observações"
                   type="textarea"
                   {...register('observacoes')}
                   disabled={viewMode}
-                  rows={4}
+                  rows={5}
                 />
               </div>
             </div>
