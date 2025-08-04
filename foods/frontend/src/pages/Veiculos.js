@@ -1,409 +1,124 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf, FaTruck, FaCar, FaMotorcycle, FaTools } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
-import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
+import VeiculosService from '../services/veiculos';
+import { Button, Input, Modal, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
-
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h1`
-  color: var(--dark-gray);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const AddButton = styled.button`
-  background: var(--primary-green);
-  color: var(--white);
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: var(--dark-green);
-    transform: translateY(-1px);
-  }
-`;
-
-const TableContainer = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  background-color: #f5f5f5;
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const Td = styled.td`
-  padding: 16px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  color: var(--dark-gray);
-`;
-
-const StatusBadge = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props =>
-    props.status === 'ativo' ? 'var(--success-green)' :
-    props.status === 'manutencao' ? 'var(--warning-yellow)' : '#ffebee'};
-  color: ${props =>
-    props.status === 'ativo' ? 'white' :
-    props.status === 'manutencao' ? 'var(--dark-gray)' : 'var(--error-red)'};
-`;
-
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  margin-right: 8px;
-  color: var(--gray);
-
-  &:hover {
-    background-color: var(--light-gray);
-  }
-
-  &.edit {
-    color: var(--blue);
-  }
-
-  &.delete {
-    color: var(--error-red);
-  }
-
-  &.view {
-    color: var(--primary-green);
-  }
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 24px;
-  width: 95%;
-  max-width: 1400px;
-  max-height: 95vh;
-  overflow-y: auto;
-  
-  /* Personalizar scrollbar */
-  &::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: var(--primary-green);
-    border-radius: 4px;
-  }
-  
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--dark-green);
-  }
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const ModalTitle = styled.h2`
-  color: var(--dark-gray);
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--gray);
-  padding: 4px;
-
-  &:hover {
-    color: var(--error-red);
-  }
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const Label = styled.label`
-  color: var(--dark-gray);
-  font-weight: 600;
-  font-size: 12px;
-`;
-
-const Input = styled.input`
-  padding: 8px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const Select = styled.select`
-  padding: 8px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  background: var(--white);
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-`;
-
-const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &.primary {
-    background: var(--primary-green);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-green);
-    }
-  }
-
-  &.secondary {
-    background: var(--gray);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-gray);
-    }
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px;
-  color: var(--gray);
-`;
-
-const TextArea = styled.textarea`
-  padding: 8px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  resize: vertical;
-  min-height: 60px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const FormGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
-  margin-bottom: 6px;
-  flex: 1;
-`;
-
-const FormGrid2 = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-  margin-bottom: 6px;
-`;
-
-const FormGrid3 = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 8px;
-`;
-
-const FormSection = styled.div`
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 12px;
-  background: #fafafa;
-  min-height: 350px;
-  display: flex;
-  flex-direction: column;
-`;
-
-const SectionTitle = styled.h3`
-  color: var(--dark-gray);
-  font-size: 13px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-  padding-bottom: 4px;
-  border-bottom: 2px solid var(--primary-green);
-`;
-
-const FirstRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  align-items: start;
-  margin-bottom: 12px;
-`;
-
-const SecondRow = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  align-items: start;
-`;
+import Pagination from '../components/Pagination';
 
 const Veiculos = () => {
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [veiculos, setVeiculos] = useState([]);
-  const [loading, setLoading] = useState(true); // Voltado para true como nas outras páginas
+  const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [viewMode, setViewMode] = useState(false);
   const [editingVeiculo, setEditingVeiculo] = useState(null);
-  const [isViewMode, setIsViewMode] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
-  const [auditLoading, setAuditLoading] = useState(false);
-  const [auditFilters, setAuditFilters] = useState({
-    dataInicio: '',
-    dataFim: '',
-    acao: '',
-    usuario: ''
+  const [loadingAudit, setLoadingAudit] = useState(false);
+  const [estatisticas, setEstatisticas] = useState({
+    total_veiculos: 0,
+    veiculos_ativos: 0,
+    em_manutencao: 0,
+    total_tipos: 0
   });
-  const { canView, canCreate, canEdit, canDelete } = usePermissions();
+  const [searchTerm, setSearchTerm] = useState('');
   
+  // Estados de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   useEffect(() => {
     loadVeiculos();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
-  const loadVeiculos = async () => {
+  const loadVeiculos = async (params = {}) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await api.get('/veiculos');
-      setVeiculos(response.data.data || []);
+      // Parâmetros de paginação
+      const paginationParams = {
+        page: currentPage,
+        limit: itemsPerPage,
+        ...params
+      };
+
+      const result = await VeiculosService.listar(paginationParams);
+      if (result.success) {
+        setVeiculos(result.data);
+        
+        // Extrair informações de paginação
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages || 1);
+          setTotalItems(result.pagination.totalItems || result.data.length);
+          setCurrentPage(result.pagination.currentPage || 1);
+        } else {
+          // Fallback se não houver paginação no backend
+          setTotalItems(result.data.length);
+          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
+        }
+        
+        // Calcular estatísticas básicas
+        const total = result.pagination?.totalItems || result.data.length;
+        const ativos = result.data.filter(v => v.status === 'ativo').length;
+        const manutencao = result.data.filter(v => v.status === 'manutencao').length;
+        const tipos = new Set(result.data.map(v => v.tipo_veiculo)).size;
+        
+        setEstatisticas({
+          total_veiculos: total,
+          veiculos_ativos: ativos,
+          em_manutencao: manutencao,
+          total_tipos: tipos
+        });
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      console.error('Erro ao carregar veículos:', error);
       toast.error('Erro ao carregar veículos');
-      setVeiculos([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const loadAuditLogs = async () => {
-    try {
-      setAuditLoading(true);
-      const params = new URLSearchParams();
-      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
-      if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
-      params.append('recurso', 'veiculos');
+  // Filtrar veículos (client-side)
+  const filteredVeiculos = veiculos.filter(veiculo => {
+    const matchesSearch = !searchTerm || 
+      veiculo.placa.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      veiculo.modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      veiculo.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      veiculo.tipo_veiculo.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
 
-      const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
+  // Função para mudar de página
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const loadAuditLogs = async () => {
+    setLoadingAudit(true);
+    try {
+      const response = await fetch('/api/auditoria?entidade=veiculos&limit=100', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setAuditLogs(data.data || []);
+      } else {
+        toast.error('Erro ao carregar logs de auditoria');
+      }
     } catch (error) {
-      console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
-      setAuditLogs([]);
     } finally {
-      setAuditLoading(false);
+      setLoadingAudit(false);
     }
   };
 
@@ -415,12 +130,6 @@ const Veiculos = () => {
   const handleCloseAuditModal = () => {
     setShowAuditModal(false);
     setAuditLogs([]);
-    setAuditFilters({
-      dataInicio: '',
-      dataFim: '',
-      acao: '',
-      usuario: ''
-    });
   };
 
   const handleApplyAuditFilters = () => {
@@ -429,1153 +138,614 @@ const Veiculos = () => {
 
   const handleExportXLSX = async () => {
     try {
-      const params = new URLSearchParams();
-      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
-      if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
-      params.append('recurso', 'veiculos');
-
-      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
-        responseType: 'blob'
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_veiculos_${new Date().toISOString().split('T')[0]}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success('Relatório exportado com sucesso!');
+      const result = await VeiculosService.exportarXLSX();
+      if (result.success) {
+        const blob = new Blob([result.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'veiculos.xlsx';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        toast.success('Exportação XLSX realizada com sucesso!');
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      console.error('Erro ao exportar auditoria:', error);
-      toast.error('Erro ao exportar relatório');
+      toast.error('Erro ao exportar XLSX');
     }
   };
 
   const handleExportPDF = async () => {
     try {
-      const params = new URLSearchParams();
-      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
-      if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
-      params.append('recurso', 'veiculos');
-
-      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
-        responseType: 'blob'
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_veiculos_${new Date().toISOString().split('T')[0]}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success('Relatório exportado com sucesso!');
+      const result = await VeiculosService.exportarPDF();
+      if (result.success) {
+        const blob = new Blob([result.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'veiculos.pdf';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        toast.success('Exportação PDF realizada com sucesso!');
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      console.error('Erro ao exportar auditoria:', error);
-      toast.error('Erro ao exportar relatório');
+      toast.error('Erro ao exportar PDF');
     }
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    return new Date(dateString).toLocaleString('pt-BR');
   };
 
   const getActionLabel = (action) => {
     const actions = {
-      'CREATE': 'Criação',
-      'UPDATE': 'Atualização',
-      'DELETE': 'Exclusão'
+      CREATE: 'Criar',
+      UPDATE: 'Atualizar',
+      DELETE: 'Excluir'
     };
     return actions[action] || action;
   };
 
   const getFieldLabel = (field) => {
     const fields = {
-      'placa': 'Placa',
-      'renavam': 'RENAVAM',
-      'chassi': 'Chassi',
-      'modelo': 'Modelo',
-      'marca': 'Marca',
-      'fabricante': 'Fabricante',
-      'ano_fabricacao': 'Ano de Fabricação',
-      'tipo_veiculo': 'Tipo de Veículo',
-      'carroceria': 'Carroceria',
-      'combustivel': 'Combustível',
-      'categoria': 'Categoria',
-      'capacidade_carga': 'Capacidade de Carga',
-      'capacidade_volume': 'Capacidade de Volume',
-      'numero_eixos': 'Número de Eixos',
-      'tara': 'Tara',
-      'peso_bruto_total': 'Peso Bruto Total',
-      'potencia_motor': 'Potência do Motor',
-      'tipo_tracao': 'Tipo de Tração',
-      'quilometragem_atual': 'Quilometragem Atual',
-      'data_emplacamento': 'Data de Emplacamento',
-      'vencimento_licenciamento': 'Vencimento do Licenciamento',
-      'vencimento_ipva': 'Vencimento do IPVA',
-      'vencimento_dpvat': 'Vencimento do DPVAT',
-      'numero_apolice_seguro': 'Número da Apólice de Seguro',
-      'situacao_documental': 'Situação Documental',
-      'data_ultima_revisao': 'Data da Última Revisão',
-      'quilometragem_proxima_revisao': 'Quilometragem da Próxima Revisão',
-      'data_ultima_troca_oleo': 'Data da Última Troca de Óleo',
-      'vencimento_alinhamento_balanceamento': 'Vencimento do Alinhamento/Balanceamento',
-      'proxima_inspecao_veicular': 'Próxima Inspeção Veicular',
-      'status': 'Status',
-      'status_detalhado': 'Status Detalhado',
-      'data_aquisicao': 'Data de Aquisição',
-      'valor_compra': 'Valor de Compra',
-      'fornecedor': 'Fornecedor',
-      'numero_frota': 'Número da Frota',
-      'situacao_financeira': 'Situação Financeira',
-      'observacoes': 'Observações'
+      placa: 'Placa',
+      modelo: 'Modelo',
+      marca: 'Marca',
+      ano: 'Ano',
+      tipo_veiculo: 'Tipo de Veículo',
+      categoria: 'Categoria',
+      status: 'Status',
+      motorista_id: 'Motorista',
+      capacidade: 'Capacidade',
+      combustivel: 'Combustível',
+      km_atual: 'KM Atual',
+      ultima_manutencao: 'Última Manutenção',
+      proxima_manutencao: 'Próxima Manutenção',
+      observacoes: 'Observações'
     };
     return fields[field] || field;
   };
 
   const formatFieldValue = (field, value) => {
-    if (value === null || value === undefined) return 'Não informado';
-    
-    if (field.includes('data') || field.includes('vencimento')) {
-      return formatDate(value);
-    }
-    
     if (field === 'status') {
-      return value === 'ativo' ? 'Ativo' : value === 'manutencao' ? 'Em Manutenção' : 'Inativo';
+      return getStatusLabel(value);
     }
-    
     if (field === 'tipo_veiculo') {
-      const tipos = {
-        'passeio': 'Passeio',
-        'caminhao': 'Caminhão',
-        'moto': 'Moto',
-        'utilitario': 'Utilitário'
-      };
-      return tipos[value] || value;
+      return getTipoVeiculoLabel(value);
     }
-    
     if (field === 'categoria') {
-      const categorias = {
-        'Frota': 'Frota',
-        'Agregado': 'Agregado',
-        'Terceiro': 'Terceiro'
-      };
-      return categorias[value] || value;
+      return getCategoriaLabel(value);
     }
-    
-    if (field === 'situacao_financeira') {
-      const situacoes = {
-        'Proprio': 'Próprio',
-        'Financiado': 'Financiado',
-        'leasing': 'Leasing'
-      };
-      return situacoes[value] || value;
+    if (field === 'ultima_manutencao' || field === 'proxima_manutencao') {
+      return value ? formatDate(value) : 'N/A';
     }
-    
     return value;
   };
 
   const handleAddVeiculo = () => {
+    setViewMode(false);
     setEditingVeiculo(null);
-    setIsViewMode(false);
     reset();
     setShowModal(true);
   };
 
   const handleViewVeiculo = (veiculo) => {
+    setViewMode(true);
     setEditingVeiculo(veiculo);
-    setIsViewMode(true);
     reset(veiculo);
     setShowModal(true);
   };
 
   const handleEditVeiculo = (veiculo) => {
+    setViewMode(false);
     setEditingVeiculo(veiculo);
-    setIsViewMode(false);
     reset(veiculo);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
+    setViewMode(false);
     setEditingVeiculo(null);
-    setIsViewMode(false);
     reset();
   };
 
   const onSubmit = async (data) => {
     try {
+      let result;
       if (editingVeiculo) {
-        await api.put(`/veiculos/${editingVeiculo.id}`, data);
-        toast.success('Veículo atualizado com sucesso!');
+        result = await VeiculosService.atualizar(editingVeiculo.id, data);
       } else {
-        await api.post('/veiculos', data);
-        toast.success('Veículo criado com sucesso!');
+        result = await VeiculosService.criar(data);
       }
-      
-      handleCloseModal();
-      loadVeiculos();
+
+      if (result.success) {
+        toast.success(editingVeiculo ? 'Veículo atualizado com sucesso!' : 'Veículo criado com sucesso!');
+        handleCloseModal();
+        loadVeiculos();
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      console.error('Erro ao salvar veículo:', error);
       toast.error('Erro ao salvar veículo');
     }
   };
 
   const handleDeleteVeiculo = async (veiculoId) => {
-    if (!window.confirm('Tem certeza que deseja excluir este veículo?')) {
-      return;
-    }
-
-    try {
-      await api.delete(`/veiculos/${veiculoId}`);
-      toast.success('Veículo excluído com sucesso!');
-      loadVeiculos();
-    } catch (error) {
-      console.error('Erro ao excluir veículo:', error);
-      toast.error('Erro ao excluir veículo');
+    if (window.confirm('Tem certeza que deseja excluir este veículo?')) {
+      try {
+        const result = await VeiculosService.excluir(veiculoId);
+        if (result.success) {
+          toast.success('Veículo excluído com sucesso!');
+          loadVeiculos();
+        } else {
+          toast.error(result.error);
+        }
+      } catch (error) {
+        toast.error('Erro ao excluir veículo');
+      }
     }
   };
 
   const getStatusLabel = (status) => {
-    const statuses = {
-      'ativo': 'Ativo',
-      'inativo': 'Inativo',
-      'manutencao': 'Em Manutenção'
+    const statusMap = {
+      ativo: 'Ativo',
+      inativo: 'Inativo',
+      manutencao: 'Em Manutenção'
     };
-    return statuses[status] || status;
+    return statusMap[status] || status;
   };
 
   const getTipoVeiculoLabel = (tipo) => {
-    const tipos = {
-      'passeio': 'Passeio',
-      'caminhao': 'Caminhão',
-      'moto': 'Moto',
-      'utilitario': 'Utilitário'
+    const tiposMap = {
+      caminhao: 'Caminhão',
+      van: 'Van',
+      carro: 'Carro',
+      moto: 'Moto',
+      onibus: 'Ônibus'
     };
-    return tipos[tipo] || tipo;
+    return tiposMap[tipo] || tipo;
   };
 
   const getCategoriaLabel = (categoria) => {
-    const categorias = {
-      'Frota': 'Frota',
-      'Agregado': 'Agregado',
-      'Terceiro': 'Terceiro'
+    const categoriasMap = {
+      carga: 'Carga',
+      passageiros: 'Passageiros',
+      utilitario: 'Utilitário',
+      especial: 'Especial'
     };
-    return categorias[categoria] || categoria;
+    return categoriasMap[categoria] || categoria;
   };
-
-  const filteredVeiculos = veiculos.filter(veiculo => {
-    const matchesSearch = searchTerm === '' || 
-      veiculo.placa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      veiculo.modelo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      veiculo.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      veiculo.numero_frota?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'todos' || veiculo.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
 
   if (loading) {
     return (
-      <Container>
-        <div>Carregando veículos...</div>
-      </Container>
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <Header>
-        <Title>Gestão de Veículos</Title>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <AddButton 
+    <div className="p-3 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Veículos</h1>
+        <div className="flex gap-2 sm:gap-3">
+          <Button
             onClick={handleOpenAuditModal}
-            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
           >
-            <FaQuestionCircle />
-            Auditoria
-          </AddButton>
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+          </Button>
           {canCreate('veiculos') && (
-            <AddButton onClick={handleAddVeiculo}>
-              <FaPlus />
-              Adicionar Veículo
-            </AddButton>
+            <Button onClick={handleAddVeiculo} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
           )}
         </div>
-      </Header>
+      </div>
 
+      {/* Estatísticas */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+        <StatCard
+          title="Total de Veículos"
+          value={estatisticas.total_veiculos}
+          icon={FaTruck}
+          color="blue"
+        />
+        <StatCard
+          title="Veículos Ativos"
+          value={estatisticas.veiculos_ativos}
+          icon={FaCar}
+          color="green"
+        />
+        <StatCard
+          title="Em Manutenção"
+          value={estatisticas.em_manutencao}
+          icon={FaTools}
+          color="orange"
+        />
+        <StatCard
+          title="Tipos de Veículos"
+          value={estatisticas.total_tipos}
+          icon={FaMotorcycle}
+          color="purple"
+        />
+      </div>
+
+      {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
-        placeholder="Buscar por placa, modelo, marca ou número da frota..."
+        onClear={() => setSearchTerm('')}
+        placeholder="Buscar por placa, modelo, marca ou tipo..."
       />
 
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Placa</Th>
-              <Th>Modelo</Th>
-              <Th>Marca</Th>
-              <Th>Tipo</Th>
-              <Th>Categoria</Th>
-              <Th>Status</Th>
-              <Th>Ações</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredVeiculos.length === 0 ? (
-              <tr>
-                <Td colSpan="7">
-                  <EmptyState>
-                    {searchTerm || statusFilter !== 'todos' 
-                      ? 'Nenhum veículo encontrado com os filtros aplicados'
-                      : 'Nenhum veículo cadastrado'
-                    }
-                  </EmptyState>
-                </Td>
-              </tr>
-            ) : (
-              filteredVeiculos.map((veiculo) => (
-                <tr key={veiculo.id}>
-                  <Td>{veiculo.placa}</Td>
-                  <Td>{veiculo.modelo || '-'}</Td>
-                  <Td>{veiculo.marca || '-'}</Td>
-                  <Td>{getTipoVeiculoLabel(veiculo.tipo_veiculo)}</Td>
-                  <Td>{getCategoriaLabel(veiculo.categoria)}</Td>
-                  <Td>
-                    <StatusBadge status={veiculo.status}>
-                      {getStatusLabel(veiculo.status)}
-                    </StatusBadge>
-                  </Td>
-                  <Td>
-                    <ActionButton
-                      className="view"
-                      title="Visualizar"
-                      onClick={() => handleViewVeiculo(veiculo)}
-                    >
-                      <FaEye />
-                    </ActionButton>
-                    {canEdit('veiculos') && (
-                      <ActionButton
-                        className="edit"
-                        title="Editar"
-                        onClick={() => handleEditVeiculo(veiculo)}
-                      >
-                        <FaEdit />
-                      </ActionButton>
-                    )}
-                    {canDelete('veiculos') && (
-                      <ActionButton
-                        className="delete"
-                        title="Excluir"
-                        onClick={() => handleDeleteVeiculo(veiculo.id)}
-                      >
-                        <FaTrash />
-                      </ActionButton>
-                    )}
-                  </Td>
+      {/* Ações */}
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+        <Button onClick={handleExportXLSX} variant="outline" size="sm">
+          <FaFileExcel className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar XLSX</span>
+          <span className="sm:hidden">XLSX</span>
+        </Button>
+        <Button onClick={handleExportPDF} variant="outline" size="sm">
+          <FaFilePdf className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar PDF</span>
+          <span className="sm:hidden">PDF</span>
+        </Button>
+      </div>
+
+      {/* Tabela */}
+      {filteredVeiculos.length === 0 ? (
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+          {searchTerm 
+            ? 'Nenhum veículo encontrado com os filtros aplicados'
+            : 'Nenhum veículo cadastrado'
+          }
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Placa
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Modelo/Marca
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tipo/Categoria
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    KM Atual
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </TableContainer>
-
-      {showModal && (
-        <Modal onClick={handleCloseModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>
-                {isViewMode ? 'Visualizar Veículo' : editingVeiculo ? 'Editar Veículo' : 'Adicionar Veículo'}
-              </ModalTitle>
-              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
-            </ModalHeader>
-
-            <Form onSubmit={handleSubmit(onSubmit)}>
-              {/* Primeira Linha - 3 Cards */}
-              <FirstRow>
-                {/* Card 1: Informações Básicas */}
-                <FormSection>
-                  <SectionTitle>Informações Básicas</SectionTitle>
-                  <FormGrid>
-                    <FormGroup>
-                      <Label>Placa *</Label>
-                      <Input
-                        type="text"
-                        placeholder="Ex: ABC-1234"
-                        disabled={isViewMode}
-                        {...register('placa', { required: 'Placa é obrigatória' })}
-                      />
-                      {errors.placa && <span style={{ color: 'red', fontSize: '11px' }}>{errors.placa.message}</span>}
-                    </FormGroup>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>RENAVAM</Label>
-                        <Input
-                          type="text"
-                          placeholder="RENAVAM"
-                          disabled={isViewMode}
-                          {...register('renavam')}
-                        />
-                        {errors.renavam && <span style={{ color: 'red', fontSize: '11px' }}>{errors.renavam.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Chassi</Label>
-                        <Input
-                          type="text"
-                          placeholder="Chassi"
-                          disabled={isViewMode}
-                          {...register('chassi')}
-                        />
-                        {errors.chassi && <span style={{ color: 'red', fontSize: '11px' }}>{errors.chassi.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Marca</Label>
-                        <Input
-                          type="text"
-                          placeholder="Ex: Ford"
-                          disabled={isViewMode}
-                          {...register('marca')}
-                        />
-                        {errors.marca && <span style={{ color: 'red', fontSize: '11px' }}>{errors.marca.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Modelo</Label>
-                        <Input
-                          type="text"
-                          placeholder="Ex: Fiesta"
-                          disabled={isViewMode}
-                          {...register('modelo')}
-                        />
-                        {errors.modelo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.modelo.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGroup>
-                      <Label>Fabricante</Label>
-                      <Input
-                        type="text"
-                        placeholder="Fabricante"
-                        disabled={isViewMode}
-                        {...register('fabricante')}
-                      />
-                      {errors.fabricante && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fabricante.message}</span>}
-                    </FormGroup>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Ano de Fabricação</Label>
-                        <Input
-                          type="number"
-                          placeholder="Ex: 2020"
-                          disabled={isViewMode}
-                          {...register('ano_fabricacao')}
-                        />
-                        {errors.ano_fabricacao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.ano_fabricacao.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Tipo de Veículo</Label>
-                        <Select disabled={isViewMode} {...register('tipo_veiculo')}>
-                          <option value="">Selecione...</option>
-                          <option value="passeio">Passeio</option>
-                          <option value="caminhao">Caminhão</option>
-                          <option value="moto">Moto</option>
-                          <option value="utilitario">Utilitário</option>
-                        </Select>
-                        {errors.tipo_veiculo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.tipo_veiculo.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Carroceria</Label>
-                        <Select disabled={isViewMode} {...register('carroceria')}>
-                          <option value="">Selecione...</option>
-                          <option value="Bau">Baú</option>
-                          <option value="Refrigerado">Refrigerado</option>
-                          <option value="Bipartido">Bipartido</option>
-                          <option value="Grade Baixa">Grade Baixa</option>
-                          <option value="Sider">Sider</option>
-                          <option value="Graneleiro">Graneleiro</option>
-                          <option value="Tanque">Tanque</option>
-                          <option value="Cacamba">Caçamba</option>
-                        </Select>
-                        {errors.carroceria && <span style={{ color: 'red', fontSize: '11px' }}>{errors.carroceria.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Combustível</Label>
-                        <Select disabled={isViewMode} {...register('combustivel')}>
-                          <option value="">Selecione...</option>
-                          <option value="gasolina">Gasolina</option>
-                          <option value="diesel">Diesel</option>
-                          <option value="etanol">Etanol</option>
-                          <option value="flex">Flex</option>
-                          <option value="GNV">GNV</option>
-                          <option value="eletrico">Elétrico</option>
-                        </Select>
-                        {errors.combustivel && <span style={{ color: 'red', fontSize: '11px' }}>{errors.combustivel.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGroup>
-                      <Label>Categoria</Label>
-                      <Select disabled={isViewMode} {...register('categoria')}>
-                        <option value="">Selecione...</option>
-                        <option value="Frota">Frota</option>
-                        <option value="Agregado">Agregado</option>
-                        <option value="Terceiro">Terceiro</option>
-                      </Select>
-                      {errors.categoria && <span style={{ color: 'red', fontSize: '11px' }}>{errors.categoria.message}</span>}
-                    </FormGroup>
-                  </FormGrid>
-                </FormSection>
-
-                {/* Card 2: Capacidades e Especificações */}
-                <FormSection>
-                  <SectionTitle>Capacidades e Especificações</SectionTitle>
-                  <FormGrid>
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Capacidade de Carga (kg)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 1000.00"
-                          disabled={isViewMode}
-                          {...register('capacidade_carga')}
-                        />
-                        {errors.capacidade_carga && <span style={{ color: 'red', fontSize: '11px' }}>{errors.capacidade_carga.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Capacidade de Volume (m³)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 10.00"
-                          disabled={isViewMode}
-                          {...register('capacidade_volume')}
-                        />
-                        {errors.capacidade_volume && <span style={{ color: 'red', fontSize: '11px' }}>{errors.capacidade_volume.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Número de Eixos</Label>
-                        <Input
-                          type="number"
-                          placeholder="Ex: 2"
-                          disabled={isViewMode}
-                          {...register('numero_eixos')}
-                        />
-                        {errors.numero_eixos && <span style={{ color: 'red', fontSize: '11px' }}>{errors.numero_eixos.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Tipo de Tração</Label>
-                        <Select disabled={isViewMode} {...register('tipo_tracao')}>
-                          <option value="">Selecione...</option>
-                          <option value="4x2">4x2</option>
-                          <option value="4x4">4x4</option>
-                          <option value="dianteira">Dianteira</option>
-                          <option value="traseira">Traseira</option>
-                        </Select>
-                        {errors.tipo_tracao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.tipo_tracao.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Tara (kg)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 2000.00"
-                          disabled={isViewMode}
-                          {...register('tara')}
-                        />
-                        {errors.tara && <span style={{ color: 'red', fontSize: '11px' }}>{errors.tara.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Peso Bruto Total (kg)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 5000.00"
-                          disabled={isViewMode}
-                          {...register('peso_bruto_total')}
-                        />
-                        {errors.peso_bruto_total && <span style={{ color: 'red', fontSize: '11px' }}>{errors.peso_bruto_total.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Potência do Motor (cv)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 100.00"
-                          disabled={isViewMode}
-                          {...register('potencia_motor')}
-                        />
-                        {errors.potencia_motor && <span style={{ color: 'red', fontSize: '11px' }}>{errors.potencia_motor.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Quilometragem Atual (km)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 50000.00"
-                          disabled={isViewMode}
-                          {...register('quilometragem_atual')}
-                        />
-                        {errors.quilometragem_atual && <span style={{ color: 'red', fontSize: '11px' }}>{errors.quilometragem_atual.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGroup>
-                      <Label>Número da Frota</Label>
-                      <Input
-                        type="text"
-                        placeholder="Ex: F001"
-                        disabled={isViewMode}
-                        {...register('numero_frota')}
-                      />
-                      {errors.numero_frota && <span style={{ color: 'red', fontSize: '11px' }}>{errors.numero_frota.message}</span>}
-                    </FormGroup>
-                  </FormGrid>
-                </FormSection>
-
-                {/* Card 3: Documentação e Vencimentos */}
-                <FormSection>
-                  <SectionTitle>Documentação e Vencimentos</SectionTitle>
-                  <FormGrid>
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Data de Emplacamento</Label>
-                        <Input
-                          type="date"
-                          disabled={isViewMode}
-                          {...register('data_emplacamento')}
-                        />
-                        {errors.data_emplacamento && <span style={{ color: 'red', fontSize: '11px' }}>{errors.data_emplacamento.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Vencimento Licenciamento</Label>
-                        <Input
-                          type="date"
-                          disabled={isViewMode}
-                          {...register('vencimento_licenciamento')}
-                        />
-                        {errors.vencimento_licenciamento && <span style={{ color: 'red', fontSize: '11px' }}>{errors.vencimento_licenciamento.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Vencimento IPVA</Label>
-                        <Input
-                          type="date"
-                          disabled={isViewMode}
-                          {...register('vencimento_ipva')}
-                        />
-                        {errors.vencimento_ipva && <span style={{ color: 'red', fontSize: '11px' }}>{errors.vencimento_ipva.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Vencimento DPVAT</Label>
-                        <Input
-                          type="date"
-                          disabled={isViewMode}
-                          {...register('vencimento_dpvat')}
-                        />
-                        {errors.vencimento_dpvat && <span style={{ color: 'red', fontSize: '11px' }}>{errors.vencimento_dpvat.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGroup>
-                      <Label>Número da Apólice de Seguro</Label>
-                      <Input
-                        type="text"
-                        placeholder="Número da apólice"
-                        disabled={isViewMode}
-                        {...register('numero_apolice_seguro')}
-                      />
-                      {errors.numero_apolice_seguro && <span style={{ color: 'red', fontSize: '11px' }}>{errors.numero_apolice_seguro.message}</span>}
-                    </FormGroup>
-
-                    <FormGroup>
-                      <Label>Situação Documental</Label>
-                      <Select disabled={isViewMode} {...register('situacao_documental')}>
-                        <option value="">Selecione...</option>
-                        <option value="regular">Regular</option>
-                        <option value="alienado">Alienado</option>
-                        <option value="bloqueado">Bloqueado</option>
-                      </Select>
-                      {errors.situacao_documental && <span style={{ color: 'red', fontSize: '11px' }}>{errors.situacao_documental.message}</span>}
-                    </FormGroup>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Próxima Inspeção Veicular</Label>
-                        <Input
-                          type="date"
-                          disabled={isViewMode}
-                          {...register('proxima_inspecao_veicular')}
-                        />
-                        {errors.proxima_inspecao_veicular && <span style={{ color: 'red', fontSize: '11px' }}>{errors.proxima_inspecao_veicular.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Vencimento Alinhamento/Balanceamento</Label>
-                        <Input
-                          type="date"
-                          disabled={isViewMode}
-                          {...register('vencimento_alinhamento_balanceamento')}
-                        />
-                        {errors.vencimento_alinhamento_balanceamento && <span style={{ color: 'red', fontSize: '11px' }}>{errors.vencimento_alinhamento_balanceamento.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-                  </FormGrid>
-                </FormSection>
-              </FirstRow>
-
-              {/* Segunda Linha - 2 Cards */}
-              <SecondRow>
-                {/* Card 4: Manutenção e Status */}
-                <FormSection>
-                  <SectionTitle>Manutenção e Status</SectionTitle>
-                  <FormGrid>
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Data da Última Revisão</Label>
-                        <Input
-                          type="date"
-                          disabled={isViewMode}
-                          {...register('data_ultima_revisao')}
-                        />
-                        {errors.data_ultima_revisao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.data_ultima_revisao.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Data da Última Troca de Óleo</Label>
-                        <Input
-                          type="date"
-                          disabled={isViewMode}
-                          {...register('data_ultima_troca_oleo')}
-                        />
-                        {errors.data_ultima_troca_oleo && <span style={{ color: 'red', fontSize: '11px' }}>{errors.data_ultima_troca_oleo.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGroup>
-                      <Label>Quilometragem Próxima Revisão (km)</Label>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="Ex: 60000.00"
-                        disabled={isViewMode}
-                        {...register('quilometragem_proxima_revisao')}
-                      />
-                      {errors.quilometragem_proxima_revisao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.quilometragem_proxima_revisao.message}</span>}
-                    </FormGroup>
-
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Status</Label>
-                        <Select disabled={isViewMode} {...register('status')}>
-                          <option value="">Selecione...</option>
-                          <option value="ativo">Ativo</option>
-                          <option value="inativo">Inativo</option>
-                          <option value="manutencao">Em Manutenção</option>
-                        </Select>
-                        {errors.status && <span style={{ color: 'red', fontSize: '11px' }}>{errors.status.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Status Detalhado</Label>
-                        <Select disabled={isViewMode} {...register('status_detalhado')}>
-                          <option value="">Selecione...</option>
-                          <option value="Ativo">Ativo</option>
-                          <option value="Em manutencao">Em Manutenção</option>
-                          <option value="Alugado">Alugado</option>
-                          <option value="Vendido">Vendido</option>
-                        </Select>
-                        {errors.status_detalhado && <span style={{ color: 'red', fontSize: '11px' }}>{errors.status_detalhado.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-                  </FormGrid>
-                </FormSection>
-
-                {/* Card 5: Financeiro e Observações */}
-                <FormSection>
-                  <SectionTitle>Financeiro e Observações</SectionTitle>
-                  <FormGrid>
-                    <FormGrid2>
-                      <FormGroup>
-                        <Label>Data de Aquisição</Label>
-                        <Input
-                          type="date"
-                          disabled={isViewMode}
-                          {...register('data_aquisicao')}
-                        />
-                        {errors.data_aquisicao && <span style={{ color: 'red', fontSize: '11px' }}>{errors.data_aquisicao.message}</span>}
-                      </FormGroup>
-
-                      <FormGroup>
-                        <Label>Valor de Compra (R$)</Label>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder="Ex: 50000.00"
-                          disabled={isViewMode}
-                          {...register('valor_compra')}
-                        />
-                        {errors.valor_compra && <span style={{ color: 'red', fontSize: '11px' }}>{errors.valor_compra.message}</span>}
-                      </FormGroup>
-                    </FormGrid2>
-
-                    <FormGroup>
-                      <Label>Fornecedor</Label>
-                      <Input
-                        type="text"
-                        placeholder="Nome do fornecedor"
-                        disabled={isViewMode}
-                        {...register('fornecedor')}
-                      />
-                      {errors.fornecedor && <span style={{ color: 'red', fontSize: '11px' }}>{errors.fornecedor.message}</span>}
-                    </FormGroup>
-
-                    <FormGroup>
-                      <Label>Situação Financeira</Label>
-                      <Select disabled={isViewMode} {...register('situacao_financeira')}>
-                        <option value="">Selecione...</option>
-                        <option value="Proprio">Próprio</option>
-                        <option value="Financiado">Financiado</option>
-                        <option value="leasing">Leasing</option>
-                      </Select>
-                      {errors.situacao_financeira && <span style={{ color: 'red', fontSize: '11px' }}>{errors.situacao_financeira.message}</span>}
-                    </FormGroup>
-
-                    <FormGroup>
-                      <Label>Observações</Label>
-                      <TextArea
-                        placeholder="Observações sobre o veículo..."
-                        disabled={isViewMode}
-                        {...register('observacoes')}
-                      />
-                      {errors.observacoes && <span style={{ color: 'red', fontSize: '11px' }}>{errors.observacoes.message}</span>}
-                    </FormGroup>
-                  </FormGrid>
-                </FormSection>
-              </SecondRow>
-
-              {/* Botões */}
-              <ButtonGroup>
-                {!isViewMode && (
-                  <Button type="submit" className="primary">
-                    {editingVeiculo ? 'Atualizar' : 'Salvar'}
-                  </Button>
-                )}
-                <Button type="button" onClick={handleCloseModal} className="secondary">
-                  {isViewMode ? 'Fechar' : 'Cancelar'}
-                </Button>
-              </ButtonGroup>
-            </Form>
-          </ModalContent>
-        </Modal>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredVeiculos.map((veiculo) => (
+                  <tr key={veiculo.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900">
+                        {veiculo.placa}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm text-gray-900">{veiculo.modelo}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{veiculo.marca}</div>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm text-gray-900">{getTipoVeiculoLabel(veiculo.tipo_veiculo)}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{getCategoriaLabel(veiculo.categoria)}</div>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                        veiculo.status === 'ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : veiculo.status === 'manutencao'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {getStatusLabel(veiculo.status)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      {veiculo.km_atual ? `${veiculo.km_atual.toLocaleString()} km` : 'N/A'}
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                      <div className="flex gap-1 sm:gap-2">
+                        {canView('veiculos') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleViewVeiculo(veiculo)}
+                            title="Visualizar"
+                          >
+                            <FaEye className="text-green-600 text-xs sm:text-sm" />
+                          </Button>
+                        )}
+                        {canEdit('veiculos') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditVeiculo(veiculo)}
+                            title="Editar"
+                          >
+                            <FaEdit className="text-blue-600 text-xs sm:text-sm" />
+                          </Button>
+                        )}
+                        {canDelete('veiculos') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteVeiculo(veiculo.id)}
+                            title="Excluir"
+                          >
+                            <FaTrash className="text-red-600 text-xs sm:text-sm" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
-      {showAuditModal && (
-        <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
-            <ModalHeader>
-              <ModalTitle>Relatório de Auditoria - Veículos</ModalTitle>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={handleExportXLSX}
-                  title="Exportar para Excel"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFileExcel />
-                  Excel
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  title="Exportar para PDF"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFilePdf />
-                  PDF
-                </button>
-                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
-              </div>
-            </ModalHeader>
-
-            {/* Filtros de Auditoria */}
-            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataInicio}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataFim}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Ação
-                  </label>
-                  <select
-                    value={auditFilters.acao}
-                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todas as ações</option>
-                    <option value="create">Criar</option>
-                    <option value="update">Editar</option>
-                    <option value="delete">Excluir</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Usuário
-                  </label>
-                  <input
-                    type="text"
-                    value={auditFilters.usuario}
-                    onChange={(e) => setAuditFilters({...auditFilters, usuario: e.target.value})}
-                    placeholder="Nome do usuário"
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    &nbsp;
-                  </label>
-                  <button
-                    onClick={handleApplyAuditFilters}
-                    style={{
-                      width: '100%',
-                      padding: '8px 16px',
-                      background: 'var(--primary-green)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Aplicar Filtros
-                  </button>
-                </div>
+      {/* Modal de Veículo */}
+      <Modal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        title={viewMode ? 'Visualizar Veículo' : editingVeiculo ? 'Editar Veículo' : 'Adicionar Veículo'}
+        size="xl"
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
+          {/* Primeira Linha - 2 Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Card 1: Informações Básicas */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Básicas</h3>
+              <div className="space-y-3">
+                <Input
+                  label="Placa *"
+                  {...register('placa', { required: 'Placa é obrigatória' })}
+                  error={errors.placa?.message}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Modelo *"
+                  {...register('modelo', { required: 'Modelo é obrigatório' })}
+                  error={errors.modelo?.message}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Marca *"
+                  {...register('marca', { required: 'Marca é obrigatória' })}
+                  error={errors.marca?.message}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Ano"
+                  type="number"
+                  {...register('ano')}
+                  disabled={viewMode}
+                />
               </div>
             </div>
 
-            {/* Lista de Logs */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-              {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
-              ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
-                  Nenhum log encontrado com os filtros aplicados
-                </div>
-              ) : (
-                <div>
-                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
-                    {auditLogs.length} log(s) encontrado(s)
-                  </div>
-                                      {auditLogs.map((log, index) => (
-                      <div
-                        key={index}
-                        style={{
-                          border: '1px solid #e0e0e0',
-                          borderRadius: '8px',
-                          padding: '16px',
-                          marginBottom: '12px',
-                          background: 'white'
-                        }}
-                      >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              fontSize: '12px',
-                              fontWeight: 'bold',
-                              background: log.acao === 'create' ? '#e8f5e8' : 
-                                         log.acao === 'update' ? '#fff3cd' : 
-                                         log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
-                              color: log.acao === 'create' ? '#2e7d32' : 
-                                     log.acao === 'update' ? '#856404' : 
-                                     log.acao === 'delete' ? '#721c24' : '#1976d2'
-                            }}>
-                              {getActionLabel(log.acao)}
-                            </span>
-                            <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                              por {log.usuario_nome || 'Usuário desconhecido'}
-                            </span>
-                          </div>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                            {formatDate(log.timestamp)}
-                          </span>
-                        </div>
-                      
-                      {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
-                          {log.detalhes.changes && (
-                            <div style={{ marginBottom: '8px' }}>
-                              <strong>Mudanças Realizadas:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
-                                {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} style={{ 
-                                    marginBottom: '6px', 
-                                    padding: '8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
-                                      {getFieldLabel(field)}:
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                      <span style={{ color: '#721c24' }}>
-                                        <strong>Antes:</strong> {formatFieldValue(field, change.from)}
-                                      </span>
-                                      <span style={{ color: '#6c757d' }}>→</span>
-                                      <span style={{ color: '#2e7d32' }}>
-                                        <strong>Depois:</strong> {formatFieldValue(field, change.to)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {log.detalhes.requestBody && !log.detalhes.changes && (
-                            <div>
-                              <strong>Dados do Veículo:</strong>
-                              <div style={{ 
-                                marginLeft: '12px', 
-                                marginTop: '8px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '8px'
-                              }}>
-                                {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} style={{ 
-                                    padding: '6px 8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef',
-                                    fontSize: '11px'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
-                                      {getFieldLabel(field)}:
-                                    </div>
-                                    <div style={{ color: '#2e7d32' }}>
-                                      {formatFieldValue(field, value)}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {log.resource_id && (
-                            <div style={{ 
-                              marginTop: '8px', 
-                              padding: '6px 8px', 
-                              background: '#e3f2fd', 
-                              borderRadius: '4px',
-                              border: '1px solid #bbdefb',
-                              fontSize: '11px'
-                            }}>
-                              <strong>ID do Veículo:</strong> {log.resource_id}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+            {/* Card 2: Classificação */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Classificação</h3>
+              <div className="space-y-3">
+                <Input
+                  label="Tipo de Veículo *"
+                  type="select"
+                  {...register('tipo_veiculo', { required: 'Tipo de veículo é obrigatório' })}
+                  error={errors.tipo_veiculo?.message}
+                  disabled={viewMode}
+                >
+                  <option value="">Selecione o tipo</option>
+                  <option value="caminhao">Caminhão</option>
+                  <option value="van">Van</option>
+                  <option value="carro">Carro</option>
+                  <option value="moto">Moto</option>
+                  <option value="onibus">Ônibus</option>
+                </Input>
+                <Input
+                  label="Categoria *"
+                  type="select"
+                  {...register('categoria', { required: 'Categoria é obrigatória' })}
+                  error={errors.categoria?.message}
+                  disabled={viewMode}
+                >
+                  <option value="">Selecione a categoria</option>
+                  <option value="carga">Carga</option>
+                  <option value="passageiros">Passageiros</option>
+                  <option value="utilitario">Utilitário</option>
+                  <option value="especial">Especial</option>
+                </Input>
+                <Input
+                  label="Status *"
+                  type="select"
+                  {...register('status', { required: 'Status é obrigatório' })}
+                  error={errors.status?.message}
+                  disabled={viewMode}
+                >
+                  <option value="">Selecione o status</option>
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                  <option value="manutencao">Em Manutenção</option>
+                </Input>
+              </div>
+            </div>
+          </div>
+
+          {/* Segunda Linha - 2 Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Card 3: Especificações */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Especificações</h3>
+              <div className="space-y-3">
+                <Input
+                  label="Capacidade"
+                  {...register('capacidade')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Combustível"
+                  {...register('combustivel')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="KM Atual"
+                  type="number"
+                  {...register('km_atual')}
+                  disabled={viewMode}
+                />
+              </div>
+            </div>
+
+            {/* Card 4: Manutenção */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Manutenção</h3>
+              <div className="space-y-3">
+                <Input
+                  label="Última Manutenção"
+                  type="date"
+                  {...register('ultima_manutencao')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Próxima Manutenção"
+                  type="date"
+                  {...register('proxima_manutencao')}
+                  disabled={viewMode}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Terceira Linha - 1 Card */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Observações</h3>
+            <Input
+              label="Observações"
+              type="textarea"
+              {...register('observacoes')}
+              disabled={viewMode}
+              rows={4}
+            />
+          </div>
+
+          {!viewMode && (
+            <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
+              <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
+                Cancelar
+              </Button>
+              <Button type="submit" size="sm">
+                {editingVeiculo ? 'Atualizar' : 'Criar'}
+              </Button>
+            </div>
+          )}
+        </form>
+      </Modal>
+
+      {/* Modal de Auditoria */}
+      <Modal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
+        title="Logs de Auditoria - Veículos"
+        size="xl"
+      >
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900">
+              Histórico de Alterações
+            </h3>
+            <Button onClick={handleApplyAuditFilters} variant="outline" size="sm">
+              <span className="hidden sm:inline">Atualizar</span>
+              <span className="sm:hidden">Atualizar</span>
+            </Button>
+          </div>
+
+          {loadingAudit ? (
+            <div className="flex justify-center items-center py-6 sm:py-8">
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600"></div>
+            </div>
+          ) : (
+            <div className="max-h-64 sm:max-h-96 overflow-y-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Usuário</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Ação</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Campo</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Valor Anterior</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Novo Valor</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {auditLogs.map((log, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {formatDate(log.created_at)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {log.usuario_nome || 'Sistema'}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {getActionLabel(log.action)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {getFieldLabel(log.field_name)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
+                        {formatFieldValue(log.field_name, log.old_value)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
+                        {formatFieldValue(log.field_name, log.new_value)}
+                      </td>
+                    </tr>
                   ))}
-                </div>
-              )}
+                </tbody>
+              </table>
             </div>
-          </ModalContent>
-        </Modal>
+          )}
+        </div>
+      </Modal>
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
       )}
-    </Container>
+    </div>
   );
 };
 
