@@ -514,153 +514,159 @@ const UnidadesEscolares = () => {
           size="xl"
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Seção 1: Informações Básicas */}
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Informações Básicas</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <Input
-                  label="Nome da Escola *"
-                  {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
-                  error={errors.nome_escola?.message}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Código Teknisa *"
-                  {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
-                  error={errors.codigo_teknisa?.message}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Cidade *"
-                  {...register('cidade', { required: 'Cidade é obrigatória' })}
-                  error={errors.cidade?.message}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Estado *"
-                  {...register('estado', { required: 'Estado é obrigatório' })}
-                  error={errors.estado?.message}
-                  disabled={viewMode}
-                />
+            {/* Primeira Linha - 3 Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Card 1: Informações Básicas */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-2">Informações Básicas</h3>
+                <div className="space-y-3">
+                  <Input
+                    label="Nome da Escola *"
+                    {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
+                    error={errors.nome_escola?.message}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Código Teknisa *"
+                    {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
+                    error={errors.codigo_teknisa?.message}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Cidade *"
+                    {...register('cidade', { required: 'Cidade é obrigatória' })}
+                    error={errors.cidade?.message}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Estado *"
+                    {...register('estado', { required: 'Estado é obrigatório' })}
+                    error={errors.estado?.message}
+                    disabled={viewMode}
+                  />
+                </div>
+              </div>
+
+              {/* Card 2: Endereço */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-2">Endereço</h3>
+                <div className="space-y-3">
+                  <Input
+                    label="País"
+                    {...register('pais')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="CEP"
+                    {...register('cep')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Endereço"
+                    {...register('endereco')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Número"
+                    {...register('numero')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Bairro"
+                    {...register('bairro')}
+                    disabled={viewMode}
+                  />
+                </div>
+              </div>
+
+              {/* Card 3: Configurações */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-2">Configurações</h3>
+                <div className="space-y-3">
+                  <Input
+                    label="Centro de Distribuição"
+                    {...register('centro_distribuicao')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Regional"
+                    {...register('regional')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="LOT"
+                    {...register('lot')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="CC Senior"
+                    {...register('cc_senior')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Código Senior"
+                    {...register('codigo_senior')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Abastecimento"
+                    {...register('abastecimento')}
+                    disabled={viewMode}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Seção 2: Endereço */}
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Endereço</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Segunda Linha - 2 Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Card 4: Rota e Status */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-2">Rota e Status</h3>
+                <div className="space-y-3">
+                  <Input
+                    label="Ordem de Entrega"
+                    type="number"
+                    {...register('ordem_entrega')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Rota"
+                    type="select"
+                    {...register('rota_id')}
+                    disabled={viewMode}
+                  >
+                    <option value="">Selecione uma rota</option>
+                    {rotas.map((rota) => (
+                      <option key={rota.id} value={rota.id}>
+                        {rota.nome}
+                      </option>
+                    ))}
+                  </Input>
+                  <Input
+                    label="Status *"
+                    type="select"
+                    {...register('status', { required: 'Status é obrigatório' })}
+                    error={errors.status?.message}
+                    disabled={viewMode}
+                  >
+                    <option value="">Selecione o status</option>
+                    <option value="ativo">Ativo</option>
+                    <option value="inativo">Inativo</option>
+                  </Input>
+                </div>
+              </div>
+
+              {/* Card 5: Observações */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-2">Observações</h3>
                 <Input
-                  label="País"
-                  {...register('pais')}
+                  label="Observações"
+                  type="textarea"
+                  {...register('observacoes')}
                   disabled={viewMode}
-                />
-                <Input
-                  label="CEP"
-                  {...register('cep')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Endereço"
-                  {...register('endereco')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Número"
-                  {...register('numero')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Bairro"
-                  {...register('bairro')}
-                  disabled={viewMode}
+                  rows={4}
                 />
               </div>
-            </div>
-
-            {/* Seção 3: Configurações */}
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Configurações</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                <Input
-                  label="Centro de Distribuição"
-                  {...register('centro_distribuicao')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Regional"
-                  {...register('regional')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="LOT"
-                  {...register('lot')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="CC Senior"
-                  {...register('cc_senior')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Código Senior"
-                  {...register('codigo_senior')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Abastecimento"
-                  {...register('abastecimento')}
-                  disabled={viewMode}
-                />
-              </div>
-            </div>
-
-            {/* Seção 4: Rota e Status */}
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Rota e Status</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                <Input
-                  label="Ordem de Entrega"
-                  type="number"
-                  {...register('ordem_entrega')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Rota"
-                  type="select"
-                  {...register('rota_id')}
-                  disabled={viewMode}
-                >
-                  <option value="">Selecione uma rota</option>
-                  {rotas.map((rota) => (
-                    <option key={rota.id} value={rota.id}>
-                      {rota.nome}
-                    </option>
-                  ))}
-                </Input>
-                <Input
-                  label="Status *"
-                  type="select"
-                  {...register('status', { required: 'Status é obrigatório' })}
-                  error={errors.status?.message}
-                  disabled={viewMode}
-                >
-                  <option value="">Selecione o status</option>
-                  <option value="ativo">Ativo</option>
-                  <option value="inativo">Inativo</option>
-                </Input>
-              </div>
-            </div>
-
-            {/* Seção 5: Observações */}
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">Observações</h3>
-              <Input
-                label="Observações"
-                type="textarea"
-                {...register('observacoes')}
-                disabled={viewMode}
-                rows={2}
-              />
             </div>
 
             {!viewMode && (
