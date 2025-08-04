@@ -286,30 +286,32 @@ const UnidadesEscolares = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold text-gray-800">Unidades Escolares</h1>
-        <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Unidades Escolares</h1>
+        <div className="flex gap-2 sm:gap-3">
           <Button
             onClick={handleOpenAuditModal}
             variant="ghost"
-            className="text-xs px-3 py-2"
+            size="sm"
+            className="text-xs"
           >
-            <FaQuestionCircle className="mr-2" />
-            Auditoria
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
           </Button>
           {canCreate('unidades_escolares') && (
-            <Button onClick={handleAddUnidade}>
-              <FaPlus className="mr-2" />
-              Adicionar
+            <Button onClick={handleAddUnidade} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar</span>
+              <span className="sm:hidden">Adicionar</span>
             </Button>
           )}
         </div>
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
         <StatCard
           title="Total de Unidades"
           value={estatisticas.total_unidades}
@@ -345,50 +347,52 @@ const UnidadesEscolares = () => {
        />
 
        {/* Ações */}
-       <div className="flex justify-end gap-3 mb-4">
+       <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
          <Button onClick={handleExportXLSX} variant="outline" size="sm">
-           <FaFileExcel className="mr-2" />
-           Exportar XLSX
+           <FaFileExcel className="mr-1 sm:mr-2" />
+           <span className="hidden sm:inline">Exportar XLSX</span>
+           <span className="sm:hidden">XLSX</span>
          </Button>
          <Button onClick={handleExportPDF} variant="outline" size="sm">
-           <FaFilePdf className="mr-2" />
-           Exportar PDF
+           <FaFilePdf className="mr-1 sm:mr-2" />
+           <span className="hidden sm:inline">Exportar PDF</span>
+           <span className="sm:hidden">PDF</span>
          </Button>
        </div>
 
                {/* Tabela */}
        {filteredUnidades.length === 0 ? (
-         <div className="text-center py-12 text-gray-500">
+         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
            {searchTerm 
              ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
              : 'Nenhuma unidade escolar cadastrada'
            }
          </div>
        ) : (
-         <div className="bg-white rounded-lg shadow-md overflow-hidden">
+         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
            <div className="overflow-x-auto">
              <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Escola
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Código
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Cidade/Estado
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Centro Distribuição
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Rota
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -396,26 +400,26 @@ const UnidadesEscolares = () => {
                          <tbody className="bg-white divide-y divide-gray-200">
                {filteredUnidades.map((unidade) => (
                 <tr key={unidade.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
+                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                    <div className="text-xs sm:text-sm font-medium text-gray-900">
                       {unidade.nome_escola}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                     {unidade.codigo_teknisa}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{unidade.cidade}</div>
-                    <div className="text-sm text-gray-500">{unidade.estado}</div>
+                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                    <div className="text-xs sm:text-sm text-gray-900">{unidade.cidade}</div>
+                    <div className="text-xs sm:text-sm text-gray-500">{unidade.estado}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                     {unidade.centro_distribuicao}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                     {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                       unidade.status === 'ativo' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-red-100 text-red-800'
@@ -423,31 +427,37 @@ const UnidadesEscolares = () => {
                       {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
-                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                     <div className="flex space-x-2">
+                                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                     <div className="flex gap-1 sm:gap-2">
                        {canView('unidades_escolares') && (
-                         <button
+                         <Button
+                           variant="ghost"
+                           size="xs"
                            onClick={() => handleViewUnidade(unidade)}
-                           className="text-green-600 hover:text-green-900"
+                           title="Visualizar"
                          >
-                           <FaEye />
-                         </button>
+                           <FaEye className="text-green-600 text-xs sm:text-sm" />
+                         </Button>
                        )}
                        {canEdit('unidades_escolares') && (
-                         <button
+                         <Button
+                           variant="ghost"
+                           size="xs"
                            onClick={() => handleEditUnidade(unidade)}
-                           className="text-blue-600 hover:text-blue-900"
+                           title="Editar"
                          >
-                           <FaEdit />
-                         </button>
+                           <FaEdit className="text-blue-600 text-xs sm:text-sm" />
+                         </Button>
                        )}
                        {canDelete('unidades_escolares') && (
-                         <button
+                         <Button
+                           variant="ghost"
+                           size="xs"
                            onClick={() => handleDeleteUnidade(unidade.id)}
-                           className="text-red-600 hover:text-red-900"
+                           title="Excluir"
                          >
-                           <FaTrash />
-                         </button>
+                           <FaTrash className="text-red-600 text-xs sm:text-sm" />
+                         </Button>
                        )}
                      </div>
                    </td>
@@ -466,28 +476,31 @@ const UnidadesEscolares = () => {
          title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
          size="xl"
        >
-         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'lg:grid-cols-3 md:grid-cols-2'} gap-6`}>
+         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'lg:grid-cols-3 md:grid-cols-2'} gap-3 sm:gap-4`}>
+            {/* Primeira linha - Informações básicas */}
             <Input
-              label="Nome da Escola"
+              label="Nome da Escola *"
               {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
               error={errors.nome_escola?.message}
               disabled={viewMode}
             />
             <Input
-              label="Código Teknisa"
+              label="Código Teknisa *"
               {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
               error={errors.codigo_teknisa?.message}
               disabled={viewMode}
             />
             <Input
-              label="Cidade"
+              label="Cidade *"
               {...register('cidade', { required: 'Cidade é obrigatória' })}
               error={errors.cidade?.message}
               disabled={viewMode}
             />
+
+            {/* Segunda linha - Localização */}
             <Input
-              label="Estado"
+              label="Estado *"
               {...register('estado', { required: 'Estado é obrigatório' })}
               error={errors.estado?.message}
               disabled={viewMode}
@@ -502,6 +515,8 @@ const UnidadesEscolares = () => {
               {...register('cep')}
               disabled={viewMode}
             />
+
+            {/* Terceira linha - Endereço */}
             <Input
               label="Endereço"
               {...register('endereco')}
@@ -517,6 +532,8 @@ const UnidadesEscolares = () => {
               {...register('bairro')}
               disabled={viewMode}
             />
+
+            {/* Quarta linha - Configurações */}
             <Input
               label="Centro de Distribuição"
               {...register('centro_distribuicao')}
@@ -532,6 +549,8 @@ const UnidadesEscolares = () => {
               {...register('lot')}
               disabled={viewMode}
             />
+
+            {/* Quinta linha - Códigos */}
             <Input
               label="CC Senior"
               {...register('cc_senior')}
@@ -547,6 +566,8 @@ const UnidadesEscolares = () => {
               {...register('abastecimento')}
               disabled={viewMode}
             />
+
+            {/* Sexta linha - Rota e Status */}
             <Input
               label="Ordem de Entrega"
               type="number"
@@ -567,7 +588,7 @@ const UnidadesEscolares = () => {
               ))}
             </Input>
             <Input
-              label="Status"
+              label="Status *"
               type="select"
               {...register('status', { required: 'Status é obrigatório' })}
               error={errors.status?.message}
@@ -584,14 +605,16 @@ const UnidadesEscolares = () => {
             type="textarea"
             {...register('observacoes')}
             disabled={viewMode}
+            className="md:col-span-2 lg:col-span-2"
+            rows={3}
           />
 
           {!viewMode && (
-            <div className="flex justify-end space-x-3">
-              <Button type="button" variant="outline" onClick={handleCloseModal}>
+            <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
+              <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
                 Cancelar
               </Button>
-              <Button type="submit">
+              <Button type="submit" size="sm">
                 {editingUnidade ? 'Atualizar' : 'Criar'}
               </Button>
             </div>
@@ -606,52 +629,53 @@ const UnidadesEscolares = () => {
         title="Logs de Auditoria - Unidades Escolares"
         size="xl"
       >
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium text-gray-900">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900">
               Histórico de Alterações
             </h3>
             <Button onClick={handleApplyAuditFilters} variant="outline" size="sm">
-              Atualizar
+              <span className="hidden sm:inline">Atualizar</span>
+              <span className="sm:hidden">Atualizar</span>
             </Button>
           </div>
 
           {loadingAudit ? (
-            <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+            <div className="flex justify-center items-center py-6 sm:py-8">
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600"></div>
             </div>
           ) : (
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Usuário</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ação</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Campo</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Valor Anterior</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Novo Valor</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Usuário</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Ação</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Campo</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Valor Anterior</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Novo Valor</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {auditLogs.map((log, index) => (
                     <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 text-sm text-gray-900">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {formatDate(log.created_at)}
                       </td>
-                      <td className="px-4 py-2 text-sm text-gray-900">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {log.usuario_nome || 'Sistema'}
                       </td>
-                      <td className="px-4 py-2 text-sm text-gray-900">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {getActionLabel(log.action)}
                       </td>
-                      <td className="px-4 py-2 text-sm text-gray-900">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {getFieldLabel(log.field_name)}
                       </td>
-                      <td className="px-4 py-2 text-sm text-gray-500">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
                         {formatFieldValue(log.field_name, log.old_value)}
                       </td>
-                      <td className="px-4 py-2 text-sm text-gray-500">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
                         {formatFieldValue(log.field_name, log.new_value)}
                       </td>
                     </tr>
