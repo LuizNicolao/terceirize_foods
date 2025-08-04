@@ -511,11 +511,11 @@ const UnidadesEscolares = () => {
           isOpen={showModal}
           onClose={handleCloseModal}
           title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-          size="xl"
+          size="2xl"
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Primeira Linha - 3 Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Primeira Linha - 2 Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Card 1: Informações Básicas */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-2">Informações Básicas</h3>
@@ -532,18 +532,6 @@ const UnidadesEscolares = () => {
                     error={errors.codigo_teknisa?.message}
                     disabled={viewMode}
                   />
-                  <Input
-                    label="Cidade *"
-                    {...register('cidade', { required: 'Cidade é obrigatória' })}
-                    error={errors.cidade?.message}
-                    disabled={viewMode}
-                  />
-                  <Input
-                    label="Estado *"
-                    {...register('estado', { required: 'Estado é obrigatório' })}
-                    error={errors.estado?.message}
-                    disabled={viewMode}
-                  />
                 </div>
               </div>
 
@@ -551,34 +539,55 @@ const UnidadesEscolares = () => {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-2">Endereço</h3>
                 <div className="space-y-3">
-                  <Input
-                    label="País"
-                    {...register('pais')}
-                    disabled={viewMode}
-                  />
-                  <Input
-                    label="CEP"
-                    {...register('cep')}
-                    disabled={viewMode}
-                  />
+                  {/* Cidade e Estado lado a lado */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label="Cidade *"
+                      {...register('cidade', { required: 'Cidade é obrigatória' })}
+                      error={errors.cidade?.message}
+                      disabled={viewMode}
+                    />
+                    <Input
+                      label="Estado *"
+                      {...register('estado', { required: 'Estado é obrigatório' })}
+                      error={errors.estado?.message}
+                      disabled={viewMode}
+                    />
+                  </div>
                   <Input
                     label="Endereço"
                     {...register('endereco')}
                     disabled={viewMode}
                   />
-                  <Input
-                    label="Número"
-                    {...register('numero')}
-                    disabled={viewMode}
-                  />
+                  {/* Número e CEP lado a lado */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label="Número"
+                      {...register('numero')}
+                      disabled={viewMode}
+                    />
+                    <Input
+                      label="CEP"
+                      {...register('cep')}
+                      disabled={viewMode}
+                    />
+                  </div>
                   <Input
                     label="Bairro"
                     {...register('bairro')}
                     disabled={viewMode}
                   />
+                  <Input
+                    label="País"
+                    {...register('pais')}
+                    disabled={viewMode}
+                  />
                 </div>
               </div>
+            </div>
 
+            {/* Segunda Linha - 3 Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Card 3: Configurações */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-2">Configurações</h3>
@@ -593,16 +602,19 @@ const UnidadesEscolares = () => {
                     {...register('regional')}
                     disabled={viewMode}
                   />
-                  <Input
-                    label="LOT"
-                    {...register('lot')}
-                    disabled={viewMode}
-                  />
-                  <Input
-                    label="CC Senior"
-                    {...register('cc_senior')}
-                    disabled={viewMode}
-                  />
+                  {/* LOT e CC Senior lado a lado */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label="LOT"
+                      {...register('lot')}
+                      disabled={viewMode}
+                    />
+                    <Input
+                      label="CC Senior"
+                      {...register('cc_senior')}
+                      disabled={viewMode}
+                    />
+                  </div>
                   <Input
                     label="Código Senior"
                     {...register('codigo_senior')}
@@ -615,20 +627,11 @@ const UnidadesEscolares = () => {
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Segunda Linha - 2 Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Card 4: Rota e Status */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3 border-b pb-2">Rota e Status</h3>
                 <div className="space-y-3">
-                  <Input
-                    label="Ordem de Entrega"
-                    type="number"
-                    {...register('ordem_entrega')}
-                    disabled={viewMode}
-                  />
                   <Input
                     label="Rota"
                     type="select"
@@ -642,17 +645,26 @@ const UnidadesEscolares = () => {
                       </option>
                     ))}
                   </Input>
-                  <Input
-                    label="Status *"
-                    type="select"
-                    {...register('status', { required: 'Status é obrigatório' })}
-                    error={errors.status?.message}
-                    disabled={viewMode}
-                  >
-                    <option value="">Selecione o status</option>
-                    <option value="ativo">Ativo</option>
-                    <option value="inativo">Inativo</option>
-                  </Input>
+                  {/* Ordem de Entrega e Status lado a lado */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Input
+                      label="Ordem de Entrega"
+                      type="number"
+                      {...register('ordem_entrega')}
+                      disabled={viewMode}
+                    />
+                    <Input
+                      label="Status *"
+                      type="select"
+                      {...register('status', { required: 'Status é obrigatório' })}
+                      error={errors.status?.message}
+                      disabled={viewMode}
+                    >
+                      <option value="">Selecione</option>
+                      <option value="ativo">Ativo</option>
+                      <option value="inativo">Inativo</option>
+                    </Input>
+                  </div>
                 </div>
               </div>
 
@@ -664,7 +676,7 @@ const UnidadesEscolares = () => {
                   type="textarea"
                   {...register('observacoes')}
                   disabled={viewMode}
-                  rows={4}
+                  rows={6}
                 />
               </div>
             </div>
