@@ -7,6 +7,7 @@ import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
 import { Button, Input, Modal, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
+import Pagination from '../components/Pagination';
 
 const UnidadesEscolares = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -27,22 +28,47 @@ const UnidadesEscolares = () => {
     total_cidades: 0
   });
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Estados de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   useEffect(() => {
     loadUnidades();
     loadRotas();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   const loadUnidades = async (params = {}) => {
     setLoading(true);
     try {
-      const result = await UnidadesEscolaresService.listar(params);
+      // Parâmetros de paginação
+      const paginationParams = {
+        page: currentPage,
+        limit: itemsPerPage,
+        ...params
+      };
+
+      const result = await UnidadesEscolaresService.listar(paginationParams);
       if (result.success) {
         setUnidades(result.data);
+        
+        // Extrair informações de paginação
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages || 1);
+          setTotalItems(result.pagination.totalItems || result.data.length);
+          setCurrentPage(result.pagination.currentPage || 1);
+        } else {
+          // Fallback se não houver paginação no backend
+          setTotalItems(result.data.length);
+          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
+        }
+        
         // Calcular estatísticas básicas
-        const total = result.data.length;
+        const total = result.pagination?.totalItems || result.data.length;
         const ativas = result.data.filter(u => u.status === 'ativo').length;
         const estados = new Set(result.data.map(u => u.estado)).size;
         const cidades = new Set(result.data.map(u => u.cidade)).size;
@@ -73,6 +99,17 @@ const UnidadesEscolares = () => {
     
     return matchesSearch;
   });
+
+  // Função para mudar de página
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  // Função para mudar itens por página
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Voltar para primeira página
+  };
 
   const loadRotas = async () => {
     setLoadingRotas(true);
@@ -470,157 +507,174 @@ const UnidadesEscolares = () => {
        )}
 
                     {/* Modal de Unidade Escolar */}
-       <Modal
-         isOpen={showModal}
-         onClose={handleCloseModal}
-         title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-         size="xl"
-       >
-         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
-           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'lg:grid-cols-3 md:grid-cols-2'} gap-3 sm:gap-4`}>
-            {/* Primeira linha - Informações básicas */}
-            <Input
-              label="Nome da Escola *"
-              {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
-              error={errors.nome_escola?.message}
-              disabled={viewMode}
-            />
-            <Input
-              label="Código Teknisa *"
-              {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
-              error={errors.codigo_teknisa?.message}
-              disabled={viewMode}
-            />
-            <Input
-              label="Cidade *"
-              {...register('cidade', { required: 'Cidade é obrigatória' })}
-              error={errors.cidade?.message}
-              disabled={viewMode}
-            />
-
-            {/* Segunda linha - Localização */}
-            <Input
-              label="Estado *"
-              {...register('estado', { required: 'Estado é obrigatório' })}
-              error={errors.estado?.message}
-              disabled={viewMode}
-            />
-            <Input
-              label="País"
-              {...register('pais')}
-              disabled={viewMode}
-            />
-            <Input
-              label="CEP"
-              {...register('cep')}
-              disabled={viewMode}
-            />
-
-            {/* Terceira linha - Endereço */}
-            <Input
-              label="Endereço"
-              {...register('endereco')}
-              disabled={viewMode}
-            />
-            <Input
-              label="Número"
-              {...register('numero')}
-              disabled={viewMode}
-            />
-            <Input
-              label="Bairro"
-              {...register('bairro')}
-              disabled={viewMode}
-            />
-
-            {/* Quarta linha - Configurações */}
-            <Input
-              label="Centro de Distribuição"
-              {...register('centro_distribuicao')}
-              disabled={viewMode}
-            />
-            <Input
-              label="Regional"
-              {...register('regional')}
-              disabled={viewMode}
-            />
-            <Input
-              label="LOT"
-              {...register('lot')}
-              disabled={viewMode}
-            />
-
-            {/* Quinta linha - Códigos */}
-            <Input
-              label="CC Senior"
-              {...register('cc_senior')}
-              disabled={viewMode}
-            />
-            <Input
-              label="Código Senior"
-              {...register('codigo_senior')}
-              disabled={viewMode}
-            />
-            <Input
-              label="Abastecimento"
-              {...register('abastecimento')}
-              disabled={viewMode}
-            />
-
-            {/* Sexta linha - Rota e Status */}
-            <Input
-              label="Ordem de Entrega"
-              type="number"
-              {...register('ordem_entrega')}
-              disabled={viewMode}
-            />
-            <Input
-              label="Rota"
-              type="select"
-              {...register('rota_id')}
-              disabled={viewMode}
-            >
-              <option value="">Selecione uma rota</option>
-              {rotas.map((rota) => (
-                <option key={rota.id} value={rota.id}>
-                  {rota.nome}
-                </option>
-              ))}
-            </Input>
-            <Input
-              label="Status *"
-              type="select"
-              {...register('status', { required: 'Status é obrigatório' })}
-              error={errors.status?.message}
-              disabled={viewMode}
-            >
-              <option value="">Selecione o status</option>
-              <option value="ativo">Ativo</option>
-              <option value="inativo">Inativo</option>
-            </Input>
-          </div>
-          
-          <Input
-            label="Observações"
-            type="textarea"
-            {...register('observacoes')}
-            disabled={viewMode}
-            className="md:col-span-2 lg:col-span-2"
-            rows={3}
-          />
-
-          {!viewMode && (
-            <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
-              <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
-                Cancelar
-              </Button>
-              <Button type="submit" size="sm">
-                {editingUnidade ? 'Atualizar' : 'Criar'}
-              </Button>
+               <Modal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
+          size="xl"
+        >
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Seção 1: Informações Básicas */}
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Informações Básicas</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Input
+                  label="Nome da Escola *"
+                  {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
+                  error={errors.nome_escola?.message}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Código Teknisa *"
+                  {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
+                  error={errors.codigo_teknisa?.message}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Cidade *"
+                  {...register('cidade', { required: 'Cidade é obrigatória' })}
+                  error={errors.cidade?.message}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Estado *"
+                  {...register('estado', { required: 'Estado é obrigatório' })}
+                  error={errors.estado?.message}
+                  disabled={viewMode}
+                />
+              </div>
             </div>
-          )}
-        </form>
-      </Modal>
+
+            {/* Seção 2: Endereço */}
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Endereço</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Input
+                  label="País"
+                  {...register('pais')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="CEP"
+                  {...register('cep')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Endereço"
+                  {...register('endereco')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Número"
+                  {...register('numero')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Bairro"
+                  {...register('bairro')}
+                  disabled={viewMode}
+                />
+              </div>
+            </div>
+
+            {/* Seção 3: Configurações */}
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Configurações</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Input
+                  label="Centro de Distribuição"
+                  {...register('centro_distribuicao')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Regional"
+                  {...register('regional')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="LOT"
+                  {...register('lot')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="CC Senior"
+                  {...register('cc_senior')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Código Senior"
+                  {...register('codigo_senior')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Abastecimento"
+                  {...register('abastecimento')}
+                  disabled={viewMode}
+                />
+              </div>
+            </div>
+
+            {/* Seção 4: Rota e Status */}
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Rota e Status</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <Input
+                  label="Ordem de Entrega"
+                  type="number"
+                  {...register('ordem_entrega')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Rota"
+                  type="select"
+                  {...register('rota_id')}
+                  disabled={viewMode}
+                >
+                  <option value="">Selecione uma rota</option>
+                  {rotas.map((rota) => (
+                    <option key={rota.id} value={rota.id}>
+                      {rota.nome}
+                    </option>
+                  ))}
+                </Input>
+                <Input
+                  label="Status *"
+                  type="select"
+                  {...register('status', { required: 'Status é obrigatório' })}
+                  error={errors.status?.message}
+                  disabled={viewMode}
+                >
+                  <option value="">Selecione o status</option>
+                  <option value="ativo">Ativo</option>
+                  <option value="inativo">Inativo</option>
+                </Input>
+              </div>
+            </div>
+
+            {/* Seção 5: Observações */}
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3">Observações</h3>
+              <Input
+                label="Observações"
+                type="textarea"
+                {...register('observacoes')}
+                disabled={viewMode}
+                rows={2}
+              />
+            </div>
+
+            {!viewMode && (
+              <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
+                <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
+                  Cancelar
+                </Button>
+                <Button type="submit" size="sm">
+                  {editingUnidade ? 'Atualizar' : 'Criar'}
+                </Button>
+              </div>
+            )}
+          </form>
+        </Modal>
 
       {/* Modal de Auditoria */}
       <Modal
@@ -686,6 +740,17 @@ const UnidadesEscolares = () => {
           )}
         </div>
       </Modal>
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
+      )}
     </div>
   );
 };

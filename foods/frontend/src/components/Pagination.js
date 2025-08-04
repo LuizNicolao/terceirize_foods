@@ -1,43 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-
-const PaginationContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  margin-top: 24px;
-  padding: 16px;
-`;
-
-const PaginationButton = styled.button`
-  background: ${props => props.$active ? 'var(--primary-green)' : 'var(--white)'};
-  color: ${props => props.$active ? 'var(--white)' : 'var(--dark-gray)'};
-  border: 2px solid ${props => props.$active ? 'var(--primary-green)' : '#e0e0e0'};
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: ${props => props.$disabled ? 'not-allowed' : 'pointer'};
-  transition: all 0.3s ease;
-  opacity: ${props => props.$disabled ? 0.5 : 1};
-
-  &:hover:not(:disabled) {
-    background: ${props => props.$active ? 'var(--dark-green)' : '#f5f5f5'};
-    transform: translateY(-1px);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-  }
-`;
-
-const PageInfo = styled.span`
-  color: var(--dark-gray);
-  font-size: 14px;
-  margin: 0 16px;
-`;
 
 const Pagination = ({ 
   currentPage, 
@@ -62,13 +24,17 @@ const Pagination = ({
 
     for (let i = startPage; i <= endPage; i++) {
       pages.push(
-        <PaginationButton
+        <button
           key={i}
-          $active={i === currentPage}
+          className={`px-3 py-2 text-sm font-medium rounded-md transition-all duration-200 ${
+            i === currentPage
+              ? 'bg-green-600 text-white border-2 border-green-600'
+              : 'bg-white text-gray-700 border-2 border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+          }`}
           onClick={() => onPageChange(i)}
         >
           {i}
-        </PaginationButton>
+        </button>
       );
     }
 
@@ -78,31 +44,39 @@ const Pagination = ({
   if (totalPages <= 1) return null;
 
   return (
-    <PaginationContainer>
-      <PaginationButton
-        $disabled={currentPage === 1}
+    <div className="flex justify-center items-center gap-2 mt-6 p-4">
+      <button
+        className={`p-2 rounded-md transition-all duration-200 ${
+          currentPage === 1
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+        }`}
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
         title="Página anterior"
       >
-        <FaChevronLeft />
-      </PaginationButton>
+        <FaChevronLeft className="w-4 h-4" />
+      </button>
 
       {renderPageNumbers()}
 
-      <PaginationButton
-        $disabled={currentPage === totalPages}
+      <button
+        className={`p-2 rounded-md transition-all duration-200 ${
+          currentPage === totalPages
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+        }`}
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
         title="Próxima página"
       >
-        <FaChevronRight />
-      </PaginationButton>
+        <FaChevronRight className="w-4 h-4" />
+      </button>
 
-      <PageInfo>
+      <span className="text-gray-600 text-sm ml-4">
         Mostrando {startItem}-{endItem} de {totalItems} itens
-      </PageInfo>
-    </PaginationContainer>
+      </span>
+    </div>
   );
 };
 

@@ -6,6 +6,7 @@ import { usePermissions } from '../contexts/PermissionsContext';
 import { Button, Input, Modal, Table, StatCard } from '../components/ui';
 import RotasService from '../services/rotas';
 import CadastroFilterBar from '../components/CadastroFilterBar';
+import Pagination from '../components/Pagination';
 
 const Rotas = () => {
   const { canCreate, canEdit, canDelete } = usePermissions();
@@ -44,6 +45,12 @@ const Rotas = () => {
     custo_total_diario: 0
   });
   const [loadingFiliais, setLoadingFiliais] = useState(false);
+  
+  // Estados de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const {
     register,
@@ -58,9 +65,27 @@ const Rotas = () => {
   const loadRotas = async () => {
     try {
       setLoading(true);
-      const result = await RotasService.listar();
+      
+      // Parâmetros de paginação
+      const paginationParams = {
+        page: currentPage,
+        limit: itemsPerPage
+      };
+
+      const result = await RotasService.listar(paginationParams);
       if (result.success) {
         setRotas(result.data || []);
+        
+        // Extrair informações de paginação
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages || 1);
+          setTotalItems(result.pagination.totalItems || result.data.length);
+          setCurrentPage(result.pagination.currentPage || 1);
+        } else {
+          // Fallback se não houver paginação no backend
+          setTotalItems(result.data.length);
+          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
+        }
       } else {
         toast.error(result.error);
       }
@@ -168,7 +193,7 @@ const Rotas = () => {
     loadRotas();
     loadFiliais();
     loadEstatisticas();
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
@@ -1017,6 +1042,18 @@ const Rotas = () => {
             </div>
           </div>
         </Modal>
+      )}
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          totalItems={totalItems}
+        />
       )}
     </div>
   );
