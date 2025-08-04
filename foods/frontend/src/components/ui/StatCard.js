@@ -5,27 +5,35 @@ const StatCard = ({
   value, 
   subtitle, 
   icon: Icon, 
-  color = 'bg-blue-500',
+  color = 'blue',
   trend = null,
   onClick,
   className = '' 
 }) => {
+  const colorClasses = {
+    blue: 'bg-blue-500',
+    green: 'bg-green-500',
+    purple: 'bg-purple-500',
+    orange: 'bg-orange-500',
+    red: 'bg-red-500',
+    yellow: 'bg-yellow-500'
+  };
+
   const cardClasses = `
-    bg-white rounded-lg p-3 sm:p-4 lg:p-6 shadow-sm border border-gray-200 
-    transition-all duration-300 hover:shadow-lg hover:-translate-y-1
+    bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 
+    transition-all duration-300 hover:shadow-md hover:-translate-y-1
     ${onClick ? 'cursor-pointer' : ''}
     ${className}
   `;
 
   const iconClasses = `
-    w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg lg:rounded-xl flex items-center justify-center 
-    text-lg sm:text-xl lg:text-2xl text-white
-    ${color}
+    w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg sm:text-xl text-white
+    ${colorClasses[color]}
   `;
 
   return (
     <div className={cardClasses} onClick={onClick}>
-      <div className="flex items-center justify-between mb-2 sm:mb-3 lg:mb-4">
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
         <div className={iconClasses}>
           {Icon && <Icon />}
         </div>
