@@ -29,7 +29,7 @@ const TableHeader = ({ children, className = '' }) => (
     <tr>
       {React.Children.map(children, (child) => 
         React.cloneElement(child, { 
-          className: `px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${className}` 
+          className: `px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${className}` 
         })
       )}
     </tr>
@@ -60,7 +60,7 @@ const TableCell = ({ children, className = '', align = 'left' }) => {
   };
   
   return (
-    <td className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${alignClasses[align]} ${className}`}>
+    <td className={`px-2 sm:px-4 lg:px-6 py-2 sm:py-3 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 ${alignClasses[align]} ${className}`}>
       {children}
     </td>
   );
@@ -74,7 +74,7 @@ const TableHeaderCell = ({ children, className = '', align = 'left' }) => {
   };
   
   return (
-    <th className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${alignClasses[align]} ${className}`}>
+    <th className={`px-2 sm:px-4 lg:px-6 py-2 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${alignClasses[align]} ${className}`}>
       {children}
     </th>
   );
