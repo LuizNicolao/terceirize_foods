@@ -657,100 +657,104 @@ const Rotas = () => {
            isOpen={showModal}
            onClose={handleCloseModal}
            title={viewMode ? 'Visualizar Rota' : editingRota ? 'Editar Rota' : 'Adicionar Rota'}
-                       size={viewMode ? "xl" : "lg"}
+           size="xl"
          >
-                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
-                           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'md:grid-cols-2'} gap-4 sm:gap-6`}>
+                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+                           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'lg:grid-cols-3 md:grid-cols-2'} gap-3 sm:gap-4`}>
+                             {/* Primeira linha - Informações básicas */}
                              <Input
-                 label="Filial *"
-                 type="select"
-                 {...register('filial_id', { required: 'Filial é obrigatória' })}
-                 error={errors.filial_id?.message}
-                 disabled={viewMode || loadingFiliais}
-               >
-                 <option value="">
-                   {loadingFiliais ? 'Carregando filiais...' : 'Selecione uma filial'}
-                 </option>
-                 {filiais.map(filial => (
-                   <option key={filial.id} value={filial.id}>
-                     {filial.filial}
-                   </option>
-                 ))}
-               </Input>
+                               label="Filial *"
+                               type="select"
+                               {...register('filial_id', { required: 'Filial é obrigatória' })}
+                               error={errors.filial_id?.message}
+                               disabled={viewMode || loadingFiliais}
+                             >
+                               <option value="">
+                                 {loadingFiliais ? 'Carregando filiais...' : 'Selecione uma filial'}
+                               </option>
+                               {filiais.map(filial => (
+                                 <option key={filial.id} value={filial.id}>
+                                   {filial.filial}
+                                 </option>
+                               ))}
+                             </Input>
 
-              <Input
-                label="Código *"
-                type="text"
-                placeholder="Código da rota"
-                {...register('codigo', { required: 'Código é obrigatório' })}
-                error={errors.codigo?.message}
-                disabled={viewMode}
-              />
+                             <Input
+                               label="Código *"
+                               type="text"
+                               placeholder="Código da rota"
+                               {...register('codigo', { required: 'Código é obrigatório' })}
+                               error={errors.codigo?.message}
+                               disabled={viewMode}
+                             />
 
-              <Input
-                label="Nome *"
-                type="text"
-                placeholder="Nome da rota"
-                {...register('nome', { required: 'Nome é obrigatório' })}
-                error={errors.nome?.message}
-                disabled={viewMode}
-              />
+                             <Input
+                               label="Nome *"
+                               type="text"
+                               placeholder="Nome da rota"
+                               {...register('nome', { required: 'Nome é obrigatório' })}
+                               error={errors.nome?.message}
+                               disabled={viewMode}
+                             />
 
-              <Input
-                label="Distância (km)"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                {...register('distancia_km')}
-                disabled={viewMode}
-              />
+                             {/* Segunda linha - Configurações */}
+                             <Input
+                               label="Distância (km)"
+                               type="number"
+                               step="0.01"
+                               placeholder="0.00"
+                               {...register('distancia_km')}
+                               disabled={viewMode}
+                             />
 
-              <Input
-                label="Tipo de Rota"
-                type="select"
-                {...register('tipo_rota')}
-                disabled={viewMode}
-              >
-                <option value="semanal">Semanal</option>
-                <option value="quinzenal">Quinzenal</option>
-                <option value="mensal">Mensal</option>
-                <option value="transferencia">Transferência</option>
-              </Input>
+                             <Input
+                               label="Tipo de Rota"
+                               type="select"
+                               {...register('tipo_rota')}
+                               disabled={viewMode}
+                             >
+                               <option value="semanal">Semanal</option>
+                               <option value="quinzenal">Quinzenal</option>
+                               <option value="mensal">Mensal</option>
+                               <option value="transferencia">Transferência</option>
+                             </Input>
 
-              <Input
-                label="Custo Diário"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                {...register('custo_diario')}
-                disabled={viewMode}
-              />
+                             <Input
+                               label="Custo Diário"
+                               type="number"
+                               step="0.01"
+                               placeholder="0.00"
+                               {...register('custo_diario')}
+                               disabled={viewMode}
+                             />
 
-              <Input
-                label="Status"
-                type="select"
-                {...register('status')}
-                disabled={viewMode}
-              >
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-              </Input>
-            </div>
+                             {/* Terceira linha - Status e Observações */}
+                             <Input
+                               label="Status"
+                               type="select"
+                               {...register('status')}
+                               disabled={viewMode}
+                             >
+                               <option value="ativo">Ativo</option>
+                               <option value="inativo">Inativo</option>
+                             </Input>
 
-            <Input
-              label="Observações"
-              type="textarea"
-              placeholder="Observações sobre a rota..."
-              {...register('observacoes')}
-              disabled={viewMode}
-              className="col-span-full"
-            />
+                             <Input
+                               label="Observações"
+                               type="textarea"
+                               placeholder="Observações sobre a rota..."
+                               {...register('observacoes')}
+                               disabled={viewMode}
+                               className="md:col-span-2 lg:col-span-2"
+                               rows={3}
+                             />
+                           </div>
             
             {/* Seção de Unidades Escolares Vinculadas */}
             {viewMode && (
-              <div className="border-t pt-4 sm:pt-6">
+              <div className="border-t pt-3 sm:pt-4">
                 <div 
-                  className="flex justify-between items-center cursor-pointer p-3 sm:p-4 bg-gray-50 rounded-lg mb-3 sm:mb-4"
+                  className="flex justify-between items-center cursor-pointer p-2 sm:p-3 bg-gray-50 rounded-lg mb-2 sm:mb-3"
                   onClick={() => {
                     if (!showUnidades && unidadesEscolares.length === 0) {
                       loadUnidadesEscolares(editingRota.id);
@@ -770,7 +774,7 @@ const Rotas = () => {
                 </div>
                 
                                  {showUnidades && (
-                   <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
+                   <div className="max-h-[250px] sm:max-h-[300px] overflow-y-auto">
                     {loadingUnidades ? (
                       <div className="text-center py-6 sm:py-8">
                         <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
@@ -831,7 +835,7 @@ const Rotas = () => {
             )}
 
             {!viewMode && (
-              <div className="flex justify-end gap-2 sm:gap-3 pt-4 sm:pt-6 border-t">
+              <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
                 <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
                   Cancelar
                 </Button>

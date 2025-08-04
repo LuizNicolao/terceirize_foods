@@ -31,7 +31,8 @@ const Input = React.forwardRef(({
         return (
           <textarea 
             ref={ref}
-            className={`${inputClasses} resize-vertical min-h-[80px]`}
+            className={`${inputClasses} resize-vertical min-h-[60px]`}
+            rows={props.rows || 3}
             {...props}
           />
         );
