@@ -43,6 +43,7 @@ const Clientes = () => {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [formKey, setFormKey] = useState(0); // Para forçar re-render do formulário
   
   // Estados de paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,7 +51,7 @@ const Clientes = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
 
   // Debounce para busca
   useEffect(() => {
@@ -200,12 +201,12 @@ const Clientes = () => {
         a.href = url;
         a.download = 'clientes.pdf';
         a.click();
-        window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
         toast.success('Exportação PDF realizada com sucesso!');
-      } else {
+              } else {
         toast.error(result.error);
       }
-    } catch (error) {
+            } catch (error) {
       toast.error('Erro ao exportar PDF');
     }
   };
@@ -243,7 +244,7 @@ const Clientes = () => {
 
   const formatFieldValue = (field, value) => {
     if (field === 'status') {
-      return value === 1 ? 'Ativo' : 'Inativo';
+        return value === 1 ? 'Ativo' : 'Inativo';
     }
     if (field === 'cnpj') {
       return value ? value.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : '';
@@ -306,8 +307,8 @@ const Clientes = () => {
 
       if (result.success) {
         toast.success(result.message);
-        handleCloseModal();
-        loadClientes();
+      handleCloseModal();
+      loadClientes();
       } else {
         toast.error(result.error);
       }
@@ -322,7 +323,7 @@ const Clientes = () => {
         const result = await ClientesService.excluir(clienteId);
         if (result.success) {
           toast.success(result.message);
-          loadClientes();
+        loadClientes();
         } else {
           toast.error(result.error);
         }
@@ -341,10 +342,23 @@ const Clientes = () => {
     try {
       const cnpjLimpo = cnpj.replace(/\D/g, '');
       if (cnpjLimpo.length === 14) {
+        console.log('Buscando dados do CNPJ:', cnpjLimpo);
         const result = await ClientesService.buscarCNPJ(cnpjLimpo);
+        console.log('Resultado da busca CNPJ:', result);
+        
         if (result.success && result.data) {
           const dados = result.data;
-          reset({
+          console.log('Dados recebidos:', dados);
+          
+          // Verificar se os dados têm a estrutura esperada
+          if (!dados.razao_social) {
+            console.warn('Dados do CNPJ não contêm razao_social:', dados);
+            toast.error('Dados do CNPJ incompletos ou inválidos');
+            return;
+          }
+          
+          // Usar reset para atualizar todos os campos de uma vez
+          const formData = {
             razao_social: dados.razao_social || '',
             nome_fantasia: dados.nome_fantasia || '',
             logradouro: dados.logradouro || '',
@@ -352,14 +366,25 @@ const Clientes = () => {
             bairro: dados.bairro || '',
             municipio: dados.municipio || '',
             uf: dados.uf || '',
-            cep: dados.cep || '',
-            cnpj: cnpj
-          });
+            cep: dados.cep ? formatCEP(dados.cep) : '',
+            cnpj: cnpj // Manter o CNPJ formatado
+          };
+          
+          console.log('Dados do formulário:', formData);
+          reset(formData);
+          
+          // Forçar re-render do formulário
+          setFormKey(prev => prev + 1);
+          
           toast.success('Dados do CNPJ carregados automaticamente!');
+        } else {
+          console.log('Erro na resposta:', result);
+          toast.error(result.error || 'Erro ao buscar dados do CNPJ');
         }
       }
     } catch (error) {
       console.error('Erro ao buscar dados do CNPJ:', error);
+      toast.error('Erro ao buscar dados do CNPJ');
     }
   };
 
@@ -409,7 +434,7 @@ const Clientes = () => {
     const telefone = value.replace(/\D/g, '');
     if (telefone.length <= 10) {
       return telefone.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
-    } else {
+      } else {
       return telefone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
     }
   };
@@ -423,7 +448,7 @@ const Clientes = () => {
     // Buscar dados automaticamente se CNPJ estiver completo e válido
     const cnpjLimpo = formatted.replace(/\D/g, '');
     if (cnpjLimpo.length === 14 && validarCNPJ(formatted)) {
-      buscarDadosCNPJ(formatted);
+          buscarDadosCNPJ(formatted);
     }
   };
 
@@ -447,6 +472,20 @@ const Clientes = () => {
     e.target.value = formatted;
   };
 
+  // Função de teste para verificar se o setValue funciona
+  const testSetValue = () => {
+    console.log('Testando setValue...');
+    setValue('razao_social', 'TESTE RAZÃO SOCIAL');
+    setValue('nome_fantasia', 'TESTE NOME FANTASIA');
+    setValue('logradouro', 'TESTE LOGRADOURO');
+    setValue('numero', '123');
+    setValue('bairro', 'TESTE BAIRRO');
+    setValue('municipio', 'TESTE MUNICÍPIO');
+    setValue('uf', 'SP');
+    setValue('cep', '00000-000');
+    toast.success('Teste de setValue executado!');
+  };
+
   return (
     <div className="p-4 sm:p-6">
       {/* Header */}
@@ -466,6 +505,12 @@ const Clientes = () => {
             <FaHistory className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
             <span className="sm:hidden">Logs</span>
+          </Button>
+          
+          <Button onClick={testSetValue} variant="outline" size="sm">
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Teste</span>
+            <span className="sm:hidden">Teste</span>
           </Button>
         </div>
       </div>
@@ -537,9 +582,9 @@ const Clientes = () => {
       ) : filteredClientes.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {debouncedSearchTerm 
-            ? 'Nenhum cliente encontrado com os filtros aplicados'
-            : 'Nenhum cliente cadastrado'
-          }
+                      ? 'Nenhum cliente encontrado com os filtros aplicados'
+                      : 'Nenhum cliente cadastrado'
+                    }
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -603,37 +648,37 @@ const Clientes = () => {
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleViewCliente(cliente)}
+                      onClick={() => handleViewCliente(cliente)}
                             title="Visualizar"
-                          >
+                    >
                             <FaEye className="text-green-600 text-xs sm:text-sm" />
                           </Button>
                         )}
-                        {canEdit('clientes') && (
+                    {canEdit('clientes') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleEditCliente(cliente)}
+                        onClick={() => handleEditCliente(cliente)}
                             title="Editar"
-                          >
+                      >
                             <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                           </Button>
-                        )}
-                        {canDelete('clientes') && (
+                    )}
+                    {canDelete('clientes') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleDeleteCliente(cliente.id)}
+                        onClick={() => handleDeleteCliente(cliente.id)}
                             title="Excluir"
-                          >
+                      >
                             <FaTrash className="text-red-600 text-xs sm:text-sm" />
                           </Button>
-                        )}
+                    )}
                       </div>
                     </td>
-                  </tr>
+                </tr>
                 ))}
-              </tbody>
+          </tbody>
             </table>
           </div>
         </div>
@@ -657,7 +702,7 @@ const Clientes = () => {
         title={viewMode ? 'Visualizar Cliente' : editingCliente ? 'Editar Cliente' : 'Adicionar Cliente'}
         size="xl"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+        <form key={formKey} onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'lg:grid-cols-3 md:grid-cols-2'} gap-3 sm:gap-4`}>
             {/* Primeira linha - Informações básicas */}
             <div className="lg:col-span-2">
@@ -670,7 +715,7 @@ const Clientes = () => {
             </div>
             
             <div>
-              <Input
+                <Input
                 label="CNPJ"
                 {...register('cnpj')}
                 error={errors.cnpj?.message}
@@ -681,84 +726,84 @@ const Clientes = () => {
             </div>
 
             <div>
-              <Input
+                <Input
                 label="Nome Fantasia"
-                {...register('nome_fantasia')}
+                  {...register('nome_fantasia')}
                 error={errors.nome_fantasia?.message}
                 disabled={viewMode}
-              />
+                />
             </div>
 
             <div>
-              <Input
+                  <Input
                 label="Email"
                 type="email"
                 {...register('email')}
                 error={errors.email?.message}
                 disabled={viewMode}
               />
-            </div>
+                    </div>
 
             <div>
-              <Input
+                <Input
                 label="Telefone"
-                {...register('telefone')}
+                  {...register('telefone')}
                 error={errors.telefone?.message}
                 disabled={viewMode}
                 placeholder="(00) 00000-0000"
                 onChange={handleTelefoneChange}
               />
-            </div>
+                </div>
 
             {/* Segunda linha - Endereço */}
             <div className="lg:col-span-2">
-              <Input
+                <Input
                 label="Logradouro"
-                {...register('logradouro')}
+                  {...register('logradouro')}
                 error={errors.logradouro?.message}
                 disabled={viewMode}
-              />
+                />
             </div>
 
             <div>
-              <Input
+                <Input
                 label="Número"
-                {...register('numero')}
+                  {...register('numero')}
                 error={errors.numero?.message}
                 disabled={viewMode}
-              />
+                />
             </div>
 
             <div>
-              <Input
+                <Input
                 label="Bairro"
-                {...register('bairro')}
+                  {...register('bairro')}
                 error={errors.bairro?.message}
                 disabled={viewMode}
-              />
+                />
             </div>
 
             <div>
-              <Input
+                  <Input
                 label="CEP"
-                {...register('cep')}
+                    {...register('cep')}
                 error={errors.cep?.message}
                 disabled={viewMode}
                 placeholder="00000-000"
                 onChange={handleCEPChange}
-              />
-            </div>
+                  />
+              </div>
 
-            <div>
+                <div>
               <Input
                 label="Município"
                 {...register('municipio')}
                 error={errors.municipio?.message}
                 disabled={viewMode}
-              />
-            </div>
+                  />
+                </div>
 
-            <div>
+                <div>
               <Input
                 label="UF"
                 {...register('uf')}
@@ -766,23 +811,23 @@ const Clientes = () => {
                 disabled={viewMode}
                 maxLength={2}
                 placeholder="SP"
-              />
-            </div>
+                  />
+                </div>
 
-            <div>
+                <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Status
-              </label>
-              <select
+                  </label>
+                  <select
                 {...register('status')}
                 disabled={viewMode}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:bg-gray-100"
               >
                 <option value={1}>Ativo</option>
                 <option value={0}>Inativo</option>
-              </select>
-            </div>
-          </div>
+                  </select>
+                </div>
+                </div>
 
           {!viewMode && (
             <div className="flex justify-end gap-3 pt-4">
@@ -792,7 +837,7 @@ const Clientes = () => {
               <Button type="submit" variant="primary">
                 {editingCliente ? 'Atualizar' : 'Criar'} Cliente
               </Button>
-            </div>
+                </div>
           )}
         </form>
       </Modal>
@@ -810,11 +855,11 @@ const Clientes = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
               <p className="mt-2 text-gray-600">Carregando logs...</p>
             </div>
-          ) : auditLogs.length === 0 ? (
+              ) : auditLogs.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               Nenhum log de auditoria encontrado
-            </div>
-          ) : (
+                </div>
+              ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -837,7 +882,7 @@ const Clientes = () => {
                         {log.usuario_nome || log.usuario_id}
                       </td>
                       <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
-                        {getActionLabel(log.acao)}
+                            {getActionLabel(log.acao)}
                       </td>
                       <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {getFieldLabel(log.campo)}
@@ -852,12 +897,12 @@ const Clientes = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-        </div>
-      </Modal>
-    </div>
+                            </div>
+                          )}
+                                    </div>
+        </Modal>
+                </div>
   );
 };
 
-export default Clientes;
+export default Clientes; 
