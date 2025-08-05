@@ -502,118 +502,122 @@ const Usuarios = () => {
       </div>
 
       {/* Tabela */}
-            {filteredUsuarios.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+          Carregando usuários...
+        </div>
+      ) : filteredUsuarios.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {searchTerm 
-                      ? 'Nenhum usuário encontrado com os filtros aplicados'
-                      : 'Nenhum usuário cadastrado'
-                    }
+            ? 'Nenhum usuário encontrado com os filtros aplicados'
+            : 'Nenhum usuário cadastrado'
+          }
         </div>
       ) : (
                 <>
           {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
+          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nome
-                    </th>
+                    Nome
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
+                    Email
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tipo de Acesso
-                    </th>
+                    Tipo de Acesso
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nível
-                    </th>
+                    Nível
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
+                    Status
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Criado em
-                    </th>
+                    Criado em
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredUsuarios.map((usuario) => (
-                    <tr key={usuario.id} className="hover:bg-gray-50">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsuarios.map((usuario) => (
+                  <tr key={usuario.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {usuario.nome}
-                        </div>
-                      </td>
+                        {usuario.nome}
+                      </div>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {usuario.email}
-                      </td>
+                      {usuario.email}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {getTipoAcessoLabel(usuario.tipo_de_acesso)}
-                      </td>
+                      {getTipoAcessoLabel(usuario.tipo_de_acesso)}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {getNivelAcessoLabel(usuario.nivel_de_acesso)}
-                      </td>
+                      {getNivelAcessoLabel(usuario.nivel_de_acesso)}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                          usuario.status === 'ativo' 
-                            ? 'bg-green-100 text-green-800' 
-                            : usuario.status === 'bloqueado'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {getStatusLabel(usuario.status)}
-                        </span>
-                      </td>
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                        usuario.status === 'ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : usuario.status === 'bloqueado'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {getStatusLabel(usuario.status)}
+                      </span>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {usuario.criado_em ? formatDate(usuario.criado_em) : 'N/A'}
-                      </td>
+                      {usuario.criado_em ? formatDate(usuario.criado_em) : 'N/A'}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                          {canView('usuarios') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleViewUser(usuario)}
-                              title="Visualizar"
-                            >
+                        {canView('usuarios') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleViewUser(usuario)}
+                      title="Visualizar"
+                    >
                               <FaEye className="text-green-600 text-sm" />
-                            </Button>
-                          )}
-                          {canEdit('usuarios') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleEditUser(usuario)}
-                              title="Editar"
-                            >
+                          </Button>
+                        )}
+                    {canEdit('usuarios') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditUser(usuario)}
+                        title="Editar"
+                      >
                               <FaEdit className="text-blue-600 text-sm" />
-                            </Button>
-                          )}
-                          {canDelete('usuarios') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleDeleteUser(usuario.id)}
-                              title="Excluir"
-                            >
+                          </Button>
+                    )}
+                    {canDelete('usuarios') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteUser(usuario.id)}
+                        title="Excluir"
+                      >
                               <FaTrash className="text-red-600 text-sm" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          </Button>
+                    )}
+                      </div>
+                    </td>
+                </tr>
+                ))}
+          </tbody>
+            </table>
           </div>
+        </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
+          <div className="md:hidden space-y-3">
             {filteredUsuarios.map((usuario) => (
               <div key={usuario.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
@@ -860,10 +864,10 @@ const Usuarios = () => {
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
                     <span className="hidden sm:inline">Aplicar Filtros</span>
                     <span className="sm:hidden">Aplicar</span>
-                  </Button>
+            </Button>
                 </div>
               </div>
-            </div>
+              </div>
 
             {/* Botões de Exportação */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -877,7 +881,7 @@ const Usuarios = () => {
                 <span className="hidden sm:inline">Exportar PDF</span>
                 <span className="sm:hidden">PDF</span>
             </Button>
-              </div>
+                </div>
 
             {/* Lista de Logs */}
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">

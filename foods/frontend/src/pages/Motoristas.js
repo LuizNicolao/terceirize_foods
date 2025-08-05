@@ -536,108 +536,108 @@ const Motoristas = () => {
         <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nome
-                    </th>
+                    Nome
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      CPF/CNH
-                    </th>
+                    CPF/CNH
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contato
-                    </th>
+                    Contato
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
+                    Status
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Filial
-                    </th>
+                    Filial
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Admissão
-                    </th>
+                    Admissão
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredMotoristas.map((motorista) => (
-                    <tr key={motorista.id} className="hover:bg-gray-50">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredMotoristas.map((motorista) => (
+                  <tr key={motorista.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {motorista.nome}
-                        </div>
-                      </td>
+                        {motorista.nome}
+                      </div>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{motorista.cpf}</div>
                         <div className="text-sm text-gray-500">{motorista.cnh}</div>
-                      </td>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{motorista.telefone}</div>
                         <div className="text-sm text-gray-500">{motorista.email}</div>
-                      </td>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                          motorista.status === 'ativo' 
-                            ? 'bg-green-100 text-green-800' 
-                            : motorista.status === 'ferias'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : motorista.status === 'licenca'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {getStatusLabel(motorista.status)}
-                        </span>
-                      </td>
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                        motorista.status === 'ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : motorista.status === 'ferias'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : motorista.status === 'licenca'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {getStatusLabel(motorista.status)}
+                      </span>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {motorista.filial_nome || 'N/A'}
-                      </td>
+                      {motorista.filial_nome || 'N/A'}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {motorista.data_admissao ? formatDate(motorista.data_admissao) : 'N/A'}
-                      </td>
+                      {motorista.data_admissao ? formatDate(motorista.data_admissao) : 'N/A'}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                          {canView('motoristas') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleViewMotorista(motorista)}
-                              title="Visualizar"
-                            >
+                        {canView('motoristas') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                      onClick={() => handleViewMotorista(motorista)}
+                            title="Visualizar"
+                    >
                               <FaEye className="text-green-600 text-sm" />
-                            </Button>
-                          )}
-                          {canEdit('motoristas') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleEditMotorista(motorista)}
-                              title="Editar"
-                            >
+                          </Button>
+                        )}
+                    {canEdit('motoristas') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                        onClick={() => handleEditMotorista(motorista)}
+                            title="Editar"
+                      >
                               <FaEdit className="text-blue-600 text-sm" />
-                            </Button>
-                          )}
-                          {canDelete('motoristas') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleDeleteMotorista(motorista.id)}
-                              title="Excluir"
-                            >
+                          </Button>
+                    )}
+                    {canDelete('motoristas') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                        onClick={() => handleDeleteMotorista(motorista.id)}
+                            title="Excluir"
+                      >
                               <FaTrash className="text-red-600 text-sm" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          </Button>
+                    )}
+                      </div>
+                    </td>
+                </tr>
+                ))}
+          </tbody>
+            </table>
           </div>
+        </div>
 
           {/* Versão Mobile - Cards */}
           <div className="lg:hidden space-y-3">

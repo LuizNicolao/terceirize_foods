@@ -519,107 +519,107 @@ const Ajudantes = () => {
                 <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nome
-                    </th>
+                    Nome
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      CPF
-                    </th>
+                    CPF
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contato
-                    </th>
+                    Contato
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
+                    Status
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Filial
-                    </th>
+                    Filial
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Admissão
-                    </th>
+                    Admissão
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredAjudantes.map((ajudante) => (
-                    <tr key={ajudante.id} className="hover:bg-gray-50">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredAjudantes.map((ajudante) => (
+                  <tr key={ajudante.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {ajudante.nome}
-                        </div>
-                      </td>
+                        {ajudante.nome}
+                      </div>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {ajudante.cpf || 'N/A'}
-                      </td>
+                      {ajudante.cpf || 'N/A'}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{ajudante.telefone || 'N/A'}</div>
                         <div className="text-sm text-gray-500">{ajudante.email || 'N/A'}</div>
-                      </td>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                          ajudante.status === 'ativo' 
-                            ? 'bg-green-100 text-green-800' 
-                            : ajudante.status === 'ferias'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : ajudante.status === 'licenca'
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {getStatusLabel(ajudante.status)}
-                        </span>
-                      </td>
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                        ajudante.status === 'ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : ajudante.status === 'ferias'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : ajudante.status === 'licenca'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                    {getStatusLabel(ajudante.status)}
+                      </span>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {ajudante.filial_nome || 'N/A'}
-                      </td>
+                      {ajudante.filial_nome || 'N/A'}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {ajudante.data_admissao ? formatDate(ajudante.data_admissao) : 'N/A'}
-                      </td>
+                      {ajudante.data_admissao ? formatDate(ajudante.data_admissao) : 'N/A'}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                          {canView('ajudantes') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleViewAjudante(ajudante)}
-                              title="Visualizar"
-                            >
+                        {canView('ajudantes') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                    onClick={() => handleViewAjudante(ajudante)}
+                    title="Visualizar"
+                  >
                               <FaEye className="text-green-600 text-sm" />
-                            </Button>
-                          )}
-                          {canEdit('ajudantes') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleEditAjudante(ajudante)}
-                              title="Editar"
-                            >
+                          </Button>
+                        )}
+                  {canEdit('ajudantes') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                      onClick={() => handleEditAjudante(ajudante)}
+                      title="Editar"
+                    >
                               <FaEdit className="text-blue-600 text-sm" />
-                            </Button>
-                          )}
-                          {canDelete('ajudantes') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleDeleteAjudante(ajudante.id)}
-                              title="Excluir"
-                            >
+                          </Button>
+                  )}
+                  {canDelete('ajudantes') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                      onClick={() => handleDeleteAjudante(ajudante.id)}
+                      title="Excluir"
+                    >
                               <FaTrash className="text-red-600 text-sm" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          </Button>
+                  )}
+                      </div>
+                    </td>
+              </tr>
+                ))}
+          </tbody>
+            </table>
           </div>
+        </div>
 
           {/* Versão Mobile - Cards */}
           <div className="lg:hidden space-y-3">
@@ -960,8 +960,8 @@ const Ajudantes = () => {
                                   </div>
                                 ))}
                               </div>
-                            </div>
-                          )}
+                             </div>
+                           )}
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
                               <strong>Dados do Ajudante:</strong>

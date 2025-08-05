@@ -658,9 +658,9 @@ const Produtos = () => {
       {produtos.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {searchTerm || statusFilter !== 'todos'
-            ? 'Nenhum produto encontrado com os filtros aplicados'
-            : 'Nenhum produto cadastrado'
-          }
+                    ? 'Nenhum produto encontrado com os filtros aplicados'
+                    : 'Nenhum produto cadastrado'
+                  }
         </div>
       ) : (
         <>
@@ -701,57 +701,57 @@ const Produtos = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          produto.status === 1 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {produto.status === 1 ? 'Ativo' : 'Inativo'}
-                        </span>
+                      produto.status === 1 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {produto.status === 1 ? 'Ativo' : 'Inativo'}
+                    </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex items-center gap-2">
                           {canView('produtos') && (
-                            <Button
-                              variant="ghost"
+                      <Button
+                        variant="ghost"
                               size="xs"
-                              onClick={() => handleViewProduto(produto)}
+                        onClick={() => handleViewProduto(produto)}
                               title="Visualizar"
                               className="text-green-600 hover:text-green-800"
-                            >
+                      >
                               <FaEye className="w-4 h-4" />
-                            </Button>
+                      </Button>
                           )}
-                          {canEdit('produtos') && (
-                            <Button
-                              variant="ghost"
+                      {canEdit('produtos') && (
+                        <Button
+                          variant="ghost"
                               size="xs"
-                              onClick={() => handleEditProduto(produto)}
+                          onClick={() => handleEditProduto(produto)}
                               title="Editar"
                               className="text-blue-600 hover:text-blue-800"
-                            >
+                        >
                               <FaEdit className="w-4 h-4" />
-                            </Button>
-                          )}
-                          {canDelete('produtos') && (
-                            <Button
-                              variant="ghost"
+                        </Button>
+                      )}
+                      {canDelete('produtos') && (
+                        <Button
+                          variant="ghost"
                               size="xs"
-                              onClick={() => handleDeleteProduto(produto.id)}
+                          onClick={() => handleDeleteProduto(produto.id)}
                               title="Excluir"
-                              className="text-red-600 hover:text-red-800"
-                            >
+                          className="text-red-600 hover:text-red-800"
+                        >
                               <FaTrash className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
+                        </Button>
+                      )}
+                    </div>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+      </div>
           </div>
-
+          
           {/* Versão Mobile - Cards */}
           <div className="lg:hidden space-y-3">
             {produtos.map((produto) => (
@@ -763,37 +763,37 @@ const Produtos = () => {
                   </div>
                   <div className="flex gap-2">
                     {canView('produtos') && (
-                      <Button
-                        variant="ghost"
+            <Button 
+              variant="ghost"
                         size="xs"
                         onClick={() => handleViewProduto(produto)}
                         title="Visualizar"
                         className="p-2"
                       >
                         <FaEye className="text-green-600 text-sm" />
-                      </Button>
+            </Button>
                     )}
                     {canEdit('produtos') && (
-                      <Button
-                        variant="ghost"
+            <Button 
+              variant="ghost"
                         size="xs"
                         onClick={() => handleEditProduto(produto)}
                         title="Editar"
                         className="p-2"
                       >
                         <FaEdit className="text-blue-600 text-sm" />
-                      </Button>
+            </Button>
                     )}
                     {canDelete('produtos') && (
-                      <Button
-                        variant="ghost"
+              <Button
+              variant="ghost"
                         size="xs"
                         onClick={() => handleDeleteProduto(produto.id)}
                         title="Excluir"
                         className="p-2"
                       >
                         <FaTrash className="text-red-600 text-sm" />
-                      </Button>
+            </Button>
                     )}
                   </div>
                 </div>
@@ -802,7 +802,7 @@ const Produtos = () => {
                   <div>
                     <span className="text-gray-500">Grupo:</span>
                     <p className="font-medium">{getGrupoName(produto.grupo_id)}</p>
-                  </div>
+          </div>
                   <div>
                     <span className="text-gray-500">Status:</span>
                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
@@ -831,7 +831,7 @@ const Produtos = () => {
             onPageChange={handlePageChange}
             onItemsPerPageChange={setItemsPerPage}
           />
-          </div>
+        </div>
       )}
 
       {/* Modal de Produto */}

@@ -433,12 +433,12 @@ const Grupos = () => {
       </div>
 
       {/* Tabela */}
-      {filteredGrupos.length === 0 ? (
+              {filteredGrupos.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-          {searchTerm || statusFilter !== 'todos' 
-            ? 'Nenhum grupo encontrado com os filtros aplicados'
-            : 'Nenhum grupo cadastrado'
-          }
+                      {searchTerm || statusFilter !== 'todos' 
+                        ? 'Nenhum grupo encontrado com os filtros aplicados'
+                        : 'Nenhum grupo cadastrado'
+                      }
         </div>
       ) : (
         <>
@@ -477,7 +477,7 @@ const Grupos = () => {
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
                         }`}>
-                          {grupo.status === 1 ? 'Ativo' : 'Inativo'}
+                        {grupo.status === 1 ? 'Ativo' : 'Inativo'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -486,40 +486,40 @@ const Grupos = () => {
                             <Button
                               variant="ghost"
                               size="xs"
-                              onClick={() => handleViewGrupo(grupo)}
+                        onClick={() => handleViewGrupo(grupo)}
                               title="Visualizar"
                               className="text-green-600 hover:text-green-800"
-                            >
+                      >
                               <FaEye className="w-4 h-4" />
                             </Button>
                           )}
-                          {canEdit('grupos') && (
+                                {canEdit('grupos') && (
                             <Button
                               variant="ghost"
                               size="xs"
-                              onClick={() => handleEditGrupo(grupo)}
+              onClick={() => handleEditGrupo(grupo)}
                               title="Editar"
                               className="text-blue-600 hover:text-blue-800"
-                            >
+            >
                               <FaEdit className="w-4 h-4" />
                             </Button>
-                          )}
-                          {canDelete('grupos') && (
+          )}
+          {canDelete('grupos') && (
                             <Button
                               variant="ghost"
                               size="xs"
-                              onClick={() => handleDeleteGrupo(grupo.id)}
+              onClick={() => handleDeleteGrupo(grupo.id)}
                               title="Excluir"
                               className="text-red-600 hover:text-red-800"
-                            >
+            >
                               <FaTrash className="w-4 h-4" />
                             </Button>
-                          )}
+          )}
                         </div>
                       </td>
-                    </tr>
+                  </tr>
                   ))}
-                </tbody>
+            </tbody>
               </table>
             </div>
           </div>

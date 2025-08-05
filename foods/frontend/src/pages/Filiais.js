@@ -510,10 +510,10 @@ const Filiais = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                  </tr>
-                </thead>
+              </tr>
+            </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredFiliais.map(filial => (
+              {filteredFiliais.map(filial => (
                     <tr key={filial.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{filial.codigo_filial || '-'}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{filial.cnpj || '-'}</td>
@@ -527,7 +527,7 @@ const Filiais = () => {
                             ? 'bg-green-100 text-green-800' 
                             : 'bg-red-100 text-red-800'
                         }`}>
-                          {filial.status === 1 ? 'Ativo' : 'Inativo'}
+                      {filial.status === 1 ? 'Ativo' : 'Inativo'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -535,36 +535,36 @@ const Filiais = () => {
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleViewFilial(filial)}
+                      onClick={() => handleViewFilial(filial)}
                             title="Visualizar"
-                          >
+                    >
                             <FaEye className="text-green-600 text-sm" />
                           </Button>
-                          {canEdit('filiais') && (
+                    {canEdit('filiais') && (
                             <Button
                               variant="ghost"
                               size="xs"
-                              onClick={() => handleEditFilial(filial)}
+                        onClick={() => handleEditFilial(filial)}
                               title="Editar"
-                            >
+                      >
                               <FaEdit className="text-blue-600 text-sm" />
                             </Button>
-                          )}
-                          {canDelete('filiais') && (
+                    )}
+                    {canDelete('filiais') && (
                             <Button
                               variant="ghost"
                               size="xs"
-                              onClick={() => handleDeleteFilial(filial.id)}
+                        onClick={() => handleDeleteFilial(filial.id)}
                               title="Excluir"
-                            >
+                      >
                               <FaTrash className="text-red-600 text-sm" />
                             </Button>
-                          )}
+                    )}
                         </div>
                       </td>
-                    </tr>
-                  ))}
-                </tbody>
+                </tr>
+              ))}
+            </tbody>
               </table>
             </div>
           </div>
@@ -587,7 +587,7 @@ const Filiais = () => {
                       className="p-2"
                     >
                       <FaEye className="text-green-600 text-sm" />
-                    </Button>
+                </Button>
                     {canEdit('filiais') && (
                       <Button
                         variant="ghost"
@@ -597,10 +597,10 @@ const Filiais = () => {
                         className="p-2"
                       >
                         <FaEdit className="text-blue-600 text-sm" />
-                      </Button>
-                    )}
+                  </Button>
+                )}
                     {canDelete('filiais') && (
-                      <Button
+                        <Button 
                         variant="ghost"
                         size="xs"
                         onClick={() => handleDeleteFilial(filial.id)}
@@ -608,16 +608,16 @@ const Filiais = () => {
                         className="p-2"
                       >
                         <FaTrash className="text-red-600 text-sm" />
-                      </Button>
-                    )}
-                  </div>
+                        </Button>
+                      )}
+                    </div>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
+              <div>
                     <span className="text-gray-500">CNPJ:</span>
                     <p className="font-medium">{filial.cnpj || 'N/A'}</p>
-                  </div>
+                </div>
                   <div>
                     <span className="text-gray-500">Razão Social:</span>
                     <p className="font-medium">{filial.razao_social}</p>
@@ -643,7 +643,7 @@ const Filiais = () => {
                 </div>
               </div>
             ))}
-          </div>
+              </div>
         </>
       )}
 
@@ -656,7 +656,7 @@ const Filiais = () => {
       >
         <div className="mb-4">
           <div className="flex border-b border-gray-200">
-            <button
+                <button
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'dados'
                   ? 'border-green-500 text-green-600'
@@ -665,9 +665,9 @@ const Filiais = () => {
               onClick={() => setActiveTab('dados')}
             >
               Dados
-            </button>
+                </button>
               {editingFilial && editingFilial.id && (
-              <button
+                <button
                 className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'almoxarifados'
                     ? 'border-green-500 text-green-600'
@@ -676,9 +676,9 @@ const Filiais = () => {
                 onClick={() => setActiveTab('almoxarifados')}
               >
                 Almoxarifados
-              </button>
+                </button>
             )}
-          </div>
+              </div>
         </div>
 
             {activeTab === 'dados' && (
@@ -691,7 +691,7 @@ const Filiais = () => {
         )}
 
         {activeTab === 'almoxarifados' && editingFilial && (
-          <div>
+                <div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Almoxarifados da Filial</h3>
                       {!viewMode && (

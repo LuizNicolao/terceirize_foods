@@ -647,100 +647,100 @@ const Clientes = () => {
         <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-full">
-                <thead className="bg-gray-50">
-                  <tr>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-full">
+              <thead className="bg-gray-50">
+                <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      CNPJ
-                    </th>
+                    CNPJ
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Razão Social
-                    </th>
+                    Razão Social
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Município/UF
-                    </th>
+                    Município/UF
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contato
-                    </th>
+                    Contato
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
+                    Status
+                  </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ações
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredClientes.map((cliente) => (
-                    <tr key={cliente.id} className="hover:bg-gray-50">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredClientes.map((cliente) => (
+                  <tr key={cliente.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                          {cliente.cnpj ? cliente.cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : '-'}
-                        </div>
-                      </td>
+                        {cliente.cnpj ? cliente.cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : '-'}
+                      </div>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {cliente.razao_social}
-                      </td>
+                      {cliente.razao_social}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {cliente.municipio && cliente.uf ? `${cliente.municipio}/${cliente.uf}` : '-'}
-                      </td>
+                      {cliente.municipio && cliente.uf ? `${cliente.municipio}/${cliente.uf}` : '-'}
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div>
-                          {cliente.email && <div>{cliente.email}</div>}
-                          {cliente.telefone && <div>{cliente.telefone}</div>}
-                          {!cliente.email && !cliente.telefone && '-'}
-                        </div>
-                      </td>
+                      <div>
+                        {cliente.email && <div>{cliente.email}</div>}
+                        {cliente.telefone && <div>{cliente.telefone}</div>}
+                        {!cliente.email && !cliente.telefone && '-'}
+                      </div>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                          cliente.status === 1 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {getStatusLabel(cliente.status)}
-                        </span>
-                      </td>
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                        cliente.status === 1 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {getStatusLabel(cliente.status)}
+                      </span>
+                    </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                          {canView('clientes') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleViewCliente(cliente)}
-                              title="Visualizar"
-                            >
+                        {canView('clientes') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                      onClick={() => handleViewCliente(cliente)}
+                            title="Visualizar"
+                    >
                               <FaEye className="text-green-600 text-sm" />
-                            </Button>
-                          )}
-                          {canEdit('clientes') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleEditCliente(cliente)}
-                              title="Editar"
-                            >
+                          </Button>
+                        )}
+                    {canEdit('clientes') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                        onClick={() => handleEditCliente(cliente)}
+                            title="Editar"
+                      >
                               <FaEdit className="text-blue-600 text-sm" />
-                            </Button>
-                          )}
-                          {canDelete('clientes') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleDeleteCliente(cliente.id)}
-                              title="Excluir"
-                            >
+                          </Button>
+                    )}
+                    {canDelete('clientes') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                        onClick={() => handleDeleteCliente(cliente.id)}
+                            title="Excluir"
+                      >
                               <FaTrash className="text-red-600 text-sm" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          </Button>
+                    )}
+                      </div>
+                    </td>
+                </tr>
+                ))}
+          </tbody>
+            </table>
           </div>
+        </div>
 
           {/* Versão Mobile - Cards */}
           <div className="lg:hidden space-y-3">
