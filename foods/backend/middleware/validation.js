@@ -1145,7 +1145,15 @@ const motoristaValidations = [
   
   body('filial_id')
     .optional()
-    .isInt({ min: 1 })
+    .custom((value) => {
+      if (value !== null && value !== undefined && value !== '') {
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('ID da filial deve ser um número inteiro válido maior que 0');
+        }
+      }
+      return true;
+    })
     .withMessage('ID da filial deve ser um número inteiro válido'),
   
   body('cnh_validade')
@@ -1254,12 +1262,28 @@ const motoristaAtualizacaoValidations = [
   
   body('filial_id')
     .optional()
-    .isInt({ min: 1 })
+    .custom((value) => {
+      if (value !== null && value !== undefined && value !== '') {
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('ID da filial deve ser um número inteiro válido maior que 0');
+        }
+      }
+      return true;
+    })
     .withMessage('ID da filial deve ser um número inteiro válido'),
   
   body('cnh_validade')
     .optional()
-    .isISO8601()
+    .custom((value) => {
+      if (value && value.trim() !== '') {
+        const data = new Date(value);
+        if (isNaN(data.getTime())) {
+          throw new Error('Data de validade da CNH deve ser uma data válida');
+        }
+      }
+      return true;
+    })
     .withMessage('Data de validade da CNH deve ser uma data válida')
  ];
 
@@ -1345,7 +1369,15 @@ const ajudanteValidations = [
   
   body('filial_id')
     .optional()
-    .isInt({ min: 1 })
+    .custom((value) => {
+      if (value !== null && value !== undefined && value !== '') {
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('ID da filial deve ser um número inteiro válido maior que 0');
+        }
+      }
+      return true;
+    })
     .withMessage('ID da filial deve ser um número inteiro válido')
 ];
 
@@ -1429,7 +1461,15 @@ const ajudanteAtualizacaoValidations = [
   
   body('filial_id')
     .optional()
-    .isInt({ min: 1 })
+    .custom((value) => {
+      if (value !== null && value !== undefined && value !== '') {
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('ID da filial deve ser um número inteiro válido maior que 0');
+        }
+      }
+      return true;
+    })
     .withMessage('ID da filial deve ser um número inteiro válido')
 ];
 

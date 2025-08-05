@@ -282,19 +282,32 @@ const Motoristas = () => {
     reset();
   };
 
-  const onSubmit = async (data) => {
+    const onSubmit = async (data) => {
     try {
+      // Limpar campos vazios para evitar problemas de validação
+      const cleanData = {
+        ...data,
+        filial_id: data.filial_id && data.filial_id !== '' ? parseInt(data.filial_id) : null,
+        cpf: data.cpf && data.cpf.trim() !== '' ? data.cpf.trim() : null,
+        telefone: data.telefone && data.telefone.trim() !== '' ? data.telefone.trim() : null,
+        email: data.email && data.email.trim() !== '' ? data.email.trim() : null,
+        endereco: data.endereco && data.endereco.trim() !== '' ? data.endereco.trim() : null,
+        observacoes: data.observacoes && data.observacoes.trim() !== '' ? data.observacoes.trim() : null,
+        cnh: data.cnh && data.cnh.trim() !== '' ? data.cnh.trim() : null,
+        categoria_cnh: data.categoria_cnh && data.categoria_cnh.trim() !== '' ? data.categoria_cnh.trim() : null
+      };
+
       let result;
       if (editingMotorista) {
-        result = await MotoristasService.atualizar(editingMotorista.id, data);
+        result = await MotoristasService.atualizar(editingMotorista.id, cleanData);
       } else {
-        result = await MotoristasService.criar(data);
+        result = await MotoristasService.criar(cleanData);
       }
       
       if (result.success) {
         toast.success(editingMotorista ? 'Motorista atualizado com sucesso!' : 'Motorista criado com sucesso!');
-      handleCloseModal();
-      loadMotoristas();
+        handleCloseModal();
+        loadMotoristas();
       } else {
         toast.error(result.error);
       }

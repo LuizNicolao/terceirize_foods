@@ -34,7 +34,7 @@ class FiliaisService {
 
   async buscarAtivas() {
     try {
-      const response = await api.get('/filiais/ativas');
+      const response = await api.get('/filiais/ativas/listar');
       return {
         success: true,
         data: response.data.data || response.data

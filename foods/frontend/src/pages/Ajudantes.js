@@ -71,7 +71,7 @@ const Ajudantes = () => {
   };
 
   const loadAjudantes = async (params = {}) => {
-    setLoading(true);
+      setLoading(true);
     try {
       // Parâmetros de paginação
       const paginationParams = {
@@ -178,7 +178,7 @@ const Ajudantes = () => {
         a.href = url;
         a.download = 'ajudantes.xlsx';
         a.click();
-        window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
         toast.success('Exportação XLSX realizada com sucesso!');
       } else {
         toast.error(result.error);
@@ -198,7 +198,7 @@ const Ajudantes = () => {
         a.href = url;
         a.download = 'ajudantes.pdf';
         a.click();
-        window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
         toast.success('Exportação PDF realizada com sucesso!');
       } else {
         toast.error(result.error);
@@ -278,15 +278,26 @@ const Ajudantes = () => {
     reset();
   };
 
-  const onSubmit = async (data) => {
+    const onSubmit = async (data) => {
     try {
+      // Limpar campos vazios para evitar problemas de validação
+      const cleanData = {
+        ...data,
+        filial_id: data.filial_id && data.filial_id !== '' ? parseInt(data.filial_id) : null,
+        cpf: data.cpf && data.cpf.trim() !== '' ? data.cpf.trim() : null,
+        telefone: data.telefone && data.telefone.trim() !== '' ? data.telefone.trim() : null,
+        email: data.email && data.email.trim() !== '' ? data.email.trim() : null,
+        endereco: data.endereco && data.endereco.trim() !== '' ? data.endereco.trim() : null,
+        observacoes: data.observacoes && data.observacoes.trim() !== '' ? data.observacoes.trim() : null
+      };
+
       let result;
       if (editingAjudante) {
-        result = await AjudantesService.atualizar(editingAjudante.id, data);
+        result = await AjudantesService.atualizar(editingAjudante.id, cleanData);
       } else {
-        result = await AjudantesService.criar(data);
+        result = await AjudantesService.criar(cleanData);
       }
-
+      
       if (result.success) {
         toast.success(editingAjudante ? 'Ajudante atualizado com sucesso!' : 'Ajudante criado com sucesso!');
         handleCloseModal();
@@ -295,22 +306,22 @@ const Ajudantes = () => {
         toast.error(result.error);
       }
     } catch (error) {
-      toast.error('Erro ao salvar ajudante');
+        toast.error('Erro ao salvar ajudante');
     }
   };
 
   const handleDeleteAjudante = async (ajudanteId) => {
     if (window.confirm('Tem certeza que deseja excluir este ajudante?')) {
-      try {
+    try {
         const result = await AjudantesService.excluir(ajudanteId);
         if (result.success) {
-          toast.success('Ajudante excluído com sucesso!');
-          loadAjudantes();
+      toast.success('Ajudante excluído com sucesso!');
+      loadAjudantes();
         } else {
           toast.error(result.error);
         }
-      } catch (error) {
-        toast.error('Erro ao excluir ajudante');
+    } catch (error) {
+      toast.error('Erro ao excluir ajudante');
       }
     }
   };
@@ -412,13 +423,13 @@ const Ajudantes = () => {
       </div>
 
       {/* Tabela */}
-      {filteredAjudantes.length === 0 ? (
+            {filteredAjudantes.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {searchTerm 
-            ? 'Nenhum ajudante encontrado com os filtros aplicados'
-            : 'Nenhum ajudante cadastrado'
-          }
-        </div>
+                      ? 'Nenhum ajudante encontrado com os filtros aplicados'
+                      : 'Nenhum ajudante cadastrado'
+                    }
+                  </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
@@ -473,7 +484,7 @@ const Ajudantes = () => {
                           ? 'bg-purple-100 text-purple-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {getStatusLabel(ajudante.status)}
+                    {getStatusLabel(ajudante.status)}
                       </span>
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
@@ -488,37 +499,37 @@ const Ajudantes = () => {
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleViewAjudante(ajudante)}
-                            title="Visualizar"
-                          >
+                    onClick={() => handleViewAjudante(ajudante)}
+                    title="Visualizar"
+                  >
                             <FaEye className="text-green-600 text-xs sm:text-sm" />
                           </Button>
                         )}
-                        {canEdit('ajudantes') && (
+                  {canEdit('ajudantes') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleEditAjudante(ajudante)}
-                            title="Editar"
-                          >
+                      onClick={() => handleEditAjudante(ajudante)}
+                      title="Editar"
+                    >
                             <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                           </Button>
-                        )}
-                        {canDelete('ajudantes') && (
+                  )}
+                  {canDelete('ajudantes') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleDeleteAjudante(ajudante.id)}
-                            title="Excluir"
-                          >
+                      onClick={() => handleDeleteAjudante(ajudante.id)}
+                      title="Excluir"
+                    >
                             <FaTrash className="text-red-600 text-xs sm:text-sm" />
                           </Button>
-                        )}
+                  )}
                       </div>
                     </td>
-                  </tr>
+              </tr>
                 ))}
-              </tbody>
+          </tbody>
             </table>
           </div>
         </div>
@@ -637,17 +648,17 @@ const Ajudantes = () => {
           {!viewMode && (
             <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
               <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
-                Cancelar
-              </Button>
+                    Cancelar
+                  </Button>
               <Button type="submit" size="sm">
                 {editingAjudante ? 'Atualizar' : 'Criar'}
-              </Button>
+                  </Button>
             </div>
           )}
         </form>
-      </Modal>
+        </Modal>
 
-      {/* Modal de Auditoria */}
+             {/* Modal de Auditoria */}
       <Modal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
@@ -663,13 +674,13 @@ const Ajudantes = () => {
               <span className="hidden sm:inline">Atualizar</span>
               <span className="sm:hidden">Atualizar</span>
             </Button>
-          </div>
+              </div>
 
           {loadingAudit ? (
             <div className="flex justify-center items-center py-6 sm:py-8">
               <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600"></div>
-            </div>
-          ) : (
+                 </div>
+               ) : (
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -683,7 +694,7 @@ const Ajudantes = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {auditLogs.map((log, index) => (
+                   {auditLogs.map((log, index) => (
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {formatDate(log.created_at)}
@@ -707,10 +718,10 @@ const Ajudantes = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-        </div>
-      </Modal>
+                             </div>
+                           )}
+                                     </div>
+         </Modal>
 
       {/* Paginação */}
       {totalPages > 1 && (
