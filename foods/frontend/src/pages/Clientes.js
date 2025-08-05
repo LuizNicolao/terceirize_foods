@@ -564,11 +564,7 @@ const Clientes = () => {
             </Button>
           )}
           
-          <Button onClick={handleOpenAuditModal} variant="outline" size="sm">
-            <FaHistory className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Auditoria</span>
-            <span className="sm:hidden">Logs</span>
-          </Button>
+
           
 
         </div>
@@ -620,6 +616,11 @@ const Clientes = () => {
 
       {/* Ações */}
       <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+        <Button onClick={handleOpenAuditModal} variant="ghost" size="sm">
+          <FaQuestionCircle className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Auditoria</span>
+          <span className="sm:hidden">Auditoria</span>
+        </Button>
         <Button onClick={handleExportXLSX} variant="outline" size="sm">
           <FaFileExcel className="mr-1 sm:mr-2" />
           <span className="hidden sm:inline">Exportar XLSX</span>
