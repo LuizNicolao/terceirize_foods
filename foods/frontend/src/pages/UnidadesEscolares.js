@@ -92,10 +92,10 @@ const UnidadesEscolares = () => {
   // Filtrar unidades escolares (client-side como na tela Rotas)
   const filteredUnidades = unidades.filter(unidade => {
     const matchesSearch = !searchTerm || 
-      unidade.nome_escola.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      unidade.codigo_teknisa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      unidade.cidade.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      unidade.estado.toLowerCase().includes(searchTerm.toLowerCase());
+      (unidade.nome_escola && unidade.nome_escola.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (unidade.codigo_teknisa && unidade.codigo_teknisa.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (unidade.cidade && unidade.cidade.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (unidade.estado && unidade.estado.toLowerCase().includes(searchTerm.toLowerCase()));
     
     return matchesSearch;
   });

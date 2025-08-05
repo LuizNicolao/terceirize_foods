@@ -120,10 +120,10 @@ const Ajudantes = () => {
   // Filtrar ajudantes (client-side)
   const filteredAjudantes = ajudantes.filter(ajudante => {
     const matchesSearch = !searchTerm || 
-      ajudante.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ajudante.cpf.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ajudante.telefone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ajudante.email.toLowerCase().includes(searchTerm.toLowerCase());
+      (ajudante.nome && ajudante.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ajudante.cpf && ajudante.cpf.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ajudante.telefone && ajudante.telefone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ajudante.email && ajudante.email.toLowerCase().includes(searchTerm.toLowerCase()));
     
     return matchesSearch;
   });
@@ -278,7 +278,7 @@ const Ajudantes = () => {
     reset();
   };
 
-    const onSubmit = async (data) => {
+  const onSubmit = async (data) => {
     try {
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
@@ -300,8 +300,8 @@ const Ajudantes = () => {
       
       if (result.success) {
         toast.success(editingAjudante ? 'Ajudante atualizado com sucesso!' : 'Ajudante criado com sucesso!');
-        handleCloseModal();
-        loadAjudantes();
+      handleCloseModal();
+      loadAjudantes();
       } else {
         toast.error(result.error);
       }

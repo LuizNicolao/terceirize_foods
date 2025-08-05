@@ -88,10 +88,10 @@ const Veiculos = () => {
   // Filtrar veículos (client-side)
   const filteredVeiculos = veiculos.filter(veiculo => {
     const matchesSearch = !searchTerm || 
-      veiculo.placa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      veiculo.modelo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      veiculo.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      veiculo.tipo_veiculo.toLowerCase().includes(searchTerm.toLowerCase());
+      (veiculo.placa && veiculo.placa.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (veiculo.modelo && veiculo.modelo.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (veiculo.marca && veiculo.marca.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (veiculo.tipo_veiculo && veiculo.tipo_veiculo.toLowerCase().includes(searchTerm.toLowerCase()));
     
     return matchesSearch;
   });

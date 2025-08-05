@@ -121,10 +121,10 @@ const Motoristas = () => {
   // Filtrar motoristas (client-side)
   const filteredMotoristas = motoristas.filter(motorista => {
     const matchesSearch = !searchTerm || 
-      motorista.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      motorista.cpf.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      motorista.cnh.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      motorista.telefone.toLowerCase().includes(searchTerm.toLowerCase());
+      (motorista.nome && motorista.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (motorista.cpf && motorista.cpf.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (motorista.cnh && motorista.cnh.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (motorista.telefone && motorista.telefone.toLowerCase().includes(searchTerm.toLowerCase()));
     
     return matchesSearch;
   });
@@ -282,7 +282,7 @@ const Motoristas = () => {
     reset();
   };
 
-    const onSubmit = async (data) => {
+  const onSubmit = async (data) => {
     try {
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
@@ -306,8 +306,8 @@ const Motoristas = () => {
       
       if (result.success) {
         toast.success(editingMotorista ? 'Motorista atualizado com sucesso!' : 'Motorista criado com sucesso!');
-        handleCloseModal();
-        loadMotoristas();
+      handleCloseModal();
+      loadMotoristas();
       } else {
         toast.error(result.error);
       }

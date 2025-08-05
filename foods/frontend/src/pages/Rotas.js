@@ -455,9 +455,9 @@ const Rotas = () => {
   // Filtrar rotas
   const filteredRotas = rotas.filter(rota => {
     const matchesSearch = !searchTerm || 
-      rota.codigo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rota.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      rota.id.toString().includes(searchTerm);
+      (rota.codigo && rota.codigo.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (rota.nome && rota.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (rota.id && rota.id.toString().includes(searchTerm));
     
     const matchesStatus = statusFilter === 'todos' || rota.status === statusFilter;
     const matchesFilial = filialFilter === 'todos' || rota.filial_id.toString() === filialFilter;

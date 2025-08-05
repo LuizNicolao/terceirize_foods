@@ -696,7 +696,7 @@ const Classes = () => {
   // Filtrar classes
   const filteredClasses = classes.filter(classe => {
     const matchesSearch = !searchTerm || 
-      classe.nome.toLowerCase().includes(searchTerm.toLowerCase());
+      (classe.nome && classe.nome.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'todos' || 
       (statusFilter === 'ativo' && classe.status === 1) ||
