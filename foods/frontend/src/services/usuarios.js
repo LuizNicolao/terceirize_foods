@@ -4,10 +4,29 @@ class UsuariosService {
   async listar(params = {}) {
     try {
       const response = await api.get('/usuarios', { params });
+      
+      // Extrair dados da estrutura HATEOAS
+      let usuarios = [];
+      let pagination = null;
+      
+      if (response.data.data) {
+        // Se tem data.items (estrutura HATEOAS)
+        if (response.data.data.items) {
+          usuarios = response.data.data.items;
+          pagination = response.data.data._meta?.pagination;
+        } else {
+          // Se data é diretamente um array
+          usuarios = response.data.data;
+        }
+      } else if (Array.isArray(response.data)) {
+        // Se response.data é diretamente um array
+        usuarios = response.data;
+      }
+      
       return {
         success: true,
-        data: response.data.data || response.data,
-        pagination: response.data.pagination
+        data: usuarios,
+        pagination: pagination || response.data.pagination
       };
     } catch (error) {
       return {
@@ -20,9 +39,19 @@ class UsuariosService {
   async buscarPorId(id) {
     try {
       const response = await api.get(`/usuarios/${id}`);
+      
+      // Extrair dados da estrutura HATEOAS
+      let usuario = null;
+      
+      if (response.data.data) {
+        usuario = response.data.data;
+      } else {
+        usuario = response.data;
+      }
+      
       return {
         success: true,
-        data: response.data
+        data: usuario
       };
     } catch (error) {
       return {
@@ -35,9 +64,19 @@ class UsuariosService {
   async criar(data) {
     try {
       const response = await api.post('/usuarios', data);
+      
+      // Extrair dados da estrutura HATEOAS
+      let usuario = null;
+      
+      if (response.data.data) {
+        usuario = response.data.data;
+      } else {
+        usuario = response.data;
+      }
+      
       return {
         success: true,
-        data: response.data,
+        data: usuario,
         message: 'Usuário criado com sucesso!'
       };
     } catch (error) {
@@ -51,9 +90,19 @@ class UsuariosService {
   async atualizar(id, data) {
     try {
       const response = await api.put(`/usuarios/${id}`, data);
+      
+      // Extrair dados da estrutura HATEOAS
+      let usuario = null;
+      
+      if (response.data.data) {
+        usuario = response.data.data;
+      } else {
+        usuario = response.data;
+      }
+      
       return {
         success: true,
-        data: response.data,
+        data: usuario,
         message: 'Usuário atualizado com sucesso!'
       };
     } catch (error) {
@@ -82,9 +131,26 @@ class UsuariosService {
   async buscarAtivos() {
     try {
       const response = await api.get('/usuarios', { params: { status: 'ativo' } });
+      
+      // Extrair dados da estrutura HATEOAS
+      let usuarios = [];
+      
+      if (response.data.data) {
+        // Se tem data.items (estrutura HATEOAS)
+        if (response.data.data.items) {
+          usuarios = response.data.data.items;
+        } else {
+          // Se data é diretamente um array
+          usuarios = response.data.data;
+        }
+      } else if (Array.isArray(response.data)) {
+        // Se response.data é diretamente um array
+        usuarios = response.data;
+      }
+      
       return {
         success: true,
-        data: response.data.data || response.data
+        data: usuarios
       };
     } catch (error) {
       return {

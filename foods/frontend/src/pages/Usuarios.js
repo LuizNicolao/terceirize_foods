@@ -102,7 +102,7 @@ const Usuarios = () => {
   };
 
   // Filtrar usuários (client-side)
-  const filteredUsuarios = usuarios.filter(usuario => {
+  const filteredUsuarios = (Array.isArray(usuarios) ? usuarios : []).filter(usuario => {
     const matchesSearch = !searchTerm || 
       (usuario.nome && usuario.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (usuario.email && usuario.email.toLowerCase().includes(searchTerm.toLowerCase()));
