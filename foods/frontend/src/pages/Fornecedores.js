@@ -34,6 +34,7 @@ const Fornecedores = () => {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [loadingAudit, setLoadingAudit] = useState(false);
+  const [searching, setSearching] = useState(false);
   const [estatisticas, setEstatisticas] = useState({
     total_fornecedores: 0,
     fornecedores_ativos: 0,
@@ -62,6 +63,15 @@ const Fornecedores = () => {
     }, 500); // 500ms de delay
 
     return () => clearTimeout(timer);
+  }, [searchTerm, debouncedSearchTerm]);
+
+  // Mostrar loading quando buscar
+  useEffect(() => {
+    if (searchTerm && searchTerm !== debouncedSearchTerm) {
+      setSearching(true);
+    } else {
+      setSearching(false);
+    }
   }, [searchTerm, debouncedSearchTerm]);
 
   useEffect(() => {
@@ -113,6 +123,7 @@ const Fornecedores = () => {
       toast.error('Erro ao carregar fornecedores');
     } finally {
       setLoading(false);
+      setSearching(false); // Parar loading de busca
     }
   };
 
@@ -392,8 +403,16 @@ const Fornecedores = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onClear={() => setSearchTerm('')}
-                        placeholder="Buscar por razão social, CNPJ ou município..."
+        placeholder="Buscar por razão social, CNPJ ou município..."
       />
+      
+      {/* Indicador de busca */}
+      {searching && (
+        <div className="flex items-center justify-center py-2 text-sm text-gray-600">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+          Buscando...
+        </div>
+      )}
 
       {/* Ações */}
       <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
