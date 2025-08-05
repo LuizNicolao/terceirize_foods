@@ -1,300 +1,35 @@
-import React, { useState, useEffect, useContext } from 'react';
-import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaLayerGroup, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
-import { useForm } from 'react-hook-form';
-import api from '../services/api';
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  FaPlus, 
+  FaEye, 
+  FaEdit, 
+  FaTrash, 
+  FaQuestionCircle,
+  FaFileExcel,
+  FaFilePdf,
+  FaLayerGroup,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaTags,
+  FaTimes
+} from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
+import GruposService from '../services/grupos';
+import { Button, Input, Modal, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
-import ErrorModal from '../components/ErrorModal';
-
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h1`
-  color: var(--dark-gray);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const AddButton = styled.button`
-  background: var(--primary-green);
-  color: var(--white);
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: var(--dark-green);
-    transform: translateY(-1px);
-  }
-`;
-
-const TableContainer = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  background-color: #f5f5f5;
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const Td = styled.td`
-  padding: 16px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  color: var(--dark-gray);
-`;
-
-const StatusBadge = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
-`;
-
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  margin-right: 8px;
-  color: var(--gray);
-
-  &:hover {
-    background-color: var(--light-gray);
-  }
-
-  &.edit {
-    color: var(--blue);
-  }
-
-  &.delete {
-    color: var(--error-red);
-  }
-
-  &.view {
-    color: var(--primary-green);
-  }
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 32px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const ModalTitle = styled.h2`
-  color: var(--dark-gray);
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--gray);
-  padding: 4px;
-
-  &:hover {
-    color: var(--error-red);
-  }
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const Label = styled.label`
-  color: var(--dark-gray);
-  font-weight: 600;
-  font-size: 14px;
-`;
-
-const Input = styled.input`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-
-  &:disabled {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
-  }
-`;
-
-const TextArea = styled.textarea`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  font-family: inherit;
-  resize: vertical;
-  min-height: 100px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const Select = styled.select`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white);
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-
-  &:disabled {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-`;
-
-const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &.primary {
-    background: var(--primary-green);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-green);
-    }
-  }
-
-  &.secondary {
-    background: var(--gray);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-gray);
-    }
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px;
-  color: var(--gray);
-`;
-
-
+import Pagination from '../components/Pagination';
 
 const Grupos = () => {
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [grupos, setGrupos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editingGrupo, setEditingGrupo] = useState(null);
   const [viewMode, setViewMode] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
+  const [editingGrupo, setEditingGrupo] = useState(null);
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [auditFilters, setAuditFilters] = useState({
     dataInicio: '',
     dataFim: '',
@@ -302,87 +37,95 @@ const Grupos = () => {
     usuario_id: '',
     periodo: ''
   });
+  const [estatisticas, setEstatisticas] = useState({
+    total_grupos: 0,
+    grupos_ativos: 0,
+    grupos_inativos: 0,
+    subgrupos_total: 0
+  });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
+  
+  // Estados de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-    setValue
-  } = useForm();
+  useEffect(() => {
+    loadData();
+  }, [currentPage, itemsPerPage, searchTerm, statusFilter]);
 
-  const { canCreate, canEdit, canDelete } = usePermissions();
-
-  // Carregar grupos
-  const loadGrupos = async () => {
-    try {
+  const loadData = async () => {
       setLoading(true);
-      // Carregar todos os grupos (limit=1000 para pegar todos)
-      const response = await api.get('/grupos?limit=1000');
-      setGrupos(response.data.data.items || []);
+    try {
+      // Resetar página se os filtros mudaram
+      if (searchTerm !== '' || statusFilter !== 'todos') {
+        setCurrentPage(1);
+      }
+      
+      // Carregar grupos com paginação
+      const paginationParams = {
+        page: currentPage,
+        limit: itemsPerPage,
+        search: searchTerm,
+        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
+      };
+
+      const gruposRes = await GruposService.listar(paginationParams);
+
+      if (gruposRes.success) {
+        setGrupos(gruposRes.data);
+        
+        // Extrair informações de paginação
+        if (gruposRes.pagination) {
+          setTotalPages(gruposRes.pagination.totalPages || 1);
+          setTotalItems(gruposRes.pagination.totalItems || gruposRes.data.length);
+          setCurrentPage(gruposRes.pagination.currentPage || 1);
+        } else {
+          setTotalItems(gruposRes.data.length);
+          setTotalPages(Math.ceil(gruposRes.data.length / itemsPerPage));
+        }
+        
+        // Calcular estatísticas
+        const total = gruposRes.pagination?.totalItems || gruposRes.data.length;
+        const ativos = gruposRes.data.filter(g => g.status === 1).length;
+        const inativos = gruposRes.data.filter(g => g.status === 0).length;
+        const subgrupos = gruposRes.data.reduce((acc, grupo) => acc + (grupo.subgrupos_count || 0), 0);
+        
+        setEstatisticas({
+          total_grupos: total,
+          grupos_ativos: ativos,
+          grupos_inativos: inativos,
+          subgrupos_total: subgrupos
+        });
+      } else {
+        toast.error(gruposRes.error);
+      }
     } catch (error) {
-      console.error('Erro ao carregar grupos:', error);
+      console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar grupos');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadGrupos();
-  }, []);
-
-  // Carregar logs de auditoria
   const loadAuditLogs = async () => {
+    setAuditLoading(true);
     try {
-      setAuditLoading(true);
-      
-      const params = new URLSearchParams();
-      
-      // Aplicar filtro de período se selecionado
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
+      const params = {
+        entity: 'grupos',
+        ...auditFilters
+      };
+
+      const response = await fetch('/api/audit?' + new URLSearchParams(params));
+      const data = await response.json();
+
+      if (data.success) {
+        setAuditLogs(data.data || []);
       } else {
-        // Usar filtros manuais se período não estiver selecionado
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        toast.error('Erro ao carregar logs de auditoria');
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para grupos
-      params.append('recurso', 'grupos');
-      
-      const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -391,13 +134,11 @@ const Grupos = () => {
     }
   };
 
-  // Abrir modal de auditoria
   const handleOpenAuditModal = () => {
     setShowAuditModal(true);
     loadAuditLogs();
   };
 
-  // Fechar modal de auditoria
   const handleCloseAuditModal = () => {
     setShowAuditModal(false);
     setAuditLogs([]);
@@ -410,742 +151,628 @@ const Grupos = () => {
     });
   };
 
-  // Aplicar filtros de auditoria
   const handleApplyAuditFilters = () => {
     loadAuditLogs();
   };
 
-  // Exportar auditoria para XLSX
+  const handleExportAuditXLSX = async () => {
+    try {
+      const params = {
+        entity: 'grupos',
+        format: 'xlsx',
+        ...auditFilters
+      };
+
+      const response = await fetch('/api/audit/export?' + new URLSearchParams(params));
+      const blob = await response.blob();
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `auditoria_grupos_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Relatório de auditoria exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar auditoria:', error);
+      toast.error('Erro ao exportar relatório de auditoria');
+    }
+  };
+
+  const handleExportAuditPDF = async () => {
+    try {
+      const params = {
+        entity: 'grupos',
+        format: 'pdf',
+        ...auditFilters
+      };
+
+      const response = await fetch('/api/audit/export?' + new URLSearchParams(params));
+      const blob = await response.blob();
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `auditoria_grupos_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Relatório de auditoria exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar auditoria:', error);
+      toast.error('Erro ao exportar relatório de auditoria');
+    }
+  };
+
   const handleExportXLSX = async () => {
     try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
+      const result = await GruposService.exportarXLSX();
+      if (result.success) {
+        const url = window.URL.createObjectURL(result.data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `grupos_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success('Grupos exportados com sucesso!');
       } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        toast.error(result.error);
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para grupos
-      params.append('recurso', 'grupos');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_grupos_${new Date().toISOString().split('T')[0]}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
     } catch (error) {
       console.error('Erro ao exportar XLSX:', error);
-      toast.error('Erro ao exportar relatório');
+      toast.error('Erro ao exportar grupos');
     }
   };
 
-  // Exportar auditoria para PDF
   const handleExportPDF = async () => {
     try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
+      const result = await GruposService.exportarPDF();
+      if (result.success) {
+        const url = window.URL.createObjectURL(result.data);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `grupos_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success('Grupos exportados com sucesso!');
       } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        toast.error(result.error);
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para grupos
-      params.append('recurso', 'grupos');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_grupos_${new Date().toISOString().split('T')[0]}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
     } catch (error) {
       console.error('Erro ao exportar PDF:', error);
-      toast.error('Erro ao exportar relatório');
+      toast.error('Erro ao exportar grupos');
     }
   };
 
-  // Formatar data
-  const formatDate = (dateString) => {
-    if (!dateString) {
-      return 'Data não disponível';
-    }
-    
-    try {
-      return new Date(dateString).toLocaleString('pt-BR');
-    } catch (error) {
-      return 'Data inválida';
-    }
-  };
-
-  // Obter label da ação
-  const getActionLabel = (action) => {
-    if (!action || typeof action !== 'string') {
-      return 'Desconhecida';
-    }
-    
-    const actions = {
-      'create': 'Criar',
-      'update': 'Editar',
-      'delete': 'Excluir',
-      'login': 'Login',
-      'logout': 'Logout',
-      'view': 'Visualizar'
-    };
-    return actions[action] || action;
-  };
-
-  // Obter label do campo
-  const getFieldLabel = (field) => {
-    const labels = {
-      'nome': 'Nome',
-      'status': 'Status',
-      'grupo_id': 'ID do Grupo',
-      'id': 'ID'
-    };
-    return labels[field] || field;
-  };
-
-  // Formatar valor do campo
-  const formatFieldValue = (field, value) => {
-    if (value === null || value === undefined || value === '') {
-      return 'Não informado';
-    }
-
-    switch (field) {
-      case 'status':
-        return value === 1 ? 'Ativo' : 'Inativo';
-      default:
-        return value;
-    }
-  };
-
-
-
-  // Abrir modal para adicionar grupo
   const handleAddGrupo = () => {
     setEditingGrupo(null);
     setViewMode(false);
-    reset();
     setShowModal(true);
   };
 
-  // Abrir modal para editar grupo
-  const handleEditGrupo = (grupo) => {
-    setEditingGrupo(grupo);
-    setViewMode(false);
-    setValue('nome', grupo.nome);
-    setValue('status', grupo.status.toString());
-    setShowModal(true);
-  };
-
-  // Abrir modal para visualizar grupo
   const handleViewGrupo = (grupo) => {
     setEditingGrupo(grupo);
     setViewMode(true);
-    setValue('nome', grupo.nome);
-    setValue('status', grupo.status.toString());
     setShowModal(true);
   };
 
-  // Fechar modal
+  const handleEditGrupo = (grupo) => {
+    setEditingGrupo(grupo);
+    setViewMode(false);
+    setShowModal(true);
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingGrupo(null);
     setViewMode(false);
-    reset();
   };
 
-  // Salvar grupo
   const onSubmit = async (data) => {
     try {
-      if (editingGrupo) {
-        // Para edição, enviar apenas os campos que foram alterados
-        const updateData = {};
-        
-        if (data.nome !== editingGrupo.nome) {
-          updateData.nome = data.nome;
-        }
-        
-        if (parseInt(data.status) !== editingGrupo.status) {
-          updateData.status = parseInt(data.status);
-        }
-        
-        // Se não há campos para atualizar, mostrar erro
-        if (Object.keys(updateData).length === 0) {
-          toast.error('Nenhum campo foi alterado');
-          return;
-        }
-        
-        await api.put(`/grupos/${editingGrupo.id}`, updateData);
-        toast.success('Grupo atualizado com sucesso!');
-      } else {
-        // Para criação, enviar todos os campos
-        const formData = {
-          ...data,
-          status: parseInt(data.status)
-        };
-        
-        await api.post('/grupos', formData);
-        toast.success('Grupo criado com sucesso!');
-      }
+      let result;
       
+      if (editingGrupo) {
+        result = await GruposService.atualizar(editingGrupo.id, data);
+      } else {
+        result = await GruposService.criar(data);
+      }
+
+      if (result.success) {
+        toast.success(result.message);
       handleCloseModal();
-      loadGrupos();
+        loadData();
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
       console.error('Erro ao salvar grupo:', error);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao salvar grupo';
-      toast.error(errorMessage);
+      toast.error('Erro ao salvar grupo');
     }
   };
 
-  // Excluir grupo
   const handleDeleteGrupo = async (grupoId) => {
     if (window.confirm('Tem certeza que deseja excluir este grupo?')) {
       try {
-        await api.delete(`/grupos/${grupoId}`);
-        toast.success('Grupo excluído com sucesso!');
-        loadGrupos();
+        const result = await GruposService.excluir(grupoId);
+        if (result.success) {
+          toast.success(result.message);
+          loadData();
+        } else {
+          toast.error(result.error);
+        }
       } catch (error) {
         console.error('Erro ao excluir grupo:', error);
-        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir grupo';
-        
-        // Se a mensagem contém quebras de linha, mostrar no modal customizado
-        if (errorMsg.includes('\n')) {
-          setErrorMessage(errorMsg);
-          setShowErrorModal(true);
-        } else {
-          toast.error(errorMsg);
-        }
+        toast.error('Erro ao excluir grupo');
       }
     }
   };
 
-  // Filtrar grupos
-  const filteredGrupos = grupos.filter(grupo => {
-    const matchesSearch = grupo.nome?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || grupo.status === parseInt(statusFilter);
-    return matchesSearch && matchesStatus;
-  });
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('todos');
+    setCurrentPage(1);
+  };
 
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
+  // Filtros aplicados
+  const filteredGrupos = useMemo(() => {
+    let filtered = grupos;
+
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(grupo => 
+        grupo.nome?.toLowerCase().includes(term) ||
+        grupo.descricao?.toLowerCase().includes(term)
+      );
+    }
+
+    if (statusFilter !== 'todos') {
+      const status = statusFilter === 'ativo' ? 1 : 0;
+      filtered = filtered.filter(grupo => grupo.status === status);
+    }
+
+    return filtered;
+  }, [grupos, searchTerm, statusFilter]);
 
   if (loading) {
     return (
-      <Container>
-        <div>Carregando grupos...</div>
-      </Container>
+      <div className="p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <span className="ml-3 text-gray-600">Carregando grupos...</span>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <Header>
-        <Title>Grupos</Title>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <AddButton 
-            onClick={handleOpenAuditModal}
-            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
-          >
-            <FaQuestionCircle />
-            Auditoria
-          </AddButton>
+    <div className="p-4 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Grupos</h1>
+        
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <Button onClick={handleOpenAuditModal} variant="ghost" size="sm">
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+            <span className="sm:hidden">Auditoria</span>
+          </Button>
+          
           {canCreate('grupos') && (
-            <AddButton onClick={handleAddGrupo}>
-              <FaPlus />
-              Adicionar Grupo
-            </AddButton>
+            <Button onClick={handleAddGrupo} variant="primary" size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar Grupo</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
           )}
         </div>
-      </Header>
+      </div>
 
+      {/* Estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <StatCard
+          title="Total de Grupos"
+          value={estatisticas.total_grupos}
+          icon={FaLayerGroup}
+          color="blue"
+        />
+        <StatCard
+          title="Grupos Ativos"
+          value={estatisticas.grupos_ativos}
+          icon={FaCheckCircle}
+          color="green"
+        />
+        <StatCard
+          title="Grupos Inativos"
+          value={estatisticas.grupos_inativos}
+          icon={FaTimesCircle}
+          color="red"
+        />
+        <StatCard
+          title="Total de Subgrupos"
+          value={estatisticas.subgrupos_total}
+          icon={FaTags}
+          color="purple"
+        />
+      </div>
+
+      {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
-        placeholder="Buscar por nome ou código..."
+        onStatusFilterChange={setStatusFilter}
+        onClear={handleClearFilters}
+        placeholder="Buscar por nome ou descrição..."
       />
 
-      <TableContainer>
-        <Table>
-                      <thead>
+      {/* Ações */}
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+        <Button onClick={handleExportXLSX} variant="outline" size="sm">
+          <FaFileExcel className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar XLSX</span>
+          <span className="sm:hidden">XLSX</span>
+        </Button>
+        <Button onClick={handleExportPDF} variant="outline" size="sm">
+          <FaFilePdf className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar PDF</span>
+          <span className="sm:hidden">PDF</span>
+        </Button>
+      </div>
+
+      {/* Tabela */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
-                <Th>Nome</Th>
-                <Th>Status</Th>
-                <Th>Ações</Th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nome
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Descrição
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Subgrupos
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ações
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="bg-white divide-y divide-gray-200">
               {filteredGrupos.length === 0 ? (
                 <tr>
-                  <Td colSpan="3">
-                    <EmptyState>
+                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
                       {searchTerm || statusFilter !== 'todos' 
                         ? 'Nenhum grupo encontrado com os filtros aplicados'
                         : 'Nenhum grupo cadastrado'
                       }
-                    </EmptyState>
-                  </Td>
+                  </td>
                 </tr>
               ) : (
                 filteredGrupos.map((grupo) => (
-                  <tr key={grupo.id}>
-                    <Td>{grupo.nome}</Td>
-                    <Td>
-                      <StatusBadge $status={grupo.status === 1 ? 'ativo' : 'inativo'}>
+                  <tr key={grupo.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {grupo.nome}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {grupo.descricao || '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {grupo.subgrupos_count || 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        grupo.status === 1 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
                         {grupo.status === 1 ? 'Ativo' : 'Inativo'}
-                      </StatusBadge>
-                    </Td>
-                    <Td>
-                      <ActionButton
-                        className="view"
-                        title="Visualizar"
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center gap-2">
+                        {canView('grupos') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
                         onClick={() => handleViewGrupo(grupo)}
+                            title="Visualizar"
+                            className="text-green-600 hover:text-green-800"
                       >
-                        <FaEye />
-                      </ActionButton>
+                            <FaEye className="w-4 h-4" />
+                          </Button>
+                        )}
                                 {canEdit('grupos') && (
-            <ActionButton
-              className="edit"
-              title="Editar"
+                          <Button
+                            variant="ghost"
+                            size="xs"
               onClick={() => handleEditGrupo(grupo)}
+                            title="Editar"
+                            className="text-blue-600 hover:text-blue-800"
             >
-              <FaEdit />
-            </ActionButton>
+                            <FaEdit className="w-4 h-4" />
+                          </Button>
           )}
           {canDelete('grupos') && (
-            <ActionButton
-              className="delete"
-              title="Excluir"
+                          <Button
+                            variant="ghost"
+                            size="xs"
               onClick={() => handleDeleteGrupo(grupo.id)}
+                            title="Excluir"
+                            className="text-red-600 hover:text-red-800"
             >
-              <FaTrash />
-            </ActionButton>
+                            <FaTrash className="w-4 h-4" />
+                          </Button>
           )}
-                    </Td>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
             </tbody>
-        </Table>
-      </TableContainer>
+          </table>
+        </div>
+      </div>
 
-      {showModal && (
-        <Modal onClick={handleCloseModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>
-                {viewMode ? 'Visualizar Grupo' : editingGrupo ? 'Editar Grupo' : 'Adicionar Grupo'}
-              </ModalTitle>
-              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
-            </ModalHeader>
+      {/* Paginação */}
+      {totalItems > 0 && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={setItemsPerPage}
+          />
+        </div>
+      )}
 
-            <Form onSubmit={handleSubmit(onSubmit)}>
-              <FormGroup>
-                <Label>Nome do Grupo *</Label>
+      {/* Modal de Grupo */}
+      <Modal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        title={viewMode ? 'Visualizar Grupo' : editingGrupo ? 'Editar Grupo' : 'Adicionar Grupo'}
+        size="full"
+      >
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          const data = {
+            nome: formData.get('nome'),
+            descricao: formData.get('descricao'),
+            status: formData.get('status')
+          };
+          onSubmit(data);
+        }} className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 <Input
-                  type="text"
-                  placeholder="Nome do grupo"
+              label="Nome do Grupo *"
+              name="nome"
+              defaultValue={editingGrupo?.nome}
                   disabled={viewMode}
-                  {...register('nome', { required: 'Nome é obrigatório' })}
-                />
-                {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-              </FormGroup>
+              required
+            />
+            <Input
+              label="Status"
+              name="status"
+              type="select"
+              defaultValue={editingGrupo?.status || '1'}
+              disabled={viewMode}
+            >
+              <option value="1">Ativo</option>
+              <option value="0">Inativo</option>
+            </Input>
+          </div>
+          
+          <Input
+            label="Descrição"
+            name="descricao"
+            type="textarea"
+            defaultValue={editingGrupo?.descricao}
+            disabled={viewMode}
+            rows={3}
+          />
 
-              <FormGroup>
-                <Label>Status</Label>
-                <Select disabled={viewMode} {...register('status', { required: 'Status é obrigatório' })}>
-                  <option value="">Selecione...</option>
-                  <option value={1}>Ativo</option>
-                  <option value={0}>Inativo</option>
-                </Select>
-                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
-              </FormGroup>
-
-              <ButtonGroup>
-                <Button type="button" className="secondary" onClick={handleCloseModal}>
-                  {viewMode ? 'Fechar' : 'Cancelar'}
-                </Button>
+          <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
                 {!viewMode && (
-                  <Button type="submit" className="primary">
-                    {editingGrupo ? 'Atualizar' : 'Criar'}
+              <Button type="submit" variant="primary" size="lg">
+                {editingGrupo ? 'Atualizar Grupo' : 'Cadastrar Grupo'}
                   </Button>
                 )}
-              </ButtonGroup>
-            </Form>
-          </ModalContent>
+            <Button type="button" variant="outline" size="lg" onClick={handleCloseModal}>
+              {viewMode ? 'Fechar' : 'Cancelar'}
+            </Button>
+          </div>
+        </form>
         </Modal>
-      )}
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal onClick={handleCloseAuditModal}>
-          <ModalContent 
-            onClick={(e) => e.stopPropagation()}
-            style={{ 
-              maxWidth: '1200px', 
-              width: '95%', 
-              maxHeight: '90vh',
-              padding: '24px'
-            }}
-          >
-            <ModalHeader>
-              <ModalTitle>Auditoria - Grupos</ModalTitle>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={handleExportXLSX}
-                  title="Exportar para Excel"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+        <Modal isOpen={showAuditModal} onClose={handleCloseAuditModal} size="full">
+          <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Relatório de Auditoria - Grupos
+              </h2>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportAuditXLSX}
+                  className="flex items-center gap-2"
                 >
-                  <FaFileExcel />
-                  Excel
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  title="Exportar para PDF"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                  <FaFileExcel className="w-4 h-4" />
+                  Exportar XLSX
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportAuditPDF}
+                  className="flex items-center gap-2"
                 >
-                  <FaFilePdf />
-                  PDF
-                </button>
-                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
+                  <FaFilePdf className="w-4 h-4" />
+                  Exportar PDF
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCloseAuditModal}
+                >
+                  <FaTimes className="w-4 h-4" />
+                </Button>
               </div>
-            </ModalHeader>
-
-            {/* Filtros de Auditoria */}
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-              gap: '16px', 
-              marginBottom: '24px',
-              padding: '16px',
-              backgroundColor: '#f8f9fa',
-              borderRadius: '8px'
-            }}>
-              <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Período Rápido</Label>
-                <Select
-                  value={auditFilters.periodo}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, periodo: e.target.value }))}
-                  style={{ fontSize: '12px', padding: '8px' }}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="7dias">Últimos 7 dias</option>
-                  <option value="30dias">Últimos 30 dias</option>
-                  <option value="90dias">Últimos 90 dias</option>
-                  <option value="todos">Todos</option>
-                </Select>
               </div>
 
+            {/* Filtros */}
+            <div className="p-6 border-b border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Data Início</Label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Data Início
+                  </label>
                 <Input
                   type="date"
                   value={auditFilters.dataInicio}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, dataInicio: e.target.value, periodo: '' }))}
-                  style={{ fontSize: '12px', padding: '8px' }}
+                    onChange={(e) => setAuditFilters(prev => ({ ...prev, dataInicio: e.target.value }))}
                 />
               </div>
-
               <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Data Fim</Label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Data Fim
+                  </label>
                 <Input
                   type="date"
                   value={auditFilters.dataFim}
-                  onChange={(e) => setAuditFilters(prev => ({ ...prev, dataFim: e.target.value, periodo: '' }))}
-                  style={{ fontSize: '12px', padding: '8px' }}
+                    onChange={(e) => setAuditFilters(prev => ({ ...prev, dataFim: e.target.value }))}
                 />
               </div>
-
               <div>
-                <Label style={{ fontSize: '12px', marginBottom: '4px' }}>Ação</Label>
-                <Select
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Ação
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
                   value={auditFilters.acao}
                   onChange={(e) => setAuditFilters(prev => ({ ...prev, acao: e.target.value }))}
-                  style={{ fontSize: '12px', padding: '8px' }}
                 >
                   <option value="">Todas</option>
                   <option value="create">Criar</option>
                   <option value="update">Editar</option>
                   <option value="delete">Excluir</option>
-                </Select>
+                    <option value="view">Visualizar</option>
+                  </select>
               </div>
-
-              <div style={{ display: 'flex', alignItems: 'end' }}>
+                <div className="flex items-end">
                 <Button 
+                    variant="primary"
+                    size="sm"
                   onClick={handleApplyAuditFilters}
-                  style={{ 
-                    fontSize: '12px', 
-                    padding: '8px 16px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
+                    className="w-full"
                 >
                   Aplicar Filtros
                 </Button>
+                </div>
               </div>
             </div>
 
-            {/* Lista de Logs */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            {/* Conteúdo */}
+            <div className="p-6">
               {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                  <p className="mt-2 text-gray-600">Carregando logs de auditoria...</p>
+                </div>
               ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
-                  Nenhum log encontrado com os filtros aplicados
+                <div className="text-center py-8 text-gray-500">
+                  Nenhum log de auditoria encontrado
                 </div>
               ) : (
-                <div>
-                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
-                    {auditLogs.length} log(s) encontrado(s)
-                  </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Data/Hora
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Usuário
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ação
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Campo
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Valor Anterior
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Novo Valor
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
                   {auditLogs.map((log, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        marginBottom: '12px',
-                        background: 'white'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            background: log.acao === 'create' ? '#e8f5e8' : 
-                                       log.acao === 'update' ? '#fff3cd' : 
-                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
-                            color: log.acao === 'create' ? '#2e7d32' : 
-                                   log.acao === 'update' ? '#856404' : 
-                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
-                          }}>
-                            {getActionLabel(log.acao)}
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(log.created_at).toLocaleString('pt-BR')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {log.usuario_nome || 'Sistema'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              log.action === 'create' ? 'bg-green-100 text-green-800' :
+                              log.action === 'update' ? 'bg-blue-100 text-blue-800' :
+                              log.action === 'delete' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {log.action === 'create' ? 'Criar' :
+                               log.action === 'update' ? 'Editar' :
+                               log.action === 'delete' ? 'Excluir' :
+                               log.action === 'view' ? 'Visualizar' : log.action}
                           </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                            por {log.usuario_nome || 'Usuário desconhecido'}
-                          </span>
-                        </div>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                          {formatDate(log.timestamp)}
-                        </span>
-                      </div>
-                      
-                      {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
-                          {log.detalhes.changes && (
-                            <div style={{ marginBottom: '8px' }}>
-                              <strong>Mudanças Realizadas:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
-                                {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} style={{ 
-                                    marginBottom: '6px', 
-                                    padding: '8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
-                                      {getFieldLabel(field)}:
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                      <span style={{ color: '#721c24' }}>
-                                        <strong>Antes:</strong> {formatFieldValue(field, change.from)}
-                                      </span>
-                                      <span style={{ color: '#6c757d' }}>→</span>
-                                      <span style={{ color: '#2e7d32' }}>
-                                        <strong>Depois:</strong> {formatFieldValue(field, change.to)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {log.field_name || '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {log.old_value || '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {log.new_value || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                             </div>
                           )}
-                          {log.detalhes.requestBody && !log.detalhes.changes && (
-                            <div>
-                              <strong>Dados do Grupo:</strong>
-                              <div style={{ 
-                                marginLeft: '12px', 
-                                marginTop: '8px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '8px'
-                              }}>
-                                {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} style={{ 
-                                    padding: '6px 8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef',
-                                    fontSize: '11px'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
-                                      {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ color: '#2e7d32' }}>
-                                      {formatFieldValue(field, value)}
                                     </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {log.detalhes.resourceId && (
-                            <div style={{ 
-                              marginTop: '8px', 
-                              padding: '6px 8px', 
-                              background: '#e3f2fd', 
-                              borderRadius: '4px',
-                              fontSize: '11px'
-                            }}>
-                              <strong>ID do Grupo:</strong> 
-                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
-                                #{log.detalhes.resourceId}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </ModalContent>
         </Modal>
       )}
-
-      {/* Modal de Erro Customizado */}
-      <ErrorModal
-        isOpen={showErrorModal}
-        message={errorMessage}
-        onClose={() => setShowErrorModal(false)}
-      />
-    </Container>
+    </div>
   );
 };
 

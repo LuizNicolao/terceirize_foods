@@ -22,7 +22,7 @@ import Pagination from '../components/Pagination';
 import ProdutoModal from '../components/ProdutoModal';
 
 import api from '../services/api';
-
+  
 const Produtos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [produtos, setProdutos] = useState([]);
@@ -764,7 +764,7 @@ const Produtos = () => {
             onPageChange={handlePageChange}
             onItemsPerPageChange={setItemsPerPage}
           />
-        </div>
+          </div>
       )}
 
       {/* Modal de Produto */}
@@ -789,33 +789,33 @@ const Produtos = () => {
                 Relatório de Auditoria - Produtos
               </h2>
               <div className="flex items-center gap-2">
-                <Button
+            <Button 
                   variant="outline"
-                  size="sm"
+              size="sm"
                   onClick={handleExportAuditXLSX}
                   className="flex items-center gap-2"
-                >
+            >
                   <FaFileExcel className="w-4 h-4" />
                   Exportar XLSX
-                </Button>
-                <Button
+            </Button>
+            <Button 
                   variant="outline"
-                  size="sm"
+              size="sm"
                   onClick={handleExportAuditPDF}
                   className="flex items-center gap-2"
-                >
+            >
                   <FaFilePdf className="w-4 h-4" />
                   Exportar PDF
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
+            </Button>
+              <Button
+              variant="ghost"
+              size="sm"
                   onClick={handleCloseAuditModal}
                 >
                   <FaTimes className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
+            </Button>
+          </div>
+        </div>
 
             {/* Filtros */}
             <div className="p-6 border-b border-gray-200">
@@ -824,19 +824,19 @@ const Produtos = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Data Início
                   </label>
-                  <Input
-                    type="date"
-                    value={auditFilters.dataInicio}
+                <Input
+                  type="date"
+                  value={auditFilters.dataInicio}
                     onChange={(e) => setAuditFilters(prev => ({ ...prev, dataInicio: e.target.value }))}
-                  />
+                />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Data Fim
                   </label>
-                  <Input
-                    type="date"
-                    value={auditFilters.dataFim}
+                <Input
+                  type="date"
+                  value={auditFilters.dataFim}
                     onChange={(e) => setAuditFilters(prev => ({ ...prev, dataFim: e.target.value }))}
                   />
                 </div>
@@ -846,13 +846,13 @@ const Produtos = () => {
                   </label>
                   <select
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                    value={auditFilters.acao}
+                  value={auditFilters.acao}
                     onChange={(e) => setAuditFilters(prev => ({ ...prev, acao: e.target.value }))}
-                  >
+                >
                     <option value="">Todas</option>
-                    <option value="create">Criar</option>
-                    <option value="update">Editar</option>
-                    <option value="delete">Excluir</option>
+                  <option value="create">Criar</option>
+                  <option value="update">Editar</option>
+                  <option value="delete">Excluir</option>
                     <option value="view">Visualizar</option>
                   </select>
                 </div>
@@ -906,7 +906,7 @@ const Produtos = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {auditLogs.map((log, index) => (
+                  {auditLogs.map((log, index) => (
                         <tr key={index} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {new Date(log.created_at).toLocaleString('pt-BR')}
@@ -925,7 +925,7 @@ const Produtos = () => {
                                log.action === 'update' ? 'Editar' :
                                log.action === 'delete' ? 'Excluir' :
                                log.action === 'view' ? 'Visualizar' : log.action}
-                            </span>
+                          </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {log.field_name || '-'}
@@ -940,8 +940,8 @@ const Produtos = () => {
                       ))}
                     </tbody>
                   </table>
-                </div>
-              )}
+                            </div>
+                          )}
             </div>
           </div>
         </Modal>
