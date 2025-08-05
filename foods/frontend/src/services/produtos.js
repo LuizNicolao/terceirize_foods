@@ -1,179 +1,215 @@
 import api from './api';
 
-const produtosService = {
-  // Listar produtos com paginação e filtros
-  listar: async (params = {}) => {
-    const response = await api.get('/produtos', { params });
-    return response.data;
-  },
-
-  // Buscar produto por ID
-  buscarPorId: async (id) => {
-    const response = await api.get(`/produtos/${id}`);
-    return response.data;
-  },
-
-  // Criar novo produto
-  criar: async (produto) => {
-    const response = await api.post('/produtos', produto);
-    return response.data;
-  },
-
-  // Atualizar produto
-  atualizar: async (id, produto) => {
-    const response = await api.put(`/produtos/${id}`, produto);
-    return response.data;
-  },
-
-  // Excluir produto
-  excluir: async (id) => {
-    const response = await api.delete(`/produtos/${id}`);
-    return response.data;
-  },
-
-  // Buscar produtos ativos
-  buscarAtivos: async () => {
-    const response = await api.get('/produtos/ativos');
-    return response.data;
-  },
-
-  // Buscar produtos por grupo
-  buscarPorGrupo: async (grupoId) => {
-    const response = await api.get(`/produtos/grupo/${grupoId}`);
-    return response.data;
-  },
-
-  // Buscar produtos por subgrupo
-  buscarPorSubgrupo: async (subgrupoId) => {
-    const response = await api.get(`/produtos/subgrupo/${subgrupoId}`);
-    return response.data;
-  },
-
-  // Buscar produtos por classe
-  buscarPorClasse: async (classeId) => {
-    const response = await api.get(`/produtos/classe/${classeId}`);
-    return response.data;
-  },
-
-  // Buscar produtos por marca
-  buscarPorMarca: async (marcaId) => {
-    const response = await api.get(`/produtos/marca/${marcaId}`);
-    return response.data;
-  },
-
-  // Buscar produtos por nome genérico
-  buscarPorNomeGenerico: async (nomeGenericoId) => {
-    const response = await api.get(`/produtos/nome-generico/${nomeGenericoId}`);
-    return response.data;
-  },
-
-  // Buscar produtos por unidade
-  buscarPorUnidade: async (unidadeId) => {
-    const response = await api.get(`/produtos/unidade/${unidadeId}`);
-    return response.data;
-  },
-
-  // Buscar produtos por fornecedor
-  buscarPorFornecedor: async (fornecedorId) => {
-    const response = await api.get(`/produtos/fornecedor/${fornecedorId}`);
-    return response.data;
-  },
-
-  // Buscar produtos por código
-  buscarPorCodigo: async (codigo) => {
-    const response = await api.get(`/produtos/codigo/${codigo}`);
-    return response.data;
-  },
-
-  // Buscar produtos por descrição
-  buscarPorDescricao: async (descricao) => {
-    const response = await api.get(`/produtos/descricao/${descricao}`);
-    return response.data;
-  },
-
-  // Listar grupos
-  listarGrupos: async () => {
-    const response = await api.get('/grupos');
-    return response.data;
-  },
-
-  // Listar subgrupos
-  listarSubgrupos: async () => {
-    const response = await api.get('/subgrupos');
-    return response.data;
-  },
-
-  // Listar classes
-  listarClasses: async () => {
-    const response = await api.get('/classes');
-    return response.data;
-  },
-
-  // Listar marcas
-  listarMarcas: async () => {
-    const response = await api.get('/marcas');
-    return response.data;
-  },
-
-  // Listar nomes genéricos
-  listarNomesGenericos: async () => {
-    const response = await api.get('/nome-generico-produto');
-    return response.data;
-  },
-
-  // Listar unidades
-  listarUnidades: async () => {
-    const response = await api.get('/unidades');
-    return response.data;
-  },
-
-  // Listar fornecedores
-  listarFornecedores: async () => {
-    const response = await api.get('/fornecedores');
-    return response.data;
-  },
-
-  // Exportar produtos para XLSX
-  exportarXLSX: async (filtros = {}) => {
-    const response = await api.get('/produtos/exportar/xlsx', { 
-      params: filtros,
-      responseType: 'blob'
-    });
-    return response.data;
-  },
-
-  // Exportar produtos para PDF
-  exportarPDF: async (filtros = {}) => {
-    const response = await api.get('/produtos/exportar/pdf', { 
-      params: filtros,
-      responseType: 'blob'
-    });
-    return response.data;
-  },
-
-  // Listar logs de auditoria
-  listarAuditoria: async (filtros = {}) => {
-    const response = await api.get('/auditoria/produtos', { params: filtros });
-    return response.data;
-  },
-
-  // Exportar auditoria para XLSX
-  exportarAuditoriaXLSX: async (filtros = {}) => {
-    const response = await api.get('/auditoria/produtos/exportar/xlsx', { 
-      params: filtros,
-      responseType: 'blob'
-    });
-    return response.data;
-  },
-
-  // Exportar auditoria para PDF
-  exportarAuditoriaPDF: async (filtros = {}) => {
-    const response = await api.get('/auditoria/produtos/exportar/pdf', { 
-      params: filtros,
-      responseType: 'blob'
-    });
-    return response.data;
+class ProdutosService {
+  async listar(params = {}) {
+    try {
+      const response = await api.get('/produtos', { params });
+      
+      // Extrair dados da estrutura HATEOAS
+      let produtos = [];
+      let pagination = null;
+      
+      if (response.data.data) {
+        // Se tem data.items (estrutura HATEOAS)
+        if (response.data.data.items) {
+          produtos = response.data.data.items;
+          pagination = response.data.data._meta?.pagination;
+        } else {
+          // Se data é diretamente um array
+          produtos = response.data.data;
+        }
+      } else if (Array.isArray(response.data)) {
+        // Se response.data é diretamente um array
+        produtos = response.data;
+      }
+      
+      return {
+        success: true,
+        data: produtos,
+        pagination: pagination || response.data.pagination
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar produtos'
+      };
+    }
   }
-};
 
-export default produtosService; 
+  async buscarPorId(id) {
+    try {
+      const response = await api.get(`/produtos/${id}`);
+      
+      // Extrair dados da estrutura HATEOAS
+      let produto = null;
+      
+      if (response.data.data) {
+        produto = response.data.data;
+      } else {
+        produto = response.data;
+      }
+      
+      return {
+        success: true,
+        data: produto
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar produto'
+      };
+    }
+  }
+
+  async criar(data) {
+    try {
+      const response = await api.post('/produtos', data);
+      
+      // Extrair dados da estrutura HATEOAS
+      let produto = null;
+      
+      if (response.data.data) {
+        produto = response.data.data;
+      } else {
+        produto = response.data;
+      }
+      
+      return {
+        success: true,
+        data: produto,
+        message: 'Produto criado com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao criar produto'
+      };
+    }
+  }
+
+  async atualizar(id, data) {
+    try {
+      const response = await api.put(`/produtos/${id}`, data);
+      
+      // Extrair dados da estrutura HATEOAS
+      let produto = null;
+      
+      if (response.data.data) {
+        produto = response.data.data;
+      } else {
+        produto = response.data;
+      }
+      
+      return {
+        success: true,
+        data: produto,
+        message: 'Produto atualizado com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao atualizar produto'
+      };
+    }
+  }
+
+  async excluir(id) {
+    try {
+      await api.delete(`/produtos/${id}`);
+      return {
+        success: true,
+        message: 'Produto excluído com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao excluir produto'
+      };
+    }
+  }
+
+  async buscarAtivos() {
+    try {
+      const response = await api.get('/produtos', { params: { status: 1 } });
+      
+      // Extrair dados da estrutura HATEOAS
+      let produtos = [];
+      
+      if (response.data.data) {
+        // Se tem data.items (estrutura HATEOAS)
+        if (response.data.data.items) {
+          produtos = response.data.data.items;
+        } else {
+          // Se data é diretamente um array
+          produtos = response.data.data;
+        }
+      } else if (Array.isArray(response.data)) {
+        // Se response.data é diretamente um array
+        produtos = response.data;
+      }
+      
+      return {
+        success: true,
+        data: produtos
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar produtos ativos'
+      };
+    }
+  }
+
+  async exportarXLSX() {
+    try {
+      const response = await api.get('/produtos/export/xlsx', {
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Erro ao exportar XLSX'
+      };
+    }
+  }
+
+  async exportarPDF() {
+    try {
+      const response = await api.get('/produtos/export/pdf', {
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Erro ao exportar PDF'
+      };
+    }
+  }
+
+  async imprimirPDF(id) {
+    try {
+      const response = await api.get(`/produtos/${id}/pdf`, {
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: 'Erro ao imprimir produto'
+      };
+    }
+  }
+}
+
+export default new ProdutosService(); 

@@ -6,7 +6,8 @@ const Pagination = ({
   totalPages, 
   onPageChange, 
   totalItems, 
-  itemsPerPage 
+  itemsPerPage,
+  onItemsPerPageChange
 }) => {
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
@@ -76,6 +77,22 @@ const Pagination = ({
       <span className="text-gray-600 text-sm ml-4">
         Mostrando {startItem}-{endItem} de {totalItems} itens
       </span>
+      
+      {onItemsPerPageChange && (
+        <div className="flex items-center gap-2 ml-4">
+          <span className="text-gray-600 text-sm">Itens por página:</span>
+          <select
+            value={itemsPerPage}
+            onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
+            className="px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+          >
+            <option value={10}>10</option>
+            <option value={20}>20</option>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+          </select>
+        </div>
+      )}
     </div>
   );
 };
