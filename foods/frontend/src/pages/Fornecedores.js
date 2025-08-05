@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { 
   FaPlus, 
@@ -41,6 +41,7 @@ const Fornecedores = () => {
     com_telefone: 0
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   
   // Estados de paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,17 +51,31 @@ const Fornecedores = () => {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
+  // Debounce para busca
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      // Resetar para primeira página quando buscar
+      if (searchTerm !== debouncedSearchTerm) {
+        setCurrentPage(1);
+      }
+    }, 500); // 500ms de delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, debouncedSearchTerm]);
+
   useEffect(() => {
     loadFornecedores();
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, debouncedSearchTerm]);
 
   const loadFornecedores = async (params = {}) => {
       setLoading(true);
     try {
-      // Parâmetros de paginação
+      // Parâmetros de paginação e busca
       const paginationParams = {
         page: currentPage,
         limit: itemsPerPage,
+        search: debouncedSearchTerm, // Usar termo de busca com debounce
         ...params
       };
 
@@ -101,15 +116,8 @@ const Fornecedores = () => {
     }
   };
 
-  // Filtrar fornecedores (client-side)
-  const filteredFornecedores = (Array.isArray(fornecedores) ? fornecedores : []).filter(fornecedor => {
-    const matchesSearch = !searchTerm || 
-              (fornecedor.razao_social && fornecedor.razao_social.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (fornecedor.cnpj && fornecedor.cnpj.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (fornecedor.municipio && fornecedor.municipio.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    return matchesSearch;
-  });
+  // Filtrar fornecedores (client-side) - apenas para casos especiais
+  const filteredFornecedores = Array.isArray(fornecedores) ? fornecedores : [];
 
   // Função para mudar de página
   const handlePageChange = (page) => {
@@ -404,7 +412,7 @@ const Fornecedores = () => {
       {/* Tabela */}
       {filteredFornecedores.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-          {searchTerm 
+          {debouncedSearchTerm 
             ? 'Nenhum fornecedor encontrado com os filtros aplicados'
             : 'Nenhum fornecedor cadastrado'
           }
