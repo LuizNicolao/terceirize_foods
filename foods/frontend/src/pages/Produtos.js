@@ -6,7 +6,11 @@ import {
   FaTrash, 
   FaQuestionCircle,
   FaFileExcel,
-  FaFilePdf
+  FaFilePdf,
+  FaBox,
+  FaCheckCircle,
+  FaTimesCircle,
+  FaTags
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -626,25 +630,25 @@ const Produtos = () => {
         <StatCard
           title="Total de Produtos"
           value={estatisticas.total_produtos}
-          icon="📦"
+          icon={FaBox}
           color="blue"
         />
         <StatCard
           title="Produtos Ativos"
           value={estatisticas.produtos_ativos}
-          icon="✅"
+          icon={FaCheckCircle}
           color="green"
         />
         <StatCard
           title="Produtos Inativos"
           value={estatisticas.produtos_inativos}
-          icon="❌"
+          icon={FaTimesCircle}
           color="red"
         />
         <StatCard
           title="Grupos Diferentes"
           value={estatisticas.grupos_diferentes}
-          icon="🏷️"
+          icon={FaTags}
           color="purple"
         />
       </div>
