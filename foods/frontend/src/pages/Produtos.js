@@ -586,6 +586,12 @@ const Produtos = () => {
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Produtos</h1>
         
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <Button onClick={handleOpenAuditModal} variant="ghost" size="sm">
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+            <span className="sm:hidden">Auditoria</span>
+          </Button>
+          
           {canCreate('produtos') && (
             <Button onClick={handleAddProduto} variant="primary" size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
@@ -593,12 +599,6 @@ const Produtos = () => {
               <span className="sm:hidden">Adicionar</span>
             </Button>
           )}
-          
-          <Button onClick={handleOpenAuditModal} variant="ghost" size="sm">
-            <FaQuestionCircle className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Auditoria</span>
-            <span className="sm:hidden">Auditoria</span>
-          </Button>
         </div>
       </div>
 
