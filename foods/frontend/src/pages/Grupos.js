@@ -334,8 +334,7 @@ const Grupos = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(grupo => 
-        grupo.nome?.toLowerCase().includes(term) ||
-        grupo.descricao?.toLowerCase().includes(term)
+        grupo.nome?.toLowerCase().includes(term)
       );
     }
 
@@ -416,7 +415,7 @@ const Grupos = () => {
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}
-        placeholder="Buscar por nome ou descrição..."
+                 placeholder="Buscar por nome..."
       />
 
       {/* Ações */}
@@ -439,27 +438,24 @@ const Grupos = () => {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nome
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Descrição
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Subgrupos
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
-                </th>
+                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                   Nome
+                 </th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                   Subgrupos
+                 </th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                   Status
+                 </th>
+                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                   Ações
+                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredGrupos.length === 0 ? (
                 <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                                     <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
                       {searchTerm || statusFilter !== 'todos' 
                         ? 'Nenhum grupo encontrado com os filtros aplicados'
                         : 'Nenhum grupo cadastrado'
@@ -469,15 +465,12 @@ const Grupos = () => {
               ) : (
                 filteredGrupos.map((grupo) => (
                   <tr key={grupo.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {grupo.nome}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {grupo.descricao || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {grupo.subgrupos_count || 0}
-                    </td>
+                                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                     {grupo.nome}
+                   </td>
+                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                     {grupo.subgrupos_count || 0}
+                   </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                         grupo.status === 1 
@@ -558,17 +551,16 @@ const Grupos = () => {
           const formData = new FormData(e.target);
           const data = {
             nome: formData.get('nome'),
-            descricao: formData.get('descricao'),
             status: formData.get('status')
           };
           onSubmit(data);
         }} className="space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <Input
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Input
               label="Nome do Grupo *"
               name="nome"
               defaultValue={editingGrupo?.nome}
-                  disabled={viewMode}
+              disabled={viewMode}
               required
             />
             <Input
@@ -582,15 +574,6 @@ const Grupos = () => {
               <option value="0">Inativo</option>
             </Input>
           </div>
-          
-          <Input
-            label="Descrição"
-            name="descricao"
-            type="textarea"
-            defaultValue={editingGrupo?.descricao}
-            disabled={viewMode}
-            rows={3}
-          />
 
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
                 {!viewMode && (
