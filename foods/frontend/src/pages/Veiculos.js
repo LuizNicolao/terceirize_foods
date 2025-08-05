@@ -31,7 +31,7 @@ const Veiculos = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
-
+  
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   useEffect(() => {
@@ -39,7 +39,7 @@ const Veiculos = () => {
   }, [currentPage, itemsPerPage]);
 
   const loadVeiculos = async (params = {}) => {
-    setLoading(true);
+      setLoading(true);
     try {
       // Parâmetros de paginação
       const paginationParams = {
@@ -146,7 +146,7 @@ const Veiculos = () => {
         a.href = url;
         a.download = 'veiculos.xlsx';
         a.click();
-        window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
         toast.success('Exportação XLSX realizada com sucesso!');
       } else {
         toast.error(result.error);
@@ -166,7 +166,7 @@ const Veiculos = () => {
         a.href = url;
         a.download = 'veiculos.pdf';
         a.click();
-        window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
         toast.success('Exportação PDF realizada com sucesso!');
       } else {
         toast.error(result.error);
@@ -264,11 +264,11 @@ const Veiculos = () => {
       } else {
         result = await VeiculosService.criar(data);
       }
-
+      
       if (result.success) {
         toast.success(editingVeiculo ? 'Veículo atualizado com sucesso!' : 'Veículo criado com sucesso!');
-        handleCloseModal();
-        loadVeiculos();
+      handleCloseModal();
+      loadVeiculos();
       } else {
         toast.error(result.error);
       }
@@ -279,16 +279,16 @@ const Veiculos = () => {
 
   const handleDeleteVeiculo = async (veiculoId) => {
     if (window.confirm('Tem certeza que deseja excluir este veículo?')) {
-      try {
+    try {
         const result = await VeiculosService.excluir(veiculoId);
         if (result.success) {
-          toast.success('Veículo excluído com sucesso!');
-          loadVeiculos();
+      toast.success('Veículo excluído com sucesso!');
+      loadVeiculos();
         } else {
           toast.error(result.error);
         }
-      } catch (error) {
-        toast.error('Erro ao excluir veículo');
+    } catch (error) {
+      toast.error('Erro ao excluir veículo');
       }
     }
   };
@@ -410,12 +410,12 @@ const Veiculos = () => {
       </div>
 
       {/* Tabela */}
-      {filteredVeiculos.length === 0 ? (
+            {filteredVeiculos.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {searchTerm 
-            ? 'Nenhum veículo encontrado com os filtros aplicados'
-            : 'Nenhum veículo cadastrado'
-          }
+                      ? 'Nenhum veículo encontrado com os filtros aplicados'
+                      : 'Nenhum veículo cadastrado'
+                    }
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -467,7 +467,7 @@ const Veiculos = () => {
                           ? 'bg-yellow-100 text-yellow-800'
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {getStatusLabel(veiculo.status)}
+                      {getStatusLabel(veiculo.status)}
                       </span>
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
@@ -479,37 +479,37 @@ const Veiculos = () => {
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleViewVeiculo(veiculo)}
+                      onClick={() => handleViewVeiculo(veiculo)}
                             title="Visualizar"
-                          >
+                    >
                             <FaEye className="text-green-600 text-xs sm:text-sm" />
                           </Button>
                         )}
-                        {canEdit('veiculos') && (
+                    {canEdit('veiculos') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleEditVeiculo(veiculo)}
+                        onClick={() => handleEditVeiculo(veiculo)}
                             title="Editar"
-                          >
+                      >
                             <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                           </Button>
-                        )}
-                        {canDelete('veiculos') && (
+                    )}
+                    {canDelete('veiculos') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleDeleteVeiculo(veiculo.id)}
+                        onClick={() => handleDeleteVeiculo(veiculo.id)}
                             title="Excluir"
-                          >
+                      >
                             <FaTrash className="text-red-600 text-xs sm:text-sm" />
                           </Button>
-                        )}
+                    )}
                       </div>
                     </td>
-                  </tr>
+                </tr>
                 ))}
-              </tbody>
+          </tbody>
             </table>
           </div>
         </div>
@@ -525,32 +525,32 @@ const Veiculos = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
           {/* Primeira Linha - 2 Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Card 1: Informações Básicas */}
+                {/* Card 1: Informações Básicas */}
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Básicas</h3>
               <div className="space-y-3">
-                <Input
+                      <Input
                   label="Placa *"
-                  {...register('placa', { required: 'Placa é obrigatória' })}
+                        {...register('placa', { required: 'Placa é obrigatória' })}
                   error={errors.placa?.message}
                   disabled={viewMode}
                 />
-                <Input
+                        <Input
                   label="Modelo *"
                   {...register('modelo', { required: 'Modelo é obrigatório' })}
                   error={errors.modelo?.message}
                   disabled={viewMode}
                 />
-                <Input
+                        <Input
                   label="Marca *"
                   {...register('marca', { required: 'Marca é obrigatória' })}
                   error={errors.marca?.message}
                   disabled={viewMode}
                 />
-                <Input
+                        <Input
                   label="Ano"
-                  type="number"
-                  {...register('ano_fabricacao')}
+                          type="number"
+                          {...register('ano_fabricacao')}
                   disabled={viewMode}
                 />
               </div>
@@ -568,10 +568,10 @@ const Veiculos = () => {
                   disabled={viewMode}
                 >
                   <option value="">Selecione o tipo</option>
-                  <option value="caminhao">Caminhão</option>
+                          <option value="caminhao">Caminhão</option>
                   <option value="van">Van</option>
                   <option value="carro">Carro</option>
-                  <option value="moto">Moto</option>
+                          <option value="moto">Moto</option>
                   <option value="onibus">Ônibus</option>
                 </Input>
                 <Input
@@ -584,7 +584,7 @@ const Veiculos = () => {
                   <option value="">Selecione a categoria</option>
                   <option value="carga">Carga</option>
                   <option value="passageiros">Passageiros</option>
-                  <option value="utilitario">Utilitário</option>
+                          <option value="utilitario">Utilitário</option>
                   <option value="especial">Especial</option>
                 </Input>
                 <Input
@@ -609,20 +609,20 @@ const Veiculos = () => {
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Especificações</h3>
               <div className="space-y-3">
-                <Input
+                        <Input
                   label="Capacidade"
-                  {...register('capacidade_carga')}
+                          {...register('capacidade_carga')}
                   disabled={viewMode}
-                />
-                <Input
+                        />
+                        <Input
                   label="Combustível"
                   {...register('combustivel')}
                   disabled={viewMode}
                 />
-                <Input
+                        <Input
                   label="KM Atual"
-                  type="number"
-                  {...register('quilometragem_atual')}
+                          type="number"
+                          {...register('quilometragem_atual')}
                   disabled={viewMode}
                 />
               </div>
@@ -632,17 +632,17 @@ const Veiculos = () => {
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Manutenção</h3>
               <div className="space-y-3">
-                <Input
+                      <Input
                   label="Última Revisão"
-                  type="date"
-                  {...register('data_ultima_revisao')}
+                          type="date"
+                          {...register('data_ultima_revisao')}
                   disabled={viewMode}
-                />
-                <Input
+                        />
+                        <Input
                   label="Próxima Revisão"
-                  type="number"
+                        type="number"
                   placeholder="KM para próxima revisão"
-                  {...register('quilometragem_proxima_revisao')}
+                        {...register('quilometragem_proxima_revisao')}
                   disabled={viewMode}
                 />
               </div>
@@ -652,10 +652,10 @@ const Veiculos = () => {
           {/* Terceira Linha - 1 Card */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Observações</h3>
-            <Input
+                        <Input
               label="Observações"
               type="textarea"
-              {...register('observacoes')}
+                        {...register('observacoes')}
               disabled={viewMode}
               rows={4}
             />
@@ -665,10 +665,10 @@ const Veiculos = () => {
             <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
               <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
                 Cancelar
-              </Button>
+                  </Button>
               <Button type="submit" size="sm">
                 {editingVeiculo ? 'Atualizar' : 'Criar'}
-              </Button>
+                </Button>
             </div>
           )}
         </form>
@@ -690,13 +690,13 @@ const Veiculos = () => {
               <span className="hidden sm:inline">Atualizar</span>
               <span className="sm:hidden">Atualizar</span>
             </Button>
-          </div>
+              </div>
 
           {loadingAudit ? (
             <div className="flex justify-center items-center py-6 sm:py-8">
               <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600"></div>
-            </div>
-          ) : (
+                </div>
+              ) : (
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -710,7 +710,7 @@ const Veiculos = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {auditLogs.map((log, index) => (
+                                      {auditLogs.map((log, index) => (
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {formatDate(log.created_at)}
@@ -734,10 +734,10 @@ const Veiculos = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-        </div>
-      </Modal>
+                            </div>
+                          )}
+                                    </div>
+        </Modal>
 
       {/* Paginação */}
       {totalPages > 1 && (

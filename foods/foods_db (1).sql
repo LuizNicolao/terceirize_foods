@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql:3306
--- Tempo de geração: 01/08/2025 às 18:45
+-- Tempo de geração: 05/08/2025 às 00:46
 -- Versão do servidor: 8.0.43
 -- Versão do PHP: 8.2.27
 
@@ -29,14 +29,14 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `ajudantes` (
   `id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `cpf` varchar(14) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `telefone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `endereco` text COLLATE utf8mb4_general_ci,
-  `status` enum('ativo','inativo','ferias','licenca') COLLATE utf8mb4_general_ci DEFAULT 'ativo',
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `cpf` varchar(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `endereco` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `status` enum('ativo','inativo','ferias','licenca') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ativo',
   `data_admissao` date DEFAULT NULL,
-  `observacoes` text COLLATE utf8mb4_general_ci,
+  `observacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `filial_id` int DEFAULT NULL
@@ -51,7 +51,7 @@ CREATE TABLE `ajudantes` (
 CREATE TABLE `almoxarifados` (
   `id` int NOT NULL,
   `filial_id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `status` tinyint(1) DEFAULT '1',
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -527,7 +527,31 @@ INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`
 (521, 4, 'update', 'filiais', '{\"url\": \"/api/filiais/1\", \"method\": \"PUT\", \"changes\": {\"filial\": {\"to\": \"CD CHAPECOo\", \"from\": \"CD CHAPECO\"}}, \"userAgent\": \"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36\", \"resourceId\": \"1\", \"statusCode\": 200, \"requestBody\": {\"filial\": \"CD CHAPECOo\"}}', '::ffff:179.151.167.117', '2025-07-31 20:05:02'),
 (522, 4, 'update', 'filiais', '{\"url\": \"/api/filiais/1\", \"method\": \"PUT\", \"changes\": {\"filial\": {\"to\": \"CD CHAPECO\", \"from\": \"CD CHAPECOo\"}}, \"userAgent\": \"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36\", \"resourceId\": \"1\", \"statusCode\": 200, \"requestBody\": {\"filial\": \"CD CHAPECO\"}}', '::ffff:179.151.167.117', '2025-07-31 20:05:11'),
 (523, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '177.75.142.157', '2025-08-01 17:55:26'),
-(524, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '177.75.142.157', '2025-08-01 18:22:02');
+(524, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '177.75.142.157', '2025-08-01 18:22:02'),
+(525, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '177.75.142.157', '2025-08-03 13:40:05'),
+(526, 4, 'create', 'grupos', '{\"url\": \"/api/grupos\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 201, \"requestBody\": {\"nome\": \"TESTE GRUPO\", \"status\": 1}}', '177.75.142.157', '2025-08-03 13:53:49'),
+(527, 4, 'create', 'subgrupos', '{\"url\": \"/api/subgrupos\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 201, \"requestBody\": {\"nome\": \"TESTE SUBGRUPO\", \"status\": 1, \"grupo_id\": 13}}', '177.75.142.157', '2025-08-03 13:53:58'),
+(528, 4, 'create', 'classes', '{\"url\": \"/api/classes\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 201, \"requestBody\": {\"nome\": \"TESTE CLASSE\", \"status\": \"1\", \"subgrupo_id\": \"13\"}}', '177.75.142.157', '2025-08-03 13:54:19'),
+(529, 4, 'create', 'nome_generico_produto', '{\"url\": \"/api/nome-generico-produto\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 201, \"requestBody\": {\"nome\": \"TESTE NOME GENERICO\", \"status\": 1, \"grupo_id\": \"13\", \"classe_id\": \"3\", \"subgrupo_id\": \"13\"}}', '177.75.142.157', '2025-08-03 13:54:28'),
+(530, 4, 'update', 'nome_generico_produto', '{\"url\": \"/api/nome-generico-produto/2\", \"method\": \"PUT\", \"changes\": {\"nome\": {\"to\": \"TESTE NOME GENERICO 2\", \"from\": \"TESTE NOME GENERICO\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"2\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"TESTE NOME GENERICO 2\"}}', '177.75.142.157', '2025-08-03 13:54:34'),
+(531, 4, 'delete', 'nome_generico_produto', '{\"url\": \"/api/nome-generico-produto/2\", \"method\": \"DELETE\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"2\", \"statusCode\": 200}', '177.75.142.157', '2025-08-03 13:54:38'),
+(532, 4, 'create', 'nome_generico_produto', '{\"url\": \"/api/nome-generico-produto\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 201, \"requestBody\": {\"nome\": \"TESTE NOME GENERICO\", \"status\": 1, \"grupo_id\": \"13\", \"classe_id\": \"3\", \"subgrupo_id\": \"13\"}}', '177.75.142.157', '2025-08-03 13:57:58'),
+(533, 4, 'delete', 'nome_generico_produto', '{\"url\": \"/api/nome-generico-produto/3\", \"method\": \"DELETE\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"3\", \"statusCode\": 200}', '177.75.142.157', '2025-08-03 13:58:00'),
+(534, 4, 'create', 'marcas', '{\"url\": \"/api/marcas\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 201, \"requestBody\": {\"marca\": \"TESTE MARCAS\", \"status\": 1, \"fabricante\": \"TESTE MARCA FABRICANTE\"}}', '177.75.142.157', '2025-08-03 14:37:38'),
+(535, 4, 'update', 'marcas', '{\"url\": \"/api/marcas/3\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"3\", \"statusCode\": 200, \"requestBody\": {\"marca\": \"TESTE MARCA\"}}', '177.75.142.157', '2025-08-03 14:37:41'),
+(536, 4, 'delete', 'marcas', '{\"url\": \"/api/marcas/3\", \"method\": \"DELETE\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"3\", \"statusCode\": 204}', '177.75.142.157', '2025-08-03 14:37:43'),
+(537, 4, 'update', 'permissoes', '{\"url\": \"/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {\"cotacao_pode_visualizar\": {\"to\": \"Não\", \"from\": \"Sim\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"fornecedores\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"clientes\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"filiais\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"rotas\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"produtos\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"grupos\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"subgrupos\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"classes\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"nome_generico_produto\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"unidades\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"unidades_escolares\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"marcas\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"veiculos\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"motoristas\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"ajudantes\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"cotacao\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": false}, {\"tela\": \"permissoes\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}], \"estado_anterior\": {\"rotas\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"grupos\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"marcas\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"classes\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"cotacao\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"filiais\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"clientes\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"produtos\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"unidades\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"usuarios\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"veiculos\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"ajudantes\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"subgrupos\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"motoristas\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"permissoes\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"fornecedores\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"unidades_escolares\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"nome_generico_produto\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}}}}', '177.75.142.157', '2025-08-03 14:46:37'),
+(538, 4, 'update', 'permissoes', '{\"url\": \"/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {\"cotacao_pode_visualizar\": {\"to\": \"Sim\", \"from\": \"Não\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"fornecedores\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"clientes\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"filiais\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"rotas\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"produtos\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"grupos\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"subgrupos\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"classes\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"nome_generico_produto\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"unidades\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"unidades_escolares\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"marcas\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"veiculos\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"motoristas\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"ajudantes\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"cotacao\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, {\"tela\": \"permissoes\", \"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}], \"estado_anterior\": {\"rotas\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"grupos\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"marcas\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"classes\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"cotacao\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": false}, \"filiais\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"clientes\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"produtos\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"unidades\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"usuarios\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"veiculos\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"ajudantes\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"subgrupos\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"motoristas\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"permissoes\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"fornecedores\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"unidades_escolares\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}, \"nome_generico_produto\": {\"pode_criar\": true, \"pode_editar\": true, \"pode_excluir\": true, \"pode_visualizar\": true}}}}', '177.75.142.157', '2025-08-03 14:46:47'),
+(539, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '177.75.142.157', '2025-08-03 16:39:44'),
+(540, 4, 'update', 'rotas', '{\"url\": \"/api/rotas/2\", \"method\": \"PUT\", \"changes\": {\"distancia_km\": {\"to\": \"0.01\", \"from\": \"0.00\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"2\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"R01 - Canoinhas\", \"codigo\": \"ROTA 01 CTB\", \"status\": \"ativo\", \"filial_id\": 3, \"tipo_rota\": \"semanal\", \"observacoes\": \"\", \"custo_diario\": \"2700.00\", \"distancia_km\": \"0.01\"}}', '177.75.142.157', '2025-08-03 17:32:06'),
+(541, 4, 'update', 'rotas', '{\"url\": \"/api/rotas/2\", \"method\": \"PUT\", \"changes\": {\"observacoes\": {\"to\": \"\", \"from\": null}, \"distancia_km\": {\"to\": \"111\", \"from\": \"0.01\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"2\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"R01 - Canoinhas\", \"codigo\": \"ROTA 01 CTB\", \"status\": \"ativo\", \"filial_id\": 3, \"tipo_rota\": \"semanal\", \"observacoes\": \"\", \"custo_diario\": \"2700.00\", \"distancia_km\": \"111\"}}', '177.75.142.157', '2025-08-03 17:32:13'),
+(542, 4, 'update', 'rotas', '{\"url\": \"/api/rotas/2\", \"method\": \"PUT\", \"changes\": {\"observacoes\": {\"to\": \"\", \"from\": null}, \"distancia_km\": {\"to\": \"0\", \"from\": \"111.00\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"2\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"R01 - Canoinhas\", \"codigo\": \"ROTA 01 CTB\", \"status\": \"ativo\", \"filial_id\": 3, \"tipo_rota\": \"semanal\", \"observacoes\": \"\", \"custo_diario\": \"2700.00\", \"distancia_km\": \"0\"}}', '177.75.142.157', '2025-08-03 17:32:18'),
+(543, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:141.0) Gecko/20100101 Firefox/141.0\"}', '146.70.98.146', '2025-08-03 20:08:30'),
+(544, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '177.156.18.159', '2025-08-04 16:15:20'),
+(545, 4, 'update', 'veiculos', '{\"url\": \"/api/veiculos/7\", \"method\": \"PUT\", \"changes\": {\"ano\": {\"to\": \"\"}, \"marca\": {\"to\": \"asd\", \"from\": \"\"}, \"modelo\": {\"to\": \"asd\", \"from\": \"\"}, \"km_atual\": {\"to\": \"12\"}, \"categoria\": {\"to\": \"passageiros\", \"from\": \"carga\"}, \"criado_em\": {\"to\": \"2025-07-23T00:07:20.000Z\", \"from\": \"2025-07-23T00:07:20.000Z\"}, \"capacidade\": {\"to\": \"\"}, \"filial_nome\": {\"to\": null}, \"atualizado_em\": {\"to\": \"2025-07-23T00:07:20.000Z\", \"from\": \"2025-08-04T22:44:05.000Z\"}, \"motorista_nome\": {\"to\": null}, \"ultima_manutencao\": {\"to\": \"\"}, \"proxima_manutencao\": {\"to\": \"\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"7\", \"statusCode\": 200, \"requestBody\": {\"id\": 7, \"ano\": \"\", \"tara\": null, \"marca\": \"asd\", \"placa\": \"MJW4930\", \"chassi\": null, \"modelo\": \"asd\", \"status\": \"ativo\", \"renavam\": null, \"km_atual\": \"12\", \"categoria\": \"passageiros\", \"criado_em\": \"2025-07-23T00:07:20.000Z\", \"filial_id\": null, \"capacidade\": \"\", \"carroceria\": null, \"fabricante\": null, \"fornecedor\": null, \"combustivel\": null, \"filial_nome\": null, \"foto_frente\": null, \"observacoes\": \"\", \"tipo_tracao\": null, \"foto_lateral\": null, \"motorista_id\": null, \"numero_eixos\": null, \"numero_frota\": null, \"tipo_veiculo\": \"caminhao\", \"valor_compra\": null, \"atualizado_em\": \"2025-07-23T00:07:20.000Z\", \"foto_interior\": null, \"foto_traseira\": null, \"ano_fabricacao\": 0, \"data_aquisicao\": null, \"motorista_nome\": null, \"potencia_motor\": null, \"contrato_seguro\": null, \"vencimento_ipva\": null, \"capacidade_carga\": null, \"peso_bruto_total\": null, \"status_detalhado\": null, \"vencimento_dpvat\": null, \"capacidade_volume\": null, \"crlv_digitalizado\": null, \"data_emplacamento\": null, \"ultima_manutencao\": \"\", \"proxima_manutencao\": \"\", \"data_ultima_revisao\": null, \"quilometragem_atual\": null, \"situacao_documental\": null, \"situacao_financeira\": null, \"numero_apolice_seguro\": null, \"data_ultima_troca_oleo\": null, \"vencimento_licenciamento\": null, \"proxima_inspecao_veicular\": null, \"quilometragem_proxima_revisao\": null, \"vencimento_alinhamento_balanceamento\": null}}', '177.156.18.159', '2025-08-05 00:02:57'),
+(546, 4, 'update', 'veiculos', '{\"url\": \"/api/veiculos/7\", \"method\": \"PUT\", \"changes\": {\"ano\": {\"to\": \"\"}, \"km_atual\": {\"to\": \"111\"}, \"criado_em\": {\"to\": \"2025-07-23T00:07:20.000Z\", \"from\": \"2025-07-23T00:07:20.000Z\"}, \"capacidade\": {\"to\": \"\"}, \"filial_nome\": {\"to\": null}, \"atualizado_em\": {\"to\": \"2025-08-05T00:02:56.000Z\", \"from\": \"2025-08-05T00:02:56.000Z\"}, \"motorista_nome\": {\"to\": null}, \"ultima_manutencao\": {\"to\": \"\"}, \"proxima_manutencao\": {\"to\": \"\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"7\", \"statusCode\": 200, \"requestBody\": {\"id\": 7, \"ano\": \"\", \"tara\": null, \"marca\": \"asd\", \"placa\": \"MJW4930\", \"chassi\": null, \"modelo\": \"asd\", \"status\": \"ativo\", \"renavam\": null, \"km_atual\": \"111\", \"categoria\": \"passageiros\", \"criado_em\": \"2025-07-23T00:07:20.000Z\", \"filial_id\": null, \"capacidade\": \"\", \"carroceria\": null, \"fabricante\": null, \"fornecedor\": null, \"combustivel\": null, \"filial_nome\": null, \"foto_frente\": null, \"observacoes\": null, \"tipo_tracao\": null, \"foto_lateral\": null, \"motorista_id\": null, \"numero_eixos\": null, \"numero_frota\": null, \"tipo_veiculo\": \"caminhao\", \"valor_compra\": null, \"atualizado_em\": \"2025-08-05T00:02:56.000Z\", \"foto_interior\": null, \"foto_traseira\": null, \"ano_fabricacao\": null, \"data_aquisicao\": null, \"motorista_nome\": null, \"potencia_motor\": null, \"contrato_seguro\": null, \"vencimento_ipva\": null, \"capacidade_carga\": null, \"peso_bruto_total\": null, \"status_detalhado\": null, \"vencimento_dpvat\": null, \"capacidade_volume\": null, \"crlv_digitalizado\": null, \"data_emplacamento\": null, \"ultima_manutencao\": \"\", \"proxima_manutencao\": \"\", \"data_ultima_revisao\": null, \"quilometragem_atual\": null, \"situacao_documental\": null, \"situacao_financeira\": null, \"numero_apolice_seguro\": null, \"data_ultima_troca_oleo\": null, \"vencimento_licenciamento\": null, \"proxima_inspecao_veicular\": null, \"quilometragem_proxima_revisao\": null, \"vencimento_alinhamento_balanceamento\": null}}', '177.156.18.159', '2025-08-05 00:03:06'),
+(547, 4, 'update', 'veiculos', '{\"url\": \"/api/veiculos/7\", \"method\": \"PUT\", \"changes\": {\"criado_em\": {\"to\": \"2025-07-23T00:07:20.000Z\", \"from\": \"2025-07-23T00:07:20.000Z\"}, \"filial_nome\": {\"to\": null}, \"atualizado_em\": {\"to\": \"2025-08-05T00:03:06.000Z\", \"from\": \"2025-08-05T00:03:06.000Z\"}, \"motorista_nome\": {\"to\": null}, \"quilometragem_atual\": {\"to\": \"11211\", \"from\": null}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"7\", \"statusCode\": 200, \"requestBody\": {\"id\": 7, \"tara\": null, \"marca\": \"asd\", \"placa\": \"MJW4930\", \"chassi\": null, \"modelo\": \"asd\", \"status\": \"ativo\", \"renavam\": null, \"categoria\": \"passageiros\", \"criado_em\": \"2025-07-23T00:07:20.000Z\", \"filial_id\": null, \"carroceria\": null, \"fabricante\": null, \"fornecedor\": null, \"combustivel\": null, \"filial_nome\": null, \"foto_frente\": null, \"observacoes\": null, \"tipo_tracao\": null, \"foto_lateral\": null, \"motorista_id\": null, \"numero_eixos\": null, \"numero_frota\": null, \"tipo_veiculo\": \"caminhao\", \"valor_compra\": null, \"atualizado_em\": \"2025-08-05T00:03:06.000Z\", \"foto_interior\": null, \"foto_traseira\": null, \"ano_fabricacao\": null, \"data_aquisicao\": null, \"motorista_nome\": null, \"potencia_motor\": null, \"contrato_seguro\": null, \"vencimento_ipva\": null, \"capacidade_carga\": null, \"peso_bruto_total\": null, \"status_detalhado\": null, \"vencimento_dpvat\": null, \"capacidade_volume\": null, \"crlv_digitalizado\": null, \"data_emplacamento\": null, \"data_ultima_revisao\": null, \"quilometragem_atual\": \"11211\", \"situacao_documental\": null, \"situacao_financeira\": null, \"numero_apolice_seguro\": null, \"data_ultima_troca_oleo\": null, \"vencimento_licenciamento\": null, \"proxima_inspecao_veicular\": null, \"quilometragem_proxima_revisao\": null, \"vencimento_alinhamento_balanceamento\": null}}', '177.156.18.159', '2025-08-05 00:15:03'),
+(548, 4, 'update', 'veiculos', '{\"url\": \"/api/veiculos/6\", \"method\": \"PUT\", \"changes\": {\"marca\": {\"to\": \"TESTE MARCA\", \"from\": \"\"}, \"modelo\": {\"to\": \"teste\", \"from\": \"\"}, \"criado_em\": {\"to\": \"2025-07-23T00:06:27.000Z\", \"from\": \"2025-07-23T00:06:27.000Z\"}, \"filial_nome\": {\"to\": null}, \"atualizado_em\": {\"to\": \"2025-08-04T22:44:05.000Z\", \"from\": \"2025-08-04T22:44:05.000Z\"}, \"motorista_nome\": {\"to\": null}, \"quilometragem_atual\": {\"to\": \"2222\", \"from\": null}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"6\", \"statusCode\": 200, \"requestBody\": {\"id\": 6, \"tara\": null, \"marca\": \"TESTE MARCA\", \"placa\": \"RYB9J07\", \"chassi\": null, \"modelo\": \"teste\", \"status\": \"ativo\", \"renavam\": null, \"categoria\": \"carga\", \"criado_em\": \"2025-07-23T00:06:27.000Z\", \"filial_id\": null, \"carroceria\": null, \"fabricante\": null, \"fornecedor\": null, \"combustivel\": null, \"filial_nome\": null, \"foto_frente\": null, \"observacoes\": \"\", \"tipo_tracao\": null, \"foto_lateral\": null, \"motorista_id\": null, \"numero_eixos\": null, \"numero_frota\": null, \"tipo_veiculo\": \"caminhao\", \"valor_compra\": null, \"atualizado_em\": \"2025-08-04T22:44:05.000Z\", \"foto_interior\": null, \"foto_traseira\": null, \"ano_fabricacao\": 0, \"data_aquisicao\": null, \"motorista_nome\": null, \"potencia_motor\": null, \"contrato_seguro\": null, \"vencimento_ipva\": null, \"capacidade_carga\": null, \"peso_bruto_total\": null, \"status_detalhado\": null, \"vencimento_dpvat\": null, \"capacidade_volume\": null, \"crlv_digitalizado\": null, \"data_emplacamento\": null, \"data_ultima_revisao\": null, \"quilometragem_atual\": \"2222\", \"situacao_documental\": null, \"situacao_financeira\": null, \"numero_apolice_seguro\": null, \"data_ultima_troca_oleo\": null, \"vencimento_licenciamento\": null, \"proxima_inspecao_veicular\": null, \"quilometragem_proxima_revisao\": null, \"vencimento_alinhamento_balanceamento\": null}}', '177.156.18.159', '2025-08-05 00:15:43');
 
 -- --------------------------------------------------------
 
@@ -544,6 +568,13 @@ CREATE TABLE `classes` (
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Despejando dados para a tabela `classes`
+--
+
+INSERT INTO `classes` (`id`, `nome`, `subgrupo_id`, `status`, `criado_em`, `atualizado_em`) VALUES
+(3, 'TESTE CLASSE', 13, 1, '2025-08-03 13:54:19', '2025-08-03 13:54:19');
+
 -- --------------------------------------------------------
 
 --
@@ -552,17 +583,17 @@ CREATE TABLE `classes` (
 
 CREATE TABLE `clientes` (
   `id` int NOT NULL,
-  `cnpj` varchar(18) COLLATE utf8mb4_general_ci NOT NULL,
-  `razao_social` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
-  `nome_fantasia` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `logradouro` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `numero` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `cep` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bairro` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `municipio` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `uf` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `telefone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cnpj` varchar(18) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `razao_social` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nome_fantasia` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `logradouro` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cep` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bairro` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `municipio` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `uf` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `status` tinyint(1) DEFAULT '1'
@@ -610,17 +641,17 @@ INSERT INTO `filiais` (`id`, `codigo_filial`, `cnpj`, `filial`, `razao_social`, 
 
 CREATE TABLE `fornecedores` (
   `id` int NOT NULL,
-  `cnpj` varchar(18) COLLATE utf8mb4_general_ci NOT NULL,
-  `razao_social` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
-  `nome_fantasia` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `logradouro` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `numero` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `cep` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bairro` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `municipio` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `uf` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `telefone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cnpj` varchar(18) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `razao_social` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nome_fantasia` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `logradouro` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cep` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bairro` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `municipio` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `uf` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `status` tinyint(1) DEFAULT '1'
@@ -918,6 +949,13 @@ CREATE TABLE `grupos` (
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Despejando dados para a tabela `grupos`
+--
+
+INSERT INTO `grupos` (`id`, `nome`, `status`, `criado_em`, `atualizado_em`) VALUES
+(13, 'TESTE GRUPO', 1, '2025-08-03 13:53:49', '2025-08-03 13:53:49');
+
 -- --------------------------------------------------------
 
 --
@@ -933,6 +971,13 @@ CREATE TABLE `marcas` (
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Despejando dados para a tabela `marcas`
+--
+
+INSERT INTO `marcas` (`id`, `marca`, `fabricante`, `status`, `criado_em`, `atualizado_em`) VALUES
+(3, 'TESTE MARCA', 'TESTE MARCA FABRICANTE', 0, '2025-08-03 14:37:38', '2025-08-03 14:37:43');
+
 -- --------------------------------------------------------
 
 --
@@ -941,16 +986,16 @@ CREATE TABLE `marcas` (
 
 CREATE TABLE `motoristas` (
   `id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `cpf` varchar(14) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `cnh` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `categoria_cnh` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `telefone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `endereco` text COLLATE utf8mb4_general_ci,
-  `status` enum('ativo','inativo','ferias','licenca') COLLATE utf8mb4_general_ci DEFAULT 'ativo',
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `cpf` varchar(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cnh` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `categoria_cnh` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `endereco` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `status` enum('ativo','inativo','ferias','licenca') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ativo',
   `data_admissao` date DEFAULT NULL,
-  `observacoes` text COLLATE utf8mb4_general_ci,
+  `observacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `filial_id` int DEFAULT NULL,
@@ -982,6 +1027,13 @@ CREATE TABLE `nome_generico_produto` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `nome_generico_produto`
+--
+
+INSERT INTO `nome_generico_produto` (`id`, `nome`, `grupo_id`, `subgrupo_id`, `classe_id`, `status`, `created_at`, `updated_at`) VALUES
+(3, 'TESTE NOME GENERICO', 13, 13, 3, 0, '2025-08-03 13:57:58', '2025-08-03 13:58:00');
 
 -- --------------------------------------------------------
 
@@ -1030,24 +1082,6 @@ INSERT INTO `permissoes_usuario` (`id`, `usuario_id`, `tela`, `pode_visualizar`,
 (648, 6, 'subgrupos', 1, 1, 1, 1, '2025-07-21 20:11:12', '2025-07-21 20:11:12'),
 (649, 6, 'unidades', 1, 1, 1, 1, '2025-07-21 20:11:12', '2025-07-21 20:11:12'),
 (650, 6, 'marcas', 1, 1, 1, 1, '2025-07-21 20:11:12', '2025-07-21 20:11:12'),
-(775, 4, 'usuarios', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(776, 4, 'fornecedores', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(777, 4, 'clientes', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(778, 4, 'filiais', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(779, 4, 'rotas', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(780, 4, 'produtos', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(781, 4, 'grupos', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(782, 4, 'subgrupos', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(783, 4, 'classes', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(784, 4, 'nome_generico_produto', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(785, 4, 'unidades', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(786, 4, 'unidades_escolares', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(787, 4, 'marcas', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(788, 4, 'veiculos', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(789, 4, 'motoristas', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(790, 4, 'ajudantes', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(791, 4, 'cotacao', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(792, 4, 'permissoes', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
 (793, 5, 'fornecedores', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
 (794, 5, 'clientes', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
 (795, 5, 'filiais', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
@@ -1062,7 +1096,25 @@ INSERT INTO `permissoes_usuario` (`id`, `usuario_id`, `tela`, `pode_visualizar`,
 (804, 5, 'marcas', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
 (805, 5, 'veiculos', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
 (806, 5, 'motoristas', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(807, 5, 'ajudantes', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32');
+(807, 5, 'ajudantes', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
+(826, 4, 'usuarios', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(827, 4, 'fornecedores', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(828, 4, 'clientes', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(829, 4, 'filiais', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(830, 4, 'rotas', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(831, 4, 'produtos', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(832, 4, 'grupos', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(833, 4, 'subgrupos', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(834, 4, 'classes', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(835, 4, 'nome_generico_produto', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(836, 4, 'unidades', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(837, 4, 'unidades_escolares', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(838, 4, 'marcas', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(839, 4, 'veiculos', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(840, 4, 'motoristas', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(841, 4, 'ajudantes', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(842, 4, 'cotacao', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47'),
+(843, 4, 'permissoes', 1, 1, 1, 1, '2025-08-03 14:46:47', '2025-08-03 14:46:47');
 
 -- --------------------------------------------------------
 
@@ -1135,13 +1187,13 @@ CREATE TABLE `produtos` (
 CREATE TABLE `rotas` (
   `id` int NOT NULL,
   `filial_id` int NOT NULL,
-  `codigo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `codigo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `distancia_km` decimal(10,2) DEFAULT '0.00',
-  `status` enum('ativo','inativo') COLLATE utf8mb4_unicode_ci DEFAULT 'ativo',
-  `tipo_rota` enum('semanal','quinzenal','mensal','transferencia') COLLATE utf8mb4_unicode_ci DEFAULT 'semanal',
+  `status` enum('ativo','inativo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'ativo',
+  `tipo_rota` enum('semanal','quinzenal','mensal','transferencia') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'semanal',
   `custo_diario` decimal(10,2) DEFAULT '0.00',
-  `observacoes` text COLLATE utf8mb4_unicode_ci,
+  `observacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1152,7 +1204,7 @@ CREATE TABLE `rotas` (
 
 INSERT INTO `rotas` (`id`, `filial_id`, `codigo`, `nome`, `distancia_km`, `status`, `tipo_rota`, `custo_diario`, `observacoes`, `created_at`, `updated_at`) VALUES
 (1, 3, 'ROTA 03 CTB', 'R03 - Taio', 0.00, 'ativo', 'semanal', 2700.00, '', '2025-07-20 04:19:37', '2025-07-20 21:51:00'),
-(2, 3, 'ROTA 01 CTB', 'R01 - Canoinhas', 0.00, 'ativo', 'semanal', 2700.00, '', '2025-07-20 04:19:37', '2025-07-23 20:06:52'),
+(2, 3, 'ROTA 01 CTB', 'R01 - Canoinhas', 0.00, 'ativo', 'semanal', 2700.00, NULL, '2025-07-20 04:19:37', '2025-08-03 17:32:18'),
 (3, 3, 'ROTA 02 CTB', 'R02 - Ibirama', 0.00, 'ativo', 'semanal', 2700.00, '', '2025-07-20 04:19:37', '2025-07-20 21:50:29'),
 (4, 3, 'ROTA 04 CTB', 'R04 - Curitibanos', 0.00, 'ativo', 'quinzenal', 2700.00, '', '2025-07-20 04:19:37', '2025-07-20 21:51:24'),
 (6, 3, 'ROTA 05 CTB', 'R05 - Pouso Redondo', 0.00, 'ativo', 'semanal', 2700.00, '', '2025-07-20 17:19:45', '2025-07-20 21:51:37'),
@@ -1176,6 +1228,13 @@ CREATE TABLE `subgrupos` (
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Despejando dados para a tabela `subgrupos`
+--
+
+INSERT INTO `subgrupos` (`id`, `nome`, `grupo_id`, `status`, `criado_em`, `atualizado_em`) VALUES
+(13, 'TESTE SUBGRUPO', 13, 1, '2025-08-03 13:53:58', '2025-08-03 13:53:58');
+
 -- --------------------------------------------------------
 
 --
@@ -1185,24 +1244,24 @@ CREATE TABLE `subgrupos` (
 CREATE TABLE `unidades_escolares` (
   `id` int NOT NULL,
   `codigo_teknisa` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código teknisa da unidade',
-  `nome_escola` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome da escola/unidade',
-  `cidade` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Cidade da unidade',
-  `estado` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Estado da unidade',
-  `pais` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'Brasil' COMMENT 'País da unidade',
-  `endereco` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Endereço completo',
-  `numero` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Número do endereço',
-  `bairro` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Bairro da unidade',
-  `cep` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'CEP da unidade',
-  `centro_distribuicao` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Centro de distribuição responsável',
+  `nome_escola` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome da escola/unidade',
+  `cidade` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Cidade da unidade',
+  `estado` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Estado da unidade',
+  `pais` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'Brasil' COMMENT 'País da unidade',
+  `endereco` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Endereço completo',
+  `numero` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Número do endereço',
+  `bairro` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Bairro da unidade',
+  `cep` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'CEP da unidade',
+  `centro_distribuicao` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Centro de distribuição responsável',
   `rota_id` int DEFAULT NULL COMMENT 'Rota que atende esta unidade',
-  `regional` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Regional da unidade',
-  `lot` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Lote da unidade',
+  `regional` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Regional da unidade',
+  `lot` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Lote da unidade',
   `cc_senior` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'C.C. Senior',
   `codigo_senior` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Código Senior',
-  `abastecimento` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Tipo de abastecimento',
+  `abastecimento` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Tipo de abastecimento',
   `ordem_entrega` int DEFAULT '0' COMMENT 'Ordem de entrega na rota',
-  `status` enum('ativo','inativo') COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status da unidade',
-  `observacoes` text COLLATE utf8mb4_unicode_ci COMMENT 'Observações adicionais',
+  `status` enum('ativo','inativo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status da unidade',
+  `observacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Observações adicionais',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de criação',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1372,11 +1431,11 @@ INSERT INTO `unidades_medida` (`id`, `nome`, `sigla`, `status`, `criado_em`, `at
 
 CREATE TABLE `usuarios` (
   `id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `senha` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `nivel_de_acesso` enum('I','II','III') COLLATE utf8mb4_general_ci DEFAULT 'I',
-  `tipo_de_acesso` enum('administrador','coordenador','administrativo','gerente','supervisor') COLLATE utf8mb4_general_ci DEFAULT 'administrativo',
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `senha` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nivel_de_acesso` enum('I','II','III') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'I',
+  `tipo_de_acesso` enum('administrador','coordenador','administrativo','gerente','supervisor') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'administrativo',
   `status` enum('ativo','inativo','bloqueado') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ativo',
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -1401,50 +1460,50 @@ INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `nivel_de_acesso`, `tipo
 
 CREATE TABLE `veiculos` (
   `id` int NOT NULL,
-  `placa` varchar(10) COLLATE utf8mb4_general_ci NOT NULL,
-  `renavam` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `chassi` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `modelo` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `marca` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `fabricante` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `placa` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `renavam` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `chassi` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `modelo` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `marca` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fabricante` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `ano_fabricacao` int DEFAULT NULL,
-  `tipo_veiculo` enum('passeio','caminhao','moto','utilitario') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `carroceria` enum('Bau','Refrigerado','Bipartido','Grade Baixa','Sider','Graneleiro','Tanque','Cacamba') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `combustivel` enum('gasolina','diesel','etanol','flex','GNV','eletrico') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `categoria` enum('Frota','Agregado','Terceiro') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo_veiculo` enum('caminhao','van','carro','moto','onibus') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `carroceria` enum('Bau','Refrigerado','Bipartido','Grade Baixa','Sider','Graneleiro','Tanque','Cacamba') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `combustivel` enum('gasolina','diesel','etanol','flex','GNV','eletrico') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `categoria` enum('carga','passageiros','utilitario','especial') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `capacidade_carga` decimal(10,2) DEFAULT NULL,
   `capacidade_volume` decimal(10,2) DEFAULT NULL,
   `numero_eixos` int DEFAULT NULL,
   `tara` decimal(10,2) DEFAULT NULL,
   `peso_bruto_total` decimal(10,2) DEFAULT NULL,
   `potencia_motor` decimal(8,2) DEFAULT NULL,
-  `tipo_tracao` enum('4x2','4x4','dianteira','traseira') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo_tracao` enum('4x2','4x4','dianteira','traseira') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `quilometragem_atual` decimal(12,2) DEFAULT NULL,
   `data_emplacamento` date DEFAULT NULL,
   `vencimento_licenciamento` date DEFAULT NULL,
   `vencimento_ipva` date DEFAULT NULL,
   `vencimento_dpvat` date DEFAULT NULL,
-  `numero_apolice_seguro` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `situacao_documental` enum('regular','alienado','bloqueado') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero_apolice_seguro` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `situacao_documental` enum('regular','alienado','bloqueado') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `data_ultima_revisao` date DEFAULT NULL,
   `quilometragem_proxima_revisao` decimal(12,2) DEFAULT NULL,
   `data_ultima_troca_oleo` date DEFAULT NULL,
   `vencimento_alinhamento_balanceamento` date DEFAULT NULL,
   `proxima_inspecao_veicular` date DEFAULT NULL,
-  `status` enum('ativo','inativo','manutencao') COLLATE utf8mb4_general_ci DEFAULT 'ativo',
-  `status_detalhado` enum('Ativo','Em manutencao','Alugado','Vendido') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` enum('ativo','inativo','manutencao') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ativo',
+  `status_detalhado` enum('Ativo','Em manutencao','Alugado','Vendido') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `data_aquisicao` date DEFAULT NULL,
   `valor_compra` decimal(12,2) DEFAULT NULL,
-  `fornecedor` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `numero_frota` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `situacao_financeira` enum('Proprio','Financiado','leasing') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `crlv_digitalizado` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `foto_frente` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `foto_traseira` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `foto_lateral` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `foto_interior` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `contrato_seguro` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `observacoes` text COLLATE utf8mb4_general_ci,
+  `fornecedor` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero_frota` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `situacao_financeira` enum('Proprio','Financiado','leasing') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `crlv_digitalizado` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `foto_frente` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `foto_traseira` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `foto_lateral` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `foto_interior` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `contrato_seguro` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `observacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `filial_id` int DEFAULT NULL,
@@ -1456,9 +1515,9 @@ CREATE TABLE `veiculos` (
 --
 
 INSERT INTO `veiculos` (`id`, `placa`, `renavam`, `chassi`, `modelo`, `marca`, `fabricante`, `ano_fabricacao`, `tipo_veiculo`, `carroceria`, `combustivel`, `categoria`, `capacidade_carga`, `capacidade_volume`, `numero_eixos`, `tara`, `peso_bruto_total`, `potencia_motor`, `tipo_tracao`, `quilometragem_atual`, `data_emplacamento`, `vencimento_licenciamento`, `vencimento_ipva`, `vencimento_dpvat`, `numero_apolice_seguro`, `situacao_documental`, `data_ultima_revisao`, `quilometragem_proxima_revisao`, `data_ultima_troca_oleo`, `vencimento_alinhamento_balanceamento`, `proxima_inspecao_veicular`, `status`, `status_detalhado`, `data_aquisicao`, `valor_compra`, `fornecedor`, `numero_frota`, `situacao_financeira`, `crlv_digitalizado`, `foto_frente`, `foto_traseira`, `foto_lateral`, `foto_interior`, `contrato_seguro`, `observacoes`, `criado_em`, `atualizado_em`, `filial_id`, `motorista_id`) VALUES
-(5, 'TEB8H13', NULL, NULL, '', '', NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', '2025-07-22 19:51:33', '2025-07-22 19:51:33', NULL, NULL),
-(6, 'RYB9J07', NULL, NULL, '', '', NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', '2025-07-23 00:06:27', '2025-07-23 00:06:27', NULL, NULL),
-(7, 'MJW4930', NULL, NULL, '', '', NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', '2025-07-23 00:07:20', '2025-07-23 00:07:20', NULL, NULL);
+(5, 'TEB8H13', NULL, NULL, '', '', NULL, 0, 'caminhao', NULL, NULL, 'carga', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '', '2025-07-22 19:51:33', '2025-08-04 22:44:05', NULL, NULL),
+(6, 'RYB9J07', NULL, NULL, 'teste', 'TESTE MARCA', NULL, NULL, 'caminhao', NULL, NULL, 'carga', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 2222.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-07-23 00:06:27', '2025-08-05 00:15:43', NULL, NULL),
+(7, 'MJW4930', NULL, NULL, 'asd', 'asd', NULL, NULL, 'caminhao', NULL, NULL, 'passageiros', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 11211.00, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'ativo', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-07-23 00:07:20', '2025-08-05 00:15:03', NULL, NULL);
 
 --
 -- Índices para tabelas despejadas
@@ -1673,13 +1732,13 @@ ALTER TABLE `almoxarifado_itens`
 -- AUTO_INCREMENT de tabela `auditoria_acoes`
 --
 ALTER TABLE `auditoria_acoes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=525;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=549;
 
 --
 -- AUTO_INCREMENT de tabela `classes`
 --
 ALTER TABLE `classes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `clientes`
@@ -1703,25 +1762,25 @@ ALTER TABLE `fornecedores`
 -- AUTO_INCREMENT de tabela `grupos`
 --
 ALTER TABLE `grupos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de tabela `marcas`
 --
 ALTER TABLE `marcas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `nome_generico_produto`
 --
 ALTER TABLE `nome_generico_produto`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `permissoes_usuario`
 --
 ALTER TABLE `permissoes_usuario`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=808;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=844;
 
 --
 -- AUTO_INCREMENT de tabela `rotas`
@@ -1733,7 +1792,7 @@ ALTER TABLE `rotas`
 -- AUTO_INCREMENT de tabela `subgrupos`
 --
 ALTER TABLE `subgrupos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT de tabela `unidades_escolares`

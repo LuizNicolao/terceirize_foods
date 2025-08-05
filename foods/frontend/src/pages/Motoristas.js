@@ -179,7 +179,7 @@ const Motoristas = () => {
         a.href = url;
         a.download = 'motoristas.xlsx';
         a.click();
-        window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
         toast.success('Exportação XLSX realizada com sucesso!');
       } else {
         toast.error(result.error);
@@ -199,7 +199,7 @@ const Motoristas = () => {
         a.href = url;
         a.download = 'motoristas.pdf';
         a.click();
-        window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
         toast.success('Exportação PDF realizada com sucesso!');
       } else {
         toast.error(result.error);
@@ -290,11 +290,11 @@ const Motoristas = () => {
       } else {
         result = await MotoristasService.criar(data);
       }
-
+      
       if (result.success) {
         toast.success(editingMotorista ? 'Motorista atualizado com sucesso!' : 'Motorista criado com sucesso!');
-        handleCloseModal();
-        loadMotoristas();
+      handleCloseModal();
+      loadMotoristas();
       } else {
         toast.error(result.error);
       }
@@ -305,16 +305,16 @@ const Motoristas = () => {
 
   const handleDeleteMotorista = async (motoristaId) => {
     if (window.confirm('Tem certeza que deseja excluir este motorista?')) {
-      try {
+    try {
         const result = await MotoristasService.excluir(motoristaId);
         if (result.success) {
-          toast.success('Motorista excluído com sucesso!');
-          loadMotoristas();
+      toast.success('Motorista excluído com sucesso!');
+      loadMotoristas();
         } else {
           toast.error(result.error);
         }
-      } catch (error) {
-        toast.error('Erro ao excluir motorista');
+    } catch (error) {
+      toast.error('Erro ao excluir motorista');
       }
     }
   };
@@ -427,12 +427,12 @@ const Motoristas = () => {
       </div>
 
       {/* Tabela */}
-      {filteredMotoristas.length === 0 ? (
+            {filteredMotoristas.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {searchTerm 
-            ? 'Nenhum motorista encontrado com os filtros aplicados'
-            : 'Nenhum motorista cadastrado'
-          }
+                      ? 'Nenhum motorista encontrado com os filtros aplicados'
+                      : 'Nenhum motorista cadastrado'
+                    }
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -504,37 +504,37 @@ const Motoristas = () => {
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleViewMotorista(motorista)}
+                      onClick={() => handleViewMotorista(motorista)}
                             title="Visualizar"
-                          >
+                    >
                             <FaEye className="text-green-600 text-xs sm:text-sm" />
                           </Button>
                         )}
-                        {canEdit('motoristas') && (
+                    {canEdit('motoristas') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleEditMotorista(motorista)}
+                        onClick={() => handleEditMotorista(motorista)}
                             title="Editar"
-                          >
+                      >
                             <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                           </Button>
-                        )}
-                        {canDelete('motoristas') && (
+                    )}
+                    {canDelete('motoristas') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleDeleteMotorista(motorista.id)}
+                        onClick={() => handleDeleteMotorista(motorista.id)}
                             title="Excluir"
-                          >
+                      >
                             <FaTrash className="text-red-600 text-xs sm:text-sm" />
                           </Button>
-                        )}
+                    )}
                       </div>
                     </td>
-                  </tr>
+                </tr>
                 ))}
-              </tbody>
+          </tbody>
             </table>
           </div>
         </div>
@@ -677,7 +677,7 @@ const Motoristas = () => {
             <Input
               label="Observações"
               type="textarea"
-              {...register('observacoes')}
+                  {...register('observacoes')}
               disabled={viewMode}
               rows={4}
             />
@@ -686,15 +686,15 @@ const Motoristas = () => {
           {!viewMode && (
             <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
               <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
-                Cancelar
-              </Button>
+                    Cancelar
+                  </Button>
               <Button type="submit" size="sm">
-                {editingMotorista ? 'Atualizar' : 'Criar'}
-              </Button>
+                    {editingMotorista ? 'Atualizar' : 'Criar'}
+                  </Button>
             </div>
-          )}
+              )}
         </form>
-      </Modal>
+        </Modal>
 
       {/* Modal de Auditoria */}
       <Modal
@@ -712,13 +712,13 @@ const Motoristas = () => {
               <span className="hidden sm:inline">Atualizar</span>
               <span className="sm:hidden">Atualizar</span>
             </Button>
-          </div>
+              </div>
 
           {loadingAudit ? (
             <div className="flex justify-center items-center py-6 sm:py-8">
               <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600"></div>
-            </div>
-          ) : (
+                </div>
+              ) : (
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -756,10 +756,10 @@ const Motoristas = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-        </div>
-      </Modal>
+                            </div>
+                          )}
+                                    </div>
+        </Modal>
 
       {/* Paginação */}
       {totalPages > 1 && (
