@@ -588,16 +588,17 @@ const Rotas = () => {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <Table>
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
-                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distância</th>
-                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Custo</th>
+          <div className="overflow-x-auto">
+            <Table>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distância</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Custo</th>
                 <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
               </tr>
@@ -644,6 +645,7 @@ const Rotas = () => {
                         size="xs"
                         onClick={() => handleViewRota(rota)}
                         title="Visualizar"
+                        className="p-1 sm:p-2"
                       >
                         <FaEye className="text-green-600 text-xs sm:text-sm" />
                       </Button>
@@ -653,6 +655,7 @@ const Rotas = () => {
                           size="xs"
                           onClick={() => handleEditRota(rota)}
                           title="Editar"
+                          className="p-1 sm:p-2"
                         >
                           <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                         </Button>
@@ -663,6 +666,7 @@ const Rotas = () => {
                           size="xs"
                           onClick={() => handleDeleteRota(rota.id)}
                           title="Excluir"
+                          className="p-1 sm:p-2"
                         >
                           <FaTrash className="text-red-600 text-xs sm:text-sm" />
                         </Button>
@@ -674,18 +678,19 @@ const Rotas = () => {
             </tbody>
           </Table>
         </div>
+        </div>
       )}
 
       {/* Modal de Cadastro/Edição/Visualização */}
       {showModal && (
-                 <Modal
-           isOpen={showModal}
-           onClose={handleCloseModal}
-           title={viewMode ? 'Visualizar Rota' : editingRota ? 'Editar Rota' : 'Adicionar Rota'}
-           size="xl"
-         >
-                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
-                           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'lg:grid-cols-3 md:grid-cols-2'} gap-3 sm:gap-4`}>
+        <Modal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          title={viewMode ? 'Visualizar Rota' : editingRota ? 'Editar Rota' : 'Adicionar Rota'}
+          size="full"
+        >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                              {/* Primeira linha - Informações básicas */}
                              <Input
                                label="Filial *"
@@ -860,11 +865,11 @@ const Rotas = () => {
             )}
 
             {!viewMode && (
-              <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
-                <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
+                <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal} className="w-full sm:w-auto">
                   Cancelar
                 </Button>
-                <Button type="submit" size="sm">
+                <Button type="submit" size="sm" className="w-full sm:w-auto">
                   {editingRota ? 'Atualizar' : 'Cadastrar'}
                 </Button>
               </div>
@@ -879,13 +884,13 @@ const Rotas = () => {
           isOpen={showAuditModal}
           onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Rotas"
-          size="xl"
+          size="full"
         >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
             <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
               <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Filtros</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
                 <Input
                   label="Data Início"
                   type="date"
@@ -932,15 +937,15 @@ const Rotas = () => {
 
             {/* Botões de Exportação */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button onClick={handleExportXLSX} variant="secondary" size="sm">
+              <Button onClick={handleExportXLSX} variant="secondary" size="sm" className="w-full sm:w-auto">
                 <FaFileExcel className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar Excel</span>
-                <span className="sm:hidden">Excel</span>
+                <span className="sm:hidden">Exportar Excel</span>
               </Button>
-              <Button onClick={handleExportPDF} variant="secondary" size="sm">
+              <Button onClick={handleExportPDF} variant="secondary" size="sm" className="w-full sm:w-auto">
                 <FaFilePdf className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar PDF</span>
-                <span className="sm:hidden">PDF</span>
+                <span className="sm:hidden">Exportar PDF</span>
               </Button>
             </div>
             
