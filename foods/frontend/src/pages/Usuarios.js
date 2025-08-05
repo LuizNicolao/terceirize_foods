@@ -1,675 +1,320 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
-import api from '../services/api';
+import { 
+  FaPlus, 
+  FaEye, 
+  FaEdit, 
+  FaTrash, 
+  FaSearch, 
+  FaFilter, 
+  FaHistory,
+  FaQuestionCircle,
+  FaFileExcel,
+  FaFilePdf,
+  FaUser,
+  FaUserShield,
+  FaUserTie,
+  FaUserCog,
+  FaUsers
+} from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
+import UsuariosService from '../services/usuarios';
+import { Button, Input, Modal, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
-
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h1`
-  color: var(--dark-gray);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const AddButton = styled.button`
-  background: var(--primary-green);
-  color: var(--white);
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: var(--dark-green);
-    transform: translateY(-1px);
-  }
-`;
-
-const TableContainer = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  background-color: #f5f5f5;
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const Td = styled.td`
-  padding: 16px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  color: var(--dark-gray);
-`;
-
-const StatusBadge = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props =>
-    props.status === 'ativo' ? 'var(--success-green)' :
-    props.status === 'bloqueado' ? 'var(--warning-yellow)' : '#ffebee'};
-  color: ${props =>
-    props.status === 'ativo' ? 'white' :
-    props.status === 'bloqueado' ? 'var(--dark-gray)' : 'var(--error-red)'};
-`;
-
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  margin-right: 8px;
-  color: var(--gray);
-
-  &:hover {
-    background-color: var(--light-gray);
-  }
-
-  &.edit {
-    color: var(--blue);
-  }
-
-  &.delete {
-    color: var(--error-red);
-  }
-
-  &.view {
-    color: var(--primary-green);
-  }
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 32px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const ModalTitle = styled.h2`
-  color: var(--dark-gray);
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--gray);
-  padding: 4px;
-
-  &:hover {
-    color: var(--error-red);
-  }
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const Label = styled.label`
-  color: var(--dark-gray);
-  font-weight: 600;
-  font-size: 14px;
-`;
-
-const Input = styled.input`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const Select = styled.select`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white);
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-`;
-
-const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &.primary {
-    background: var(--primary-green);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-green);
-    }
-  }
-
-  &.secondary {
-    background: var(--gray);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-gray);
-    }
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px;
-  color: var(--gray);
-`;
-
-
+import Pagination from '../components/Pagination';
 
 const Usuarios = () => {
-  const { canCreate, canEdit, canDelete } = usePermissions();
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editingUser, setEditingUser] = useState(null);
-  const [isViewMode, setIsViewMode] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
+  const [viewMode, setViewMode] = useState(false);
+  const [editingUsuario, setEditingUsuario] = useState(null);
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
-  const [auditLoading, setAuditLoading] = useState(false);
-  const [auditFilters, setAuditFilters] = useState({
-    dataInicio: '',
-    dataFim: '',
-    acao: '',
-    usuario_id: '',
-    periodo: ''
+  const [loadingAudit, setLoadingAudit] = useState(false);
+  const [estatisticas, setEstatisticas] = useState({
+    total_usuarios: 0,
+    usuarios_ativos: 0,
+    administradores: 0,
+    coordenadores: 0
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Estados de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-    setValue
-  } = useForm();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  // Carregar usuários
-  const loadUsuarios = async () => {
+  useEffect(() => {
+    loadUsuarios();
+  }, [currentPage, itemsPerPage]);
+
+  const loadUsuarios = async (params = {}) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await api.get('/usuarios');
-      setUsuarios(response.data.data.items || []);
+      // Parâmetros de paginação
+      const paginationParams = {
+        page: currentPage,
+        limit: itemsPerPage,
+        ...params
+      };
+
+      const result = await UsuariosService.listar(paginationParams);
+      if (result.success) {
+        setUsuarios(result.data);
+        
+        // Extrair informações de paginação
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages || 1);
+          setTotalItems(result.pagination.totalItems || result.data.length);
+          setCurrentPage(result.pagination.currentPage || 1);
+        } else {
+          // Fallback se não houver paginação no backend
+          setTotalItems(result.data.length);
+          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
+        }
+        
+        // Calcular estatísticas básicas
+        const total = result.pagination?.totalItems || result.data.length;
+        const ativos = result.data.filter(u => u.status === 'ativo').length;
+        const administradores = result.data.filter(u => u.tipo_de_acesso === 'administrador').length;
+        const coordenadores = result.data.filter(u => u.tipo_de_acesso === 'coordenador').length;
+        
+        setEstatisticas({
+          total_usuarios: total,
+          usuarios_ativos: ativos,
+          administradores,
+          coordenadores
+        });
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      console.error('Erro ao carregar usuários:', error);
       toast.error('Erro ao carregar usuários');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadUsuarios();
-  }, []);
+  // Filtrar usuários (client-side)
+  const filteredUsuarios = usuarios.filter(usuario => {
+    const matchesSearch = !searchTerm || 
+      (usuario.nome && usuario.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (usuario.email && usuario.email.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    return matchesSearch;
+  });
 
-  // Carregar logs de auditoria
+  // Função para mudar de página
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   const loadAuditLogs = async () => {
+    setLoadingAudit(true);
     try {
-      setAuditLoading(true);
-      
-      const params = new URLSearchParams();
-      
-      // Aplicar filtro de período se selecionado
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
+      const response = await fetch('/api/auditoria?entidade=usuarios&limit=100', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setAuditLogs(data.data || []);
       } else {
-        // Usar filtros manuais se período não estiver selecionado
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        toast.error('Erro ao carregar logs de auditoria');
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para usuários
-      params.append('recurso', 'usuarios');
-      
-      const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
     } catch (error) {
-      console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
     } finally {
-      setAuditLoading(false);
+      setLoadingAudit(false);
     }
   };
 
-  // Abrir modal de auditoria
   const handleOpenAuditModal = () => {
     setShowAuditModal(true);
     loadAuditLogs();
   };
 
-  // Fechar modal de auditoria
   const handleCloseAuditModal = () => {
     setShowAuditModal(false);
     setAuditLogs([]);
-    setAuditFilters({
-      dataInicio: '',
-      dataFim: '',
-      acao: '',
-      usuario_id: '',
-      periodo: ''
-    });
   };
 
-  // Aplicar filtros de auditoria
   const handleApplyAuditFilters = () => {
     loadAuditLogs();
   };
 
-  // Exportar auditoria para XLSX
   const handleExportXLSX = async () => {
     try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
+      const result = await UsuariosService.exportarXLSX();
+      if (result.success) {
+        const blob = new Blob([result.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'usuarios.xlsx';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        toast.success('Exportação XLSX realizada com sucesso!');
       } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        toast.error(result.error);
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para usuários
-      params.append('recurso', 'usuarios');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_usuarios_${new Date().toISOString().split('T')[0]}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
     } catch (error) {
-      console.error('Erro ao exportar XLSX:', error);
-      toast.error('Erro ao exportar relatório');
+      toast.error('Erro ao exportar XLSX');
     }
   };
 
-  // Exportar auditoria para PDF
   const handleExportPDF = async () => {
     try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
+      const result = await UsuariosService.exportarPDF();
+      if (result.success) {
+        const blob = new Blob([result.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'usuarios.pdf';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        toast.success('Exportação PDF realizada com sucesso!');
       } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        toast.error(result.error);
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para usuários
-      params.append('recurso', 'usuarios');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_usuarios_${new Date().toISOString().split('T')[0]}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
     } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      toast.error('Erro ao exportar relatório');
+      toast.error('Erro ao exportar PDF');
     }
   };
 
-  // Formatar data
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('pt-BR');
   };
 
-  // Obter label da ação
   const getActionLabel = (action) => {
     const actions = {
-      'create': 'Criar',
-      'update': 'Editar',
-      'delete': 'Excluir',
-      'login': 'Login',
-      'logout': 'Logout',
-      'view': 'Visualizar'
+      CREATE: 'Criar',
+      UPDATE: 'Atualizar',
+      DELETE: 'Excluir'
     };
     return actions[action] || action;
   };
 
-  // Obter label do campo
   const getFieldLabel = (field) => {
-    const labels = {
-      'nome': 'Nome',
-      'email': 'Email',
-      'senha': 'Senha',
-      'nivel_de_acesso': 'Nível de Acesso',
-      'tipo_de_acesso': 'Tipo de Acesso',
-      'status': 'Status'
+    const fields = {
+      nome: 'Nome',
+      email: 'Email',
+      senha: 'Senha',
+      nivel_de_acesso: 'Nível de Acesso',
+      tipo_de_acesso: 'Tipo de Acesso',
+      status: 'Status'
     };
-    return labels[field] || field;
+    return fields[field] || field;
   };
 
-  // Formatar valor do campo
   const formatFieldValue = (field, value) => {
-    if (value === null || value === undefined || value === '') {
-      return 'Não informado';
+    if (field === 'status') {
+      return getStatusLabel(value);
     }
-
-    switch (field) {
-      case 'nivel_de_acesso':
-        return getNivelAcessoLabel(value);
-      case 'tipo_de_acesso':
-        return getTipoAcessoLabel(value);
-      case 'status':
-        return value === 'ativo' ? 'Ativo' : value === 'bloqueado' ? 'Bloqueado' : 'Inativo';
-      case 'senha':
-        return '[PROTEGIDO]';
-      case 'email':
-        return value;
-      default:
-        return value;
+    if (field === 'nivel_de_acesso') {
+      return getNivelAcessoLabel(value);
     }
+    if (field === 'tipo_de_acesso') {
+      return getTipoAcessoLabel(value);
+    }
+    return value;
   };
 
-  // Abrir modal para adicionar usuário
   const handleAddUser = () => {
-    setEditingUser(null);
+    setViewMode(false);
+    setEditingUsuario(null);
     reset();
     setShowModal(true);
   };
 
-  // Abrir modal para visualizar usuário
-  const handleViewUser = (user) => {
-    setEditingUser(user);
-    setValue('nome', user.nome);
-    setValue('email', user.email);
-    setValue('nivel_de_acesso', user.nivel_de_acesso);
-    setValue('tipo_de_acesso', user.tipo_de_acesso);
-    setValue('status', user.status);
-    setIsViewMode(true);
+  const handleViewUser = (usuario) => {
+    setViewMode(true);
+    setEditingUsuario(usuario);
+    reset(usuario);
     setShowModal(true);
   };
 
-  // Abrir modal para editar usuário
-  const handleEditUser = (user) => {
-    setEditingUser(user);
-    setValue('nome', user.nome);
-    setValue('email', user.email);
-    setValue('nivel_de_acesso', user.nivel_de_acesso);
-    setValue('tipo_de_acesso', user.tipo_de_acesso);
-    setValue('status', user.status);
-    setIsViewMode(false);
+  const handleEditUser = (usuario) => {
+    setViewMode(false);
+    setEditingUsuario(usuario);
+    reset(usuario);
     setShowModal(true);
   };
 
-  // Fechar modal
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingUser(null);
-    setIsViewMode(false);
+    setViewMode(false);
+    setEditingUsuario(null);
     reset();
   };
 
-  // Salvar usuário
   const onSubmit = async (data) => {
     try {
-      // Se estiver editando e a senha estiver vazia, remove o campo
-      if (editingUser && (!data.senha || data.senha.trim() === '')) {
-        delete data.senha;
+      // Limpar campos vazios para evitar problemas de validação
+      const cleanData = {
+        ...data,
+        nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
+        email: data.email && data.email.trim() !== '' ? data.email.trim() : null,
+        senha: data.senha && data.senha.trim() !== '' ? data.senha.trim() : null
+      };
+
+      let result;
+      if (editingUsuario) {
+        result = await UsuariosService.atualizar(editingUsuario.id, cleanData);
+      } else {
+        result = await UsuariosService.criar(cleanData);
       }
 
-      if (editingUser) {
-        await api.put(`/usuarios/${editingUser.id}`, data);
-        toast.success('Usuário atualizado com sucesso!');
+      if (result.success) {
+        toast.success(editingUsuario ? 'Usuário atualizado com sucesso!' : 'Usuário criado com sucesso!');
+        handleCloseModal();
+        loadUsuarios();
       } else {
-        await api.post('/usuarios', data);
-        toast.success('Usuário criado com sucesso!');
+        toast.error(result.error);
       }
-      
-      handleCloseModal();
-      loadUsuarios();
     } catch (error) {
-      console.error('Erro ao salvar usuário:', error);
-      if (error.response?.data?.message) {
-        toast.error(error.response.data.message);
-      } else if (error.response?.data?.error) {
-        toast.error(error.response.data.error);
-      } else {
-        toast.error('Erro ao salvar usuário');
-      }
+      toast.error('Erro ao salvar usuário');
     }
   };
 
-  // Excluir usuário
   const handleDeleteUser = async (userId) => {
     if (window.confirm('Tem certeza que deseja excluir este usuário?')) {
       try {
-        await api.delete(`/usuarios/${userId}`);
-        toast.success('Usuário excluído com sucesso!');
-        loadUsuarios();
+        const result = await UsuariosService.excluir(userId);
+        if (result.success) {
+          toast.success('Usuário excluído com sucesso!');
+          loadUsuarios();
+        } else {
+          toast.error(result.error);
+        }
       } catch (error) {
-        console.error('Erro ao excluir usuário:', error);
         toast.error('Erro ao excluir usuário');
       }
     }
   };
 
-  // Filtrar usuários
-  const filteredUsuarios = (Array.isArray(usuarios) ? usuarios : []).filter(user => {
-    const matchesSearch = user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || user.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const getStatusLabel = (status) => {
+    const statusMap = {
+      ativo: 'Ativo',
+      inativo: 'Inativo',
+      bloqueado: 'Bloqueado'
+    };
+    return statusMap[status] || status;
+  };
 
   const getNivelAcessoLabel = (nivel) => {
     const niveis = {
-      'I': 'Nível I - Visualizar',
-      'II': 'Nível II - Criar/Editar',
-      'III': 'Nível III - Completo'
+      'I': 'Nível I',
+      'II': 'Nível II',
+      'III': 'Nível III'
     };
     return niveis[nivel] || nivel;
   };
@@ -687,500 +332,394 @@ const Usuarios = () => {
 
   if (loading) {
     return (
-      <Container>
-        <div>Carregando usuários...</div>
-      </Container>
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <Header>
-        <Title>Usuários</Title>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <AddButton 
+    <div className="p-3 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Usuários</h1>
+        <div className="flex gap-2 sm:gap-3">
+          <Button
             onClick={handleOpenAuditModal}
-            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
           >
-            <FaQuestionCircle />
-            Auditoria
-          </AddButton>
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+          </Button>
           {canCreate('usuarios') && (
-            <AddButton onClick={handleAddUser}>
-              <FaPlus />
-              Adicionar Usuário
-            </AddButton>
+            <Button onClick={handleAddUser} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
           )}
         </div>
-      </Header>
+      </div>
 
+      {/* Estatísticas */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+        <StatCard
+          title="Total de Usuários"
+          value={estatisticas.total_usuarios}
+          icon={FaUsers}
+          color="blue"
+        />
+        <StatCard
+          title="Usuários Ativos"
+          value={estatisticas.usuarios_ativos}
+          icon={FaUser}
+          color="green"
+        />
+        <StatCard
+          title="Administradores"
+          value={estatisticas.administradores}
+          icon={FaUserShield}
+          color="purple"
+        />
+        <StatCard
+          title="Coordenadores"
+          value={estatisticas.coordenadores}
+          icon={FaUserTie}
+          color="orange"
+        />
+      </div>
+
+      {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
-        placeholder="Buscar por nome, email ou perfil..."
+        onClear={() => setSearchTerm('')}
+        placeholder="Buscar por nome ou email..."
       />
 
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Nome</Th>
-              <Th>Email</Th>
-              <Th>Nível de Acesso</Th>
-              <Th>Tipo de Acesso</Th>
-              <Th>Status</Th>
-              <Th>Ações</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsuarios.length === 0 ? (
-              <tr>
-                <Td colSpan="6">
-                  <EmptyState>
-                    {searchTerm || statusFilter !== 'todos' 
-                      ? 'Nenhum usuário encontrado com os filtros aplicados'
-                      : 'Nenhum usuário cadastrado'
-                    }
-                  </EmptyState>
-                </Td>
-              </tr>
-            ) : (
-              filteredUsuarios.map((user) => (
-                <tr key={user.id}>
-                  <Td>{user.nome}</Td>
-                  <Td>{user.email}</Td>
-                  <Td>{getNivelAcessoLabel(user.nivel_de_acesso)}</Td>
-                  <Td>{getTipoAcessoLabel(user.tipo_de_acesso)}</Td>
-                  <Td>
-                    <StatusBadge status={user.status}>
-                      {user.status === 'ativo' ? 'Ativo' : user.status === 'bloqueado' ? 'Bloqueado' : 'Inativo'}
-                    </StatusBadge>
-                  </Td>
-                  <Td>
-                    <ActionButton
-                      className="view"
-                      title="Visualizar"
-                      onClick={() => handleViewUser(user)}
-                    >
-                      <FaEye />
-                    </ActionButton>
-                    {canEdit('usuarios') && (
-                      <ActionButton
-                        className="edit"
-                        title="Editar"
-                        onClick={() => handleEditUser(user)}
-                      >
-                        <FaEdit />
-                      </ActionButton>
-                    )}
-                    {canDelete('usuarios') && (
-                      <ActionButton
-                        className="delete"
-                        title="Excluir"
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        <FaTrash />
-                      </ActionButton>
-                    )}
-                  </Td>
+      {/* Ações */}
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+        <Button onClick={handleExportXLSX} variant="outline" size="sm">
+          <FaFileExcel className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar XLSX</span>
+          <span className="sm:hidden">XLSX</span>
+        </Button>
+        <Button onClick={handleExportPDF} variant="outline" size="sm">
+          <FaFilePdf className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar PDF</span>
+          <span className="sm:hidden">PDF</span>
+        </Button>
+      </div>
+
+      {/* Tabela */}
+      {filteredUsuarios.length === 0 ? (
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+          {searchTerm 
+            ? 'Nenhum usuário encontrado com os filtros aplicados'
+            : 'Nenhum usuário cadastrado'
+          }
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nome
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tipo de Acesso
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nível
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Criado em
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </TableContainer>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsuarios.map((usuario) => (
+                  <tr key={usuario.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900">
+                        {usuario.nome}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                      {usuario.email}
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      {getTipoAcessoLabel(usuario.tipo_de_acesso)}
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      {getNivelAcessoLabel(usuario.nivel_de_acesso)}
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                        usuario.status === 'ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : usuario.status === 'bloqueado'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {getStatusLabel(usuario.status)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      {usuario.criado_em ? formatDate(usuario.criado_em) : 'N/A'}
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                      <div className="flex gap-1 sm:gap-2">
+                        {canView('usuarios') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleViewUser(usuario)}
+                            title="Visualizar"
+                          >
+                            <FaEye className="text-green-600 text-xs sm:text-sm" />
+                          </Button>
+                        )}
+                        {canEdit('usuarios') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditUser(usuario)}
+                            title="Editar"
+                          >
+                            <FaEdit className="text-blue-600 text-xs sm:text-sm" />
+                          </Button>
+                        )}
+                        {canDelete('usuarios') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteUser(usuario.id)}
+                            title="Excluir"
+                          >
+                            <FaTrash className="text-red-600 text-xs sm:text-sm" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
-      {showModal && (
-        <Modal onClick={handleCloseModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>
-                {isViewMode ? 'Visualizar Usuário' : editingUser ? 'Editar Usuário' : 'Adicionar Usuário'}
-              </ModalTitle>
-              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
-            </ModalHeader>
-
-            <Form onSubmit={handleSubmit(onSubmit)}>
-              <FormGroup>
-                <Label>Nome</Label>
+      {/* Modal de Usuário */}
+      <Modal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        title={viewMode ? 'Visualizar Usuário' : editingUsuario ? 'Editar Usuário' : 'Adicionar Usuário'}
+        size="xl"
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
+          {/* Primeira Linha - 2 Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Card 1: Informações Pessoais */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Pessoais</h3>
+              <div className="space-y-3">
                 <Input
-                  type="text"
-                  placeholder="Nome completo"
-                  disabled={isViewMode}
+                  label="Nome Completo *"
                   {...register('nome', { required: 'Nome é obrigatório' })}
+                  error={errors.nome?.message}
+                  disabled={viewMode}
                 />
-                {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Email</Label>
                 <Input
+                  label="Email *"
                   type="email"
-                  placeholder="email@exemplo.com"
-                  disabled={isViewMode}
                   {...register('email', { 
                     required: 'Email é obrigatório',
                     pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
                       message: 'Email inválido'
                     }
                   })}
+                  error={errors.email?.message}
+                  disabled={viewMode}
                 />
-                {errors.email && <span style={{ color: 'red', fontSize: '12px' }}>{errors.email.message}</span>}
-              </FormGroup>
+              </div>
+            </div>
 
-              {!isViewMode && (
-                <FormGroup>
-                  <Label>Senha {editingUser && '(deixe em branco para manter a atual)'}</Label>
-                  <Input
-                    type="password"
-                    placeholder={editingUser ? "Nova senha (opcional)" : "Senha"}
-                    {...register('senha', { 
-                      required: !editingUser ? 'Senha é obrigatória' : false,
-                      minLength: {
-                        value: 6,
-                        message: 'Senha deve ter pelo menos 6 caracteres'
-                      }
-                    })}
-                  />
-                  {errors.senha && <span style={{ color: 'red', fontSize: '12px' }}>{errors.senha.message}</span>}
-                </FormGroup>
-              )}
-
-              <FormGroup>
-                <Label>Nível de Acesso</Label>
-                <Select disabled={isViewMode} {...register('nivel_de_acesso', { required: 'Nível de acesso é obrigatório' })}>
-                  <option value="">Selecione...</option>
-                  <option value="I">Nível I - Visualizar</option>
-                  <option value="II">Nível II - Criar/Editar</option>
-                  <option value="III">Nível III - Completo</option>
-                </Select>
-                {errors.nivel_de_acesso && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nivel_de_acesso.message}</span>}
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Tipo de Acesso</Label>
-                <Select disabled={isViewMode} {...register('tipo_de_acesso', { required: 'Tipo de acesso é obrigatório' })}>
-                  <option value="">Selecione...</option>
+            {/* Card 2: Informações de Acesso */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações de Acesso</h3>
+              <div className="space-y-3">
+                <Input
+                  label="Tipo de Acesso *"
+                  type="select"
+                  {...register('tipo_de_acesso', { required: 'Tipo de acesso é obrigatório' })}
+                  error={errors.tipo_de_acesso?.message}
+                  disabled={viewMode}
+                >
+                  <option value="">Selecione o tipo de acesso</option>
                   <option value="administrador">Administrador</option>
                   <option value="coordenador">Coordenador</option>
                   <option value="administrativo">Administrativo</option>
                   <option value="gerente">Gerente</option>
                   <option value="supervisor">Supervisor</option>
-                </Select>
-                {errors.tipo_de_acesso && <span style={{ color: 'red', fontSize: '12px' }}>{errors.tipo_de_acesso.message}</span>}
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Status</Label>
-                <Select disabled={isViewMode} {...register('status', { required: 'Status é obrigatório' })}>
-                  <option value="">Selecione...</option>
+                </Input>
+                <Input
+                  label="Nível de Acesso *"
+                  type="select"
+                  {...register('nivel_de_acesso', { required: 'Nível de acesso é obrigatório' })}
+                  error={errors.nivel_de_acesso?.message}
+                  disabled={viewMode}
+                >
+                  <option value="">Selecione o nível de acesso</option>
+                  <option value="I">Nível I</option>
+                  <option value="II">Nível II</option>
+                  <option value="III">Nível III</option>
+                </Input>
+                <Input
+                  label="Status *"
+                  type="select"
+                  {...register('status', { required: 'Status é obrigatório' })}
+                  error={errors.status?.message}
+                  disabled={viewMode}
+                >
+                  <option value="">Selecione o status</option>
                   <option value="ativo">Ativo</option>
                   <option value="inativo">Inativo</option>
                   <option value="bloqueado">Bloqueado</option>
-                </Select>
-                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
-              </FormGroup>
+                </Input>
+              </div>
+            </div>
+          </div>
 
-              <ButtonGroup>
-                <Button type="button" className="secondary" onClick={handleCloseModal}>
-                  {isViewMode ? 'Fechar' : 'Cancelar'}
-                </Button>
-                {!isViewMode && (
-                  <Button type="submit" className="primary">
-                    {editingUser ? 'Atualizar' : 'Criar'}
-                  </Button>
-                )}
-              </ButtonGroup>
-            </Form>
-          </ModalContent>
-        </Modal>
-      )}
+          {/* Segunda Linha - 1 Card */}
+          <div className="grid grid-cols-1 gap-4">
+            {/* Card 3: Senha */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Senha</h3>
+              <div className="space-y-3">
+                <Input
+                  label={editingUsuario ? "Nova Senha (deixe em branco para manter a atual)" : "Senha *"}
+                  type="password"
+                  {...register('senha', { 
+                    required: !editingUsuario ? 'Senha é obrigatória' : false,
+                    minLength: {
+                      value: 6,
+                      message: 'Senha deve ter pelo menos 6 caracteres'
+                    }
+                  })}
+                  error={errors.senha?.message}
+                  disabled={viewMode}
+                />
+              </div>
+            </div>
+          </div>
+
+          {!viewMode && (
+            <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
+              <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
+                Cancelar
+              </Button>
+              <Button type="submit" size="sm">
+                {editingUsuario ? 'Atualizar' : 'Criar'}
+              </Button>
+            </div>
+          )}
+        </form>
+      </Modal>
 
       {/* Modal de Auditoria */}
-      {showAuditModal && (
-        <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
-            <ModalHeader>
-              <ModalTitle>Relatório de Auditoria - Usuários</ModalTitle>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={handleExportXLSX}
-                  title="Exportar para Excel"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFileExcel />
-                  Excel
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  title="Exportar para PDF"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFilePdf />
-                  PDF
-                </button>
-                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
-              </div>
-            </ModalHeader>
+      <Modal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
+        title="Logs de Auditoria - Usuários"
+        size="xl"
+      >
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900">
+              Histórico de Alterações
+            </h3>
+            <Button onClick={handleApplyAuditFilters} variant="outline" size="sm">
+              <span className="hidden sm:inline">Atualizar</span>
+              <span className="sm:hidden">Atualizar</span>
+            </Button>
+          </div>
 
-            {/* Filtros de Auditoria */}
-            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataInicio}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataFim}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Ação
-                  </label>
-                  <select
-                    value={auditFilters.acao}
-                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todas as ações</option>
-                    <option value="create">Criar</option>
-                    <option value="update">Editar</option>
-                    <option value="delete">Excluir</option>
-                    <option value="login">Login</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Usuário
-                  </label>
-                  <select
-                    value={auditFilters.usuario_id}
-                    onChange={(e) => setAuditFilters({...auditFilters, usuario_id: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todos os usuários</option>
-                    {usuarios.map(user => (
-                      <option key={user.id} value={user.id}>{user.nome}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Período
-                  </label>
-                  <select
-                    value={auditFilters.periodo}
-                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Período personalizado</option>
-                    <option value="7dias">Últimos 7 dias</option>
-                    <option value="30dias">Últimos 30 dias</option>
-                    <option value="90dias">Últimos 90 dias</option>
-                    <option value="todos">Todos os registros</option>
-                  </select>
-                </div>
-              </div>
-              <button
-                onClick={handleApplyAuditFilters}
-                style={{
-                  marginTop: '12px',
-                  padding: '8px 16px',
-                  background: 'var(--primary-green)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Aplicar Filtros
-              </button>
+          {loadingAudit ? (
+            <div className="flex justify-center items-center py-6 sm:py-8">
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600"></div>
             </div>
-
-            {/* Lista de Logs */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-              {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
-              ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
-                  Nenhum log encontrado com os filtros aplicados
-                </div>
-              ) : (
-                <div>
-                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
-                    {auditLogs.length} log(s) encontrado(s)
-                  </div>
+          ) : (
+            <div className="max-h-64 sm:max-h-96 overflow-y-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Usuário</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Ação</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Campo</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Valor Anterior</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Novo Valor</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
                   {auditLogs.map((log, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        marginBottom: '12px',
-                        background: 'white'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            background: log.acao === 'create' ? '#e8f5e8' : 
-                                       log.acao === 'update' ? '#fff3cd' : 
-                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
-                            color: log.acao === 'create' ? '#2e7d32' : 
-                                   log.acao === 'update' ? '#856404' : 
-                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
-                          }}>
-                            {getActionLabel(log.acao)}
-                          </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                            por {log.usuario_nome || 'Usuário desconhecido'}
-                          </span>
-                        </div>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                          {formatDate(log.timestamp)}
-                        </span>
-                      </div>
-                      
-                      {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
-                          {log.detalhes.changes && (
-                            <div style={{ marginBottom: '8px' }}>
-                              <strong>Mudanças Realizadas:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
-                                {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} style={{ 
-                                    marginBottom: '6px', 
-                                    padding: '8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
-                                      {getFieldLabel(field)}:
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                      <span style={{ color: '#721c24' }}>
-                                        <strong>Antes:</strong> {formatFieldValue(field, change.from)}
-                                      </span>
-                                      <span style={{ color: '#6c757d' }}>→</span>
-                                      <span style={{ color: '#2e7d32' }}>
-                                        <strong>Depois:</strong> {formatFieldValue(field, change.to)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {log.detalhes.requestBody && !log.detalhes.changes && (
-                            <div>
-                              <strong>Dados do Usuário:</strong>
-                              <div style={{ 
-                                marginLeft: '12px', 
-                                marginTop: '8px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '8px'
-                              }}>
-                                {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} style={{ 
-                                    padding: '6px 8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef',
-                                    fontSize: '11px'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
-                                      {getFieldLabel(field)}:
-                                    </div>
-                                    <div style={{ color: '#2e7d32' }}>
-                                      {formatFieldValue(field, value)}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {log.detalhes.resourceId && (
-                            <div style={{ 
-                              marginTop: '8px', 
-                              padding: '6px 8px', 
-                              background: '#e3f2fd', 
-                              borderRadius: '4px',
-                              fontSize: '11px'
-                            }}>
-                              <strong>ID do Usuário:</strong> 
-                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
-                                #{log.detalhes.resourceId}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {formatDate(log.created_at)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {log.usuario_nome || 'Sistema'}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {getActionLabel(log.action)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {getFieldLabel(log.field_name)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
+                        {formatFieldValue(log.field_name, log.old_value)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
+                        {formatFieldValue(log.field_name, log.new_value)}
+                      </td>
+                    </tr>
                   ))}
-                </div>
-              )}
+                </tbody>
+              </table>
             </div>
-          </ModalContent>
-        </Modal>
+          )}
+        </div>
+      </Modal>
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
       )}
-    </Container>
+    </div>
   );
 };
 
