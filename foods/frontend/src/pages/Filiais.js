@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import { 
-  PlusIcon, 
-  PencilIcon, 
-  TrashIcon, 
-  EyeIcon,
-  MagnifyingGlassIcon,
-  DocumentArrowDownIcon,
-  FunnelIcon
-} from '@heroicons/react/24/outline';
+  FaPlus, 
+  FaEdit, 
+  FaTrash, 
+  FaEye,
+  FaSearch,
+  FaFileExcel,
+  FaFilePdf,
+  FaFilter
+} from 'react-icons/fa';
 
 // Componentes reutilizáveis
 import Button from '../components/ui/Button';
@@ -401,7 +402,7 @@ const Filiais = () => {
             onClick={() => openModal()}
             className="flex items-center gap-2"
           >
-            <PlusIcon className="w-5 h-5" />
+            <FaPlus className="w-5 h-5" />
             Nova Filial
           </Button>
         </div>
@@ -412,19 +413,19 @@ const Filiais = () => {
         <StatCard
           title="Total de Filiais"
           value={stats.total}
-          icon="🏢"
+          icon={() => <span className="text-2xl">🏢</span>}
           color="blue"
         />
         <StatCard
           title="Filiais Ativas"
           value={stats.ativas}
-          icon="✅"
+          icon={() => <span className="text-2xl">✅</span>}
           color="green"
         />
         <StatCard
           title="Filiais Inativas"
           value={stats.inativas}
-          icon="❌"
+          icon={() => <span className="text-2xl">❌</span>}
           color="red"
         />
       </div>
@@ -523,7 +524,7 @@ const Filiais = () => {
                           onClick={() => openViewModal(filial)}
                           className="text-blue-600 hover:text-blue-900"
                         >
-                          <EyeIcon className="w-4 h-4" />
+                          <FaEye className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -531,7 +532,7 @@ const Filiais = () => {
                           onClick={() => openModal(filial)}
                           className="text-green-600 hover:text-green-900"
                         >
-                          <PencilIcon className="w-4 h-4" />
+                          <FaEdit className="w-4 h-4" />
                         </Button>
                         <Button
                           variant="ghost"
@@ -539,7 +540,7 @@ const Filiais = () => {
                           onClick={() => handleDelete(filial.id)}
                           className="text-red-600 hover:text-red-900"
                         >
-                          <TrashIcon className="w-4 h-4" />
+                          <FaTrash className="w-4 h-4" />
                         </Button>
                       </div>
                     </td>
