@@ -194,16 +194,16 @@ const Veiculos = () => {
       placa: 'Placa',
       modelo: 'Modelo',
       marca: 'Marca',
-      ano: 'Ano',
+      ano_fabricacao: 'Ano',
       tipo_veiculo: 'Tipo de Veículo',
       categoria: 'Categoria',
       status: 'Status',
       motorista_id: 'Motorista',
-      capacidade: 'Capacidade',
+      capacidade_carga: 'Capacidade',
       combustivel: 'Combustível',
-      km_atual: 'KM Atual',
-      ultima_manutencao: 'Última Manutenção',
-      proxima_manutencao: 'Próxima Manutenção',
+      quilometragem_atual: 'KM Atual',
+      data_ultima_revisao: 'Última Revisão',
+      quilometragem_proxima_revisao: 'Próxima Revisão',
       observacoes: 'Observações'
     };
     return fields[field] || field;
@@ -219,8 +219,11 @@ const Veiculos = () => {
     if (field === 'categoria') {
       return getCategoriaLabel(value);
     }
-    if (field === 'ultima_manutencao' || field === 'proxima_manutencao') {
+    if (field === 'data_ultima_revisao') {
       return value ? formatDate(value) : 'N/A';
+    }
+    if (field === 'quilometragem_atual' || field === 'quilometragem_proxima_revisao') {
+      return value ? `${value.toLocaleString()} km` : 'N/A';
     }
     return value;
   };
@@ -468,7 +471,7 @@ const Veiculos = () => {
                       </span>
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                      {veiculo.km_atual ? `${veiculo.km_atual.toLocaleString()} km` : 'N/A'}
+                      {veiculo.quilometragem_atual ? `${veiculo.quilometragem_atual.toLocaleString()} km` : 'N/A'}
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
                       <div className="flex gap-1 sm:gap-2">
@@ -547,7 +550,7 @@ const Veiculos = () => {
                 <Input
                   label="Ano"
                   type="number"
-                  {...register('ano')}
+                  {...register('ano_fabricacao')}
                   disabled={viewMode}
                 />
               </div>
@@ -608,7 +611,7 @@ const Veiculos = () => {
               <div className="space-y-3">
                 <Input
                   label="Capacidade"
-                  {...register('capacidade')}
+                  {...register('capacidade_carga')}
                   disabled={viewMode}
                 />
                 <Input
@@ -619,7 +622,7 @@ const Veiculos = () => {
                 <Input
                   label="KM Atual"
                   type="number"
-                  {...register('km_atual')}
+                  {...register('quilometragem_atual')}
                   disabled={viewMode}
                 />
               </div>
@@ -630,15 +633,16 @@ const Veiculos = () => {
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Manutenção</h3>
               <div className="space-y-3">
                 <Input
-                  label="Última Manutenção"
+                  label="Última Revisão"
                   type="date"
-                  {...register('ultima_manutencao')}
+                  {...register('data_ultima_revisao')}
                   disabled={viewMode}
                 />
                 <Input
-                  label="Próxima Manutenção"
-                  type="date"
-                  {...register('proxima_manutencao')}
+                  label="Próxima Revisão"
+                  type="number"
+                  placeholder="KM para próxima revisão"
+                  {...register('quilometragem_proxima_revisao')}
                   disabled={viewMode}
                 />
               </div>
