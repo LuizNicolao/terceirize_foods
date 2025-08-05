@@ -433,97 +433,163 @@ const Grupos = () => {
       </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                   Nome
-                 </th>
-                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                   Subgrupos
-                 </th>
-                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                   Status
-                 </th>
-                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                   Ações
-                 </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredGrupos.length === 0 ? (
-                <tr>
-                                     <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
-                      {searchTerm || statusFilter !== 'todos' 
-                        ? 'Nenhum grupo encontrado com os filtros aplicados'
-                        : 'Nenhum grupo cadastrado'
-                      }
-                  </td>
-                </tr>
-              ) : (
-                filteredGrupos.map((grupo) => (
-                  <tr key={grupo.id} className="hover:bg-gray-50">
-                                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                     {grupo.nome}
-                   </td>
-                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                     {grupo.subgrupos_count || 0}
-                   </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        grupo.status === 1 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {grupo.status === 1 ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center gap-2">
-                        {canView('grupos') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                        onClick={() => handleViewGrupo(grupo)}
-                            title="Visualizar"
-                            className="text-green-600 hover:text-green-800"
-                      >
-                            <FaEye className="w-4 h-4" />
-                          </Button>
-                        )}
-                                {canEdit('grupos') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-              onClick={() => handleEditGrupo(grupo)}
-                            title="Editar"
-                            className="text-blue-600 hover:text-blue-800"
-            >
-                            <FaEdit className="w-4 h-4" />
-                          </Button>
-          )}
-          {canDelete('grupos') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-              onClick={() => handleDeleteGrupo(grupo.id)}
-                            title="Excluir"
-                            className="text-red-600 hover:text-red-800"
-            >
-                            <FaTrash className="w-4 h-4" />
-                          </Button>
-          )}
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {filteredGrupos.length === 0 ? (
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+          {searchTerm || statusFilter !== 'todos' 
+            ? 'Nenhum grupo encontrado com os filtros aplicados'
+            : 'Nenhum grupo cadastrado'
+          }
         </div>
-      </div>
+      ) : (
+        <>
+          {/* Versão Desktop - Tabela completa */}
+          <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Nome
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Subgrupos
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredGrupos.map((grupo) => (
+                    <tr key={grupo.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {grupo.nome}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {grupo.subgrupos_count || 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          grupo.status === 1 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {grupo.status === 1 ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          {canView('grupos') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleViewGrupo(grupo)}
+                              title="Visualizar"
+                              className="text-green-600 hover:text-green-800"
+                            >
+                              <FaEye className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {canEdit('grupos') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleEditGrupo(grupo)}
+                              title="Editar"
+                              className="text-blue-600 hover:text-blue-800"
+                            >
+                              <FaEdit className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {canDelete('grupos') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleDeleteGrupo(grupo.id)}
+                              title="Excluir"
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <FaTrash className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Versão Mobile - Cards */}
+          <div className="lg:hidden space-y-3">
+            {filteredGrupos.map((grupo) => (
+              <div key={grupo.id} className="bg-white rounded-lg shadow-sm p-4 border">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm">{grupo.nome}</h3>
+                  </div>
+                  <div className="flex gap-2">
+                    {canView('grupos') && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleViewGrupo(grupo)}
+                        title="Visualizar"
+                        className="p-2"
+                      >
+                        <FaEye className="text-green-600 text-sm" />
+                      </Button>
+                    )}
+                    {canEdit('grupos') && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleEditGrupo(grupo)}
+                        title="Editar"
+                        className="p-2"
+                      >
+                        <FaEdit className="text-blue-600 text-sm" />
+                      </Button>
+                    )}
+                    {canDelete('grupos') && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleDeleteGrupo(grupo.id)}
+                        title="Excluir"
+                        className="p-2"
+                      >
+                        <FaTrash className="text-red-600 text-sm" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-gray-500">Subgrupos:</span>
+                    <p className="font-medium">{grupo.subgrupos_count || 0}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Status:</span>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                      grupo.status === 1 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {grupo.status === 1 ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Paginação */}
       {totalItems > 0 && (
