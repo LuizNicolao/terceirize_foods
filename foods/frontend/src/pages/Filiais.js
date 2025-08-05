@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle } from 'react-icons/fa';
-import { Button, Table, Modal } from '../components/ui';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaHistory, FaFileExcel, FaFilePdf, FaBuilding, FaMapMarkerAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { Button, Table, Modal, StatCard } from '../components/ui';
 import LoadingSpinner from '../components/LoadingSpinner';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import FilialForm from '../components/FilialForm';
@@ -21,6 +21,12 @@ const Filiais = () => {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [showAlmoxarifadoModal, setShowAlmoxarifadoModal] = useState(false);
   const [activeTab, setActiveTab] = useState('dados');
+  const [estatisticas, setEstatisticas] = useState({
+    total_filiais: 0,
+    filiais_ativas: 0,
+    filiais_inativas: 0,
+    com_cnpj: 0
+  });
 
   const { canCreate, canEdit, canDelete } = usePermissions();
 
@@ -30,7 +36,16 @@ const Filiais = () => {
       setLoading(true);
       const response = await filiaisService.listar();
       if (response.success) {
-        setFiliais(response.data || []);
+        const data = response.data || [];
+        setFiliais(data);
+        
+        // Calcular estatísticas
+        setEstatisticas({
+          total_filiais: data.length,
+          filiais_ativas: data.filter(f => f.status === 1).length,
+          filiais_inativas: data.filter(f => f.status === 0).length,
+          com_cnpj: data.filter(f => f.cnpj && f.cnpj.trim() !== '').length
+        });
       } else {
         toast.error(response.error);
       }
@@ -123,6 +138,52 @@ const Filiais = () => {
     }
   };
 
+  // Exportar para XLSX
+  const handleExportXLSX = async () => {
+    try {
+      const response = await filiaisService.exportarXLSX();
+      if (response.success) {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `filiais_${new Date().toISOString().split('T')[0]}.xlsx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error(response.error);
+      }
+    } catch (error) {
+      console.error('Erro ao exportar relatório:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  // Exportar para PDF
+  const handleExportPDF = async () => {
+    try {
+      const response = await filiaisService.exportarPDF();
+      if (response.success) {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `filiais_${new Date().toISOString().split('T')[0]}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error(response.error);
+      }
+    } catch (error) {
+      console.error('Erro ao exportar relatório:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
   // Modal handlers
   const handleAddFilial = () => {
     setEditingFilial(null);
@@ -183,11 +244,13 @@ const Filiais = () => {
         <h1 className="text-2xl font-bold text-gray-900">Filiais</h1>
         <div className="flex gap-3">
           <Button
-            variant="info"
+            variant="outline"
+            size="sm"
             onClick={() => setShowAuditModal(true)}
           >
-            <FaQuestionCircle className="mr-2" />
-            Auditoria
+            <FaHistory className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+            <span className="sm:hidden">Logs</span>
           </Button>
           {canCreate('filiais') && (
             <Button
@@ -201,6 +264,34 @@ const Filiais = () => {
         </div>
       </div>
 
+      {/* Estatísticas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatCard
+          title="Total de Filiais"
+          value={estatisticas.total_filiais}
+          icon={FaBuilding}
+          color="blue"
+        />
+        <StatCard
+          title="Filiais Ativas"
+          value={estatisticas.filiais_ativas}
+          icon={FaCheckCircle}
+          color="green"
+        />
+        <StatCard
+          title="Filiais Inativas"
+          value={estatisticas.filiais_inativas}
+          icon={FaTimesCircle}
+          color="red"
+        />
+        <StatCard
+          title="Com CNPJ"
+          value={estatisticas.com_cnpj}
+          icon={FaMapMarkerAlt}
+          color="purple"
+        />
+      </div>
+
       {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
@@ -210,6 +301,20 @@ const Filiais = () => {
         onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
         placeholder="Buscar por nome, cidade ou código..."
       />
+
+      {/* Ações */}
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+        <Button onClick={handleExportXLSX} variant="outline" size="sm">
+          <FaFileExcel className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar XLSX</span>
+          <span className="sm:hidden">XLSX</span>
+        </Button>
+        <Button onClick={handleExportPDF} variant="outline" size="sm">
+          <FaFilePdf className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar PDF</span>
+          <span className="sm:hidden">PDF</span>
+        </Button>
+      </div>
 
       {/* Tabela */}
       {filteredFiliais.length === 0 ? (
@@ -258,7 +363,7 @@ const Filiais = () => {
                         onClick={() => handleViewFilial(filial)}
                         title="Visualizar"
                       >
-                        <FaEye />
+                        <FaEye className="text-green-600 text-xs sm:text-sm" />
                       </Button>
                       {canEdit('filiais') && (
                         <Button
@@ -267,7 +372,7 @@ const Filiais = () => {
                           onClick={() => handleEditFilial(filial)}
                           title="Editar"
                         >
-                          <FaEdit />
+                          <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                         </Button>
                       )}
                       {canDelete('filiais') && (
@@ -277,7 +382,7 @@ const Filiais = () => {
                           onClick={() => handleDeleteFilial(filial.id)}
                           title="Excluir"
                         >
-                          <FaTrash />
+                          <FaTrash className="text-red-600 text-xs sm:text-sm" />
                         </Button>
                       )}
                     </div>
