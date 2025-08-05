@@ -15,11 +15,11 @@ import {
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import ProdutosService from '../services/produtos';
-import { Button, Input, StatCard } from '../components/ui';
+import { Button, Input, StatCard, Modal } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
 import ProdutoModal from '../components/ProdutoModal';
-import AuditModal from '../components/AuditModal';
+
 import api from '../services/api';
 
 const Produtos = () => {
@@ -61,7 +61,7 @@ const Produtos = () => {
   }, [currentPage, itemsPerPage, searchTerm, statusFilter]);
 
   const loadData = async () => {
-    setLoading(true);
+      setLoading(true);
     try {
       // Resetar página se os filtros mudaram
       if (searchTerm !== '' || statusFilter !== 'todos') {
@@ -472,7 +472,7 @@ const Produtos = () => {
           toast.success(result.message);
           handleCloseModal();
           loadData();
-        } else {
+      } else {
           toast.error(result.error);
         }
       } else {
@@ -485,8 +485,8 @@ const Produtos = () => {
         const result = await ProdutosService.criar(createData);
         if (result.success) {
           toast.success(result.message);
-          handleCloseModal();
-          loadData();
+      handleCloseModal();
+      loadData();
         } else {
           toast.error(result.error);
         }
@@ -500,17 +500,17 @@ const Produtos = () => {
   // Excluir produto
   const handleDeleteProduto = async (produtoId) => {
     if (window.confirm('Tem certeza que deseja excluir este produto?')) {
-      try {
+    try {
         const result = await ProdutosService.excluir(produtoId);
         if (result.success) {
           toast.success(result.message);
-          loadData();
+      loadData();
         } else {
           toast.error(result.error);
         }
-      } catch (error) {
-        console.error('Erro ao excluir produto:', error);
-        toast.error('Erro ao excluir produto');
+    } catch (error) {
+      console.error('Erro ao excluir produto:', error);
+      toast.error('Erro ao excluir produto');
       }
     }
   };
@@ -534,7 +534,7 @@ const Produtos = () => {
         link.remove();
         window.URL.revokeObjectURL(url);
         toast.success('Produto impresso com sucesso!');
-      } else {
+    } else {
         toast.error(result.error);
       }
     } catch (error) {
@@ -579,79 +579,55 @@ const Produtos = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h1 className="text-3xl font-bold text-gray-900">Produtos</h1>
-        <div className="flex flex-wrap gap-3">
-          <Button
-            variant="info"
-            size="sm"
-            onClick={handleOpenAuditModal}
-            className="flex items-center gap-2"
-          >
-            <FaQuestionCircle className="w-4 h-4" />
-            Auditoria
-          </Button>
-          <Button
-            variant="success"
-            size="sm"
-            onClick={handleExportXLSX}
-            className="flex items-center gap-2"
-          >
-            <FaFileExcel className="w-4 h-4" />
-            Excel
-          </Button>
-          <Button
-            variant="info"
-            size="sm"
-            onClick={handleExportPDF}
-            className="flex items-center gap-2"
-          >
-            <FaFilePdf className="w-4 h-4" />
-            PDF
-          </Button>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Produtos</h1>
+        
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           {canCreate('produtos') && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={handleAddProduto}
-              className="flex items-center gap-2"
-            >
-              <FaPlus className="w-4 h-4" />
-              Adicionar Produto
+            <Button onClick={handleAddProduto} variant="primary" size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar Produto</span>
+              <span className="sm:hidden">Adicionar</span>
             </Button>
           )}
+          
+          <Button onClick={handleOpenAuditModal} variant="ghost" size="sm">
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+            <span className="sm:hidden">Auditoria</span>
+          </Button>
         </div>
       </div>
 
       {/* Estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <StatCard
-          title="Total de Produtos"
+         <StatCard
+           title="Total de Produtos"
           value={estatisticas.total_produtos}
           icon={FaBox}
-          color="blue"
-        />
-        <StatCard
-          title="Produtos Ativos"
+           color="blue"
+         />
+         <StatCard
+           title="Produtos Ativos"
           value={estatisticas.produtos_ativos}
           icon={FaCheckCircle}
-          color="green"
-        />
-        <StatCard
-          title="Produtos Inativos"
+           color="green"
+         />
+         <StatCard
+           title="Produtos Inativos"
           value={estatisticas.produtos_inativos}
           icon={FaTimesCircle}
-          color="red"
-        />
-        <StatCard
+           color="red"
+         />
+         <StatCard
           title="Grupos Diferentes"
           value={estatisticas.grupos_diferentes}
           icon={FaTags}
           color="purple"
-        />
-      </div>
+         />
+       </div>
 
       {/* Filtros */}
       <CadastroFilterBar
@@ -662,6 +638,20 @@ const Produtos = () => {
         onClear={handleClearFilters}
         placeholder="Buscar por nome, código ou grupo..."
       />
+
+      {/* Ações */}
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+        <Button onClick={handleExportXLSX} variant="outline" size="sm">
+          <FaFileExcel className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar XLSX</span>
+          <span className="sm:hidden">XLSX</span>
+        </Button>
+        <Button onClick={handleExportPDF} variant="outline" size="sm">
+          <FaFilePdf className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar PDF</span>
+          <span className="sm:hidden">PDF</span>
+        </Button>
+      </div>
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -691,9 +681,9 @@ const Produtos = () => {
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
                     {searchTerm || statusFilter !== 'todos'
-                      ? 'Nenhum produto encontrado com os filtros aplicados'
-                      : 'Nenhum produto cadastrado'
-                    }
+                    ? 'Nenhum produto encontrado com os filtros aplicados'
+                    : 'Nenhum produto cadastrado'
+                  }
                   </td>
                 </tr>
               ) : (
@@ -710,53 +700,53 @@ const Produtos = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        produto.status === 1 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {produto.status === 1 ? 'Ativo' : 'Inativo'}
-                      </span>
+                      produto.status === 1 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {produto.status === 1 ? 'Ativo' : 'Inativo'}
+                    </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center gap-2">
                         {canView('produtos') && (
-                          <Button
-                            variant="ghost"
+                      <Button
+                        variant="ghost"
                             size="xs"
-                            onClick={() => handleViewProduto(produto)}
+                        onClick={() => handleViewProduto(produto)}
                             title="Visualizar"
                             className="text-green-600 hover:text-green-800"
-                          >
+                      >
                             <FaEye className="w-4 h-4" />
-                          </Button>
+                      </Button>
                         )}
-                        {canEdit('produtos') && (
-                          <Button
-                            variant="ghost"
+                      {canEdit('produtos') && (
+                        <Button
+                          variant="ghost"
                             size="xs"
-                            onClick={() => handleEditProduto(produto)}
+                          onClick={() => handleEditProduto(produto)}
                             title="Editar"
                             className="text-blue-600 hover:text-blue-800"
-                          >
+                        >
                             <FaEdit className="w-4 h-4" />
-                          </Button>
-                        )}
-                        {canDelete('produtos') && (
-                          <Button
-                            variant="ghost"
+                        </Button>
+                      )}
+                      {canDelete('produtos') && (
+                        <Button
+                          variant="ghost"
                             size="xs"
-                            onClick={() => handleDeleteProduto(produto.id)}
+                          onClick={() => handleDeleteProduto(produto.id)}
                             title="Excluir"
-                            className="text-red-600 hover:text-red-800"
-                          >
+                          className="text-red-600 hover:text-red-800"
+                        >
                             <FaTrash className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
+                        </Button>
+                      )}
+                    </div>
                     </td>
                   </tr>
-                ))
-              )}
+              ))
+            )}
             </tbody>
           </table>
         </div>
@@ -789,19 +779,174 @@ const Produtos = () => {
       />
 
       {/* Modal de Auditoria */}
-      <AuditModal
-        isOpen={showAuditModal}
-        onClose={handleCloseAuditModal}
-        auditLogs={auditLogs}
-        auditLoading={auditLoading}
-        auditFilters={auditFilters}
-        onFiltersChange={setAuditFilters}
-        onApplyFilters={handleApplyAuditFilters}
-        onExportXLSX={handleExportAuditXLSX}
-        onExportPDF={handleExportAuditPDF}
-      />
+      {showAuditModal && (
+        <Modal isOpen={showAuditModal} onClose={handleCloseAuditModal} size="7xl">
+          <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900">
+                Relatório de Auditoria - Produtos
+              </h2>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportAuditXLSX}
+                  className="flex items-center gap-2"
+                >
+                  <FaFileExcel className="w-4 h-4" />
+                  Exportar XLSX
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportAuditPDF}
+                  className="flex items-center gap-2"
+                >
+                  <FaFilePdf className="w-4 h-4" />
+                  Exportar PDF
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCloseAuditModal}
+                >
+                  <FaTimes className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Filtros */}
+            <div className="p-6 border-b border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Data Início
+                  </label>
+                  <Input
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters(prev => ({ ...prev, dataInicio: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Data Fim
+                  </label>
+                  <Input
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters(prev => ({ ...prev, dataFim: e.target.value }))}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Ação
+                  </label>
+                  <select
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters(prev => ({ ...prev, acao: e.target.value }))}
+                  >
+                    <option value="">Todas</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
+                    <option value="view">Visualizar</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={handleApplyAuditFilters}
+                    className="w-full"
+                  >
+                    Aplicar Filtros
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Conteúdo */}
+            <div className="p-6">
+              {auditLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                  <p className="mt-2 text-gray-600">Carregando logs de auditoria...</p>
+                </div>
+              ) : auditLogs.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Nenhum log de auditoria encontrado
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Data/Hora
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Usuário
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ação
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Campo
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Valor Anterior
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Novo Valor
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {auditLogs.map((log, index) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(log.created_at).toLocaleString('pt-BR')}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {log.usuario_nome || 'Sistema'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                              log.action === 'create' ? 'bg-green-100 text-green-800' :
+                              log.action === 'update' ? 'bg-blue-100 text-blue-800' :
+                              log.action === 'delete' ? 'bg-red-100 text-red-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {log.action === 'create' ? 'Criar' :
+                               log.action === 'update' ? 'Editar' :
+                               log.action === 'delete' ? 'Excluir' :
+                               log.action === 'view' ? 'Visualizar' : log.action}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {log.field_name || '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {log.old_value || '-'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {log.new_value || '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
 
-export default Produtos;
+export default Produtos; 
