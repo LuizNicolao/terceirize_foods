@@ -35,7 +35,7 @@ const ProdutoForm = ({
   // Filtrar subgrupos baseado no grupo selecionado
   useEffect(() => {
     if (grupoSelecionado) {
-      const filtrados = (subgrupos || []).filter(sub => sub.grupo_id === parseInt(grupoSelecionado));
+      const filtrados = Array.isArray(subgrupos) ? subgrupos.filter(sub => sub.grupo_id === parseInt(grupoSelecionado)) : [];
       setSubgruposFiltrados(filtrados);
       setValue('subgrupo_id', '');
       setValue('classe_id', '');
@@ -47,7 +47,7 @@ const ProdutoForm = ({
   // Filtrar classes baseado no subgrupo selecionado
   useEffect(() => {
     if (subgrupoSelecionado) {
-      const filtrados = (classes || []).filter(classe => classe.subgrupo_id === parseInt(subgrupoSelecionado));
+      const filtrados = Array.isArray(classes) ? classes.filter(classe => classe.subgrupo_id === parseInt(subgrupoSelecionado)) : [];
       setClassesFiltradas(filtrados);
       setValue('classe_id', '');
     } else {
@@ -112,11 +112,11 @@ const ProdutoForm = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
                              <option value="">Selecione um grupo</option>
-               {(grupos || []).map(grupo => (
+               {Array.isArray(grupos) ? grupos.map(grupo => (
                  <option key={grupo.id} value={grupo.id}>
                    {grupo.nome_grupo}
                  </option>
-               ))}
+               )) : []}
             </select>
             {errors.grupo_id && (
               <p className="text-red-500 text-sm mt-1">{errors.grupo_id.message}</p>
@@ -134,11 +134,11 @@ const ProdutoForm = ({
               disabled={!grupoSelecionado}
             >
                              <option value="">Selecione um subgrupo</option>
-               {(subgruposFiltrados || []).map(subgrupo => (
+               {Array.isArray(subgruposFiltrados) ? subgruposFiltrados.map(subgrupo => (
                  <option key={subgrupo.id} value={subgrupo.id}>
                    {subgrupo.nome_subgrupo}
                  </option>
-               ))}
+               )) : []}
             </select>
             {errors.subgrupo_id && (
               <p className="text-red-500 text-sm mt-1">{errors.subgrupo_id.message}</p>
@@ -156,11 +156,11 @@ const ProdutoForm = ({
               disabled={!subgrupoSelecionado}
             >
                              <option value="">Selecione uma classe</option>
-               {(classesFiltradas || []).map(classe => (
+               {Array.isArray(classesFiltradas) ? classesFiltradas.map(classe => (
                  <option key={classe.id} value={classe.id}>
                    {classe.nome_classe}
                  </option>
-               ))}
+               )) : []}
             </select>
             {errors.classe_id && (
               <p className="text-red-500 text-sm mt-1">{errors.classe_id.message}</p>
@@ -177,11 +177,11 @@ const ProdutoForm = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
                              <option value="">Selecione uma marca</option>
-               {(marcas || []).map(marca => (
+               {Array.isArray(marcas) ? marcas.map(marca => (
                  <option key={marca.id} value={marca.id}>
                    {marca.nome_marca}
                  </option>
-               ))}
+               )) : []}
             </select>
           </div>
 
@@ -195,11 +195,11 @@ const ProdutoForm = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
                              <option value="">Selecione um nome genérico</option>
-               {(nomesGenericos || []).map(nome => (
+               {Array.isArray(nomesGenericos) ? nomesGenericos.map(nome => (
                  <option key={nome.id} value={nome.id}>
                    {nome.nome_generico}
                  </option>
-               ))}
+               )) : []}
             </select>
           </div>
 
@@ -213,11 +213,11 @@ const ProdutoForm = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
                              <option value="">Selecione uma unidade</option>
-               {(unidades || []).map(unidade => (
+               {Array.isArray(unidades) ? unidades.map(unidade => (
                  <option key={unidade.id} value={unidade.id}>
                    {unidade.nome_unidade}
                  </option>
-               ))}
+               )) : []}
             </select>
             {errors.unidade_id && (
               <p className="text-red-500 text-sm mt-1">{errors.unidade_id.message}</p>
@@ -234,11 +234,11 @@ const ProdutoForm = ({
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
                              <option value="">Selecione um fornecedor</option>
-               {(fornecedores || []).map(fornecedor => (
+               {Array.isArray(fornecedores) ? fornecedores.map(fornecedor => (
                  <option key={fornecedor.id} value={fornecedor.id}>
                    {fornecedor.razao_social}
                  </option>
-               ))}
+               )) : []}
             </select>
           </div>
 
