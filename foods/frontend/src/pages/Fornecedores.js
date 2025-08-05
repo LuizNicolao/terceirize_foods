@@ -189,8 +189,8 @@ const Fornecedores = () => {
     setAuditFilters({ dataInicio: '', dataFim: '', acao: '', usuario_id: '', periodo: '' });
   };
 
-  const handleApplyAuditFilters = () => { 
-    loadAuditLogs(); 
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
   };
 
   // Exportar auditoria para XLSX
@@ -752,12 +752,12 @@ const Fornecedores = () => {
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal
-          isOpen={showAuditModal}
-          onClose={handleCloseAuditModal}
+      <Modal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Fornecedores"
-          size="xl"
-        >
+        size="xl"
+      >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
             <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
@@ -818,9 +818,9 @@ const Fornecedores = () => {
                 <FaFilePdf className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar PDF</span>
                 <span className="sm:hidden">PDF</span>
-              </Button>
-            </div>
-            
+            </Button>
+              </div>
+
             {/* Lista de Logs */}
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               {auditLoading ? (
@@ -917,7 +917,7 @@ const Fornecedores = () => {
                 </div>
               )}
             </div>
-          </div>
+                                    </div>
         </Modal>
       )}
 

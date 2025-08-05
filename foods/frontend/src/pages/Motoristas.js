@@ -188,8 +188,8 @@ const Motoristas = () => {
     setAuditFilters({ dataInicio: '', dataFim: '', acao: '', usuario_id: '', periodo: '' });
   };
 
-  const handleApplyAuditFilters = () => { 
-    loadAuditLogs(); 
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
   };
 
   // Exportar auditoria para XLSX
@@ -796,12 +796,12 @@ const Motoristas = () => {
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal
-          isOpen={showAuditModal}
-          onClose={handleCloseAuditModal}
+      <Modal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Motoristas"
-          size="xl"
-        >
+        size="xl"
+      >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
             <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
@@ -846,10 +846,10 @@ const Motoristas = () => {
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
                     <span className="hidden sm:inline">Aplicar Filtros</span>
                     <span className="sm:hidden">Aplicar</span>
-                  </Button>
+            </Button>
                 </div>
               </div>
-            </div>
+              </div>
 
             {/* Botões de Exportação */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -863,7 +863,7 @@ const Motoristas = () => {
                 <span className="hidden sm:inline">Exportar PDF</span>
                 <span className="sm:hidden">PDF</span>
               </Button>
-            </div>
+                </div>
             
             {/* Lista de Logs */}
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">
@@ -961,7 +961,7 @@ const Motoristas = () => {
                 </div>
               )}
             </div>
-          </div>
+                                    </div>
         </Modal>
       )}
 

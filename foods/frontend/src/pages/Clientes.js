@@ -189,8 +189,8 @@ const Clientes = () => {
     setAuditFilters({ dataInicio: '', dataFim: '', acao: '', usuario_id: '', periodo: '' });
   };
 
-  const handleApplyAuditFilters = () => { 
-    loadAuditLogs(); 
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
   };
 
   // Exportar auditoria para XLSX
@@ -905,12 +905,12 @@ const Clientes = () => {
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal
-          isOpen={showAuditModal}
-          onClose={handleCloseAuditModal}
+      <Modal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Clientes"
-          size="xl"
-        >
+        size="xl"
+      >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
             <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
@@ -980,7 +980,7 @@ const Clientes = () => {
                 <div className="text-center py-6 sm:py-8">
                   <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
                   <p className="text-gray-600 text-sm">Carregando logs...</p>
-                </div>
+            </div>
               ) : auditLogs.length === 0 ? (
                 <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
                   Nenhum log encontrado com os filtros aplicados
@@ -1070,7 +1070,7 @@ const Clientes = () => {
                 </div>
               )}
             </div>
-          </div>
+                                    </div>
         </Modal>
       )}
                 </div>

@@ -1,24 +1,62 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button, Input, Modal } from './ui';
+import produtosService from '../services/produtos';
 
 const ProdutoForm = ({ 
   isOpen, 
   onClose, 
-  onSubmit, 
   produto = null, 
-  viewMode = false,
+  onSuccess,
   grupos = [],
   subgrupos = [],
   classes = [],
   marcas = [],
+  nomesGenericos = [],
   unidades = [],
   fornecedores = []
 }) => {
-  const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
+  const [loading, setLoading] = useState(false);
+  const [subgruposFiltrados, setSubgruposFiltrados] = useState([]);
+  const [classesFiltradas, setClassesFiltradas] = useState([]);
 
-  // Reset form when produto changes
-  React.useEffect(() => {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { errors }
+  } = useForm();
+
+  const grupoSelecionado = watch('grupo_id');
+  const subgrupoSelecionado = watch('subgrupo_id');
+
+  // Filtrar subgrupos baseado no grupo selecionado
+  useEffect(() => {
+    if (grupoSelecionado) {
+      const filtrados = subgrupos.filter(sub => sub.grupo_id === parseInt(grupoSelecionado));
+      setSubgruposFiltrados(filtrados);
+      setValue('subgrupo_id', '');
+      setValue('classe_id', '');
+    } else {
+      setSubgruposFiltrados([]);
+    }
+  }, [grupoSelecionado, subgrupos, setValue]);
+
+  // Filtrar classes baseado no subgrupo selecionado
+  useEffect(() => {
+    if (subgrupoSelecionado) {
+      const filtrados = classes.filter(classe => classe.subgrupo_id === parseInt(subgrupoSelecionado));
+      setClassesFiltradas(filtrados);
+      setValue('classe_id', '');
+    } else {
+      setClassesFiltradas([]);
+    }
+  }, [subgrupoSelecionado, classes, setValue]);
+
+  // Preencher formulário quando editar
+  useEffect(() => {
     if (produto) {
       Object.keys(produto).forEach(key => {
         setValue(key, produto[key]);
@@ -28,450 +66,172 @@ const ProdutoForm = ({
     }
   }, [produto, setValue, reset]);
 
-  const handleFormSubmit = (data) => {
-    onSubmit(data);
-  };
-
-  const handleClose = () => {
-    reset();
-    onClose();
+  const onSubmit = async (data) => {
+    setLoading(true);
+    try {
+      if (produto) {
+        await produtosService.atualizar(produto.id, data);
+      } else {
+        await produtosService.criar(data);
+      }
+      onSuccess();
+      onClose();
+      reset();
+    } catch (error) {
+      console.error('Erro ao salvar produto:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      title={viewMode ? 'Visualizar Produto' : (produto ? 'Editar Produto' : 'Novo Produto')}
-      size="xl"
-    >
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-        {/* Informações Básicas */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Informações Básicas</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Código do Produto"
-              {...register('codigo_produto')}
-              disabled={viewMode}
-              placeholder="Ex: PROD001"
-            />
-            
-            <Input
-              label="Nome do Produto"
-              {...register('nome', { required: 'Nome é obrigatório' })}
-              disabled={viewMode}
-              error={errors.nome?.message}
-              placeholder="Ex: PATINHO BOVINO EM CUBOS"
-            />
+    <Modal isOpen={isOpen} onClose={onClose} title={produto ? 'Editar Produto' : 'Novo Produto'}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Código do Produto */}
+          <Input
+            label="Código do Produto"
+            {...register('codigo_produto', { required: 'Código é obrigatório' })}
+            error={errors.codigo_produto?.message}
+          />
 
-            <Input
-              label="Descrição"
-              type="textarea"
-              {...register('descricao')}
-              disabled={viewMode}
-              rows={3}
-              placeholder="Descrição detalhada do produto"
-            />
+          {/* Descrição */}
+          <Input
+            label="Descrição"
+            {...register('descricao', { required: 'Descrição é obrigatória' })}
+            error={errors.descricao?.message}
+          />
 
-            <Input
-              label="Código de Barras"
-              {...register('codigo_barras')}
-              disabled={viewMode}
-              placeholder="Ex: 1234567891234"
-            />
-          </div>
-        </div>
-
-        {/* Referências */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Referências</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Referência Interna"
-              {...register('referencia')}
-              disabled={viewMode}
-              placeholder="Ex: 123654"
-            />
-
-            <Input
-              label="Referência Externa"
-              {...register('referencia_externa')}
-              disabled={viewMode}
-              placeholder="Ex: 123654"
-            />
-
-            <Input
-              label="Referência do Mercado"
-              {...register('referencia_mercado')}
-              disabled={viewMode}
-              placeholder="Ex: Corte Bovino / Patinho / Cubos"
-            />
-
-            <Input
-              label="Nome Genérico"
-              {...register('nome_generico')}
-              disabled={viewMode}
-              placeholder="Nome genérico do produto"
-            />
-          </div>
-        </div>
-
-        {/* Classificação */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Classificação</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Grupo"
-              type="select"
-              {...register('grupo_id')}
-              disabled={viewMode}
+          {/* Grupo */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Grupo *
+            </label>
+            <select
+              {...register('grupo_id', { required: 'Grupo é obrigatório' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Selecione um grupo</option>
               {grupos.map(grupo => (
                 <option key={grupo.id} value={grupo.id}>
-                  {grupo.nome}
+                  {grupo.nome_grupo}
                 </option>
               ))}
-            </Input>
+            </select>
+            {errors.grupo_id && (
+              <p className="text-red-500 text-sm mt-1">{errors.grupo_id.message}</p>
+            )}
+          </div>
 
-            <Input
-              label="Subgrupo"
-              type="select"
-              {...register('subgrupo_id')}
-              disabled={viewMode}
+          {/* Subgrupo */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Subgrupo *
+            </label>
+            <select
+              {...register('subgrupo_id', { required: 'Subgrupo é obrigatório' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={!grupoSelecionado}
             >
               <option value="">Selecione um subgrupo</option>
-              {subgrupos.map(subgrupo => (
+              {subgruposFiltrados.map(subgrupo => (
                 <option key={subgrupo.id} value={subgrupo.id}>
-                  {subgrupo.nome}
+                  {subgrupo.nome_subgrupo}
                 </option>
               ))}
-            </Input>
+            </select>
+            {errors.subgrupo_id && (
+              <p className="text-red-500 text-sm mt-1">{errors.subgrupo_id.message}</p>
+            )}
+          </div>
 
-            <Input
-              label="Classe"
-              type="select"
-              {...register('classe_id')}
-              disabled={viewMode}
+          {/* Classe */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Classe *
+            </label>
+            <select
+              {...register('classe_id', { required: 'Classe é obrigatória' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={!subgrupoSelecionado}
             >
               <option value="">Selecione uma classe</option>
-              {classes.map(classe => (
+              {classesFiltradas.map(classe => (
                 <option key={classe.id} value={classe.id}>
-                  {classe.nome}
+                  {classe.nome_classe}
                 </option>
               ))}
-            </Input>
+            </select>
+            {errors.classe_id && (
+              <p className="text-red-500 text-sm mt-1">{errors.classe_id.message}</p>
+            )}
+          </div>
 
-            <Input
-              label="Marca"
-              type="select"
+          {/* Marca */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Marca
+            </label>
+            <select
               {...register('marca_id')}
-              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Selecione uma marca</option>
               {marcas.map(marca => (
                 <option key={marca.id} value={marca.id}>
-                  {marca.nome}
+                  {marca.nome_marca}
                 </option>
               ))}
-            </Input>
+            </select>
           </div>
-        </div>
 
-        {/* Agrupamentos */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Agrupamentos</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Agrupamento N3"
-              {...register('agrupamento_n3')}
-              disabled={viewMode}
-              placeholder="Ex: BOVINO"
-            />
-
-            <Input
-              label="Agrupamento N4"
-              {...register('agrupamento_n4')}
-              disabled={viewMode}
-              placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
-            />
-
-            <Input
-              label="Marca"
-              {...register('marca')}
-              disabled={viewMode}
-              placeholder="Ex: KING"
-            />
-
-            <Input
-              label="Fabricante"
-              {...register('fabricante')}
-              disabled={viewMode}
-              placeholder="Ex: KING"
-            />
+          {/* Nome Genérico */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Nome Genérico
+            </label>
+            <select
+              {...register('nome_generico_id')}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Selecione um nome genérico</option>
+              {nomesGenericos.map(nome => (
+                <option key={nome.id} value={nome.id}>
+                  {nome.nome_generico}
+                </option>
+              ))}
+            </select>
           </div>
-        </div>
 
-        {/* Medidas e Pesos */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Medidas e Pesos</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input
-              label="Unidade de Medida"
-              type="select"
-              {...register('unidade_id')}
-              disabled={viewMode}
+          {/* Unidade */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Unidade *
+            </label>
+            <select
+              {...register('unidade_id', { required: 'Unidade é obrigatória' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Selecione uma unidade</option>
               {unidades.map(unidade => (
                 <option key={unidade.id} value={unidade.id}>
-                  {unidade.nome}
+                  {unidade.nome_unidade}
                 </option>
               ))}
-            </Input>
-
-            <Input
-              label="Quantidade"
-              type="number"
-              step="0.001"
-              {...register('quantidade')}
-              disabled={viewMode}
-              placeholder="1.000"
-            />
-
-            <Input
-              label="Fator de Conversão"
-              type="number"
-              step="0.001"
-              {...register('fator_conversao')}
-              disabled={viewMode}
-              placeholder="1.000"
-            />
-
-            <Input
-              label="Peso Líquido (kg)"
-              type="number"
-              step="0.001"
-              {...register('peso_liquido')}
-              disabled={viewMode}
-              placeholder="1.000"
-            />
-
-            <Input
-              label="Peso Bruto (kg)"
-              type="number"
-              step="0.001"
-              {...register('peso_bruto')}
-              disabled={viewMode}
-              placeholder="1.000"
-            />
-
-            <Input
-              label="Regra Palet (UN)"
-              type="number"
-              {...register('regra_palet_un')}
-              disabled={viewMode}
-              placeholder="1200"
-            />
+            </select>
+            {errors.unidade_id && (
+              <p className="text-red-500 text-sm mt-1">{errors.unidade_id.message}</p>
+            )}
           </div>
-        </div>
 
-        {/* Dimensões */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Dimensões</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Input
-              label="Comprimento (cm)"
-              type="number"
-              step="0.01"
-              {...register('comprimento')}
-              disabled={viewMode}
-              placeholder="20.00"
-            />
-
-            <Input
-              label="Largura (cm)"
-              type="number"
-              step="0.01"
-              {...register('largura')}
-              disabled={viewMode}
-              placeholder="15.00"
-            />
-
-            <Input
-              label="Altura (cm)"
-              type="number"
-              step="0.01"
-              {...register('altura')}
-              disabled={viewMode}
-              placeholder="10.00"
-            />
-
-            <Input
-              label="Volume (cm³)"
-              type="number"
-              step="0.01"
-              {...register('volume')}
-              disabled={viewMode}
-              placeholder="3000.00"
-            />
-          </div>
-        </div>
-
-        {/* Validade */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Validade</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Prazo de Validade"
-              type="number"
-              {...register('prazo_validade')}
-              disabled={viewMode}
-              placeholder="12"
-            />
-
-            <Input
-              label="Unidade de Validade"
-              type="select"
-              {...register('unidade_validade')}
-              disabled={viewMode}
-            >
-              <option value="">Selecione</option>
-              <option value="DIAS">Dias</option>
-              <option value="SEMANAS">Semanas</option>
-              <option value="MESES">Meses</option>
-              <option value="ANOS">Anos</option>
-            </Input>
-          </div>
-        </div>
-
-        {/* Informações Fiscais */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Informações Fiscais</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="NCM"
-              {...register('ncm')}
-              disabled={viewMode}
-              placeholder="Classificação NCM"
-            />
-
-            <Input
-              label="CEST"
-              {...register('cest')}
-              disabled={viewMode}
-              placeholder="Código CEST"
-            />
-
-            <Input
-              label="CFOP"
-              {...register('cfop')}
-              disabled={viewMode}
-              placeholder="Código CFOP"
-            />
-
-            <Input
-              label="EAN"
-              {...register('ean')}
-              disabled={viewMode}
-              placeholder="Código EAN"
-            />
-
-            <Input
-              label="CST ICMS"
-              {...register('cst_icms')}
-              disabled={viewMode}
-              placeholder="CST ICMS"
-            />
-
-            <Input
-              label="CSOSN"
-              {...register('csosn')}
-              disabled={viewMode}
-              placeholder="CSOSN"
-            />
-
-            <Input
-              label="Alíquota ICMS (%)"
-              type="number"
-              step="0.01"
-              {...register('aliquota_icms')}
-              disabled={viewMode}
-              placeholder="0.00"
-            />
-
-            <Input
-              label="Alíquota IPI (%)"
-              type="number"
-              step="0.01"
-              {...register('aliquota_ipi')}
-              disabled={viewMode}
-              placeholder="0.00"
-            />
-
-            <Input
-              label="Alíquota PIS (%)"
-              type="number"
-              step="0.01"
-              {...register('aliquota_pis')}
-              disabled={viewMode}
-              placeholder="0.00"
-            />
-
-            <Input
-              label="Alíquota COFINS (%)"
-              type="number"
-              step="0.01"
-              {...register('aliquota_cofins')}
-              disabled={viewMode}
-              placeholder="0.00"
-            />
-          </div>
-        </div>
-
-        {/* Preços e Estoque */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Preços e Estoque</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Preço de Custo"
-              type="number"
-              step="0.01"
-              {...register('preco_custo')}
-              disabled={viewMode}
-              placeholder="0.00"
-            />
-
-            <Input
-              label="Preço de Venda"
-              type="number"
-              step="0.01"
-              {...register('preco_venda')}
-              disabled={viewMode}
-              placeholder="0.00"
-            />
-
-            <Input
-              label="Estoque Atual"
-              type="number"
-              {...register('estoque_atual')}
-              disabled={viewMode}
-              placeholder="0"
-            />
-
-            <Input
-              label="Estoque Mínimo"
-              type="number"
-              {...register('estoque_minimo')}
-              disabled={viewMode}
-              placeholder="0"
-            />
-
-            <Input
-              label="Fornecedor"
-              type="select"
+          {/* Fornecedor */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Fornecedor
+            </label>
+            <select
               {...register('fornecedor_id')}
-              disabled={viewMode}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Selecione um fornecedor</option>
               {fornecedores.map(fornecedor => (
@@ -479,67 +239,66 @@ const ProdutoForm = ({
                   {fornecedor.razao_social}
                 </option>
               ))}
-            </Input>
+            </select>
+          </div>
 
-            <Input
-              label="Status"
-              type="select"
-              {...register('status')}
-              disabled={viewMode}
+          {/* Preço Unitário */}
+          <Input
+            label="Preço Unitário"
+            type="number"
+            step="0.01"
+            {...register('preco_unitario')}
+            error={errors.preco_unitario?.message}
+          />
+
+          {/* Status */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status *
+            </label>
+            <select
+              {...register('status', { required: 'Status é obrigatório' })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
-              <option value={1}>Ativo</option>
-              <option value={0}>Inativo</option>
-            </Input>
+              <option value="">Selecione o status</option>
+              <option value="ativo">Ativo</option>
+              <option value="inativo">Inativo</option>
+            </select>
+            {errors.status && (
+              <p className="text-red-500 text-sm mt-1">{errors.status.message}</p>
+            )}
           </div>
         </div>
 
-        {/* Informações Adicionais */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Informações Adicionais</h3>
-          <div className="grid grid-cols-1 gap-4">
-            <Input
-              label="Informações Adicionais"
-              type="textarea"
-              {...register('informacoes_adicionais')}
-              disabled={viewMode}
-              rows={3}
-              placeholder="Ex: PRODUTO COM 5% DE GORDURA"
-            />
-
-            <Input
-              label="Ficha de Homologação"
-              {...register('ficha_homologacao')}
-              disabled={viewMode}
-              placeholder="Ex: 123456"
-            />
-
-            <Input
-              label="Registro Específico"
-              {...register('registro_especifico')}
-              disabled={viewMode}
-              placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
-            />
-
-            <Input
-              label="Integração Senior"
-              {...register('integracao_senior')}
-              disabled={viewMode}
-              placeholder="Ex: 123654"
-            />
-          </div>
+        {/* Observações */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Observações
+          </label>
+          <textarea
+            {...register('observacoes')}
+            rows="3"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Observações sobre o produto..."
+          />
         </div>
 
-        {/* Botões */}
-        {!viewMode && (
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button type="button" variant="secondary" onClick={handleClose}>
-              Cancelar
-            </Button>
-            <Button type="submit">
-              {produto ? 'Atualizar' : 'Criar'} Produto
-            </Button>
-          </div>
-        )}
+        <div className="flex justify-end space-x-3 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            loading={loading}
+          >
+            {produto ? 'Atualizar' : 'Criar'} Produto
+          </Button>
+        </div>
       </form>
     </Modal>
   );

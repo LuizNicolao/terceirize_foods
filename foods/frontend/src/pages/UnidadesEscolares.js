@@ -247,8 +247,8 @@ const UnidadesEscolares = () => {
     setAuditFilters({ dataInicio: '', dataFim: '', acao: '', usuario_id: '', periodo: '' });
   };
 
-  const handleApplyAuditFilters = () => { 
-    loadAuditLogs(); 
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
   };
 
   // Exportar auditoria para XLSX
@@ -786,12 +786,12 @@ const UnidadesEscolares = () => {
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal
-          isOpen={showAuditModal}
-          onClose={handleCloseAuditModal}
+      <Modal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Unidades Escolares"
-          size="xl"
-        >
+        size="xl"
+      >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
             <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
@@ -836,10 +836,10 @@ const UnidadesEscolares = () => {
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
                     <span className="hidden sm:inline">Aplicar Filtros</span>
                     <span className="sm:hidden">Aplicar</span>
-                  </Button>
+            </Button>
                 </div>
               </div>
-            </div>
+          </div>
 
             {/* Botões de Exportação */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -917,8 +917,8 @@ const UnidadesEscolares = () => {
                                   </div>
                                 ))}
                               </div>
-                            </div>
-                          )}
+            </div>
+          )}
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
                               <strong>Dados da Unidade Escolar:</strong>
@@ -951,8 +951,8 @@ const UnidadesEscolares = () => {
                 </div>
               )}
             </div>
-          </div>
-        </Modal>
+        </div>
+      </Modal>
       )}
 
       {/* Paginação */}

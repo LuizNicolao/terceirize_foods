@@ -187,8 +187,8 @@ const Ajudantes = () => {
     setAuditFilters({ dataInicio: '', dataFim: '', acao: '', usuario_id: '', periodo: '' });
   };
 
-  const handleApplyAuditFilters = () => { 
-    loadAuditLogs(); 
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
   };
 
   // Exportar auditoria para XLSX
@@ -743,14 +743,14 @@ const Ajudantes = () => {
         </form>
         </Modal>
 
-      {/* Modal de Auditoria */}
+             {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal
-          isOpen={showAuditModal}
-          onClose={handleCloseAuditModal}
+      <Modal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Ajudantes"
-          size="xl"
-        >
+        size="xl"
+      >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
             <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
@@ -795,10 +795,10 @@ const Ajudantes = () => {
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
                     <span className="hidden sm:inline">Aplicar Filtros</span>
                     <span className="sm:hidden">Aplicar</span>
-                  </Button>
+            </Button>
                 </div>
               </div>
-            </div>
+              </div>
 
             {/* Botões de Exportação */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -812,7 +812,7 @@ const Ajudantes = () => {
                 <span className="hidden sm:inline">Exportar PDF</span>
                 <span className="sm:hidden">PDF</span>
               </Button>
-            </div>
+                 </div>
             
             {/* Lista de Logs */}
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">
@@ -830,7 +830,7 @@ const Ajudantes = () => {
                   <div className="text-xs sm:text-sm text-gray-600">
                     {auditLogs.length} log(s) encontrado(s)
                   </div>
-                  {auditLogs.map((log, index) => (
+                   {auditLogs.map((log, index) => (
                     <div
                       key={index}
                       className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white"
@@ -907,11 +907,11 @@ const Ajudantes = () => {
                       )}
                     </div>
                   ))}
-                </div>
-              )}
+                             </div>
+                           )}
             </div>
-          </div>
-        </Modal>
+                                     </div>
+         </Modal>
       )}
 
       {/* Paginação */}
