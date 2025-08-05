@@ -422,19 +422,19 @@ const Fornecedores = () => {
                   <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Razão Social
                   </th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Nome Fantasia
                   </th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Município/UF
                   </th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden xl:table-cell px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contato
                   </th>
                   <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Criado em
                   </th>
                   <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -451,15 +451,23 @@ const Fornecedores = () => {
                       </div>
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                      {fornecedor.razao_social}
+                      <div>
+                        <div className="font-medium">{fornecedor.razao_social}</div>
+                        <div className="text-gray-500 md:hidden">
+                          {fornecedor.nome_fantasia && `${fornecedor.nome_fantasia}`}
+                        </div>
+                        <div className="text-gray-500 md:hidden">
+                          {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : ''}
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                    <td className="hidden md:table-cell px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {fornecedor.nome_fantasia || '-'}
                     </td>
-                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                    <td className="hidden lg:table-cell px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : '-'}
                     </td>
-                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                    <td className="hidden xl:table-cell px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       <div>
                         {fornecedor.email && <div>{fornecedor.email}</div>}
                         {fornecedor.telefone && <div>{fornecedor.telefone}</div>}
@@ -475,7 +483,7 @@ const Fornecedores = () => {
                         {getStatusLabel(fornecedor.status)}
                       </span>
                     </td>
-                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                    <td className="hidden lg:table-cell px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {fornecedor.criado_em ? formatDate(fornecedor.criado_em) : 'N/A'}
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
@@ -597,13 +605,15 @@ const Fornecedores = () => {
             {/* Card 3: Endereço */}
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Endereço</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <Input
-                  label="Logradouro"
-                  {...register('logradouro')}
-                  error={errors.logradouro?.message}
-                  disabled={viewMode}
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="sm:col-span-2">
+                  <Input
+                    label="Logradouro"
+                    {...register('logradouro')}
+                    error={errors.logradouro?.message}
+                    disabled={viewMode}
+                  />
+                </div>
                 <Input
                   label="Número"
                   {...register('numero')}
@@ -681,9 +691,9 @@ const Fornecedores = () => {
                     <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
                     <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Usuário</th>
                     <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Ação</th>
-                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Campo</th>
-                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Valor Anterior</th>
-                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Novo Valor</th>
+                    <th className="hidden md:table-cell px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Campo</th>
+                    <th className="hidden lg:table-cell px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Valor Anterior</th>
+                    <th className="hidden lg:table-cell px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Novo Valor</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -698,13 +708,13 @@ const Fornecedores = () => {
                       <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {getActionLabel(log.action)}
                       </td>
-                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                      <td className="hidden md:table-cell px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {getFieldLabel(log.field_name)}
                       </td>
-                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
+                      <td className="hidden lg:table-cell px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
                         {formatFieldValue(log.field_name, log.old_value)}
                       </td>
-                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
+                      <td className="hidden lg:table-cell px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
                         {formatFieldValue(log.field_name, log.new_value)}
                       </td>
                     </tr>
