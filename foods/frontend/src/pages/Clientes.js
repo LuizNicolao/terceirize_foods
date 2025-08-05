@@ -342,17 +342,13 @@ const Clientes = () => {
     try {
       const cnpjLimpo = cnpj.replace(/\D/g, '');
       if (cnpjLimpo.length === 14) {
-        console.log('Buscando dados do CNPJ:', cnpjLimpo);
         const result = await ClientesService.buscarCNPJ(cnpjLimpo);
-        console.log('Resultado da busca CNPJ:', result);
         
         if (result.success && result.data) {
           const dados = result.data;
-          console.log('Dados recebidos:', dados);
           
           // Verificar se os dados têm a estrutura esperada
           if (!dados.razao_social) {
-            console.warn('Dados do CNPJ não contêm razao_social:', dados);
             toast.error('Dados do CNPJ incompletos ou inválidos');
             return;
           }
@@ -370,7 +366,6 @@ const Clientes = () => {
             cnpj: cnpj // Manter o CNPJ formatado
           };
           
-          console.log('Dados do formulário:', formData);
           reset(formData);
           
           // Forçar re-render do formulário
@@ -378,7 +373,6 @@ const Clientes = () => {
           
           toast.success('Dados do CNPJ carregados automaticamente!');
         } else {
-          console.log('Erro na resposta:', result);
           toast.error(result.error || 'Erro ao buscar dados do CNPJ');
         }
       }
@@ -472,19 +466,7 @@ const Clientes = () => {
     e.target.value = formatted;
   };
 
-  // Função de teste para verificar se o setValue funciona
-  const testSetValue = () => {
-    console.log('Testando setValue...');
-    setValue('razao_social', 'TESTE RAZÃO SOCIAL');
-    setValue('nome_fantasia', 'TESTE NOME FANTASIA');
-    setValue('logradouro', 'TESTE LOGRADOURO');
-    setValue('numero', '123');
-    setValue('bairro', 'TESTE BAIRRO');
-    setValue('municipio', 'TESTE MUNICÍPIO');
-    setValue('uf', 'SP');
-    setValue('cep', '00000-000');
-    toast.success('Teste de setValue executado!');
-  };
+
 
   return (
     <div className="p-4 sm:p-6">
@@ -507,11 +489,7 @@ const Clientes = () => {
             <span className="sm:hidden">Logs</span>
           </Button>
           
-          <Button onClick={testSetValue} variant="outline" size="sm">
-            <FaQuestionCircle className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Teste</span>
-            <span className="sm:hidden">Teste</span>
-          </Button>
+
         </div>
       </div>
 

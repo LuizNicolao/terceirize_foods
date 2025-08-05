@@ -198,9 +198,18 @@ class ClientesService {
     try {
       const response = await api.get(`/clientes/buscar-cnpj/${cnpj}`);
       
+      // Extrair dados da estrutura HATEOAS
+      let dados = null;
+      
+      if (response.data.data) {
+        dados = response.data.data;
+      } else {
+        dados = response.data;
+      }
+      
       return {
         success: true,
-        data: response.data
+        data: dados
       };
     } catch (error) {
       return {
