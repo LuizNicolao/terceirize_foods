@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import styled from 'styled-components';
 import { 
   FaPlus, 
   FaEye, 
@@ -12,592 +11,205 @@ import {
   FaQuestionCircle,
   FaDownload,
   FaFileExcel,
-  FaFilePdf
+  FaFilePdf,
+  FaUser,
+  FaIdCard,
+  FaPhone,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaCar,
+  FaCalendarAlt
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import api from '../services/api';
 import { usePermissions } from '../contexts/PermissionsContext';
+import MotoristasService from '../services/motoristas';
+import { Button, Input, Modal, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
-
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h1`
-  color: var(--dark-gray);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const AddButton = styled.button`
-  background: var(--primary-green);
-  color: var(--white);
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: var(--dark-green);
-    transform: translateY(-1px);
-  }
-`;
-
-const TableContainer = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  background-color: #f5f5f5;
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const Td = styled.td`
-  padding: 16px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  color: var(--dark-gray);
-`;
-
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  margin-right: 8px;
-  color: var(--gray);
-
-  &:hover {
-    background-color: var(--light-gray);
-  }
-
-  &.edit {
-    color: var(--blue);
-  }
-
-  &.delete {
-    color: var(--error-red);
-  }
-
-  &.view {
-    color: var(--primary-green);
-  }
-`;
-
-const StatusBadge = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props =>
-    props.status === 'ativo' ? 'var(--success-green)' :
-    props.status === 'inativo' ? '#ffebee' :
-    props.status === 'ferias' ? 'var(--warning-yellow)' :
-    props.status === 'licenca' ? '#f3e5f5' : '#f5f5f5'};
-  color: ${props =>
-    props.status === 'ativo' ? 'white' :
-    props.status === 'inativo' ? 'var(--error-red)' :
-    props.status === 'ferias' ? 'var(--dark-gray)' :
-    props.status === 'licenca' ? '#7b1fa2' : '#757575'};
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: #6c757d;
-  font-size: 16px;
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-`;
-
-const ModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 24px;
-  width: 100%;
-  max-width: 90vw;
-  width: 1200px;
-  max-height: 95vh;
-  overflow-y: auto;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  grid-column: 1 / -1;
-`;
-
-const ModalTitle = styled.h2`
-  color: var(--dark-gray);
-  font-size: 20px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--gray);
-  padding: 4px;
-
-  &:hover {
-    color: var(--error-red);
-  }
-`;
-
-const Form = styled.form`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  max-height: calc(95vh - 120px);
-  overflow-y: auto;
-  padding-right: 8px;
-
-  /* Estilizar scrollbar */
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: var(--primary-green);
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb:hover {
-    background: var(--dark-green);
-  }
-`;
-
-
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
-const Label = styled.label`
-  color: var(--dark-gray);
-  font-weight: 600;
-  font-size: 13px;
-`;
-
-const Input = styled.input`
-  padding: 10px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const Select = styled.select`
-  padding: 10px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  background: var(--white);
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-`;
-
-const TextArea = styled.textarea`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  font-family: inherit;
-  resize: vertical;
-  min-height: 100px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-  grid-column: 1 / -1;
-`;
-
-const Button = styled.button`
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &.primary {
-    background: var(--primary-green);
-    color: white;
-
-    &:hover {
-      background: var(--dark-green);
-    }
-
-    &:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-  }
-
-  &.secondary {
-    background: #6c757d;
-    color: white;
-
-    &:hover {
-      background: #5a6268;
-    }
-  }
-
-  &.danger {
-    background: #dc3545;
-    color: white;
-
-    &:hover {
-      background: #c82333;
-    }
-  }
-`;
-
-const AuditModal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-`;
-
-const AuditModalContent = styled.div`
-  background: white;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 1200px;
-  max-height: 90vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-`;
-
-const AuditModalHeader = styled.div`
-  padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const AuditModalBody = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 24px;
-`;
-
-const AuditFilters = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
-`;
-
-const AuditTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 16px;
-`;
-
-const AuditTh = styled.th`
-  background: #f8f9fa;
-  padding: 12px;
-  text-align: left;
-  font-weight: 600;
-  color: #495057;
-  border-bottom: 1px solid #dee2e6;
-  font-size: 13px;
-`;
-
-const AuditTd = styled.td`
-  padding: 12px;
-  border-bottom: 1px solid #dee2e6;
-  font-size: 13px;
-  color: #495057;
-`;
-
-const ExportButtons = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-`;
-
-const ExportButton = styled.button`
-  background: var(--primary-green);
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: var(--dark-green);
-  }
-
-  &.xlsx {
-    background: #217346;
-    &:hover { background: #1e6b3d; }
-  }
-
-  &.pdf {
-    background: #dc3545;
-    &:hover { background: #c82333; }
-  }
-`;
+import Pagination from '../components/Pagination';
 
 const Motoristas = () => {
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [motoristas, setMotoristas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [auditModalOpen, setAuditModalOpen] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [viewMode, setViewMode] = useState(false);
   const [editingMotorista, setEditingMotorista] = useState(null);
-  const [viewingMotorista, setViewingMotorista] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
+  const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
-  const [auditFilters, setAuditFilters] = useState({
-    dataInicio: '',
-    dataFim: '',
-    acao: '',
-    usuario: ''
+  const [loadingAudit, setLoadingAudit] = useState(false);
+  const [estatisticas, setEstatisticas] = useState({
+    total_motoristas: 0,
+    motoristas_ativos: 0,
+    em_ferias: 0,
+    em_licenca: 0
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  // Estados de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const { canView, canCreate, canEdit, canDelete } = usePermissions();
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  // Carregar motoristas
-  const loadMotoristas = async () => {
+  useEffect(() => {
+    loadMotoristas();
+  }, [currentPage, itemsPerPage]);
+
+  const loadMotoristas = async (params = {}) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await api.get('/motoristas');
-      setMotoristas(response.data.data || []);
+      // Parâmetros de paginação
+      const paginationParams = {
+        page: currentPage,
+        limit: itemsPerPage,
+        ...params
+      };
+
+      const result = await MotoristasService.listar(paginationParams);
+      if (result.success) {
+        setMotoristas(result.data);
+        
+        // Extrair informações de paginação
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages || 1);
+          setTotalItems(result.pagination.totalItems || result.data.length);
+          setCurrentPage(result.pagination.currentPage || 1);
+        } else {
+          // Fallback se não houver paginação no backend
+          setTotalItems(result.data.length);
+          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
+        }
+        
+        // Calcular estatísticas básicas
+        const total = result.pagination?.totalItems || result.data.length;
+        const ativos = result.data.filter(m => m.status === 'ativo').length;
+        const ferias = result.data.filter(m => m.status === 'ferias').length;
+        const licenca = result.data.filter(m => m.status === 'licenca').length;
+        
+        setEstatisticas({
+          total_motoristas: total,
+          motoristas_ativos: ativos,
+          em_ferias: ferias,
+          em_licenca: licenca
+        });
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      console.error('Erro ao carregar motoristas:', error);
       toast.error('Erro ao carregar motoristas');
-      setMotoristas([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Carregar logs de auditoria
+  // Filtrar motoristas (client-side)
+  const filteredMotoristas = motoristas.filter(motorista => {
+    const matchesSearch = !searchTerm || 
+      motorista.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      motorista.cpf.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      motorista.cnh.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      motorista.telefone.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
+
+  // Função para mudar de página
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
   const loadAuditLogs = async () => {
+    setLoadingAudit(true);
     try {
-      const params = new URLSearchParams();
-      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
-      if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
-      params.append('recurso', 'motoristas');
-
-      const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
+      const response = await fetch('/api/auditoria?entidade=motoristas&limit=100', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setAuditLogs(data.data || []);
+      } else {
+        toast.error('Erro ao carregar logs de auditoria');
+      }
     } catch (error) {
-      console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
+    } finally {
+      setLoadingAudit(false);
     }
   };
 
-  useEffect(() => {
-    loadMotoristas();
-  }, []);
-
-  useEffect(() => {
-    if (auditModalOpen) {
-      loadAuditLogs();
-    }
-  }, [auditModalOpen, auditFilters]);
-
-  // Abrir modal de auditoria
   const handleOpenAuditModal = () => {
-    setAuditModalOpen(true);
+    setShowAuditModal(true);
+    loadAuditLogs();
   };
 
-  // Fechar modal de auditoria
   const handleCloseAuditModal = () => {
-    setAuditModalOpen(false);
-    setAuditFilters({
-      dataInicio: '',
-      dataFim: '',
-      acao: '',
-      usuario: ''
-    });
+    setShowAuditModal(false);
+    setAuditLogs([]);
   };
 
-  // Aplicar filtros de auditoria
   const handleApplyAuditFilters = () => {
     loadAuditLogs();
   };
 
-  // Exportar auditoria para XLSX
   const handleExportXLSX = async () => {
     try {
-      const params = new URLSearchParams();
-      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
-      if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
-      params.append('recurso', 'motoristas');
-
-      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
-        responseType: 'blob'
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_motoristas_${new Date().toISOString().split('T')[0]}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success('Relatório exportado com sucesso!');
+      const result = await MotoristasService.exportarXLSX();
+      if (result.success) {
+        const blob = new Blob([result.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'motoristas.xlsx';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        toast.success('Exportação XLSX realizada com sucesso!');
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      console.error('Erro ao exportar auditoria:', error);
-      toast.error('Erro ao exportar relatório');
+      toast.error('Erro ao exportar XLSX');
     }
   };
 
-  // Exportar auditoria para PDF
   const handleExportPDF = async () => {
     try {
-      const params = new URLSearchParams();
-      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
-      if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario) params.append('usuario_id', auditFilters.usuario);
-      params.append('recurso', 'motoristas');
-
-      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
-        responseType: 'blob'
-      });
-
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_motoristas_${new Date().toISOString().split('T')[0]}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast.success('Relatório exportado com sucesso!');
+      const result = await MotoristasService.exportarPDF();
+      if (result.success) {
+        const blob = new Blob([result.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'motoristas.pdf';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        toast.success('Exportação PDF realizada com sucesso!');
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      console.error('Erro ao exportar auditoria:', error);
-      toast.error('Erro ao exportar relatório');
+      toast.error('Erro ao exportar PDF');
     }
   };
 
-  // Funções utilitárias
   const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    return new Date(dateString).toLocaleString('pt-BR');
   };
 
   const getActionLabel = (action) => {
-    switch (action) {
-      case 'CREATE': return 'Criação';
-      case 'UPDATE': return 'Atualização';
-      case 'DELETE': return 'Exclusão';
-      default: return action;
-    }
+    const actions = {
+      CREATE: 'Criar',
+      UPDATE: 'Atualizar',
+      DELETE: 'Excluir'
+    };
+    return actions[action] || action;
   };
 
   const getFieldLabel = (field) => {
-    const labels = {
+    const fields = {
       nome: 'Nome',
       cpf: 'CPF',
       cnh: 'CNH',
@@ -605,639 +217,552 @@ const Motoristas = () => {
       telefone: 'Telefone',
       email: 'Email',
       endereco: 'Endereço',
-      status: 'Status',
+      cidade: 'Cidade',
+      estado: 'Estado',
+      cep: 'CEP',
+      data_nascimento: 'Data de Nascimento',
       data_admissao: 'Data de Admissão',
-      observacoes: 'Observações',
-      filial_id: 'Filial'
+      status: 'Status',
+      salario: 'Salário',
+      observacoes: 'Observações'
     };
-    return labels[field] || field;
+    return fields[field] || field;
   };
 
   const formatFieldValue = (field, value) => {
-    if (value === null || value === undefined) return '-';
-    
-    switch (field) {
-      case 'data_admissao':
-        return formatDate(value);
-      case 'status':
-        return value === 'ativo' ? 'Ativo' : 
-               value === 'inativo' ? 'Inativo' : 
-               value === 'ferias' ? 'Férias' : 
-               value === 'licenca' ? 'Licença' : value;
-      default:
-        return value.toString();
+    if (field === 'status') {
+      return getStatusLabel(value);
     }
+    if (field === 'data_nascimento' || field === 'data_admissao') {
+      return value ? formatDate(value) : 'N/A';
+    }
+    if (field === 'salario') {
+      return value ? `R$ ${parseFloat(value).toFixed(2)}` : 'N/A';
+    }
+    return value;
   };
 
-  // Handlers
   const handleAddMotorista = () => {
+    setViewMode(false);
     setEditingMotorista(null);
-    setViewingMotorista(null);
     reset();
-    setModalOpen(true);
+    setShowModal(true);
   };
 
   const handleViewMotorista = (motorista) => {
-    setViewingMotorista(motorista);
-    setEditingMotorista(null);
-    setValue('nome', motorista.nome);
-    setValue('cpf', motorista.cpf);
-    setValue('cnh', motorista.cnh);
-    setValue('categoria_cnh', motorista.categoria_cnh);
-    setValue('telefone', motorista.telefone);
-    setValue('email', motorista.email);
-    setValue('endereco', motorista.endereco);
-    setValue('status', motorista.status);
-    setValue('data_admissao', motorista.data_admissao);
-    setValue('observacoes', motorista.observacoes);
-    setValue('filial_id', motorista.filial_id);
-    setModalOpen(true);
+    setViewMode(true);
+    setEditingMotorista(motorista);
+    reset(motorista);
+    setShowModal(true);
   };
 
   const handleEditMotorista = (motorista) => {
+    setViewMode(false);
     setEditingMotorista(motorista);
-    setViewingMotorista(null);
-    setValue('nome', motorista.nome);
-    setValue('cpf', motorista.cpf);
-    setValue('cnh', motorista.cnh);
-    setValue('categoria_cnh', motorista.categoria_cnh);
-    setValue('telefone', motorista.telefone);
-    setValue('email', motorista.email);
-    setValue('endereco', motorista.endereco);
-    setValue('status', motorista.status);
-    setValue('data_admissao', motorista.data_admissao);
-    setValue('observacoes', motorista.observacoes);
-    setValue('filial_id', motorista.filial_id);
-    setModalOpen(true);
+    reset(motorista);
+    setShowModal(true);
   };
 
   const handleCloseModal = () => {
-    setModalOpen(false);
+    setShowModal(false);
+    setViewMode(false);
     setEditingMotorista(null);
-    setViewingMotorista(null);
     reset();
   };
 
   const onSubmit = async (data) => {
     try {
+      let result;
       if (editingMotorista) {
-        await api.put(`/motoristas/${editingMotorista.id}`, data);
-        toast.success('Motorista atualizado com sucesso!');
+        result = await MotoristasService.atualizar(editingMotorista.id, data);
       } else {
-        await api.post('/motoristas', data);
-        toast.success('Motorista criado com sucesso!');
+        result = await MotoristasService.criar(data);
       }
-      
-      handleCloseModal();
-      loadMotoristas();
+
+      if (result.success) {
+        toast.success(editingMotorista ? 'Motorista atualizado com sucesso!' : 'Motorista criado com sucesso!');
+        handleCloseModal();
+        loadMotoristas();
+      } else {
+        toast.error(result.error);
+      }
     } catch (error) {
-      console.error('Erro ao salvar motorista:', error);
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Erro ao salvar motorista';
-      toast.error(errorMessage);
+      toast.error('Erro ao salvar motorista');
     }
   };
 
   const handleDeleteMotorista = async (motoristaId) => {
-    if (!window.confirm('Tem certeza que deseja excluir este motorista?')) {
-      return;
-    }
-
-    try {
-      await api.delete(`/motoristas/${motoristaId}`);
-      toast.success('Motorista excluído com sucesso!');
-      loadMotoristas();
-    } catch (error) {
-      console.error('Erro ao excluir motorista:', error);
-      toast.error('Erro ao excluir motorista');
+    if (window.confirm('Tem certeza que deseja excluir este motorista?')) {
+      try {
+        const result = await MotoristasService.excluir(motoristaId);
+        if (result.success) {
+          toast.success('Motorista excluído com sucesso!');
+          loadMotoristas();
+        } else {
+          toast.error(result.error);
+        }
+      } catch (error) {
+        toast.error('Erro ao excluir motorista');
+      }
     }
   };
 
-  // Filtrar motoristas
-  const filteredMotoristas = motoristas.filter(motorista => {
-    const matchesSearch = !searchTerm || 
-      motorista.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      motorista.cpf?.includes(searchTerm) ||
-      motorista.cnh?.includes(searchTerm) ||
-      motorista.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'todos' || motorista.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  const getStatusLabel = (status) => {
+    const statusMap = {
+      ativo: 'Ativo',
+      inativo: 'Inativo',
+      ferias: 'Em Férias',
+      licenca: 'Em Licença'
+    };
+    return statusMap[status] || status;
+  };
+
+  const getCategoriaCNHLabel = (categoria) => {
+    const categoriasMap = {
+      A: 'A - Motocicletas',
+      B: 'B - Automóveis',
+      C: 'C - Caminhões',
+      D: 'D - Ônibus',
+      E: 'E - Reboques'
+    };
+    return categoriasMap[categoria] || categoria;
+  };
 
   if (loading) {
     return (
-      <Container>
-        <div>Carregando motoristas...</div>
-      </Container>
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <Header>
-        <Title>Gestão de Motoristas</Title>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <AddButton 
+    <div className="p-3 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Motoristas</h1>
+        <div className="flex gap-2 sm:gap-3">
+          <Button
             onClick={handleOpenAuditModal}
-            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
           >
-            <FaQuestionCircle />
-            Auditoria
-          </AddButton>
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+          </Button>
           {canCreate('motoristas') && (
-            <AddButton onClick={handleAddMotorista}>
-              <FaPlus />
-              Adicionar Motorista
-            </AddButton>
+            <Button onClick={handleAddMotorista} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
           )}
         </div>
-      </Header>
+      </div>
 
+      {/* Estatísticas */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+        <StatCard
+          title="Total de Motoristas"
+          value={estatisticas.total_motoristas}
+          icon={FaUser}
+          color="blue"
+        />
+        <StatCard
+          title="Motoristas Ativos"
+          value={estatisticas.motoristas_ativos}
+          icon={FaCar}
+          color="green"
+        />
+        <StatCard
+          title="Em Férias"
+          value={estatisticas.em_ferias}
+          icon={FaCalendarAlt}
+          color="orange"
+        />
+        <StatCard
+          title="Em Licença"
+          value={estatisticas.em_licenca}
+          icon={FaIdCard}
+          color="purple"
+        />
+      </div>
+
+      {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
-        placeholder="Buscar por nome, CPF, CNH ou email..."
-        statusOptions={[
-          { value: 'todos', label: 'Todos' },
-          { value: 'ativo', label: 'Ativo' },
-          { value: 'inativo', label: 'Inativo' },
-          { value: 'ferias', label: 'Férias' },
-          { value: 'licenca', label: 'Licença' }
-        ]}
+        onClear={() => setSearchTerm('')}
+        placeholder="Buscar por nome, CPF, CNH ou telefone..."
       />
 
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Nome</Th>
-              <Th>CPF</Th>
-              <Th>CNH</Th>
-              <Th>Categoria</Th>
-              <Th>Telefone</Th>
-              <Th>Email</Th>
-              <Th>Status</Th>
-              <Th>Ações</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredMotoristas.length === 0 ? (
-              <tr>
-                <Td colSpan="8">
-                  <EmptyState>
-                    {searchTerm || statusFilter !== 'todos' 
-                      ? 'Nenhum motorista encontrado com os filtros aplicados'
-                      : 'Nenhum motorista cadastrado'
-                    }
-                  </EmptyState>
-                </Td>
-              </tr>
-            ) : (
-              filteredMotoristas.map((motorista) => (
-                <tr key={motorista.id}>
-                  <Td>{motorista.nome}</Td>
-                  <Td>{motorista.cpf || '-'}</Td>
-                  <Td>{motorista.cnh || '-'}</Td>
-                  <Td>{motorista.categoria_cnh || '-'}</Td>
-                  <Td>{motorista.telefone || '-'}</Td>
-                  <Td>{motorista.email || '-'}</Td>
-                  <Td>
-                    <StatusBadge status={motorista.status}>
-                      {motorista.status === 'ativo' ? 'Ativo' : 
-                       motorista.status === 'inativo' ? 'Inativo' : 
-                       motorista.status === 'ferias' ? 'Férias' : 
-                       motorista.status === 'licenca' ? 'Licença' : motorista.status}
-                    </StatusBadge>
-                  </Td>
-                  <Td>
-                    <ActionButton
-                      className="view"
-                      title="Visualizar"
-                      onClick={() => handleViewMotorista(motorista)}
-                    >
-                      <FaEye />
-                    </ActionButton>
-                    {canEdit('motoristas') && (
-                      <ActionButton
-                        className="edit"
-                        title="Editar"
-                        onClick={() => handleEditMotorista(motorista)}
-                      >
-                        <FaEdit />
-                      </ActionButton>
-                    )}
-                    {canDelete('motoristas') && (
-                      <ActionButton
-                        className="delete"
-                        title="Excluir"
-                        onClick={() => handleDeleteMotorista(motorista.id)}
-                      >
-                        <FaTrash />
-                      </ActionButton>
-                    )}
-                  </Td>
+      {/* Ações */}
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+        <Button onClick={handleExportXLSX} variant="outline" size="sm">
+          <FaFileExcel className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar XLSX</span>
+          <span className="sm:hidden">XLSX</span>
+        </Button>
+        <Button onClick={handleExportPDF} variant="outline" size="sm">
+          <FaFilePdf className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar PDF</span>
+          <span className="sm:hidden">PDF</span>
+        </Button>
+      </div>
+
+      {/* Tabela */}
+      {filteredMotoristas.length === 0 ? (
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+          {searchTerm 
+            ? 'Nenhum motorista encontrado com os filtros aplicados'
+            : 'Nenhum motorista cadastrado'
+          }
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Nome
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    CPF/CNH
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contato
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Admissão
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </TableContainer>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredMotoristas.map((motorista) => (
+                  <tr key={motorista.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900">
+                        {motorista.nome}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm text-gray-900">{motorista.cpf}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{motorista.cnh}</div>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm text-gray-900">{motorista.telefone}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{motorista.email}</div>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                        motorista.status === 'ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : motorista.status === 'ferias'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : motorista.status === 'licenca'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {getStatusLabel(motorista.status)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      {motorista.data_admissao ? formatDate(motorista.data_admissao) : 'N/A'}
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                      <div className="flex gap-1 sm:gap-2">
+                        {canView('motoristas') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleViewMotorista(motorista)}
+                            title="Visualizar"
+                          >
+                            <FaEye className="text-green-600 text-xs sm:text-sm" />
+                          </Button>
+                        )}
+                        {canEdit('motoristas') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditMotorista(motorista)}
+                            title="Editar"
+                          >
+                            <FaEdit className="text-blue-600 text-xs sm:text-sm" />
+                          </Button>
+                        )}
+                        {canDelete('motoristas') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteMotorista(motorista.id)}
+                            title="Excluir"
+                          >
+                            <FaTrash className="text-red-600 text-xs sm:text-sm" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Modal de Motorista */}
-      {modalOpen && (
-        <Modal onClick={handleCloseModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>
-                {viewingMotorista ? 'Visualizar Motorista' : 
-                 editingMotorista ? 'Editar Motorista' : 'Novo Motorista'}
-              </ModalTitle>
-              <CloseButton onClick={handleCloseModal}>
-                <FaTimes />
-              </CloseButton>
-            </ModalHeader>
-            <Form onSubmit={handleSubmit(onSubmit)}>
-              <FormGroup>
-                <Label>Nome *</Label>
+      <Modal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        title={viewMode ? 'Visualizar Motorista' : editingMotorista ? 'Editar Motorista' : 'Adicionar Motorista'}
+        size="xl"
+      >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
+          {/* Primeira Linha - 2 Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Card 1: Informações Pessoais */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Pessoais</h3>
+              <div className="space-y-3">
                 <Input
+                  label="Nome Completo *"
                   {...register('nome', { required: 'Nome é obrigatório' })}
-                  disabled={!!viewingMotorista}
-                  placeholder="Nome completo"
+                  error={errors.nome?.message}
+                  disabled={viewMode}
                 />
-                {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-              </FormGroup>
-
-              <FormGroup>
-                <Label>CPF</Label>
                 <Input
-                  {...register('cpf')}
-                  disabled={!!viewingMotorista}
-                  placeholder="000.000.000-00"
+                  label="CPF *"
+                  {...register('cpf', { required: 'CPF é obrigatório' })}
+                  error={errors.cpf?.message}
+                  disabled={viewMode}
                 />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>CNH</Label>
                 <Input
-                  {...register('cnh')}
-                  disabled={!!viewingMotorista}
-                  placeholder="Número da CNH"
+                  label="Data de Nascimento"
+                  type="date"
+                  {...register('data_nascimento')}
+                  disabled={viewMode}
                 />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Categoria CNH</Label>
-                <Select {...register('categoria_cnh')} disabled={!!viewingMotorista}>
-                  <option value="">Selecione</option>
-                  <option value="A">A</option>
-                  <option value="B">B</option>
-                  <option value="C">C</option>
-                  <option value="D">D</option>
-                  <option value="E">E</option>
-                  <option value="AB">AB</option>
-                  <option value="AC">AC</option>
-                  <option value="AD">AD</option>
-                  <option value="AE">AE</option>
-                </Select>
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Telefone</Label>
                 <Input
-                  {...register('telefone')}
-                  disabled={!!viewingMotorista}
-                  placeholder="(00) 00000-0000"
-                />
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Email</Label>
-                <Input
-                  {...register('email')}
+                  label="Email"
                   type="email"
-                  disabled={!!viewingMotorista}
-                  placeholder="email@exemplo.com"
+                  {...register('email')}
+                  disabled={viewMode}
                 />
-              </FormGroup>
+              </div>
+            </div>
 
-              <FormGroup>
-                <Label>Endereço</Label>
-                <TextArea
+            {/* Card 2: Documentação */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Documentação</h3>
+              <div className="space-y-3">
+                <Input
+                  label="CNH *"
+                  {...register('cnh', { required: 'CNH é obrigatória' })}
+                  error={errors.cnh?.message}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Categoria CNH *"
+                  type="select"
+                  {...register('categoria_cnh', { required: 'Categoria CNH é obrigatória' })}
+                  error={errors.categoria_cnh?.message}
+                  disabled={viewMode}
+                >
+                  <option value="">Selecione a categoria</option>
+                  <option value="A">A - Motocicletas</option>
+                  <option value="B">B - Automóveis</option>
+                  <option value="C">C - Caminhões</option>
+                  <option value="D">D - Ônibus</option>
+                  <option value="E">E - Reboques</option>
+                </Input>
+                <Input
+                  label="Telefone *"
+                  {...register('telefone', { required: 'Telefone é obrigatório' })}
+                  error={errors.telefone?.message}
+                  disabled={viewMode}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Segunda Linha - 2 Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Card 3: Endereço */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Endereço</h3>
+              <div className="space-y-3">
+                <Input
+                  label="Endereço"
                   {...register('endereco')}
-                  disabled={!!viewingMotorista}
-                  placeholder="Endereço completo"
+                  disabled={viewMode}
                 />
-              </FormGroup>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    label="Cidade"
+                    {...register('cidade')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Estado"
+                    {...register('estado')}
+                    disabled={viewMode}
+                  />
+                </div>
+                <Input
+                  label="CEP"
+                  {...register('cep')}
+                  disabled={viewMode}
+                />
+              </div>
+            </div>
 
-              <FormGroup>
-                <Label>Status</Label>
-                <Select {...register('status')} disabled={!!viewingMotorista}>
+            {/* Card 4: Informações Profissionais */}
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Profissionais</h3>
+              <div className="space-y-3">
+                <Input
+                  label="Data de Admissão"
+                  type="date"
+                  {...register('data_admissao')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Status *"
+                  type="select"
+                  {...register('status', { required: 'Status é obrigatório' })}
+                  error={errors.status?.message}
+                  disabled={viewMode}
+                >
+                  <option value="">Selecione o status</option>
                   <option value="ativo">Ativo</option>
                   <option value="inativo">Inativo</option>
-                  <option value="ferias">Férias</option>
-                  <option value="licenca">Licença</option>
-                </Select>
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Data de Admissão</Label>
+                  <option value="ferias">Em Férias</option>
+                  <option value="licenca">Em Licença</option>
+                </Input>
                 <Input
-                  {...register('data_admissao')}
-                  type="date"
-                  disabled={!!viewingMotorista}
+                  label="Salário"
+                  type="number"
+                  step="0.01"
+                  {...register('salario')}
+                  disabled={viewMode}
                 />
-              </FormGroup>
+              </div>
+            </div>
+          </div>
 
-              <FormGroup>
-                <Label>Observações</Label>
-                <TextArea
-                  {...register('observacoes')}
-                  disabled={!!viewingMotorista}
-                  placeholder="Observações adicionais"
-                />
-              </FormGroup>
+          {/* Terceira Linha - 1 Card */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Observações</h3>
+            <Input
+              label="Observações"
+              type="textarea"
+              {...register('observacoes')}
+              disabled={viewMode}
+              rows={4}
+            />
+          </div>
 
-              {!viewingMotorista && (
-                <ButtonGroup>
-                  <Button type="button" className="secondary" onClick={handleCloseModal}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" className="primary">
-                    {editingMotorista ? 'Atualizar' : 'Criar'}
-                  </Button>
-                </ButtonGroup>
-              )}
-            </Form>
-          </ModalContent>
-        </Modal>
-      )}
+          {!viewMode && (
+            <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
+              <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
+                Cancelar
+              </Button>
+              <Button type="submit" size="sm">
+                {editingMotorista ? 'Atualizar' : 'Criar'}
+              </Button>
+            </div>
+          )}
+        </form>
+      </Modal>
 
       {/* Modal de Auditoria */}
-      {auditModalOpen && (
-        <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
-            <ModalHeader>
-              <ModalTitle>Relatório de Auditoria - Motoristas</ModalTitle>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={handleExportXLSX}
-                  title="Exportar para Excel"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFileExcel />
-                  Excel
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  title="Exportar para PDF"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFilePdf />
-                  PDF
-                </button>
-                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
-              </div>
-            </ModalHeader>
+      <Modal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
+        title="Logs de Auditoria - Motoristas"
+        size="xl"
+      >
+        <div className="space-y-3 sm:space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-base sm:text-lg font-medium text-gray-900">
+              Histórico de Alterações
+            </h3>
+            <Button onClick={handleApplyAuditFilters} variant="outline" size="sm">
+              <span className="hidden sm:inline">Atualizar</span>
+              <span className="sm:hidden">Atualizar</span>
+            </Button>
+          </div>
 
-            {/* Filtros de Auditoria */}
-            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataInicio}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataFim}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Ação
-                  </label>
-                  <select
-                    value={auditFilters.acao}
-                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todas as ações</option>
-                    <option value="create">Criar</option>
-                    <option value="update">Editar</option>
-                    <option value="delete">Excluir</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Usuário
-                  </label>
-                  <input
-                    type="text"
-                    value={auditFilters.usuario}
-                    onChange={(e) => setAuditFilters({...auditFilters, usuario: e.target.value})}
-                    placeholder="Nome do usuário"
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    &nbsp;
-                  </label>
-                  <button
-                    onClick={handleApplyAuditFilters}
-                    style={{
-                      width: '100%',
-                      padding: '8px 16px',
-                      background: 'var(--primary-green)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Aplicar Filtros
-                  </button>
-                </div>
-              </div>
+          {loadingAudit ? (
+            <div className="flex justify-center items-center py-6 sm:py-8">
+              <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600"></div>
             </div>
-
-            {/* Lista de Logs */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
-                  {auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
-                  Nenhum log encontrado com os filtros aplicados
-                </div>
-              ) : (
-                <div>
-                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
-                    {auditLogs.length} log(s) encontrado(s)
-                  </div>
+          ) : (
+            <div className="max-h-64 sm:max-h-96 overflow-y-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Usuário</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Ação</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Campo</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Valor Anterior</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Novo Valor</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
                   {auditLogs.map((log, index) => (
-                    <div
-                      key={index}
-                      style={{
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        marginBottom: '12px',
-                        background: 'white'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            background: log.acao === 'create' ? '#e8f5e8' : 
-                                       log.acao === 'update' ? '#fff3cd' : 
-                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
-                            color: log.acao === 'create' ? '#2e7d32' : 
-                                   log.acao === 'update' ? '#856404' : 
-                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
-                          }}>
-                            {getActionLabel(log.acao)}
-                          </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                            por {log.usuario_nome || 'Usuário desconhecido'}
-                          </span>
-                        </div>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
-                          {formatDate(log.timestamp)}
-                        </span>
-                      </div>
-                      
-                      {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
-                          {log.detalhes.changes && (
-                            <div style={{ marginBottom: '8px' }}>
-                              <strong>Mudanças Realizadas:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
-                                {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} style={{ 
-                                    marginBottom: '6px', 
-                                    padding: '8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
-                                      {getFieldLabel(field)}:
-                                    </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                      <span style={{ color: '#721c24' }}>
-                                        <strong>Antes:</strong> {formatFieldValue(field, change.from)}
-                                      </span>
-                                      <span style={{ color: '#6c757d' }}>→</span>
-                                      <span style={{ color: '#2e7d32' }}>
-                                        <strong>Depois:</strong> {formatFieldValue(field, change.to)}
-                                      </span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {log.detalhes.requestBody && !log.detalhes.changes && (
-                            <div>
-                              <strong>Dados do Motorista:</strong>
-                              <div style={{ 
-                                marginLeft: '12px', 
-                                marginTop: '8px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '8px'
-                              }}>
-                                {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} style={{ 
-                                    padding: '6px 8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef',
-                                    fontSize: '11px'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
-                                      {getFieldLabel(field)}:
-                                    </div>
-                                    <div style={{ color: '#2e7d32' }}>
-                                      {formatFieldValue(field, value)}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {log.resource_id && (
-                            <div style={{ 
-                              marginTop: '8px', 
-                              padding: '6px 8px', 
-                              background: '#e3f2fd', 
-                              borderRadius: '4px',
-                              border: '1px solid #bbdefb',
-                              fontSize: '11px'
-                            }}>
-                              <strong>ID do Motorista:</strong> {log.resource_id}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {formatDate(log.created_at)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {log.usuario_nome || 'Sistema'}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {getActionLabel(log.action)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                        {getFieldLabel(log.field_name)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
+                        {formatFieldValue(log.field_name, log.old_value)}
+                      </td>
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
+                        {formatFieldValue(log.field_name, log.new_value)}
+                      </td>
+                    </tr>
                   ))}
-                </div>
-              )}
+                </tbody>
+              </table>
             </div>
-          </ModalContent>
-        </Modal>
+          )}
+        </div>
+      </Modal>
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
       )}
-    </Container>
+    </div>
   );
 };
 
