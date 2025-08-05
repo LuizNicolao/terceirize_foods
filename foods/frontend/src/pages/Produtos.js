@@ -10,7 +10,8 @@ import {
   FaBox,
   FaCheckCircle,
   FaTimesCircle,
-  FaTags
+  FaTags,
+  FaTimes
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
@@ -780,7 +781,7 @@ const Produtos = () => {
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal isOpen={showAuditModal} onClose={handleCloseAuditModal} size="7xl">
+        <Modal isOpen={showAuditModal} onClose={handleCloseAuditModal} size="full">
           <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
