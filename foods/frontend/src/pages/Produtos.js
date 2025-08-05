@@ -5,7 +5,8 @@ import produtosService from '../services/produtos';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import CadastroFilterBar from '../components/CadastroFilterBar';
-import { Button, Input, Modal, Table, StatCard, LoadingSpinner } from '../components/ui';
+import { Button, Input, Modal, Table, StatCard } from '../components/ui';
+import LoadingSpinner from '../components/LoadingSpinner';
 import ProdutoForm from '../components/ProdutoForm';
 
 const Produtos = () => {
@@ -36,10 +37,11 @@ const Produtos = () => {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditFilters, setAuditFilters] = useState({
-    startDate: '',
-    endDate: '',
-    action: '',
-    user: ''
+    dataInicio: '',
+    dataFim: '',
+    acao: '',
+    usuario_id: '',
+    periodo: ''
   });
   
   // Estados de dados auxiliares
@@ -99,28 +101,30 @@ const Produtos = () => {
   const loadAuditLogs = async () => {
     try {
       setAuditLoading(true);
-      
       const params = new URLSearchParams();
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        switch (auditFilters.periodo) {
+          case '7dias': dataInicio.setDate(hoje.getDate() - 7); break;
+          case '30dias': dataInicio.setDate(hoje.getDate() - 30); break;
+          case '90dias': dataInicio.setDate(hoje.getDate() - 90); break;
+          default: break;
+        }
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+        if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      }
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
+      params.append('recurso', 'produtos');
       
-      if (auditFilters.startDate) {
-        params.append('data_inicio', auditFilters.startDate);
-      }
-      if (auditFilters.endDate) {
-        params.append('data_fim', auditFilters.endDate);
-      }
-      if (auditFilters.action) {
-        params.append('acao', auditFilters.action);
-      }
-      if (auditFilters.user) {
-        params.append('usuario_id', auditFilters.user);
-      }
-      
-      const response = await produtosService.listar({ 
-        resource: 'produtos',
-        ...Object.fromEntries(params)
-      });
-      
-      setAuditLogs(response.data || response || []);
+      const response = await fetch(`/api/auditoria?${params.toString()}`);
+      const data = await response.json();
+      setAuditLogs(data.data?.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -140,10 +144,11 @@ const Produtos = () => {
     setShowAuditModal(false);
     setAuditLogs([]);
     setAuditFilters({
-      startDate: '',
-      endDate: '',
-      action: '',
-      user: ''
+      dataInicio: '',
+      dataFim: '',
+      acao: '',
+      usuario_id: '',
+      periodo: ''
     });
   };
 
@@ -153,29 +158,35 @@ const Produtos = () => {
   };
 
   // Exportar auditoria para XLSX
-  const handleExportAuditXLSX = async () => {
+  const handleExportXLSX = async () => {
     try {
       const params = new URLSearchParams();
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        switch (auditFilters.periodo) {
+          case '7dias': dataInicio.setDate(hoje.getDate() - 7); break;
+          case '30dias': dataInicio.setDate(hoje.getDate() - 30); break;
+          case '90dias': dataInicio.setDate(hoje.getDate() - 90); break;
+          default: break;
+        }
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+        if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      }
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
+      params.append('recurso', 'produtos');
       
-      if (auditFilters.startDate) {
-        params.append('data_inicio', auditFilters.startDate);
-      }
-      if (auditFilters.endDate) {
-        params.append('data_fim', auditFilters.endDate);
-      }
-      if (auditFilters.action) {
-        params.append('acao', auditFilters.action);
-      }
-      if (auditFilters.user) {
-        params.append('usuario_id', auditFilters.user);
-      }
-      
-      const response = await produtosService.exportarXLSX({ 
-        resource: 'produtos',
-        ...Object.fromEntries(params)
+      const response = await fetch(`/api/auditoria/export/xlsx?${params.toString()}`, {
+        responseType: 'blob'
       });
+      const blob = await response.blob();
       
-      const url = window.URL.createObjectURL(new Blob([response]));
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `auditoria_produtos_${new Date().toISOString().split('T')[0]}.xlsx`);
@@ -184,37 +195,43 @@ const Produtos = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
       
-      toast.success('Auditoria exportada com sucesso!');
+      toast.success('Relatório exportado com sucesso!');
     } catch (error) {
-      console.error('Erro ao exportar auditoria:', error);
-      toast.error('Erro ao exportar auditoria');
+      console.error('Erro ao exportar XLSX:', error);
+      toast.error('Erro ao exportar relatório');
     }
   };
 
   // Exportar auditoria para PDF
-  const handleExportAuditPDF = async () => {
+  const handleExportPDF = async () => {
     try {
       const params = new URLSearchParams();
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        switch (auditFilters.periodo) {
+          case '7dias': dataInicio.setDate(hoje.getDate() - 7); break;
+          case '30dias': dataInicio.setDate(hoje.getDate() - 30); break;
+          case '90dias': dataInicio.setDate(hoje.getDate() - 90); break;
+          default: break;
+        }
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+        if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      }
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
+      params.append('recurso', 'produtos');
       
-      if (auditFilters.startDate) {
-        params.append('data_inicio', auditFilters.startDate);
-      }
-      if (auditFilters.endDate) {
-        params.append('data_fim', auditFilters.endDate);
-      }
-      if (auditFilters.action) {
-        params.append('acao', auditFilters.action);
-      }
-      if (auditFilters.user) {
-        params.append('usuario_id', auditFilters.user);
-      }
-      
-      const response = await produtosService.exportarPDF({ 
-        resource: 'produtos',
-        ...Object.fromEntries(params)
+      const response = await fetch(`/api/auditoria/export/pdf?${params.toString()}`, {
+        responseType: 'blob'
       });
+      const blob = await response.blob();
       
-      const url = window.URL.createObjectURL(new Blob([response]));
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       link.setAttribute('download', `auditoria_produtos_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -223,10 +240,10 @@ const Produtos = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
       
-      toast.success('Auditoria exportada com sucesso!');
+      toast.success('Relatório exportado com sucesso!');
     } catch (error) {
-      console.error('Erro ao exportar auditoria:', error);
-      toast.error('Erro ao exportar auditoria');
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar relatório');
     }
   };
 
@@ -238,53 +255,60 @@ const Produtos = () => {
 
   // Obter label da ação
   const getActionLabel = (action) => {
-    const actionLabels = {
-      'CREATE': 'Criado',
-      'UPDATE': 'Atualizado',
-      'DELETE': 'Excluído',
-      'VIEW': 'Visualizado'
+    const actions = {
+      'create': 'Criar',
+      'update': 'Editar',
+      'delete': 'Excluir',
+      'login': 'Login',
+      'logout': 'Logout',
+      'view': 'Visualizar'
     };
-    return actionLabels[action] || action;
+    return actions[action] || action;
   };
 
   // Obter label do campo
   const getFieldLabel = (field) => {
-    const fieldLabels = {
+    const labels = {
       'nome': 'Nome',
       'codigo_produto': 'Código do Produto',
       'descricao': 'Descrição',
-      'grupo_id': 'Grupo',
-      'subgrupo_id': 'Subgrupo',
-      'classe_id': 'Classe',
-      'marca_id': 'Marca',
-      'unidade_id': 'Unidade',
-      'status': 'Status',
+      'codigo_barras': 'Código de Barras',
+      'fator_conversao': 'Fator de Conversão',
       'preco_custo': 'Preço de Custo',
       'preco_venda': 'Preço de Venda',
       'estoque_atual': 'Estoque Atual',
-      'estoque_minimo': 'Estoque Mínimo'
+      'estoque_minimo': 'Estoque Mínimo',
+      'id_fornecedor': 'Fornecedor',
+      'grupo_id': 'Grupo',
+      'unidade_id': 'Unidade',
+      'status': 'Status'
     };
-    return fieldLabels[field] || field;
+    return labels[field] || field;
   };
 
   // Formatar valor do campo
   const formatFieldValue = (field, value) => {
     if (value === null || value === undefined || value === '') {
-      return '-';
+      return 'Não informado';
     }
-    
-    if (field === 'status') {
-      return value === 1 ? 'Ativo' : 'Inativo';
+
+    switch (field) {
+      case 'preco_custo':
+      case 'preco_venda':
+        return formatPrice(value);
+      case 'estoque_atual':
+      case 'estoque_minimo':
+        return value.toString();
+
+      case 'grupo_id':
+        return getGrupoName(value);
+      case 'unidade_id':
+        return getUnidadeName(value);
+      case 'status':
+        return value === 1 ? 'Ativo' : 'Inativo';
+      default:
+        return value;
     }
-    
-    if (field.includes('preco')) {
-      return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-      }).format(value);
-    }
-    
-    return String(value);
   };
 
   // Adicionar produto
@@ -706,96 +730,127 @@ const Produtos = () => {
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal isOpen={showAuditModal} onClose={handleCloseAuditModal} size="xl">
-          <div className="p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-800">Auditoria de Produtos</h2>
-              <Button onClick={handleCloseAuditModal} variant="ghost" size="sm">
-                <FaTimes />
-              </Button>
-            </div>
-
+        <Modal
+          isOpen={showAuditModal}
+          onClose={handleCloseAuditModal}
+          title="Relatório de Auditoria - Produtos"
+          size="xl"
+        >
+          <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <Input
-                label="Data Início"
-                type="date"
-                value={auditFilters.startDate}
-                onChange={(e) => setAuditFilters(prev => ({ ...prev, startDate: e.target.value }))}
-              />
-              <Input
-                label="Data Fim"
-                type="date"
-                value={auditFilters.endDate}
-                onChange={(e) => setAuditFilters(prev => ({ ...prev, endDate: e.target.value }))}
-              />
-              <Input
-                label="Ação"
-                value={auditFilters.action}
-                onChange={(e) => setAuditFilters(prev => ({ ...prev, action: e.target.value }))}
-                placeholder="CREATE, UPDATE, DELETE"
-              />
-              <Input
-                label="Usuário"
-                value={auditFilters.user}
-                onChange={(e) => setAuditFilters(prev => ({ ...prev, user: e.target.value }))}
-                placeholder="ID do usuário"
-              />
+            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Filtros</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+                <Input
+                  label="Data Início"
+                  type="date"
+                  value={auditFilters.dataInicio}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                />
+                <Input
+                  label="Data Fim"
+                  type="date"
+                  value={auditFilters.dataFim}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                />
+                <Input
+                  label="Ação"
+                  type="select"
+                  value={auditFilters.acao}
+                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                >
+                  <option value="">Todas as ações</option>
+                  <option value="create">Criar</option>
+                  <option value="update">Editar</option>
+                  <option value="delete">Excluir</option>
+                </Input>
+                <Input
+                  label="Período"
+                  type="select"
+                  value={auditFilters.periodo}
+                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                >
+                  <option value="">Período personalizado</option>
+                  <option value="7dias">Últimos 7 dias</option>
+                  <option value="30dias">Últimos 30 dias</option>
+                  <option value="90dias">Últimos 90 dias</option>
+                  <option value="todos">Todos os registros</option>
+                </Input>
+                <div className="flex items-end">
+                  <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
+                    <span className="hidden sm:inline">Aplicar Filtros</span>
+                    <span className="sm:hidden">Aplicar</span>
+                  </Button>
+                </div>
+              </div>
             </div>
 
-            {/* Botões de Ação */}
-            <div className="flex gap-3 mb-6">
-              <Button onClick={handleApplyAuditFilters} disabled={auditLoading}>
-                {auditLoading ? 'Carregando...' : 'Aplicar Filtros'}
+            {/* Botões de Exportação */}
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button onClick={handleExportXLSX} variant="secondary" size="sm">
+                <FaFileExcel className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar Excel</span>
+                <span className="sm:hidden">Excel</span>
               </Button>
-              <Button onClick={handleExportAuditXLSX} variant="outline">
-                <FaFileExcel className="mr-2" />
-                Exportar XLSX
-              </Button>
-              <Button onClick={handleExportAuditPDF} variant="outline">
-                <FaFilePdf className="mr-2" />
-                Exportar PDF
+              <Button onClick={handleExportPDF} variant="secondary" size="sm">
+                <FaFilePdf className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar PDF</span>
+                <span className="sm:hidden">PDF</span>
               </Button>
             </div>
-
+            
             {/* Lista de Logs */}
-            {auditLoading ? (
-              <LoadingSpinner />
-            ) : (
-              <div className="space-y-4 max-h-96 overflow-y-auto">
-                {auditLogs.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Nenhum log de auditoria encontrado
+            <div className="max-h-64 sm:max-h-96 overflow-y-auto">
+              {auditLoading ? (
+                <div className="text-center py-6 sm:py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+                  <p className="text-gray-600 text-sm">Carregando logs...</p>
+                </div>
+              ) : auditLogs.length === 0 ? (
+                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
+                  Nenhum log encontrado com os filtros aplicados
+                </div>
+              ) : (
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="text-xs sm:text-sm text-gray-600">
+                    {auditLogs.length} log(s) encontrado(s)
                   </div>
-                ) : (
-                  auditLogs.map((log, index) => (
-                    <div key={index} className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <span className="font-medium text-gray-800">
+                  {auditLogs.map((log, index) => (
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 sm:mb-3 gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            log.acao === 'create' ? 'bg-green-100 text-green-800' :
+                            log.acao === 'update' ? 'bg-yellow-100 text-yellow-800' :
+                            log.acao === 'delete' ? 'bg-red-100 text-red-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
                             {getActionLabel(log.acao)}
                           </span>
-                          <span className="text-sm text-gray-600 ml-2">
+                          <span className="text-xs sm:text-sm text-gray-600">
                             por {log.usuario_nome || 'Usuário desconhecido'}
                           </span>
                         </div>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-xs sm:text-sm text-gray-500">
                           {formatDate(log.timestamp)}
                         </span>
                       </div>
                       
                       {log.detalhes && (
-                        <div className="text-sm text-gray-700">
+                        <div className="text-xs sm:text-sm text-gray-700">
                           {log.detalhes.changes && (
                             <div className="mb-2">
                               <strong>Mudanças Realizadas:</strong>
-                              <div className="ml-4 mt-2 space-y-2">
+                              <div className="ml-3 mt-2 space-y-2">
                                 {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} className="p-2 bg-white rounded border">
+                                  <div key={field} className="p-2 bg-gray-50 rounded border text-xs">
                                     <div className="font-medium text-gray-800 mb-1">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs">
+                                    <div className="flex items-center gap-2">
                                       <span className="text-red-600">
                                         <strong>Antes:</strong> {formatFieldValue(field, change.from)}
                                       </span>
@@ -812,9 +867,9 @@ const Produtos = () => {
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
                               <strong>Dados do Produto:</strong>
-                              <div className="ml-4 mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+                              <div className="ml-3 mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} className="p-2 bg-white rounded border text-xs">
+                                  <div key={field} className="p-2 bg-gray-50 rounded border text-xs">
                                     <div className="font-medium text-gray-800 mb-1">
                                       {getFieldLabel(field)}:
                                     </div>
@@ -837,10 +892,10 @@ const Produtos = () => {
                         </div>
                       )}
                     </div>
-                  ))
-                )}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </Modal>
       )}
