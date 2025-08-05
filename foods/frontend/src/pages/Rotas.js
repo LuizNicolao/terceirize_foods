@@ -587,37 +587,153 @@ const Rotas = () => {
           }
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+        <>
+          {/* Versão Desktop - Tabela completa */}
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
             <Table>
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distância</th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Custo</th>
-                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredRotas.map((rota) => (
-                <tr key={rota.id} className="hover:bg-gray-50">
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{rota.id}</td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                    {loadingFiliais ? (
-                      <span className="text-gray-400">Carregando...</span>
-                    ) : (
-                      getFilialName(rota.filial_id)
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distância</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Custo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredRotas.map((rota) => (
+                  <tr key={rota.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {loadingFiliais ? (
+                        <span className="text-gray-400">Carregando...</span>
+                      ) : (
+                        getFilialName(rota.filial_id)
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.codigo}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.nome}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.distancia_km}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                        rota.tipo_rota === 'semanal' ? 'bg-blue-100 text-blue-800' :
+                        rota.tipo_rota === 'quinzenal' ? 'bg-purple-100 text-purple-800' :
+                        rota.tipo_rota === 'mensal' ? 'bg-green-100 text-green-800' :
+                        rota.tipo_rota === 'transferencia' ? 'bg-orange-100 text-orange-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {formatTipoRota(rota.tipo_rota)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(rota.custo_diario)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                        rota.status === 'ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {rota.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleViewRota(rota)}
+                          title="Visualizar"
+                        >
+                          <FaEye className="text-green-600 text-sm" />
+                        </Button>
+                        {canEdit('rotas') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditRota(rota)}
+                            title="Editar"
+                          >
+                            <FaEdit className="text-blue-600 text-sm" />
+                          </Button>
+                        )}
+                        {canDelete('rotas') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteRota(rota.id)}
+                            title="Excluir"
+                          >
+                            <FaTrash className="text-red-600 text-sm" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Versão Mobile - Cards */}
+          <div className="lg:hidden space-y-3">
+            {filteredRotas.map((rota) => (
+              <div key={rota.id} className="bg-white rounded-lg shadow-sm p-4 border">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm">{rota.nome}</h3>
+                    <p className="text-gray-600 text-xs">ID: {rota.id} | Código: {rota.codigo}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => handleViewRota(rota)}
+                      title="Visualizar"
+                      className="p-2"
+                    >
+                      <FaEye className="text-green-600 text-sm" />
+                    </Button>
+                    {canEdit('rotas') && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleEditRota(rota)}
+                        title="Editar"
+                        className="p-2"
+                      >
+                        <FaEdit className="text-blue-600 text-sm" />
+                      </Button>
                     )}
-                  </td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{rota.codigo}</td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{rota.nome}</td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{rota.distancia_km}</td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                    {canDelete('rotas') && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleDeleteRota(rota.id)}
+                        title="Excluir"
+                        className="p-2"
+                      >
+                        <FaTrash className="text-red-600 text-sm" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-gray-500">Filial:</span>
+                    <p className="font-medium">
+                      {loadingFiliais ? 'Carregando...' : getFilialName(rota.filial_id)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Distância:</span>
+                    <p className="font-medium">{rota.distancia_km} km</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Tipo:</span>
                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                       rota.tipo_rota === 'semanal' ? 'bg-blue-100 text-blue-800' :
                       rota.tipo_rota === 'quinzenal' ? 'bg-purple-100 text-purple-800' :
@@ -627,58 +743,26 @@ const Rotas = () => {
                     }`}>
                       {formatTipoRota(rota.tipo_rota)}
                     </span>
-                  </td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">{formatCurrency(rota.custo_diario)}</td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                      rota.status === 'ativo' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {rota.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                    <div className="flex gap-1 sm:gap-2">
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleViewRota(rota)}
-                        title="Visualizar"
-                        className="p-1 sm:p-2"
-                      >
-                        <FaEye className="text-green-600 text-xs sm:text-sm" />
-                      </Button>
-                      {canEdit('rotas') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => handleEditRota(rota)}
-                          title="Editar"
-                          className="p-1 sm:p-2"
-                        >
-                          <FaEdit className="text-blue-600 text-xs sm:text-sm" />
-                        </Button>
-                      )}
-                      {canDelete('rotas') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => handleDeleteRota(rota.id)}
-                          title="Excluir"
-                          className="p-1 sm:p-2"
-                        >
-                          <FaTrash className="text-red-600 text-xs sm:text-sm" />
-                        </Button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </div>
-        </div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Custo:</span>
+                    <p className="font-medium">{formatCurrency(rota.custo_diario)}</p>
+                  </div>
+                </div>
+                
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    rota.status === 'ativo' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {rota.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Modal de Cadastro/Edição/Visualização */}
@@ -803,8 +887,8 @@ const Rotas = () => {
                   {showUnidades ? <FaChevronUp /> : <FaChevronDown />}
                 </div>
                 
-                                 {showUnidades && (
-                   <div className="max-h-[250px] sm:max-h-[300px] overflow-y-auto">
+                {showUnidades && (
+                  <div className="max-h-[250px] sm:max-h-[300px] overflow-y-auto">
                     {loadingUnidades ? (
                       <div className="text-center py-6 sm:py-8">
                         <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
@@ -815,44 +899,87 @@ const Rotas = () => {
                         Nenhuma unidade escolar vinculada a esta rota
                       </div>
                     ) : (
-                      <div className="bg-white rounded-lg border overflow-hidden">
-                        <div className="overflow-x-auto">
-                          <table className="w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                              <tr>
-                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12 sm:w-16">Ordem</th>
-                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20 sm:w-24">Código</th>
-                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome da Escola</th>
-                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24 sm:w-32">Cidade</th>
-                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16 sm:w-20">Estado</th>
-                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32 sm:w-40">Centro Distribuição</th>
-                                <th className="px-2 py-2 sm:px-4 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16 sm:w-20">Status</th>
-                              </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                              {unidadesEscolares.map((unidade) => (
-                                <tr key={unidade.id} className="hover:bg-gray-50">
-                                  <td className="px-2 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">{unidade.ordem_entrega || '-'}</td>
-                                  <td className="px-2 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">{unidade.codigo_teknisa}</td>
-                                  <td className="px-2 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">{unidade.nome_escola}</td>
-                                  <td className="px-2 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">{unidade.cidade}</td>
-                                  <td className="px-2 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">{unidade.estado}</td>
-                                  <td className="px-2 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">{unidade.centro_distribuicao || '-'}</td>
-                                  <td className="px-2 py-2 sm:px-4 sm:py-3 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                                      unidade.status === 'ativo' 
-                                        ? 'bg-green-100 text-green-800' 
-                                        : 'bg-red-100 text-red-800'
-                                    }`}>
-                                      {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                                    </span>
-                                  </td>
+                      <>
+                        {/* Versão Desktop - Tabela completa */}
+                        <div className="hidden lg:block bg-white rounded-lg border overflow-hidden">
+                          <div className="overflow-x-auto">
+                            <table className="w-full divide-y divide-gray-200">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Ordem</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Código</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome da Escola</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Cidade</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Estado</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Centro Distribuição</th>
+                                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Status</th>
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {unidadesEscolares.map((unidade) => (
+                                  <tr key={unidade.id} className="hover:bg-gray-50">
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.ordem_entrega || '-'}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.codigo_teknisa}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.cidade}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.estado}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{unidade.centro_distribuicao || '-'}</td>
+                                    <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                                        unidade.status === 'ativo' 
+                                          ? 'bg-green-100 text-green-800' 
+                                          : 'bg-red-100 text-red-800'
+                                      }`}>
+                                        {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                                      </span>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
-                      </div>
+
+                        {/* Versão Mobile - Cards */}
+                        <div className="lg:hidden space-y-2">
+                          {unidadesEscolares.map((unidade) => (
+                            <div key={unidade.id} className="bg-white rounded-lg border p-3">
+                              <div className="flex justify-between items-start mb-2">
+                                <div className="flex-1">
+                                  <h4 className="font-semibold text-gray-900 text-sm">{unidade.nome_escola}</h4>
+                                  <p className="text-gray-600 text-xs">Código: {unidade.codigo_teknisa}</p>
+                                </div>
+                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                                  unidade.status === 'ativo' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-red-100 text-red-800'
+                                }`}>
+                                  {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                                </span>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                  <span className="text-gray-500">Ordem:</span>
+                                  <p className="font-medium">{unidade.ordem_entrega || '-'}</p>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Cidade:</span>
+                                  <p className="font-medium">{unidade.cidade}</p>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Estado:</span>
+                                  <p className="font-medium">{unidade.estado}</p>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Centro:</span>
+                                  <p className="font-medium">{unidade.centro_distribuicao || '-'}</p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
                     )}
                     {unidadesEscolares.length > 0 && (
                       <div className="mt-3 p-2 sm:p-3 bg-gray-50 rounded-lg text-center text-xs sm:text-sm text-gray-600">
@@ -865,11 +992,11 @@ const Rotas = () => {
             )}
 
             {!viewMode && (
-              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
-                <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal} className="w-full sm:w-auto">
+              <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
+                <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
                   Cancelar
                 </Button>
-                <Button type="submit" size="sm" className="w-full sm:w-auto">
+                <Button type="submit" size="sm">
                   {editingRota ? 'Atualizar' : 'Cadastrar'}
                 </Button>
               </div>
@@ -890,7 +1017,7 @@ const Rotas = () => {
             {/* Filtros de Auditoria */}
             <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
               <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Filtros</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Input
                   label="Data Início"
                   type="date"
@@ -937,15 +1064,15 @@ const Rotas = () => {
 
             {/* Botões de Exportação */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button onClick={handleExportXLSX} variant="secondary" size="sm" className="w-full sm:w-auto">
+              <Button onClick={handleExportXLSX} variant="secondary" size="sm">
                 <FaFileExcel className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar Excel</span>
-                <span className="sm:hidden">Exportar Excel</span>
+                <span className="sm:hidden">Excel</span>
               </Button>
-              <Button onClick={handleExportPDF} variant="secondary" size="sm" className="w-full sm:w-auto">
+              <Button onClick={handleExportPDF} variant="secondary" size="sm">
                 <FaFilePdf className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar PDF</span>
-                <span className="sm:hidden">Exportar PDF</span>
+                <span className="sm:hidden">PDF</span>
               </Button>
             </div>
             
