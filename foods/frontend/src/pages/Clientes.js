@@ -757,7 +757,7 @@ const Clientes = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         title={viewMode ? 'Visualizar Cliente' : editingCliente ? 'Editar Cliente' : 'Adicionar Cliente'}
-        size="xl"
+        size="full"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'lg:grid-cols-3 md:grid-cols-2'} gap-3 sm:gap-4`}>
@@ -905,7 +905,7 @@ const Clientes = () => {
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Clientes"
-        size="xl"
+        size="full"
       >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}

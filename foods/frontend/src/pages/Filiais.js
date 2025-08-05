@@ -569,7 +569,7 @@ const Filiais = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         title={viewMode ? 'Visualizar Filial' : editingFilial ? 'Editar Filial' : 'Adicionar Filial'}
-        size="xl"
+        size="full"
       >
         <div className="mb-4">
           <div className="flex border-b border-gray-200">
@@ -643,7 +643,7 @@ const Filiais = () => {
           isOpen={showAuditModal}
           onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Filiais"
-          size="xl"
+          size="full"
         >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}

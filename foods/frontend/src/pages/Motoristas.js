@@ -643,7 +643,7 @@ const Motoristas = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         title={viewMode ? 'Visualizar Motorista' : editingMotorista ? 'Editar Motorista' : 'Adicionar Motorista'}
-        size="xl"
+        size="full"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
           {/* Primeira Linha - 2 Cards */}
@@ -800,7 +800,7 @@ const Motoristas = () => {
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Motoristas"
-        size="xl"
+        size="full"
       >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}

@@ -624,7 +624,7 @@ const Fornecedores = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         title={viewMode ? 'Visualizar Fornecedor' : editingFornecedor ? 'Editar Fornecedor' : 'Adicionar Fornecedor'}
-        size="xl"
+        size="full"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
           {/* Primeira Linha - 2 Cards */}
@@ -756,7 +756,7 @@ const Fornecedores = () => {
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Fornecedores"
-        size="xl"
+        size="full"
       >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}

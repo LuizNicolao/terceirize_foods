@@ -625,7 +625,7 @@ const Ajudantes = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         title={viewMode ? 'Visualizar Ajudante' : editingAjudante ? 'Editar Ajudante' : 'Adicionar Ajudante'}
-        size="xl"
+        size="full"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
           {/* Primeira Linha - 2 Cards */}
@@ -749,7 +749,7 @@ const Ajudantes = () => {
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Ajudantes"
-        size="xl"
+        size="full"
       >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
