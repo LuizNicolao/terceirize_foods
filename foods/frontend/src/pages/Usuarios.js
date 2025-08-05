@@ -220,10 +220,10 @@ const Usuarios = () => {
       return getStatusLabel(value);
     }
     if (field === 'nivel_de_acesso') {
-      return getNivelAcessoLabel(value);
+        return getNivelAcessoLabel(value);
     }
     if (field === 'tipo_de_acesso') {
-      return getTipoAcessoLabel(value);
+        return getTipoAcessoLabel(value);
     }
     return value;
   };
@@ -272,16 +272,16 @@ const Usuarios = () => {
       } else {
         result = await UsuariosService.criar(cleanData);
       }
-
+      
       if (result.success) {
         toast.success(editingUsuario ? 'Usuário atualizado com sucesso!' : 'Usuário criado com sucesso!');
-        handleCloseModal();
-        loadUsuarios();
+      handleCloseModal();
+      loadUsuarios();
       } else {
         toast.error(result.error);
       }
     } catch (error) {
-      toast.error('Erro ao salvar usuário');
+        toast.error('Erro ao salvar usuário');
     }
   };
 
@@ -290,8 +290,8 @@ const Usuarios = () => {
       try {
         const result = await UsuariosService.excluir(userId);
         if (result.success) {
-          toast.success('Usuário excluído com sucesso!');
-          loadUsuarios();
+        toast.success('Usuário excluído com sucesso!');
+        loadUsuarios();
         } else {
           toast.error(result.error);
         }
@@ -417,12 +417,12 @@ const Usuarios = () => {
       </div>
 
       {/* Tabela */}
-      {filteredUsuarios.length === 0 ? (
+            {filteredUsuarios.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {searchTerm 
-            ? 'Nenhum usuário encontrado com os filtros aplicados'
-            : 'Nenhum usuário cadastrado'
-          }
+                      ? 'Nenhum usuário encontrado com os filtros aplicados'
+                      : 'Nenhum usuário cadastrado'
+                    }
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -491,36 +491,36 @@ const Usuarios = () => {
                             variant="ghost"
                             size="xs"
                             onClick={() => handleViewUser(usuario)}
-                            title="Visualizar"
-                          >
+                      title="Visualizar"
+                    >
                             <FaEye className="text-green-600 text-xs sm:text-sm" />
                           </Button>
                         )}
-                        {canEdit('usuarios') && (
+                    {canEdit('usuarios') && (
                           <Button
                             variant="ghost"
                             size="xs"
                             onClick={() => handleEditUser(usuario)}
-                            title="Editar"
-                          >
+                        title="Editar"
+                      >
                             <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                           </Button>
-                        )}
-                        {canDelete('usuarios') && (
+                    )}
+                    {canDelete('usuarios') && (
                           <Button
                             variant="ghost"
                             size="xs"
                             onClick={() => handleDeleteUser(usuario.id)}
-                            title="Excluir"
-                          >
+                        title="Excluir"
+                      >
                             <FaTrash className="text-red-600 text-xs sm:text-sm" />
                           </Button>
-                        )}
+                    )}
                       </div>
                     </td>
-                  </tr>
+                </tr>
                 ))}
-              </tbody>
+          </tbody>
             </table>
           </div>
         </div>
@@ -566,7 +566,7 @@ const Usuarios = () => {
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações de Acesso</h3>
               <div className="space-y-3">
-                <Input
+                  <Input
                   label="Tipo de Acesso *"
                   type="select"
                   {...register('tipo_de_acesso', { required: 'Tipo de acesso é obrigatório' })}
@@ -635,14 +635,14 @@ const Usuarios = () => {
             <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
               <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
                 Cancelar
-              </Button>
+                </Button>
               <Button type="submit" size="sm">
                 {editingUsuario ? 'Atualizar' : 'Criar'}
-              </Button>
+                  </Button>
             </div>
-          )}
+                )}
         </form>
-      </Modal>
+        </Modal>
 
       {/* Modal de Auditoria */}
       <Modal
@@ -660,13 +660,13 @@ const Usuarios = () => {
               <span className="hidden sm:inline">Atualizar</span>
               <span className="sm:hidden">Atualizar</span>
             </Button>
-          </div>
+              </div>
 
           {loadingAudit ? (
             <div className="flex justify-center items-center py-6 sm:py-8">
               <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600"></div>
-            </div>
-          ) : (
+                </div>
+              ) : (
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -704,10 +704,10 @@ const Usuarios = () => {
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-        </div>
-      </Modal>
+                            </div>
+                          )}
+                                    </div>
+        </Modal>
 
       {/* Paginação */}
       {totalPages > 1 && (

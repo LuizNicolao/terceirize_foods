@@ -55,7 +55,7 @@ const Fornecedores = () => {
   }, [currentPage, itemsPerPage]);
 
   const loadFornecedores = async (params = {}) => {
-    setLoading(true);
+      setLoading(true);
     try {
       // Parâmetros de paginação
       const paginationParams = {
@@ -182,12 +182,12 @@ const Fornecedores = () => {
         a.href = url;
         a.download = 'fornecedores.pdf';
         a.click();
-        window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
         toast.success('Exportação PDF realizada com sucesso!');
-      } else {
+              } else {
         toast.error(result.error);
       }
-    } catch (error) {
+            } catch (error) {
       toast.error('Erro ao exportar PDF');
     }
   };
@@ -225,7 +225,7 @@ const Fornecedores = () => {
 
   const formatFieldValue = (field, value) => {
     if (field === 'status') {
-      return value === 1 ? 'Ativo' : 'Inativo';
+        return value === 1 ? 'Ativo' : 'Inativo';
     }
     return value;
   };
@@ -286,8 +286,8 @@ const Fornecedores = () => {
 
       if (result.success) {
         toast.success(editingFornecedor ? 'Fornecedor atualizado com sucesso!' : 'Fornecedor criado com sucesso!');
-        handleCloseModal();
-        loadFornecedores();
+      handleCloseModal();
+      loadFornecedores();
       } else {
         toast.error(result.error);
       }
@@ -301,12 +301,12 @@ const Fornecedores = () => {
       try {
         const result = await FornecedoresService.excluir(fornecedorId);
         if (result.success) {
-          toast.success('Fornecedor excluído com sucesso!');
-          loadFornecedores();
+        toast.success('Fornecedor excluído com sucesso!');
+        loadFornecedores();
         } else {
           toast.error(result.error);
-        }
-      } catch (error) {
+      }
+    } catch (error) {
         toast.error('Erro ao excluir fornecedor');
       }
     }
@@ -353,7 +353,7 @@ const Fornecedores = () => {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
         <StatCard
           title="Total de Fornecedores"
           value={estatisticas.total_fornecedores}
@@ -413,31 +413,31 @@ const Fornecedores = () => {
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     CNPJ
                   </th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Razão Social
                   </th>
-                  <th className="hidden md:table-cell px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden md:table-cell px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Nome Fantasia
                   </th>
-                  <th className="hidden lg:table-cell px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Município/UF
                   </th>
-                  <th className="hidden xl:table-cell px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contato
                   </th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="hidden lg:table-cell px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Criado em
                   </th>
-                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
@@ -445,36 +445,28 @@ const Fornecedores = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredFornecedores.map((fornecedor) => (
                   <tr key={fornecedor.id} className="hover:bg-gray-50">
-                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap">
                       <div className="text-xs sm:text-sm font-medium text-gray-900">
                         {fornecedor.cnpj}
                       </div>
                     </td>
-                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                      <div>
-                        <div className="font-medium">{fornecedor.razao_social}</div>
-                        <div className="text-gray-500 md:hidden">
-                          {fornecedor.nome_fantasia && `${fornecedor.nome_fantasia}`}
-                        </div>
-                        <div className="text-gray-500 md:hidden">
-                          {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : ''}
-                        </div>
-                      </div>
+                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
+                      {fornecedor.razao_social}
                     </td>
-                    <td className="hidden md:table-cell px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                    <td className="hidden md:table-cell px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {fornecedor.nome_fantasia || '-'}
                     </td>
-                    <td className="hidden lg:table-cell px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : '-'}
                     </td>
-                    <td className="hidden xl:table-cell px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                    <td className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       <div>
                         {fornecedor.email && <div>{fornecedor.email}</div>}
                         {fornecedor.telefone && <div>{fornecedor.telefone}</div>}
                         {!fornecedor.email && !fornecedor.telefone && '-'}
                       </div>
                     </td>
-                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap">
                       <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                         fornecedor.status === 1 
                           ? 'bg-green-100 text-green-800' 
@@ -483,10 +475,10 @@ const Fornecedores = () => {
                         {getStatusLabel(fornecedor.status)}
                       </span>
                     </td>
-                    <td className="hidden lg:table-cell px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                    <td className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {fornecedor.criado_em ? formatDate(fornecedor.criado_em) : 'N/A'}
                     </td>
-                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
                       <div className="flex gap-1 sm:gap-2">
                         {canView('fornecedores') && (
                           <Button
@@ -560,7 +552,7 @@ const Fornecedores = () => {
                   error={errors.nome_fantasia?.message}
                   disabled={viewMode}
                 />
-                <Input
+                  <Input
                   label="Status *"
                   type="select"
                   {...register('status', { required: 'Status é obrigatório' })}
@@ -571,8 +563,8 @@ const Fornecedores = () => {
                   <option value="1">Ativo</option>
                   <option value="0">Inativo</option>
                 </Input>
-              </div>
-            </div>
+                  </div>
+                </div>
 
             {/* Card 2: Contato */}
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -605,15 +597,13 @@ const Fornecedores = () => {
             {/* Card 3: Endereço */}
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Endereço</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <div className="sm:col-span-2">
-                  <Input
-                    label="Logradouro"
-                    {...register('logradouro')}
-                    error={errors.logradouro?.message}
-                    disabled={viewMode}
-                  />
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Input
+                  label="Logradouro"
+                  {...register('logradouro')}
+                  error={errors.logradouro?.message}
+                  disabled={viewMode}
+                />
                 <Input
                   label="Número"
                   {...register('numero')}
@@ -632,13 +622,13 @@ const Fornecedores = () => {
                   error={errors.bairro?.message}
                   disabled={viewMode}
                 />
-                <Input
+                  <Input
                   label="Município"
-                  {...register('municipio')}
+                    {...register('municipio')}
                   error={errors.municipio?.message}
                   disabled={viewMode}
                 />
-                <Input
+                  <Input
                   label="UF"
                   {...register('uf')}
                   error={errors.uf?.message}
@@ -646,20 +636,20 @@ const Fornecedores = () => {
                 />
               </div>
             </div>
-          </div>
+              </div>
 
           {!viewMode && (
             <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
               <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
                 Cancelar
-              </Button>
+                </Button>
               <Button type="submit" size="sm">
-                {editingFornecedor ? 'Atualizar' : 'Criar'}
-              </Button>
+                    {editingFornecedor ? 'Atualizar' : 'Criar'}
+                  </Button>
             </div>
-          )}
+                )}
         </form>
-      </Modal>
+        </Modal>
 
       {/* Modal de Auditoria */}
       <Modal
@@ -677,13 +667,13 @@ const Fornecedores = () => {
               <span className="hidden sm:inline">Atualizar</span>
               <span className="sm:hidden">Atualizar</span>
             </Button>
-          </div>
+              </div>
 
           {loadingAudit ? (
             <div className="flex justify-center items-center py-6 sm:py-8">
               <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600"></div>
-            </div>
-          ) : (
+                </div>
+              ) : (
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -691,9 +681,9 @@ const Fornecedores = () => {
                     <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
                     <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Usuário</th>
                     <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Ação</th>
-                    <th className="hidden md:table-cell px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Campo</th>
-                    <th className="hidden lg:table-cell px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Valor Anterior</th>
-                    <th className="hidden lg:table-cell px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Novo Valor</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Campo</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Valor Anterior</th>
+                    <th className="px-2 py-2 sm:px-4 sm:py-2 text-left text-xs font-medium text-gray-500 uppercase">Novo Valor</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
@@ -708,23 +698,23 @@ const Fornecedores = () => {
                       <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {getActionLabel(log.action)}
                       </td>
-                      <td className="hidden md:table-cell px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-900">
                         {getFieldLabel(log.field_name)}
                       </td>
-                      <td className="hidden lg:table-cell px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
                         {formatFieldValue(log.field_name, log.old_value)}
                       </td>
-                      <td className="hidden lg:table-cell px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
+                      <td className="px-2 py-2 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-500">
                         {formatFieldValue(log.field_name, log.new_value)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-          )}
-        </div>
-      </Modal>
+                            </div>
+                          )}
+                                    </div>
+        </Modal>
 
       {/* Paginação */}
       {totalPages > 1 && (
@@ -736,7 +726,7 @@ const Fornecedores = () => {
           itemsPerPage={itemsPerPage}
         />
       )}
-    </div>
+                  </div>
   );
 };
 
