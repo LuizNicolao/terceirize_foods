@@ -23,6 +23,7 @@ import {
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import MotoristasService from '../services/motoristas';
+import FiliaisService from '../services/filiais';
 import { Button, Input, Modal, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
@@ -30,6 +31,7 @@ import Pagination from '../components/Pagination';
 const Motoristas = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [motoristas, setMotoristas] = useState([]);
+  const [filiais, setFiliais] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
@@ -55,7 +57,19 @@ const Motoristas = () => {
 
   useEffect(() => {
     loadMotoristas();
+    loadFiliais();
   }, [currentPage, itemsPerPage]);
+
+  const loadFiliais = async () => {
+    try {
+      const result = await FiliaisService.buscarAtivas();
+      if (result.success) {
+        setFiliais(result.data);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar filiais:', error);
+    }
+  };
 
   const loadMotoristas = async (params = {}) => {
     setLoading(true);
@@ -217,13 +231,10 @@ const Motoristas = () => {
       telefone: 'Telefone',
       email: 'Email',
       endereco: 'Endereço',
-      cidade: 'Cidade',
-      estado: 'Estado',
-      cep: 'CEP',
-      data_nascimento: 'Data de Nascimento',
-      data_admissao: 'Data de Admissão',
       status: 'Status',
-      salario: 'Salário',
+      data_admissao: 'Data de Admissão',
+      cnh_validade: 'Validade da CNH',
+      filial_id: 'Filial',
       observacoes: 'Observações'
     };
     return fields[field] || field;
@@ -233,11 +244,12 @@ const Motoristas = () => {
     if (field === 'status') {
       return getStatusLabel(value);
     }
-    if (field === 'data_nascimento' || field === 'data_admissao') {
+    if (field === 'data_admissao' || field === 'cnh_validade') {
       return value ? formatDate(value) : 'N/A';
     }
-    if (field === 'salario') {
-      return value ? `R$ ${parseFloat(value).toFixed(2)}` : 'N/A';
+    if (field === 'filial_id') {
+      const filial = filiais.find(f => f.id === value);
+      return filial ? filial.filial : 'N/A';
     }
     return value;
   };
@@ -441,6 +453,9 @@ const Motoristas = () => {
                     Status
                   </th>
                   <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Filial
+                  </th>
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Admissão
                   </th>
                   <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -476,6 +491,9 @@ const Motoristas = () => {
                       }`}>
                         {getStatusLabel(motorista.status)}
                       </span>
+                    </td>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      {motorista.filial_nome || 'N/A'}
                     </td>
                     <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {motorista.data_admissao ? formatDate(motorista.data_admissao) : 'N/A'}
@@ -549,15 +567,15 @@ const Motoristas = () => {
                   disabled={viewMode}
                 />
                 <Input
-                  label="Data de Nascimento"
-                  type="date"
-                  {...register('data_nascimento')}
-                  disabled={viewMode}
-                />
-                <Input
                   label="Email"
                   type="email"
                   {...register('email')}
+                  disabled={viewMode}
+                />
+                <Input
+                  label="Telefone *"
+                  {...register('telefone', { required: 'Telefone é obrigatório' })}
+                  error={errors.telefone?.message}
                   disabled={viewMode}
                 />
               </div>
@@ -588,9 +606,9 @@ const Motoristas = () => {
                   <option value="E">E - Reboques</option>
                 </Input>
                 <Input
-                  label="Telefone *"
-                  {...register('telefone', { required: 'Telefone é obrigatório' })}
-                  error={errors.telefone?.message}
+                  label="Validade da CNH"
+                  type="date"
+                  {...register('cnh_validade')}
                   disabled={viewMode}
                 />
               </div>
@@ -605,25 +623,10 @@ const Motoristas = () => {
               <div className="space-y-3">
                 <Input
                   label="Endereço"
+                  type="textarea"
                   {...register('endereco')}
                   disabled={viewMode}
-                />
-                <div className="grid grid-cols-2 gap-3">
-                  <Input
-                    label="Cidade"
-                    {...register('cidade')}
-                    disabled={viewMode}
-                  />
-                  <Input
-                    label="Estado"
-                    {...register('estado')}
-                    disabled={viewMode}
-                  />
-                </div>
-                <Input
-                  label="CEP"
-                  {...register('cep')}
-                  disabled={viewMode}
+                  rows={3}
                 />
               </div>
             </div>
@@ -652,12 +655,18 @@ const Motoristas = () => {
                   <option value="licenca">Em Licença</option>
                 </Input>
                 <Input
-                  label="Salário"
-                  type="number"
-                  step="0.01"
-                  {...register('salario')}
+                  label="Filial"
+                  type="select"
+                  {...register('filial_id')}
                   disabled={viewMode}
-                />
+                >
+                  <option value="">Selecione a filial</option>
+                  {filiais.map((filial) => (
+                    <option key={filial.id} value={filial.id}>
+                      {filial.filial}
+                    </option>
+                  ))}
+                </Input>
               </div>
             </div>
           </div>
