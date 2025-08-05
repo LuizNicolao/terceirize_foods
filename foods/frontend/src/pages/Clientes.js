@@ -43,7 +43,6 @@ const Clientes = () => {
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [formKey, setFormKey] = useState(0); // Para forçar re-render do formulário
   
   // Estados de paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -51,7 +50,7 @@ const Clientes = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
 
   // Debounce para busca
   useEffect(() => {
@@ -368,9 +367,6 @@ const Clientes = () => {
           
           reset(formData);
           
-          // Forçar re-render do formulário
-          setFormKey(prev => prev + 1);
-          
           toast.success('Dados do CNPJ carregados automaticamente!');
         } else {
           toast.error(result.error || 'Erro ao buscar dados do CNPJ');
@@ -680,7 +676,7 @@ const Clientes = () => {
         title={viewMode ? 'Visualizar Cliente' : editingCliente ? 'Editar Cliente' : 'Adicionar Cliente'}
         size="xl"
       >
-        <form key={formKey} onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
           <div className={`grid grid-cols-1 ${viewMode ? 'lg:grid-cols-3 md:grid-cols-2' : 'lg:grid-cols-3 md:grid-cols-2'} gap-3 sm:gap-4`}>
             {/* Primeira linha - Informações básicas */}
             <div className="lg:col-span-2">
