@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaBox, FaCheckCircle, FaTimesCircle, FaExclamationTriangle, FaUsers, FaTruck, FaRoute, FaBuilding } from 'react-icons/fa';
 
 const StatCard = ({ 
   title, 
@@ -19,6 +20,20 @@ const StatCard = ({
     yellow: 'bg-yellow-500'
   };
 
+  // Função para determinar o ícone baseado no título
+  const getDefaultIcon = (title) => {
+    const titleLower = title.toLowerCase();
+    if (titleLower.includes('produto')) return FaBox;
+    if (titleLower.includes('ativo')) return FaCheckCircle;
+    if (titleLower.includes('inativo')) return FaTimesCircle;
+    if (titleLower.includes('estoque') || titleLower.includes('baixo')) return FaExclamationTriangle;
+    if (titleLower.includes('usuário') || titleLower.includes('usuario')) return FaUsers;
+    if (titleLower.includes('veículo') || titleLower.includes('veiculo')) return FaTruck;
+    if (titleLower.includes('rota')) return FaRoute;
+    if (titleLower.includes('filial') || titleLower.includes('unidade')) return FaBuilding;
+    return FaBox; // ícone padrão
+  };
+
   const cardClasses = `
     bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 
     transition-all duration-300 hover:shadow-md hover:-translate-y-1
@@ -35,7 +50,7 @@ const StatCard = ({
     <div className={cardClasses} onClick={onClick}>
       <div className="flex items-center justify-between mb-3 sm:mb-4">
         <div className={iconClasses}>
-          {Icon && <Icon />}
+          {Icon ? <Icon /> : React.createElement(getDefaultIcon(title))}
         </div>
         
         {trend && (

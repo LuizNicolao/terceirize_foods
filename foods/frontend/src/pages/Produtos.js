@@ -523,33 +523,29 @@ const Produtos = () => {
         </div>
       </div>
 
-      {/* StatCards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard
-          title="Total de Produtos"
-          value={estatisticas.total}
-          icon="📦"
-          color="blue"
-        />
-        <StatCard
-          title="Produtos Ativos"
-          value={estatisticas.ativos}
-          icon="✅"
-          color="green"
-        />
-        <StatCard
-          title="Produtos Inativos"
-          value={estatisticas.inativos}
-          icon="❌"
-          color="red"
-        />
-        <StatCard
-          title="Estoque Baixo"
-          value={estatisticas.estoqueBaixo}
-          icon="⚠️"
-          color="yellow"
-        />
-      </div>
+             {/* StatCards */}
+       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+         <StatCard
+           title="Total de Produtos"
+           value={estatisticas.total}
+           color="blue"
+         />
+         <StatCard
+           title="Produtos Ativos"
+           value={estatisticas.ativos}
+           color="green"
+         />
+         <StatCard
+           title="Produtos Inativos"
+           value={estatisticas.inativos}
+           color="red"
+         />
+         <StatCard
+           title="Estoque Baixo"
+           value={estatisticas.estoqueBaixo}
+           color="yellow"
+         />
+       </div>
 
       {/* Filtros */}
       <CadastroFilterBar
