@@ -368,7 +368,7 @@ const Clientes = () => {
           reset(formData);
           
           toast.success('Dados do CNPJ carregados automaticamente!');
-        } else {
+    } else {
           toast.error(result.error || 'Erro ao buscar dados do CNPJ');
         }
       }

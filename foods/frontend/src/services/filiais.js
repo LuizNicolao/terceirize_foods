@@ -32,6 +32,50 @@ class FiliaisService {
     }
   }
 
+  async criar(data) {
+    try {
+      const response = await api.post('/filiais', data);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao criar filial'
+      };
+    }
+  }
+
+  async atualizar(id, data) {
+    try {
+      const response = await api.put(`/filiais/${id}`, data);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao atualizar filial'
+      };
+    }
+  }
+
+  async excluir(id) {
+    try {
+      await api.delete(`/filiais/${id}`);
+      return {
+        success: true
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao excluir filial'
+      };
+    }
+  }
+
   async buscarAtivas() {
     try {
       const response = await api.get('/filiais/ativas/listar');
@@ -43,6 +87,171 @@ class FiliaisService {
       return {
         success: false,
         error: error.response?.data?.message || 'Erro ao carregar filiais ativas'
+      };
+    }
+  }
+
+  async consultarCNPJ(cnpj) {
+    try {
+      const cnpjLimpo = cnpj.replace(/\D/g, '');
+      const response = await api.get(`/filiais/consulta-cnpj/${cnpjLimpo}`);
+      
+      // Extrair dados da estrutura HATEOAS
+      let dados = null;
+      
+      if (response.data.data) {
+        dados = response.data.data;
+      } else {
+        dados = response.data;
+      }
+      
+      return {
+        success: true,
+        data: dados
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao consultar CNPJ'
+      };
+    }
+  }
+
+  async listarAlmoxarifados(filialId) {
+    try {
+      const response = await api.get(`/filiais/${filialId}/almoxarifados`);
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar almoxarifados'
+      };
+    }
+  }
+
+  async criarAlmoxarifado(filialId, data) {
+    try {
+      const response = await api.post(`/filiais/${filialId}/almoxarifados`, data);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao criar almoxarifado'
+      };
+    }
+  }
+
+  async atualizarAlmoxarifado(id, data) {
+    try {
+      const response = await api.put(`/filiais/almoxarifados/${id}`, data);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao atualizar almoxarifado'
+      };
+    }
+  }
+
+  async excluirAlmoxarifado(id) {
+    try {
+      await api.delete(`/filiais/almoxarifados/${id}`);
+      return {
+        success: true
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao excluir almoxarifado'
+      };
+    }
+  }
+
+  async listarItensAlmoxarifado(almoxarifadoId) {
+    try {
+      const response = await api.get(`/filiais/almoxarifados/${almoxarifadoId}/itens`);
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar itens do almoxarifado'
+      };
+    }
+  }
+
+  async adicionarItemAlmoxarifado(almoxarifadoId, data) {
+    try {
+      const response = await api.post(`/filiais/almoxarifados/${almoxarifadoId}/itens`, data);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao adicionar item ao almoxarifado'
+      };
+    }
+  }
+
+  async removerItemAlmoxarifado(almoxarifadoId, itemId) {
+    try {
+      await api.delete(`/filiais/almoxarifados/${almoxarifadoId}/itens/${itemId}`);
+      return {
+        success: true
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao remover item do almoxarifado'
+      };
+    }
+  }
+
+  async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/filiais/export/xlsx', { 
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar dados'
+      };
+    }
+  }
+
+  async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/filiais/export/pdf', { 
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar dados'
       };
     }
   }
