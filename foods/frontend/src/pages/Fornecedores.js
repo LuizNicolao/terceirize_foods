@@ -330,7 +330,7 @@ const Fornecedores = () => {
   return (
     <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4 px-1">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Fornecedores</h1>
         <div className="flex gap-2 sm:gap-3">
           <Button
@@ -353,7 +353,7 @@ const Fornecedores = () => {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
         <StatCard
           title="Total de Fornecedores"
           value={estatisticas.total_fornecedores}
@@ -389,13 +389,13 @@ const Fornecedores = () => {
       />
 
       {/* Ações */}
-      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
-        <Button onClick={handleExportXLSX} variant="outline" size="sm">
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <Button onClick={handleExportXLSX} variant="outline" size="sm" className="text-xs sm:text-sm">
           <FaFileExcel className="mr-1 sm:mr-2" />
           <span className="hidden sm:inline">Exportar XLSX</span>
           <span className="sm:hidden">XLSX</span>
         </Button>
-        <Button onClick={handleExportPDF} variant="outline" size="sm">
+        <Button onClick={handleExportPDF} variant="outline" size="sm" className="text-xs sm:text-sm">
           <FaFilePdf className="mr-1 sm:mr-2" />
           <span className="hidden sm:inline">Exportar PDF</span>
           <span className="sm:hidden">PDF</span>
@@ -404,7 +404,7 @@ const Fornecedores = () => {
 
       {/* Tabela */}
       {filteredFornecedores.length === 0 ? (
-        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base px-4">
           {searchTerm 
             ? 'Nenhum fornecedor encontrado com os filtros aplicados'
             : 'Nenhum fornecedor cadastrado'
@@ -412,7 +412,7 @@ const Fornecedores = () => {
         </div>
       ) : (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto -mx-3 sm:mx-0">
             <table className="w-full min-w-full">
               <thead className="bg-gray-50">
                 <tr>
@@ -479,7 +479,7 @@ const Fornecedores = () => {
                       {fornecedor.criado_em ? formatDate(fornecedor.criado_em) : 'N/A'}
                     </td>
                     <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
-                      <div className="flex gap-1 sm:gap-2">
+                      <div className="flex gap-1 sm:gap-2 justify-center sm:justify-start">
                         {canView('fornecedores') && (
                           <Button
                             variant="ghost"
@@ -527,13 +527,13 @@ const Fornecedores = () => {
         title={viewMode ? 'Visualizar Fornecedor' : editingFornecedor ? 'Editar Fornecedor' : 'Adicionar Fornecedor'}
         size="xl"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* Primeira Linha - 2 Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Card 1: Informações Principais */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 max-h-[75vh] overflow-y-auto">
+                      {/* Primeira Linha - 2 Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              {/* Card 1: Informações Principais */}
+              <div className="bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Principais</h3>
-              <div className="space-y-3">
+              <div className="space-y-3 sm:space-y-4">
                 <Input
                   label="CNPJ *"
                   {...register('cnpj', { required: 'CNPJ é obrigatório' })}
@@ -567,9 +567,9 @@ const Fornecedores = () => {
                 </div>
 
             {/* Card 2: Contato */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Contato</h3>
-              <div className="space-y-3">
+              <div className="space-y-3 sm:space-y-4">
                 <Input
                   label="Email"
                   type="email"
@@ -595,9 +595,9 @@ const Fornecedores = () => {
           {/* Segunda Linha - 1 Card */}
           <div className="grid grid-cols-1 gap-4">
             {/* Card 3: Endereço */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Endereço</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 <Input
                   label="Logradouro"
                   {...register('logradouro')}
@@ -639,7 +639,7 @@ const Fornecedores = () => {
               </div>
 
           {!viewMode && (
-            <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
+            <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
               <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
                 Cancelar
                 </Button>
