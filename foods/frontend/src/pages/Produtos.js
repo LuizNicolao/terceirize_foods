@@ -285,12 +285,12 @@ const Produtos = () => {
   };
 
   const getGrupoName = (grupoId) => {
-    const grupo = grupos.find(g => g.id === grupoId);
+    const grupo = (grupos || []).find(g => g.id === grupoId);
     return grupo ? grupo.nome_grupo : '-';
   };
 
   const getUnidadeName = (unidadeId) => {
-    const unidade = unidades.find(u => u.id === unidadeId);
+    const unidade = (unidades || []).find(u => u.id === unidadeId);
     return unidade ? unidade.nome_unidade : '-';
   };
 
@@ -457,8 +457,8 @@ const Produtos = () => {
             { value: 'ativo', label: 'Ativo' },
             { value: 'inativo', label: 'Inativo' }
           ]},
-          { key: 'grupo_id', label: 'Grupo', type: 'select', options: grupos.map(g => ({ value: g.id, label: g.nome_grupo })) },
-          { key: 'unidade_id', label: 'Unidade', type: 'select', options: unidades.map(u => ({ value: u.id, label: u.nome_unidade })) }
+          { key: 'grupo_id', label: 'Grupo', type: 'select', options: (grupos || []).map(g => ({ value: g.id, label: g.nome_grupo })) },
+          { key: 'unidade_id', label: 'Unidade', type: 'select', options: (unidades || []).map(u => ({ value: u.id, label: u.nome_unidade })) }
         ]}
       />
 
