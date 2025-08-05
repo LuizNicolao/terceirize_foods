@@ -104,15 +104,15 @@ const Filiais = () => {
       if (editingFilial) {
         const response = await filiaisService.atualizar(editingFilial.id, data);
         if (response.success) {
-          toast.success('Filial atualizada com sucesso!');
-        } else {
+        toast.success('Filial atualizada com sucesso!');
+      } else {
           toast.error(response.error);
           return false;
         }
       } else {
         const response = await filiaisService.criar(data);
         if (response.success) {
-          toast.success('Filial criada com sucesso!');
+        toast.success('Filial criada com sucesso!');
         } else {
           toast.error(response.error);
           return false;
@@ -132,7 +132,7 @@ const Filiais = () => {
   const handleDeleteFilial = async (filialId) => {
     if (!window.confirm('Tem certeza que deseja excluir esta filial?')) return;
 
-    try {
+      try {
       const response = await filiaisService.excluir(filialId);
       if (response.success) {
         toast.success('Filial excluída com sucesso!');
@@ -140,8 +140,8 @@ const Filiais = () => {
       } else {
         toast.error(response.error);
       }
-    } catch (error) {
-      console.error('Erro ao excluir filial:', error);
+      } catch (error) {
+        console.error('Erro ao excluir filial:', error);
       toast.error('Erro ao excluir filial');
     }
   };
@@ -530,31 +530,31 @@ const Filiais = () => {
                       <Button
                         variant="ghost"
                         size="xs"
-                        onClick={() => handleViewFilial(filial)}
+                      onClick={() => handleViewFilial(filial)}
                         title="Visualizar"
-                      >
+                    >
                         <FaEye className="text-green-600 text-xs sm:text-sm" />
                       </Button>
-                      {canEdit('filiais') && (
+                    {canEdit('filiais') && (
                         <Button
                           variant="ghost"
                           size="xs"
-                          onClick={() => handleEditFilial(filial)}
+                        onClick={() => handleEditFilial(filial)}
                           title="Editar"
-                        >
+                      >
                           <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                         </Button>
-                      )}
-                      {canDelete('filiais') && (
+                    )}
+                    {canDelete('filiais') && (
                         <Button
                           variant="ghost"
                           size="xs"
-                          onClick={() => handleDeleteFilial(filial.id)}
+                        onClick={() => handleDeleteFilial(filial.id)}
                           title="Excluir"
-                        >
+                      >
                           <FaTrash className="text-red-600 text-xs sm:text-sm" />
                         </Button>
-                      )}
+                    )}
                     </div>
                   </Table.Cell>
                 </Table.Row>
@@ -583,7 +583,7 @@ const Filiais = () => {
             >
               Dados
             </button>
-            {editingFilial && editingFilial.id && (
+              {editingFilial && editingFilial.id && (
               <button
                 className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === 'almoxarifados'
@@ -598,7 +598,7 @@ const Filiais = () => {
           </div>
         </div>
 
-        {activeTab === 'dados' && (
+            {activeTab === 'dados' && (
           <FilialForm
             onSubmit={handleSaveFilial}
             initialData={editingFilial}
@@ -611,23 +611,23 @@ const Filiais = () => {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Almoxarifados da Filial</h3>
-              {!viewMode && (
-                <Button
+                      {!viewMode && (
+                        <Button 
                   variant="primary"
                   size="sm"
                   onClick={() => setShowAlmoxarifadoModal(true)}
                 >
                   <FaPlus className="mr-1" />
                   Novo Almoxarifado
-                </Button>
-              )}
-            </div>
+                        </Button>
+                      )}
+                    </div>
             <div className="text-center py-8 text-gray-500">
               Clique em "Novo Almoxarifado" para gerenciar os almoxarifados desta filial
-            </div>
-          </div>
-        )}
-      </Modal>
+                </div>
+              </div>
+            )}
+              </Modal>
 
       {/* Modal de Almoxarifados */}
       <AlmoxarifadoModal
@@ -652,38 +652,38 @@ const Filiais = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                 <Input
                   label="Data Início"
-                  type="date"
-                  value={auditFilters.dataInicio}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
                 />
                 <Input
                   label="Data Fim"
-                  type="date"
-                  value={auditFilters.dataFim}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
                 />
                 <Input
                   label="Ação"
                   type="select"
-                  value={auditFilters.acao}
-                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                >
-                  <option value="">Todas as ações</option>
-                  <option value="create">Criar</option>
-                  <option value="update">Editar</option>
-                  <option value="delete">Excluir</option>
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
                 </Input>
                 <Input
                   label="Período"
                   type="select"
-                  value={auditFilters.periodo}
-                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                >
-                  <option value="">Período personalizado</option>
-                  <option value="7dias">Últimos 7 dias</option>
-                  <option value="30dias">Últimos 30 dias</option>
-                  <option value="90dias">Últimos 90 dias</option>
-                  <option value="todos">Todos os registros</option>
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                  >
+                    <option value="">Período personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos os registros</option>
                 </Input>
                 <div className="flex items-end">
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
@@ -691,8 +691,8 @@ const Filiais = () => {
                     <span className="sm:hidden">Aplicar</span>
                   </Button>
                 </div>
+                </div>
               </div>
-            </div>
 
             {/* Botões de Exportação */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -804,7 +804,7 @@ const Filiais = () => {
                 </div>
               )}
             </div>
-          </div>
+              </div>
         </Modal>
       )}
     </div>
