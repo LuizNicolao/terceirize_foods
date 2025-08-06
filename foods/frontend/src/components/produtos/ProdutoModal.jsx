@@ -1,7 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaPrint } from 'react-icons/fa';
-import { Button, Input, Modal } from '../../ui';
+import { Button, Input, Modal } from '../ui';
 
 const ProdutoModal = ({ 
   isOpen, 
