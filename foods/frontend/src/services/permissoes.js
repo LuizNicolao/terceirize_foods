@@ -50,8 +50,15 @@ class PermissoesService {
       let permissoes = [];
       
       if (response.data.data) {
-        permissoes = response.data.data;
+        // Se tem data.items (estrutura HATEOAS)
+        if (response.data.data.items) {
+          permissoes = response.data.data.items;
+        } else {
+          // Se data é diretamente um array
+          permissoes = response.data.data;
+        }
       } else if (Array.isArray(response.data)) {
+        // Se response.data é diretamente um array
         permissoes = response.data;
       }
       
@@ -68,21 +75,21 @@ class PermissoesService {
   }
 
   /**
-   * Salvar permissões de um usuário
+   * Atualizar permissões de um usuário
    */
-  static async salvarPermissoes(userId, permissoes) {
+  static async atualizarPermissoes(userId, permissoes) {
     try {
-      const response = await api.post(`/permissoes/usuario/${userId}`, { permissoes });
+      const response = await api.put(`/permissoes/usuario/${userId}`, { permissoes });
       
       return {
         success: true,
         data: response.data,
-        message: 'Permissões salvas com sucesso!'
+        message: 'Permissões atualizadas com sucesso!'
       };
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao salvar permissões'
+        error: error.response?.data?.message || 'Erro ao atualizar permissões'
       };
     }
   }
@@ -92,10 +99,11 @@ class PermissoesService {
    */
   static async resetarPermissoes(userId) {
     try {
-      const response = await api.delete(`/permissoes/usuario/${userId}`);
+      const response = await api.post(`/permissoes/usuario/${userId}/reset`);
       
       return {
         success: true,
+        data: response.data,
         message: 'Permissões resetadas com sucesso!'
       };
     } catch (error) {
@@ -127,29 +135,36 @@ class PermissoesService {
   }
 
   /**
-   * Buscar usuário por ID
+   * Listar todas as telas disponíveis
    */
-  static async buscarUsuarioPorId(id) {
+  static async listarTelas() {
     try {
-      const response = await api.get(`/usuarios/${id}`);
+      const response = await api.get('/permissoes/telas');
       
       // Extrair dados da estrutura HATEOAS
-      let usuario = null;
+      let telas = [];
       
       if (response.data.data) {
-        usuario = response.data.data;
-      } else {
-        usuario = response.data;
+        // Se tem data.items (estrutura HATEOAS)
+        if (response.data.data.items) {
+          telas = response.data.data.items;
+        } else {
+          // Se data é diretamente um array
+          telas = response.data.data;
+        }
+      } else if (Array.isArray(response.data)) {
+        // Se response.data é diretamente um array
+        telas = response.data;
       }
       
       return {
         success: true,
-        data: usuario
+        data: telas
       };
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar usuário'
+        error: error.response?.data?.message || 'Erro ao carregar telas'
       };
     }
   }

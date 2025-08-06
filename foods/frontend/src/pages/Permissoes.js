@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog, FaSearch, FaSync, FaChevronDown, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUserShield, FaCheckCircle, FaTimesCircle, FaCog, FaBuilding, FaTruck, FaBox, FaFolder, FaFolderOpen, FaTags, FaTag, FaRuler, FaSchool, FaList, FaHandsHelping, FaCar, FaRoute, FaUserFriends } from 'react-icons/fa';
+import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog, FaSearch, FaSync, FaChevronDown, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUserShield, FaCheckCircle, FaTimesCircle, FaCog } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { Button, Input, Modal, StatCard } from '../components/ui';
 import PermissoesService from '../services/permissoes';
@@ -28,8 +28,8 @@ const Permissoes = () => {
   const [expandedGroups, setExpandedGroups] = useState({});
   const [estatisticas, setEstatisticas] = useState({
     total_usuarios: 0,
-    usuarios_com_permissoes: 0,
-    usuarios_sem_permissoes: 0
+    usuarios_ativos: 0,
+    usuarios_com_permissoes: 0
   });
 
   // Carregar usuários
@@ -44,21 +44,24 @@ const Permissoes = () => {
         setFilteredUsuarios(data);
         
         // Calcular estatísticas
-        const total = data.length;
+        const ativos = data.filter(u => u.status === 'ativo').length;
         const comPermissoes = data.filter(u => u.permissoes_count > 0).length;
-        const semPermissoes = total - comPermissoes;
         
         setEstatisticas({
-          total_usuarios: total,
-          usuarios_com_permissoes: comPermissoes,
-          usuarios_sem_permissoes: semPermissoes
+          total_usuarios: data.length,
+          usuarios_ativos: ativos,
+          usuarios_com_permissoes: comPermissoes
         });
       } else {
         toast.error(result.error || 'Erro ao carregar usuários');
+        setUsuarios([]);
+        setFilteredUsuarios([]);
       }
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
       toast.error('Erro ao carregar usuários');
+      setUsuarios([]);
+      setFilteredUsuarios([]);
     } finally {
       setLoading(false);
     }
@@ -70,24 +73,34 @@ const Permissoes = () => {
       const result = await PermissoesService.buscarPermissoesUsuario(userId);
       
       if (result.success) {
-        const permissoes = Array.isArray(result.data) ? result.data : [];
-        const permissoesObj = {};
+        const data = Array.isArray(result.data) ? result.data : [];
         
-        permissoes.forEach(perm => {
-          if (!permissoesObj[perm.tela]) {
-            permissoesObj[perm.tela] = {};
+        // Converter array de permissões para objeto
+        const permissionsObj = {};
+        data.forEach(perm => {
+          if (!permissionsObj[perm.tela]) {
+            permissionsObj[perm.tela] = {};
           }
-          permissoesObj[perm.tela][perm.acao] = perm.valor;
+          permissionsObj[perm.tela] = {
+            pode_visualizar: perm.pode_visualizar,
+            pode_criar: perm.pode_criar,
+            pode_editar: perm.pode_editar,
+            pode_excluir: perm.pode_excluir
+          };
         });
         
-        setUserPermissions(permissoesObj);
-        setEditingPermissions(JSON.parse(JSON.stringify(permissoesObj)));
+        setUserPermissions(permissionsObj);
+        setEditingPermissions(JSON.parse(JSON.stringify(permissionsObj))); // Deep copy
       } else {
         toast.error(result.error || 'Erro ao carregar permissões');
+        setUserPermissions({});
+        setEditingPermissions({});
       }
     } catch (error) {
       console.error('Erro ao carregar permissões:', error);
       toast.error('Erro ao carregar permissões');
+      setUserPermissions({});
+      setEditingPermissions({});
     }
   };
 
@@ -124,9 +137,9 @@ const Permissoes = () => {
     setSearchTerm(term);
     
     if (term) {
-      const filtered = usuarios.filter(user => 
+      const filtered = usuarios.filter(user =>
         user.nome.toLowerCase().includes(term.toLowerCase()) ||
-        user.email.toLowerCase().includes(term.toLowerCase())
+        user.email?.toLowerCase().includes(term.toLowerCase())
       );
       setFilteredUsuarios(filtered);
     } else {
@@ -159,23 +172,25 @@ const Permissoes = () => {
     try {
       setSaving(true);
       
-      // Converter para formato esperado pelo backend
+      // Converter objeto de permissões para array
       const permissoesArray = [];
       Object.keys(editingPermissions).forEach(tela => {
-        Object.keys(editingPermissions[tela]).forEach(acao => {
-          permissoesArray.push({
-            tela,
-            acao,
-            valor: editingPermissions[tela][acao]
-          });
+        const perms = editingPermissions[tela];
+        permissoesArray.push({
+          tela,
+          pode_visualizar: perms.pode_visualizar || 0,
+          pode_criar: perms.pode_criar || 0,
+          pode_editar: perms.pode_editar || 0,
+          pode_excluir: perms.pode_excluir || 0
         });
       });
 
-      const result = await PermissoesService.salvarPermissoes(selectedUserId, permissoesArray);
+      const result = await PermissoesService.atualizarPermissoes(selectedUserId, permissoesArray);
       
       if (result.success) {
         toast.success('Permissões salvas com sucesso!');
         setUserPermissions(JSON.parse(JSON.stringify(editingPermissions)));
+        await loadUsuarios(); // Recarregar estatísticas
       } else {
         toast.error(result.error || 'Erro ao salvar permissões');
       }
@@ -204,8 +219,8 @@ const Permissoes = () => {
       
       if (result.success) {
         toast.success('Permissões resetadas com sucesso!');
-        setEditingPermissions({});
-        setUserPermissions({});
+        await loadUserPermissions(selectedUserId);
+        await loadUsuarios(); // Recarregar estatísticas
       } else {
         toast.error(result.error || 'Erro ao resetar permissões');
       }
@@ -231,6 +246,7 @@ const Permissoes = () => {
       if (result.success) {
         toast.success('Permissões sincronizadas com sucesso!');
         await loadUserPermissions(selectedUserId);
+        await loadUsuarios(); // Recarregar estatísticas
       } else {
         toast.error(result.error || 'Erro ao sincronizar permissões');
       }
@@ -289,6 +305,7 @@ const Permissoes = () => {
     loadAuditLogs();
   };
 
+  // Funções auxiliares
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('pt-BR');
   };
@@ -304,9 +321,10 @@ const Permissoes = () => {
 
   const getFieldLabel = (field) => {
     const labels = {
-      tela: 'Tela',
-      acao: 'Ação',
-      valor: 'Valor'
+      pode_visualizar: 'Visualizar',
+      pode_criar: 'Criar',
+      pode_editar: 'Editar',
+      pode_excluir: 'Excluir'
     };
     return labels[field] || field;
   };
@@ -314,8 +332,8 @@ const Permissoes = () => {
   const formatFieldValue = (field, value) => {
     if (value === null || value === undefined) return '-';
     
-    if (field === 'valor') {
-      return value === 1 ? 'Sim' : 'Não';
+    if (typeof value === 'boolean' || value === 0 || value === 1) {
+      return value ? 'Sim' : 'Não';
     }
     
     return value.toString();
@@ -324,8 +342,7 @@ const Permissoes = () => {
   const handleExportXLSX = async () => {
     try {
       const params = {
-        usuario_id: selectedUserId,
-        ...auditFilters
+        usuario_id: selectedUserId
       };
 
       const result = await PermissoesService.exportarXLSX(params);
@@ -353,8 +370,7 @@ const Permissoes = () => {
   const handleExportPDF = async () => {
     try {
       const params = {
-        usuario_id: selectedUserId,
-        ...auditFilters
+        usuario_id: selectedUserId
       };
 
       const result = await PermissoesService.exportarPDF(params);
@@ -379,23 +395,33 @@ const Permissoes = () => {
     }
   };
 
-  // Funções auxiliares
-  const getAccessTypeLabel = (type) => {
-    const labels = {
-      'pode_visualizar': 'Visualizar',
-      'pode_criar': 'Criar',
-      'pode_editar': 'Editar',
-      'pode_excluir': 'Excluir'
+  // Funções para gerenciar grupos
+  const toggleGroup = (groupTitle) => {
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupTitle]: !prev[groupTitle]
+    }));
+  };
+
+  const expandAllGroups = () => {
+    const allGroups = {
+      'Cadastros Básicos': true,
+      'Gestão de Pessoas': true,
+      'Produtos e Fornecedores': true,
+      'Logística': true,
+      'Relatórios': true
     };
-    return labels[type] || type;
+    setExpandedGroups(allGroups);
   };
 
-  const getAccessLevelLabel = (level) => {
-    return level === 1 ? 'Sim' : 'Não';
+  const collapseAllGroups = () => {
+    setExpandedGroups({});
   };
 
+  // Funções para labels e ícones
   const getScreenLabel = (screen) => {
     const labels = {
+      'dashboard': 'Dashboard',
       'usuarios': 'Usuários',
       'filiais': 'Filiais',
       'fornecedores': 'Fornecedores',
@@ -419,52 +445,35 @@ const Permissoes = () => {
 
   const getScreenIcon = (screen) => {
     const icons = {
+      'dashboard': FaCog,
       'usuarios': FaUsers,
-      'filiais': FaBuilding,
-      'fornecedores': FaTruck,
-      'clientes': FaUsers,
-      'produtos': FaBox,
-      'grupos': FaFolder,
-      'subgrupos': FaFolderOpen,
-      'classes': FaTags,
-      'marcas': FaTag,
-      'unidades': FaRuler,
-      'unidades_escolares': FaSchool,
-      'nome_generico_produto': FaList,
-      'motoristas': FaUserTie,
-      'ajudantes': FaHandsHelping,
-      'veiculos': FaCar,
-      'rotas': FaRoute,
+      'filiais': FaCog,
+      'fornecedores': FaCog,
+      'clientes': FaCog,
+      'produtos': FaCog,
+      'grupos': FaCog,
+      'subgrupos': FaCog,
+      'classes': FaCog,
+      'marcas': FaCog,
+      'unidades': FaCog,
+      'unidades_escolares': FaCog,
+      'nome_generico_produto': FaCog,
+      'motoristas': FaCog,
+      'ajudantes': FaCog,
+      'veiculos': FaCog,
+      'rotas': FaCog,
       'permissoes': FaUserShield
     };
     return icons[screen] || FaCog;
   };
 
-  const toggleGroup = (groupTitle) => {
-    setExpandedGroups(prev => ({
-      ...prev,
-      [groupTitle]: !prev[groupTitle]
-    }));
-  };
-
-  const expandAllGroups = () => {
-    const allGroups = ['Cadastros', 'Operacional', 'Administrativo'];
-    const expanded = {};
-    allGroups.forEach(group => {
-      expanded[group] = true;
-    });
-    setExpandedGroups(expanded);
-  };
-
-  const collapseAllGroups = () => {
-    setExpandedGroups({});
-  };
-
-  // Agrupar telas
+  // Grupos de telas
   const screenGroups = {
-    'Cadastros': ['usuarios', 'filiais', 'fornecedores', 'clientes', 'produtos', 'grupos', 'subgrupos', 'classes', 'marcas', 'unidades', 'unidades_escolares', 'nome_generico_produto'],
-    'Operacional': ['motoristas', 'ajudantes', 'veiculos', 'rotas'],
-    'Administrativo': ['permissoes']
+    'Cadastros Básicos': ['usuarios', 'filiais', 'unidades', 'unidades_escolares'],
+    'Gestão de Pessoas': ['motoristas', 'ajudantes'],
+    'Produtos e Fornecedores': ['fornecedores', 'clientes', 'produtos', 'grupos', 'subgrupos', 'classes', 'marcas', 'nome_generico_produto'],
+    'Logística': ['veiculos', 'rotas'],
+    'Relatórios': ['dashboard', 'permissoes']
   };
 
   // Effects
@@ -490,7 +499,7 @@ const Permissoes = () => {
     <div className="p-3 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Gerenciar Permissões</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Permissões de Usuários</h1>
         <div className="flex gap-2 sm:gap-3">
           <Button
             onClick={handleOpenAuditModal}
@@ -513,16 +522,16 @@ const Permissoes = () => {
           color="blue"
         />
         <StatCard
-          title="Com Permissões"
-          value={estatisticas.usuarios_com_permissoes}
+          title="Usuários Ativos"
+          value={estatisticas.usuarios_ativos}
           icon={FaCheckCircle}
           color="green"
         />
         <StatCard
-          title="Sem Permissões"
-          value={estatisticas.usuarios_sem_permissoes}
-          icon={FaTimesCircle}
-          color="red"
+          title="Com Permissões"
+          value={estatisticas.usuarios_com_permissoes}
+          icon={FaUserShield}
+          color="purple"
         />
       </div>
 
@@ -532,14 +541,14 @@ const Permissoes = () => {
         
         <div className="relative">
           <div
-            className="w-full p-3 sm:p-4 border border-gray-300 rounded-lg cursor-pointer bg-white flex justify-between items-center"
+            className="w-full p-3 border border-gray-300 rounded-lg cursor-pointer bg-white flex justify-between items-center"
             onClick={handleSelectClick}
             onBlur={handleSelectBlur}
           >
             <span className={selectedUser ? 'text-gray-900' : 'text-gray-500'}>
-              {selectedUser ? `${selectedUser.nome} (${selectedUser.email})` : 'Selecione um usuário...'}
+              {selectedUser ? selectedUser.nome : 'Selecione um usuário...'}
             </span>
-            <FaChevronDown className={`text-gray-500 transition-transform ${isSelectOpen ? 'rotate-180' : ''}`} />
+            <FaChevronDown className={`text-gray-400 transition-transform ${isSelectOpen ? 'rotate-180' : ''}`} />
           </div>
 
           {isSelectOpen && (
@@ -567,7 +576,9 @@ const Permissoes = () => {
                       onClick={() => handleUserSelect(user.id)}
                     >
                       <div className="font-medium text-gray-900">{user.nome}</div>
-                      <div className="text-sm text-gray-600">{user.email}</div>
+                      {user.email && (
+                        <div className="text-sm text-gray-600">{user.email}</div>
+                      )}
                     </div>
                   ))
                 )}
@@ -577,7 +588,7 @@ const Permissoes = () => {
         </div>
       </div>
 
-      {/* Permissões do Usuário */}
+      {/* Permissões do Usuário Selecionado */}
       {selectedUser && (
         <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
@@ -585,43 +596,45 @@ const Permissoes = () => {
               <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
                 Permissões de {selectedUser.nome}
               </h2>
-              <p className="text-sm text-gray-600">{selectedUser.email}</p>
+              {selectedUser.email && (
+                <p className="text-sm text-gray-600">{selectedUser.email}</p>
+              )}
             </div>
             
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              <Button
-                onClick={reloadUserPermissions}
-                variant="outline"
-                size="sm"
-                disabled={saving}
-              >
-                <FaSync className="mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Recarregar</span>
-                <span className="sm:hidden">Recarregar</span>
-              </Button>
-              
+            <div className="flex gap-2 sm:gap-3">
               <Button
                 onClick={expandAllGroups}
                 variant="outline"
                 size="sm"
+                className="text-xs"
               >
-                <span className="hidden sm:inline">Expandir Tudo</span>
+                <span className="hidden sm:inline">Expandir Todos</span>
                 <span className="sm:hidden">Expandir</span>
               </Button>
-              
               <Button
                 onClick={collapseAllGroups}
                 variant="outline"
                 size="sm"
+                className="text-xs"
               >
-                <span className="hidden sm:inline">Recolher Tudo</span>
+                <span className="hidden sm:inline">Recolher Todos</span>
                 <span className="sm:hidden">Recolher</span>
+              </Button>
+              <Button
+                onClick={reloadUserPermissions}
+                variant="outline"
+                size="sm"
+                className="text-xs"
+              >
+                <FaSync className="mr-1" />
+                <span className="hidden sm:inline">Recarregar</span>
+                <span className="sm:hidden">Recarregar</span>
               </Button>
             </div>
           </div>
 
           {/* Grupos de Permissões */}
-          <div className="space-y-4 sm:space-y-6">
+          <div className="space-y-4">
             {Object.entries(screenGroups).map(([groupTitle, screens]) => (
               <div key={groupTitle} className="border border-gray-200 rounded-lg">
                 <div
@@ -629,45 +642,38 @@ const Permissoes = () => {
                   onClick={() => toggleGroup(groupTitle)}
                 >
                   <h3 className="font-semibold text-gray-800">{groupTitle}</h3>
-                  <FaChevronDown className={`text-gray-500 transition-transform ${expandedGroups[groupTitle] ? 'rotate-180' : ''}`} />
+                  <FaChevronDown className={`text-gray-400 transition-transform ${expandedGroups[groupTitle] ? 'rotate-180' : ''}`} />
                 </div>
                 
                 {expandedGroups[groupTitle] && (
-                  <div className="p-3 sm:p-4">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                      {screens.map(screen => {
-                        const ScreenIcon = getScreenIcon(screen);
-                        const screenLabel = getScreenLabel(screen);
-                        
-                        return (
-                          <div key={screen} className="border border-gray-200 rounded-lg p-3 sm:p-4">
-                            <div className="flex items-center mb-3">
-                              <ScreenIcon className="text-blue-600 mr-2" />
-                              <h4 className="font-medium text-gray-800">{screenLabel}</h4>
-                            </div>
-                            
-                            <div className="space-y-2">
-                              {['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].map(acao => (
-                                <div key={acao} className="flex items-center justify-between">
-                                  <span className="text-sm text-gray-600">
-                                    {getAccessTypeLabel(acao)}
-                                  </span>
-                                  <label className="relative inline-flex items-center cursor-pointer">
-                                    <input
-                                      type="checkbox"
-                                      className="sr-only peer"
-                                      checked={editingPermissions[screen]?.[acao] === 1}
-                                      onChange={(e) => handlePermissionChange(screen, acao, e.target.checked ? 1 : 0)}
-                                    />
-                                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
+                  <div className="p-3 sm:p-4 space-y-4">
+                    {screens.map(screen => {
+                      const Icon = getScreenIcon(screen);
+                      const currentPerms = editingPermissions[screen] || {};
+                      
+                      return (
+                        <div key={screen} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Icon className="text-gray-600" />
+                            <h4 className="font-medium text-gray-800">{getScreenLabel(screen)}</h4>
                           </div>
-                        );
-                      })}
-                    </div>
+                          
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].map(acao => (
+                              <label key={acao} className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={currentPerms[acao] || false}
+                                  onChange={(e) => handlePermissionChange(screen, acao, e.target.checked)}
+                                  className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                                />
+                                <span className="text-sm text-gray-700">{getFieldLabel(acao)}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -675,37 +681,32 @@ const Permissoes = () => {
           </div>
 
           {/* Botões de Ação */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-6 pt-4 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-6 pt-4 border-t">
             <Button
               onClick={handleSavePermissions}
               disabled={saving}
-              className="flex-1 sm:flex-none"
+              className="flex-1"
             >
-              <FaSave className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Salvar Permissões</span>
-              <span className="sm:hidden">Salvar</span>
+              <FaSave className="mr-2" />
+              {saving ? 'Salvando...' : 'Salvar Permissões'}
             </Button>
-            
             <Button
               onClick={handleResetPermissions}
               variant="outline"
               disabled={saving}
-              className="flex-1 sm:flex-none"
+              className="flex-1"
             >
-              <FaTimes className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Resetar Permissões</span>
-              <span className="sm:hidden">Resetar</span>
+              <FaTimes className="mr-2" />
+              Resetar
             </Button>
-            
             <Button
               onClick={handleSyncPermissions}
               variant="outline"
               disabled={saving}
-              className="flex-1 sm:flex-none"
+              className="flex-1"
             >
-              <FaSync className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Sincronizar</span>
-              <span className="sm:hidden">Sync</span>
+              <FaSync className="mr-2" />
+              Sincronizar
             </Button>
           </div>
         </div>

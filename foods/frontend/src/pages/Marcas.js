@@ -169,7 +169,6 @@ const Marcas = () => {
 
   const onSubmit = async (data) => {
     try {
-      
       if (editingMarca) {
         const result = await MarcasService.atualizar(editingMarca.id, data);
         if (result.success) {
