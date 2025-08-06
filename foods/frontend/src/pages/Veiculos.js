@@ -503,29 +503,27 @@ const Veiculos = () => {
                     }
         </div>
       ) : (
-        <>
-          {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Placa
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Modelo/Marca
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tipo/Categoria
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     KM Atual
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
@@ -533,20 +531,20 @@ const Veiculos = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredVeiculos.map((veiculo) => (
                   <tr key={veiculo.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900">
                         {veiculo.placa}
                       </div>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{veiculo.modelo}</div>
-                        <div className="text-sm text-gray-500">{veiculo.marca}</div>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm text-gray-900">{veiculo.modelo}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{veiculo.marca}</div>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{getTipoVeiculoLabel(veiculo.tipo_veiculo)}</div>
-                        <div className="text-sm text-gray-500">{getCategoriaLabel(veiculo.categoria)}</div>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm text-gray-900">{getTipoVeiculoLabel(veiculo.tipo_veiculo)}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{getCategoriaLabel(veiculo.categoria)}</div>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                       <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                         veiculo.status === 'ativo' 
                           ? 'bg-green-100 text-green-800' 
@@ -557,11 +555,11 @@ const Veiculos = () => {
                       {getStatusLabel(veiculo.status)}
                       </span>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {veiculo.quilometragem_atual ? `${veiculo.quilometragem_atual.toLocaleString()} km` : 'N/A'}
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                      <div className="flex gap-1 sm:gap-2">
                         {canView('veiculos') && (
                           <Button
                             variant="ghost"
@@ -569,7 +567,7 @@ const Veiculos = () => {
                       onClick={() => handleViewVeiculo(veiculo)}
                             title="Visualizar"
                     >
-                              <FaEye className="text-green-600 text-sm" />
+                            <FaEye className="text-green-600 text-xs sm:text-sm" />
                           </Button>
                         )}
                     {canEdit('veiculos') && (
@@ -579,7 +577,7 @@ const Veiculos = () => {
                         onClick={() => handleEditVeiculo(veiculo)}
                             title="Editar"
                       >
-                              <FaEdit className="text-blue-600 text-sm" />
+                            <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                           </Button>
                     )}
                     {canDelete('veiculos') && (
@@ -589,7 +587,7 @@ const Veiculos = () => {
                         onClick={() => handleDeleteVeiculo(veiculo.id)}
                             title="Excluir"
                       >
-                              <FaTrash className="text-red-600 text-sm" />
+                            <FaTrash className="text-red-600 text-xs sm:text-sm" />
                           </Button>
                     )}
                       </div>
@@ -600,85 +598,6 @@ const Veiculos = () => {
             </table>
           </div>
         </div>
-
-          {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
-            {filteredVeiculos.map((veiculo) => (
-              <div key={veiculo.id} className="bg-white rounded-lg shadow-sm p-4 border">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm">{veiculo.placa}</h3>
-                    <p className="text-gray-600 text-xs">{veiculo.modelo} - {veiculo.marca}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    {canView('veiculos') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleViewVeiculo(veiculo)}
-                        title="Visualizar"
-                        className="p-2"
-                      >
-                        <FaEye className="text-green-600 text-sm" />
-                      </Button>
-                    )}
-                    {canEdit('veiculos') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleEditVeiculo(veiculo)}
-                        title="Editar"
-                        className="p-2"
-                      >
-                        <FaEdit className="text-blue-600 text-sm" />
-                      </Button>
-                    )}
-                    {canDelete('veiculos') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleDeleteVeiculo(veiculo.id)}
-                        title="Excluir"
-                        className="p-2"
-                      >
-                        <FaTrash className="text-red-600 text-sm" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span className="text-gray-500">Tipo:</span>
-                    <p className="font-medium">{getTipoVeiculoLabel(veiculo.tipo_veiculo)}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Categoria:</span>
-                    <p className="font-medium">{getCategoriaLabel(veiculo.categoria)}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Status:</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                      veiculo.status === 'ativo' 
-                        ? 'bg-green-100 text-green-800' 
-                        : veiculo.status === 'manutencao'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {getStatusLabel(veiculo.status)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">KM Atual:</span>
-                    <p className="font-medium">
-                      {veiculo.quilometragem_atual ? `${veiculo.quilometragem_atual.toLocaleString()} km` : 'N/A'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
       )}
 
       {/* Modal de Veículo */}

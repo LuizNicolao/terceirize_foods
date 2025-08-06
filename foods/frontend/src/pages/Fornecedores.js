@@ -522,43 +522,27 @@ const Fornecedores = () => {
           }
         </div>
       ) : (
-                <>
-          {console.log('🚀 Fornecedores - Iniciando renderização responsiva', {
-            windowWidth: window.innerWidth,
-            shouldShowDesktop: window.innerWidth >= 1024,
-            shouldShowMobile: window.innerWidth < 1024,
-            timestamp: new Date().toISOString()
-          })}
-          
-          {/* Versão Desktop - Tabela completa */}
-          {window.innerWidth >= 1024 && (
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              {console.log('🔍 Fornecedores - Desktop view renderizando', {
-                totalItems: filteredFornecedores.length,
-                windowWidth: window.innerWidth,
-                breakpoint: window.innerWidth >= 1024 ? 'lg+' : 'sm-md',
-                timestamp: new Date().toISOString()
-              })}
-              <div className="overflow-x-auto">
-                <table className="w-full">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-full">
               <thead className="bg-gray-50">
                 <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     CNPJ
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Razão Social
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Município/UF
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contato
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
@@ -566,25 +550,25 @@ const Fornecedores = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredFornecedores.map((fornecedor) => (
                   <tr key={fornecedor.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900">
                         {fornecedor.cnpj}
                       </div>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
                       {fornecedor.razao_social}
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : '-'}
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       <div>
                         {fornecedor.email && <div>{fornecedor.email}</div>}
                         {fornecedor.telefone && <div>{fornecedor.telefone}</div>}
                         {!fornecedor.email && !fornecedor.telefone && '-'}
                       </div>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap">
                       <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                         fornecedor.status === 1 
                           ? 'bg-green-100 text-green-800' 
@@ -593,8 +577,8 @@ const Fornecedores = () => {
                         {getStatusLabel(fornecedor.status)}
                       </span>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
+                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                      <div className="flex gap-1 sm:gap-2">
                         {canView('fornecedores') && (
                           <Button
                             variant="ghost"
@@ -602,7 +586,7 @@ const Fornecedores = () => {
                             onClick={() => handleViewFornecedor(fornecedor)}
                             title="Visualizar"
                           >
-                              <FaEye className="text-green-600 text-sm" />
+                            <FaEye className="text-green-600 text-xs sm:text-sm" />
                           </Button>
                         )}
                         {canEdit('fornecedores') && (
@@ -612,7 +596,7 @@ const Fornecedores = () => {
                             onClick={() => handleEditFornecedor(fornecedor)}
                             title="Editar"
                           >
-                              <FaEdit className="text-blue-600 text-sm" />
+                            <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                           </Button>
                         )}
                         {canDelete('fornecedores') && (
@@ -622,7 +606,7 @@ const Fornecedores = () => {
                             onClick={() => handleDeleteFornecedor(fornecedor.id)}
                             title="Excluir"
                           >
-                              <FaTrash className="text-red-600 text-sm" />
+                            <FaTrash className="text-red-600 text-xs sm:text-sm" />
                           </Button>
                         )}
                       </div>
@@ -633,93 +617,6 @@ const Fornecedores = () => {
             </table>
           </div>
         </div>
-          )}
-
-          {/* Versão Mobile - Cards */}
-          {window.innerWidth < 1024 && (
-            <div className="space-y-3">
-            {console.log('📱 Fornecedores - Mobile view renderizando', {
-              totalItems: filteredFornecedores.length,
-              windowWidth: window.innerWidth,
-              breakpoint: window.innerWidth >= 1024 ? 'lg+' : 'sm-md',
-              timestamp: new Date().toISOString()
-            })}
-            {filteredFornecedores.map((fornecedor) => (
-              <div key={fornecedor.id} className="bg-white rounded-lg shadow-sm p-4 border">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm">{fornecedor.razao_social}</h3>
-                    <p className="text-gray-600 text-xs">CNPJ: {fornecedor.cnpj}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    {canView('fornecedores') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleViewFornecedor(fornecedor)}
-                        title="Visualizar"
-                        className="p-2"
-                      >
-                        <FaEye className="text-green-600 text-sm" />
-                      </Button>
-                    )}
-                    {canEdit('fornecedores') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleEditFornecedor(fornecedor)}
-                        title="Editar"
-                        className="p-2"
-                      >
-                        <FaEdit className="text-blue-600 text-sm" />
-                      </Button>
-                    )}
-                    {canDelete('fornecedores') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleDeleteFornecedor(fornecedor.id)}
-                        title="Excluir"
-                        className="p-2"
-                      >
-                        <FaTrash className="text-red-600 text-sm" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span className="text-gray-500">Localização:</span>
-                    <p className="font-medium">
-                      {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : 'N/A'}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Status:</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                      fornecedor.status === 1 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {getStatusLabel(fornecedor.status)}
-                    </span>
-                  </div>
-                  {(fornecedor.email || fornecedor.telefone) && (
-                    <div className="col-span-2">
-                      <span className="text-gray-500">Contato:</span>
-                      <div className="mt-1">
-                        {fornecedor.email && <p className="font-medium text-xs">{fornecedor.email}</p>}
-                        {fornecedor.telefone && <p className="font-medium text-xs">{fornecedor.telefone}</p>}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-          )}
-        </>
       )}
 
       {/* Modal de Fornecedor */}
@@ -905,10 +802,10 @@ const Fornecedores = () => {
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
                     <span className="hidden sm:inline">Aplicar Filtros</span>
                     <span className="sm:hidden">Aplicar</span>
-            </Button>
+                  </Button>
                 </div>
               </div>
-              </div>
+            </div>
 
             {/* Botões de Exportação */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
@@ -922,7 +819,7 @@ const Fornecedores = () => {
                 <span className="hidden sm:inline">Exportar PDF</span>
                 <span className="sm:hidden">PDF</span>
             </Button>
-                </div>
+              </div>
 
             {/* Lista de Logs */}
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">

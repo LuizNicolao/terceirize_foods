@@ -533,44 +533,30 @@ const Motoristas = () => {
                     }
         </div>
       ) : (
-        <>
-          {console.log('🚀 Motoristas - Iniciando renderização responsiva', {
-            windowWidth: window.innerWidth,
-            shouldShowDesktop: window.innerWidth >= 1024,
-            shouldShowMobile: window.innerWidth < 1024,
-            timestamp: new Date().toISOString()
-          })}
-          {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            {console.log('🔍 Motoristas - Desktop view renderizando', {
-              totalItems: filteredMotoristas.length,
-              windowWidth: window.innerWidth,
-              breakpoint: window.innerWidth >= 1024 ? 'lg+' : 'sm-md',
-              timestamp: new Date().toISOString()
-            })}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Nome
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     CPF/CNH
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Contato
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Filial
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Admissão
                   </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
@@ -578,20 +564,20 @@ const Motoristas = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredMotoristas.map((motorista) => (
                   <tr key={motorista.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm font-medium text-gray-900">
                         {motorista.nome}
                       </div>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{motorista.cpf}</div>
-                        <div className="text-sm text-gray-500">{motorista.cnh}</div>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm text-gray-900">{motorista.cpf}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{motorista.cnh}</div>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{motorista.telefone}</div>
-                        <div className="text-sm text-gray-500">{motorista.email}</div>
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
+                      <div className="text-xs sm:text-sm text-gray-900">{motorista.telefone}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{motorista.email}</div>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap">
                       <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                         motorista.status === 'ativo' 
                           ? 'bg-green-100 text-green-800' 
@@ -604,14 +590,14 @@ const Motoristas = () => {
                         {getStatusLabel(motorista.status)}
                       </span>
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {motorista.filial_nome || 'N/A'}
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                       {motorista.data_admissao ? formatDate(motorista.data_admissao) : 'N/A'}
                     </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
+                    <td className="px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
+                      <div className="flex gap-1 sm:gap-2">
                         {canView('motoristas') && (
                           <Button
                             variant="ghost"
@@ -619,7 +605,7 @@ const Motoristas = () => {
                       onClick={() => handleViewMotorista(motorista)}
                             title="Visualizar"
                     >
-                              <FaEye className="text-green-600 text-sm" />
+                            <FaEye className="text-green-600 text-xs sm:text-sm" />
                           </Button>
                         )}
                     {canEdit('motoristas') && (
@@ -629,7 +615,7 @@ const Motoristas = () => {
                         onClick={() => handleEditMotorista(motorista)}
                             title="Editar"
                       >
-                              <FaEdit className="text-blue-600 text-sm" />
+                            <FaEdit className="text-blue-600 text-xs sm:text-sm" />
                           </Button>
                     )}
                     {canDelete('motoristas') && (
@@ -639,7 +625,7 @@ const Motoristas = () => {
                         onClick={() => handleDeleteMotorista(motorista.id)}
                             title="Excluir"
                       >
-                              <FaTrash className="text-red-600 text-sm" />
+                            <FaTrash className="text-red-600 text-xs sm:text-sm" />
                           </Button>
                     )}
                       </div>
@@ -650,98 +636,6 @@ const Motoristas = () => {
             </table>
           </div>
         </div>
-
-          {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
-            {console.log('📱 Motoristas - Mobile view renderizando', {
-              totalItems: filteredMotoristas.length,
-              windowWidth: window.innerWidth,
-              breakpoint: window.innerWidth >= 1024 ? 'lg+' : 'sm-md',
-              timestamp: new Date().toISOString()
-            })}
-            {filteredMotoristas.map((motorista) => (
-              <div key={motorista.id} className="bg-white rounded-lg shadow-sm p-4 border">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm">{motorista.nome}</h3>
-                    <p className="text-gray-600 text-xs">CPF: {motorista.cpf}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    {canView('motoristas') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleViewMotorista(motorista)}
-                        title="Visualizar"
-                        className="p-2"
-                      >
-                        <FaEye className="text-green-600 text-sm" />
-                      </Button>
-                    )}
-                    {canEdit('motoristas') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleEditMotorista(motorista)}
-                        title="Editar"
-                        className="p-2"
-                      >
-                        <FaEdit className="text-blue-600 text-sm" />
-                      </Button>
-                    )}
-                    {canDelete('motoristas') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleDeleteMotorista(motorista.id)}
-                        title="Excluir"
-                        className="p-2"
-                      >
-                        <FaTrash className="text-red-600 text-sm" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span className="text-gray-500">CNH:</span>
-                    <p className="font-medium">{motorista.cnh}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Filial:</span>
-                    <p className="font-medium">{motorista.filial_nome || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Status:</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                      motorista.status === 'ativo' 
-                        ? 'bg-green-100 text-green-800' 
-                        : motorista.status === 'ferias'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : motorista.status === 'licenca'
-                        ? 'bg-purple-100 text-purple-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {getStatusLabel(motorista.status)}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Admissão:</span>
-                    <p className="font-medium">{motorista.data_admissao ? formatDate(motorista.data_admissao) : 'N/A'}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-gray-500">Contato:</span>
-                    <div className="mt-1">
-                      {motorista.telefone && <p className="font-medium text-xs">{motorista.telefone}</p>}
-                      {motorista.email && <p className="font-medium text-xs">{motorista.email}</p>}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
       )}
 
       {/* Modal de Motorista */}
