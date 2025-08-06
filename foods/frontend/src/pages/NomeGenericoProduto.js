@@ -188,7 +188,7 @@ const NomeGenericoProduto = () => {
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
-    setAuditLoading(true);
+      setAuditLoading(true);
     try {
       const params = {
         entity: 'nome_generico_produto',
@@ -288,7 +288,7 @@ const NomeGenericoProduto = () => {
         } else {
           toast.error(result.error || 'Erro ao excluir nome genérico');
         }
-      } catch (error) {
+    } catch (error) {
         console.error('Erro ao excluir nome genérico:', error);
         toast.error('Erro ao excluir nome genérico');
       }
@@ -384,10 +384,10 @@ const NomeGenericoProduto = () => {
         a.download = `nomes_genericos_${new Date().toISOString().split('T')[0]}.xlsx`;
         document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
-        toast.success('Relatório exportado com sucesso!');
+      
+      toast.success('Relatório exportado com sucesso!');
       } else {
         toast.error(result.error || 'Erro ao exportar relatório');
       }
@@ -416,10 +416,10 @@ const NomeGenericoProduto = () => {
         a.download = `nomes_genericos_${new Date().toISOString().split('T')[0]}.pdf`;
         document.body.appendChild(a);
         a.click();
-        window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
-        toast.success('Relatório exportado com sucesso!');
+      
+      toast.success('Relatório exportado com sucesso!');
       } else {
         toast.error(result.error || 'Erro ao exportar relatório');
       }
@@ -482,7 +482,7 @@ const NomeGenericoProduto = () => {
 
   // Effects
   useEffect(() => {
-    loadNomesGenericos();
+      loadNomesGenericos();
     loadGrupos();
     loadSubgrupos();
     loadClasses();
@@ -597,12 +597,12 @@ const NomeGenericoProduto = () => {
       />
 
       {/* Tabela */}
-      {filteredNomesGenericos.length === 0 ? (
+            {filteredNomesGenericos.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {searchTerm || statusFilter !== 'todos' || grupoFilter !== 'todos' || subgrupoFilter !== 'todos' || classeFilter !== 'todos'
-            ? 'Nenhum nome genérico encontrado com os filtros aplicados'
-            : 'Nenhum nome genérico cadastrado'
-          }
+                      ? 'Nenhum nome genérico encontrado com os filtros aplicados'
+                      : 'Nenhum nome genérico cadastrado'
+                    }
         </div>
       ) : (
         <>
@@ -618,7 +618,7 @@ const NomeGenericoProduto = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                </tr>
+              </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredNomesGenericos.map((nomeGenerico) => (
@@ -652,7 +652,7 @@ const NomeGenericoProduto = () => {
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {nomeGenerico.status === 1 ? 'Ativo' : 'Inativo'}
+                      {nomeGenerico.status === 1 ? 'Ativo' : 'Inativo'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -660,37 +660,37 @@ const NomeGenericoProduto = () => {
                         <Button
                           variant="ghost"
                           size="xs"
-                          onClick={() => handleViewNomeGenerico(nomeGenerico)}
+                      onClick={() => handleViewNomeGenerico(nomeGenerico)}
                           title="Visualizar"
-                        >
+                    >
                           <FaEye className="text-green-600 text-sm" />
                         </Button>
-                        {canEdit('nome_generico_produto') && (
+                    {canEdit('nome_generico_produto') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleEditNomeGenerico(nomeGenerico)}
+                        onClick={() => handleEditNomeGenerico(nomeGenerico)}
                             title="Editar"
-                          >
+                      >
                             <FaEdit className="text-blue-600 text-sm" />
                           </Button>
-                        )}
-                        {canDelete('nome_generico_produto') && (
+                    )}
+                    {canDelete('nome_generico_produto') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleDeleteNomeGenerico(nomeGenerico.id)}
+                        onClick={() => handleDeleteNomeGenerico(nomeGenerico.id)}
                             title="Excluir"
-                          >
+                      >
                             <FaTrash className="text-red-600 text-sm" />
                           </Button>
-                        )}
+                    )}
                       </div>
                     </td>
-                  </tr>
+                </tr>
                 ))}
-              </tbody>
-            </Table>
+          </tbody>
+        </Table>
           </div>
 
           {/* Versão Mobile - Cards */}
@@ -783,10 +783,10 @@ const NomeGenericoProduto = () => {
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              <Input
+                <Input
                 label="Nome *"
-                type="text"
-                {...register('nome', { required: 'Nome é obrigatório' })}
+                  type="text"
+                  {...register('nome', { required: 'Nome é obrigatório' })}
                 error={errors.nome?.message}
                 disabled={viewMode}
               />
@@ -801,10 +801,10 @@ const NomeGenericoProduto = () => {
                   {loadingGrupos ? 'Carregando grupos...' : 'Selecione um grupo'}
                 </option>
                 {grupos.map(grupo => (
-                  <option key={grupo.id} value={grupo.id}>
-                    {grupo.nome}
-                  </option>
-                ))}
+                      <option key={grupo.id} value={grupo.id}>
+                        {grupo.nome}
+                      </option>
+                    ))}
               </Input>
               <Input
                 label="Subgrupo *"
@@ -817,10 +817,10 @@ const NomeGenericoProduto = () => {
                   {loadingSubgrupos ? 'Carregando subgrupos...' : 'Selecione um subgrupo'}
                 </option>
                 {subgrupos.map(subgrupo => (
-                  <option key={subgrupo.id} value={subgrupo.id}>
-                    {subgrupo.nome}
-                  </option>
-                ))}
+                      <option key={subgrupo.id} value={subgrupo.id}>
+                        {subgrupo.nome}
+                      </option>
+                    ))}
               </Input>
               <Input
                 label="Classe *"
@@ -833,12 +833,12 @@ const NomeGenericoProduto = () => {
                   {loadingClasses ? 'Carregando classes...' : 'Selecione uma classe'}
                 </option>
                 {classes.map(classe => (
-                  <option key={classe.id} value={classe.id}>
-                    {classe.nome}
-                  </option>
-                ))}
+                    <option key={classe.id} value={classe.id}>
+                      {classe.nome}
+                    </option>
+                  ))}
               </Input>
-              {!viewMode && (
+                {!viewMode && (
                 <Input
                   label="Status"
                   type="select"
@@ -857,10 +857,10 @@ const NomeGenericoProduto = () => {
                   Cancelar
                 </Button>
                 <Button type="submit" size="sm">
-                  {editingNomeGenerico ? 'Atualizar' : 'Cadastrar'}
-                </Button>
+                    {editingNomeGenerico ? 'Atualizar' : 'Cadastrar'}
+                  </Button>
               </div>
-            )}
+                )}
           </form>
         </Modal>
       )}
@@ -880,38 +880,38 @@ const NomeGenericoProduto = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Input
                   label="Data Início"
-                  type="date"
-                  value={auditFilters.dataInicio}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
                 />
                 <Input
                   label="Data Fim"
-                  type="date"
-                  value={auditFilters.dataFim}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
                 />
                 <Input
                   label="Ação"
                   type="select"
-                  value={auditFilters.acao}
-                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                >
-                  <option value="">Todas as ações</option>
-                  <option value="create">Criar</option>
-                  <option value="update">Editar</option>
-                  <option value="delete">Excluir</option>
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
                 </Input>
                 <Input
                   label="Período"
                   type="select"
-                  value={auditFilters.periodo}
-                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                >
-                  <option value="">Período personalizado</option>
-                  <option value="7dias">Últimos 7 dias</option>
-                  <option value="30dias">Últimos 30 dias</option>
-                  <option value="90dias">Últimos 90 dias</option>
-                  <option value="todos">Todos os registros</option>
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                  >
+                    <option value="">Período personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos os registros</option>
                 </Input>
                 <div className="flex items-end">
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">

@@ -1,775 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog, FaSearch, FaSync, FaChevronDown, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
-import api from '../services/api';
+import { FaUsers, FaEye, FaEdit, FaTrash, FaPlus, FaSave, FaTimes, FaUserCog, FaSearch, FaSync, FaChevronDown, FaQuestionCircle, FaFileExcel, FaFilePdf, FaUserShield, FaCheckCircle, FaTimesCircle, FaCog, FaBuilding, FaTruck, FaBox, FaFolder, FaFolderOpen, FaTags, FaTag, FaRuler, FaSchool, FaList, FaHandsHelping, FaCar, FaRoute, FaUserFriends } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import LoadingSpinner from '../components/LoadingSpinner';
-
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 32px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const ModalTitle = styled.h2`
-  color: var(--dark-gray);
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--gray);
-  padding: 4px;
-
-  &:hover {
-    color: var(--error-red);
-  }
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h1`
-  color: var(--dark-gray);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const UserSelector = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 24px;
-`;
-
-const SelectContainer = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-const CustomSelect = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-const SelectInput = styled.input`
-  width: 100%;
-  padding: 12px 40px 12px 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white);
-  color: var(--dark-gray);
-  cursor: pointer;
-
-  &:focus {
-    outline: none;
-    border-color: var(--primary-green);
-  }
-
-  &::placeholder {
-    color: var(--gray);
-  }
-`;
-
-const SelectIcon = styled.div.withConfig({
-  shouldForwardProp: (prop) => prop !== 'isOpen'
-})`
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--gray);
-  font-size: 12px;
-  pointer-events: none;
-  transition: transform 0.2s ease;
-
-  ${props => props.isOpen && `
-    transform: translateY(-50%) rotate(180deg);
-  `}
-`;
-
-const SelectDropdown = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: var(--white);
-  border: 1px solid #ddd;
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 1000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-`;
-
-const SelectOption = styled.div.withConfig({
-  shouldForwardProp: (prop) => prop !== 'isSelected'
-})`
-  padding: 12px;
-  cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #f8f9fa;
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  ${props => props.isSelected && `
-    background-color: var(--primary-green);
-    color: white;
-  `}
-`;
-
-const NoResults = styled.div`
-  padding: 12px;
-  text-align: center;
-  color: var(--gray);
-  font-size: 14px;
-`;
-
-const SearchContainer = styled.div`
-  position: relative;
-  margin-bottom: 16px;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 12px 16px 12px 40px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white);
-  color: var(--dark-gray);
-
-  &:focus {
-    outline: none;
-    border-color: var(--primary-green);
-  }
-
-  &::placeholder {
-    color: var(--gray);
-  }
-`;
-
-const SearchIcon = styled.div`
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--gray);
-  font-size: 14px;
-`;
-
-const UserSelect = styled.select`
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white);
-  color: var(--dark-gray);
-
-  &:focus {
-    outline: none;
-    border-color: var(--primary-green);
-  }
-`;
-
-const PermissionsContainer = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  margin-bottom: 24px;
-`;
-
-const PermissionGroup = styled.div`
-  border-bottom: 1px solid #e0e0e0;
-  
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const GroupHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  background: #f8f9fa;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-bottom: 1px solid #e0e0e0;
-
-  &:hover {
-    background: #e9ecef;
-  }
-`;
-
-const GroupTitle = styled.div`
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--dark-gray);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const GroupToggle = styled.div`
-  font-size: 14px;
-  color: var(--gray);
-  transition: all 0.3s ease;
-`;
-
-const GroupContent = styled.div`
-  overflow: hidden;
-  transition: all 0.3s ease;
-  max-height: ${props => props.$expanded ? '1000px' : '0'};
-  opacity: ${props => props.$expanded ? '1' : '0'};
-`;
-
-const PermissionsTable = styled.div`
-  background: var(--white);
-`;
-
-const TableHeader = styled.div`
-  background: #f8f9fa;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e0e0e0;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-  gap: 16px;
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-`;
-
-const TableRow = styled.div`
-  padding: 16px 20px;
-  border-bottom: 1px solid #f0f0f0;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
-  gap: 16px;
-  align-items: center;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #f8f9fa;
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const ScreenName = styled.div`
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const PermissionCell = styled.div`
-  display: flex;
-  justify-content: center;
-`;
-
-const Checkbox = styled.input`
-  width: 18px;
-  height: 18px;
-  accent-color: var(--primary-green);
-  cursor: pointer;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-  justify-content: center;
-`;
-
-const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &.primary {
-    background: var(--primary-green);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-green);
-    }
-
-    &:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-  }
-
-  &.secondary {
-    background: var(--light-gray);
-    color: var(--dark-gray);
-
-    &:hover {
-      background: #d0d0d0;
-    }
-
-    &:disabled {
-      background: #ccc;
-      cursor: not-allowed;
-    }
-  }
-
-  &.danger {
-    background: var(--error-red);
-    color: var(--white);
-
-    &:hover {
-      background: #c82333;
-    }
-  }
-`;
-
-const LoadingContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-  color: var(--gray);
-  font-size: 16px;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--gray);
-  font-size: 16px;
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-`;
-
-const UserAvatar = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--primary-green);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 16px;
-`;
-
-const UserDetails = styled.div`
-  flex: 1;
-`;
-
-const UserName = styled.h3`
-  color: var(--dark-gray);
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 4px 0;
-`;
-
-const UserEmail = styled.p`
-  color: var(--gray);
-  font-size: 14px;
-  margin: 0;
-`;
-
-const AccessBadge = styled.span.withConfig({
-  shouldForwardProp: (prop) => prop !== 'type'
-})`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props => props.type === 'administrador' ? 'var(--error-red)' : 
-                props.type === 'coordenador' ? 'var(--orange)' :
-                props.type === 'gerente' ? 'var(--blue)' :
-                props.type === 'supervisor' ? 'var(--success-green)' : 'var(--gray)'};
-  color: white;
-`;
-
-// Estilos do Modal de Auditoria
-const AuditModal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-`;
-
-const AuditModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  width: 100%;
-  max-width: 1200px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-`;
-
-const AuditModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #e0e0e0;
-  background: #f8f9fa;
-  border-radius: 12px 12px 0 0;
-`;
-
-const AuditModalTitle = styled.h2`
-  color: var(--dark-gray);
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
-`;
-
-const AuditExportButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  background: var(--primary-green);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: var(--dark-green);
-    transform: translateY(-1px);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-const AuditModalClose = styled.button`
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: var(--gray);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #e0e0e0;
-    color: var(--dark-gray);
-  }
-`;
-
-const AuditFiltersContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  padding: 20px 24px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const AuditFilterGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const AuditFilterLabel = styled.label`
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--dark-gray);
-`;
-
-const AuditFilterSelect = styled.select`
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  background: var(--white);
-  color: var(--dark-gray);
-
-  &:focus {
-    outline: none;
-    border-color: var(--primary-green);
-  }
-`;
-
-const AuditFilterInput = styled.input`
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  background: var(--white);
-  color: var(--dark-gray);
-
-  &:focus {
-    outline: none;
-    border-color: var(--primary-green);
-  }
-
-  &:disabled {
-    background: #f5f5f5;
-    color: var(--gray);
-    cursor: not-allowed;
-  }
-`;
-
-const AuditFilterButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: var(--primary-green);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  align-self: end;
-
-  &:hover {
-    background: var(--dark-green);
-  }
-`;
-
-const AuditContent = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 24px;
-`;
-
-// Removido AuditLoading pois agora usamos o LoadingSpinner
-
-const AuditEmpty = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: var(--gray);
-  font-size: 16px;
-`;
-
-const AuditLogsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const AuditLogCard = styled.div`
-  background: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 16px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-`;
-
-const AuditLogHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-`;
-
-const AuditLogAction = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  color: white;
-  background: ${props => {
-    switch (props.action) {
-      case 'create': return 'var(--success-green)';
-      case 'update': return 'var(--blue)';
-      case 'delete': return 'var(--error-red)';
-      case 'login': return 'var(--orange)';
-      case 'logout': return 'var(--gray)';
-      default: return 'var(--gray)';
-    }
-  }};
-`;
-
-const AuditLogDate = styled.span`
-  color: var(--gray);
-  font-size: 14px;
-`;
-
-const AuditLogUser = styled.div`
-  margin-bottom: 8px;
-  color: var(--dark-gray);
-  font-size: 14px;
-`;
-
-const AuditLogResource = styled.div`
-  margin-bottom: 8px;
-  color: var(--dark-gray);
-  font-size: 14px;
-`;
-
-const AuditLogDetails = styled.div`
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e0e0e0;
-`;
-
-const AuditLogDetailsTitle = styled.div`
-  font-weight: 600;
-  color: var(--dark-gray);
-  margin-bottom: 8px;
-  font-size: 14px;
-`;
-
-const AuditLogDetailsContent = styled.div`
-  background: var(--white);
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  padding: 12px;
-`;
-
-const AuditChangesContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const AuditChangesTitle = styled.div`
-  font-weight: 600;
-  color: var(--dark-gray);
-  margin-bottom: 8px;
-  font-size: 14px;
-`;
-
-const AuditChangeItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px;
-  background: #f8f9fa;
-  border-radius: 4px;
-`;
-
-const AuditChangeField = styled.span`
-  font-weight: 600;
-  color: var(--dark-gray);
-  min-width: 120px;
-  font-size: 14px;
-`;
-
-const AuditChangeValues = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-`;
-
-const AuditChangeValue = styled.span.withConfig({
-  shouldForwardProp: (prop) => prop !== 'type'
-})`
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  background: ${props => props.type === 'from' ? '#fff3cd' : '#d1ecf1'};
-  color: ${props => props.type === 'from' ? '#856404' : '#0c5460'};
-`;
-
-const AuditChangeArrow = styled.span`
-  color: var(--gray);
-  font-weight: bold;
-`;
-
-const AuditLogText = styled.pre`
-  margin: 0;
-  font-size: 12px;
-  color: var(--dark-gray);
-  white-space: pre-wrap;
-  word-break: break-word;
-`;
-
-const AuditLogIP = styled.div`
-  margin-top: 8px;
-  color: var(--gray);
-  font-size: 12px;
-`;
+import { Button, Input, Modal, StatCard } from '../components/ui';
+import PermissoesService from '../services/permissoes';
 
 const Permissoes = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -793,63 +26,239 @@ const Permissoes = () => {
     periodo: ''
   });
   const [expandedGroups, setExpandedGroups] = useState({});
+  const [estatisticas, setEstatisticas] = useState({
+    total_usuarios: 0,
+    usuarios_com_permissoes: 0,
+    usuarios_sem_permissoes: 0
+  });
 
-  useEffect(() => {
-    loadUsuarios();
-  }, []);
+  // Carregar usuários
+  const loadUsuarios = async () => {
+    try {
+      setLoading(true);
+      const result = await PermissoesService.listarUsuarios({ limit: 1000 });
+      
+      if (result.success) {
+        const data = Array.isArray(result.data) ? result.data : [];
+        setUsuarios(data);
+        setFilteredUsuarios(data);
+        
+        // Calcular estatísticas
+        const total = data.length;
+        const comPermissoes = data.filter(u => u.permissoes_count > 0).length;
+        const semPermissoes = total - comPermissoes;
+        
+        setEstatisticas({
+          total_usuarios: total,
+          usuarios_com_permissoes: comPermissoes,
+          usuarios_sem_permissoes: semPermissoes
+        });
+      } else {
+        toast.error(result.error || 'Erro ao carregar usuários');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar usuários:', error);
+      toast.error('Erro ao carregar usuários');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carregar permissões de um usuário
+  const loadUserPermissions = async (userId) => {
+    try {
+      const result = await PermissoesService.buscarPermissoesUsuario(userId);
+      
+      if (result.success) {
+        const permissoes = Array.isArray(result.data) ? result.data : [];
+        const permissoesObj = {};
+        
+        permissoes.forEach(perm => {
+          if (!permissoesObj[perm.tela]) {
+            permissoesObj[perm.tela] = {};
+          }
+          permissoesObj[perm.tela][perm.acao] = perm.valor;
+        });
+        
+        setUserPermissions(permissoesObj);
+        setEditingPermissions(JSON.parse(JSON.stringify(permissoesObj)));
+      } else {
+        toast.error(result.error || 'Erro ao carregar permissões');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar permissões:', error);
+      toast.error('Erro ao carregar permissões');
+    }
+  };
+
+  // Recarregar permissões
+  const reloadUserPermissions = async () => {
+    if (selectedUserId) {
+      await loadUserPermissions(selectedUserId);
+    }
+  };
+
+  // Selecionar usuário
+  const handleUserSelect = (userId) => {
+    setSelectedUserId(userId);
+    const user = usuarios.find(u => u.id === userId);
+    setSelectedUser(user);
+    setIsSelectOpen(false);
+    setSearchTerm('');
+    
+    if (userId) {
+      loadUserPermissions(userId);
+    } else {
+      setUserPermissions({});
+      setEditingPermissions({});
+    }
+  };
+
+  // Handlers do seletor de usuário
+  const handleSelectClick = () => {
+    setIsSelectOpen(!isSelectOpen);
+  };
+
+  const handleSearchChange = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    
+    if (term) {
+      const filtered = usuarios.filter(user => 
+        user.nome.toLowerCase().includes(term.toLowerCase()) ||
+        user.email.toLowerCase().includes(term.toLowerCase())
+      );
+      setFilteredUsuarios(filtered);
+    } else {
+      setFilteredUsuarios(usuarios);
+    }
+  };
+
+  const handleSelectBlur = () => {
+    setTimeout(() => setIsSelectOpen(false), 200);
+  };
+
+  // Alterar permissão
+  const handlePermissionChange = (tela, acao, value) => {
+    setEditingPermissions(prev => ({
+      ...prev,
+      [tela]: {
+        ...prev[tela],
+        [acao]: value
+      }
+    }));
+  };
+
+  // Salvar permissões
+  const handleSavePermissions = async () => {
+    if (!selectedUserId) {
+      toast.error('Selecione um usuário primeiro');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      
+      // Converter para formato esperado pelo backend
+      const permissoesArray = [];
+      Object.keys(editingPermissions).forEach(tela => {
+        Object.keys(editingPermissions[tela]).forEach(acao => {
+          permissoesArray.push({
+            tela,
+            acao,
+            valor: editingPermissions[tela][acao]
+          });
+        });
+      });
+
+      const result = await PermissoesService.salvarPermissoes(selectedUserId, permissoesArray);
+      
+      if (result.success) {
+        toast.success('Permissões salvas com sucesso!');
+        setUserPermissions(JSON.parse(JSON.stringify(editingPermissions)));
+      } else {
+        toast.error(result.error || 'Erro ao salvar permissões');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar permissões:', error);
+      toast.error('Erro ao salvar permissões');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Resetar permissões
+  const handleResetPermissions = async () => {
+    if (!selectedUserId) {
+      toast.error('Selecione um usuário primeiro');
+      return;
+    }
+
+    if (!window.confirm('Tem certeza que deseja resetar todas as permissões deste usuário?')) {
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const result = await PermissoesService.resetarPermissoes(selectedUserId);
+      
+      if (result.success) {
+        toast.success('Permissões resetadas com sucesso!');
+        setEditingPermissions({});
+        setUserPermissions({});
+      } else {
+        toast.error(result.error || 'Erro ao resetar permissões');
+      }
+    } catch (error) {
+      console.error('Erro ao resetar permissões:', error);
+      toast.error('Erro ao resetar permissões');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Sincronizar permissões
+  const handleSyncPermissions = async () => {
+    if (!selectedUserId) {
+      toast.error('Selecione um usuário primeiro');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const result = await PermissoesService.sincronizarPermissoes(selectedUserId);
+      
+      if (result.success) {
+        toast.success('Permissões sincronizadas com sucesso!');
+        await loadUserPermissions(selectedUserId);
+      } else {
+        toast.error(result.error || 'Erro ao sincronizar permissões');
+      }
+    } catch (error) {
+      console.error('Erro ao sincronizar permissões:', error);
+      toast.error('Erro ao sincronizar permissões');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
+    setAuditLoading(true);
     try {
-      setAuditLoading(true);
-      
-      const params = new URLSearchParams();
-      
-      // Aplicar filtro de período se selecionado
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
+      const params = {
+        entity: 'permissoes',
+        ...auditFilters
+      };
+
+      const response = await fetch('/api/audit?' + new URLSearchParams(params));
+      const data = await response.json();
+
+      if (data.success) {
+        setAuditLogs(data.data || []);
       } else {
-        // Usar filtros manuais se período não estiver selecionado
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        toast.error('Erro ao carregar logs de auditoria');
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para permissões
-      params.append('recurso', 'permissoes');
-      
-      const response = await api.get(`/auditoria?${params.toString()}`);
-      const auditData = response.data.data || response.data;
-      setAuditLogs(auditData.logs || auditData || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -858,13 +267,12 @@ const Permissoes = () => {
     }
   };
 
-  // Abrir modal de auditoria
+  // Handlers de auditoria
   const handleOpenAuditModal = () => {
     setShowAuditModal(true);
     loadAuditLogs();
   };
 
-  // Fechar modal de auditoria
   const handleCloseAuditModal = () => {
     setShowAuditModal(false);
     setAuditLogs([]);
@@ -877,539 +285,159 @@ const Permissoes = () => {
     });
   };
 
-  // Aplicar filtros de auditoria
   const handleApplyAuditFilters = () => {
     loadAuditLogs();
   };
 
-  // Exportar auditoria para XLSX
-  const handleExportXLSX = async () => {
-    try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para permissões
-      params.append('recurso', 'permissoes');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_permissoes_${new Date().toISOString().split('T')[0]}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar XLSX:', error);
-      toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  // Exportar auditoria para PDF
-  const handleExportPDF = async () => {
-    try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para permissões
-      params.append('recurso', 'permissoes');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_permissoes_${new Date().toISOString().split('T')[0]}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  // Formatar data
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('pt-BR');
   };
 
-  // Obter label da ação
   const getActionLabel = (action) => {
-    const actions = {
-      'create': 'Criar',
-      'update': 'Editar',
-      'delete': 'Excluir',
-      'login': 'Login',
-      'logout': 'Logout',
-      'view': 'Visualizar'
+    const labels = {
+      create: 'Criar',
+      update: 'Editar',
+      delete: 'Excluir'
     };
-    return actions[action] || action;
+    return labels[action] || action;
   };
 
-  // Obter label do campo
   const getFieldLabel = (field) => {
-    // Para campos de permissões (formato: tela_acao)
-    if (field.includes('_')) {
-      const [tela, acao] = field.split('_');
-      const telaLabel = getScreenLabel(tela);
-      const acaoLabel = {
-        'pode_visualizar': 'Visualizar',
-        'pode_criar': 'Criar',
-        'pode_editar': 'Editar',
-        'pode_excluir': 'Excluir'
-      }[acao] || acao;
-      return `${telaLabel} - ${acaoLabel}`;
-    }
-    
     const labels = {
-      'tela': 'Tela',
-      'pode_visualizar': 'Visualizar',
-      'pode_criar': 'Criar',
-      'pode_editar': 'Editar',
-      'pode_excluir': 'Excluir',
-      'tipo_acesso': 'Tipo de Acesso',
-      'nivel_acesso': 'Nível de Acesso',
-      'id': 'ID'
+      tela: 'Tela',
+      acao: 'Ação',
+      valor: 'Valor'
     };
     return labels[field] || field;
   };
 
-  // Formatar valor do campo
   const formatFieldValue = (field, value) => {
-    if (value === null || value === undefined || value === '') {
-      return 'Não informado';
+    if (value === null || value === undefined) return '-';
+    
+    if (field === 'valor') {
+      return value === 1 ? 'Sim' : 'Não';
     }
-
-    // Para campos de permissões (formato: tela_acao)
-    if (field.includes('_')) {
-      const [, acao] = field.split('_');
-      if (acao === 'pode_visualizar' || acao === 'pode_criar' || acao === 'pode_editar' || acao === 'pode_excluir') {
-        return value === 1 || value === true || value === 'Sim' ? 'Sim' : 'Não';
-      }
-    }
-
-    switch (field) {
-      case 'pode_visualizar':
-      case 'pode_criar':
-      case 'pode_editar':
-      case 'pode_excluir':
-        return value === 1 || value === true ? 'Sim' : 'Não';
-      case 'tipo_acesso':
-        return getAccessTypeLabel(value);
-      case 'nivel_acesso':
-        return getAccessLevelLabel(value);
-      default:
-        return value;
-    }
+    
+    return value.toString();
   };
 
-  // Removido recarregamento automático para melhorar a experiência do usuário
-  // Os dados são carregados apenas uma vez ao montar o componente
+  const handleExportXLSX = async () => {
+    try {
+      const params = {
+        usuario_id: selectedUserId,
+        ...auditFilters
+      };
 
-  useEffect(() => {
-    // Filtrar usuários baseado no termo de busca
-    if (searchTerm.trim() === '') {
-      setFilteredUsuarios(Array.isArray(usuarios) ? usuarios : []);
-    } else {
-      const filtered = (Array.isArray(usuarios) ? usuarios : []).filter(user => 
-        user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        getAccessTypeLabel(user.tipo_de_acesso).toLowerCase().includes(searchTerm.toLowerCase()) ||
-        getAccessLevelLabel(user.nivel_de_acesso).toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredUsuarios(filtered);
-    }
-  }, [searchTerm, usuarios]);
-
-  // Detectar mudanças no usuário selecionado e recarregar permissões
-  useEffect(() => {
-    if (selectedUser && selectedUserId) {
-      // Verificar se os dados do usuário mudaram (tipo ou nível de acesso)
-      const currentUser = (Array.isArray(usuarios) ? usuarios : []).find(u => u.id === selectedUser.id);
-      
-      if (currentUser && (
-        currentUser.tipo_de_acesso !== selectedUser.tipo_de_acesso ||
-        currentUser.nivel_de_acesso !== selectedUser.nivel_de_acesso
-      )) {
+      const result = await PermissoesService.exportarXLSX(params);
+      if (result.success) {
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `permissoes_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
         
-        // Atualizar o usuário selecionado com os novos dados
-        setSelectedUser(currentUser);
-        // Recarregar permissões com os novos dados
-        loadUserPermissions(selectedUserId);
-        toast.success('Dados do usuário atualizados! As permissões foram recarregadas.');
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar relatório');
       }
-    }
-  }, [usuarios, selectedUser, selectedUserId]);
-
-  const loadUsuarios = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/usuarios?limit=1000');
-      const usuariosData = response.data.data.items || response.data.data || [];
-      setUsuarios(usuariosData);
-      setFilteredUsuarios(usuariosData);
     } catch (error) {
-      console.error('Erro ao carregar usuários:', error);
-      toast.error('Erro ao carregar usuários');
-      setUsuarios([]);
-      setFilteredUsuarios([]);
-    } finally {
-      setLoading(false);
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar relatório');
     }
   };
 
-  const loadUserPermissions = async (userId) => {
+  const handleExportPDF = async () => {
     try {
-      const response = await api.get(`/permissoes/usuario/${userId}`);
-      const permissionsData = response.data.data || response.data;
-      setUserPermissions(permissionsData);
-      setEditingPermissions({});
-      
-      // Inicializar permissões de edição
-      const initialPermissions = {};
-      if (permissionsData.permissoes && Array.isArray(permissionsData.permissoes)) {
-        permissionsData.permissoes.forEach(perm => {
-          initialPermissions[perm.tela] = {
-            pode_visualizar: perm.pode_visualizar === 1,
-            pode_criar: perm.pode_criar === 1,
-            pode_editar: perm.pode_editar === 1,
-            pode_excluir: perm.pode_excluir === 1
-          };
-        });
+      const params = {
+        usuario_id: selectedUserId,
+        ...auditFilters
+      };
+
+      const result = await PermissoesService.exportarPDF(params);
+      if (result.success) {
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `permissoes_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar relatório');
       }
-      setEditingPermissions(initialPermissions);
     } catch (error) {
-      console.error('Erro ao carregar permissões:', error);
-      toast.error('Erro ao carregar permissões do usuário');
-      setUserPermissions({});
-      setEditingPermissions({});
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar relatório');
     }
   };
 
-  const reloadUserPermissions = async () => {
-    if (selectedUserId) {
-      await loadUserPermissions(selectedUserId);
-    }
-  };
-
-  const handleUserSelect = (userId) => {
-    const user = (Array.isArray(usuarios) ? usuarios : []).find(u => u.id === parseInt(userId));
-    setSelectedUserId(userId);
-    setSelectedUser(user);
-    setSearchTerm(user ? `${user.nome} - ${getAccessTypeLabel(user.tipo_de_acesso)} (${getAccessLevelLabel(user.nivel_de_acesso)})` : '');
-    setIsSelectOpen(false);
-    if (userId) {
-      // Sempre recarregar permissões para garantir dados atualizados
-      loadUserPermissions(userId);
-    } else {
-      setUserPermissions({});
-      setEditingPermissions({});
-    }
-  };
-
-  const handleSelectClick = () => {
-    setIsSelectOpen(!isSelectOpen);
-    if (!isSelectOpen) {
-      setSearchTerm('');
-    }
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-    setIsSelectOpen(true);
-  };
-
-  const handleSelectBlur = () => {
-    // Pequeno delay para permitir cliques nas opções
-    setTimeout(() => {
-      setIsSelectOpen(false);
-    }, 200);
-  };
-
-  const handlePermissionChange = (tela, acao, value) => {
-    setEditingPermissions(prev => ({
-      ...prev,
-      [tela]: {
-        ...prev[tela],
-        [acao]: value
-      }
-    }));
-  };
-
-  const handleSavePermissions = async () => {
-    try {
-      setSaving(true);
-      
-      const permissoesArray = Object.keys(editingPermissions).map(tela => ({
-        tela,
-        ...editingPermissions[tela]
-      }));
-
-      // Preparar estado anterior para auditoria
-      const estadoAnterior = {};
-      if (userPermissions.permissoes) {
-        userPermissions.permissoes.forEach(perm => {
-          estadoAnterior[perm.tela] = {
-            pode_visualizar: perm.pode_visualizar === 1,
-            pode_criar: perm.pode_criar === 1,
-            pode_editar: perm.pode_editar === 1,
-            pode_excluir: perm.pode_excluir === 1
-          };
-        });
-      }
-
-      await api.put(`/permissoes/usuario/${selectedUser.id}`, {
-        permissoes: permissoesArray,
-        estado_anterior: estadoAnterior
-      });
-
-      toast.success('Permissões atualizadas com sucesso!');
-      loadUserPermissions(selectedUser.id);
-    } catch (error) {
-      console.error('Erro ao salvar permissões:', error);
-      const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao salvar permissões';
-      toast.error(errorMsg);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleResetPermissions = async () => {
-    try {
-      setSaving(true);
-      
-      // Buscar permissões padrão baseadas no tipo e nível do usuário
-      const response = await api.get(`/permissoes/padrao/${selectedUser.tipo_de_acesso}/${selectedUser.nivel_de_acesso}`);
-      
-      const permissoesData = response.data.data || response.data;
-      const permissoesArray = (permissoesData.permissoes || []).map(perm => ({
-        tela: perm.tela,
-        pode_visualizar: perm.pode_visualizar === 1,
-        pode_criar: perm.pode_criar === 1,
-        pode_editar: perm.pode_editar === 1,
-        pode_excluir: perm.pode_excluir === 1
-      }));
-
-      await api.put(`/permissoes/usuario/${selectedUser.id}`, {
-        permissoes: permissoesArray
-      });
-
-      toast.success('Permissões resetadas para padrão!');
-      loadUserPermissions(selectedUser.id);
-    } catch (error) {
-      console.error('Erro ao resetar permissões:', error);
-      toast.error('Erro ao resetar permissões');
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSyncPermissions = async () => {
-    try {
-      setSaving(true);
-      
-      const response = await api.post('/permissoes/sincronizar');
-      
-      const syncData = response.data.data || response.data;
-      toast.success(`Sincronização concluída! ${syncData.usuarios_atualizados} usuários atualizados, ${syncData.telas_adicionadas} telas adicionadas.`);
-      
-      // Recarregar permissões do usuário atual se houver
-      if (selectedUserId) {
-        loadUserPermissions(selectedUserId);
-      }
-      
-    } catch (error) {
-      console.error('Erro ao sincronizar permissões:', error);
-      toast.error('Erro ao sincronizar permissões');
-    } finally {
-      setSaving(false);
-    }
-  };
-
+  // Funções auxiliares
   const getAccessTypeLabel = (type) => {
-    switch (type) {
-      case 'administrador': return 'Administrador';
-      case 'coordenador': return 'Coordenador';
-      case 'gerente': return 'Gerente';
-      case 'supervisor': return 'Supervisor';
-      case 'administrativo': return 'Administrativo';
-      default: return type;
-    }
+    const labels = {
+      'pode_visualizar': 'Visualizar',
+      'pode_criar': 'Criar',
+      'pode_editar': 'Editar',
+      'pode_excluir': 'Excluir'
+    };
+    return labels[type] || type;
   };
 
   const getAccessLevelLabel = (level) => {
-    switch (level) {
-      case 'I': return 'Nível I';
-      case 'II': return 'Nível II';
-      case 'III': return 'Nível III';
-      default: return level;
-    }
+    return level === 1 ? 'Sim' : 'Não';
   };
 
-  // Estrutura de grupos baseada na sidebar
-  const permissionGroups = [
-    {
-      title: 'Principal',
-      screens: ['dashboard']
-    },
-    {
-      title: 'Suprimentos',
-      screens: ['cotacao']
-    },
-    {
-      title: 'Logística',
-      screens: ['rotas', 'unidades_escolares']
-    },
-    {
-      title: 'Frotas',
-      screens: ['veiculos', 'motoristas', 'ajudantes']
-    },
-    {
-      title: 'Cadastros',
-      screens: ['usuarios', 'fornecedores', 'clientes', 'filiais', 'produtos', 'grupos', 'subgrupos', 'classes', 'nome_generico_produto', 'unidades', 'marcas']
-    },
-    {
-      title: 'Sistema',
-      screens: ['permissoes']
-    }
-  ];
-
   const getScreenLabel = (screen) => {
-    switch (screen) {
-      case 'dashboard': return 'Dashboard';
-      case 'usuarios': return 'Usuários';
-      case 'fornecedores': return 'Fornecedores';
-      case 'produtos': return 'Produtos';
-      case 'grupos': return 'Grupos';
-      case 'subgrupos': return 'Subgrupos';
-      case 'unidades': return 'Unidades';
-      case 'unidades_escolares': return 'Unidades Escolares';
-      case 'permissoes': return 'Permissões';
-      case 'classes': return 'Classes';
-      case 'marcas': return 'Marcas';
-      case 'nome_generico_produto': return 'Nomes Genéricos';
-      case 'clientes': return 'Clientes';
-      case 'filiais': return 'Filiais';
-      case 'rotas': return 'Rotas';
-      case 'cotacao': return 'Cotação';
-      case 'veiculos': return 'Veículos';
-      case 'motoristas': return 'Motoristas';
-      case 'ajudantes': return 'Ajudantes';
-      default: return screen;
-    }
+    const labels = {
+      'usuarios': 'Usuários',
+      'filiais': 'Filiais',
+      'fornecedores': 'Fornecedores',
+      'clientes': 'Clientes',
+      'produtos': 'Produtos',
+      'grupos': 'Grupos',
+      'subgrupos': 'Subgrupos',
+      'classes': 'Classes',
+      'marcas': 'Marcas',
+      'unidades': 'Unidades',
+      'unidades_escolares': 'Unidades Escolares',
+      'nome_generico_produto': 'Nomes Genéricos',
+      'motoristas': 'Motoristas',
+      'ajudantes': 'Ajudantes',
+      'veiculos': 'Veículos',
+      'rotas': 'Rotas',
+      'permissoes': 'Permissões'
+    };
+    return labels[screen] || screen;
   };
 
   const getScreenIcon = (screen) => {
-    switch (screen) {
-      case 'dashboard': return '🏠';
-      case 'usuarios': return '👥';
-      case 'fornecedores': return '🚛';
-      case 'produtos': return '📦';
-      case 'grupos': return '📚';
-      case 'subgrupos': return '🔗';
-      case 'unidades': return '📏';
-      case 'unidades_escolares': return '🏢';
-      case 'permissoes': return '🔐';
-      case 'classes': return '📊';
-      case 'marcas': return '🏷️';
-      case 'nome_generico_produto': return '📄';
-      case 'clientes': return '🏢';
-      case 'filiais': return '🏪';
-      case 'rotas': return '🛣️';
-      case 'cotacao': return '📋';
-      case 'veiculos': return '🚗';
-      case 'motoristas': return '👨‍💼';
-      case 'ajudantes': return '👨‍💼';
-      default: return '📄';
-    }
+    const icons = {
+      'usuarios': FaUsers,
+      'filiais': FaBuilding,
+      'fornecedores': FaTruck,
+      'clientes': FaUsers,
+      'produtos': FaBox,
+      'grupos': FaFolder,
+      'subgrupos': FaFolderOpen,
+      'classes': FaTags,
+      'marcas': FaTag,
+      'unidades': FaRuler,
+      'unidades_escolares': FaSchool,
+      'nome_generico_produto': FaList,
+      'motoristas': FaUserTie,
+      'ajudantes': FaHandsHelping,
+      'veiculos': FaCar,
+      'rotas': FaRoute,
+      'permissoes': FaUserShield
+    };
+    return icons[screen] || FaCog;
   };
 
   const toggleGroup = (groupTitle) => {
@@ -1420,483 +448,396 @@ const Permissoes = () => {
   };
 
   const expandAllGroups = () => {
-    const allExpanded = {};
-    permissionGroups.forEach(group => {
-      allExpanded[group.title] = true;
+    const allGroups = ['Cadastros', 'Operacional', 'Administrativo'];
+    const expanded = {};
+    allGroups.forEach(group => {
+      expanded[group] = true;
     });
-    setExpandedGroups(allExpanded);
+    setExpandedGroups(expanded);
   };
 
   const collapseAllGroups = () => {
     setExpandedGroups({});
   };
 
+  // Agrupar telas
+  const screenGroups = {
+    'Cadastros': ['usuarios', 'filiais', 'fornecedores', 'clientes', 'produtos', 'grupos', 'subgrupos', 'classes', 'marcas', 'unidades', 'unidades_escolares', 'nome_generico_produto'],
+    'Operacional': ['motoristas', 'ajudantes', 'veiculos', 'rotas'],
+    'Administrativo': ['permissoes']
+  };
+
+  // Effects
+  useEffect(() => {
+    loadUsuarios();
+  }, []);
+
+  // Loading state
   if (loading) {
     return (
-      <Container>
-        <LoadingContainer>
-          <LoadingSpinner inline={true} text="Carregando usuários..." />
-        </LoadingContainer>
-      </Container>
+      <div className="p-3 sm:p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Carregando usuários...</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <Header>
-        <Title>Gerenciar Permissões</Title>
-        <div style={{ display: 'flex', gap: '12px' }}>
+    <div className="p-3 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Gerenciar Permissões</h1>
+        <div className="flex gap-2 sm:gap-3">
           <Button
-            className="secondary"
-            onClick={handleSyncPermissions}
-            disabled={saving}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <FaSync />
-            {saving ? 'Sincronizando...' : 'Sincronizar Permissões'}
-          </Button>
-          <Button
-            className="primary"
             onClick={handleOpenAuditModal}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
           >
-            <FaQuestionCircle />
-            Auditoria
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
           </Button>
         </div>
-      </Header>
+      </div>
 
-      {usuarios.length === 0 ? (
-        <EmptyState>Nenhum usuário encontrado</EmptyState>
-      ) : (
-        <div>
-          <UserSelector>
-            <SelectContainer>
-              <CustomSelect>
-                <SelectInput
+      {/* Cards de Estatísticas */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-6">
+        <StatCard
+          title="Total de Usuários"
+          value={estatisticas.total_usuarios}
+          icon={FaUsers}
+          color="blue"
+        />
+        <StatCard
+          title="Com Permissões"
+          value={estatisticas.usuarios_com_permissoes}
+          icon={FaCheckCircle}
+          color="green"
+        />
+        <StatCard
+          title="Sem Permissões"
+          value={estatisticas.usuarios_sem_permissoes}
+          icon={FaTimesCircle}
+          color="red"
+        />
+      </div>
+
+      {/* Seletor de Usuário */}
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Selecionar Usuário</h2>
+        
+        <div className="relative">
+          <div
+            className="w-full p-3 sm:p-4 border border-gray-300 rounded-lg cursor-pointer bg-white flex justify-between items-center"
+            onClick={handleSelectClick}
+            onBlur={handleSelectBlur}
+          >
+            <span className={selectedUser ? 'text-gray-900' : 'text-gray-500'}>
+              {selectedUser ? `${selectedUser.nome} (${selectedUser.email})` : 'Selecione um usuário...'}
+            </span>
+            <FaChevronDown className={`text-gray-500 transition-transform ${isSelectOpen ? 'rotate-180' : ''}`} />
+          </div>
+
+          {isSelectOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+              <div className="p-2 border-b border-gray-200">
+                <Input
                   type="text"
-                  placeholder="Buscar e selecionar usuário..."
+                  placeholder="Buscar usuário..."
                   value={searchTerm}
                   onChange={handleSearchChange}
-                  onFocus={() => setIsSelectOpen(true)}
-                  onBlur={handleSelectBlur}
-                  onClick={handleSelectClick}
+                  className="w-full"
                 />
-                <SelectIcon isOpen={isSelectOpen}>
-                  <FaChevronDown />
-                </SelectIcon>
-                
-                {isSelectOpen && (
-                  <SelectDropdown>
-                    {filteredUsuarios.length > 0 ? (
-                      filteredUsuarios.map(user => (
-                        <SelectOption
-                          key={user.id}
-                          isSelected={selectedUserId === user.id.toString()}
-                          onClick={() => handleUserSelect(user.id.toString())}
-                        >
-                          {user.nome} - {getAccessTypeLabel(user.tipo_de_acesso)} ({getAccessLevelLabel(user.nivel_de_acesso)})
-                        </SelectOption>
-                      ))
-                    ) : (
-                      <NoResults>
-                        {searchTerm.trim() !== '' 
-                          ? `Nenhum usuário encontrado para "${searchTerm}"`
-                          : 'Nenhum usuário disponível'
-                        }
-                      </NoResults>
-                    )}
-                  </SelectDropdown>
-                )}
-              </CustomSelect>
-            </SelectContainer>
-
-            {selectedUser && (
-              <UserInfo>
-                <UserAvatar>
-                  {selectedUser.nome.charAt(0).toUpperCase()}
-                </UserAvatar>
-                <UserDetails>
-                  <UserName>{selectedUser.nome}</UserName>
-                  <UserEmail>{selectedUser.email}</UserEmail>
-                </UserDetails>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <AccessBadge type={selectedUser.tipo_de_acesso}>
-                    {getAccessTypeLabel(selectedUser.tipo_de_acesso)}
-                  </AccessBadge>
-                  <AccessBadge type="nivel">
-                    {getAccessLevelLabel(selectedUser.nivel_de_acesso)}
-                  </AccessBadge>
-                </div>
-              </UserInfo>
-            )}
-          </UserSelector>
-
-          {selectedUser && userPermissions.permissoes && (
-            <div>
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center', 
-                marginBottom: '16px',
-                padding: '12px 16px',
-                background: '#f8f9fa',
-                borderRadius: '8px',
-                border: '1px solid #e0e0e0'
-              }}>
-                <div style={{ fontSize: '14px', color: 'var(--dark-gray)', fontWeight: '500' }}>
-                  Gerenciar permissões para: <strong>{selectedUser.nome}</strong>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button
-                    onClick={expandAllGroups}
-                    style={{
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      background: 'var(--primary-green)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Expandir Todos
-                  </button>
-                  <button
-                    onClick={collapseAllGroups}
-                    style={{
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      background: 'var(--light-gray)',
-                      color: 'var(--dark-gray)',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Colapsar Todos
-                  </button>
-                </div>
               </div>
               
-              <PermissionsContainer>
-              {permissionGroups.map((group, groupIndex) => {
-                // Filtrar permissões que pertencem a este grupo
-                const groupPermissions = userPermissions.permissoes.filter(perm => 
-                  group.screens.includes(perm.tela)
-                );
-
-                // Se não há permissões neste grupo, não renderizar
-                if (groupPermissions.length === 0) return null;
-
-                return (
-                  <PermissionGroup key={groupIndex}>
-                    <GroupHeader onClick={() => toggleGroup(group.title)}>
-                      <GroupTitle>
-                        {group.title}
-                        <span style={{ fontSize: '12px', color: 'var(--gray)', fontWeight: 'normal' }}>
-                          ({groupPermissions.length} tela{groupPermissions.length !== 1 ? 's' : ''})
-                        </span>
-                      </GroupTitle>
-                      <GroupToggle>
-                        {expandedGroups[group.title] ? '▼' : '▶'}
-                      </GroupToggle>
-                    </GroupHeader>
-                    
-                    <GroupContent $expanded={expandedGroups[group.title]}>
-                      <PermissionsTable>
-                        <TableHeader>
-                          <div>Tela</div>
-                          <div style={{ textAlign: 'center' }}>Visualizar</div>
-                          <div style={{ textAlign: 'center' }}>Criar</div>
-                          <div style={{ textAlign: 'center' }}>Editar</div>
-                          <div style={{ textAlign: 'center' }}>Excluir</div>
-                        </TableHeader>
-
-                        {groupPermissions.map(perm => (
-                          <TableRow key={perm.tela}>
-                            <ScreenName>
-                              <span style={{ fontSize: '16px' }}>{getScreenIcon(perm.tela)}</span>
-                              {getScreenLabel(perm.tela)}
-                            </ScreenName>
-                            <PermissionCell>
-                              <Checkbox
-                                type="checkbox"
-                                checked={editingPermissions[perm.tela]?.pode_visualizar || false}
-                                onChange={(e) => handlePermissionChange(perm.tela, 'pode_visualizar', e.target.checked)}
-                              />
-                            </PermissionCell>
-                            <PermissionCell>
-                              <Checkbox
-                                type="checkbox"
-                                checked={editingPermissions[perm.tela]?.pode_criar || false}
-                                onChange={(e) => handlePermissionChange(perm.tela, 'pode_criar', e.target.checked)}
-                              />
-                            </PermissionCell>
-                            <PermissionCell>
-                              <Checkbox
-                                type="checkbox"
-                                checked={editingPermissions[perm.tela]?.pode_editar || false}
-                                onChange={(e) => handlePermissionChange(perm.tela, 'pode_editar', e.target.checked)}
-                              />
-                            </PermissionCell>
-                            <PermissionCell>
-                              <Checkbox
-                                type="checkbox"
-                                checked={editingPermissions[perm.tela]?.pode_excluir || false}
-                                onChange={(e) => handlePermissionChange(perm.tela, 'pode_excluir', e.target.checked)}
-                              />
-                            </PermissionCell>
-                          </TableRow>
-                        ))}
-                      </PermissionsTable>
-                    </GroupContent>
-                  </PermissionGroup>
-                );
-              })}
-            </PermissionsContainer>
+              <div className="max-h-48 overflow-y-auto">
+                {filteredUsuarios.length === 0 ? (
+                  <div className="p-3 text-center text-gray-500 text-sm">
+                    Nenhum usuário encontrado
+                  </div>
+                ) : (
+                  filteredUsuarios.map(user => (
+                    <div
+                      key={user.id}
+                      className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                      onClick={() => handleUserSelect(user.id)}
+                    >
+                      <div className="font-medium text-gray-900">{user.nome}</div>
+                      <div className="text-sm text-gray-600">{user.email}</div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           )}
+        </div>
+      </div>
 
-          {selectedUser && userPermissions.permissoes && (
-            <ButtonGroup>
+      {/* Permissões do Usuário */}
+      {selectedUser && (
+        <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3">
+            <div>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+                Permissões de {selectedUser.nome}
+              </h2>
+              <p className="text-sm text-gray-600">{selectedUser.email}</p>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 sm:gap-3">
               <Button
-                className="primary"
-                onClick={handleSavePermissions}
-                disabled={saving}
-              >
-                <FaSave />
-                {saving ? 'Salvando...' : 'Salvar Permissões'}
-              </Button>
-              <Button
-                className="secondary"
-                onClick={handleResetPermissions}
-                disabled={saving}
-              >
-                <FaTimes />
-                Resetar para Padrão
-              </Button>
-              <Button
-                className="secondary"
                 onClick={reloadUserPermissions}
-                disabled={loading}
+                variant="outline"
+                size="sm"
+                disabled={saving}
               >
-                <FaSync />
-                Recarregar Permissões
+                <FaSync className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Recarregar</span>
+                <span className="sm:hidden">Recarregar</span>
               </Button>
-            </ButtonGroup>
-          )}
+              
+              <Button
+                onClick={expandAllGroups}
+                variant="outline"
+                size="sm"
+              >
+                <span className="hidden sm:inline">Expandir Tudo</span>
+                <span className="sm:hidden">Expandir</span>
+              </Button>
+              
+              <Button
+                onClick={collapseAllGroups}
+                variant="outline"
+                size="sm"
+              >
+                <span className="hidden sm:inline">Recolher Tudo</span>
+                <span className="sm:hidden">Recolher</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Grupos de Permissões */}
+          <div className="space-y-4 sm:space-y-6">
+            {Object.entries(screenGroups).map(([groupTitle, screens]) => (
+              <div key={groupTitle} className="border border-gray-200 rounded-lg">
+                <div
+                  className="p-3 sm:p-4 bg-gray-50 cursor-pointer flex justify-between items-center"
+                  onClick={() => toggleGroup(groupTitle)}
+                >
+                  <h3 className="font-semibold text-gray-800">{groupTitle}</h3>
+                  <FaChevronDown className={`text-gray-500 transition-transform ${expandedGroups[groupTitle] ? 'rotate-180' : ''}`} />
+                </div>
+                
+                {expandedGroups[groupTitle] && (
+                  <div className="p-3 sm:p-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                      {screens.map(screen => {
+                        const ScreenIcon = getScreenIcon(screen);
+                        const screenLabel = getScreenLabel(screen);
+                        
+                        return (
+                          <div key={screen} className="border border-gray-200 rounded-lg p-3 sm:p-4">
+                            <div className="flex items-center mb-3">
+                              <ScreenIcon className="text-blue-600 mr-2" />
+                              <h4 className="font-medium text-gray-800">{screenLabel}</h4>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              {['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].map(acao => (
+                                <div key={acao} className="flex items-center justify-between">
+                                  <span className="text-sm text-gray-600">
+                                    {getAccessTypeLabel(acao)}
+                                  </span>
+                                  <label className="relative inline-flex items-center cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      className="sr-only peer"
+                                      checked={editingPermissions[screen]?.[acao] === 1}
+                                      onChange={(e) => handlePermissionChange(screen, acao, e.target.checked ? 1 : 0)}
+                                    />
+                                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                                  </label>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Botões de Ação */}
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-6 pt-4 border-t border-gray-200">
+            <Button
+              onClick={handleSavePermissions}
+              disabled={saving}
+              className="flex-1 sm:flex-none"
+            >
+              <FaSave className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Salvar Permissões</span>
+              <span className="sm:hidden">Salvar</span>
+            </Button>
+            
+            <Button
+              onClick={handleResetPermissions}
+              variant="outline"
+              disabled={saving}
+              className="flex-1 sm:flex-none"
+            >
+              <FaTimes className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Resetar Permissões</span>
+              <span className="sm:hidden">Resetar</span>
+            </Button>
+            
+            <Button
+              onClick={handleSyncPermissions}
+              variant="outline"
+              disabled={saving}
+              className="flex-1 sm:flex-none"
+            >
+              <FaSync className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Sincronizar</span>
+              <span className="sm:hidden">Sync</span>
+            </Button>
+          </div>
         </div>
       )}
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
-            <ModalHeader>
-              <ModalTitle>Relatório de Auditoria - Permissões</ModalTitle>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={handleExportXLSX}
-                  title="Exportar para Excel"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFileExcel />
-                  Excel
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  title="Exportar para PDF"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFilePdf />
-                  PDF
-                </button>
-                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
-              </div>
-            </ModalHeader>
-
+        <Modal
+          isOpen={showAuditModal}
+          onClose={handleCloseAuditModal}
+          title="Relatório de Auditoria - Permissões"
+          size="full"
+        >
+          <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
-            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataInicio}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataFim}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Ação
-                  </label>
-                  <select
-                    value={auditFilters.acao}
-                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todas as ações</option>
-                    <option value="create">Criar</option>
-                    <option value="update">Editar</option>
-                    <option value="delete">Excluir</option>
-                    <option value="login">Login</option>
-                    <option value="logout">Logout</option>
-                    <option value="view">Visualizar</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Período
-                  </label>
-                  <select
-                    value={auditFilters.periodo}
-                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Período personalizado</option>
-                    <option value="7dias">Últimos 7 dias</option>
-                    <option value="30dias">Últimos 30 dias</option>
-                    <option value="90dias">Últimos 90 dias</option>
-                    <option value="todos">Todos os registros</option>
-                  </select>
-                </div>
-                <div>
-                  <button
-                    onClick={handleApplyAuditFilters}
-                    style={{
-                      marginTop: '20px',
-                      padding: '8px 16px',
-                      background: 'var(--primary-green)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Aplicar Filtros
-                  </button>
+            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Filtros</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <Input
+                  label="Data Início"
+                  type="date"
+                  value={auditFilters.dataInicio}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                />
+                <Input
+                  label="Data Fim"
+                  type="date"
+                  value={auditFilters.dataFim}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                />
+                <Input
+                  label="Ação"
+                  type="select"
+                  value={auditFilters.acao}
+                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                >
+                  <option value="">Todas as ações</option>
+                  <option value="create">Criar</option>
+                  <option value="update">Editar</option>
+                  <option value="delete">Excluir</option>
+                </Input>
+                <Input
+                  label="Período"
+                  type="select"
+                  value={auditFilters.periodo}
+                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                >
+                  <option value="">Período personalizado</option>
+                  <option value="7dias">Últimos 7 dias</option>
+                  <option value="30dias">Últimos 30 dias</option>
+                  <option value="90dias">Últimos 90 dias</option>
+                  <option value="todos">Todos os registros</option>
+                </Input>
+                <div className="flex items-end">
+                  <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
+                    <span className="hidden sm:inline">Aplicar Filtros</span>
+                    <span className="sm:hidden">Aplicar</span>
+                  </Button>
                 </div>
               </div>
             </div>
 
-            {/* Lista de Logs */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            {/* Botões de Exportação */}
+            <div className="flex gap-2 sm:gap-3">
+              <Button onClick={handleExportXLSX} variant="outline" size="sm">
+                <FaFileExcel className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar Excel</span>
+                <span className="sm:hidden">Excel</span>
+              </Button>
+              <Button onClick={handleExportPDF} variant="outline" size="sm">
+                <FaFilePdf className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar PDF</span>
+                <span className="sm:hidden">PDF</span>
+              </Button>
+            </div>
+
+            {/* Resultados da Auditoria */}
+            <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
+                <div className="text-center py-6 sm:py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+                  <p className="text-gray-600 text-sm">Carregando logs...</p>
+                </div>
               ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
+                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
                   Nenhum log encontrado com os filtros aplicados
                 </div>
               ) : (
-                <div>
-                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="text-xs sm:text-sm text-gray-600">
                     {auditLogs.length} log(s) encontrado(s)
                   </div>
                   {auditLogs.map((log, index) => (
                     <div
                       key={index}
-                      style={{
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        marginBottom: '12px',
-                        background: 'white'
-                      }}
+                      className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white"
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            background: log.acao === 'create' ? '#e8f5e8' : 
-                                       log.acao === 'update' ? '#fff3cd' : 
-                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
-                            color: log.acao === 'create' ? '#2e7d32' : 
-                                   log.acao === 'update' ? '#856404' : 
-                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
-                          }}>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 sm:mb-3 gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                            log.acao === 'create' ? 'bg-green-100 text-green-800' : 
+                            log.acao === 'update' ? 'bg-yellow-100 text-yellow-800' : 
+                            log.acao === 'delete' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
                             {getActionLabel(log.acao)}
                           </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                          <span className="text-xs sm:text-sm text-gray-600">
                             por {log.usuario_nome || 'Usuário desconhecido'}
                           </span>
                         </div>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                        <span className="text-xs sm:text-sm text-gray-600">
                           {formatDate(log.timestamp)}
                         </span>
                       </div>
                       
                       {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
+                        <div className="text-xs sm:text-sm text-gray-800">
                           {log.detalhes.changes && (
-                            <div style={{ marginBottom: '8px' }}>
+                            <div className="mb-2 sm:mb-3">
                               <strong>Mudanças Realizadas:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
+                              <div className="mt-1 sm:mt-2 space-y-1 sm:space-y-2">
                                 {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} style={{ 
-                                    marginBottom: '6px', 
-                                    padding: '8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
+                                  <div key={field} className="p-2 sm:p-3 bg-gray-50 rounded-lg border">
+                                    <div className="font-semibold text-gray-800 mb-1 sm:mb-2 text-xs sm:text-sm">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                      <span style={{ color: '#721c24' }}>
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs">
+                                      <span className="text-red-600">
                                         <strong>Antes:</strong> {formatFieldValue(field, change.from)}
                                       </span>
-                                      <span style={{ color: '#6c757d' }}>→</span>
-                                      <span style={{ color: '#2e7d32' }}>
+                                      <span className="text-gray-500 hidden sm:inline">→</span>
+                                      <span className="text-green-600">
                                         <strong>Depois:</strong> {formatFieldValue(field, change.to)}
                                       </span>
                                     </div>
@@ -1907,26 +848,14 @@ const Permissoes = () => {
                           )}
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
-                              <strong>Dados da Permissão:</strong>
-                              <div style={{ 
-                                marginLeft: '12px', 
-                                marginTop: '8px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '8px'
-                              }}>
+                              <strong>Dados das Permissões:</strong>
+                              <div className="mt-1 sm:mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
                                 {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} style={{ 
-                                    padding: '6px 8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef',
-                                    fontSize: '11px'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
+                                  <div key={field} className="p-1.5 sm:p-2 bg-gray-50 rounded border text-xs">
+                                    <div className="font-semibold text-gray-800 mb-0.5 sm:mb-1">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ color: '#2e7d32' }}>
+                                    <div className="text-green-600">
                                       {formatFieldValue(field, value)}
                                     </div>
                                   </div>
@@ -1935,15 +864,9 @@ const Permissoes = () => {
                             </div>
                           )}
                           {log.detalhes.resourceId && (
-                            <div style={{ 
-                              marginTop: '8px', 
-                              padding: '6px 8px', 
-                              background: '#e3f2fd', 
-                              borderRadius: '4px',
-                              fontSize: '11px'
-                            }}>
-                              <strong>ID da Permissão:</strong> 
-                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
+                            <div className="mt-2 sm:mt-3 p-1.5 sm:p-2 bg-blue-50 rounded border text-xs">
+                              <strong>ID do Usuário:</strong> 
+                              <span className="text-blue-600 ml-1">
                                 #{log.detalhes.resourceId}
                               </span>
                             </div>
@@ -1955,10 +878,10 @@ const Permissoes = () => {
                 </div>
               )}
             </div>
-          </ModalContent>
+          </div>
         </Modal>
       )}
-    </Container>
+    </div>
   );
 };
 

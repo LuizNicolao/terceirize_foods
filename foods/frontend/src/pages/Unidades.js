@@ -111,7 +111,7 @@ const Unidades = () => {
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
-    setAuditLoading(true);
+      setAuditLoading(true);
     try {
       const params = {
         entity: 'unidades',
@@ -204,7 +204,7 @@ const Unidades = () => {
           toast.success('Unidade excluída com sucesso!');
           loadUnidades();
           loadEstatisticas();
-        } else {
+      } else {
           toast.error(result.error || 'Erro ao excluir unidade');
         }
       } catch (error) {
@@ -236,7 +236,7 @@ const Unidades = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('pt-BR');
+      return new Date(dateString).toLocaleString('pt-BR');
   };
 
   const getActionLabel = (action) => {
@@ -259,9 +259,9 @@ const Unidades = () => {
 
   const formatFieldValue = (field, value) => {
     if (value === null || value === undefined) return '-';
-    
+
     if (field === 'status') {
-      return value === 1 ? 'Ativo' : 'Inativo';
+        return value === 1 ? 'Ativo' : 'Inativo';
     }
     
     return value.toString();
@@ -423,12 +423,12 @@ const Unidades = () => {
       />
 
       {/* Tabela */}
-      {filteredUnidades.length === 0 ? (
+            {filteredUnidades.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-          {searchTerm || statusFilter !== 'todos'
-            ? 'Nenhuma unidade encontrada com os filtros aplicados'
-            : 'Nenhuma unidade cadastrada'
-          }
+                    {searchTerm || statusFilter !== 'todos' 
+                      ? 'Nenhuma unidade encontrada com os filtros aplicados'
+                      : 'Nenhuma unidade cadastrada'
+                    }
         </div>
       ) : (
         <>
@@ -456,7 +456,7 @@ const Unidades = () => {
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {unidade.status === 1 ? 'Ativo' : 'Inativo'}
+                      {unidade.status === 1 ? 'Ativo' : 'Inativo'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -464,37 +464,37 @@ const Unidades = () => {
                         <Button
                           variant="ghost"
                           size="xs"
-                          onClick={() => handleViewUnidade(unidade)}
+                      onClick={() => handleViewUnidade(unidade)}
                           title="Visualizar"
-                        >
+                    >
                           <FaEye className="text-green-600 text-sm" />
                         </Button>
-                        {canEdit('unidades') && (
+                    {canEdit('unidades') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleEditUnidade(unidade)}
+                        onClick={() => handleEditUnidade(unidade)}
                             title="Editar"
-                          >
+                      >
                             <FaEdit className="text-blue-600 text-sm" />
                           </Button>
-                        )}
-                        {canDelete('unidades') && (
+                    )}
+                    {canDelete('unidades') && (
                           <Button
                             variant="ghost"
                             size="xs"
-                            onClick={() => handleDeleteUnidade(unidade.id)}
+                        onClick={() => handleDeleteUnidade(unidade.id)}
                             title="Excluir"
-                          >
+                      >
                             <FaTrash className="text-red-600 text-sm" />
                           </Button>
-                        )}
+                    )}
                       </div>
                     </td>
-                  </tr>
+                </tr>
                 ))}
-              </tbody>
-            </Table>
+          </tbody>
+        </Table>
           </div>
 
           {/* Versão Mobile - Cards */}
@@ -573,21 +573,21 @@ const Unidades = () => {
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              <Input
+                <Input
                 label="Nome *"
-                type="text"
-                {...register('nome', { required: 'Nome é obrigatório' })}
+                  type="text"
+                  {...register('nome', { required: 'Nome é obrigatório' })}
                 error={errors.nome?.message}
-                disabled={viewMode}
-              />
-              <Input
+                  disabled={viewMode}
+                />
+                <Input
                 label="Sigla *"
-                type="text"
-                {...register('sigla', { required: 'Sigla é obrigatória' })}
+                  type="text"
+                  {...register('sigla', { required: 'Sigla é obrigatória' })}
                 error={errors.sigla?.message}
-                disabled={viewMode}
-              />
-              {!viewMode && (
+                  disabled={viewMode}
+                />
+                {!viewMode && (
                 <Input
                   label="Status"
                   type="select"
@@ -606,10 +606,10 @@ const Unidades = () => {
                   Cancelar
                 </Button>
                 <Button type="submit" size="sm">
-                  {editingUnidade ? 'Atualizar' : 'Cadastrar'}
-                </Button>
+                    {editingUnidade ? 'Atualizar' : 'Cadastrar'}
+                  </Button>
               </div>
-            )}
+                )}
           </form>
         </Modal>
       )}
@@ -629,38 +629,38 @@ const Unidades = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Input
                   label="Data Início"
-                  type="date"
-                  value={auditFilters.dataInicio}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
                 />
                 <Input
                   label="Data Fim"
-                  type="date"
-                  value={auditFilters.dataFim}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
                 />
                 <Input
                   label="Ação"
                   type="select"
-                  value={auditFilters.acao}
-                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                >
-                  <option value="">Todas as ações</option>
-                  <option value="create">Criar</option>
-                  <option value="update">Editar</option>
-                  <option value="delete">Excluir</option>
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
                 </Input>
                 <Input
                   label="Período"
                   type="select"
-                  value={auditFilters.periodo}
-                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                >
-                  <option value="">Período personalizado</option>
-                  <option value="7dias">Últimos 7 dias</option>
-                  <option value="30dias">Últimos 30 dias</option>
-                  <option value="90dias">Últimos 90 dias</option>
-                  <option value="todos">Todos os registros</option>
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                  >
+                    <option value="">Período personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos os registros</option>
                 </Input>
                 <div className="flex items-end">
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
@@ -668,8 +668,8 @@ const Unidades = () => {
                     <span className="sm:hidden">Aplicar</span>
                   </Button>
                 </div>
+                </div>
               </div>
-            </div>
 
             {/* Botões de Exportação */}
             <div className="flex gap-2 sm:gap-3">
