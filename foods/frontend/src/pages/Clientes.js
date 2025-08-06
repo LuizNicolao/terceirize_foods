@@ -617,7 +617,7 @@ const Clientes = () => {
       )}
 
       {/* Ações */}
-      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+      <div className="flex gap-2 sm:gap-3 mb-4">
         <Button onClick={handleExportXLSX} variant="outline" size="sm">
           <FaFileExcel className="mr-1 sm:mr-2" />
           <span className="hidden sm:inline">Exportar XLSX</span>
@@ -639,106 +639,189 @@ const Clientes = () => {
       ) : filteredClientes.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {debouncedSearchTerm 
-                      ? 'Nenhum cliente encontrado com os filtros aplicados'
-                      : 'Nenhum cliente cadastrado'
-                    }
+            ? 'Nenhum cliente encontrado com os filtros aplicados'
+            : 'Nenhum cliente cadastrado'
+          }
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CNPJ
-                  </th>
-                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Razão Social
-                  </th>
-                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Município/UF
-                  </th>
-                  <th className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contato
-                  </th>
-                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-2 py-2 sm:px-3 sm:py-3 lg:px-6 lg:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredClientes.map((cliente) => (
-                  <tr key={cliente.id} className="hover:bg-gray-50">
-                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap">
-                      <div className="text-xs sm:text-sm font-medium text-gray-900">
-                        {cliente.cnpj ? cliente.cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : '-'}
-                      </div>
-                    </td>
-                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                      {cliente.razao_social}
-                    </td>
-                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                      {cliente.municipio && cliente.uf ? `${cliente.municipio}/${cliente.uf}` : '-'}
-                    </td>
-                    <td className="hidden lg:table-cell px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                      <div>
-                        {cliente.email && <div>{cliente.email}</div>}
-                        {cliente.telefone && <div>{cliente.telefone}</div>}
-                        {!cliente.email && !cliente.telefone && '-'}
-                      </div>
-                    </td>
-                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                        cliente.status === 1 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {getStatusLabel(cliente.status)}
-                      </span>
-                    </td>
-                    <td className="px-2 py-2 sm:px-3 sm:py-4 lg:px-6 lg:py-4 whitespace-nowrap text-xs sm:text-sm font-medium">
-                      <div className="flex gap-1 sm:gap-2">
-                        {canView('clientes') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                      onClick={() => handleViewCliente(cliente)}
-                            title="Visualizar"
-                    >
-                            <FaEye className="text-green-600 text-xs sm:text-sm" />
-                          </Button>
-                        )}
-                    {canEdit('clientes') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                        onClick={() => handleEditCliente(cliente)}
-                            title="Editar"
+        <>
+          {/* Versão Desktop - Tabela completa */}
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      CNPJ
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Razão Social
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Município/UF
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Contato
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredClientes.map((cliente) => (
+                    <tr key={cliente.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {cliente.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {cliente.cnpj ? cliente.cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {cliente.razao_social}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {cliente.municipio && cliente.uf ? `${cliente.municipio}/${cliente.uf}` : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div>
+                          {cliente.email && <div>{cliente.email}</div>}
+                          {cliente.telefone && <div>{cliente.telefone}</div>}
+                          {!cliente.email && !cliente.telefone && '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                          cliente.status === 1 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {getStatusLabel(cliente.status)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex gap-2">
+                          {canView('clientes') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleViewCliente(cliente)}
+                              title="Visualizar"
+                            >
+                              <FaEye className="text-green-600 text-sm" />
+                            </Button>
+                          )}
+                          {canEdit('clientes') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleEditCliente(cliente)}
+                              title="Editar"
+                            >
+                              <FaEdit className="text-blue-600 text-sm" />
+                            </Button>
+                          )}
+                          {canDelete('clientes') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleDeleteCliente(cliente.id)}
+                              title="Excluir"
+                            >
+                              <FaTrash className="text-red-600 text-sm" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Versão Mobile - Cards */}
+          <div className="lg:hidden space-y-3">
+            {filteredClientes.map((cliente) => (
+              <div key={cliente.id} className="bg-white rounded-lg shadow-sm p-4 border">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm">{cliente.razao_social}</h3>
+                    <p className="text-gray-600 text-xs">ID: {cliente.id} | CNPJ: {cliente.cnpj ? cliente.cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : 'N/A'}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    {canView('clientes') && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleViewCliente(cliente)}
+                        title="Visualizar"
+                        className="p-2"
                       >
-                            <FaEdit className="text-blue-600 text-xs sm:text-sm" />
-                          </Button>
+                        <FaEye className="text-green-600 text-sm" />
+                      </Button>
+                    )}
+                    {canEdit('clientes') && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        onClick={() => handleEditCliente(cliente)}
+                        title="Editar"
+                        className="p-2"
+                      >
+                        <FaEdit className="text-blue-600 text-sm" />
+                      </Button>
                     )}
                     {canDelete('clientes') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleDeleteCliente(cliente.id)}
-                            title="Excluir"
+                        title="Excluir"
+                        className="p-2"
                       >
-                            <FaTrash className="text-red-600 text-xs sm:text-sm" />
-                          </Button>
+                        <FaTrash className="text-red-600 text-sm" />
+                      </Button>
                     )}
-                      </div>
-                    </td>
-                </tr>
-                ))}
-          </tbody>
-            </table>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-gray-500">Município/UF:</span>
+                    <p className="font-medium">{cliente.municipio && cliente.uf ? `${cliente.municipio}/${cliente.uf}` : 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Email:</span>
+                    <p className="font-medium">{cliente.email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Telefone:</span>
+                    <p className="font-medium">{cliente.telefone || 'N/A'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-gray-500">Status:</span>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                      cliente.status === 1 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {getStatusLabel(cliente.status)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
+        </>
       )}
 
       {/* Paginação */}
