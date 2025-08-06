@@ -145,8 +145,8 @@ const Marcas = () => {
   const handleViewMarca = (marca) => {
     setEditingMarca(marca);
     setViewMode(true);
-    setValue('nome', marca.nome);
-    setValue('descricao', marca.descricao);
+    setValue('marca', marca.marca);
+    setValue('fabricante', marca.fabricante);
     setValue('status', marca.status);
     setShowModal(true);
   };
@@ -154,8 +154,8 @@ const Marcas = () => {
   const handleEditMarca = (marca) => {
     setEditingMarca(marca);
     setViewMode(false);
-    setValue('nome', marca.nome);
-    setValue('descricao', marca.descricao);
+    setValue('marca', marca.marca);
+    setValue('fabricante', marca.fabricante);
     setValue('status', marca.status);
     setShowModal(true);
   };
@@ -248,14 +248,14 @@ const Marcas = () => {
     return labels[action] || action;
   };
 
-  const getFieldLabel = (field) => {
-    const labels = {
-      nome: 'Nome',
-      descricao: 'Descrição',
-      status: 'Status'
-    };
-    return labels[field] || field;
-  };
+     const getFieldLabel = (field) => {
+     const labels = {
+       marca: 'Marca',
+       fabricante: 'Fabricante',
+       status: 'Status'
+     };
+     return labels[field] || field;
+   };
 
   const formatFieldValue = (field, value) => {
     if (value === null || value === undefined) return '-';
@@ -337,8 +337,8 @@ const Marcas = () => {
   // Filtros
   const filteredMarcas = Array.isArray(marcas) ? marcas.filter(marca => {
     const matchesSearch = !searchTerm || 
-      marca.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (marca.descricao && marca.descricao.toLowerCase().includes(searchTerm.toLowerCase()));
+      marca.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (marca.fabricante && marca.fabricante.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'todos' || 
       (statusFilter === 'ativo' && marca.status === 1) ||
@@ -437,23 +437,23 @@ const Marcas = () => {
             <Table>
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
+                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fabricante</th>
+                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredMarcas.map((marca) => (
-                  <tr key={marca.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.nome}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <div className="max-w-xs truncate" title={marca.descricao}>
-                        {marca.descricao || '-'}
-                      </div>
-                    </td>
+                                     <tr key={marca.id} className="hover:bg-gray-50">
+                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.id}</td>
+                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.marca}</td>
+                     <td className="px-6 py-4 text-sm text-gray-900">
+                       <div className="max-w-xs truncate" title={marca.fabricante}>
+                         {marca.fabricante || '-'}
+                       </div>
+                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                         marca.status === 1 
@@ -506,10 +506,10 @@ const Marcas = () => {
             {filteredMarcas.map((marca) => (
               <div key={marca.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm">{marca.nome}</h3>
-                    <p className="text-gray-600 text-xs">ID: {marca.id}</p>
-                  </div>
+                                   <div className="flex-1">
+                   <h3 className="font-semibold text-gray-900 text-sm">{marca.marca}</h3>
+                   <p className="text-gray-600 text-xs">ID: {marca.id}</p>
+                 </div>
                   <div className="flex gap-2">
                     <Button
                       variant="ghost"
@@ -545,13 +545,13 @@ const Marcas = () => {
                   </div>
                 </div>
                 
-                <div className="space-y-2 text-xs">
-                  <div>
-                    <span className="text-gray-500">Descrição:</span>
-                    <p className="font-medium text-gray-900">
-                      {marca.descricao || 'Sem descrição'}
-                    </p>
-                  </div>
+                                 <div className="space-y-2 text-xs">
+                   <div>
+                     <span className="text-gray-500">Fabricante:</span>
+                     <p className="font-medium text-gray-900">
+                       {marca.fabricante || 'Sem fabricante'}
+                     </p>
+                   </div>
                   <div>
                     <span className="text-gray-500">Status:</span>
                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
@@ -577,35 +577,35 @@ const Marcas = () => {
           title={viewMode ? 'Visualizar Marca' : editingMarca ? 'Editar Marca' : 'Adicionar Marca'}
           size="full"
         >
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              <Input
-                label="Nome *"
-                type="text"
-                {...register('nome', { required: 'Nome é obrigatório' })}
-                error={errors.nome?.message}
-                disabled={viewMode}
-              />
-              {!viewMode && (
-                <Input
-                  label="Status"
-                  type="select"
-                  {...register('status')}
-                  error={errors.status?.message}
-                >
-                  <option value={1}>Ativo</option>
-                  <option value={0}>Inativo</option>
-                </Input>
-              )}
-            </div>
-            
-            <Input
-              label="Descrição"
-              type="textarea"
-              {...register('descricao')}
-              error={errors.descricao?.message}
-              disabled={viewMode}
-            />
+                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+               <Input
+                 label="Marca *"
+                 type="text"
+                 {...register('marca', { required: 'Marca é obrigatória' })}
+                 error={errors.marca?.message}
+                 disabled={viewMode}
+               />
+               <Input
+                 label="Fabricante *"
+                 type="text"
+                 {...register('fabricante', { required: 'Fabricante é obrigatório' })}
+                 error={errors.fabricante?.message}
+                 disabled={viewMode}
+               />
+             </div>
+             
+             {!viewMode && (
+               <Input
+                 label="Status"
+                 type="select"
+                 {...register('status')}
+                 error={errors.status?.message}
+               >
+                 <option value={1}>Ativo</option>
+                 <option value={0}>Inativo</option>
+               </Input>
+             )}
 
             {!viewMode && (
               <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
