@@ -114,11 +114,15 @@ const Grupos = () => {
     setAuditLoading(true);
     try {
       const params = {
-        entity: 'grupos',
-        ...auditFilters
+        recurso: 'grupos',
+        data_inicio: auditFilters.dataInicio,
+        data_fim: auditFilters.dataFim,
+        acao: auditFilters.acao,
+        usuario_id: auditFilters.usuario_id,
+        periodo: auditFilters.periodo
       };
 
-      const response = await fetch('/api/audit?' + new URLSearchParams(params));
+      const response = await fetch('/api/auditoria?' + new URLSearchParams(params));
       const data = await response.json();
 
       if (data.success) {
@@ -163,7 +167,7 @@ const Grupos = () => {
         ...auditFilters
       };
 
-      const response = await fetch('/api/audit/export?' + new URLSearchParams(params));
+      const response = await fetch('/api/auditoria/export/xlsx?' + new URLSearchParams(params));
       const blob = await response.blob();
       
       const url = window.URL.createObjectURL(blob);
@@ -190,7 +194,7 @@ const Grupos = () => {
         ...auditFilters
       };
 
-      const response = await fetch('/api/audit/export?' + new URLSearchParams(params));
+      const response = await fetch('/api/auditoria/export/pdf?' + new URLSearchParams(params));
       const blob = await response.blob();
       
       const url = window.URL.createObjectURL(blob);

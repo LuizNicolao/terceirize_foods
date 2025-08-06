@@ -139,11 +139,15 @@ const Subgrupos = () => {
     setAuditLoading(true);
     try {
       const params = {
-        entity: 'subgrupos',
-        ...auditFilters
+        recurso: 'subgrupos',
+        data_inicio: auditFilters.dataInicio,
+        data_fim: auditFilters.dataFim,
+        acao: auditFilters.acao,
+        usuario_id: auditFilters.usuario_id,
+        periodo: auditFilters.periodo
       };
 
-      const response = await fetch('/api/audit?' + new URLSearchParams(params));
+      const response = await fetch('/api/auditoria?' + new URLSearchParams(params));
       const data = await response.json();
 
       if (data.success) {
