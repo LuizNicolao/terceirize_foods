@@ -61,24 +61,27 @@ const Marcas = () => {
 
       const result = await MarcasService.listar(paginationParams);
       if (result.success) {
-        setMarcas(result.data || []);
+        const marcasData = Array.isArray(result.data) ? result.data : [];
+        setMarcas(marcasData);
         
         // Extrair informações de paginação
         if (result.pagination) {
           setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
+          setTotalItems(result.pagination.totalItems || marcasData.length);
           setCurrentPage(result.pagination.currentPage || 1);
         } else {
           // Fallback se não houver paginação no backend
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
+          setTotalItems(marcasData.length);
+          setTotalPages(Math.ceil(marcasData.length / itemsPerPage));
         }
       } else {
         toast.error(result.error);
+        setMarcas([]);
       }
     } catch (error) {
       console.error('Erro ao carregar marcas:', error);
       toast.error('Erro ao carregar marcas');
+      setMarcas([]);
     } finally {
       setLoading(false);
     }
@@ -306,7 +309,7 @@ const Marcas = () => {
   };
 
   // Filtros
-  const filteredMarcas = marcas.filter(marca => {
+  const filteredMarcas = (marcas || []).filter(marca => {
     const matchesSearch = !searchTerm || 
       marca.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
       marca.fabricante.toLowerCase().includes(searchTerm.toLowerCase());

@@ -5,9 +5,10 @@ const MarcasService = {
   async listar(params = {}) {
     try {
       const response = await api.get('/marcas', { params });
+      const data = response.data.data || response.data || [];
       return {
         success: true,
-        data: response.data.data || [],
+        data: Array.isArray(data) ? data : [],
         pagination: response.data.pagination || null
       };
     } catch (error) {
