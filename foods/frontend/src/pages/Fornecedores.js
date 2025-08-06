@@ -529,16 +529,18 @@ const Fornecedores = () => {
             shouldShowMobile: window.innerWidth < 1024,
             timestamp: new Date().toISOString()
           })}
+          
           {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            {console.log('🔍 Fornecedores - Desktop view renderizando', {
-              totalItems: filteredFornecedores.length,
-              windowWidth: window.innerWidth,
-              breakpoint: window.innerWidth >= 1024 ? 'lg+' : 'sm-md',
-              timestamp: new Date().toISOString()
-            })}
-            <div className="overflow-x-auto">
-              <table className="w-full">
+          {window.innerWidth >= 1024 && (
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+              {console.log('🔍 Fornecedores - Desktop view renderizando', {
+                totalItems: filteredFornecedores.length,
+                windowWidth: window.innerWidth,
+                breakpoint: window.innerWidth >= 1024 ? 'lg+' : 'sm-md',
+                timestamp: new Date().toISOString()
+              })}
+              <div className="overflow-x-auto">
+                <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -631,9 +633,11 @@ const Fornecedores = () => {
             </table>
           </div>
         </div>
+          )}
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
+          {window.innerWidth < 1024 && (
+            <div className="space-y-3">
             {console.log('📱 Fornecedores - Mobile view renderizando', {
               totalItems: filteredFornecedores.length,
               windowWidth: window.innerWidth,
@@ -714,6 +718,7 @@ const Fornecedores = () => {
               </div>
             ))}
           </div>
+          )}
         </>
       )}
 
