@@ -34,8 +34,7 @@ class AuditoriaController {
         data_fim,
         acao,
         recurso,
-        usuario_id,
-        periodo
+        usuario_id
       } = req.query;
 
       const actualOffset = offset || (page - 1) * limit;
@@ -45,41 +44,9 @@ class AuditoriaController {
         offset: parseInt(actualOffset)
       };
 
-      // Processar período se fornecido
-      let dataInicioProcessada = data_inicio;
-      let dataFimProcessada = data_fim;
-      
-      if (periodo && !data_inicio && !data_fim) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          case 'todos':
-            // Não aplicar filtro de data
-            break;
-          default:
-            // Período personalizado - usar datas fornecidas
-            break;
-        }
-        
-        if (periodo !== 'todos') {
-          dataInicioProcessada = dataInicio.toISOString().split('T')[0];
-          dataFimProcessada = hoje.toISOString().split('T')[0];
-        }
-      }
-      
       // Adicionar filtros opcionais
-      if (dataInicioProcessada) filters.data_inicio = dataInicioProcessada;
-      if (dataFimProcessada) filters.data_fim = dataFimProcessada;
+      if (data_inicio) filters.data_inicio = data_inicio;
+      if (data_fim) filters.data_fim = data_fim;
       if (acao) filters.acao = acao;
       if (recurso) filters.recurso = recurso;
       if (usuario_id) filters.usuario_id = parseInt(usuario_id);
@@ -96,16 +63,16 @@ class AuditoriaController {
           FROM auditoria_acoes aa
           LEFT JOIN usuarios u ON aa.usuario_id = u.id
           WHERE 1=1
-          ${dataInicioProcessada ? 'AND aa.timestamp >= ?' : ''}
-          ${dataFimProcessada ? 'AND aa.timestamp <= ?' : ''}
+          ${data_inicio ? 'AND aa.timestamp >= ?' : ''}
+          ${data_fim ? 'AND aa.timestamp <= ?' : ''}
           ${acao ? 'AND aa.acao = ?' : ''}
           ${recurso ? 'AND aa.recurso = ?' : ''}
           ${usuario_id ? 'AND aa.usuario_id = ?' : ''}
         `;
         
         const countParams = [];
-        if (dataInicioProcessada) countParams.push(dataInicioProcessada);
-        if (dataFimProcessada) countParams.push(dataFimProcessada);
+        if (data_inicio) countParams.push(data_inicio);
+        if (data_fim) countParams.push(data_fim);
         if (acao) countParams.push(acao);
         if (recurso) countParams.push(recurso);
         if (usuario_id) countParams.push(parseInt(usuario_id));

@@ -113,20 +113,43 @@ const Grupos = () => {
   const loadAuditLogs = async () => {
     setAuditLoading(true);
     try {
-      const params = {
-        recurso: 'grupos',
-        data_inicio: auditFilters.dataInicio,
-        data_fim: auditFilters.dataFim,
-        acao: auditFilters.acao,
-        usuario_id: auditFilters.usuario_id,
-        periodo: auditFilters.periodo
-      };
+      const params = new URLSearchParams();
+      
+      // Aplicar filtro de período se selecionado
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default: break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+        if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      }
+      
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
+      params.append('recurso', 'grupos');
 
       const response = await fetch('/api/auditoria?' + new URLSearchParams(params));
       const data = await response.json();
 
       if (data.success) {
-        setAuditLogs(data.data || []);
+        setAuditLogs(data.data?.logs || []);
       } else {
         toast.error('Erro ao carregar logs de auditoria');
       }
@@ -161,11 +184,14 @@ const Grupos = () => {
 
   const handleExportAuditXLSX = async () => {
     try {
-      const params = {
-        entity: 'grupos',
-        format: 'xlsx',
-        ...auditFilters
-      };
+      const params = new URLSearchParams();
+      
+      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
+      if (auditFilters.periodo) params.append('periodo', auditFilters.periodo);
+      params.append('recurso', 'grupos');
 
       const response = await fetch('/api/auditoria/export/xlsx?' + new URLSearchParams(params));
       const blob = await response.blob();
@@ -188,11 +214,14 @@ const Grupos = () => {
 
   const handleExportAuditPDF = async () => {
     try {
-      const params = {
-        entity: 'grupos',
-        format: 'pdf',
-        ...auditFilters
-      };
+      const params = new URLSearchParams();
+      
+      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
+      if (auditFilters.periodo) params.append('periodo', auditFilters.periodo);
+      params.append('recurso', 'grupos');
 
       const response = await fetch('/api/auditoria/export/pdf?' + new URLSearchParams(params));
       const blob = await response.blob();

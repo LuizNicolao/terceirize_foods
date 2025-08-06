@@ -138,20 +138,43 @@ const Subgrupos = () => {
   const loadAuditLogs = async () => {
     setAuditLoading(true);
     try {
-      const params = {
-        recurso: 'subgrupos',
-        data_inicio: auditFilters.dataInicio,
-        data_fim: auditFilters.dataFim,
-        acao: auditFilters.acao,
-        usuario_id: auditFilters.usuario_id,
-        periodo: auditFilters.periodo
-      };
+      const params = new URLSearchParams();
+      
+      // Aplicar filtro de período se selecionado
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default: break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+        if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      }
+      
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
+      params.append('recurso', 'subgrupos');
 
       const response = await fetch('/api/auditoria?' + new URLSearchParams(params));
       const data = await response.json();
 
       if (data.success) {
-        setAuditLogs(data.data || []);
+        setAuditLogs(data.data?.logs || []);
       } else {
         toast.error('Erro ao carregar logs de auditoria');
       }
@@ -233,7 +256,7 @@ const Subgrupos = () => {
           toast.success('Subgrupo excluído com sucesso!');
           loadSubgrupos();
           loadEstatisticas();
-        } else {
+      } else {
           toast.error(result.error || 'Erro ao excluir subgrupo');
         }
       } catch (error) {
@@ -265,7 +288,7 @@ const Subgrupos = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('pt-BR');
+      return new Date(dateString).toLocaleString('pt-BR');
   };
 
   const getActionLabel = (action) => {
@@ -288,9 +311,9 @@ const Subgrupos = () => {
 
   const formatFieldValue = (field, value) => {
     if (value === null || value === undefined) return '-';
-    
+
     if (field === 'status') {
-      return value === 1 ? 'Ativo' : 'Inativo';
+        return value === 1 ? 'Ativo' : 'Inativo';
     }
     
     if (field === 'grupo_id') {
@@ -358,6 +381,66 @@ const Subgrupos = () => {
     } catch (error) {
       console.error('Erro ao exportar:', error);
       toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  const handleExportAuditXLSX = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
+      if (auditFilters.periodo) params.append('periodo', auditFilters.periodo);
+      params.append('recurso', 'subgrupos');
+
+      const response = await fetch(`/api/auditoria/export/xlsx?${params.toString()}`);
+      const blob = await response.blob();
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `auditoria_subgrupos_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Relatório de auditoria exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar auditoria:', error);
+      toast.error('Erro ao exportar relatório de auditoria');
+    }
+  };
+
+  const handleExportAuditPDF = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
+      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
+      if (auditFilters.acao) params.append('acao', auditFilters.acao);
+      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
+      if (auditFilters.periodo) params.append('periodo', auditFilters.periodo);
+      params.append('recurso', 'subgrupos');
+
+      const response = await fetch(`/api/auditoria/export/pdf?${params.toString()}`);
+      const blob = await response.blob();
+      
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `auditoria_subgrupos_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      toast.success('Relatório de auditoria exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar auditoria:', error);
+      toast.error('Erro ao exportar relatório de auditoria');
     }
   };
 
@@ -494,7 +577,7 @@ const Subgrupos = () => {
         <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <Table>
+          <Table>
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
@@ -502,8 +585,8 @@ const Subgrupos = () => {
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grupo</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                </tr>
-              </thead>
+              </tr>
+            </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredSubgrupos.map((subgrupo) => (
                   <tr key={subgrupo.id} className="hover:bg-gray-50">
@@ -522,7 +605,7 @@ const Subgrupos = () => {
                           ? 'bg-green-100 text-green-800' 
                           : 'bg-red-100 text-red-800'
                       }`}>
-                        {subgrupo.status === 1 ? 'Ativo' : 'Inativo'}
+                      {subgrupo.status === 1 ? 'Ativo' : 'Inativo'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -531,36 +614,36 @@ const Subgrupos = () => {
                           variant="ghost"
                           size="xs"
                           onClick={() => handleViewSubgrupo(subgrupo)}
-                          title="Visualizar"
-                        >
+                      title="Visualizar"
+                    >
                           <FaEye className="text-green-600 text-sm" />
                         </Button>
-                        {canEdit('subgrupos') && (
+                    {canEdit('subgrupos') && (
                           <Button
                             variant="ghost"
                             size="xs"
                             onClick={() => handleEditSubgrupo(subgrupo)}
-                            title="Editar"
-                          >
+                        title="Editar"
+                      >
                             <FaEdit className="text-blue-600 text-sm" />
                           </Button>
-                        )}
-                        {canDelete('subgrupos') && (
+                    )}
+                    {canDelete('subgrupos') && (
                           <Button
                             variant="ghost"
                             size="xs"
                             onClick={() => handleDeleteSubgrupo(subgrupo.id)}
-                            title="Excluir"
-                          >
+                        title="Excluir"
+                      >
                             <FaTrash className="text-red-600 text-sm" />
                           </Button>
-                        )}
+                    )}
                       </div>
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
           </div>
 
           {/* Versão Mobile - Cards */}
@@ -641,12 +724,12 @@ const Subgrupos = () => {
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              <Input
+                <Input
                 label="Nome *"
-                type="text"
+                  type="text"
                 {...register('nome', { required: 'Nome é obrigatório' })}
                 error={errors.nome?.message}
-                disabled={viewMode}
+                  disabled={viewMode}
               />
               <Input
                 label="Grupo *"
@@ -658,11 +741,11 @@ const Subgrupos = () => {
                 <option value="">
                   {loadingGrupos ? 'Carregando grupos...' : 'Selecione um grupo'}
                 </option>
-                {grupos.map(grupo => (
-                  <option key={grupo.id} value={grupo.id}>
-                    {grupo.nome}
-                  </option>
-                ))}
+                  {grupos.map(grupo => (
+                    <option key={grupo.id} value={grupo.id}>
+                      {grupo.nome}
+                    </option>
+                  ))}
               </Input>
               {!viewMode && (
                 <Input
@@ -677,11 +760,11 @@ const Subgrupos = () => {
               )}
             </div>
 
-            {!viewMode && (
+                {!viewMode && (
               <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
                 <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
                   Cancelar
-                </Button>
+                  </Button>
                 <Button type="submit" size="sm">
                   {editingSubgrupo ? 'Atualizar' : 'Cadastrar'}
                 </Button>
@@ -706,38 +789,38 @@ const Subgrupos = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Input
                   label="Data Início"
-                  type="date"
-                  value={auditFilters.dataInicio}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
                 />
                 <Input
                   label="Data Fim"
-                  type="date"
-                  value={auditFilters.dataFim}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
                 />
                 <Input
                   label="Ação"
                   type="select"
-                  value={auditFilters.acao}
-                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                >
-                  <option value="">Todas as ações</option>
-                  <option value="create">Criar</option>
-                  <option value="update">Editar</option>
-                  <option value="delete">Excluir</option>
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
                 </Input>
                 <Input
                   label="Período"
                   type="select"
-                  value={auditFilters.periodo}
-                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                >
-                  <option value="">Período personalizado</option>
-                  <option value="7dias">Últimos 7 dias</option>
-                  <option value="30dias">Últimos 30 dias</option>
-                  <option value="90dias">Últimos 90 dias</option>
-                  <option value="todos">Todos os registros</option>
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                  >
+                    <option value="">Período personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos os registros</option>
                 </Input>
                 <div className="flex items-end">
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
@@ -745,17 +828,17 @@ const Subgrupos = () => {
                     <span className="sm:hidden">Aplicar</span>
                   </Button>
                 </div>
+                </div>
               </div>
-            </div>
 
             {/* Botões de Exportação */}
             <div className="flex gap-2 sm:gap-3">
-              <Button onClick={handleExportXLSX} variant="outline" size="sm">
+              <Button onClick={handleExportAuditXLSX} variant="outline" size="sm">
                 <FaFileExcel className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar Excel</span>
                 <span className="sm:hidden">Excel</span>
               </Button>
-              <Button onClick={handleExportPDF} variant="outline" size="sm">
+              <Button onClick={handleExportAuditPDF} variant="outline" size="sm">
                 <FaFilePdf className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar PDF</span>
                 <span className="sm:hidden">PDF</span>
