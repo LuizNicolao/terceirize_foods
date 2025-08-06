@@ -43,7 +43,15 @@ const UnidadesEscolares = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setValue,
+    watch,
+    isSubmitting
+  } = useForm();
 
   useEffect(() => {
     loadUnidades();
@@ -429,7 +437,7 @@ const UnidadesEscolares = () => {
         </div>
         {canCreate('unidades_escolares') && (
           <Button
-            onClick={() => setShowModal(true)}
+            onClick={handleAddUnidade}
             className="w-full sm:w-auto"
           >
             <FaPlus className="mr-2" />
@@ -482,12 +490,12 @@ const UnidadesEscolares = () => {
 
       {/* Botões de Exportação */}
       <div className="flex gap-2">
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
+        <Button variant="outline" size="sm" className="flex items-center gap-2" onClick={handleExportXLSX}>
           <FaFileExcel className="text-green-600" />
           <span className="hidden sm:inline">Exportar XLSX</span>
           <span className="sm:hidden">XLSX</span>
         </Button>
-        <Button variant="outline" size="sm" className="flex items-center gap-2">
+        <Button variant="outline" size="sm" className="flex items-center gap-2" onClick={handleExportPDF}>
           <FaFilePdf className="text-red-600" />
           <span className="hidden sm:inline">Exportar PDF</span>
           <span className="sm:hidden">PDF</span>
@@ -691,7 +699,7 @@ const UnidadesEscolares = () => {
       {/* Modal */}
       <Modal
         isOpen={showModal}
-        onClose={() => setShowModal(false)}
+        onClose={handleCloseModal}
         title={editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
         size="lg"
       >
@@ -804,7 +812,7 @@ const UnidadesEscolares = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setShowModal(false)}
+              onClick={handleCloseModal}
             >
               Cancelar
             </Button>
