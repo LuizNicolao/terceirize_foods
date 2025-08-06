@@ -525,6 +525,7 @@ const Fornecedores = () => {
         <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+            {console.log('🔍 Fornecedores - Desktop view renderizando')}
           <div className="overflow-x-auto">
             <table className="w-full min-w-full">
               <thead className="bg-gray-50">
@@ -622,6 +623,7 @@ const Fornecedores = () => {
 
           {/* Versão Mobile - Cards */}
           <div className="lg:hidden space-y-3">
+            {console.log('📱 Fornecedores - Mobile view renderizando')}
             {filteredFornecedores.map((fornecedor) => (
               <div key={fornecedor.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
