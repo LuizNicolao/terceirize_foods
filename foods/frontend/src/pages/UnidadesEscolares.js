@@ -420,55 +420,50 @@ const UnidadesEscolares = () => {
   }
 
   return (
-    <div className="p-3 sm:p-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Unidades Escolares</h1>
-        <div className="flex gap-2 sm:gap-3">
-          <Button
-            onClick={handleOpenAuditModal}
-            variant="ghost"
-            size="sm"
-            className="text-xs"
-          >
-            <FaQuestionCircle className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Auditoria</span>
-          </Button>
-          {canCreate('unidades_escolares') && (
-            <Button onClick={handleAddUnidade} size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar Unidade</span>
-              <span className="sm:hidden">Adicionar</span>
-            </Button>
-          )}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex items-center gap-3">
+          <FaQuestionCircle className="text-gray-400 text-xl" />
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Unidades Escolares</h1>
         </div>
+        {canCreate('unidades_escolares') && (
+          <Button
+            onClick={() => setShowModal(true)}
+            className="w-full sm:w-auto"
+          >
+            <FaPlus className="mr-2" />
+            <span className="hidden sm:inline">Adicionar Unidade</span>
+            <span className="sm:hidden">Adicionar</span>
+          </Button>
+        )}
       </div>
 
-      {/* Estatísticas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+      {/* Cards de Estatísticas */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
-          title="Total de Unidades"
-          value={estatisticas.total_unidades}
-          icon={FaSchool}
-          color="blue"
+          icon={<FaSchool className="text-blue-500" />}
+          value={unidades.length}
+          label="Total de Unidades"
+          className="bg-white"
         />
         <StatCard
-          title="Unidades Ativas"
-          value={estatisticas.unidades_ativas}
-          icon={FaMapMarkerAlt}
-          color="green"
+          icon={<FaMapMarkerAlt className="text-green-500" />}
+          value={unidades.filter(u => u.status === 'ativo').length}
+          label="Unidades Ativas"
+          className="bg-white"
         />
         <StatCard
-          title="Estados"
-          value={estatisticas.total_estados}
-          icon={FaRoute}
-          color="purple"
+          icon={<FaRoute className="text-purple-500" />}
+          value={new Set(unidades.map(u => u.estado)).size}
+          label="Estados"
+          className="bg-white"
         />
         <StatCard
-          title="Cidades"
-          value={estatisticas.total_cidades}
-          icon={FaUsers}
-          color="orange"
+          icon={<FaUsers className="text-orange-500" />}
+          value={new Set(unidades.map(u => u.cidade)).size}
+          label="Cidades"
+          className="bg-white"
         />
       </div>
 
@@ -485,15 +480,15 @@ const UnidadesEscolares = () => {
         placeholder="Buscar por nome, cidade ou código..."
       />
 
-      {/* Ações */}
-      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
-        <Button onClick={handleExportXLSX} variant="outline" size="sm">
-          <FaFileExcel className="mr-1 sm:mr-2" />
+      {/* Botões de Exportação */}
+      <div className="flex gap-2">
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <FaFileExcel className="text-green-600" />
           <span className="hidden sm:inline">Exportar XLSX</span>
           <span className="sm:hidden">XLSX</span>
         </Button>
-        <Button onClick={handleExportPDF} variant="outline" size="sm">
-          <FaFilePdf className="mr-1 sm:mr-2" />
+        <Button variant="outline" size="sm" className="flex items-center gap-2">
+          <FaFilePdf className="text-red-600" />
           <span className="hidden sm:inline">Exportar PDF</span>
           <span className="sm:hidden">PDF</span>
         </Button>
@@ -501,7 +496,7 @@ const UnidadesEscolares = () => {
 
       {/* Tabela */}
       {filteredUnidades.length === 0 ? (
-        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+        <div className="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
           {searchTerm || statusFilter !== 'todos'
             ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
             : 'Nenhuma unidade escolar cadastrada'
@@ -509,14 +504,8 @@ const UnidadesEscolares = () => {
         </div>
       ) : (
         <>
-          {/* Debug Info */}
-          <div className="bg-yellow-100 p-2 mb-4 text-xs">
-            <strong>Debug:</strong> Total de unidades: {filteredUnidades.length} | 
-            Breakpoint: <span className="sm:hidden">MOBILE</span><span className="hidden sm:inline">DESKTOP</span>
-          </div>
-
           {/* Versão Desktop - Tabela completa */}
-          <div className="hidden sm:block bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -616,24 +605,24 @@ const UnidadesEscolares = () => {
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="block sm:hidden space-y-3">
+          <div className="block lg:hidden space-y-2">
             {filteredUnidades.map((unidade) => (
-              <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm">{unidade.nome_escola}</h3>
+              <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-3 border">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 text-sm truncate">{unidade.nome_escola}</h3>
                     <p className="text-gray-600 text-xs">Código: {unidade.codigo_teknisa}</p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1 ml-2">
                     {canView('unidades_escolares') && (
                       <Button
                         variant="ghost"
                         size="xs"
                         onClick={() => handleViewUnidade(unidade)}
                         title="Visualizar"
-                        className="p-2"
+                        className="p-1"
                       >
-                        <FaEye className="text-green-600 text-sm" />
+                        <FaEye className="text-green-600 text-xs" />
                       </Button>
                     )}
                     {canEdit('unidades_escolares') && (
@@ -642,9 +631,9 @@ const UnidadesEscolares = () => {
                         size="xs"
                         onClick={() => handleEditUnidade(unidade)}
                         title="Editar"
-                        className="p-2"
+                        className="p-1"
                       >
-                        <FaEdit className="text-blue-600 text-sm" />
+                        <FaEdit className="text-blue-600 text-xs" />
                       </Button>
                     )}
                     {canDelete('unidades_escolares') && (
@@ -653,46 +642,44 @@ const UnidadesEscolares = () => {
                         size="xs"
                         onClick={() => handleDeleteUnidade(unidade.id)}
                         title="Excluir"
-                        className="p-2"
+                        className="p-1"
                       >
-                        <FaTrash className="text-red-600 text-sm" />
+                        <FaTrash className="text-red-600 text-xs" />
                       </Button>
                     )}
                   </div>
                 </div>
                 
-                <div className="space-y-2 text-xs">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
+                <div className="space-y-1 text-xs">
+                  <div className="grid grid-cols-1 gap-1">
+                    <div className="flex justify-between">
                       <span className="text-gray-500">Cidade:</span>
-                      <p className="font-medium text-gray-900">{unidade.cidade}</p>
+                      <span className="font-medium text-gray-900 truncate ml-2">{unidade.cidade}</span>
                     </div>
-                    <div>
+                    <div className="flex justify-between">
                       <span className="text-gray-500">Estado:</span>
-                      <p className="font-medium text-gray-900">{unidade.estado}</p>
+                      <span className="font-medium text-gray-900 truncate ml-2">{unidade.estado}</span>
                     </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <span className="text-gray-500">Centro Distribuição:</span>
-                      <p className="font-medium text-gray-900">{unidade.centro_distribuicao || '-'}</p>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Centro:</span>
+                      <span className="font-medium text-gray-900 truncate ml-2">{unidade.centro_distribuicao || '-'}</span>
                     </div>
-                    <div>
+                    <div className="flex justify-between">
                       <span className="text-gray-500">Rota:</span>
-                      <p className="font-medium text-gray-900">
+                      <span className="font-medium text-gray-900 truncate ml-2">
                         {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
-                      </p>
+                      </span>
                     </div>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Status:</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                      unidade.status === 'ativo' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                    </span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-500">Status:</span>
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                        unidade.status === 'ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -701,191 +688,130 @@ const UnidadesEscolares = () => {
         </>
       )}
 
-      {/* Modal de Unidade Escolar */}
+      {/* Modal */}
       <Modal
         isOpen={showModal}
-        onClose={handleCloseModal}
-        title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-        size="full"
+        onClose={() => setShowModal(false)}
+        title={editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
+        size="lg"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* Primeira Linha - 2 Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Card 1: Informações Básicas */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Básicas</h3>
-              <div className="space-y-3">
-                <Input
-                  label="Nome da Escola *"
-                  {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
-                  error={errors.nome_escola?.message}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Código Teknisa *"
-                  {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
-                  error={errors.codigo_teknisa?.message}
-                  disabled={viewMode}
-                />
-              </div>
-            </div>
-
-            {/* Card 2: Endereço */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Endereço</h3>
-              <div className="space-y-3">
-                {/* Cidade e Estado lado a lado */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="Cidade *"
-                    {...register('cidade', { required: 'Cidade é obrigatória' })}
-                    error={errors.cidade?.message}
-                    disabled={viewMode}
-                  />
-                  <Input
-                    label="Estado *"
-                    {...register('estado', { required: 'Estado é obrigatório' })}
-                    error={errors.estado?.message}
-                    disabled={viewMode}
-                  />
-                </div>
-                <Input
-                  label="Endereço"
-                  {...register('endereco')}
-                  disabled={viewMode}
-                />
-                {/* Número e CEP lado a lado */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="Número"
-                    {...register('numero')}
-                    disabled={viewMode}
-                  />
-                  <Input
-                    label="CEP"
-                    {...register('cep')}
-                    disabled={viewMode}
-                  />
-                </div>
-                <Input
-                  label="Bairro"
-                  {...register('bairro')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="País"
-                  {...register('pais')}
-                  disabled={viewMode}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Segunda Linha - 3 Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Card 3: Configurações */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Configurações</h3>
-              <div className="space-y-3">
-                <Input
-                  label="Centro de Distribuição"
-                  {...register('centro_distribuicao')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Regional"
-                  {...register('regional')}
-                  disabled={viewMode}
-                />
-                {/* LOT e CC Senior lado a lado */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="LOT"
-                    {...register('lot')}
-                    disabled={viewMode}
-                  />
-                  <Input
-                    label="CC Senior"
-                    {...register('cc_senior')}
-                    disabled={viewMode}
-                  />
-                </div>
-                <Input
-                  label="Código Senior"
-                  {...register('codigo_senior')}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Abastecimento"
-                  {...register('abastecimento')}
-                  disabled={viewMode}
-                />
-              </div>
-            </div>
-
-            {/* Card 4: Rota e Status */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Rota e Status</h3>
-              <div className="space-y-3">
-                <Input
-                  label="Rota"
-                  type="select"
-                  {...register('rota_id')}
-                  disabled={viewMode}
-                >
-                  <option value="">Selecione uma rota</option>
-                  {rotas.map((rota) => (
-                    <option key={rota.id} value={rota.id}>
-                      {rota.nome}
-                    </option>
-                  ))}
-                </Input>
-                {/* Ordem de Entrega e Status lado a lado */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input
-                    label="Ordem de Entrega"
-                    type="number"
-                    {...register('ordem_entrega')}
-                    disabled={viewMode}
-                  />
-                  <Input
-                    label="Status *"
-                    type="select"
-                    {...register('status', { required: 'Status é obrigatório' })}
-                    error={errors.status?.message}
-                    disabled={viewMode}
-                  >
-                    <option value="">Selecione</option>
-                    <option value="ativo">Ativo</option>
-                    <option value="inativo">Inativo</option>
-                  </Input>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 5: Observações */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Observações</h3>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nome da Escola *
+              </label>
               <Input
-                label="Observações"
-                type="textarea"
-                {...register('observacoes')}
-                disabled={viewMode}
-                rows={5}
+                {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
+                placeholder="Digite o nome da escola"
+                className={errors.nome_escola ? 'border-red-500' : ''}
+              />
+              {errors.nome_escola && (
+                <p className="text-red-500 text-xs mt-1">{errors.nome_escola.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Código Teknisa *
+              </label>
+              <Input
+                {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
+                placeholder="Digite o código"
+                className={errors.codigo_teknisa ? 'border-red-500' : ''}
+              />
+              {errors.codigo_teknisa && (
+                <p className="text-red-500 text-xs mt-1">{errors.codigo_teknisa.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Cidade *
+              </label>
+              <Input
+                {...register('cidade', { required: 'Cidade é obrigatória' })}
+                placeholder="Digite a cidade"
+                className={errors.cidade ? 'border-red-500' : ''}
+              />
+              {errors.cidade && (
+                <p className="text-red-500 text-xs mt-1">{errors.cidade.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Estado *
+              </label>
+              <Input
+                {...register('estado', { required: 'Estado é obrigatório' })}
+                placeholder="Digite o estado"
+                className={errors.estado ? 'border-red-500' : ''}
+              />
+              {errors.estado && (
+                <p className="text-red-500 text-xs mt-1">{errors.estado.message}</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Centro de Distribuição
+              </label>
+              <Input
+                {...register('centro_distribuicao')}
+                placeholder="Digite o centro de distribuição"
               />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Rota
+              </label>
+              <select
+                {...register('rota_id')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="">Selecione uma rota</option>
+                {rotas.map((rota) => (
+                  <option key={rota.id} value={rota.id}>
+                    {rota.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status *
+              </label>
+              <select
+                {...register('status', { required: 'Status é obrigatório' })}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                  errors.status ? 'border-red-500' : 'border-gray-300'
+                }`}
+              >
+                <option value="">Selecione o status</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </select>
+              {errors.status && (
+                <p className="text-red-500 text-xs mt-1">{errors.status.message}</p>
+              )}
+            </div>
           </div>
 
-          {!viewMode && (
-            <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
-              <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
-                Cancelar
-              </Button>
-              <Button type="submit" size="sm">
-                {editingUnidade ? 'Atualizar' : 'Criar'}
-              </Button>
-            </div>
-          )}
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowModal(false)}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Salvando...' : (editingUnidade ? 'Atualizar' : 'Adicionar')}
+            </Button>
+          </div>
         </form>
       </Modal>
 
