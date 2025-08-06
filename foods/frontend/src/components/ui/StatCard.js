@@ -22,7 +22,6 @@ const StatCard = ({
   const cardClasses = `
     bg-white rounded-lg p-3 sm:p-4 lg:p-6 shadow-sm border border-gray-200 
     transition-all duration-300 hover:shadow-md hover:-translate-y-1
-    min-w-[140px] min-h-[120px] sm:min-w-[160px] sm:min-h-[140px]
     ${onClick ? 'cursor-pointer' : ''}
     ${className}
   `;
