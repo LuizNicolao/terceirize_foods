@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
-import { Button, Input, Modal, Table, StatCard } from '../components/ui';
+import { Button, Input, Modal, StatCard, Table } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
 
@@ -43,15 +43,7 @@ const UnidadesEscolares = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setValue,
-    watch,
-    isSubmitting
-  } = useForm();
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   useEffect(() => {
     loadUnidades();
@@ -428,49 +420,54 @@ const UnidadesEscolares = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="flex items-center gap-3">
-          <FaQuestionCircle className="text-gray-400 text-xl" />
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Unidades Escolares</h1>
-        </div>
-        {canCreate('unidades_escolares') && (
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Unidades Escolares</h1>
+        <div className="flex gap-2 sm:gap-3">
           <Button
-            onClick={handleAddUnidade}
-            className="w-full sm:w-auto"
+            onClick={handleOpenAuditModal}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
           >
-            <FaPlus className="mr-2" />
-            <span className="hidden sm:inline">Adicionar Unidade</span>
-            <span className="sm:hidden">Adicionar</span>
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
           </Button>
-        )}
+          {canCreate('unidades_escolares') && (
+            <Button onClick={handleAddUnidade} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar Unidade Escolar</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
+          )}
+        </div>
       </div>
 
-      {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* Estatísticas */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
         <StatCard
-          icon={FaSchool}
-          value={unidades.length}
           title="Total de Unidades"
+          value={estatisticas.total_unidades}
+          icon={FaSchool}
           color="blue"
         />
         <StatCard
-          icon={FaMapMarkerAlt}
-          value={unidades.filter(u => u.status === 'ativo').length}
           title="Unidades Ativas"
+          value={estatisticas.unidades_ativas}
+          icon={FaMapMarkerAlt}
           color="green"
         />
         <StatCard
-          icon={FaRoute}
-          value={new Set(unidades.map(u => u.estado)).size}
           title="Estados"
+          value={estatisticas.total_estados}
+          icon={FaRoute}
           color="purple"
         />
         <StatCard
-          icon={FaUsers}
-          value={new Set(unidades.map(u => u.cidade)).size}
           title="Cidades"
+          value={estatisticas.total_cidades}
+          icon={FaUsers}
           color="orange"
         />
       </div>
@@ -488,15 +485,15 @@ const UnidadesEscolares = () => {
         placeholder="Buscar por nome, cidade ou código..."
       />
 
-      {/* Botões de Exportação */}
-      <div className="flex gap-2">
-        <Button variant="outline" size="sm" className="flex items-center gap-2" onClick={handleExportXLSX}>
-          <FaFileExcel className="text-green-600" />
+      {/* Ações */}
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+        <Button onClick={handleExportXLSX} variant="outline" size="sm">
+          <FaFileExcel className="mr-1 sm:mr-2" />
           <span className="hidden sm:inline">Exportar XLSX</span>
           <span className="sm:hidden">XLSX</span>
         </Button>
-        <Button variant="outline" size="sm" className="flex items-center gap-2" onClick={handleExportPDF}>
-          <FaFilePdf className="text-red-600" />
+        <Button onClick={handleExportPDF} variant="outline" size="sm">
+          <FaFilePdf className="mr-1 sm:mr-2" />
           <span className="hidden sm:inline">Exportar PDF</span>
           <span className="sm:hidden">PDF</span>
         </Button>
@@ -504,7 +501,7 @@ const UnidadesEscolares = () => {
 
       {/* Tabela */}
       {filteredUnidades.length === 0 ? (
-        <div className="text-center py-6 sm:py-8 text-gray-500 text-sm sm:text-base">
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {searchTerm || statusFilter !== 'todos'
             ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
             : 'Nenhuma unidade escolar cadastrada'
@@ -517,27 +514,13 @@ const UnidadesEscolares = () => {
             <Table>
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Escola
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Código
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cidade/Estado
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Centro Distribuição
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rota
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escola</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade/Estado</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Centro Distribuição</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -656,26 +639,24 @@ const UnidadesEscolares = () => {
                   </div>
                 </div>
                 
-                <div className="space-y-2 text-xs">
+                <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
                     <span className="text-gray-500">Cidade:</span>
-                    <p className="font-medium text-gray-900">{unidade.cidade}</p>
+                    <p className="font-medium">{unidade.cidade}</p>
                   </div>
                   <div>
                     <span className="text-gray-500">Estado:</span>
-                    <p className="font-medium text-gray-900">{unidade.estado}</p>
+                    <p className="font-medium">{unidade.estado}</p>
                   </div>
                   <div>
                     <span className="text-gray-500">Centro Distribuição:</span>
-                    <p className="font-medium text-gray-900">{unidade.centro_distribuicao || '-'}</p>
+                    <p className="font-medium">{unidade.centro_distribuicao || 'N/A'}</p>
                   </div>
                   <div>
                     <span className="text-gray-500">Rota:</span>
-                    <p className="font-medium text-gray-900">
-                      {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
-                    </p>
+                    <p className="font-medium">{loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}</p>
                   </div>
-                  <div>
+                  <div className="col-span-2">
                     <span className="text-gray-500">Status:</span>
                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                       unidade.status === 'ativo' 
@@ -692,84 +673,195 @@ const UnidadesEscolares = () => {
         </>
       )}
 
-      {/* Modal */}
-      <Modal
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-        size="full"
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-            <Input
-              label="Nome da Escola *"
-              {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
-              error={errors.nome_escola?.message}
-              disabled={viewMode}
-            />
-            <Input
-              label="Código Teknisa *"
-              {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
-              error={errors.codigo_teknisa?.message}
-              disabled={viewMode}
-            />
-            <Input
-              label="Cidade *"
-              {...register('cidade', { required: 'Cidade é obrigatória' })}
-              error={errors.cidade?.message}
-              disabled={viewMode}
-            />
-            <Input
-              label="Estado *"
-              {...register('estado', { required: 'Estado é obrigatório' })}
-              error={errors.estado?.message}
-              disabled={viewMode}
-            />
-            <Input
-              label="Centro de Distribuição"
-              {...register('centro_distribuicao')}
-              disabled={viewMode}
-            />
-            <Input
-              label="Rota"
-              type="select"
-              {...register('rota_id')}
-              disabled={viewMode}
-            >
-              <option value="">Selecione uma rota</option>
-              {rotas.map((rota) => (
-                <option key={rota.id} value={rota.id}>
-                  {rota.nome}
-                </option>
-              ))}
-            </Input>
-          </div>
-          
-          {!viewMode && (
-            <Input
-              label="Status *"
-              type="select"
-              {...register('status', { required: 'Status é obrigatório' })}
-              error={errors.status?.message}
-            >
-              <option value="">Selecione o status</option>
-              <option value="ativo">Ativo</option>
-              <option value="inativo">Inativo</option>
-            </Input>
-          )}
+      {/* Modal de Unidade Escolar */}
+      {showModal && (
+        <Modal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
+          size="full"
+        >
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+            {/* Primeira Linha - 2 Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              {/* Card 1: Informações Básicas */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Básicas</h3>
+                <div className="space-y-3">
+                  <Input
+                    label="Nome da Escola *"
+                    {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
+                    error={errors.nome_escola?.message}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Código Teknisa *"
+                    {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
+                    error={errors.codigo_teknisa?.message}
+                    disabled={viewMode}
+                  />
+                </div>
+              </div>
 
-          {!viewMode && (
-            <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
-              <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
-                Cancelar
-              </Button>
-              <Button type="submit" size="sm">
-                {editingUnidade ? 'Atualizar' : 'Criar'}
-              </Button>
+              {/* Card 2: Endereço */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Endereço</h3>
+                <div className="space-y-3">
+                  {/* Cidade e Estado lado a lado */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="Cidade *"
+                      {...register('cidade', { required: 'Cidade é obrigatória' })}
+                      error={errors.cidade?.message}
+                      disabled={viewMode}
+                    />
+                    <Input
+                      label="Estado *"
+                      {...register('estado', { required: 'Estado é obrigatório' })}
+                      error={errors.estado?.message}
+                      disabled={viewMode}
+                    />
+                  </div>
+                  <Input
+                    label="Endereço"
+                    {...register('endereco')}
+                    disabled={viewMode}
+                  />
+                  {/* Número e CEP lado a lado */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="Número"
+                      {...register('numero')}
+                      disabled={viewMode}
+                    />
+                    <Input
+                      label="CEP"
+                      {...register('cep')}
+                      disabled={viewMode}
+                    />
+                  </div>
+                  <Input
+                    label="Bairro"
+                    {...register('bairro')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="País"
+                    {...register('pais')}
+                    disabled={viewMode}
+                  />
+                </div>
+              </div>
             </div>
-          )}
-        </form>
-      </Modal>
+
+            {/* Segunda Linha - 3 Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+              {/* Card 3: Configurações */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Configurações</h3>
+                <div className="space-y-3">
+                  <Input
+                    label="Centro de Distribuição"
+                    {...register('centro_distribuicao')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Regional"
+                    {...register('regional')}
+                    disabled={viewMode}
+                  />
+                  {/* LOT e CC Senior lado a lado */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="LOT"
+                      {...register('lot')}
+                      disabled={viewMode}
+                    />
+                    <Input
+                      label="CC Senior"
+                      {...register('cc_senior')}
+                      disabled={viewMode}
+                    />
+                  </div>
+                  <Input
+                    label="Código Senior"
+                    {...register('codigo_senior')}
+                    disabled={viewMode}
+                  />
+                  <Input
+                    label="Abastecimento"
+                    {...register('abastecimento')}
+                    disabled={viewMode}
+                  />
+                </div>
+              </div>
+
+              {/* Card 4: Rota e Status */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Rota e Status</h3>
+                <div className="space-y-3">
+                  <Input
+                    label="Rota"
+                    type="select"
+                    {...register('rota_id')}
+                    disabled={viewMode}
+                  >
+                    <option value="">Selecione uma rota</option>
+                    {rotas.map((rota) => (
+                      <option key={rota.id} value={rota.id}>
+                        {rota.nome}
+                      </option>
+                    ))}
+                  </Input>
+                  {/* Ordem de Entrega e Status lado a lado */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Input
+                      label="Ordem de Entrega"
+                      type="number"
+                      {...register('ordem_entrega')}
+                      disabled={viewMode}
+                    />
+                    <Input
+                      label="Status *"
+                      type="select"
+                      {...register('status', { required: 'Status é obrigatório' })}
+                      error={errors.status?.message}
+                      disabled={viewMode}
+                    >
+                      <option value="">Selecione</option>
+                      <option value="ativo">Ativo</option>
+                      <option value="inativo">Inativo</option>
+                    </Input>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 5: Observações */}
+              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Observações</h3>
+                <Input
+                  label="Observações"
+                  type="textarea"
+                  {...register('observacoes')}
+                  disabled={viewMode}
+                  rows={5}
+                />
+              </div>
+            </div>
+
+            {!viewMode && (
+              <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
+                <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
+                  Cancelar
+                </Button>
+                <Button type="submit" size="sm">
+                  {editingUnidade ? 'Atualizar' : 'Cadastrar'}
+                </Button>
+              </div>
+            )}
+          </form>
+        </Modal>
+      )}
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
@@ -783,7 +875,7 @@ const UnidadesEscolares = () => {
             {/* Filtros de Auditoria */}
             <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
               <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Filtros</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Input
                   label="Data Início"
                   type="date"
@@ -829,20 +921,20 @@ const UnidadesEscolares = () => {
             </div>
 
             {/* Botões de Exportação */}
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              <Button onClick={handleExportAuditXLSX} variant="secondary" size="sm">
+            <div className="flex gap-2 sm:gap-3">
+              <Button onClick={handleExportAuditXLSX} variant="outline" size="sm">
                 <FaFileExcel className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar Excel</span>
                 <span className="sm:hidden">Excel</span>
               </Button>
-              <Button onClick={handleExportAuditPDF} variant="secondary" size="sm">
+              <Button onClick={handleExportAuditPDF} variant="outline" size="sm">
                 <FaFilePdf className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar PDF</span>
                 <span className="sm:hidden">PDF</span>
               </Button>
             </div>
-            
-            {/* Lista de Logs */}
+
+            {/* Resultados da Auditoria */}
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               {auditLoading ? (
                 <div className="text-center py-6 sm:py-8">
@@ -948,8 +1040,9 @@ const UnidadesEscolares = () => {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
-          totalItems={totalItems}
           itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          totalItems={totalItems}
         />
       )}
     </div>
