@@ -46,25 +46,10 @@ class PermissoesService {
     try {
       const response = await api.get(`/permissoes/usuario/${userId}`);
       
-      // Extrair dados da estrutura HATEOAS
-      let permissoes = [];
-      
-      if (response.data.data) {
-        // Se tem data.items (estrutura HATEOAS)
-        if (response.data.data.items) {
-          permissoes = response.data.data.items;
-        } else {
-          // Se data é diretamente um array
-          permissoes = response.data.data;
-        }
-      } else if (Array.isArray(response.data)) {
-        // Se response.data é diretamente um array
-        permissoes = response.data;
-      }
-      
+      // O backend retorna { usuario, permissoes: [...] }
       return {
         success: true,
-        data: permissoes
+        data: response.data
       };
     } catch (error) {
       return {

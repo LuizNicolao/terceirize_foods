@@ -73,19 +73,17 @@ const Permissoes = () => {
       const result = await PermissoesService.buscarPermissoesUsuario(userId);
       
       if (result.success) {
-        const data = Array.isArray(result.data) ? result.data : [];
+        // O backend retorna { usuario, permissoes: [...] }
+        const permissoes = result.data.permissoes || result.data || [];
         
         // Converter array de permissões para objeto
         const permissionsObj = {};
-        data.forEach(perm => {
-          if (!permissionsObj[perm.tela]) {
-            permissionsObj[perm.tela] = {};
-          }
+        permissoes.forEach(perm => {
           permissionsObj[perm.tela] = {
-            pode_visualizar: perm.pode_visualizar,
-            pode_criar: perm.pode_criar,
-            pode_editar: perm.pode_editar,
-            pode_excluir: perm.pode_excluir
+            pode_visualizar: perm.pode_visualizar === 1 || perm.pode_visualizar === true,
+            pode_criar: perm.pode_criar === 1 || perm.pode_criar === true,
+            pode_editar: perm.pode_editar === 1 || perm.pode_editar === true,
+            pode_excluir: perm.pode_excluir === 1 || perm.pode_excluir === true
           };
         });
         
@@ -178,10 +176,10 @@ const Permissoes = () => {
         const perms = editingPermissions[tela];
         permissoesArray.push({
           tela,
-          pode_visualizar: perms.pode_visualizar || 0,
-          pode_criar: perms.pode_criar || 0,
-          pode_editar: perms.pode_editar || 0,
-          pode_excluir: perms.pode_excluir || 0
+          pode_visualizar: perms.pode_visualizar ? 1 : 0,
+          pode_criar: perms.pode_criar ? 1 : 0,
+          pode_editar: perms.pode_editar ? 1 : 0,
+          pode_excluir: perms.pode_excluir ? 1 : 0
         });
       });
 
@@ -405,11 +403,12 @@ const Permissoes = () => {
 
   const expandAllGroups = () => {
     const allGroups = {
-      'Cadastros Básicos': true,
-      'Gestão de Pessoas': true,
-      'Produtos e Fornecedores': true,
+      'Principal': true,
+      'Suprimentos': true,
       'Logística': true,
-      'Relatórios': true
+      'Frotas': true,
+      'Cadastros': true,
+      'Configurações': true
     };
     setExpandedGroups(allGroups);
   };
@@ -467,13 +466,14 @@ const Permissoes = () => {
     return icons[screen] || FaCog;
   };
 
-  // Grupos de telas
+  // Grupos de telas seguindo a estrutura da sidebar
   const screenGroups = {
-    'Cadastros Básicos': ['usuarios', 'filiais', 'unidades', 'unidades_escolares'],
-    'Gestão de Pessoas': ['motoristas', 'ajudantes'],
-    'Produtos e Fornecedores': ['fornecedores', 'clientes', 'produtos', 'grupos', 'subgrupos', 'classes', 'marcas', 'nome_generico_produto'],
-    'Logística': ['veiculos', 'rotas'],
-    'Relatórios': ['dashboard', 'permissoes']
+    'Principal': ['dashboard'],
+    'Suprimentos': ['cotacao'],
+    'Logística': ['rotas', 'unidades_escolares'],
+    'Frotas': ['veiculos', 'motoristas', 'ajudantes'],
+    'Cadastros': ['usuarios', 'fornecedores', 'clientes', 'filiais', 'produtos', 'grupos', 'subgrupos', 'classes', 'nome_generico_produto', 'unidades', 'marcas'],
+    'Configurações': ['permissoes']
   };
 
   // Effects
@@ -569,9 +569,9 @@ const Permissoes = () => {
                     Nenhum usuário encontrado
                   </div>
                 ) : (
-                  filteredUsuarios.map(user => (
+                      filteredUsuarios.map(user => (
                     <div
-                      key={user.id}
+                          key={user.id}
                       className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
                       onClick={() => handleUserSelect(user.id)}
                     >
@@ -582,9 +582,9 @@ const Permissoes = () => {
                     </div>
                   ))
                 )}
-              </div>
+                </div>
             </div>
-          )}
+            )}
         </div>
       </div>
 
@@ -599,11 +599,11 @@ const Permissoes = () => {
               {selectedUser.email && (
                 <p className="text-sm text-gray-600">{selectedUser.email}</p>
               )}
-            </div>
+                </div>
             
             <div className="flex gap-2 sm:gap-3">
               <Button
-                onClick={expandAllGroups}
+                    onClick={expandAllGroups}
                 variant="outline"
                 size="sm"
                 className="text-xs"
@@ -612,7 +612,7 @@ const Permissoes = () => {
                 <span className="sm:hidden">Expandir</span>
               </Button>
               <Button
-                onClick={collapseAllGroups}
+                    onClick={collapseAllGroups}
                 variant="outline"
                 size="sm"
                 className="text-xs"
@@ -630,9 +630,9 @@ const Permissoes = () => {
                 <span className="hidden sm:inline">Recarregar</span>
                 <span className="sm:hidden">Recarregar</span>
               </Button>
-            </div>
-          </div>
-
+                </div>
+              </div>
+              
           {/* Grupos de Permissões */}
           <div className="space-y-4">
             {Object.entries(screenGroups).map(([groupTitle, screens]) => (
@@ -650,8 +650,8 @@ const Permissoes = () => {
                     {screens.map(screen => {
                       const Icon = getScreenIcon(screen);
                       const currentPerms = editingPermissions[screen] || {};
-                      
-                      return (
+
+                return (
                         <div key={screen} className="border border-gray-200 rounded-lg p-3 sm:p-4">
                           <div className="flex items-center gap-2 mb-3">
                             <Icon className="text-gray-600" />
@@ -662,7 +662,7 @@ const Permissoes = () => {
                             {['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].map(acao => (
                               <label key={acao} className="flex items-center gap-2 cursor-pointer">
                                 <input
-                                  type="checkbox"
+                                type="checkbox"
                                   checked={currentPerms[acao] || false}
                                   onChange={(e) => handlePermissionChange(screen, acao, e.target.checked)}
                                   className="rounded border-gray-300 text-green-600 focus:ring-green-500"
@@ -672,34 +672,34 @@ const Permissoes = () => {
                             ))}
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                );
+              })}
+            </div>
+          )}
               </div>
             ))}
           </div>
 
           {/* Botões de Ação */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-6 pt-4 border-t">
-            <Button
-              onClick={handleSavePermissions}
-              disabled={saving}
+              <Button
+                onClick={handleSavePermissions}
+                disabled={saving}
               className="flex-1"
-            >
+              >
               <FaSave className="mr-2" />
-              {saving ? 'Salvando...' : 'Salvar Permissões'}
-            </Button>
-            <Button
-              onClick={handleResetPermissions}
+                {saving ? 'Salvando...' : 'Salvar Permissões'}
+              </Button>
+              <Button
+                onClick={handleResetPermissions}
               variant="outline"
-              disabled={saving}
+                disabled={saving}
               className="flex-1"
-            >
+              >
               <FaTimes className="mr-2" />
               Resetar
-            </Button>
-            <Button
+              </Button>
+              <Button
               onClick={handleSyncPermissions}
               variant="outline"
               disabled={saving}
@@ -707,7 +707,7 @@ const Permissoes = () => {
             >
               <FaSync className="mr-2" />
               Sincronizar
-            </Button>
+              </Button>
           </div>
         </div>
       )}
@@ -727,38 +727,38 @@ const Permissoes = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <Input
                   label="Data Início"
-                  type="date"
-                  value={auditFilters.dataInicio}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
                 />
                 <Input
                   label="Data Fim"
-                  type="date"
-                  value={auditFilters.dataFim}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
                 />
                 <Input
                   label="Ação"
                   type="select"
-                  value={auditFilters.acao}
-                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                >
-                  <option value="">Todas as ações</option>
-                  <option value="create">Criar</option>
-                  <option value="update">Editar</option>
-                  <option value="delete">Excluir</option>
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
                 </Input>
                 <Input
                   label="Período"
                   type="select"
-                  value={auditFilters.periodo}
-                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                >
-                  <option value="">Período personalizado</option>
-                  <option value="7dias">Últimos 7 dias</option>
-                  <option value="30dias">Últimos 30 dias</option>
-                  <option value="90dias">Últimos 90 dias</option>
-                  <option value="todos">Todos os registros</option>
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                  >
+                    <option value="">Período personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos os registros</option>
                 </Input>
                 <div className="flex items-end">
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
@@ -766,8 +766,8 @@ const Permissoes = () => {
                     <span className="sm:hidden">Aplicar</span>
                   </Button>
                 </div>
+                </div>
               </div>
-            </div>
 
             {/* Botões de Exportação */}
             <div className="flex gap-2 sm:gap-3">
