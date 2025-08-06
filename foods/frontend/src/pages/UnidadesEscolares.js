@@ -488,21 +488,31 @@ const UnidadesEscolares = () => {
        </div>
 
                      {/* Tabela */}
-      {loading ? (
-        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-          Carregando unidades escolares...
-        </div>
-      ) : filteredUnidades.length === 0 ? (
-        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-          {searchTerm 
-            ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
-            : 'Nenhuma unidade escolar cadastrada'
-          }
-        </div>
-      ) : (
-        <>
-          {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+      {(() => {
+        console.log('🔍 DEBUG - Estado atual:', {
+          loading,
+          filteredUnidadesLength: filteredUnidades.length,
+          searchTerm,
+          windowWidth: window.innerWidth,
+          isMobile: window.innerWidth < 1024
+        });
+        
+        return loading ? (
+          <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+            Carregando unidades escolares...
+          </div>
+        ) : filteredUnidades.length === 0 ? (
+          <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+            {searchTerm 
+              ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
+              : 'Nenhuma unidade escolar cadastrada'
+            }
+          </div>
+        ) : (
+          <>
+            {/* Versão Desktop - Tabela completa */}
+            <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden" style={{border: '3px solid blue'}}>
+              {console.log('🖥️ DEBUG - Renderizando versão desktop com', filteredUnidades.length, 'unidades')}
             <Table>
               <thead className="bg-gray-50">
                 <tr>
@@ -578,7 +588,8 @@ const UnidadesEscolares = () => {
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
+          <div className="lg:hidden space-y-3" style={{border: '3px solid red'}}>
+            {console.log('📱 DEBUG - Renderizando versão mobile com', filteredUnidades.length, 'unidades')}
             {filteredUnidades.map((unidade) => (
               <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
@@ -651,7 +662,7 @@ const UnidadesEscolares = () => {
             ))}
           </div>
         </>
-      )}
+      )})()}
 
                     {/* Modal de Unidade Escolar */}
                <Modal
