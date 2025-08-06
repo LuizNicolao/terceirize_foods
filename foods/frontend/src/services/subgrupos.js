@@ -7,10 +7,35 @@ class SubgruposService {
   static async listar(params = {}) {
     try {
       const response = await api.get('/subgrupos', { params });
-      return response.data;
+      
+      // Extrair dados da estrutura HATEOAS
+      let subgrupos = [];
+      let pagination = null;
+      
+      if (response.data.data) {
+        // Se tem data.items (estrutura HATEOAS)
+        if (response.data.data.items) {
+          subgrupos = response.data.data.items;
+          pagination = response.data.data._meta?.pagination;
+        } else {
+          // Se data é diretamente um array
+          subgrupos = response.data.data;
+        }
+      } else if (Array.isArray(response.data)) {
+        // Se response.data é diretamente um array
+        subgrupos = response.data;
+      }
+      
+      return {
+        success: true,
+        data: subgrupos,
+        pagination: pagination || response.data.pagination
+      };
     } catch (error) {
-      console.error('Erro ao listar subgrupos:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar subgrupos'
+      };
     }
   }
 
@@ -20,10 +45,25 @@ class SubgruposService {
   static async buscarPorId(id) {
     try {
       const response = await api.get(`/subgrupos/${id}`);
-      return response.data;
+      
+      // Extrair dados da estrutura HATEOAS
+      let subgrupo = null;
+      
+      if (response.data.data) {
+        subgrupo = response.data.data;
+      } else {
+        subgrupo = response.data;
+      }
+      
+      return {
+        success: true,
+        data: subgrupo
+      };
     } catch (error) {
-      console.error('Erro ao buscar subgrupo:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar subgrupo'
+      };
     }
   }
 
@@ -33,10 +73,26 @@ class SubgruposService {
   static async criar(data) {
     try {
       const response = await api.post('/subgrupos', data);
-      return response.data;
+      
+      // Extrair dados da estrutura HATEOAS
+      let subgrupo = null;
+      
+      if (response.data.data) {
+        subgrupo = response.data.data;
+      } else {
+        subgrupo = response.data;
+      }
+      
+      return {
+        success: true,
+        data: subgrupo,
+        message: 'Subgrupo criado com sucesso!'
+      };
     } catch (error) {
-      console.error('Erro ao criar subgrupo:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao criar subgrupo'
+      };
     }
   }
 
@@ -46,10 +102,26 @@ class SubgruposService {
   static async atualizar(id, data) {
     try {
       const response = await api.put(`/subgrupos/${id}`, data);
-      return response.data;
+      
+      // Extrair dados da estrutura HATEOAS
+      let subgrupo = null;
+      
+      if (response.data.data) {
+        subgrupo = response.data.data;
+      } else {
+        subgrupo = response.data;
+      }
+      
+      return {
+        success: true,
+        data: subgrupo,
+        message: 'Subgrupo atualizado com sucesso!'
+      };
     } catch (error) {
-      console.error('Erro ao atualizar subgrupo:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao atualizar subgrupo'
+      };
     }
   }
 
@@ -58,11 +130,16 @@ class SubgruposService {
    */
   static async excluir(id) {
     try {
-      const response = await api.delete(`/subgrupos/${id}`);
-      return response.data;
+      await api.delete(`/subgrupos/${id}`);
+      return {
+        success: true,
+        message: 'Subgrupo excluído com sucesso!'
+      };
     } catch (error) {
-      console.error('Erro ao excluir subgrupo:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao excluir subgrupo'
+      };
     }
   }
 
@@ -101,10 +178,15 @@ class SubgruposService {
         params,
         responseType: 'blob'
       });
-      return response.data;
+      return {
+        success: true,
+        data: response.data
+      };
     } catch (error) {
-      console.error('Erro ao exportar subgrupos para XLSX:', error);
-      throw error;
+      return {
+        success: false,
+        error: 'Erro ao exportar XLSX'
+      };
     }
   }
 
@@ -117,10 +199,15 @@ class SubgruposService {
         params,
         responseType: 'blob'
       });
-      return response.data;
+      return {
+        success: true,
+        data: response.data
+      };
     } catch (error) {
-      console.error('Erro ao exportar subgrupos para PDF:', error);
-      throw error;
+      return {
+        success: false,
+        error: 'Erro ao exportar PDF'
+      };
     }
   }
 }

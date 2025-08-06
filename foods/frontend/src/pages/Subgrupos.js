@@ -64,25 +64,30 @@ const Subgrupos = () => {
       };
 
       const result = await SubgruposService.listar(paginationParams);
+      
       if (result.success) {
-        setSubgrupos(result.data || []);
+        // Garantir que data seja um array
+        const data = Array.isArray(result.data) ? result.data : [];
+        setSubgrupos(data);
         
         // Extrair informações de paginação
         if (result.pagination) {
           setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
+          setTotalItems(result.pagination.totalItems || data.length);
           setCurrentPage(result.pagination.currentPage || 1);
         } else {
           // Fallback se não houver paginação no backend
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
+          setTotalItems(data.length);
+          setTotalPages(Math.ceil(data.length / itemsPerPage));
         }
       } else {
-        toast.error(result.error);
+        toast.error(result.error || 'Erro ao carregar subgrupos');
+        setSubgrupos([]);
       }
     } catch (error) {
       console.error('Erro ao carregar subgrupos:', error);
       toast.error('Erro ao carregar subgrupos');
+      setSubgrupos([]);
     } finally {
       setLoading(false);
     }
@@ -94,10 +99,15 @@ const Subgrupos = () => {
       setLoadingGrupos(true);
       const result = await GruposService.buscarAtivos();
       if (result.success) {
-        setGrupos(result.data || []);
+        const data = Array.isArray(result.data) ? result.data : [];
+        setGrupos(data);
+      } else {
+        console.error('Erro ao carregar grupos:', result.error);
+        setGrupos([]);
       }
     } catch (error) {
       console.error('Erro ao carregar grupos:', error);
+      setGrupos([]);
     } finally {
       setLoadingGrupos(false);
     }
@@ -108,7 +118,7 @@ const Subgrupos = () => {
     try {
       const result = await SubgruposService.listar({ limit: 1000 });
       if (result.success) {
-        const data = result.data || [];
+        const data = Array.isArray(result.data) ? result.data : [];
         const total = data.length;
         const ativos = data.filter(s => s.status === 1).length;
         const inativos = data.filter(s => s.status === 0).length;
@@ -295,17 +305,22 @@ const Subgrupos = () => {
         grupo_id: grupoFilter !== 'todos' ? grupoFilter : ''
       };
 
-      const blob = await SubgruposService.exportarXLSX(params);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `subgrupos_${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast.success('Relatório exportado com sucesso!');
+      const result = await SubgruposService.exportarXLSX(params);
+      if (result.success) {
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `subgrupos_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar relatório');
+      }
     } catch (error) {
       console.error('Erro ao exportar:', error);
       toast.error('Erro ao exportar relatório');
@@ -320,17 +335,22 @@ const Subgrupos = () => {
         grupo_id: grupoFilter !== 'todos' ? grupoFilter : ''
       };
 
-      const blob = await SubgruposService.exportarPDF(params);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `subgrupos_${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast.success('Relatório exportado com sucesso!');
+      const result = await SubgruposService.exportarPDF(params);
+      if (result.success) {
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `subgrupos_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar relatório');
+      }
     } catch (error) {
       console.error('Erro ao exportar:', error);
       toast.error('Erro ao exportar relatório');
@@ -353,7 +373,7 @@ const Subgrupos = () => {
   };
 
   // Filtros
-  const filteredSubgrupos = subgrupos.filter(subgrupo => {
+  const filteredSubgrupos = Array.isArray(subgrupos) ? subgrupos.filter(subgrupo => {
     const matchesSearch = !searchTerm || 
       subgrupo.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
       getGrupoName(subgrupo.grupo_id).toLowerCase().includes(searchTerm.toLowerCase());
@@ -366,7 +386,7 @@ const Subgrupos = () => {
       subgrupo.grupo_id.toString() === grupoFilter;
     
     return matchesSearch && matchesStatus && matchesGrupo;
-  });
+  }) : [];
 
   // Effects
   useEffect(() => {
