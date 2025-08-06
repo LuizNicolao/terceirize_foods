@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
-import { Button, Input, Modal, StatCard, Table } from '../components/ui';
+import { Button, Input, Modal, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
 
@@ -35,7 +35,6 @@ const UnidadesEscolares = () => {
     total_cidades: 0
   });
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
   
   // Estados de paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -105,11 +104,7 @@ const UnidadesEscolares = () => {
       (unidade.cidade && unidade.cidade.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (unidade.estado && unidade.estado.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesStatus = statusFilter === 'todos' || 
-      (statusFilter === 'ativo' && unidade.status === 'ativo') ||
-      (statusFilter === 'inativo' && unidade.status === 'inativo');
-    
-    return matchesSearch && matchesStatus;
+    return matchesSearch;
   });
 
   // Função para mudar de página
@@ -408,12 +403,10 @@ const UnidadesEscolares = () => {
 
   if (loading) {
     return (
-      <div className="p-3 sm:p-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Carregando unidades escolares...</p>
-          </div>
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
         </div>
       </div>
     );
@@ -437,7 +430,7 @@ const UnidadesEscolares = () => {
           {canCreate('unidades_escolares') && (
             <Button onClick={handleAddUnidade} size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar Unidade Escolar</span>
+              <span className="hidden sm:inline">Adicionar</span>
               <span className="sm:hidden">Adicionar</span>
             </Button>
           )}
@@ -472,220 +465,216 @@ const UnidadesEscolares = () => {
         />
       </div>
 
-      {/* Filtros */}
-      <CadastroFilterBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        onClear={() => {
-          setSearchTerm('');
-          setStatusFilter('todos');
-        }}
-        placeholder="Buscar por nome, cidade ou código..."
-      />
+                    {/* Filtros */}
+       <CadastroFilterBar
+         searchTerm={searchTerm}
+         onSearchChange={setSearchTerm}
+         onClear={() => setSearchTerm('')}
+         placeholder="Buscar por nome, cidade ou código..."
+       />
 
-      {/* Ações */}
-      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
-        <Button onClick={handleExportXLSX} variant="outline" size="sm">
-          <FaFileExcel className="mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Exportar XLSX</span>
-          <span className="sm:hidden">XLSX</span>
-        </Button>
-        <Button onClick={handleExportPDF} variant="outline" size="sm">
-          <FaFilePdf className="mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Exportar PDF</span>
-          <span className="sm:hidden">PDF</span>
-        </Button>
-      </div>
+       {/* Ações */}
+       <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+         <Button onClick={handleExportXLSX} variant="outline" size="sm">
+           <FaFileExcel className="mr-1 sm:mr-2" />
+           <span className="hidden sm:inline">Exportar XLSX</span>
+           <span className="sm:hidden">XLSX</span>
+         </Button>
+         <Button onClick={handleExportPDF} variant="outline" size="sm">
+           <FaFilePdf className="mr-1 sm:mr-2" />
+           <span className="hidden sm:inline">Exportar PDF</span>
+           <span className="sm:hidden">PDF</span>
+         </Button>
+       </div>
 
-      {/* Tabela */}
-      {filteredUnidades.length === 0 ? (
-        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-          {searchTerm || statusFilter !== 'todos'
-            ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
-            : 'Nenhuma unidade escolar cadastrada'
-          }
-        </div>
-      ) : (
-        <>
-          {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <Table>
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escola</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade/Estado</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Centro Distribuição</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUnidades.map((unidade) => (
-                  <tr key={unidade.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {unidade.nome_escola}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {unidade.codigo_teknisa}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{unidade.cidade}</div>
-                      <div className="text-sm text-gray-500">{unidade.estado}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {unidade.centro_distribuicao}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                        unidade.status === 'ativo' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
-                        {canView('unidades_escolares') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleViewUnidade(unidade)}
-                            title="Visualizar"
-                          >
-                            <FaEye className="text-green-600 text-sm" />
-                          </Button>
-                        )}
-                        {canEdit('unidades_escolares') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleEditUnidade(unidade)}
-                            title="Editar"
-                          >
-                            <FaEdit className="text-blue-600 text-sm" />
-                          </Button>
-                        )}
-                        {canDelete('unidades_escolares') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleDeleteUnidade(unidade.id)}
-                            title="Excluir"
-                          >
-                            <FaTrash className="text-red-600 text-sm" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
+               {/* Tabela */}
+       {filteredUnidades.length === 0 ? (
+         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+           {searchTerm 
+             ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
+             : 'Nenhuma unidade escolar cadastrada'
+           }
+         </div>
+       ) : (
+         <>
+           {/* Versão Desktop - Tabela completa */}
+           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+             <div className="overflow-x-auto">
+               <table className="w-full">
+                 <thead className="bg-gray-50">
+                   <tr>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escola</th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade/Estado</th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Centro Distribuição</th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                   </tr>
+                 </thead>
+                 <tbody className="bg-white divide-y divide-gray-200">
+                   {filteredUnidades.map((unidade) => (
+                     <tr key={unidade.id} className="hover:bg-gray-50">
+                       <td className="px-6 py-4 whitespace-nowrap">
+                         <div className="text-sm font-medium text-gray-900">
+                           {unidade.nome_escola}
+                         </div>
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                         {unidade.codigo_teknisa}
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap">
+                         <div className="text-sm text-gray-900">{unidade.cidade}</div>
+                         <div className="text-sm text-gray-500">{unidade.estado}</div>
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                         {unidade.centro_distribuicao}
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                         {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap">
+                         <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                           unidade.status === 'ativo' 
+                             ? 'bg-green-100 text-green-800' 
+                             : 'bg-red-100 text-red-800'
+                         }`}>
+                           {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                         </span>
+                       </td>
+                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                         <div className="flex gap-2">
+                           {canView('unidades_escolares') && (
+                             <Button
+                               variant="ghost"
+                               size="xs"
+                               onClick={() => handleViewUnidade(unidade)}
+                               title="Visualizar"
+                             >
+                               <FaEye className="text-green-600 text-sm" />
+                             </Button>
+                           )}
+                           {canEdit('unidades_escolares') && (
+                             <Button
+                               variant="ghost"
+                               size="xs"
+                               onClick={() => handleEditUnidade(unidade)}
+                               title="Editar"
+                             >
+                               <FaEdit className="text-blue-600 text-sm" />
+                             </Button>
+                           )}
+                           {canDelete('unidades_escolares') && (
+                             <Button
+                               variant="ghost"
+                               size="xs"
+                               onClick={() => handleDeleteUnidade(unidade.id)}
+                               title="Excluir"
+                             >
+                               <FaTrash className="text-red-600 text-sm" />
+                             </Button>
+                           )}
+                         </div>
+                       </td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
+           </div>
 
-          {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
-            {filteredUnidades.map((unidade) => (
-              <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm">{unidade.nome_escola}</h3>
-                    <p className="text-gray-600 text-xs">Código: {unidade.codigo_teknisa}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    {canView('unidades_escolares') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleViewUnidade(unidade)}
-                        title="Visualizar"
-                        className="p-2"
-                      >
-                        <FaEye className="text-green-600 text-sm" />
-                      </Button>
-                    )}
-                    {canEdit('unidades_escolares') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleEditUnidade(unidade)}
-                        title="Editar"
-                        className="p-2"
-                      >
-                        <FaEdit className="text-blue-600 text-sm" />
-                      </Button>
-                    )}
-                    {canDelete('unidades_escolares') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleDeleteUnidade(unidade.id)}
-                        title="Excluir"
-                        className="p-2"
-                      >
-                        <FaTrash className="text-red-600 text-sm" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span className="text-gray-500">Cidade:</span>
-                    <p className="font-medium">{unidade.cidade}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Estado:</span>
-                    <p className="font-medium">{unidade.estado}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Centro Distribuição:</span>
-                    <p className="font-medium">{unidade.centro_distribuicao || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Rota:</span>
-                    <p className="font-medium">{loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-gray-500">Status:</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                      unidade.status === 'ativo' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
+           {/* Versão Mobile - Cards */}
+           <div className="lg:hidden space-y-3">
+             {filteredUnidades.map((unidade) => (
+               <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
+                 <div className="flex justify-between items-start mb-3">
+                   <div className="flex-1">
+                     <h3 className="font-semibold text-gray-900 text-sm">{unidade.nome_escola}</h3>
+                     <p className="text-gray-600 text-xs">Código: {unidade.codigo_teknisa}</p>
+                   </div>
+                   <div className="flex gap-2">
+                     {canView('unidades_escolares') && (
+                       <Button
+                         variant="ghost"
+                         size="xs"
+                         onClick={() => handleViewUnidade(unidade)}
+                         title="Visualizar"
+                         className="p-2"
+                       >
+                         <FaEye className="text-green-600 text-sm" />
+                       </Button>
+                     )}
+                     {canEdit('unidades_escolares') && (
+                       <Button
+                         variant="ghost"
+                         size="xs"
+                         onClick={() => handleEditUnidade(unidade)}
+                         title="Editar"
+                         className="p-2"
+                       >
+                         <FaEdit className="text-blue-600 text-sm" />
+                       </Button>
+                     )}
+                     {canDelete('unidades_escolares') && (
+                       <Button
+                         variant="ghost"
+                         size="xs"
+                         onClick={() => handleDeleteUnidade(unidade.id)}
+                         title="Excluir"
+                         className="p-2"
+                       >
+                         <FaTrash className="text-red-600 text-sm" />
+                       </Button>
+                     )}
+                   </div>
+                 </div>
+                 
+                 <div className="grid grid-cols-2 gap-3 text-xs">
+                   <div>
+                     <span className="text-gray-500">Cidade:</span>
+                     <p className="font-medium">{unidade.cidade}</p>
+                   </div>
+                   <div>
+                     <span className="text-gray-500">Estado:</span>
+                     <p className="font-medium">{unidade.estado}</p>
+                   </div>
+                   <div>
+                     <span className="text-gray-500">Centro:</span>
+                     <p className="font-medium">{unidade.centro_distribuicao || 'N/A'}</p>
+                   </div>
+                   <div>
+                     <span className="text-gray-500">Rota:</span>
+                     <p className="font-medium">{loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}</p>
+                   </div>
+                   <div className="col-span-2">
+                     <span className="text-gray-500">Status:</span>
+                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                       unidade.status === 'ativo' 
+                         ? 'bg-green-100 text-green-800' 
+                         : 'bg-red-100 text-red-800'
+                     }`}>
+                       {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                     </span>
+                   </div>
+                 </div>
+               </div>
+             ))}
+           </div>
+         </>
+       )}
 
-      {/* Modal de Unidade Escolar */}
-      {showModal && (
-        <Modal
+                    {/* Modal de Unidade Escolar */}
+               <Modal
           isOpen={showModal}
           onClose={handleCloseModal}
           title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-          size="full"
+          size="xl"
         >
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
             {/* Primeira Linha - 2 Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {/* Card 1: Informações Básicas */}
-              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Básicas</h3>
                 <div className="space-y-3">
                   <Input
@@ -704,7 +693,7 @@ const UnidadesEscolares = () => {
               </div>
 
               {/* Card 2: Endereço */}
-              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Endereço</h3>
                 <div className="space-y-3">
                   {/* Cidade e Estado lado a lado */}
@@ -755,9 +744,9 @@ const UnidadesEscolares = () => {
             </div>
 
             {/* Segunda Linha - 3 Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Card 3: Configurações */}
-              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Configurações</h3>
                 <div className="space-y-3">
                   <Input
@@ -797,7 +786,7 @@ const UnidadesEscolares = () => {
               </div>
 
               {/* Card 4: Rota e Status */}
-              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Rota e Status</h3>
                 <div className="space-y-3">
                   <Input
@@ -837,7 +826,7 @@ const UnidadesEscolares = () => {
               </div>
 
               {/* Card 5: Observações */}
-              <div className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-200">
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Observações</h3>
                 <Input
                   label="Observações"
@@ -850,32 +839,31 @@ const UnidadesEscolares = () => {
             </div>
 
             {!viewMode && (
-              <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
+              <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
                 <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
                   Cancelar
                 </Button>
                 <Button type="submit" size="sm">
-                  {editingUnidade ? 'Atualizar' : 'Cadastrar'}
+                  {editingUnidade ? 'Atualizar' : 'Criar'}
                 </Button>
               </div>
             )}
           </form>
         </Modal>
-      )}
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal
-          isOpen={showAuditModal}
-          onClose={handleCloseAuditModal}
+      <Modal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Unidades Escolares"
-          size="full"
-        >
+        size="xl"
+      >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
             <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
               <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Filtros</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
                 <Input
                   label="Data Início"
                   type="date"
@@ -915,26 +903,26 @@ const UnidadesEscolares = () => {
                   <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
                     <span className="hidden sm:inline">Aplicar Filtros</span>
                     <span className="sm:hidden">Aplicar</span>
-                  </Button>
+            </Button>
                 </div>
               </div>
-            </div>
+          </div>
 
             {/* Botões de Exportação */}
-            <div className="flex gap-2 sm:gap-3">
-              <Button onClick={handleExportAuditXLSX} variant="outline" size="sm">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <Button onClick={handleExportAuditXLSX} variant="secondary" size="sm">
                 <FaFileExcel className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar Excel</span>
                 <span className="sm:hidden">Excel</span>
               </Button>
-              <Button onClick={handleExportAuditPDF} variant="outline" size="sm">
+              <Button onClick={handleExportAuditPDF} variant="secondary" size="sm">
                 <FaFilePdf className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar PDF</span>
                 <span className="sm:hidden">PDF</span>
               </Button>
             </div>
-
-            {/* Resultados da Auditoria */}
+            
+            {/* Lista de Logs */}
             <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               {auditLoading ? (
                 <div className="text-center py-6 sm:py-8">
@@ -996,8 +984,8 @@ const UnidadesEscolares = () => {
                                   </div>
                                 ))}
                               </div>
-                            </div>
-                          )}
+            </div>
+          )}
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
                               <strong>Dados da Unidade Escolar:</strong>
@@ -1030,8 +1018,8 @@ const UnidadesEscolares = () => {
                 </div>
               )}
             </div>
-          </div>
-        </Modal>
+        </div>
+      </Modal>
       )}
 
       {/* Paginação */}
@@ -1040,9 +1028,8 @@ const UnidadesEscolares = () => {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
           totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
         />
       )}
     </div>
