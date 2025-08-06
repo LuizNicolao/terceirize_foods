@@ -487,58 +487,92 @@ const UnidadesEscolares = () => {
          </Button>
        </div>
 
-                     {/* Tabela */}
+                           {/* Tabela */}
       {(() => {
+        const isMobile = window.innerWidth < 1024;
         console.log('🔍 DEBUG - Estado atual:', {
           loading,
           filteredUnidadesLength: filteredUnidades.length,
           searchTerm,
           windowWidth: window.innerWidth,
-          isMobile: window.innerWidth < 1024
+          isMobile
         });
         
-        return loading ? (
-          <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-            Carregando unidades escolares...
-          </div>
-        ) : filteredUnidades.length === 0 ? (
-          <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-            {searchTerm 
-              ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
-              : 'Nenhuma unidade escolar cadastrada'
-            }
-          </div>
-        ) : (
-          <>
-            {/* Versão Desktop - Tabela completa */}
-            <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden" style={{border: '3px solid blue'}}>
-              {console.log('🖥️ DEBUG - Renderizando versão desktop com', filteredUnidades.length, 'unidades')}
-            <Table>
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escola</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade/Estado</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Centro Distribuição</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUnidades.map((unidade) => (
-                  <tr key={unidade.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.codigo_teknisa}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div>{unidade.cidade}</div>
-                      <div className="text-gray-500">{unidade.estado}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.centro_distribuicao}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+        if (loading) {
+          return (
+            <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+              Carregando unidades escolares...
+            </div>
+          );
+        }
+        
+        if (filteredUnidades.length === 0) {
+          return (
+            <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+              {searchTerm 
+                ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
+                : 'Nenhuma unidade escolar cadastrada'
+              }
+            </div>
+          );
+        }
+        
+        // Renderizar apenas uma versão baseada no tamanho da tela
+        if (isMobile) {
+          console.log('📱 DEBUG - Renderizando APENAS versão mobile com', filteredUnidades.length, 'unidades');
+          return (
+            <div className="space-y-3" style={{border: '3px solid red'}}>
+              {filteredUnidades.map((unidade) => (
+                <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 text-sm">{unidade.nome_escola}</h3>
+                      <p className="text-gray-600 text-xs">Código: {unidade.codigo_teknisa}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      {canView('unidades_escolares') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleViewUnidade(unidade)}
+                          title="Visualizar"
+                          className="p-2"
+                        >
+                          <FaEye className="text-green-600 text-sm" />
+                        </Button>
+                      )}
+                      {canEdit('unidades_escolares') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleEditUnidade(unidade)}
+                          title="Editar"
+                          className="p-2"
+                        >
+                          <FaEdit className="text-blue-600 text-sm" />
+                        </Button>
+                      )}
+                      {canDelete('unidades_escolares') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleDeleteUnidade(unidade.id)}
+                          title="Excluir"
+                          className="p-2"
+                        >
+                          <FaTrash className="text-red-600 text-sm" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-gray-500">Localização:</span>
+                      <p className="font-medium">{unidade.cidade}, {unidade.estado}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Status:</span>
                       <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                         unidade.status === 'ativo' 
                           ? 'bg-green-100 text-green-800' 
@@ -546,123 +580,100 @@ const UnidadesEscolares = () => {
                       }`}>
                         {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex gap-2">
-                        {canView('unidades_escolares') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleViewUnidade(unidade)}
-                            title="Visualizar"
-                          >
-                            <FaEye className="text-green-600 text-sm" />
-                          </Button>
-                        )}
-                        {canEdit('unidades_escolares') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleEditUnidade(unidade)}
-                            title="Editar"
-                          >
-                            <FaEdit className="text-blue-600 text-sm" />
-                          </Button>
-                        )}
-                        {canDelete('unidades_escolares') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleDeleteUnidade(unidade.id)}
-                            title="Excluir"
-                          >
-                            <FaTrash className="text-red-600 text-sm" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Centro:</span>
+                      <p className="font-medium">{unidade.centro_distribuicao || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Rota:</span>
+                      <p className="font-medium">{loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id) || 'N/A'}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          );
+        } else {
+          console.log('🖥️ DEBUG - Renderizando APENAS versão desktop com', filteredUnidades.length, 'unidades');
+          return (
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden" style={{border: '3px solid blue'}}>
+              <Table>
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Escola</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade/Estado</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Centro Distribuição</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-
-          {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3" style={{border: '3px solid red'}}>
-            {console.log('📱 DEBUG - Renderizando versão mobile com', filteredUnidades.length, 'unidades')}
-            {filteredUnidades.map((unidade) => (
-              <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm">{unidade.nome_escola}</h3>
-                    <p className="text-gray-600 text-xs">Código: {unidade.codigo_teknisa}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    {canView('unidades_escolares') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleViewUnidade(unidade)}
-                        title="Visualizar"
-                        className="p-2"
-                      >
-                        <FaEye className="text-green-600 text-sm" />
-                      </Button>
-                    )}
-                    {canEdit('unidades_escolares') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleEditUnidade(unidade)}
-                        title="Editar"
-                        className="p-2"
-                      >
-                        <FaEdit className="text-blue-600 text-sm" />
-                      </Button>
-                    )}
-                    {canDelete('unidades_escolares') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleDeleteUnidade(unidade.id)}
-                        title="Excluir"
-                        className="p-2"
-                      >
-                        <FaTrash className="text-red-600 text-sm" />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <span className="text-gray-500">Localização:</span>
-                    <p className="font-medium">{unidade.cidade}, {unidade.estado}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Status:</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                      unidade.status === 'ativo' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Centro:</span>
-                    <p className="font-medium">{unidade.centro_distribuicao || 'N/A'}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-500">Rota:</span>
-                    <p className="font-medium">{loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id) || 'N/A'}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )})()}
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredUnidades.map((unidade) => (
+                    <tr key={unidade.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.codigo_teknisa}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div>{unidade.cidade}</div>
+                        <div className="text-gray-500">{unidade.estado}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.centro_distribuicao}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                          unidade.status === 'ativo' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <div className="flex gap-2">
+                          {canView('unidades_escolares') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleViewUnidade(unidade)}
+                              title="Visualizar"
+                            >
+                              <FaEye className="text-green-600 text-sm" />
+                            </Button>
+                          )}
+                          {canEdit('unidades_escolares') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleEditUnidade(unidade)}
+                              title="Editar"
+                            >
+                              <FaEdit className="text-blue-600 text-sm" />
+                            </Button>
+                          )}
+                          {canDelete('unidades_escolares') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleDeleteUnidade(unidade.id)}
+                              title="Excluir"
+                            >
+                              <FaTrash className="text-red-600 text-sm" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          );
+        }
+      })()}
 
                     {/* Modal de Unidade Escolar */}
                <Modal
