@@ -450,28 +450,28 @@ const UnidadesEscolares = () => {
       {/* Cards de Estatísticas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
-          icon={<FaSchool className="text-blue-500" />}
+          icon={FaSchool}
           value={unidades.length}
-          label="Total de Unidades"
-          className="bg-white"
+          title="Total de Unidades"
+          color="blue"
         />
         <StatCard
-          icon={<FaMapMarkerAlt className="text-green-500" />}
+          icon={FaMapMarkerAlt}
           value={unidades.filter(u => u.status === 'ativo').length}
-          label="Unidades Ativas"
-          className="bg-white"
+          title="Unidades Ativas"
+          color="green"
         />
         <StatCard
-          icon={<FaRoute className="text-purple-500" />}
+          icon={FaRoute}
           value={new Set(unidades.map(u => u.estado)).size}
-          label="Estados"
-          className="bg-white"
+          title="Estados"
+          color="purple"
         />
         <StatCard
-          icon={<FaUsers className="text-orange-500" />}
+          icon={FaUsers}
           value={new Set(unidades.map(u => u.cidade)).size}
-          label="Cidades"
-          className="bg-white"
+          title="Cidades"
+          color="orange"
         />
       </div>
 
