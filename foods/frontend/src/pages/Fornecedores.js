@@ -20,7 +20,7 @@ import {
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import FornecedoresService from '../services/fornecedores';
-import { Button, Input, Modal, Table, StatCard } from '../components/ui';
+import { Button, Input, Modal, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
 
@@ -140,12 +140,6 @@ const Fornecedores = () => {
   // Função para mudar de página
   const handlePageChange = (page) => {
     setCurrentPage(page);
-  };
-
-  // Função para mudar itens por página
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1); // Voltar para primeira página
   };
 
   const loadAuditLogs = async () => {
@@ -437,7 +431,7 @@ const Fornecedores = () => {
   }
 
   return (
-    <div className="p-3 sm:p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Fornecedores</h1>
@@ -450,9 +444,10 @@ const Fornecedores = () => {
           >
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
+            <span className="sm:hidden">Auditoria</span>
           </Button>
           {canCreate('fornecedores') && (
-            <Button onClick={handleAddFornecedor} size="sm">
+            <Button onClick={handleAddFornecedor} variant="primary" size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Adicionar</span>
               <span className="sm:hidden">Adicionar</span>
@@ -462,7 +457,7 @@ const Fornecedores = () => {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <StatCard
           title="Total de Fornecedores"
           value={estatisticas.total_fornecedores}
@@ -531,35 +526,52 @@ const Fornecedores = () => {
         <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <Table>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CNPJ</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Razão Social</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Município/UF</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contato</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    CNPJ
+                  </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Razão Social
+                  </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Município/UF
+                  </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Contato
+                  </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredFornecedores.map((fornecedor) => (
                   <tr key={fornecedor.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{fornecedor.cnpj}</div>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                        {fornecedor.cnpj}
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{fornecedor.razao_social}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {fornecedor.razao_social}
+                    </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div>
                         {fornecedor.email && <div>{fornecedor.email}</div>}
                         {fornecedor.telefone && <div>{fornecedor.telefone}</div>}
                         {!fornecedor.email && !fornecedor.telefone && '-'}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                         fornecedor.status === 1 
                           ? 'bg-green-100 text-green-800' 
@@ -568,8 +580,8 @@ const Fornecedores = () => {
                         {getStatusLabel(fornecedor.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex gap-2">
                         {canView('fornecedores') && (
                           <Button
                             variant="ghost"
@@ -577,7 +589,7 @@ const Fornecedores = () => {
                             onClick={() => handleViewFornecedor(fornecedor)}
                             title="Visualizar"
                           >
-                            <FaEye className="text-green-600 text-sm" />
+                              <FaEye className="text-green-600 text-sm" />
                           </Button>
                         )}
                         {canEdit('fornecedores') && (
@@ -587,7 +599,7 @@ const Fornecedores = () => {
                             onClick={() => handleEditFornecedor(fornecedor)}
                             title="Editar"
                           >
-                            <FaEdit className="text-blue-600 text-sm" />
+                              <FaEdit className="text-blue-600 text-sm" />
                           </Button>
                         )}
                         {canDelete('fornecedores') && (
@@ -597,7 +609,7 @@ const Fornecedores = () => {
                             onClick={() => handleDeleteFornecedor(fornecedor.id)}
                             title="Excluir"
                           >
-                            <FaTrash className="text-red-600 text-sm" />
+                              <FaTrash className="text-red-600 text-sm" />
                           </Button>
                         )}
                       </div>
@@ -605,8 +617,9 @@ const Fornecedores = () => {
                   </tr>
                 ))}
               </tbody>
-            </Table>
+            </table>
           </div>
+        </div>
 
           {/* Versão Mobile - Cards */}
           <div className="lg:hidden space-y-3">
@@ -995,9 +1008,8 @@ const Fornecedores = () => {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
           totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
         />
       )}
                   </div>
