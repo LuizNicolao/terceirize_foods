@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
-import { Button, Input, Modal, Table, StatCard } from '../components/ui';
+import { Button, Input, Modal, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
 
@@ -509,106 +509,114 @@ const UnidadesEscolares = () => {
         </div>
       ) : (
         <>
+          {/* Debug Info */}
+          <div className="bg-yellow-100 p-2 mb-4 text-xs">
+            <strong>Debug:</strong> Total de unidades: {filteredUnidades.length} | 
+            Breakpoint: <span className="sm:hidden">MOBILE</span><span className="hidden sm:inline">DESKTOP</span>
+          </div>
+
           {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <Table>
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Escola
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Código
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Cidade/Estado
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Centro Distribuição
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Rota
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredUnidades.map((unidade) => (
-                  <tr key={unidade.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">
-                        {unidade.nome_escola}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {unidade.codigo_teknisa}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{unidade.cidade}</div>
-                      <div className="text-sm text-gray-500">{unidade.estado}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {unidade.centro_distribuicao}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                        unidade.status === 'ativo' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
-                        {canView('unidades_escolares') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleViewUnidade(unidade)}
-                            title="Visualizar"
-                          >
-                            <FaEye className="text-green-600 text-sm" />
-                          </Button>
-                        )}
-                        {canEdit('unidades_escolares') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleEditUnidade(unidade)}
-                            title="Editar"
-                          >
-                            <FaEdit className="text-blue-600 text-sm" />
-                          </Button>
-                        )}
-                        {canDelete('unidades_escolares') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleDeleteUnidade(unidade.id)}
-                            title="Excluir"
-                          >
-                            <FaTrash className="text-red-600 text-sm" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
+          <div className="hidden sm:block bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Escola
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Código
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Cidade/Estado
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Centro Distribuição
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Rota
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ações
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredUnidades.map((unidade) => (
+                    <tr key={unidade.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {unidade.nome_escola}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {unidade.codigo_teknisa}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">{unidade.cidade}</div>
+                        <div className="text-sm text-gray-500">{unidade.estado}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {unidade.centro_distribuicao}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                          unidade.status === 'ativo' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex gap-2">
+                          {canView('unidades_escolares') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleViewUnidade(unidade)}
+                              title="Visualizar"
+                            >
+                              <FaEye className="text-green-600 text-sm" />
+                            </Button>
+                          )}
+                          {canEdit('unidades_escolares') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleEditUnidade(unidade)}
+                              title="Editar"
+                            >
+                              <FaEdit className="text-blue-600 text-sm" />
+                            </Button>
+                          )}
+                          {canDelete('unidades_escolares') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleDeleteUnidade(unidade.id)}
+                              title="Excluir"
+                            >
+                              <FaTrash className="text-red-600 text-sm" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
+          <div className="block sm:hidden space-y-3">
             {filteredUnidades.map((unidade) => (
               <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
