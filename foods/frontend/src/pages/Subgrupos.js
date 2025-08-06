@@ -138,43 +138,16 @@ const Subgrupos = () => {
   const loadAuditLogs = async () => {
     setAuditLoading(true);
     try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtro de período se selecionado
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default: break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
-        if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
-      }
-      
-      if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
-      params.append('recurso', 'subgrupos');
+      const params = {
+        entity: 'subgrupos',
+        ...auditFilters
+      };
 
-      const response = await fetch('/api/auditoria?' + new URLSearchParams(params));
+      const response = await fetch('/api/audit?' + new URLSearchParams(params));
       const data = await response.json();
 
       if (data.success) {
-        setAuditLogs(data.data?.logs || []);
+        setAuditLogs(data.data || []);
       } else {
         toast.error('Erro ao carregar logs de auditoria');
       }
@@ -381,66 +354,6 @@ const Subgrupos = () => {
     } catch (error) {
       console.error('Erro ao exportar:', error);
       toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  const handleExportAuditXLSX = async () => {
-    try {
-      const params = new URLSearchParams();
-      
-      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
-      if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
-      if (auditFilters.periodo) params.append('periodo', auditFilters.periodo);
-      params.append('recurso', 'subgrupos');
-
-      const response = await fetch(`/api/auditoria/export/xlsx?${params.toString()}`);
-      const blob = await response.blob();
-      
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `auditoria_subgrupos_${new Date().toISOString().split('T')[0]}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast.success('Relatório de auditoria exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar auditoria:', error);
-      toast.error('Erro ao exportar relatório de auditoria');
-    }
-  };
-
-  const handleExportAuditPDF = async () => {
-    try {
-      const params = new URLSearchParams();
-      
-      if (auditFilters.dataInicio) params.append('data_inicio', auditFilters.dataInicio);
-      if (auditFilters.dataFim) params.append('data_fim', auditFilters.dataFim);
-      if (auditFilters.acao) params.append('acao', auditFilters.acao);
-      if (auditFilters.usuario_id) params.append('usuario_id', auditFilters.usuario_id);
-      if (auditFilters.periodo) params.append('periodo', auditFilters.periodo);
-      params.append('recurso', 'subgrupos');
-
-      const response = await fetch(`/api/auditoria/export/pdf?${params.toString()}`);
-      const blob = await response.blob();
-      
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `auditoria_subgrupos_${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast.success('Relatório de auditoria exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar auditoria:', error);
-      toast.error('Erro ao exportar relatório de auditoria');
     }
   };
 
@@ -833,12 +746,12 @@ const Subgrupos = () => {
 
             {/* Botões de Exportação */}
             <div className="flex gap-2 sm:gap-3">
-              <Button onClick={handleExportAuditXLSX} variant="outline" size="sm">
+              <Button onClick={handleExportXLSX} variant="outline" size="sm">
                 <FaFileExcel className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar Excel</span>
                 <span className="sm:hidden">Excel</span>
               </Button>
-              <Button onClick={handleExportAuditPDF} variant="outline" size="sm">
+              <Button onClick={handleExportPDF} variant="outline" size="sm">
                 <FaFilePdf className="mr-1 sm:mr-2" />
                 <span className="hidden sm:inline">Exportar PDF</span>
                 <span className="sm:hidden">PDF</span>

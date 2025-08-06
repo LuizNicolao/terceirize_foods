@@ -1,300 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle, FaFileExcel, FaFilePdf, FaGraduationCap, FaCheckCircle, FaTimesCircle, FaTags } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
-import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
+import { Button, Input, Modal, Table, StatCard } from '../components/ui';
+import ClassesService from '../services/classes';
+import SubgruposService from '../services/subgrupos';
 import CadastroFilterBar from '../components/CadastroFilterBar';
-import ErrorModal from '../components/ErrorModal';
-
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h1`
-  color: var(--dark-gray);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const AddButton = styled.button`
-  background: var(--primary-green);
-  color: var(--white);
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: var(--dark-green);
-    transform: translateY(-1px);
-  }
-`;
-
-const TableContainer = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  background-color: #f5f5f5;
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const Td = styled.td`
-  padding: 16px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  color: var(--dark-gray);
-`;
-
-const StatusBadge = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
-`;
-
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  margin-right: 8px;
-  color: var(--gray);
-
-  &:hover {
-    background-color: var(--light-gray);
-  }
-
-  &.edit {
-    color: var(--blue);
-  }
-
-  &.delete {
-    color: var(--error-red);
-  }
-
-  &.view {
-    color: var(--primary-green);
-  }
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 24px;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const ModalTitle = styled.h2`
-  color: var(--dark-gray);
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--gray);
-  padding: 4px;
-
-  &:hover {
-    color: var(--error-red);
-  }
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-const FormRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const Label = styled.label`
-  color: var(--dark-gray);
-  font-weight: 600;
-  font-size: 14px;
-`;
-
-const Input = styled.input`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-
-  &:disabled {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
-  }
-`;
-
-const TextArea = styled.textarea`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  resize: vertical;
-  min-height: 100px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const Select = styled.select`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  background: var(--white);
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-
-  &:disabled {
-    background-color: #f5f5f5;
-    cursor: not-allowed;
-  }
-`;
-
-const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-
-  &.primary {
-    background: var(--primary-green);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-green);
-    }
-  }
-
-  &.secondary {
-    background: var(--gray);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-gray);
-    }
-  }
-
-  &.danger {
-    background: var(--error-red);
-    color: var(--white);
-
-    &:hover {
-      background: #c62828;
-    }
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px;
-  color: var(--gray);
-`;
+import Pagination from '../components/Pagination';
 
 const Classes = () => {
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [classes, setClasses] = useState([]);
   const [subgrupos, setSubgrupos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -303,12 +19,10 @@ const Classes = () => {
   const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
-  const [subgrupoFilter, setSubgrupoFilter] = useState('');
+  const [subgrupoFilter, setSubgrupoFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [auditFilters, setAuditFilters] = useState({
     dataInicio: '',
     dataFim: '',
@@ -316,8 +30,18 @@ const Classes = () => {
     usuario_id: '',
     periodo: ''
   });
-
-  const { canCreate, canEdit, canDelete } = usePermissions();
+  const [estatisticas, setEstatisticas] = useState({
+    total_classes: 0,
+    classes_ativas: 0,
+    classes_inativas: 0
+  });
+  const [loadingSubgrupos, setLoadingSubgrupos] = useState(false);
+  
+  // Estados de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const {
     register,
@@ -325,30 +49,45 @@ const Classes = () => {
     reset,
     formState: { errors },
     setValue,
-    watch
+    getValues
   } = useForm();
 
   // Carregar classes
   const loadClasses = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
       
-      if (searchTerm) {
-        params.append('search', searchTerm);
-      }
-      if (statusFilter !== 'todos') {
-        params.append('status', statusFilter);
-      }
-      if (subgrupoFilter) {
-        params.append('subgrupo_id', subgrupoFilter);
-      }
+      // Parâmetros de paginação
+      const paginationParams = {
+        page: currentPage,
+        limit: itemsPerPage
+      };
+
+      const result = await ClassesService.listar(paginationParams);
       
-      const response = await api.get(`/classes?${params.toString()}&limit=1000`);
-      setClasses(response.data.data.items || []);
+      if (result.success) {
+        // Garantir que data seja um array
+        const data = Array.isArray(result.data) ? result.data : [];
+        setClasses(data);
+        
+        // Extrair informações de paginação
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages || 1);
+          setTotalItems(result.pagination.totalItems || data.length);
+          setCurrentPage(result.pagination.currentPage || 1);
+        } else {
+          // Fallback se não houver paginação no backend
+          setTotalItems(data.length);
+          setTotalPages(Math.ceil(data.length / itemsPerPage));
+        }
+      } else {
+        toast.error(result.error || 'Erro ao carregar classes');
+        setClasses([]);
+      }
     } catch (error) {
       console.error('Erro ao carregar classes:', error);
       toast.error('Erro ao carregar classes');
+      setClasses([]);
     } finally {
       setLoading(false);
     }
@@ -357,71 +96,61 @@ const Classes = () => {
   // Carregar subgrupos
   const loadSubgrupos = async () => {
     try {
-      const response = await api.get('/classes/subgrupos/list?limit=1000');
-      const subgruposData = response.data.data.items || response.data.data || [];
-      setSubgrupos(subgruposData);
+      setLoadingSubgrupos(true);
+      const result = await SubgruposService.buscarAtivos();
+      if (result.success) {
+        const data = Array.isArray(result.data) ? result.data : [];
+        setSubgrupos(data);
+      } else {
+        console.error('Erro ao carregar subgrupos:', result.error);
+        setSubgrupos([]);
+      }
     } catch (error) {
       console.error('Erro ao carregar subgrupos:', error);
-      setSubgrupos([]); // Garantir que seja sempre um array
+      setSubgrupos([]);
+    } finally {
+      setLoadingSubgrupos(false);
     }
   };
 
-  useEffect(() => {
-    loadClasses();
-    loadSubgrupos();
-  }, []);
+  // Carregar estatísticas
+  const loadEstatisticas = async () => {
+    try {
+      const result = await ClassesService.listar({ limit: 1000 });
+      if (result.success) {
+        const data = Array.isArray(result.data) ? result.data : [];
+        const total = data.length;
+        const ativas = data.filter(c => c.status === 1).length;
+        const inativas = data.filter(c => c.status === 0).length;
+        
+        setEstatisticas({
+          total_classes: total,
+          classes_ativas: ativas,
+          classes_inativas: inativas
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
+    }
+  };
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
+    setAuditLoading(true);
     try {
-      setAuditLoading(true);
-      
-      const params = new URLSearchParams();
-      
-      // Aplicar filtro de período se selecionado
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
+      const params = {
+        entity: 'classes',
+        ...auditFilters
+      };
+
+      const response = await fetch('/api/audit?' + new URLSearchParams(params));
+      const data = await response.json();
+
+      if (data.success) {
+        setAuditLogs(data.data || []);
       } else {
-        // Usar filtros manuais se período não estiver selecionado
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        toast.error('Erro ao carregar logs de auditoria');
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para classes
-      params.append('recurso', 'classes');
-      
-      const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -430,210 +159,11 @@ const Classes = () => {
     }
   };
 
-  // Abrir modal de auditoria
-  const handleOpenAuditModal = () => {
-    setShowAuditModal(true);
-    loadAuditLogs();
-  };
-
-  // Fechar modal de auditoria
-  const handleCloseAuditModal = () => {
-    setShowAuditModal(false);
-    setAuditLogs([]);
-    setAuditFilters({
-      dataInicio: '',
-      dataFim: '',
-      acao: '',
-      usuario_id: '',
-      periodo: ''
-    });
-  };
-
-  // Aplicar filtros de auditoria
-  const handleApplyAuditFilters = () => {
-    loadAuditLogs();
-  };
-
-  // Exportar auditoria para XLSX
-  const handleExportXLSX = async () => {
-    try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para classes
-      params.append('recurso', 'classes');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_classes_${new Date().toISOString().split('T')[0]}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar relatório:', error);
-      toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  // Exportar auditoria para PDF
-  const handleExportPDF = async () => {
-    try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para classes
-      params.append('recurso', 'classes');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_classes_${new Date().toISOString().split('T')[0]}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar relatório:', error);
-      toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('pt-BR');
-  };
-
-  const getActionLabel = (action) => {
-    const labels = {
-      'create': 'Criar',
-      'update': 'Atualizar',
-      'delete': 'Excluir',
-      'view': 'Visualizar',
-      'login': 'Login',
-      'logout': 'Logout'
-    };
-    return labels[action] || action;
-  };
-
-  const getFieldLabel = (field) => {
-    const labels = {
-      'nome': 'Nome',
-      'subgrupo_id': 'Subgrupo',
-      'descricao': 'Descrição',
-      'status': 'Status'
-    };
-    return labels[field] || field;
-  };
-
-  const formatFieldValue = (field, value) => {
-    if (field === 'status') {
-      return value === 1 ? 'Ativo' : 'Inativo';
-    }
-    return value;
-  };
-
+  // Handlers
   const handleAddClasse = () => {
     setEditingClasse(null);
     setViewMode(false);
     reset();
-    setShowModal(true);
-  };
-
-  const handleEditClasse = (classe) => {
-    setEditingClasse(classe);
-    setViewMode(false);
-    setValue('nome', classe.nome);
-    setValue('subgrupo_id', classe.subgrupo_id);
-    setValue('status', classe.status.toString());
     setShowModal(true);
   };
 
@@ -642,7 +172,16 @@ const Classes = () => {
     setViewMode(true);
     setValue('nome', classe.nome);
     setValue('subgrupo_id', classe.subgrupo_id);
-    setValue('status', classe.status.toString());
+    setValue('status', classe.status);
+    setShowModal(true);
+  };
+
+  const handleEditClasse = (classe) => {
+    setEditingClasse(classe);
+    setViewMode(false);
+    setValue('nome', classe.nome);
+    setValue('subgrupo_id', classe.subgrupo_id);
+    setValue('status', classe.status);
     setShowModal(true);
   };
 
@@ -656,455 +195,625 @@ const Classes = () => {
   const onSubmit = async (data) => {
     try {
       if (editingClasse) {
-        await api.put(`/classes/${editingClasse.id}`, data);
-        toast.success('Classe atualizada com sucesso!');
+        const result = await ClassesService.atualizar(editingClasse.id, data);
+        if (result.success) {
+          toast.success('Classe atualizada com sucesso!');
+          handleCloseModal();
+          loadClasses();
+          loadEstatisticas();
+        } else {
+          toast.error(result.error || 'Erro ao atualizar classe');
+        }
       } else {
-        await api.post('/classes', data);
-        toast.success('Classe criada com sucesso!');
+        const result = await ClassesService.criar(data);
+        if (result.success) {
+          toast.success('Classe criada com sucesso!');
+          handleCloseModal();
+          loadClasses();
+          loadEstatisticas();
+        } else {
+          toast.error(result.error || 'Erro ao criar classe');
+        }
       }
-      
-      handleCloseModal();
-      loadClasses();
     } catch (error) {
       console.error('Erro ao salvar classe:', error);
-      const errorMessage = error.response?.data?.error || 'Erro ao salvar classe';
-      toast.error(errorMessage);
+      toast.error('Erro ao salvar classe');
     }
   };
 
   const handleDeleteClasse = async (classeId) => {
     if (window.confirm('Tem certeza que deseja excluir esta classe?')) {
       try {
-        await api.delete(`/classes/${classeId}`);
-        toast.success('Classe excluída com sucesso!');
-        loadClasses();
+        const result = await ClassesService.excluir(classeId);
+        if (result.success) {
+          toast.success('Classe excluída com sucesso!');
+          loadClasses();
+          loadEstatisticas();
+        } else {
+          toast.error(result.error || 'Erro ao excluir classe');
+        }
       } catch (error) {
         console.error('Erro ao excluir classe:', error);
-        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir classe';
-        
-        // Se a mensagem contém quebras de linha, mostrar no modal customizado
-        if (errorMsg.includes('\n')) {
-          setErrorMessage(errorMsg);
-          setShowErrorModal(true);
-        } else {
-          toast.error(errorMsg);
-        }
+        toast.error('Erro ao excluir classe');
       }
     }
   };
 
-  // Filtrar classes
-  const filteredClasses = classes.filter(classe => {
+  const handleOpenAuditModal = () => {
+    setShowAuditModal(true);
+    loadAuditLogs();
+  };
+
+  const handleCloseAuditModal = () => {
+    setShowAuditModal(false);
+    setAuditLogs([]);
+    setAuditFilters({
+      dataInicio: '',
+      dataFim: '',
+      acao: '',
+      usuario_id: '',
+      periodo: ''
+    });
+  };
+
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
+
+  const getActionLabel = (action) => {
+    const labels = {
+      create: 'Criar',
+      update: 'Editar',
+      delete: 'Excluir'
+    };
+    return labels[action] || action;
+  };
+
+  const getFieldLabel = (field) => {
+    const labels = {
+      nome: 'Nome',
+      subgrupo_id: 'Subgrupo',
+      status: 'Status'
+    };
+    return labels[field] || field;
+  };
+
+  const formatFieldValue = (field, value) => {
+    if (value === null || value === undefined) return '-';
+    
+    if (field === 'status') {
+      return value === 1 ? 'Ativo' : 'Inativo';
+    }
+    
+    if (field === 'subgrupo_id') {
+      const subgrupo = subgrupos.find(s => s.id === value);
+      return subgrupo ? subgrupo.nome : value;
+    }
+    
+    return value.toString();
+  };
+
+  const handleExportXLSX = async () => {
+    try {
+      const params = {
+        search: searchTerm,
+        status: statusFilter !== 'todos' ? statusFilter : '',
+        subgrupo_id: subgrupoFilter !== 'todos' ? subgrupoFilter : ''
+      };
+
+      const result = await ClassesService.exportarXLSX(params);
+      if (result.success) {
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `classes_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar relatório');
+      }
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      const params = {
+        search: searchTerm,
+        status: statusFilter !== 'todos' ? statusFilter : '',
+        subgrupo_id: subgrupoFilter !== 'todos' ? subgrupoFilter : ''
+      };
+
+      const result = await ClassesService.exportarPDF(params);
+      if (result.success) {
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `classes_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar relatório');
+      }
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  const getSubgrupoName = (subgrupoId) => {
+    if (loadingSubgrupos) return 'Carregando...';
+    const subgrupo = subgrupos.find(s => s.id === subgrupoId);
+    return subgrupo ? subgrupo.nome : 'Subgrupo não encontrado';
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  // Filtros
+  const filteredClasses = Array.isArray(classes) ? classes.filter(classe => {
     const matchesSearch = !searchTerm || 
-      (classe.nome && classe.nome.toLowerCase().includes(searchTerm.toLowerCase()));
+      classe.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getSubgrupoName(classe.subgrupo_id).toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesStatus = statusFilter === 'todos' || 
       (statusFilter === 'ativo' && classe.status === 1) ||
       (statusFilter === 'inativo' && classe.status === 0);
     
-    const matchesSubgrupo = !subgrupoFilter || classe.subgrupo_id.toString() === subgrupoFilter;
+    const matchesSubgrupo = subgrupoFilter === 'todos' || 
+      classe.subgrupo_id.toString() === subgrupoFilter;
     
     return matchesSearch && matchesStatus && matchesSubgrupo;
-  });
+  }) : [];
+
+  // Effects
+  useEffect(() => {
+    loadClasses();
+    loadSubgrupos();
+    loadEstatisticas();
+  }, [currentPage, itemsPerPage]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="p-3 sm:p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Carregando classes...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Container>
-      <Header>
-        <Title>Classes</Title>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <button
+    <div className="p-3 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Classes</h1>
+        <div className="flex gap-2 sm:gap-3">
+          <Button
             onClick={handleOpenAuditModal}
-            title="Relatório de Auditoria"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 12px',
-              background: 'var(--blue)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              fontSize: '12px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseOver={(e) => e.target.style.background = '#1976d2'}
-            onMouseOut={(e) => e.target.style.background = 'var(--blue)'}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
           >
-            <FaHistory />
-            Auditoria
-          </button>
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+          </Button>
           {canCreate('classes') && (
-            <AddButton onClick={handleAddClasse}>
-              <FaPlus />
-              Adicionar Classe
-            </AddButton>
+            <Button onClick={handleAddClasse} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar Classe</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
           )}
         </div>
-      </Header>
+      </div>
 
+      {/* Cards de Estatísticas */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-6">
+        <StatCard
+          title="Total de Classes"
+          value={estatisticas.total_classes}
+          icon={FaGraduationCap}
+          color="blue"
+        />
+        <StatCard
+          title="Classes Ativas"
+          value={estatisticas.classes_ativas}
+          icon={FaCheckCircle}
+          color="green"
+        />
+        <StatCard
+          title="Classes Inativas"
+          value={estatisticas.classes_inativas}
+          icon={FaTimesCircle}
+          color="red"
+        />
+      </div>
+
+      {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
-        placeholder="Buscar por nome ou código..."
+        onStatusFilterChange={setStatusFilter}
+        additionalFilters={[
+          {
+            label: 'Subgrupo',
+            value: subgrupoFilter,
+            onChange: setSubgrupoFilter,
+            options: [
+              { value: 'todos', label: loadingSubgrupos ? 'Carregando...' : 'Todos os subgrupos' },
+              ...subgrupos.map(subgrupo => ({
+                value: subgrupo.id.toString(),
+                label: subgrupo.nome
+              }))
+            ]
+          }
+        ]}
       />
 
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Nome</Th>
-              <Th>Subgrupo</Th>
-              <Th>Grupo</Th>
-              <Th>Status</Th>
-              <Th>Ações</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredClasses.length === 0 ? (
-              <tr>
-                <Td colSpan="5">
-                  <EmptyState>
-                    {searchTerm || statusFilter !== 'todos' || subgrupoFilter
-                      ? 'Nenhuma classe encontrada com os filtros aplicados'
-                      : 'Nenhuma classe cadastrada'
-                    }
-                  </EmptyState>
-                </Td>
-              </tr>
-            ) : (
-              filteredClasses.map((classe) => (
-                <tr key={classe.id}>
-                  <Td>{classe.nome}</Td>
-                  <Td>{classe.subgrupo_nome}</Td>
-                  <Td>{classe.grupo_nome}</Td>
-                  <Td>
-                    <StatusBadge $status={classe.status === 1 ? 'ativo' : 'inativo'}>
-                      {classe.status === 1 ? 'Ativo' : 'Inativo'}
-                    </StatusBadge>
-                  </Td>
-                  <Td>
-                    <ActionButton
-                      className="view"
-                      title="Visualizar"
+      {/* Tabela */}
+      {filteredClasses.length === 0 ? (
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+          {searchTerm || statusFilter !== 'todos' || subgrupoFilter !== 'todos' 
+            ? 'Nenhuma classe encontrada com os filtros aplicados'
+            : 'Nenhuma classe cadastrada'
+          }
+        </div>
+      ) : (
+        <>
+          {/* Versão Desktop - Tabela completa */}
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+            <Table>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subgrupo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredClasses.map((classe) => (
+                  <tr key={classe.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{classe.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{classe.nome}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {loadingSubgrupos ? (
+                        <span className="text-gray-400">Carregando...</span>
+                      ) : (
+                        getSubgrupoName(classe.subgrupo_id)
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                        classe.status === 1 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {classe.status === 1 ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleViewClasse(classe)}
+                          title="Visualizar"
+                        >
+                          <FaEye className="text-green-600 text-sm" />
+                        </Button>
+                        {canEdit('classes') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditClasse(classe)}
+                            title="Editar"
+                          >
+                            <FaEdit className="text-blue-600 text-sm" />
+                          </Button>
+                        )}
+                        {canDelete('classes') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteClasse(classe.id)}
+                            title="Excluir"
+                          >
+                            <FaTrash className="text-red-600 text-sm" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Versão Mobile - Cards */}
+          <div className="lg:hidden space-y-3">
+            {filteredClasses.map((classe) => (
+              <div key={classe.id} className="bg-white rounded-lg shadow-sm p-4 border">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm">{classe.nome}</h3>
+                    <p className="text-gray-600 text-xs">ID: {classe.id}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="xs"
                       onClick={() => handleViewClasse(classe)}
+                      title="Visualizar"
+                      className="p-2"
                     >
-                      <FaEye />
-                    </ActionButton>
+                      <FaEye className="text-green-600 text-sm" />
+                    </Button>
                     {canEdit('classes') && (
-                      <ActionButton
-                        className="edit"
-                        title="Editar"
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleEditClasse(classe)}
+                        title="Editar"
+                        className="p-2"
                       >
-                        <FaEdit />
-                      </ActionButton>
+                        <FaEdit className="text-blue-600 text-sm" />
+                      </Button>
                     )}
                     {canDelete('classes') && (
-                      <ActionButton
-                        className="delete"
-                        title="Excluir"
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleDeleteClasse(classe.id)}
+                        title="Excluir"
+                        className="p-2"
                       >
-                        <FaTrash />
-                      </ActionButton>
+                        <FaTrash className="text-red-600 text-sm" />
+                      </Button>
                     )}
-                  </Td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </TableContainer>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-gray-500">Subgrupo:</span>
+                    <p className="font-medium">
+                      {loadingSubgrupos ? 'Carregando...' : getSubgrupoName(classe.subgrupo_id)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Status:</span>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                      classe.status === 1 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {classe.status === 1 ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
+      {/* Modal de Cadastro/Edição/Visualização */}
       {showModal && (
-        <Modal onClick={handleCloseModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>
-                {viewMode ? 'Visualizar Classe' : editingClasse ? 'Editar Classe' : 'Adicionar Classe'}
-              </ModalTitle>
-              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
-            </ModalHeader>
-
-            <Form onSubmit={handleSubmit(onSubmit)}>
-              <FormRow>
-                <FormGroup>
-                  <Label>Nome *</Label>
-                  <Input
-                    type="text"
-                    placeholder="Ex: BOVINO"
-                    disabled={viewMode}
-                    {...register('nome', { required: 'Nome é obrigatório' })}
-                  />
-                  {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Subgrupo *</Label>
-                  <Select disabled={viewMode} {...register('subgrupo_id', { required: 'Subgrupo é obrigatório' })}>
-                    <option value="">Selecione um subgrupo</option>
-                    {(Array.isArray(subgrupos) ? subgrupos : []).map(subgrupo => (
-                      <option key={subgrupo.id} value={subgrupo.id}>
-                        {subgrupo.grupo_nome} - {subgrupo.nome}
-                      </option>
-                    ))}
-                  </Select>
-                  {errors.subgrupo_id && <span style={{ color: 'red', fontSize: '12px' }}>{errors.subgrupo_id.message}</span>}
-                </FormGroup>
-              </FormRow>
-
-              <FormGroup>
-                <Label>Status</Label>
-                <Select disabled={viewMode} {...register('status', { required: 'Status é obrigatório' })}>
-                  <option value="1">Ativo</option>
-                  <option value="0">Inativo</option>
-                </Select>
-                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
-              </FormGroup>
-
-              <ButtonGroup>
-                <Button
-                  type="button"
-                  className="secondary"
-                  onClick={handleCloseModal}
+        <Modal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          title={viewMode ? 'Visualizar Classe' : editingClasse ? 'Editar Classe' : 'Adicionar Classe'}
+          size="full"
+        >
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <Input
+                label="Nome *"
+                type="text"
+                {...register('nome', { required: 'Nome é obrigatório' })}
+                error={errors.nome?.message}
+                disabled={viewMode}
+              />
+              <Input
+                label="Subgrupo *"
+                type="select"
+                {...register('subgrupo_id', { required: 'Subgrupo é obrigatório' })}
+                error={errors.subgrupo_id?.message}
+                disabled={viewMode || loadingSubgrupos}
+              >
+                <option value="">
+                  {loadingSubgrupos ? 'Carregando subgrupos...' : 'Selecione um subgrupo'}
+                </option>
+                {subgrupos.map(subgrupo => (
+                  <option key={subgrupo.id} value={subgrupo.id}>
+                    {subgrupo.nome}
+                  </option>
+                ))}
+              </Input>
+              {!viewMode && (
+                <Input
+                  label="Status"
+                  type="select"
+                  {...register('status')}
+                  error={errors.status?.message}
                 >
-                  {viewMode ? 'Fechar' : 'Cancelar'}
+                  <option value={1}>Ativo</option>
+                  <option value={0}>Inativo</option>
+                </Input>
+              )}
+            </div>
+
+            {!viewMode && (
+              <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
+                <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
+                  Cancelar
                 </Button>
-                {!viewMode && (
-                  <Button
-                    type="submit"
-                    className="primary"
-                  >
-                    {editingClasse ? 'Atualizar' : 'Cadastrar'}
-                  </Button>
-                )}
-              </ButtonGroup>
-            </Form>
-          </ModalContent>
+                <Button type="submit" size="sm">
+                  {editingClasse ? 'Atualizar' : 'Cadastrar'}
+                </Button>
+              </div>
+            )}
+          </form>
         </Modal>
       )}
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
-            <ModalHeader>
-              <ModalTitle>Relatório de Auditoria - Classes</ModalTitle>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={handleExportXLSX}
-                  title="Exportar para Excel"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFileExcel />
-                  Excel
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  title="Exportar para PDF"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFilePdf />
-                  PDF
-                </button>
-                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
-              </div>
-            </ModalHeader>
-
+        <Modal
+          isOpen={showAuditModal}
+          onClose={handleCloseAuditModal}
+          title="Relatório de Auditoria - Classes"
+          size="full"
+        >
+          <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
-            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataInicio}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataFim}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Ação
-                  </label>
-                  <select
-                    value={auditFilters.acao}
-                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todas as ações</option>
-                    <option value="create">Criar</option>
-                    <option value="update">Editar</option>
-                    <option value="delete">Excluir</option>
-                    <option value="view">Visualizar</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Usuário
-                  </label>
-                  <select
-                    value={auditFilters.usuario_id}
-                    onChange={(e) => setAuditFilters({...auditFilters, usuario_id: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todos os usuários</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Período
-                  </label>
-                  <select
-                    value={auditFilters.periodo}
-                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Período personalizado</option>
-                    <option value="7dias">Últimos 7 dias</option>
-                    <option value="30dias">Últimos 30 dias</option>
-                    <option value="90dias">Últimos 90 dias</option>
-                    <option value="todos">Todos os registros</option>
-                  </select>
+            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Filtros</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <Input
+                  label="Data Início"
+                  type="date"
+                  value={auditFilters.dataInicio}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                />
+                <Input
+                  label="Data Fim"
+                  type="date"
+                  value={auditFilters.dataFim}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                />
+                <Input
+                  label="Ação"
+                  type="select"
+                  value={auditFilters.acao}
+                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                >
+                  <option value="">Todas as ações</option>
+                  <option value="create">Criar</option>
+                  <option value="update">Editar</option>
+                  <option value="delete">Excluir</option>
+                </Input>
+                <Input
+                  label="Período"
+                  type="select"
+                  value={auditFilters.periodo}
+                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                >
+                  <option value="">Período personalizado</option>
+                  <option value="7dias">Últimos 7 dias</option>
+                  <option value="30dias">Últimos 30 dias</option>
+                  <option value="90dias">Últimos 90 dias</option>
+                  <option value="todos">Todos os registros</option>
+                </Input>
+                <div className="flex items-end">
+                  <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
+                    <span className="hidden sm:inline">Aplicar Filtros</span>
+                    <span className="sm:hidden">Aplicar</span>
+                  </Button>
                 </div>
               </div>
-              <button
-                onClick={handleApplyAuditFilters}
-                style={{
-                  marginTop: '12px',
-                  padding: '8px 16px',
-                  background: 'var(--primary-green)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Aplicar Filtros
-              </button>
             </div>
 
-            {/* Lista de Logs */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            {/* Botões de Exportação */}
+            <div className="flex gap-2 sm:gap-3">
+              <Button onClick={handleExportXLSX} variant="outline" size="sm">
+                <FaFileExcel className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar Excel</span>
+                <span className="sm:hidden">Excel</span>
+              </Button>
+              <Button onClick={handleExportPDF} variant="outline" size="sm">
+                <FaFilePdf className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar PDF</span>
+                <span className="sm:hidden">PDF</span>
+              </Button>
+            </div>
+
+            {/* Resultados da Auditoria */}
+            <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
+                <div className="text-center py-6 sm:py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+                  <p className="text-gray-600 text-sm">Carregando logs...</p>
+                </div>
               ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
+                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
                   Nenhum log encontrado com os filtros aplicados
                 </div>
               ) : (
-                <div>
-                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="text-xs sm:text-sm text-gray-600">
                     {auditLogs.length} log(s) encontrado(s)
                   </div>
                   {auditLogs.map((log, index) => (
                     <div
                       key={index}
-                      style={{
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        marginBottom: '12px',
-                        background: 'white'
-                      }}
+                      className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white"
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            background: log.acao === 'create' ? '#e8f5e8' : 
-                                       log.acao === 'update' ? '#fff3cd' : 
-                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
-                            color: log.acao === 'create' ? '#2e7d32' : 
-                                   log.acao === 'update' ? '#856404' : 
-                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
-                          }}>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 sm:mb-3 gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                            log.acao === 'create' ? 'bg-green-100 text-green-800' : 
+                            log.acao === 'update' ? 'bg-yellow-100 text-yellow-800' : 
+                            log.acao === 'delete' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
                             {getActionLabel(log.acao)}
                           </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                          <span className="text-xs sm:text-sm text-gray-600">
                             por {log.usuario_nome || 'Usuário desconhecido'}
                           </span>
                         </div>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                        <span className="text-xs sm:text-sm text-gray-600">
                           {formatDate(log.timestamp)}
                         </span>
                       </div>
                       
                       {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
+                        <div className="text-xs sm:text-sm text-gray-800">
                           {log.detalhes.changes && (
-                            <div style={{ marginBottom: '8px' }}>
+                            <div className="mb-2 sm:mb-3">
                               <strong>Mudanças Realizadas:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
+                              <div className="mt-1 sm:mt-2 space-y-1 sm:space-y-2">
                                 {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} style={{ 
-                                    marginBottom: '6px', 
-                                    padding: '8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
+                                  <div key={field} className="p-2 sm:p-3 bg-gray-50 rounded-lg border">
+                                    <div className="font-semibold text-gray-800 mb-1 sm:mb-2 text-xs sm:text-sm">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                      <span style={{ color: '#721c24' }}>
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs">
+                                      <span className="text-red-600">
                                         <strong>Antes:</strong> {formatFieldValue(field, change.from)}
                                       </span>
-                                      <span style={{ color: '#6c757d' }}>→</span>
-                                      <span style={{ color: '#2e7d32' }}>
+                                      <span className="text-gray-500 hidden sm:inline">→</span>
+                                      <span className="text-green-600">
                                         <strong>Depois:</strong> {formatFieldValue(field, change.to)}
                                       </span>
                                     </div>
@@ -1116,25 +825,13 @@ const Classes = () => {
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
                               <strong>Dados da Classe:</strong>
-                              <div style={{ 
-                                marginLeft: '12px', 
-                                marginTop: '8px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '8px'
-                              }}>
+                              <div className="mt-1 sm:mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
                                 {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} style={{ 
-                                    padding: '6px 8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef',
-                                    fontSize: '11px'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
+                                  <div key={field} className="p-1.5 sm:p-2 bg-gray-50 rounded border text-xs">
+                                    <div className="font-semibold text-gray-800 mb-0.5 sm:mb-1">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ color: '#2e7d32' }}>
+                                    <div className="text-green-600">
                                       {formatFieldValue(field, value)}
                                     </div>
                                   </div>
@@ -1143,15 +840,9 @@ const Classes = () => {
                             </div>
                           )}
                           {log.detalhes.resourceId && (
-                            <div style={{ 
-                              marginTop: '8px', 
-                              padding: '6px 8px', 
-                              background: '#e3f2fd', 
-                              borderRadius: '4px',
-                              fontSize: '11px'
-                            }}>
+                            <div className="mt-2 sm:mt-3 p-1.5 sm:p-2 bg-blue-50 rounded border text-xs">
                               <strong>ID da Classe:</strong> 
-                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
+                              <span className="text-blue-600 ml-1">
                                 #{log.detalhes.resourceId}
                               </span>
                             </div>
@@ -1163,17 +854,22 @@ const Classes = () => {
                 </div>
               )}
             </div>
-          </ModalContent>
+          </div>
         </Modal>
       )}
 
-      {/* Modal de Erro Customizado */}
-      <ErrorModal
-        isOpen={showErrorModal}
-        message={errorMessage}
-        onClose={() => setShowErrorModal(false)}
-      />
-    </Container>
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          totalItems={totalItems}
+        />
+      )}
+    </div>
   );
 };
 
