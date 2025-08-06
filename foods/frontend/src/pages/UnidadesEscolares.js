@@ -578,24 +578,24 @@ const UnidadesEscolares = () => {
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-2 px-2">
+          <div className="lg:hidden space-y-3">
             {filteredUnidades.map((unidade) => (
-              <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-3 border">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 text-sm truncate">{unidade.nome_escola}</h3>
+              <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm">{unidade.nome_escola}</h3>
                     <p className="text-gray-600 text-xs">Código: {unidade.codigo_teknisa}</p>
                   </div>
-                  <div className="flex gap-1 ml-2">
+                  <div className="flex gap-2">
                     {canView('unidades_escolares') && (
                       <Button
                         variant="ghost"
                         size="xs"
                         onClick={() => handleViewUnidade(unidade)}
                         title="Visualizar"
-                        className="p-1"
+                        className="p-2"
                       >
-                        <FaEye className="text-green-600 text-xs" />
+                        <FaEye className="text-green-600 text-sm" />
                       </Button>
                     )}
                     {canEdit('unidades_escolares') && (
@@ -604,9 +604,9 @@ const UnidadesEscolares = () => {
                         size="xs"
                         onClick={() => handleEditUnidade(unidade)}
                         title="Editar"
-                        className="p-1"
+                        className="p-2"
                       >
-                        <FaEdit className="text-blue-600 text-xs" />
+                        <FaEdit className="text-blue-600 text-sm" />
                       </Button>
                     )}
                     {canDelete('unidades_escolares') && (
@@ -615,20 +615,20 @@ const UnidadesEscolares = () => {
                         size="xs"
                         onClick={() => handleDeleteUnidade(unidade.id)}
                         title="Excluir"
-                        className="p-1"
+                        className="p-2"
                       >
-                        <FaTrash className="text-red-600 text-xs" />
+                        <FaTrash className="text-red-600 text-sm" />
                       </Button>
                     )}
                   </div>
                 </div>
                 
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between">
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
                     <span className="text-gray-500">Localização:</span>
-                    <span className="font-medium text-right">{unidade.cidade}, {unidade.estado}</span>
+                    <p className="font-medium">{unidade.cidade}, {unidade.estado}</p>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div>
                     <span className="text-gray-500">Status:</span>
                     <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                       unidade.status === 'ativo' 
@@ -638,13 +638,13 @@ const UnidadesEscolares = () => {
                       {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
                     </span>
                   </div>
-                  <div className="flex justify-between">
+                  <div>
                     <span className="text-gray-500">Centro:</span>
-                    <span className="font-medium text-right">{unidade.centro_distribuicao || 'N/A'}</span>
+                    <p className="font-medium">{unidade.centro_distribuicao || 'N/A'}</p>
                   </div>
-                  <div className="flex justify-between">
+                  <div>
                     <span className="text-gray-500">Rota:</span>
-                    <span className="font-medium text-right">{loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id) || 'N/A'}</span>
+                    <p className="font-medium">{loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id) || 'N/A'}</p>
                   </div>
                 </div>
               </div>
