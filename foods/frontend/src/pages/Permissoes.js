@@ -175,7 +175,7 @@ const Permissoes = () => {
       Object.keys(editingPermissions).forEach(tela => {
         const perms = editingPermissions[tela];
         permissoesArray.push({
-          tela,
+        tela,
           pode_visualizar: perms.pode_visualizar ? 1 : 0,
           pode_criar: perms.pode_criar ? 1 : 0,
           pode_editar: perms.pode_editar ? 1 : 0,
