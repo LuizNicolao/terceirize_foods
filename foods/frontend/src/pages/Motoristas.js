@@ -534,8 +534,20 @@ const Motoristas = () => {
         </div>
       ) : (
         <>
+          {console.log('🚀 Motoristas - Iniciando renderização responsiva', {
+            windowWidth: window.innerWidth,
+            shouldShowDesktop: window.innerWidth >= 1024,
+            shouldShowMobile: window.innerWidth < 1024,
+            timestamp: new Date().toISOString()
+          })}
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+            {console.log('🔍 Motoristas - Desktop view renderizando', {
+              totalItems: filteredMotoristas.length,
+              windowWidth: window.innerWidth,
+              breakpoint: window.innerWidth >= 1024 ? 'lg+' : 'sm-md',
+              timestamp: new Date().toISOString()
+            })}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
