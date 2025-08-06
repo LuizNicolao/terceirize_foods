@@ -653,6 +653,12 @@ const Motoristas = () => {
 
           {/* Versão Mobile - Cards */}
           <div className="lg:hidden space-y-3">
+            {console.log('📱 Motoristas - Mobile view renderizando', {
+              totalItems: filteredMotoristas.length,
+              windowWidth: window.innerWidth,
+              breakpoint: window.innerWidth >= 1024 ? 'lg+' : 'sm-md',
+              timestamp: new Date().toISOString()
+            })}
             {filteredMotoristas.map((motorista) => (
               <div key={motorista.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
