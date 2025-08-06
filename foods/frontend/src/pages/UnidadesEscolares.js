@@ -438,7 +438,7 @@ const UnidadesEscolares = () => {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
         <StatCard
           title="Total de Unidades"
           value={estatisticas.total_unidades}
@@ -465,29 +465,29 @@ const UnidadesEscolares = () => {
         />
       </div>
 
-                    {/* Filtros */}
-       <CadastroFilterBar
-         searchTerm={searchTerm}
-         onSearchChange={setSearchTerm}
-         onClear={() => setSearchTerm('')}
-         placeholder="Buscar por nome, cidade ou código..."
-       />
+      {/* Filtros */}
+      <CadastroFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        onClear={() => setSearchTerm('')}
+        placeholder="Buscar por nome, cidade ou código..."
+      />
 
-       {/* Ações */}
-       <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
-         <Button onClick={handleExportXLSX} variant="outline" size="sm">
-           <FaFileExcel className="mr-1 sm:mr-2" />
-           <span className="hidden sm:inline">Exportar XLSX</span>
-           <span className="sm:hidden">XLSX</span>
-         </Button>
-         <Button onClick={handleExportPDF} variant="outline" size="sm">
-           <FaFilePdf className="mr-1 sm:mr-2" />
-           <span className="hidden sm:inline">Exportar PDF</span>
-           <span className="sm:hidden">PDF</span>
-         </Button>
-       </div>
+      {/* Ações */}
+      <div className="flex gap-2 sm:gap-3 mb-4">
+        <Button onClick={handleExportXLSX} variant="outline" size="sm">
+          <FaFileExcel className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar XLSX</span>
+          <span className="sm:hidden">XLSX</span>
+        </Button>
+        <Button onClick={handleExportPDF} variant="outline" size="sm">
+          <FaFilePdf className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar PDF</span>
+          <span className="sm:hidden">PDF</span>
+        </Button>
+      </div>
 
-               {/* Tabela */}
+      {/* Tabela */}
        {filteredUnidades.length === 0 ? (
          <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
            {searchTerm 

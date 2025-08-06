@@ -20,14 +20,14 @@ const StatCard = ({
   };
 
   const cardClasses = `
-    bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 
+    bg-white rounded-lg p-3 sm:p-4 lg:p-6 shadow-sm border border-gray-200 
     transition-all duration-300 hover:shadow-md hover:-translate-y-1
     ${onClick ? 'cursor-pointer' : ''}
     ${className}
   `;
 
   const iconClasses = `
-    w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center text-lg sm:text-xl text-white
+    w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 rounded-lg flex items-center justify-center text-sm sm:text-lg lg:text-xl text-white
     ${colorClasses[color]}
   `;
 
@@ -47,11 +47,11 @@ const StatCard = ({
         )}
       </div>
       
-      <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+      <div className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
         {value}
       </div>
       
-      <div className="text-xs sm:text-sm font-medium text-gray-600 mb-1">
+      <div className="text-xs sm:text-sm lg:text-base font-medium text-gray-600 mb-1">
         {title}
       </div>
       
