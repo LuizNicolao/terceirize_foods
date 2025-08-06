@@ -403,7 +403,7 @@ const UnidadesEscolares = () => {
 
   if (loading) {
     return (
-      <div className="p-3 sm:p-6">
+      <div className="p-2 sm:p-4 md:p-6">
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
@@ -415,11 +415,11 @@ const UnidadesEscolares = () => {
   }
 
   return (
-    <div className="p-3 sm:p-6">
+    <div className="p-2 sm:p-4 md:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Unidades Escolares</h1>
-        <div className="flex gap-2 sm:gap-3">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 sm:mb-4 md:mb-6 gap-2 sm:gap-3 md:gap-4">
+        <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800">Unidades Escolares</h1>
+        <div className="flex gap-1 sm:gap-2 md:gap-3">
           <Button
             onClick={handleOpenAuditModal}
             variant="ghost"
@@ -440,7 +440,7 @@ const UnidadesEscolares = () => {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-6 mb-3 sm:mb-4 md:mb-6">
         <StatCard
           title="Total de Unidades"
           value={estatisticas.total_unidades}
@@ -476,7 +476,7 @@ const UnidadesEscolares = () => {
       />
 
       {/* Ações */}
-      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mb-3 sm:mb-4">
         <Button onClick={handleExportXLSX} variant="outline" size="sm">
           <FaFileExcel className="mr-1 sm:mr-2" />
           <span className="hidden sm:inline">Exportar XLSX</span>
@@ -500,7 +500,7 @@ const UnidadesEscolares = () => {
       ) : (
         <>
           {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
             <Table>
               <thead className="bg-gray-50">
                 <tr>
@@ -598,7 +598,7 @@ const UnidadesEscolares = () => {
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
+          <div className="md:hidden space-y-3">
             {filteredUnidades.map((unidade) => (
               <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">

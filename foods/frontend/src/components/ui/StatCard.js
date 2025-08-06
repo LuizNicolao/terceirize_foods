@@ -20,7 +20,7 @@ const StatCard = ({
   };
 
   const cardClasses = `
-    bg-white rounded-lg p-4 sm:p-6 shadow-sm border border-gray-200 
+    bg-white rounded-lg p-3 sm:p-4 md:p-6 shadow-sm border border-gray-200 
     transition-all duration-300 hover:shadow-md hover:-translate-y-1
     ${onClick ? 'cursor-pointer' : ''}
     ${className}
@@ -47,7 +47,7 @@ const StatCard = ({
         )}
       </div>
       
-      <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
+      <div className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
         {value}
       </div>
       

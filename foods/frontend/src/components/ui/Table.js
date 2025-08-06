@@ -60,7 +60,7 @@ const TableCell = ({ children, className = '', align = 'left' }) => {
   };
   
   return (
-    <td className={`px-3 py-2 sm:px-6 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 ${alignClasses[align]} ${className}`}>
+    <td className={`px-2 py-2 sm:px-4 md:px-6 sm:py-3 md:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 ${alignClasses[align]} ${className}`}>
       {children}
     </td>
   );
@@ -74,7 +74,7 @@ const TableHeaderCell = ({ children, className = '', align = 'left' }) => {
   };
   
   return (
-    <th className={`px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${alignClasses[align]} ${className}`}>
+    <th className={`px-2 py-2 sm:px-4 md:px-6 sm:py-2 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${alignClasses[align]} ${className}`}>
       {children}
     </th>
   );
