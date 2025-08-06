@@ -513,7 +513,6 @@ const Usuarios = () => {
                 <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            {console.log('🔍 Usuarios - Desktop view renderizando')}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
@@ -615,7 +614,6 @@ const Usuarios = () => {
 
           {/* Versão Mobile - Cards */}
           <div className="lg:hidden space-y-3">
-            {console.log('📱 Usuarios - Mobile view renderizando')}
             {filteredUsuarios.map((usuario) => (
               <div key={usuario.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">

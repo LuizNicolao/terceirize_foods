@@ -496,111 +496,109 @@ const UnidadesEscolares = () => {
            }
          </div>
        ) : (
-         <>
+                 <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            {console.log('🔍 UnidadesEscolares - Desktop view renderizando')}
-           <div className="overflow-x-auto">
-             <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Escola
-                </th>
+                      Escola
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Código
-                </th>
+                      Código
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Cidade/Estado
-                </th>
+                      Cidade/Estado
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Centro Distribuição
-                </th>
+                      Centro Distribuição
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Rota
-                </th>
+                      Rota
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
+                      Status
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-                         <tbody className="bg-white divide-y divide-gray-200">
-               {filteredUnidades.map((unidade) => (
-                <tr key={unidade.id} className="hover:bg-gray-50">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredUnidades.map((unidade) => (
+                    <tr key={unidade.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                      {unidade.nome_escola}
-                    </div>
-                  </td>
+                          {unidade.nome_escola}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {unidade.codigo_teknisa}
-                  </td>
+                        {unidade.codigo_teknisa}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{unidade.cidade}</div>
                         <div className="text-sm text-gray-500">{unidade.estado}</div>
-                  </td>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {unidade.centro_distribuicao}
-                  </td>
+                        {unidade.centro_distribuicao}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
-                  </td>
+                        {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                      unidade.status === 'ativo' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </td>
+                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                          unidade.status === 'ativo' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                       {canView('unidades_escolares') && (
-                         <Button
-                           variant="ghost"
-                           size="xs"
-                           onClick={() => handleViewUnidade(unidade)}
-                           title="Visualizar"
-                         >
+                          {canView('unidades_escolares') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleViewUnidade(unidade)}
+                              title="Visualizar"
+                            >
                               <FaEye className="text-green-600 text-sm" />
-                         </Button>
-                       )}
-                       {canEdit('unidades_escolares') && (
-                         <Button
-                           variant="ghost"
-                           size="xs"
-                           onClick={() => handleEditUnidade(unidade)}
-                           title="Editar"
-                         >
+                            </Button>
+                          )}
+                          {canEdit('unidades_escolares') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleEditUnidade(unidade)}
+                              title="Editar"
+                            >
                               <FaEdit className="text-blue-600 text-sm" />
-                         </Button>
-                       )}
-                       {canDelete('unidades_escolares') && (
-                         <Button
-                           variant="ghost"
-                           size="xs"
-                           onClick={() => handleDeleteUnidade(unidade.id)}
-                           title="Excluir"
-                         >
+                            </Button>
+                          )}
+                          {canDelete('unidades_escolares') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleDeleteUnidade(unidade.id)}
+                              title="Excluir"
+                            >
                               <FaTrash className="text-red-600 text-sm" />
-                         </Button>
-                       )}
-                     </div>
-                   </td>
-                </tr>
-              ))}
-                         </tbody>
-           </table>
-         </div>
-       </div>
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
           {/* Versão Mobile - Cards */}
           <div className="lg:hidden space-y-3">
-            {console.log('📱 UnidadesEscolares - Mobile view renderizando')}
             {filteredUnidades.map((unidade) => (
               <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
@@ -680,7 +678,7 @@ const UnidadesEscolares = () => {
           isOpen={showModal}
           onClose={handleCloseModal}
           title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-          size="xl"
+          size="full"
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
             {/* Primeira Linha - 2 Cards */}
@@ -869,7 +867,7 @@ const UnidadesEscolares = () => {
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
           title="Relatório de Auditoria - Unidades Escolares"
-        size="xl"
+        size="full"
       >
           <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
