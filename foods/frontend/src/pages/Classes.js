@@ -98,6 +98,7 @@ const Classes = () => {
     try {
       setLoadingSubgrupos(true);
       const result = await SubgruposService.buscarAtivos();
+      
       if (result.success) {
         const data = Array.isArray(result.data) ? result.data : [];
         setSubgrupos(data);

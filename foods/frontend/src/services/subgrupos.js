@@ -149,10 +149,32 @@ class SubgruposService {
   static async buscarAtivos(params = {}) {
     try {
       const response = await api.get('/subgrupos/ativos', { params });
-      return response.data;
+      
+      // Extrair dados da estrutura HATEOAS
+      let subgrupos = [];
+      
+      if (response.data.data) {
+        // Se tem data.items (estrutura HATEOAS)
+        if (response.data.data.items) {
+          subgrupos = response.data.data.items;
+        } else {
+          // Se data é diretamente um array
+          subgrupos = response.data.data;
+        }
+      } else if (Array.isArray(response.data)) {
+        // Se response.data é diretamente um array
+        subgrupos = response.data;
+      }
+      
+      return {
+        success: true,
+        data: subgrupos
+      };
     } catch (error) {
-      console.error('Erro ao buscar subgrupos ativos:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar subgrupos ativos'
+      };
     }
   }
 
@@ -162,10 +184,32 @@ class SubgruposService {
   static async buscarPorGrupo(grupoId, params = {}) {
     try {
       const response = await api.get(`/grupos/${grupoId}/subgrupos`, { params });
-      return response.data;
+      
+      // Extrair dados da estrutura HATEOAS
+      let subgrupos = [];
+      
+      if (response.data.data) {
+        // Se tem data.items (estrutura HATEOAS)
+        if (response.data.data.items) {
+          subgrupos = response.data.data.items;
+        } else {
+          // Se data é diretamente um array
+          subgrupos = response.data.data;
+        }
+      } else if (Array.isArray(response.data)) {
+        // Se response.data é diretamente um array
+        subgrupos = response.data;
+      }
+      
+      return {
+        success: true,
+        data: subgrupos
+      };
     } catch (error) {
-      console.error('Erro ao buscar subgrupos por grupo:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar subgrupos por grupo'
+      };
     }
   }
 
