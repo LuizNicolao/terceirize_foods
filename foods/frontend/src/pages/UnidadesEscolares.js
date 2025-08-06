@@ -487,22 +487,22 @@ const UnidadesEscolares = () => {
          </Button>
        </div>
 
-               {/* Tabela */}
-       {loading ? (
-         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-           Carregando unidades escolares...
-         </div>
-       ) : filteredUnidades.length === 0 ? (
-         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-           {searchTerm 
-             ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
-             : 'Nenhuma unidade escolar cadastrada'
-           }
-         </div>
-       ) : (
-         <>
-                    {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+                     {/* Tabela */}
+      {loading ? (
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+          Carregando unidades escolares...
+        </div>
+      ) : filteredUnidades.length === 0 ? (
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+          {searchTerm 
+            ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
+            : 'Nenhuma unidade escolar cadastrada'
+          }
+        </div>
+      ) : (
+        <>
+          {/* Versão Desktop - Tabela completa */}
+          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden border-2 border-red-500">
             <Table>
               <thead className="bg-gray-50">
                 <tr>
@@ -518,19 +518,13 @@ const UnidadesEscolares = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredUnidades.map((unidade) => (
                   <tr key={unidade.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {unidade.nome_escola}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {unidade.codigo_teknisa}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.codigo_teknisa}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div>{unidade.cidade}</div>
                       <div className="text-gray-500">{unidade.estado}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {unidade.centro_distribuicao}
-                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.centro_distribuicao}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
                     </td>
@@ -584,7 +578,7 @@ const UnidadesEscolares = () => {
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
+          <div className="md:hidden space-y-3 border-2 border-blue-500">
             {filteredUnidades.map((unidade) => (
               <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
@@ -657,7 +651,7 @@ const UnidadesEscolares = () => {
             ))}
           </div>
         </>
-       )}
+      )}
 
                     {/* Modal de Unidade Escolar */}
                <Modal
