@@ -30,7 +30,7 @@ class GruposController {
         g.status, 
         g.criado_em,
         g.atualizado_em,
-        COUNT(sg.id) as total_subgrupos
+        COUNT(sg.id) as subgrupos_count
       FROM grupos g
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
       WHERE 1=1
@@ -98,7 +98,7 @@ class GruposController {
         g.status, 
         g.criado_em,
         g.atualizado_em,
-        COUNT(sg.id) as total_subgrupos
+        COUNT(sg.id) as subgrupos_count
        FROM grupos g
        LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
        WHERE g.id = ?
@@ -156,7 +156,7 @@ class GruposController {
         g.status, 
         g.criado_em,
         g.atualizado_em,
-        COUNT(sg.id) as total_subgrupos
+        COUNT(sg.id) as subgrupos_count
        FROM grupos g
        LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
        WHERE g.id = ?
@@ -244,18 +244,18 @@ class GruposController {
     );
 
     // Buscar grupo atualizado
-    const grupos = await executeQuery(
+        const grupos = await executeQuery(
       `SELECT 
         g.id, 
         g.nome, 
         g.status, 
         g.criado_em,
         g.atualizado_em,
-        COUNT(sg.id) as total_subgrupos
-       FROM grupos g
-       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
-       WHERE g.id = ?
-       GROUP BY g.id, g.nome, g.status, g.criado_em, g.atualizado_em`,
+        COUNT(sg.id) as subgrupos_count
+      FROM grupos g
+      LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
+      WHERE g.id = ?
+      GROUP BY g.id, g.nome, g.status, g.criado_em, g.atualizado_em`,
       [id]
     );
 
@@ -340,7 +340,7 @@ class GruposController {
         g.status, 
         g.criado_em,
         g.atualizado_em,
-        COUNT(sg.id) as total_subgrupos
+        COUNT(sg.id) as subgrupos_count
       FROM grupos g
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
       WHERE g.status = 1

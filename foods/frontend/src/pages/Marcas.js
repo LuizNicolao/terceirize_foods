@@ -1,15 +1,290 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle, FaFileExcel, FaFilePdf, FaTimes, FaTag, FaCheckCircle, FaTimesCircle, FaIndustry } from 'react-icons/fa';
+import styled from 'styled-components';
+import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
+import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
-import { Button, Input, Modal, Table, StatCard } from '../components/ui';
-import MarcasService from '../services/marcas';
 import CadastroFilterBar from '../components/CadastroFilterBar';
-import Pagination from '../components/Pagination';
+import ErrorModal from '../components/ErrorModal';
+
+const Container = styled.div`
+  padding: 24px;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+`;
+
+const Title = styled.h1`
+  color: var(--dark-gray);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+`;
+
+const AddButton = styled.button`
+  background: var(--primary-green);
+  color: var(--white);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: var(--dark-green);
+    transform: translateY(-1px);
+  }
+`;
+
+const TableContainer = styled.div`
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+`;
+
+const Th = styled.th`
+  background-color: #f5f5f5;
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--dark-gray);
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+`;
+
+const Td = styled.td`
+  padding: 16px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: var(--dark-gray);
+`;
+
+const StatusBadge = styled.span`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
+  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
+`;
+
+const ActionButton = styled.button`
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  margin-right: 8px;
+  color: var(--gray);
+
+  &:hover {
+    background-color: var(--light-gray);
+  }
+
+  &.edit {
+    color: var(--blue);
+  }
+
+  &.delete {
+    color: var(--error-red);
+  }
+
+  &.view {
+    color: var(--primary-green);
+  }
+`;
+
+const Modal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+`;
+
+const ModalContent = styled.div`
+  background: var(--white);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+`;
+
+const ModalTitle = styled.h2`
+  color: var(--dark-gray);
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--gray);
+  padding: 4px;
+
+  &:hover {
+    color: var(--error-red);
+  }
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const FormRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const Label = styled.label`
+  color: var(--dark-gray);
+  font-weight: 600;
+  font-size: 14px;
+`;
+
+const Input = styled.input`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
+  }
+`;
+
+const TextArea = styled.textarea`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 100px;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
+    outline: none;
+  }
+`;
+
+const Select = styled.select`
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:focus {
+    border-color: var(--primary-green);
+    outline: none;
+  }
+`;
+
+const Button = styled.button`
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &.primary {
+    background: var(--primary-green);
+    color: var(--white);
+
+    &:hover {
+      background: var(--dark-green);
+    }
+  }
+
+  &.secondary {
+    background: var(--gray);
+    color: var(--white);
+
+    &:hover {
+      background: var(--dark-gray);
+    }
+  }
+
+  &.danger {
+    background: var(--error-red);
+    color: var(--white);
+
+    &:hover {
+      background: #c62828;
+    }
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+`;
+
+const EmptyState = styled.div`
+  text-align: center;
+  padding: 48px;
+  color: var(--gray);
+`;
 
 const Marcas = () => {
-  const { canCreate, canEdit, canDelete } = usePermissions();
   const [marcas, setMarcas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -20,6 +295,8 @@ const Marcas = () => {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [auditFilters, setAuditFilters] = useState({
     dataInicio: '',
     dataFim: '',
@@ -27,17 +304,8 @@ const Marcas = () => {
     usuario_id: '',
     periodo: ''
   });
-  const [estatisticas, setEstatisticas] = useState({
-    total_marcas: 0,
-    marcas_ativas: 0,
-    marcas_inativas: 0
-  });
-  
-  // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  const { canCreate, canEdit, canDelete } = usePermissions();
 
   const {
     register,
@@ -45,39 +313,15 @@ const Marcas = () => {
     reset,
     formState: { errors },
     setValue,
-    getValues
+    watch
   } = useForm();
 
   // Carregar marcas
   const loadMarcas = async () => {
     try {
       setLoading(true);
-      
-      // Parâmetros de paginação
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage
-      };
-
-      const result = await MarcasService.listar(paginationParams);
-      if (result.success) {
-        const marcasData = Array.isArray(result.data) ? result.data : [];
-        setMarcas(marcasData);
-        
-        // Extrair informações de paginação
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || marcasData.length);
-          setCurrentPage(result.pagination.currentPage || 1);
-        } else {
-          // Fallback se não houver paginação no backend
-          setTotalItems(marcasData.length);
-          setTotalPages(Math.ceil(marcasData.length / itemsPerPage));
-        }
-      } else {
-        toast.error(result.error);
-        setMarcas([]);
-      }
+      const response = await api.get('/marcas?limit=1000');
+      setMarcas(response.data.data.items || response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar marcas:', error);
       toast.error('Erro ao carregar marcas');
@@ -87,28 +331,61 @@ const Marcas = () => {
     }
   };
 
-  // Carregar estatísticas
-  const loadEstatisticas = async () => {
-    try {
-      const result = await MarcasService.getEstatisticas();
-      if (result.success) {
-        setEstatisticas(result.data);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error);
-    }
-  };
+  useEffect(() => {
+    loadMarcas();
+  }, []);
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
     try {
       setAuditLoading(true);
-      const result = await MarcasService.getAuditLogs(auditFilters);
-      if (result.success) {
-        setAuditLogs(result.data || []);
+      
+      const params = new URLSearchParams();
+      
+      // Aplicar filtro de período se selecionado
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
       } else {
-        toast.error(result.error);
+        // Usar filtros manuais se período não estiver selecionado
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
       }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para marcas
+      params.append('recurso', 'marcas');
+      
+      const response = await api.get(`/auditoria?${params.toString()}`);
+      setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -117,32 +394,254 @@ const Marcas = () => {
     }
   };
 
-  // Handlers
+  // Abrir modal de auditoria
+  const handleOpenAuditModal = () => {
+    setShowAuditModal(true);
+    loadAuditLogs();
+  };
+
+  // Fechar modal de auditoria
+  const handleCloseAuditModal = () => {
+    setShowAuditModal(false);
+    setAuditLogs([]);
+    setAuditFilters({
+      dataInicio: '',
+      dataFim: '',
+      acao: '',
+      usuario_id: '',
+      periodo: ''
+    });
+  };
+
+  // Aplicar filtros de auditoria
+  const handleApplyAuditFilters = () => {
+    loadAuditLogs();
+  };
+
+  // Exportar auditoria para XLSX
+  const handleExportXLSX = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      // Aplicar filtros atuais
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para marcas
+      params.append('recurso', 'marcas');
+      
+      // Fazer download do arquivo
+      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `auditoria_marcas_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Relatório exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar XLSX:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  // Exportar auditoria para PDF
+  const handleExportPDF = async () => {
+    try {
+      const params = new URLSearchParams();
+      
+      // Aplicar filtros atuais
+      if (auditFilters.periodo) {
+        const hoje = new Date();
+        let dataInicio = new Date();
+        
+        switch (auditFilters.periodo) {
+          case '7dias':
+            dataInicio.setDate(hoje.getDate() - 7);
+            break;
+          case '30dias':
+            dataInicio.setDate(hoje.getDate() - 30);
+            break;
+          case '90dias':
+            dataInicio.setDate(hoje.getDate() - 90);
+            break;
+          default:
+            break;
+        }
+        
+        if (auditFilters.periodo !== 'todos') {
+          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
+        }
+      } else {
+        if (auditFilters.dataInicio) {
+          params.append('data_inicio', auditFilters.dataInicio);
+        }
+        if (auditFilters.dataFim) {
+          params.append('data_fim', auditFilters.dataFim);
+        }
+      }
+      
+      if (auditFilters.acao) {
+        params.append('acao', auditFilters.acao);
+      }
+      if (auditFilters.usuario_id) {
+        params.append('usuario_id', auditFilters.usuario_id);
+      }
+      
+      // Adicionar filtro específico para marcas
+      params.append('recurso', 'marcas');
+      
+      // Fazer download do arquivo
+      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `auditoria_marcas_${new Date().toISOString().split('T')[0]}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      toast.success('Relatório exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar relatório');
+    }
+  };
+
+  // Formatar data
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
+
+  // Obter label da ação
+  const getActionLabel = (action) => {
+    const actions = {
+      'create': 'Criar',
+      'update': 'Editar',
+      'delete': 'Excluir',
+      'login': 'Login',
+      'logout': 'Logout',
+      'view': 'Visualizar'
+    };
+    return actions[action] || action;
+  };
+
+  // Obter label do campo
+  const getFieldLabel = (field) => {
+    const labels = {
+      'marca': 'Marca',
+      'fabricante': 'Fabricante',
+      'descricao': 'Descrição',
+      'cnpj': 'CNPJ',
+      'telefone': 'Telefone',
+      'email': 'Email',
+      'website': 'Website',
+      'endereco': 'Endereço',
+      'status': 'Status'
+    };
+    return labels[field] || field;
+  };
+
+  // Formatar valor do campo
+  const formatFieldValue = (field, value) => {
+    if (value === null || value === undefined || value === '') {
+      return 'Não informado';
+    }
+
+    switch (field) {
+      case 'status':
+        return value === 1 ? 'Ativo' : 'Inativo';
+      default:
+        return value;
+    }
+  };
+
+  // Abrir modal para adicionar marca
   const handleAddMarca = () => {
     setEditingMarca(null);
     setViewMode(false);
     reset();
+    setValue('status', '1'); // Define status como "Ativo" por padrão
     setShowModal(true);
   };
 
-  const handleViewMarca = (marca) => {
-    setEditingMarca(marca);
-    setViewMode(true);
-    setValue('marca', marca.marca);
-    setValue('fabricante', marca.fabricante);
-    setValue('status', marca.status === 1 ? 'ativo' : 'inativo');
-    setShowModal(true);
-  };
-
+  // Abrir modal para editar marca
   const handleEditMarca = (marca) => {
     setEditingMarca(marca);
     setViewMode(false);
     setValue('marca', marca.marca);
     setValue('fabricante', marca.fabricante);
-    setValue('status', marca.status === 1 ? 'ativo' : 'inativo');
+    setValue('descricao', marca.descricao);
+    setValue('cnpj', marca.cnpj);
+    setValue('telefone', marca.telefone);
+    setValue('email', marca.email);
+    setValue('website', marca.website);
+    setValue('endereco', marca.endereco);
+    setValue('status', marca.status);
     setShowModal(true);
   };
 
+  // Abrir modal para visualizar marca
+  const handleViewMarca = (marca) => {
+    setEditingMarca(marca);
+    setViewMode(true);
+    setValue('marca', marca.marca);
+    setValue('fabricante', marca.fabricante);
+    setValue('descricao', marca.descricao);
+    setValue('cnpj', marca.cnpj);
+    setValue('telefone', marca.telefone);
+    setValue('email', marca.email);
+    setValue('website', marca.website);
+    setValue('endereco', marca.endereco);
+    setValue('status', marca.status);
+    setShowModal(true);
+  };
+
+  // Fechar modal
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingMarca(null);
@@ -150,557 +649,492 @@ const Marcas = () => {
     reset();
   };
 
+  // Salvar marca
   const onSubmit = async (data) => {
     try {
-      const marcaData = {
-        marca: data.marca,
-        fabricante: data.fabricante,
-        status: data.status === 'ativo' ? 1 : 0
-      };
-
-      let result;
       if (editingMarca) {
-        result = await MarcasService.atualizar(editingMarca.id, marcaData);
+        // Para edição, enviar apenas os campos que foram alterados
+        const updateData = {};
+        
+        if (data.marca !== editingMarca.marca) {
+          updateData.marca = data.marca;
+        }
+        
+        if (data.fabricante !== editingMarca.fabricante) {
+          updateData.fabricante = data.fabricante;
+        }
+        
+        if (data.descricao !== editingMarca.descricao) {
+          updateData.descricao = data.descricao;
+        }
+        
+        if (data.cnpj !== editingMarca.cnpj) {
+          updateData.cnpj = data.cnpj;
+        }
+        
+        if (data.telefone !== editingMarca.telefone) {
+          updateData.telefone = data.telefone;
+        }
+        
+        if (data.email !== editingMarca.email) {
+          updateData.email = data.email;
+        }
+        
+        if (data.website !== editingMarca.website) {
+          updateData.website = data.website;
+        }
+        
+        if (data.endereco !== editingMarca.endereco) {
+          updateData.endereco = data.endereco;
+        }
+        
+        if (data.status !== editingMarca.status) {
+          updateData.status = parseInt(data.status);
+        }
+        
+        // Se não há campos para atualizar, mostrar erro
+        if (Object.keys(updateData).length === 0) {
+          toast.error('Nenhum campo foi alterado');
+          return;
+        }
+        
+        await api.put(`/marcas/${editingMarca.id}`, updateData);
+        toast.success('Marca atualizada com sucesso!');
       } else {
-        result = await MarcasService.criar(marcaData);
+        // Para criação, enviar todos os campos
+        const createData = { ...data };
+        if (createData.status) {
+          createData.status = parseInt(createData.status);
+        }
+        await api.post('/marcas', createData);
+        toast.success('Marca criada com sucesso!');
       }
-
-      if (result.success) {
-        toast.success(result.message);
-        handleCloseModal();
-        loadMarcas();
-        loadEstatisticas();
-      } else {
-        toast.error(result.error);
-      }
+      
+      handleCloseModal();
+      loadMarcas();
     } catch (error) {
       console.error('Erro ao salvar marca:', error);
-      toast.error('Erro ao salvar marca');
+      toast.error(error.response?.data?.error || 'Erro ao salvar marca');
     }
   };
 
+  // Desativar marca
   const handleDeleteMarca = async (marcaId) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta marca?')) {
-      return;
-    }
-
-    try {
-      const result = await MarcasService.excluir(marcaId);
-      if (result.success) {
-        toast.success(result.message);
+    if (window.confirm('Tem certeza que deseja desativar esta marca?')) {
+      try {
+        await api.delete(`/marcas/${marcaId}`);
+        toast.success('Marca desativada com sucesso!');
         loadMarcas();
-        loadEstatisticas();
-      } else {
-        toast.error(result.error);
+      } catch (error) {
+        console.error('Erro ao desativar marca:', error);
+        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao desativar marca';
+        
+        // Se a mensagem contém quebras de linha, mostrar no modal customizado
+        if (errorMsg.includes('\n')) {
+          setErrorMessage(errorMsg);
+          setShowErrorModal(true);
+        } else {
+          toast.error(errorMsg);
+        }
       }
-    } catch (error) {
-      console.error('Erro ao excluir marca:', error);
-      toast.error('Erro ao excluir marca');
     }
   };
 
-  const handleOpenAuditModal = () => {
-    setShowAuditModal(true);
-    loadAuditLogs();
-  };
-
-  const handleCloseAuditModal = () => {
-    setShowAuditModal(false);
-    setAuditLogs([]);
-  };
-
-  const handleApplyAuditFilters = () => {
-    loadAuditLogs();
-  };
-
-  // Funções auxiliares
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('pt-BR');
-  };
-
-  const getActionLabel = (action) => {
-    switch (action) {
-      case 'create': return 'Criar';
-      case 'update': return 'Editar';
-      case 'delete': return 'Excluir';
-      default: return action;
-    }
-  };
-
-  const getFieldLabel = (field) => {
-    switch (field) {
-      case 'marca': return 'Marca';
-      case 'fabricante': return 'Fabricante';
-      case 'status': return 'Status';
-      default: return field;
-    }
-  };
-
-  const formatFieldValue = (field, value) => {
-    if (value === null || value === undefined) return '-';
-    
-    switch (field) {
-      case 'status':
-        return value === 1 || value === 'ativo' ? 'Ativo' : 'Inativo';
-      default:
-        return value.toString();
-    }
-  };
-
-  // Exportar dados
-  const handleExportXLSX = async () => {
-    try {
-      const result = await MarcasService.exportar('xlsx', {
-        search: searchTerm,
-        status: statusFilter !== 'todos' ? statusFilter : undefined
-      });
-      
-      if (result.success) {
-        const url = window.URL.createObjectURL(new Blob([result.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `marcas_${new Date().toISOString().split('T')[0]}.xlsx`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        toast.success('Exportação realizada com sucesso');
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao exportar:', error);
-      toast.error('Erro ao exportar dados');
-    }
-  };
-
-  const handleExportPDF = async () => {
-    try {
-      const result = await MarcasService.exportar('pdf', {
-        search: searchTerm,
-        status: statusFilter !== 'todos' ? statusFilter : undefined
-      });
-      
-      if (result.success) {
-        const url = window.URL.createObjectURL(new Blob([result.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `marcas_${new Date().toISOString().split('T')[0]}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        toast.success('Exportação realizada com sucesso');
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao exportar:', error);
-      toast.error('Erro ao exportar dados');
-    }
-  };
-
-  // Paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-  };
-
-  // Filtros
-  const filteredMarcas = (marcas || []).filter(marca => {
-    const matchesSearch = !searchTerm || 
-      marca.marca.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      marca.fabricante.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'todos' || 
-      (statusFilter === 'ativo' && marca.status === 1) ||
-      (statusFilter === 'inativo' && marca.status === 0);
-    
+  // Filtrar marcas
+  const filteredMarcas = marcas.filter(marca => {
+    const matchesSearch = marca.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         marca.fabricante?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         marca.descricao?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'todos' || marca.status === parseInt(statusFilter);
     return matchesSearch && matchesStatus;
   });
 
-  // Effects
-  useEffect(() => {
-    loadMarcas();
-    loadEstatisticas();
-  }, [currentPage, itemsPerPage]);
-
   if (loading) {
     return (
-      <div className="p-3 sm:p-6">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Carregando marcas...</p>
-          </div>
-        </div>
-      </div>
+      <Container>
+        <div>Carregando marcas...</div>
+      </Container>
     );
   }
 
   return (
-    <div className="p-3 sm:p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Marcas</h1>
-        <div className="flex gap-2 sm:gap-3">
-          <Button
+    <Container>
+      <Header>
+        <Title>Marcas</Title>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <AddButton 
             onClick={handleOpenAuditModal}
-            variant="ghost"
-            size="sm"
-            className="text-xs"
+            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
           >
-            <FaQuestionCircle className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Auditoria</span>
-          </Button>
+            <FaQuestionCircle />
+            Auditoria
+          </AddButton>
           {canCreate('marcas') && (
-            <Button onClick={handleAddMarca} size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar Marca</span>
-              <span className="sm:hidden">Adicionar</span>
-            </Button>
+            <AddButton onClick={handleAddMarca}>
+              <FaPlus />
+              Adicionar Marca
+            </AddButton>
           )}
         </div>
-      </div>
+      </Header>
 
-      {/* Cards de Estatísticas */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-6">
-        <StatCard
-          title="Total de Marcas"
-          value={estatisticas.total_marcas}
-          icon={FaTag}
-          color="blue"
-        />
-        <StatCard
-          title="Marcas Ativas"
-          value={estatisticas.marcas_ativas}
-          icon={FaCheckCircle}
-          color="green"
-        />
-        <StatCard
-          title="Marcas Inativas"
-          value={estatisticas.marcas_inativas}
-          icon={FaTimesCircle}
-          color="red"
-        />
-      </div>
-
-      {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
+        onStatusChange={setStatusFilter}
+        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
+        placeholder="Buscar por nome ou código..."
       />
 
-      {/* Tabela */}
-      {filteredMarcas.length === 0 ? (
-        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-          {searchTerm || statusFilter !== 'todos' 
-            ? 'Nenhuma marca encontrada com os filtros aplicados'
-            : 'Nenhuma marca cadastrada'
-          }
-        </div>
-      ) : (
-        <>
-          {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <Table>
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fabricante</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredMarcas.map((marca) => (
-                  <tr key={marca.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.marca}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.fabricante}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                        marca.status === 1 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {marca.status === 1 ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => handleViewMarca(marca)}
-                          title="Visualizar"
-                        >
-                          <FaEye className="text-green-600 text-sm" />
-                        </Button>
-                        {canEdit('marcas') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleEditMarca(marca)}
-                            title="Editar"
-                          >
-                            <FaEdit className="text-blue-600 text-sm" />
-                          </Button>
-                        )}
-                        {canDelete('marcas') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleDeleteMarca(marca.id)}
-                            title="Excluir"
-                          >
-                            <FaTrash className="text-red-600 text-sm" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </div>
-
-          {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
-            {filteredMarcas.map((marca) => (
-              <div key={marca.id} className="bg-white rounded-lg shadow-sm p-4 border">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 text-sm">{marca.marca}</h3>
-                    <p className="text-gray-600 text-xs">Fabricante: {marca.fabricante}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      onClick={() => handleViewMarca(marca)}
+      <TableContainer>
+        <Table>
+          <thead>
+            <tr>
+              <Th>Marca</Th>
+              <Th>Fabricante</Th>
+              <Th>Status</Th>
+              <Th>Ações</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredMarcas.length === 0 ? (
+              <tr>
+                <Td colSpan="4">
+                  <EmptyState>
+                    {searchTerm || statusFilter !== 'todos'
+                      ? 'Nenhuma marca encontrada com os filtros aplicados'
+                      : 'Nenhuma marca cadastrada'
+                    }
+                  </EmptyState>
+                </Td>
+              </tr>
+            ) : (
+              filteredMarcas.map((marca) => (
+                <tr key={marca.id}>
+                  <Td>{marca.marca}</Td>
+                  <Td>{marca.fabricante}</Td>
+                  <Td>
+                    <StatusBadge $status={marca.status === 1 ? 'ativo' : 'inativo'}>
+                      {marca.status === 1 ? 'Ativo' : 'Inativo'}
+                    </StatusBadge>
+                  </Td>
+                  <Td>
+                    <ActionButton
+                      className="view"
                       title="Visualizar"
-                      className="p-2"
+                      onClick={() => handleViewMarca(marca)}
                     >
-                      <FaEye className="text-green-600 text-sm" />
-                    </Button>
+                      <FaEye />
+                    </ActionButton>
                     {canEdit('marcas') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleEditMarca(marca)}
+                      <ActionButton
+                        className="edit"
                         title="Editar"
-                        className="p-2"
+                        onClick={() => handleEditMarca(marca)}
                       >
-                        <FaEdit className="text-blue-600 text-sm" />
-                      </Button>
+                        <FaEdit />
+                      </ActionButton>
                     )}
                     {canDelete('marcas') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
+                      <ActionButton
+                        className="delete"
+                        title="Desativar"
                         onClick={() => handleDeleteMarca(marca.id)}
-                        title="Excluir"
-                        className="p-2"
                       >
-                        <FaTrash className="text-red-600 text-sm" />
-                      </Button>
+                        <FaTrash />
+                      </ActionButton>
                     )}
-                  </div>
-                </div>
-                
-                <div className="mt-3 pt-3 border-t border-gray-100">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                    marca.status === 1 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {marca.status === 1 ? 'Ativo' : 'Inativo'}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-
-      {/* Modal de Cadastro/Edição/Visualização */}
-      {showModal && (
-        <Modal
-          isOpen={showModal}
-          onClose={handleCloseModal}
-          title={viewMode ? 'Visualizar Marca' : editingMarca ? 'Editar Marca' : 'Adicionar Marca'}
-          size="full"
-        >
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-              <Input
-                label="Marca *"
-                {...register('marca', { required: 'Marca é obrigatória' })}
-                error={errors.marca?.message}
-                disabled={viewMode}
-              />
-              <Input
-                label="Fabricante *"
-                {...register('fabricante', { required: 'Fabricante é obrigatório' })}
-                error={errors.fabricante?.message}
-                disabled={viewMode}
-              />
-              <Input
-                label="Status"
-                type="select"
-                {...register('status')}
-                disabled={viewMode}
-              >
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-              </Input>
-            </div>
-
-            {!viewMode && (
-              <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
-                <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
-                  Cancelar
-                </Button>
-                <Button type="submit" size="sm">
-                  {editingMarca ? 'Atualizar' : 'Cadastrar'}
-                </Button>
-              </div>
+                  </Td>
+                </tr>
+              ))
             )}
-          </form>
+          </tbody>
+        </Table>
+      </TableContainer>
+
+      {showModal && (
+        <Modal onClick={handleCloseModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalHeader>
+              <ModalTitle>
+                {viewMode ? 'Visualizar Marca' : editingMarca ? 'Editar Marca' : 'Adicionar Marca'}
+              </ModalTitle>
+              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
+            </ModalHeader>
+
+            <Form onSubmit={handleSubmit(onSubmit)}>
+              <FormRow>
+                <FormGroup>
+                  <Label>Marca *</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: KING"
+                    disabled={viewMode}
+                    {...register('marca', { required: 'Marca é obrigatória' })}
+                  />
+                  {errors.marca && <span style={{ color: 'red', fontSize: '12px' }}>{errors.marca.message}</span>}
+                </FormGroup>
+
+                <FormGroup>
+                  <Label>Fabricante *</Label>
+                  <Input
+                    type="text"
+                    placeholder="Ex: KING ALIMENTOS LTDA"
+                    disabled={viewMode}
+                    {...register('fabricante', { required: 'Fabricante é obrigatório' })}
+                  />
+                  {errors.fabricante && <span style={{ color: 'red', fontSize: '12px' }}>{errors.fabricante.message}</span>}
+                </FormGroup>
+              </FormRow>
+
+              <FormGroup>
+                <Label>Status</Label>
+                <Select disabled={viewMode} {...register('status', { required: 'Status é obrigatório' })}>
+                  <option value="1">Ativo</option>
+                  <option value="0">Inativo</option>
+                </Select>
+                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
+              </FormGroup>
+
+              <ButtonGroup>
+                <Button
+                  type="button"
+                  className="secondary"
+                  onClick={handleCloseModal}
+                >
+                  {viewMode ? 'Fechar' : 'Cancelar'}
+                </Button>
+                {!viewMode && (
+                  <Button
+                    type="submit"
+                    className="primary"
+                  >
+                    {editingMarca ? 'Atualizar' : 'Cadastrar'}
+                  </Button>
+                )}
+              </ButtonGroup>
+            </Form>
+          </ModalContent>
         </Modal>
       )}
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal
-          isOpen={showAuditModal}
-          onClose={handleCloseAuditModal}
-          title="Relatório de Auditoria - Marcas"
-          size="full"
-        >
-          <div className="space-y-4 sm:space-y-6">
+        <Modal onClick={handleCloseAuditModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
+            <ModalHeader>
+              <ModalTitle>Relatório de Auditoria - Marcas</ModalTitle>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button
+                  onClick={handleExportXLSX}
+                  title="Exportar para Excel"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
+                  <FaFileExcel />
+                  Excel
+                </button>
+                <button
+                  onClick={handleExportPDF}
+                  title="Exportar para PDF"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 12px',
+                    background: 'var(--primary-green)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
+                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
+                >
+                  <FaFilePdf />
+                  PDF
+                </button>
+                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
+              </div>
+            </ModalHeader>
+
             {/* Filtros de Auditoria */}
-            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Filtros</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <Input
-                  label="Data Início"
-                  type="date"
-                  value={auditFilters.dataInicio}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
-                />
-                <Input
-                  label="Data Fim"
-                  type="date"
-                  value={auditFilters.dataFim}
-                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
-                />
-                <Input
-                  label="Ação"
-                  type="select"
-                  value={auditFilters.acao}
-                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                >
-                  <option value="">Todas as ações</option>
-                  <option value="create">Criar</option>
-                  <option value="update">Editar</option>
-                  <option value="delete">Excluir</option>
-                </Input>
-                <Input
-                  label="Período"
-                  type="select"
-                  value={auditFilters.periodo}
-                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                >
-                  <option value="">Período personalizado</option>
-                  <option value="7dias">Últimos 7 dias</option>
-                  <option value="30dias">Últimos 30 dias</option>
-                  <option value="90dias">Últimos 90 dias</option>
-                  <option value="todos">Todos os registros</option>
-                </Input>
-                <div className="flex items-end">
-                  <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
-                    <span className="hidden sm:inline">Aplicar Filtros</span>
-                    <span className="sm:hidden">Aplicar</span>
-                  </Button>
+            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Início
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataInicio}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Data Fim
+                  </label>
+                  <input
+                    type="date"
+                    value={auditFilters.dataFim}
+                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Ação
+                  </label>
+                  <select
+                    value={auditFilters.acao}
+                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Todas as ações</option>
+                    <option value="create">Criar</option>
+                    <option value="update">Editar</option>
+                    <option value="delete">Excluir</option>
+                    <option value="login">Login</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Usuário
+                  </label>
+                  <select
+                    value={auditFilters.usuario_id}
+                    onChange={(e) => setAuditFilters({...auditFilters, usuario_id: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Todos os usuários</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
+                    Período
+                  </label>
+                  <select
+                    value={auditFilters.periodo}
+                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
+                  >
+                    <option value="">Período personalizado</option>
+                    <option value="7dias">Últimos 7 dias</option>
+                    <option value="30dias">Últimos 30 dias</option>
+                    <option value="90dias">Últimos 90 dias</option>
+                    <option value="todos">Todos os registros</option>
+                  </select>
                 </div>
               </div>
+              <button
+                onClick={handleApplyAuditFilters}
+                style={{
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  background: 'var(--primary-green)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Aplicar Filtros
+              </button>
             </div>
 
-            {/* Botões de Exportação */}
-            <div className="flex gap-2 sm:gap-3">
-              <Button onClick={handleExportXLSX} variant="outline" size="sm">
-                <FaFileExcel className="mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Exportar Excel</span>
-                <span className="sm:hidden">Excel</span>
-              </Button>
-              <Button onClick={handleExportPDF} variant="outline" size="sm">
-                <FaFilePdf className="mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Exportar PDF</span>
-                <span className="sm:hidden">PDF</span>
-              </Button>
-            </div>
-
-            {/* Resultados da Auditoria */}
-            <div className="max-h-64 sm:max-h-96 overflow-y-auto">
+            {/* Lista de Logs */}
+            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
               {auditLoading ? (
-                <div className="text-center py-6 sm:py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
-                  <p className="text-gray-600 text-sm">Carregando logs...</p>
-                </div>
+                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
               ) : auditLogs.length === 0 ? (
-                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
+                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
                   Nenhum log encontrado com os filtros aplicados
                 </div>
               ) : (
-                <div className="space-y-3 sm:space-y-4">
-                  <div className="text-xs sm:text-sm text-gray-600">
+                <div>
+                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
                     {auditLogs.length} log(s) encontrado(s)
                   </div>
                   {auditLogs.map((log, index) => (
                     <div
                       key={index}
-                      className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white"
+                      style={{
+                        border: '1px solid #e0e0e0',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        marginBottom: '12px',
+                        background: 'white'
+                      }}
                     >
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 sm:mb-3 gap-2">
-                        <div className="flex items-center gap-2 sm:gap-3">
-                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                            log.acao === 'create' ? 'bg-green-100 text-green-800' : 
-                            log.acao === 'update' ? 'bg-yellow-100 text-yellow-800' : 
-                            log.acao === 'delete' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
-                          }`}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            background: log.acao === 'create' ? '#e8f5e8' : 
+                                       log.acao === 'update' ? '#fff3cd' : 
+                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
+                            color: log.acao === 'create' ? '#2e7d32' : 
+                                   log.acao === 'update' ? '#856404' : 
+                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
+                          }}>
                             {getActionLabel(log.acao)}
                           </span>
-                          <span className="text-xs sm:text-sm text-gray-600">
+                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
                             por {log.usuario_nome || 'Usuário desconhecido'}
                           </span>
                         </div>
-                        <span className="text-xs sm:text-sm text-gray-600">
+                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
                           {formatDate(log.timestamp)}
                         </span>
                       </div>
                       
                       {log.detalhes && (
-                        <div className="text-xs sm:text-sm text-gray-800">
+                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
                           {log.detalhes.changes && (
-                            <div className="mb-2 sm:mb-3">
+                            <div style={{ marginBottom: '8px' }}>
                               <strong>Mudanças Realizadas:</strong>
-                              <div className="mt-1 sm:mt-2 space-y-1 sm:space-y-2">
+                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
                                 {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} className="p-2 sm:p-3 bg-gray-50 rounded-lg border">
-                                    <div className="font-semibold text-gray-800 mb-1 sm:mb-2 text-xs sm:text-sm">
+                                  <div key={field} style={{ 
+                                    marginBottom: '6px', 
+                                    padding: '8px', 
+                                    background: '#f8f9fa', 
+                                    borderRadius: '4px',
+                                    border: '1px solid #e9ecef'
+                                  }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs">
-                                      <span className="text-red-600">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
+                                      <span style={{ color: '#721c24' }}>
                                         <strong>Antes:</strong> {formatFieldValue(field, change.from)}
                                       </span>
-                                      <span className="text-gray-500 hidden sm:inline">→</span>
-                                      <span className="text-green-600">
+                                      <span style={{ color: '#6c757d' }}>→</span>
+                                      <span style={{ color: '#2e7d32' }}>
                                         <strong>Depois:</strong> {formatFieldValue(field, change.to)}
                                       </span>
                                     </div>
@@ -712,13 +1146,25 @@ const Marcas = () => {
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
                               <strong>Dados da Marca:</strong>
-                              <div className="mt-1 sm:mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
+                              <div style={{ 
+                                marginLeft: '12px', 
+                                marginTop: '8px',
+                                display: 'grid',
+                                gridTemplateColumns: '1fr 1fr',
+                                gap: '8px'
+                              }}>
                                 {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} className="p-1.5 sm:p-2 bg-gray-50 rounded border text-xs">
-                                    <div className="font-semibold text-gray-800 mb-0.5 sm:mb-1">
+                                  <div key={field} style={{ 
+                                    padding: '6px 8px', 
+                                    background: '#f8f9fa', 
+                                    borderRadius: '4px',
+                                    border: '1px solid #e9ecef',
+                                    fontSize: '11px'
+                                  }}>
+                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div className="text-green-600">
+                                    <div style={{ color: '#2e7d32' }}>
                                       {formatFieldValue(field, value)}
                                     </div>
                                   </div>
@@ -727,9 +1173,15 @@ const Marcas = () => {
                             </div>
                           )}
                           {log.detalhes.resourceId && (
-                            <div className="mt-2 sm:mt-3 p-1.5 sm:p-2 bg-blue-50 rounded border text-xs">
+                            <div style={{ 
+                              marginTop: '8px', 
+                              padding: '6px 8px', 
+                              background: '#e3f2fd', 
+                              borderRadius: '4px',
+                              fontSize: '11px'
+                            }}>
                               <strong>ID da Marca:</strong> 
-                              <span className="text-blue-600 ml-1">
+                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
                                 #{log.detalhes.resourceId}
                               </span>
                             </div>
@@ -741,22 +1193,17 @@ const Marcas = () => {
                 </div>
               )}
             </div>
-          </div>
+          </ModalContent>
         </Modal>
       )}
 
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
-          totalItems={totalItems}
-        />
-      )}
-    </div>
+      {/* Modal de Erro Customizado */}
+      <ErrorModal
+        isOpen={showErrorModal}
+        message={errorMessage}
+        onClose={() => setShowErrorModal(false)}
+      />
+    </Container>
   );
 };
 
