@@ -655,7 +655,7 @@ const Produtos = () => {
       </div>
 
       {/* Tabela */}
-      {filteredProdutos.length === 0 ? (
+      {produtos.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {searchTerm || statusFilter !== 'todos' ? 
             'Nenhum produto encontrado com os filtros aplicados' : 
@@ -691,7 +691,7 @@ const Produtos = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredProdutos.map((produto) => (
+                  {produtos.map((produto) => (
                     <tr key={produto.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {produto.id}
@@ -758,8 +758,8 @@ const Produtos = () => {
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3">
-            {filteredProdutos.map((produto) => (
+          <div className="lg:hidden grid grid-cols-1 gap-3">
+            {produtos.map((produto) => (
               <div key={produto.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex-1">
