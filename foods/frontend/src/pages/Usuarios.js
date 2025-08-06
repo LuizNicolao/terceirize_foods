@@ -513,9 +513,9 @@ const Usuarios = () => {
       ) : (
                 <>
           {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -573,7 +573,7 @@ const Usuarios = () => {
                       {usuario.criado_em ? formatDate(usuario.criado_em) : 'N/A'}
                     </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-2">
                         {canView('usuarios') && (
                           <Button
                             variant="ghost"
