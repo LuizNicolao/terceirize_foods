@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
-import { Button, Input, Modal, StatCard } from '../components/ui';
+import { Button, Input, Modal, Table, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
 
@@ -514,123 +514,121 @@ const UnidadesEscolares = () => {
         <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Escola
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Código
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cidade/Estado
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Centro Distribuição
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Rota
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ações
-                    </th>
+            <Table>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Escola
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Código
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Cidade/Estado
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Centro Distribuição
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rota
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUnidades.map((unidade) => (
+                  <tr key={unidade.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {unidade.nome_escola}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {unidade.codigo_teknisa}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">{unidade.cidade}</div>
+                      <div className="text-sm text-gray-500">{unidade.estado}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {unidade.centro_distribuicao}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                        unidade.status === 'ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex gap-2">
+                        {canView('unidades_escolares') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleViewUnidade(unidade)}
+                            title="Visualizar"
+                          >
+                            <FaEye className="text-green-600 text-sm" />
+                          </Button>
+                        )}
+                        {canEdit('unidades_escolares') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditUnidade(unidade)}
+                            title="Editar"
+                          >
+                            <FaEdit className="text-blue-600 text-sm" />
+                          </Button>
+                        )}
+                        {canDelete('unidades_escolares') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteUnidade(unidade.id)}
+                            title="Excluir"
+                          >
+                            <FaTrash className="text-red-600 text-sm" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredUnidades.map((unidade) => (
-                    <tr key={unidade.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {unidade.nome_escola}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {unidade.codigo_teknisa}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{unidade.cidade}</div>
-                        <div className="text-sm text-gray-500">{unidade.estado}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {unidade.centro_distribuicao}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                          unidade.status === 'ativo' 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
-                          {canView('unidades_escolares') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleViewUnidade(unidade)}
-                              title="Visualizar"
-                            >
-                              <FaEye className="text-green-600 text-sm" />
-                            </Button>
-                          )}
-                          {canEdit('unidades_escolares') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleEditUnidade(unidade)}
-                              title="Editar"
-                            >
-                              <FaEdit className="text-blue-600 text-sm" />
-                            </Button>
-                          )}
-                          {canDelete('unidades_escolares') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleDeleteUnidade(unidade.id)}
-                              title="Excluir"
-                            >
-                              <FaTrash className="text-red-600 text-sm" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </Table>
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="block lg:hidden space-y-2">
+          <div className="lg:hidden space-y-3">
             {filteredUnidades.map((unidade) => (
-              <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-3 border">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 text-sm truncate">{unidade.nome_escola}</h3>
+              <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm">{unidade.nome_escola}</h3>
                     <p className="text-gray-600 text-xs">Código: {unidade.codigo_teknisa}</p>
                   </div>
-                  <div className="flex gap-1 ml-2">
+                  <div className="flex gap-2">
                     {canView('unidades_escolares') && (
                       <Button
                         variant="ghost"
                         size="xs"
                         onClick={() => handleViewUnidade(unidade)}
                         title="Visualizar"
-                        className="p-1"
+                        className="p-2"
                       >
-                        <FaEye className="text-green-600 text-xs" />
+                        <FaEye className="text-green-600 text-sm" />
                       </Button>
                     )}
                     {canEdit('unidades_escolares') && (
@@ -639,9 +637,9 @@ const UnidadesEscolares = () => {
                         size="xs"
                         onClick={() => handleEditUnidade(unidade)}
                         title="Editar"
-                        className="p-1"
+                        className="p-2"
                       >
-                        <FaEdit className="text-blue-600 text-xs" />
+                        <FaEdit className="text-blue-600 text-sm" />
                       </Button>
                     )}
                     {canDelete('unidades_escolares') && (
@@ -650,44 +648,42 @@ const UnidadesEscolares = () => {
                         size="xs"
                         onClick={() => handleDeleteUnidade(unidade.id)}
                         title="Excluir"
-                        className="p-1"
+                        className="p-2"
                       >
-                        <FaTrash className="text-red-600 text-xs" />
+                        <FaTrash className="text-red-600 text-sm" />
                       </Button>
                     )}
                   </div>
                 </div>
                 
-                <div className="space-y-1 text-xs">
-                  <div className="grid grid-cols-1 gap-1">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Cidade:</span>
-                      <span className="font-medium text-gray-900 truncate ml-2">{unidade.cidade}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Estado:</span>
-                      <span className="font-medium text-gray-900 truncate ml-2">{unidade.estado}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Centro:</span>
-                      <span className="font-medium text-gray-900 truncate ml-2">{unidade.centro_distribuicao || '-'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">Rota:</span>
-                      <span className="font-medium text-gray-900 truncate ml-2">
-                        {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500">Status:</span>
-                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-                        unidade.status === 'ativo' 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </div>
+                <div className="space-y-2 text-xs">
+                  <div>
+                    <span className="text-gray-500">Cidade:</span>
+                    <p className="font-medium text-gray-900">{unidade.cidade}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Estado:</span>
+                    <p className="font-medium text-gray-900">{unidade.estado}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Centro Distribuição:</span>
+                    <p className="font-medium text-gray-900">{unidade.centro_distribuicao || '-'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Rota:</span>
+                    <p className="font-medium text-gray-900">
+                      {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Status:</span>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                      unidade.status === 'ativo' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -700,126 +696,78 @@ const UnidadesEscolares = () => {
       <Modal
         isOpen={showModal}
         onClose={handleCloseModal}
-        title={editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-        size="lg"
+        title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
+        size="full"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nome da Escola *
-              </label>
-              <Input
-                {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
-                placeholder="Digite o nome da escola"
-                className={errors.nome_escola ? 'border-red-500' : ''}
-              />
-              {errors.nome_escola && (
-                <p className="text-red-500 text-xs mt-1">{errors.nome_escola.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Código Teknisa *
-              </label>
-              <Input
-                {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
-                placeholder="Digite o código"
-                className={errors.codigo_teknisa ? 'border-red-500' : ''}
-              />
-              {errors.codigo_teknisa && (
-                <p className="text-red-500 text-xs mt-1">{errors.codigo_teknisa.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cidade *
-              </label>
-              <Input
-                {...register('cidade', { required: 'Cidade é obrigatória' })}
-                placeholder="Digite a cidade"
-                className={errors.cidade ? 'border-red-500' : ''}
-              />
-              {errors.cidade && (
-                <p className="text-red-500 text-xs mt-1">{errors.cidade.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Estado *
-              </label>
-              <Input
-                {...register('estado', { required: 'Estado é obrigatório' })}
-                placeholder="Digite o estado"
-                className={errors.estado ? 'border-red-500' : ''}
-              />
-              {errors.estado && (
-                <p className="text-red-500 text-xs mt-1">{errors.estado.message}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Centro de Distribuição
-              </label>
-              <Input
-                {...register('centro_distribuicao')}
-                placeholder="Digite o centro de distribuição"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Rota
-              </label>
-              <select
-                {...register('rota_id')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-                <option value="">Selecione uma rota</option>
-                {rotas.map((rota) => (
-                  <option key={rota.id} value={rota.id}>
-                    {rota.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status *
-              </label>
-              <select
-                {...register('status', { required: 'Status é obrigatório' })}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent ${
-                  errors.status ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">Selecione o status</option>
-                <option value="ativo">Ativo</option>
-                <option value="inativo">Inativo</option>
-              </select>
-              {errors.status && (
-                <p className="text-red-500 text-xs mt-1">{errors.status.message}</p>
-              )}
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCloseModal}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+            <Input
+              label="Nome da Escola *"
+              {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
+              error={errors.nome_escola?.message}
+              disabled={viewMode}
+            />
+            <Input
+              label="Código Teknisa *"
+              {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
+              error={errors.codigo_teknisa?.message}
+              disabled={viewMode}
+            />
+            <Input
+              label="Cidade *"
+              {...register('cidade', { required: 'Cidade é obrigatória' })}
+              error={errors.cidade?.message}
+              disabled={viewMode}
+            />
+            <Input
+              label="Estado *"
+              {...register('estado', { required: 'Estado é obrigatório' })}
+              error={errors.estado?.message}
+              disabled={viewMode}
+            />
+            <Input
+              label="Centro de Distribuição"
+              {...register('centro_distribuicao')}
+              disabled={viewMode}
+            />
+            <Input
+              label="Rota"
+              type="select"
+              {...register('rota_id')}
+              disabled={viewMode}
             >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Salvando...' : (editingUnidade ? 'Atualizar' : 'Adicionar')}
-            </Button>
+              <option value="">Selecione uma rota</option>
+              {rotas.map((rota) => (
+                <option key={rota.id} value={rota.id}>
+                  {rota.nome}
+                </option>
+              ))}
+            </Input>
           </div>
+          
+          {!viewMode && (
+            <Input
+              label="Status *"
+              type="select"
+              {...register('status', { required: 'Status é obrigatório' })}
+              error={errors.status?.message}
+            >
+              <option value="">Selecione o status</option>
+              <option value="ativo">Ativo</option>
+              <option value="inativo">Inativo</option>
+            </Input>
+          )}
+
+          {!viewMode && (
+            <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
+              <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
+                Cancelar
+              </Button>
+              <Button type="submit" size="sm">
+                {editingUnidade ? 'Atualizar' : 'Criar'}
+              </Button>
+            </div>
+          )}
         </form>
       </Modal>
 
