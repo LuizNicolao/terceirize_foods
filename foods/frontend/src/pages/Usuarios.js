@@ -427,11 +427,11 @@ const Usuarios = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Usuários</h1>
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <Button
             onClick={handleOpenAuditModal}
             variant="ghost"
@@ -440,10 +440,9 @@ const Usuarios = () => {
           >
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
-            <span className="sm:hidden">Auditoria</span>
           </Button>
           {canCreate('usuarios') && (
-            <Button onClick={handleAddUser} variant="primary" size="sm">
+            <Button onClick={handleAddUser} size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Adicionar</span>
               <span className="sm:hidden">Adicionar</span>
@@ -453,7 +452,7 @@ const Usuarios = () => {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
         <StatCard
           title="Total de Usuários"
           value={estatisticas.total_usuarios}
@@ -513,9 +512,9 @@ const Usuarios = () => {
       ) : (
                 <>
           {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -573,7 +572,7 @@ const Usuarios = () => {
                       {usuario.criado_em ? formatDate(usuario.criado_em) : 'N/A'}
                     </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
+                        <div className="flex gap-2">
                         {canView('usuarios') && (
                           <Button
                             variant="ghost"
@@ -581,7 +580,7 @@ const Usuarios = () => {
                             onClick={() => handleViewUser(usuario)}
                       title="Visualizar"
                     >
-                              <FaEye className="w-4 h-4" />
+                              <FaEye className="text-green-600 text-sm" />
                           </Button>
                         )}
                     {canEdit('usuarios') && (
@@ -591,7 +590,7 @@ const Usuarios = () => {
                             onClick={() => handleEditUser(usuario)}
                         title="Editar"
                       >
-                              <FaEdit className="w-4 h-4" />
+                              <FaEdit className="text-blue-600 text-sm" />
                           </Button>
                     )}
                     {canDelete('usuarios') && (
@@ -601,7 +600,7 @@ const Usuarios = () => {
                             onClick={() => handleDeleteUser(usuario.id)}
                         title="Excluir"
                       >
-                              <FaTrash className="w-4 h-4" />
+                              <FaTrash className="text-red-600 text-sm" />
                           </Button>
                     )}
                       </div>

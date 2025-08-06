@@ -413,11 +413,11 @@ const UnidadesEscolares = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Unidades Escolares</h1>
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <Button
             onClick={handleOpenAuditModal}
             variant="ghost"
@@ -426,10 +426,9 @@ const UnidadesEscolares = () => {
           >
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
-            <span className="sm:hidden">Auditoria</span>
           </Button>
           {canCreate('unidades_escolares') && (
-            <Button onClick={handleAddUnidade} variant="primary" size="sm">
+            <Button onClick={handleAddUnidade} size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Adicionar</span>
               <span className="sm:hidden">Adicionar</span>
@@ -439,7 +438,7 @@ const UnidadesEscolares = () => {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
         <StatCard
           title="Total de Unidades"
           value={estatisticas.total_unidades}
@@ -499,9 +498,9 @@ const UnidadesEscolares = () => {
        ) : (
          <>
           {/* Versão Desktop - Tabela completa */}
-          <div className="hidden lg:block bg-white rounded-lg shadow overflow-hidden">
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
            <div className="overflow-x-auto">
-             <table className="min-w-full divide-y divide-gray-200">
+             <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -558,7 +557,7 @@ const UnidadesEscolares = () => {
                     </span>
                   </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
+                        <div className="flex gap-2">
                        {canView('unidades_escolares') && (
                          <Button
                            variant="ghost"
