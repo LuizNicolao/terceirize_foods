@@ -22,7 +22,7 @@ const CadastroFilterBar = ({
   placeholder = 'Buscar...'
 }) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6 p-3 sm:p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+    <div className="flex flex-col sm:flex-row gap-3 mb-6 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
       {/* Campo de busca */}
       <div className="flex-1 relative">
         <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />

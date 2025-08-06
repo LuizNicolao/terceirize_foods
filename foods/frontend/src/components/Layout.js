@@ -66,7 +66,7 @@ const Layout = ({ children }) => {
       <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
       <MainContent $sidebarCollapsed={sidebarCollapsed}>
         <Header onToggleSidebar={toggleSidebar} />
-        <div style={{ padding: '8px', paddingLeft: '8px', paddingRight: '8px' }}>
+        <div style={{ padding: '20px' }}>
           {children}
         </div>
       </MainContent>
