@@ -429,9 +429,9 @@ const Usuarios = () => {
   return (
     <div className="p-4 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Usuários</h1>
-        <div className="flex gap-2 sm:gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Button
             onClick={handleOpenAuditModal}
             variant="ghost"
@@ -581,7 +581,7 @@ const Usuarios = () => {
                             onClick={() => handleViewUser(usuario)}
                       title="Visualizar"
                     >
-                              <FaEye className="text-green-600 text-sm" />
+                              <FaEye className="w-4 h-4" />
                           </Button>
                         )}
                     {canEdit('usuarios') && (
@@ -591,7 +591,7 @@ const Usuarios = () => {
                             onClick={() => handleEditUser(usuario)}
                         title="Editar"
                       >
-                              <FaEdit className="text-blue-600 text-sm" />
+                              <FaEdit className="w-4 h-4" />
                           </Button>
                     )}
                     {canDelete('usuarios') && (
@@ -601,7 +601,7 @@ const Usuarios = () => {
                             onClick={() => handleDeleteUser(usuario.id)}
                         title="Excluir"
                       >
-                              <FaTrash className="text-red-600 text-sm" />
+                              <FaTrash className="w-4 h-4" />
                           </Button>
                     )}
                       </div>
