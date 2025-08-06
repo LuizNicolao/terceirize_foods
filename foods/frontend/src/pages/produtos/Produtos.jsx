@@ -14,14 +14,14 @@ import {
   FaTimes
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { usePermissions } from '../contexts/PermissionsContext';
-import ProdutosService from '../services/produtos';
-import { Button, Input, StatCard, Modal } from '../components/ui';
-import CadastroFilterBar from '../components/CadastroFilterBar';
-import Pagination from '../components/Pagination';
+import { usePermissions } from '../../contexts/PermissionsContext';
+import ProdutosService from '../../services/produtos';
+import { Button, Input, StatCard, Modal } from '../../components/ui';
+import CadastroFilterBar from '../../components/CadastroFilterBar';
+import Pagination from '../../components/Pagination';
 import { ProdutoModal } from '../../components/produtos';
 
-import api from '../services/api';
+import api from '../../services/api';
   
 const Produtos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();

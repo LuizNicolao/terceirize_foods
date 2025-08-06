@@ -18,11 +18,11 @@ import {
   FaUsers
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { usePermissions } from '../contexts/PermissionsContext';
-import UsuariosService from '../services/usuarios';
-import { Button, Input, Modal, StatCard } from '../components/ui';
-import CadastroFilterBar from '../components/CadastroFilterBar';
-import Pagination from '../components/Pagination';
+import { usePermissions } from '../../contexts/PermissionsContext';
+import UsuariosService from '../../services/usuarios';
+import { Button, Input, Modal, StatCard } from '../../components/ui';
+import CadastroFilterBar from '../../components/CadastroFilterBar';
+import Pagination from '../../components/Pagination';
 
 const Usuarios = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
