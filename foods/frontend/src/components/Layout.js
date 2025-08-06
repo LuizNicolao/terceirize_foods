@@ -14,9 +14,14 @@ const MainContent = styled.main`
   transition: margin-left 0.3s ease;
   background-color: var(--light-gray);
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
 
   @media (max-width: 768px) {
     margin-left: 0;
+    width: 100vw;
+    max-width: 100vw;
   }
 `;
 

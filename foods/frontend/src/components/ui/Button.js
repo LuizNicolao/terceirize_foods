@@ -23,11 +23,11 @@ const Button = ({
   };
   
   const sizes = {
-    xs: 'px-2 py-1 text-xs',
-    sm: 'px-2 py-1.5 text-xs sm:px-3 sm:py-1.5 sm:text-sm',
-    md: 'px-3 py-2 text-xs sm:px-4 sm:py-2 sm:text-sm',
-    lg: 'px-4 py-2.5 text-sm sm:px-6 sm:py-3 sm:text-base',
-    xl: 'px-6 py-3 text-base sm:px-8 sm:py-4 sm:text-lg'
+    xs: 'px-2 py-1 text-xs min-h-[32px] min-w-[32px]',
+    sm: 'px-2 py-1.5 text-xs sm:px-3 sm:py-1.5 sm:text-sm min-h-[36px] sm:min-h-[40px] min-w-[36px] sm:min-w-[40px]',
+    md: 'px-3 py-2 text-xs sm:px-4 sm:py-2 sm:text-sm min-h-[40px] sm:min-h-[44px] min-w-[40px] sm:min-w-[44px]',
+    lg: 'px-4 py-2.5 text-sm sm:px-6 sm:py-3 sm:text-base min-h-[44px] sm:min-h-[48px] min-w-[44px] sm:min-w-[48px]',
+    xl: 'px-6 py-3 text-base sm:px-8 sm:py-4 sm:text-lg min-h-[48px] sm:min-h-[52px] min-w-[48px] sm:min-w-[52px]'
   };
 
   const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`;
