@@ -1,313 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaSearch, FaFilter, FaEye, FaHistory, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle, FaFileExcel, FaFilePdf, FaTag, FaCheckCircle, FaTimesCircle, FaBox } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
-import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
+import { Button, Input, Modal, Table, StatCard } from '../components/ui';
+import NomeGenericoProdutoService from '../services/nomeGenericoProduto';
+import GruposService from '../services/grupos';
+import SubgruposService from '../services/subgrupos';
+import ClassesService from '../services/classes';
 import CadastroFilterBar from '../components/CadastroFilterBar';
-import ErrorModal from '../components/ErrorModal';
-
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h1`
-  color: var(--dark-gray);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const AddButton = styled.button`
-  background: var(--primary-green);
-  color: var(--white);
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: var(--dark-green);
-    transform: translateY(-1px);
-  }
-`;
-
-const TableContainer = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  background: var(--light-gray);
-  color: var(--dark-gray);
-  font-weight: 600;
-  padding: 16px;
-  text-align: left;
-  border-bottom: 2px solid #e0e0e0;
-`;
-
-const Td = styled.td`
-  padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
-  color: var(--dark-gray);
-`;
-
-const StatusBadge = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
-`;
-
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  margin-right: 8px;
-  color: var(--gray);
-
-  &:hover {
-    background-color: var(--light-gray);
-  }
-
-  &.edit {
-    color: var(--blue);
-  }
-
-  &.delete {
-    color: var(--error-red);
-  }
-
-  &.view {
-    color: var(--primary-green);
-  }
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 0;
-  width: 90%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 24px 24px 0 24px;
-  border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 16px;
-`;
-
-const ModalTitle = styled.h2`
-  color: var(--dark-gray);
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--gray);
-  padding: 0;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 4px;
-
-  &:hover {
-    background: var(--light-gray);
-  }
-`;
-
-const Form = styled.form`
-  padding: 24px;
-`;
-
-const FormRow = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 16px;
-`;
-
-const Label = styled.label`
-  display: block;
-  margin-bottom: 8px;
-  color: var(--dark-gray);
-  font-weight: 600;
-  font-size: 14px;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-
-  &:disabled {
-    background: #f5f5f5;
-    cursor: not-allowed;
-    opacity: 0.7;
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white);
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-
-  &:disabled {
-    background: #f5f5f5;
-    cursor: not-allowed;
-    opacity: 0.7;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-`;
-
-const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &.primary {
-    background: var(--primary-green);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-green);
-    }
-
-    &:disabled {
-      background: var(--gray);
-      cursor: not-allowed;
-    }
-
-    &:disabled:hover {
-      background: var(--gray);
-    }
-  }
-
-  &.secondary {
-    background: var(--light-gray);
-    color: var(--dark-gray);
-
-    &:hover {
-      background: var(--gray);
-    }
-
-    &:disabled {
-      background: var(--light-gray);
-      color: var(--gray);
-      cursor: not-allowed;
-    }
-
-    &:disabled:hover {
-      background: var(--light-gray);
-      color: var(--gray);
-    }
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  &:disabled:hover {
-    transform: none;
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px;
-  color: var(--gray);
-`;
+import Pagination from '../components/Pagination';
 
 const NomeGenericoProduto = () => {
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [nomesGenericos, setNomesGenericos] = useState([]);
   const [grupos, setGrupos] = useState([]);
   const [subgrupos, setSubgrupos] = useState([]);
@@ -318,11 +23,12 @@ const NomeGenericoProduto = () => {
   const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
+  const [grupoFilter, setGrupoFilter] = useState('todos');
+  const [subgrupoFilter, setSubgrupoFilter] = useState('todos');
+  const [classeFilter, setClasseFilter] = useState('todos');
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [auditFilters, setAuditFilters] = useState({
     dataInicio: '',
     dataFim: '',
@@ -330,8 +36,20 @@ const NomeGenericoProduto = () => {
     usuario_id: '',
     periodo: ''
   });
-
-  const { canCreate, canEdit, canDelete } = usePermissions();
+  const [estatisticas, setEstatisticas] = useState({
+    total_nomes_genericos: 0,
+    nomes_genericos_ativos: 0,
+    nomes_genericos_inativos: 0
+  });
+  const [loadingGrupos, setLoadingGrupos] = useState(false);
+  const [loadingSubgrupos, setLoadingSubgrupos] = useState(false);
+  const [loadingClasses, setLoadingClasses] = useState(false);
+  
+  // Estados de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const {
     register,
@@ -342,15 +60,46 @@ const NomeGenericoProduto = () => {
     watch
   } = useForm();
 
+  // Observar mudanças nos campos para carregar dados dependentes
+  const selectedGrupo = watch('grupo_id');
+  const selectedSubgrupo = watch('subgrupo_id');
+
   // Carregar nomes genéricos
   const loadNomesGenericos = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/nome-generico-produto?limit=1000');
-      setNomesGenericos(response.data.data || []);
+      
+      // Parâmetros de paginação
+      const paginationParams = {
+        page: currentPage,
+        limit: itemsPerPage
+      };
+
+      const result = await NomeGenericoProdutoService.listar(paginationParams);
+      
+      if (result.success) {
+        // Garantir que data seja um array
+        const data = Array.isArray(result.data) ? result.data : [];
+        setNomesGenericos(data);
+        
+        // Extrair informações de paginação
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages || 1);
+          setTotalItems(result.pagination.totalItems || data.length);
+          setCurrentPage(result.pagination.currentPage || 1);
+        } else {
+          // Fallback se não houver paginação no backend
+          setTotalItems(data.length);
+          setTotalPages(Math.ceil(data.length / itemsPerPage));
+        }
+      } else {
+        toast.error(result.error || 'Erro ao carregar nomes genéricos');
+        setNomesGenericos([]);
+      }
     } catch (error) {
       console.error('Erro ao carregar nomes genéricos:', error);
       toast.error('Erro ao carregar nomes genéricos');
+      setNomesGenericos([]);
     } finally {
       setLoading(false);
     }
@@ -359,94 +108,101 @@ const NomeGenericoProduto = () => {
   // Carregar grupos
   const loadGrupos = async () => {
     try {
-      const response = await api.get('/grupos?limit=1000');
-      setGrupos(response.data.data.items || response.data.data || []);
+      setLoadingGrupos(true);
+      const result = await GruposService.buscarAtivos();
+      if (result.success) {
+        const data = Array.isArray(result.data) ? result.data : [];
+        setGrupos(data);
+      } else {
+        console.error('Erro ao carregar grupos:', result.error);
+        setGrupos([]);
+      }
     } catch (error) {
       console.error('Erro ao carregar grupos:', error);
       setGrupos([]);
+    } finally {
+      setLoadingGrupos(false);
     }
   };
 
   // Carregar subgrupos
   const loadSubgrupos = async () => {
     try {
-      const response = await api.get('/subgrupos?limit=1000');
-      setSubgrupos(response.data.data.items || response.data.data || []);
+      setLoadingSubgrupos(true);
+      const result = await SubgruposService.buscarAtivos();
+      if (result.success) {
+        const data = Array.isArray(result.data) ? result.data : [];
+        setSubgrupos(data);
+      } else {
+        console.error('Erro ao carregar subgrupos:', result.error);
+        setSubgrupos([]);
+      }
     } catch (error) {
       console.error('Erro ao carregar subgrupos:', error);
       setSubgrupos([]);
+    } finally {
+      setLoadingSubgrupos(false);
     }
   };
 
   // Carregar classes
   const loadClasses = async () => {
     try {
-      const response = await api.get('/classes?limit=1000');
-      setClasses(response.data.data.items || response.data.data || []);
+      setLoadingClasses(true);
+      const result = await ClassesService.buscarAtivas();
+      if (result.success) {
+        const data = Array.isArray(result.data) ? result.data : [];
+        setClasses(data);
+      } else {
+        console.error('Erro ao carregar classes:', result.error);
+        setClasses([]);
+      }
     } catch (error) {
       console.error('Erro ao carregar classes:', error);
       setClasses([]);
+    } finally {
+      setLoadingClasses(false);
     }
   };
 
-  useEffect(() => {
-    loadNomesGenericos();
-    loadGrupos();
-    loadSubgrupos();
-    loadClasses();
-  }, []);
+  // Carregar estatísticas
+  const loadEstatisticas = async () => {
+    try {
+      const result = await NomeGenericoProdutoService.listar({ limit: 1000 });
+      if (result.success) {
+        const data = Array.isArray(result.data) ? result.data : [];
+        const total = data.length;
+        const ativos = data.filter(n => n.status === 1).length;
+        const inativos = data.filter(n => n.status === 0).length;
+        
+        setEstatisticas({
+          total_nomes_genericos: total,
+          nomes_genericos_ativos: ativos,
+          nomes_genericos_inativos: inativos
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
+    }
+  };
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
+    setAuditLoading(true);
     try {
-      setAuditLoading(true);
-      
-      const params = new URLSearchParams();
-      
-      // Aplicar filtro de período se selecionado
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
+      const params = {
+        entity: 'nome_generico_produto',
+        ...auditFilters
+      };
+
+      const response = await fetch('/api/audit?' + new URLSearchParams(params));
+      const data = await response.json();
+
+      if (data.success) {
+        setAuditLogs(data.data || []);
       } else {
-        // Usar filtros manuais se período não estiver selecionado
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        toast.error('Erro ao carregar logs de auditoria');
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para nomes genéricos
-      params.append('recurso', 'nome_generico_produto');
-      
-      const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -455,13 +211,95 @@ const NomeGenericoProduto = () => {
     }
   };
 
-  // Abrir modal de auditoria
+  // Handlers
+  const handleAddNomeGenerico = () => {
+    setEditingNomeGenerico(null);
+    setViewMode(false);
+    reset();
+    setShowModal(true);
+  };
+
+  const handleViewNomeGenerico = (nomeGenerico) => {
+    setEditingNomeGenerico(nomeGenerico);
+    setViewMode(true);
+    setValue('nome', nomeGenerico.nome);
+    setValue('grupo_id', nomeGenerico.grupo_id);
+    setValue('subgrupo_id', nomeGenerico.subgrupo_id);
+    setValue('classe_id', nomeGenerico.classe_id);
+    setValue('status', nomeGenerico.status);
+    setShowModal(true);
+  };
+
+  const handleEditNomeGenerico = (nomeGenerico) => {
+    setEditingNomeGenerico(nomeGenerico);
+    setViewMode(false);
+    setValue('nome', nomeGenerico.nome);
+    setValue('grupo_id', nomeGenerico.grupo_id);
+    setValue('subgrupo_id', nomeGenerico.subgrupo_id);
+    setValue('classe_id', nomeGenerico.classe_id);
+    setValue('status', nomeGenerico.status);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingNomeGenerico(null);
+    setViewMode(false);
+    reset();
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      if (editingNomeGenerico) {
+        const result = await NomeGenericoProdutoService.atualizar(editingNomeGenerico.id, data);
+        if (result.success) {
+          toast.success('Nome genérico atualizado com sucesso!');
+          handleCloseModal();
+          loadNomesGenericos();
+          loadEstatisticas();
+        } else {
+          toast.error(result.error || 'Erro ao atualizar nome genérico');
+        }
+      } else {
+        const result = await NomeGenericoProdutoService.criar(data);
+        if (result.success) {
+          toast.success('Nome genérico criado com sucesso!');
+          handleCloseModal();
+          loadNomesGenericos();
+          loadEstatisticas();
+        } else {
+          toast.error(result.error || 'Erro ao criar nome genérico');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao salvar nome genérico:', error);
+      toast.error('Erro ao salvar nome genérico');
+    }
+  };
+
+  const handleDeleteNomeGenerico = async (nomeGenericoId) => {
+    if (window.confirm('Tem certeza que deseja excluir este nome genérico?')) {
+      try {
+        const result = await NomeGenericoProdutoService.excluir(nomeGenericoId);
+        if (result.success) {
+          toast.success('Nome genérico excluído com sucesso!');
+          loadNomesGenericos();
+          loadEstatisticas();
+        } else {
+          toast.error(result.error || 'Erro ao excluir nome genérico');
+        }
+      } catch (error) {
+        console.error('Erro ao excluir nome genérico:', error);
+        toast.error('Erro ao excluir nome genérico');
+      }
+    }
+  };
+
   const handleOpenAuditModal = () => {
     setShowAuditModal(true);
     loadAuditLogs();
   };
 
-  // Fechar modal de auditoria
   const handleCloseAuditModal = () => {
     setShowAuditModal(false);
     setAuditLogs([]);
@@ -474,743 +312,686 @@ const NomeGenericoProduto = () => {
     });
   };
 
-  // Aplicar filtros de auditoria
   const handleApplyAuditFilters = () => {
     loadAuditLogs();
   };
 
-  // Exportar auditoria para XLSX
-  const handleExportXLSX = async () => {
-    try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para nomes genéricos
-      params.append('recurso', 'nome_generico_produto');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_nome_generico_produto_${new Date().toISOString().split('T')[0]}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar XLSX:', error);
-      toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  // Exportar auditoria para PDF
-  const handleExportPDF = async () => {
-    try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para nomes genéricos
-      params.append('recurso', 'nome_generico_produto');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_nome_generico_produto_${new Date().toISOString().split('T')[0]}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  // Formatar data
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleString('pt-BR');
   };
 
-  // Obter label da ação
   const getActionLabel = (action) => {
-    const actions = {
-      'create': 'Criar',
-      'update': 'Editar',
-      'delete': 'Excluir',
-      'login': 'Login',
-      'logout': 'Logout',
-      'view': 'Visualizar'
+    const labels = {
+      create: 'Criar',
+      update: 'Editar',
+      delete: 'Excluir'
     };
-    return actions[action] || action;
+    return labels[action] || action;
   };
 
-  // Obter label do campo
   const getFieldLabel = (field) => {
     const labels = {
-      'nome': 'Nome',
-      'grupo_id': 'Grupo',
-      'subgrupo_id': 'Subgrupo',
-      'classe_id': 'Classe',
-      'status': 'Status'
+      nome: 'Nome',
+      grupo_id: 'Grupo',
+      subgrupo_id: 'Subgrupo',
+      classe_id: 'Classe',
+      status: 'Status'
     };
     return labels[field] || field;
   };
 
-  // Formatar valor do campo
   const formatFieldValue = (field, value) => {
-    if (value === null || value === undefined || value === '') {
-      return 'Não informado';
+    if (value === null || value === undefined) return '-';
+    
+    if (field === 'status') {
+      return value === 1 ? 'Ativo' : 'Inativo';
     }
-
-    switch (field) {
-      case 'status':
-        return value === 1 ? 'Ativo' : 'Inativo';
-      case 'grupo_id':
-        const grupo = grupos.find(g => g.id === value);
-        return grupo ? grupo.nome : 'Não informado';
-      case 'subgrupo_id':
-        const subgrupo = subgrupos.find(sg => sg.id === value);
-        return subgrupo ? subgrupo.nome : 'Não informado';
-      case 'classe_id':
-        const classe = classes.find(c => c.id === value);
-        return classe ? classe.nome : 'Não informado';
-      default:
-        return value;
+    
+    if (field === 'grupo_id') {
+      const grupo = grupos.find(g => g.id === value);
+      return grupo ? grupo.nome : value;
     }
+    
+    if (field === 'subgrupo_id') {
+      const subgrupo = subgrupos.find(s => s.id === value);
+      return subgrupo ? subgrupo.nome : value;
+    }
+    
+    if (field === 'classe_id') {
+      const classe = classes.find(c => c.id === value);
+      return classe ? classe.nome : value;
+    }
+    
+    return value.toString();
   };
 
-  // Abrir modal para adicionar nome genérico
-  const handleAddNomeGenerico = () => {
-    setEditingNomeGenerico(null);
-    setViewMode(false);
-    reset();
-    setValue('status', '1'); // Define status como "Ativo" por padrão
-    setShowModal(true);
-  };
-
-  // Abrir modal para editar nome genérico
-  const handleEditNomeGenerico = (nomeGenerico) => {
-    setEditingNomeGenerico(nomeGenerico);
-    setViewMode(false);
-    setValue('nome', nomeGenerico.nome);
-    setValue('grupo_id', nomeGenerico.grupo_id || '');
-    setValue('subgrupo_id', nomeGenerico.subgrupo_id || '');
-    setValue('classe_id', nomeGenerico.classe_id || '');
-    setValue('status', nomeGenerico.status);
-    setShowModal(true);
-  };
-
-  // Abrir modal para visualizar nome genérico
-  const handleViewNomeGenerico = (nomeGenerico) => {
-    setEditingNomeGenerico(nomeGenerico);
-    setViewMode(true);
-    setValue('nome', nomeGenerico.nome);
-    setValue('grupo_id', nomeGenerico.grupo_id || '');
-    setValue('subgrupo_id', nomeGenerico.subgrupo_id || '');
-    setValue('classe_id', nomeGenerico.classe_id || '');
-    setValue('status', nomeGenerico.status);
-    setShowModal(true);
-  };
-
-  // Fechar modal
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingNomeGenerico(null);
-    setViewMode(false);
-    reset();
-  };
-
-  // Salvar nome genérico
-  const onSubmit = async (data) => {
+  const handleExportXLSX = async () => {
     try {
-      if (editingNomeGenerico) {
-        // Para edição, enviar apenas os campos que foram alterados
-        const updateData = {};
+      const params = {
+        search: searchTerm,
+        status: statusFilter !== 'todos' ? statusFilter : '',
+        grupo_id: grupoFilter !== 'todos' ? grupoFilter : '',
+        subgrupo_id: subgrupoFilter !== 'todos' ? subgrupoFilter : '',
+        classe_id: classeFilter !== 'todos' ? classeFilter : ''
+      };
+
+      const result = await NomeGenericoProdutoService.exportarXLSX(params);
+      if (result.success) {
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nomes_genericos_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
         
-        if (data.nome !== editingNomeGenerico.nome) {
-          updateData.nome = data.nome;
-        }
-        
-        if (data.grupo_id !== editingNomeGenerico.grupo_id) {
-          updateData.grupo_id = data.grupo_id || null;
-        }
-        
-        if (data.subgrupo_id !== editingNomeGenerico.subgrupo_id) {
-          updateData.subgrupo_id = data.subgrupo_id || null;
-        }
-        
-        if (data.classe_id !== editingNomeGenerico.classe_id) {
-          updateData.classe_id = data.classe_id || null;
-        }
-        
-        if (data.status !== editingNomeGenerico.status) {
-          updateData.status = parseInt(data.status);
-        }
-        
-        // Se não há campos para atualizar, mostrar erro
-        if (Object.keys(updateData).length === 0) {
-          toast.error('Nenhum campo foi alterado');
-          return;
-        }
-        
-        await api.put(`/nome-generico-produto/${editingNomeGenerico.id}`, updateData);
-        toast.success('Nome genérico atualizado com sucesso!');
+        toast.success('Relatório exportado com sucesso!');
       } else {
-        // Para criação, enviar todos os campos
-        const createData = { ...data };
-        if (createData.status) {
-          createData.status = parseInt(createData.status);
-        }
-        if (createData.grupo_id === '') createData.grupo_id = null;
-        if (createData.subgrupo_id === '') createData.subgrupo_id = null;
-        if (createData.classe_id === '') createData.classe_id = null;
-        
-        await api.post('/nome-generico-produto', createData);
-        toast.success('Nome genérico criado com sucesso!');
+        toast.error(result.error || 'Erro ao exportar relatório');
       }
-      
-      handleCloseModal();
-      loadNomesGenericos();
     } catch (error) {
-      console.error('Erro ao salvar nome genérico:', error);
-      toast.error(error.response?.data?.error || 'Erro ao salvar nome genérico');
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar relatório');
     }
   };
 
-  // Desativar nome genérico
-  const handleDeleteNomeGenerico = async (nomeGenericoId) => {
-    if (window.confirm('Tem certeza que deseja desativar este nome genérico?')) {
-      try {
-        await api.delete(`/nome-generico-produto/${nomeGenericoId}`);
-        toast.success('Nome genérico desativado com sucesso!');
-        loadNomesGenericos();
-      } catch (error) {
-        console.error('Erro ao desativar nome genérico:', error);
-        const errorMsg = error.response?.data?.message || error.response?.data?.error || 'Erro ao desativar nome genérico';
+  const handleExportPDF = async () => {
+    try {
+      const params = {
+        search: searchTerm,
+        status: statusFilter !== 'todos' ? statusFilter : '',
+        grupo_id: grupoFilter !== 'todos' ? grupoFilter : '',
+        subgrupo_id: subgrupoFilter !== 'todos' ? subgrupoFilter : '',
+        classe_id: classeFilter !== 'todos' ? classeFilter : ''
+      };
+
+      const result = await NomeGenericoProdutoService.exportarPDF(params);
+      if (result.success) {
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nomes_genericos_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
         
-        // Se a mensagem contém quebras de linha, mostrar no modal customizado
-        if (errorMsg.includes('\n')) {
-          setErrorMessage(errorMsg);
-          setShowErrorModal(true);
-        } else {
-          toast.error(errorMsg);
-        }
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar relatório');
       }
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar relatório');
     }
   };
 
-  // Filtrar nomes genéricos
-  const filteredNomesGenericos = nomesGenericos.filter(nomeGenerico => {
-    const matchesSearch = nomeGenerico.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         nomeGenerico.grupo_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         nomeGenerico.subgrupo_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         nomeGenerico.classe_nome?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'todos' || nomeGenerico.status === parseInt(statusFilter);
-    return matchesSearch && matchesStatus;
-  });
+  const getGrupoName = (grupoId) => {
+    if (loadingGrupos) return 'Carregando...';
+    const grupo = grupos.find(g => g.id === grupoId);
+    return grupo ? grupo.nome : 'Grupo não encontrado';
+  };
 
+  const getSubgrupoName = (subgrupoId) => {
+    if (loadingSubgrupos) return 'Carregando...';
+    const subgrupo = subgrupos.find(s => s.id === subgrupoId);
+    return subgrupo ? subgrupo.nome : 'Subgrupo não encontrado';
+  };
+
+  const getClasseName = (classeId) => {
+    if (loadingClasses) return 'Carregando...';
+    const classe = classes.find(c => c.id === classeId);
+    return classe ? classe.nome : 'Classe não encontrada';
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  // Filtros
+  const filteredNomesGenericos = Array.isArray(nomesGenericos) ? nomesGenericos.filter(nomeGenerico => {
+    const matchesSearch = !searchTerm || 
+      nomeGenerico.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getGrupoName(nomeGenerico.grupo_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getSubgrupoName(nomeGenerico.subgrupo_id).toLowerCase().includes(searchTerm.toLowerCase()) ||
+      getClasseName(nomeGenerico.classe_id).toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'todos' || 
+      (statusFilter === 'ativo' && nomeGenerico.status === 1) ||
+      (statusFilter === 'inativo' && nomeGenerico.status === 0);
+    
+    const matchesGrupo = grupoFilter === 'todos' || 
+      nomeGenerico.grupo_id.toString() === grupoFilter;
+    
+    const matchesSubgrupo = subgrupoFilter === 'todos' || 
+      nomeGenerico.subgrupo_id.toString() === subgrupoFilter;
+    
+    const matchesClasse = classeFilter === 'todos' || 
+      nomeGenerico.classe_id.toString() === classeFilter;
+    
+    return matchesSearch && matchesStatus && matchesGrupo && matchesSubgrupo && matchesClasse;
+  }) : [];
+
+  // Effects
+  useEffect(() => {
+    loadNomesGenericos();
+    loadGrupos();
+    loadSubgrupos();
+    loadClasses();
+    loadEstatisticas();
+  }, [currentPage, itemsPerPage]);
+
+  // Loading state
   if (loading) {
     return (
-      <Container>
-        <div>Carregando nomes genéricos...</div>
-      </Container>
+      <div className="p-3 sm:p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Carregando nomes genéricos...</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <Header>
-        <Title>Nomes Genéricos de Produtos</Title>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <AddButton 
+    <div className="p-3 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Nomes Genéricos</h1>
+        <div className="flex gap-2 sm:gap-3">
+          <Button
             onClick={handleOpenAuditModal}
-            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
           >
-            <FaQuestionCircle />
-            Auditoria
-          </AddButton>
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+          </Button>
           {canCreate('nome_generico_produto') && (
-            <AddButton onClick={handleAddNomeGenerico}>
-              <FaPlus />
-              Adicionar Nome Genérico
-            </AddButton>
+            <Button onClick={handleAddNomeGenerico} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar Nome Genérico</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
           )}
         </div>
-      </Header>
+      </div>
 
+      {/* Cards de Estatísticas */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-6">
+        <StatCard
+          title="Total de Nomes Genéricos"
+          value={estatisticas.total_nomes_genericos}
+          icon={FaTag}
+          color="blue"
+        />
+        <StatCard
+          title="Nomes Genéricos Ativos"
+          value={estatisticas.nomes_genericos_ativos}
+          icon={FaCheckCircle}
+          color="green"
+        />
+        <StatCard
+          title="Nomes Genéricos Inativos"
+          value={estatisticas.nomes_genericos_inativos}
+          icon={FaTimesCircle}
+          color="red"
+        />
+      </div>
+
+      {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); }}
-        placeholder="Buscar por nome, grupo, subgrupo ou classe..."
+        onStatusFilterChange={setStatusFilter}
+        additionalFilters={[
+          {
+            label: 'Grupo',
+            value: grupoFilter,
+            onChange: setGrupoFilter,
+            options: [
+              { value: 'todos', label: loadingGrupos ? 'Carregando...' : 'Todos os grupos' },
+              ...grupos.map(grupo => ({
+                value: grupo.id.toString(),
+                label: grupo.nome
+              }))
+            ]
+          },
+          {
+            label: 'Subgrupo',
+            value: subgrupoFilter,
+            onChange: setSubgrupoFilter,
+            options: [
+              { value: 'todos', label: loadingSubgrupos ? 'Carregando...' : 'Todos os subgrupos' },
+              ...subgrupos.map(subgrupo => ({
+                value: subgrupo.id.toString(),
+                label: subgrupo.nome
+              }))
+            ]
+          },
+          {
+            label: 'Classe',
+            value: classeFilter,
+            onChange: setClasseFilter,
+            options: [
+              { value: 'todos', label: loadingClasses ? 'Carregando...' : 'Todas as classes' },
+              ...classes.map(classe => ({
+                value: classe.id.toString(),
+                label: classe.nome
+              }))
+            ]
+          }
+        ]}
       />
 
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Nome</Th>
-              <Th>Grupo</Th>
-              <Th>Subgrupo</Th>
-              <Th>Classe</Th>
-              <Th>Status</Th>
-              <Th>Ações</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredNomesGenericos.length === 0 ? (
-              <tr>
-                <Td colSpan="6">
-                  <EmptyState>
-                    {searchTerm || statusFilter !== 'todos'
-                      ? 'Nenhum nome genérico encontrado com os filtros aplicados'
-                      : 'Nenhum nome genérico cadastrado'
-                    }
-                  </EmptyState>
-                </Td>
-              </tr>
-            ) : (
-              filteredNomesGenericos.map((nomeGenerico) => (
-                <tr key={nomeGenerico.id}>
-                  <Td>{nomeGenerico.nome}</Td>
-                  <Td>{nomeGenerico.grupo_nome || 'Não informado'}</Td>
-                  <Td>{nomeGenerico.subgrupo_nome || 'Não informado'}</Td>
-                  <Td>{nomeGenerico.classe_nome || 'Não informado'}</Td>
-                  <Td>
-                    <StatusBadge $status={nomeGenerico.status === 1 ? 'ativo' : 'inativo'}>
-                      {nomeGenerico.status === 1 ? 'Ativo' : 'Inativo'}
-                    </StatusBadge>
-                  </Td>
-                  <Td>
-                    <ActionButton
-                      className="view"
-                      title="Visualizar"
+      {/* Tabela */}
+      {filteredNomesGenericos.length === 0 ? (
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+          {searchTerm || statusFilter !== 'todos' || grupoFilter !== 'todos' || subgrupoFilter !== 'todos' || classeFilter !== 'todos'
+            ? 'Nenhum nome genérico encontrado com os filtros aplicados'
+            : 'Nenhum nome genérico cadastrado'
+          }
+        </div>
+      ) : (
+        <>
+          {/* Versão Desktop - Tabela completa */}
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+            <Table>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grupo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subgrupo</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredNomesGenericos.map((nomeGenerico) => (
+                  <tr key={nomeGenerico.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{nomeGenerico.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{nomeGenerico.nome}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {loadingGrupos ? (
+                        <span className="text-gray-400">Carregando...</span>
+                      ) : (
+                        getGrupoName(nomeGenerico.grupo_id)
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {loadingSubgrupos ? (
+                        <span className="text-gray-400">Carregando...</span>
+                      ) : (
+                        getSubgrupoName(nomeGenerico.subgrupo_id)
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {loadingClasses ? (
+                        <span className="text-gray-400">Carregando...</span>
+                      ) : (
+                        getClasseName(nomeGenerico.classe_id)
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                        nomeGenerico.status === 1 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {nomeGenerico.status === 1 ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleViewNomeGenerico(nomeGenerico)}
+                          title="Visualizar"
+                        >
+                          <FaEye className="text-green-600 text-sm" />
+                        </Button>
+                        {canEdit('nome_generico_produto') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditNomeGenerico(nomeGenerico)}
+                            title="Editar"
+                          >
+                            <FaEdit className="text-blue-600 text-sm" />
+                          </Button>
+                        )}
+                        {canDelete('nome_generico_produto') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteNomeGenerico(nomeGenerico.id)}
+                            title="Excluir"
+                          >
+                            <FaTrash className="text-red-600 text-sm" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Versão Mobile - Cards */}
+          <div className="lg:hidden space-y-3">
+            {filteredNomesGenericos.map((nomeGenerico) => (
+              <div key={nomeGenerico.id} className="bg-white rounded-lg shadow-sm p-4 border">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm">{nomeGenerico.nome}</h3>
+                    <p className="text-gray-600 text-xs">ID: {nomeGenerico.id}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="xs"
                       onClick={() => handleViewNomeGenerico(nomeGenerico)}
+                      title="Visualizar"
+                      className="p-2"
                     >
-                      <FaEye />
-                    </ActionButton>
+                      <FaEye className="text-green-600 text-sm" />
+                    </Button>
                     {canEdit('nome_generico_produto') && (
-                      <ActionButton
-                        className="edit"
-                        title="Editar"
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleEditNomeGenerico(nomeGenerico)}
+                        title="Editar"
+                        className="p-2"
                       >
-                        <FaEdit />
-                      </ActionButton>
+                        <FaEdit className="text-blue-600 text-sm" />
+                      </Button>
                     )}
                     {canDelete('nome_generico_produto') && (
-                      <ActionButton
-                        className="delete"
-                        title="Desativar"
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleDeleteNomeGenerico(nomeGenerico.id)}
+                        title="Excluir"
+                        className="p-2"
                       >
-                        <FaTrash />
-                      </ActionButton>
+                        <FaTrash className="text-red-600 text-sm" />
+                      </Button>
                     )}
-                  </Td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </TableContainer>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-gray-500">Grupo:</span>
+                    <p className="font-medium">
+                      {loadingGrupos ? 'Carregando...' : getGrupoName(nomeGenerico.grupo_id)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Subgrupo:</span>
+                    <p className="font-medium">
+                      {loadingSubgrupos ? 'Carregando...' : getSubgrupoName(nomeGenerico.subgrupo_id)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Classe:</span>
+                    <p className="font-medium">
+                      {loadingClasses ? 'Carregando...' : getClasseName(nomeGenerico.classe_id)}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Status:</span>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                      nomeGenerico.status === 1 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {nomeGenerico.status === 1 ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
+      {/* Modal de Cadastro/Edição/Visualização */}
       {showModal && (
-        <Modal onClick={handleCloseModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>
-                {viewMode ? 'Visualizar Nome Genérico' : editingNomeGenerico ? 'Editar Nome Genérico' : 'Adicionar Nome Genérico'}
-              </ModalTitle>
-              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
-            </ModalHeader>
-
-            <Form onSubmit={handleSubmit(onSubmit)}>
-              <FormGroup>
-                <Label>Nome *</Label>
+        <Modal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          title={viewMode ? 'Visualizar Nome Genérico' : editingNomeGenerico ? 'Editar Nome Genérico' : 'Adicionar Nome Genérico'}
+          size="full"
+        >
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <Input
+                label="Nome *"
+                type="text"
+                {...register('nome', { required: 'Nome é obrigatório' })}
+                error={errors.nome?.message}
+                disabled={viewMode}
+              />
+              <Input
+                label="Grupo *"
+                type="select"
+                {...register('grupo_id', { required: 'Grupo é obrigatório' })}
+                error={errors.grupo_id?.message}
+                disabled={viewMode || loadingGrupos}
+              >
+                <option value="">
+                  {loadingGrupos ? 'Carregando grupos...' : 'Selecione um grupo'}
+                </option>
+                {grupos.map(grupo => (
+                  <option key={grupo.id} value={grupo.id}>
+                    {grupo.nome}
+                  </option>
+                ))}
+              </Input>
+              <Input
+                label="Subgrupo *"
+                type="select"
+                {...register('subgrupo_id', { required: 'Subgrupo é obrigatório' })}
+                error={errors.subgrupo_id?.message}
+                disabled={viewMode || loadingSubgrupos}
+              >
+                <option value="">
+                  {loadingSubgrupos ? 'Carregando subgrupos...' : 'Selecione um subgrupo'}
+                </option>
+                {subgrupos.map(subgrupo => (
+                  <option key={subgrupo.id} value={subgrupo.id}>
+                    {subgrupo.nome}
+                  </option>
+                ))}
+              </Input>
+              <Input
+                label="Classe *"
+                type="select"
+                {...register('classe_id', { required: 'Classe é obrigatória' })}
+                error={errors.classe_id?.message}
+                disabled={viewMode || loadingClasses}
+              >
+                <option value="">
+                  {loadingClasses ? 'Carregando classes...' : 'Selecione uma classe'}
+                </option>
+                {classes.map(classe => (
+                  <option key={classe.id} value={classe.id}>
+                    {classe.nome}
+                  </option>
+                ))}
+              </Input>
+              {!viewMode && (
                 <Input
-                  type="text"
-                  placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
-                  disabled={viewMode}
-                  {...register('nome', { required: 'Nome é obrigatório' })}
-                />
-                {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-              </FormGroup>
-
-              <FormRow>
-                <FormGroup>
-                  <Label>Grupo</Label>
-                  <Select disabled={viewMode} {...register('grupo_id')}>
-                    <option value="">Selecione um grupo</option>
-                    {grupos.map((grupo) => (
-                      <option key={grupo.id} value={grupo.id}>
-                        {grupo.nome}
-                      </option>
-                    ))}
-                  </Select>
-                </FormGroup>
-
-                <FormGroup>
-                  <Label>Subgrupo</Label>
-                  <Select disabled={viewMode} {...register('subgrupo_id')}>
-                    <option value="">Selecione um subgrupo</option>
-                    {subgrupos.map((subgrupo) => (
-                      <option key={subgrupo.id} value={subgrupo.id}>
-                        {subgrupo.nome}
-                      </option>
-                    ))}
-                  </Select>
-                </FormGroup>
-              </FormRow>
-
-              <FormGroup>
-                <Label>Classe</Label>
-                <Select disabled={viewMode} {...register('classe_id')}>
-                  <option value="">Selecione uma classe</option>
-                  {classes.map((classe) => (
-                    <option key={classe.id} value={classe.id}>
-                      {classe.nome}
-                    </option>
-                  ))}
-                </Select>
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Status</Label>
-                <Select disabled={viewMode} {...register('status', { required: 'Status é obrigatório' })}>
-                  <option value="1">Ativo</option>
-                  <option value="0">Inativo</option>
-                </Select>
-                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
-              </FormGroup>
-
-              <ButtonGroup>
-                <Button
-                  type="button"
-                  className="secondary"
-                  onClick={handleCloseModal}
+                  label="Status"
+                  type="select"
+                  {...register('status')}
+                  error={errors.status?.message}
                 >
-                  {viewMode ? 'Fechar' : 'Cancelar'}
+                  <option value={1}>Ativo</option>
+                  <option value={0}>Inativo</option>
+                </Input>
+              )}
+            </div>
+
+            {!viewMode && (
+              <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
+                <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
+                  Cancelar
                 </Button>
-                {!viewMode && (
-                  <Button
-                    type="submit"
-                    className="primary"
-                  >
-                    {editingNomeGenerico ? 'Atualizar' : 'Cadastrar'}
-                  </Button>
-                )}
-              </ButtonGroup>
-            </Form>
-          </ModalContent>
+                <Button type="submit" size="sm">
+                  {editingNomeGenerico ? 'Atualizar' : 'Cadastrar'}
+                </Button>
+              </div>
+            )}
+          </form>
         </Modal>
       )}
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px', padding: '24px' }}>
-            <ModalHeader style={{ padding: '0 0 24px 0', borderBottom: '1px solid #e0e0e0' }}>
-              <ModalTitle>Relatório de Auditoria - Nomes Genéricos de Produtos</ModalTitle>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={handleExportXLSX}
-                  title="Exportar para Excel"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFileExcel />
-                  Excel
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  title="Exportar para PDF"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFilePdf />
-                  PDF
-                </button>
-                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
-              </div>
-            </ModalHeader>
-
+        <Modal
+          isOpen={showAuditModal}
+          onClose={handleCloseAuditModal}
+          title="Relatório de Auditoria - Nomes Genéricos"
+          size="full"
+        >
+          <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
-            <div style={{ marginTop: '24px', marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataInicio}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataFim}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Ação
-                  </label>
-                  <select
-                    value={auditFilters.acao}
-                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todas as ações</option>
-                    <option value="create">Criar</option>
-                    <option value="update">Editar</option>
-                    <option value="delete">Excluir</option>
-                    <option value="view">Visualizar</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Usuário
-                  </label>
-                  <select
-                    value={auditFilters.usuario_id}
-                    onChange={(e) => setAuditFilters({...auditFilters, usuario_id: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todos os usuários</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Período
-                  </label>
-                  <select
-                    value={auditFilters.periodo}
-                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Período personalizado</option>
-                    <option value="7dias">Últimos 7 dias</option>
-                    <option value="30dias">Últimos 30 dias</option>
-                    <option value="90dias">Últimos 90 dias</option>
-                    <option value="todos">Todos os registros</option>
-                  </select>
+            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Filtros</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <Input
+                  label="Data Início"
+                  type="date"
+                  value={auditFilters.dataInicio}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                />
+                <Input
+                  label="Data Fim"
+                  type="date"
+                  value={auditFilters.dataFim}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                />
+                <Input
+                  label="Ação"
+                  type="select"
+                  value={auditFilters.acao}
+                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                >
+                  <option value="">Todas as ações</option>
+                  <option value="create">Criar</option>
+                  <option value="update">Editar</option>
+                  <option value="delete">Excluir</option>
+                </Input>
+                <Input
+                  label="Período"
+                  type="select"
+                  value={auditFilters.periodo}
+                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                >
+                  <option value="">Período personalizado</option>
+                  <option value="7dias">Últimos 7 dias</option>
+                  <option value="30dias">Últimos 30 dias</option>
+                  <option value="90dias">Últimos 90 dias</option>
+                  <option value="todos">Todos os registros</option>
+                </Input>
+                <div className="flex items-end">
+                  <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
+                    <span className="hidden sm:inline">Aplicar Filtros</span>
+                    <span className="sm:hidden">Aplicar</span>
+                  </Button>
                 </div>
               </div>
-              <button
-                onClick={handleApplyAuditFilters}
-                style={{
-                  marginTop: '12px',
-                  padding: '8px 16px',
-                  background: 'var(--primary-green)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Aplicar Filtros
-              </button>
             </div>
 
-            {/* Lista de Logs */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            {/* Botões de Exportação */}
+            <div className="flex gap-2 sm:gap-3">
+              <Button onClick={handleExportXLSX} variant="outline" size="sm">
+                <FaFileExcel className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar Excel</span>
+                <span className="sm:hidden">Excel</span>
+              </Button>
+              <Button onClick={handleExportPDF} variant="outline" size="sm">
+                <FaFilePdf className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar PDF</span>
+                <span className="sm:hidden">PDF</span>
+              </Button>
+            </div>
+
+            {/* Resultados da Auditoria */}
+            <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
+                <div className="text-center py-6 sm:py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+                  <p className="text-gray-600 text-sm">Carregando logs...</p>
+                </div>
               ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
+                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
                   Nenhum log encontrado com os filtros aplicados
                 </div>
               ) : (
-                <div>
-                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="text-xs sm:text-sm text-gray-600">
                     {auditLogs.length} log(s) encontrado(s)
                   </div>
                   {auditLogs.map((log, index) => (
                     <div
                       key={index}
-                      style={{
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        marginBottom: '12px',
-                        background: 'white'
-                      }}
+                      className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white"
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            background: log.acao === 'create' ? '#e8f5e8' : 
-                                       log.acao === 'update' ? '#fff3cd' : 
-                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
-                            color: log.acao === 'create' ? '#2e7d32' : 
-                                   log.acao === 'update' ? '#856404' : 
-                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
-                          }}>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 sm:mb-3 gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                            log.acao === 'create' ? 'bg-green-100 text-green-800' : 
+                            log.acao === 'update' ? 'bg-yellow-100 text-yellow-800' : 
+                            log.acao === 'delete' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
                             {getActionLabel(log.acao)}
                           </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                          <span className="text-xs sm:text-sm text-gray-600">
                             por {log.usuario_nome || 'Usuário desconhecido'}
                           </span>
                         </div>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                        <span className="text-xs sm:text-sm text-gray-600">
                           {formatDate(log.timestamp)}
                         </span>
                       </div>
                       
                       {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
+                        <div className="text-xs sm:text-sm text-gray-800">
                           {log.detalhes.changes && (
-                            <div style={{ marginBottom: '8px' }}>
+                            <div className="mb-2 sm:mb-3">
                               <strong>Mudanças Realizadas:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
+                              <div className="mt-1 sm:mt-2 space-y-1 sm:space-y-2">
                                 {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} style={{ 
-                                    marginBottom: '6px', 
-                                    padding: '8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
+                                  <div key={field} className="p-2 sm:p-3 bg-gray-50 rounded-lg border">
+                                    <div className="font-semibold text-gray-800 mb-1 sm:mb-2 text-xs sm:text-sm">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                      <span style={{ color: '#721c24' }}>
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs">
+                                      <span className="text-red-600">
                                         <strong>Antes:</strong> {formatFieldValue(field, change.from)}
                                       </span>
-                                      <span style={{ color: '#6c757d' }}>→</span>
-                                      <span style={{ color: '#2e7d32' }}>
+                                      <span className="text-gray-500 hidden sm:inline">→</span>
+                                      <span className="text-green-600">
                                         <strong>Depois:</strong> {formatFieldValue(field, change.to)}
                                       </span>
                                     </div>
@@ -1222,25 +1003,13 @@ const NomeGenericoProduto = () => {
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
                               <strong>Dados do Nome Genérico:</strong>
-                              <div style={{ 
-                                marginLeft: '12px', 
-                                marginTop: '8px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '8px'
-                              }}>
+                              <div className="mt-1 sm:mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
                                 {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} style={{ 
-                                    padding: '6px 8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef',
-                                    fontSize: '11px'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
+                                  <div key={field} className="p-1.5 sm:p-2 bg-gray-50 rounded border text-xs">
+                                    <div className="font-semibold text-gray-800 mb-0.5 sm:mb-1">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ color: '#2e7d32' }}>
+                                    <div className="text-green-600">
                                       {formatFieldValue(field, value)}
                                     </div>
                                   </div>
@@ -1249,15 +1018,9 @@ const NomeGenericoProduto = () => {
                             </div>
                           )}
                           {log.detalhes.resourceId && (
-                            <div style={{ 
-                              marginTop: '8px', 
-                              padding: '6px 8px', 
-                              background: '#e3f2fd', 
-                              borderRadius: '4px',
-                              fontSize: '11px'
-                            }}>
+                            <div className="mt-2 sm:mt-3 p-1.5 sm:p-2 bg-blue-50 rounded border text-xs">
                               <strong>ID do Nome Genérico:</strong> 
-                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
+                              <span className="text-blue-600 ml-1">
                                 #{log.detalhes.resourceId}
                               </span>
                             </div>
@@ -1269,17 +1032,22 @@ const NomeGenericoProduto = () => {
                 </div>
               )}
             </div>
-          </ModalContent>
+          </div>
         </Modal>
       )}
 
-      {/* Modal de Erro Customizado */}
-      <ErrorModal
-        isOpen={showErrorModal}
-        message={errorMessage}
-        onClose={() => setShowErrorModal(false)}
-      />
-    </Container>
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          totalItems={totalItems}
+        />
+      )}
+    </div>
   );
 };
 
