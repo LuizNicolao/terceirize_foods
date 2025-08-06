@@ -488,7 +488,11 @@ const UnidadesEscolares = () => {
        </div>
 
                {/* Tabela */}
-       {filteredUnidades.length === 0 ? (
+       {loading ? (
+         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+           Carregando unidades escolares...
+         </div>
+       ) : filteredUnidades.length === 0 ? (
          <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
            {searchTerm 
              ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
@@ -678,7 +682,7 @@ const UnidadesEscolares = () => {
           isOpen={showModal}
           onClose={handleCloseModal}
           title={viewMode ? 'Visualizar Unidade Escolar' : editingUnidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
-          size="xl"
+          size="full"
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
             {/* Primeira Linha - 2 Cards */}
