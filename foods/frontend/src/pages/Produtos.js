@@ -758,7 +758,7 @@ const Produtos = () => {
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden space-y-3" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="lg:hidden space-y-3">
             {produtos.map((produto) => (
               <div key={produto.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
