@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
-const { userValidations, commonValidations } = require('../middleware/validation');
+const { userValidations, commonValidations } = require('./usuarioValidator');
 const { paginationMiddleware } = require('../middleware/pagination');
 const { hateoasMiddleware } = require('../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../utils/audit');

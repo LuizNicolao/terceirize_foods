@@ -530,7 +530,7 @@ const Grupos = () => {
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="lg:hidden space-y-3">
             {filteredGrupos.map((grupo) => (
               <div key={grupo.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">

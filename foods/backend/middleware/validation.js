@@ -115,36 +115,7 @@ const commonValidations = {
     .withMessage('Status deve ser ativo, inativo ou bloqueado')
 };
 
-// Validações específicas para usuários
-const userValidations = {
-  create: [
-    commonValidations.name,
-    commonValidations.email,
-    commonValidations.password,
-    body('nivel_de_acesso')
-      .isIn(['I', 'II', 'III'])
-      .withMessage('Nível de acesso deve ser I, II ou III'),
-    body('tipo_de_acesso')
-      .isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'])
-      .withMessage('Tipo de acesso inválido'),
-    handleValidationErrors
-  ],
-
-  update: [
-    commonValidations.id,
-    commonValidations.name.optional(),
-    commonValidations.email.optional(),
-    body('nivel_de_acesso')
-      .optional()
-      .isIn(['I', 'II', 'III'])
-      .withMessage('Nível de acesso deve ser I, II ou III'),
-    body('tipo_de_acesso')
-      .optional()
-      .isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'])
-      .withMessage('Tipo de acesso inválido'),
-    handleValidationErrors
-  ]
-};
+// Validações específicas para usuários foram movidas para routes/usuarios/usuarioValidator.js
 
 // Validações específicas para fornecedores
 const fornecedorValidations = {
@@ -445,133 +416,7 @@ const classeValidations = {
   ]
 };
 
-// Validações específicas para produtos
-const produtoValidations = {
-  create: [
-    body('nome')
-      .isLength({ min: 3, max: 200 })
-      .withMessage('Nome do produto deve ter entre 3 e 200 caracteres'),
-    body('descricao')
-      .optional()
-      .isLength({ min: 10, max: 1000 })
-      .withMessage('Descrição deve ter entre 10 e 1000 caracteres'),
-    body('codigo_barras')
-      .optional()
-      .isLength({ min: 8, max: 50 })
-      .withMessage('Código de barras deve ter entre 8 e 50 caracteres'),
-    body('fator_conversao')
-      .optional()
-      .isFloat({ min: 0.01 })
-      .withMessage('Fator de conversão deve ser um número positivo'),
-    body('preco_custo')
-      .optional()
-      .isFloat({ min: 0 })
-      .withMessage('Preço de custo deve ser um número positivo'),
-    body('preco_venda')
-      .optional()
-      .isFloat({ min: 0 })
-      .withMessage('Preço de venda deve ser um número positivo'),
-    body('estoque_atual')
-      .optional()
-      .isInt({ min: 0 })
-      .withMessage('Estoque atual deve ser um número inteiro positivo'),
-    body('estoque_minimo')
-      .optional()
-      .isInt({ min: 0 })
-      .withMessage('Estoque mínimo deve ser um número inteiro positivo'),
-    body('fornecedor_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Fornecedor deve ser selecionado'),
-    body('grupo_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Grupo deve ser selecionado'),
-    body('subgrupo_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Subgrupo deve ser selecionado'),
-    body('unidade_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Unidade deve ser selecionada'),
-    body('status')
-      .optional()
-      .isIn(['ativo', 'inativo'])
-      .withMessage('Status deve ser ativo ou inativo'),
-    handleValidationErrors
-  ],
-
-  update: [
-    commonValidations.id,
-    body('nome')
-      .optional()
-      .isLength({ min: 3, max: 200 })
-      .withMessage('Nome do produto deve ter entre 3 e 200 caracteres'),
-    body('descricao')
-      .optional()
-      .isLength({ min: 10, max: 1000 })
-      .withMessage('Descrição deve ter entre 10 e 1000 caracteres'),
-    body('codigo_barras')
-      .optional()
-      .isLength({ min: 8, max: 50 })
-      .withMessage('Código de barras deve ter entre 8 e 50 caracteres'),
-    body('fator_conversao')
-      .optional()
-      .isFloat({ min: 0.01 })
-      .withMessage('Fator de conversão deve ser um número positivo'),
-    body('preco_custo')
-      .optional()
-      .isFloat({ min: 0 })
-      .withMessage('Preço de custo deve ser um número positivo'),
-    body('preco_venda')
-      .optional()
-      .isFloat({ min: 0 })
-      .withMessage('Preço de venda deve ser um número positivo'),
-    body('estoque_atual')
-      .optional()
-      .isInt({ min: 0 })
-      .withMessage('Estoque atual deve ser um número inteiro positivo'),
-    body('estoque_minimo')
-      .optional()
-      .isInt({ min: 0 })
-      .withMessage('Estoque mínimo deve ser um número inteiro positivo'),
-    body('fornecedor_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Fornecedor deve ser selecionado'),
-    body('grupo_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Grupo deve ser selecionado'),
-    body('subgrupo_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Subgrupo deve ser selecionado'),
-    body('unidade_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Unidade deve ser selecionada'),
-    body('status')
-      .optional()
-      .isIn(['ativo', 'inativo'])
-      .withMessage('Status deve ser ativo ou inativo'),
-    handleValidationErrors
-  ],
-
-  estoque: [
-    commonValidations.id,
-    body('estoque_atual')
-      .optional()
-      .isInt({ min: 0 })
-      .withMessage('Estoque atual deve ser um número inteiro positivo'),
-    body('estoque_minimo')
-      .optional()
-      .isInt({ min: 0 })
-      .withMessage('Estoque mínimo deve ser um número inteiro positivo'),
-    handleValidationErrors
-  ]
-};
+// Validações específicas para produtos foram movidas para routes/produtos/produtoValidator.js
 
 // Validações para Filiais
 const filialValidations = [
@@ -2028,14 +1873,12 @@ const nomeGenericoProdutoAtualizacaoValidations = [
 module.exports = {
   handleValidationErrors,
   commonValidations,
-  userValidations,
   fornecedorValidations,
   clienteValidations,
   grupoValidations,
   subgrupoValidations,
   marcaValidations,
   classeValidations,
-  produtoValidations,
   filialValidations,
   filialAtualizacaoValidations,
   unidadeValidations,

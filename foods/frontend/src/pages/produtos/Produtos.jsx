@@ -19,7 +19,7 @@ import ProdutosService from '../services/produtos';
 import { Button, Input, StatCard, Modal } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
-import ProdutoModal from '../components/ProdutoModal';
+import { ProdutoModal } from '../../components/produtos';
 
 import api from '../services/api';
   
@@ -758,7 +758,7 @@ const Produtos = () => {
           </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="lg:hidden grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="lg:hidden space-y-3">
             {produtos.map((produto) => (
               <div key={produto.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
