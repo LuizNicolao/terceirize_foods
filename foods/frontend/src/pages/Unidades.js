@@ -1,256 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
-import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaPlus, FaEdit, FaTrash, FaEye, FaQuestionCircle, FaFileExcel, FaFilePdf, FaRuler, FaCheckCircle, FaTimesCircle, FaBox } from 'react-icons/fa';
 import { useForm } from 'react-hook-form';
-import api from '../services/api';
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
+import { Button, Input, Modal, Table, StatCard } from '../components/ui';
+import UnidadesService from '../services/unidades';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
 
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h1`
-  color: var(--dark-gray);
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const AddButton = styled.button`
-  background: var(--primary-green);
-  color: var(--white);
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: var(--dark-green);
-    transform: translateY(-1px);
-  }
-`;
-
-const TableContainer = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-`;
-
-const Th = styled.th`
-  background-color: #f5f5f5;
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const Td = styled.td`
-  padding: 16px 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  color: var(--dark-gray);
-`;
-
-const StatusBadge = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props => props.$status === 'ativo' ? 'var(--success-green)' : '#ffebee'};
-  color: ${props => props.$status === 'ativo' ? 'white' : 'var(--error-red)'};
-`;
-
-const ActionButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  margin-right: 8px;
-  color: var(--gray);
-
-  &:hover {
-    background-color: var(--light-gray);
-  }
-
-  &.edit {
-    color: var(--blue);
-  }
-
-  &.delete {
-    color: var(--error-red);
-  }
-
-  &.view {
-    color: var(--primary-green);
-  }
-`;
-
-const Modal = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 32px;
-  width: 100%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const ModalTitle = styled.h2`
-  color: var(--dark-gray);
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: var(--gray);
-  padding: 4px;
-
-  &:hover {
-    color: var(--error-red);
-  }
-`;
-
-const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const Label = styled.label`
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-`;
-
-const Input = styled.input`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-    outline: none;
-  }
-`;
-
-const Select = styled.select`
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 16px;
-  background: var(--white);
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:focus {
-    border-color: var(--primary-green);
-    outline: none;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 8px;
-`;
-
-const Button = styled.button`
-  padding: 12px 24px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &.primary {
-    background: var(--primary-green);
-    color: var(--white);
-
-    &:hover {
-      background: var(--dark-green);
-    }
-  }
-
-  &.secondary {
-    background: var(--light-gray);
-    color: var(--dark-gray);
-
-    &:hover {
-      background: #d0d0d0;
-    }
-  }
-`;
-
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 40px 20px;
-  color: var(--gray);
-  font-size: 16px;
-`;
-
 const Unidades = () => {
+  const { canCreate, canEdit, canDelete } = usePermissions();
   const [unidades, setUnidades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -258,10 +17,6 @@ const Unidades = () => {
   const [viewMode, setViewMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage] = useState(10);
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditLoading, setAuditLoading] = useState(false);
@@ -272,106 +27,105 @@ const Unidades = () => {
     usuario_id: '',
     periodo: ''
   });
+  const [estatisticas, setEstatisticas] = useState({
+    total_unidades: 0,
+    unidades_ativas: 0,
+    unidades_inativas: 0
+  });
+  
+  // Estados de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  const { canCreate, canEdit, canDelete } = usePermissions();
-
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    setValue
+  } = useForm();
 
   // Carregar unidades
-  const loadUnidades = async (page = 1) => {
+  const loadUnidades = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      params.append('page', page);
-      params.append('limit', itemsPerPage);
       
-      if (searchTerm) {
-        params.append('search', searchTerm);
+      // Parâmetros de paginação
+      const paginationParams = {
+        page: currentPage,
+        limit: itemsPerPage
+      };
+
+      const result = await UnidadesService.listar(paginationParams);
+      
+      if (result.success) {
+        // Garantir que data seja um array
+        const data = Array.isArray(result.data) ? result.data : [];
+        setUnidades(data);
+        
+        // Extrair informações de paginação
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages || 1);
+          setTotalItems(result.pagination.totalItems || data.length);
+          setCurrentPage(result.pagination.currentPage || 1);
+        } else {
+          // Fallback se não houver paginação no backend
+          setTotalItems(data.length);
+          setTotalPages(Math.ceil(data.length / itemsPerPage));
+        }
+      } else {
+        toast.error(result.error || 'Erro ao carregar unidades');
+        setUnidades([]);
       }
-      
-      if (statusFilter !== 'todos') {
-        params.append('status', statusFilter === 'ativo' ? '1' : '0');
-      }
-      
-      const response = await api.get(`/unidades?${params.toString()}`);
-      
-      setUnidades(response.data.data || []);
-      setTotalPages(response.data.pagination?.totalPages || 1);
-      setTotalItems(response.data.pagination?.total || 0);
-      setCurrentPage(page);
     } catch (error) {
       console.error('Erro ao carregar unidades:', error);
       toast.error('Erro ao carregar unidades');
+      setUnidades([]);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadUnidades(1);
-  }, []);
-
-  // Função para lidar com mudança de página
-  const handlePageChange = (page) => {
-    loadUnidades(page);
-  };
-
-  // Função para lidar com mudança de filtros
-  const handleFilterChange = () => {
-    loadUnidades(1);
+  // Carregar estatísticas
+  const loadEstatisticas = async () => {
+    try {
+      const result = await UnidadesService.listar({ limit: 1000 });
+      if (result.success) {
+        const data = Array.isArray(result.data) ? result.data : [];
+        const total = data.length;
+        const ativas = data.filter(u => u.status === 1).length;
+        const inativas = data.filter(u => u.status === 0).length;
+        
+        setEstatisticas({
+          total_unidades: total,
+          unidades_ativas: ativas,
+          unidades_inativas: inativas
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
+    }
   };
 
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
+    setAuditLoading(true);
     try {
-      setAuditLoading(true);
-      
-      const params = new URLSearchParams();
-      
-      // Aplicar filtro de período se selecionado
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
+      const params = {
+        entity: 'unidades',
+        ...auditFilters
+      };
+
+      const response = await fetch('/api/audit?' + new URLSearchParams(params));
+      const data = await response.json();
+
+      if (data.success) {
+        setAuditLogs(data.data || []);
       } else {
-        // Usar filtros manuais se período não estiver selecionado
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
+        toast.error('Erro ao carregar logs de auditoria');
       }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para unidades
-      params.append('recurso', 'unidades');
-      
-      const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -380,13 +134,91 @@ const Unidades = () => {
     }
   };
 
-  // Abrir modal de auditoria
+  // Handlers
+  const handleAddUnidade = () => {
+    setEditingUnidade(null);
+    setViewMode(false);
+    reset();
+    setShowModal(true);
+  };
+
+  const handleViewUnidade = (unidade) => {
+    setEditingUnidade(unidade);
+    setViewMode(true);
+    setValue('nome', unidade.nome);
+    setValue('sigla', unidade.sigla);
+    setValue('status', unidade.status);
+    setShowModal(true);
+  };
+
+  const handleEditUnidade = (unidade) => {
+    setEditingUnidade(unidade);
+    setViewMode(false);
+    setValue('nome', unidade.nome);
+    setValue('sigla', unidade.sigla);
+    setValue('status', unidade.status);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setEditingUnidade(null);
+    setViewMode(false);
+    reset();
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      if (editingUnidade) {
+        const result = await UnidadesService.atualizar(editingUnidade.id, data);
+        if (result.success) {
+          toast.success('Unidade atualizada com sucesso!');
+          handleCloseModal();
+          loadUnidades();
+          loadEstatisticas();
+        } else {
+          toast.error(result.error || 'Erro ao atualizar unidade');
+        }
+      } else {
+        const result = await UnidadesService.criar(data);
+        if (result.success) {
+          toast.success('Unidade criada com sucesso!');
+          handleCloseModal();
+          loadUnidades();
+          loadEstatisticas();
+        } else {
+          toast.error(result.error || 'Erro ao criar unidade');
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao salvar unidade:', error);
+      toast.error('Erro ao salvar unidade');
+    }
+  };
+
+  const handleDeleteUnidade = async (unidadeId) => {
+    if (window.confirm('Tem certeza que deseja excluir esta unidade?')) {
+      try {
+        const result = await UnidadesService.excluir(unidadeId);
+        if (result.success) {
+          toast.success('Unidade excluída com sucesso!');
+          loadUnidades();
+          loadEstatisticas();
+        } else {
+          toast.error(result.error || 'Erro ao excluir unidade');
+        }
+      } catch (error) {
+        console.error('Erro ao excluir unidade:', error);
+        toast.error('Erro ao excluir unidade');
+      }
+    }
+  };
+
   const handleOpenAuditModal = () => {
     setShowAuditModal(true);
     loadAuditLogs();
   };
 
-  // Fechar modal de auditoria
   const handleCloseAuditModal = () => {
     setShowAuditModal(false);
     setAuditLogs([]);
@@ -399,678 +231,516 @@ const Unidades = () => {
     });
   };
 
-  // Aplicar filtros de auditoria
   const handleApplyAuditFilters = () => {
     loadAuditLogs();
   };
 
-  // Exportar auditoria para XLSX
-  const handleExportXLSX = async () => {
-    try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para unidades
-      params.append('recurso', 'unidades');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_unidades_${new Date().toISOString().split('T')[0]}.xlsx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar XLSX:', error);
-      toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  // Exportar auditoria para PDF
-  const handleExportPDF = async () => {
-    try {
-      const params = new URLSearchParams();
-      
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para unidades
-      params.append('recurso', 'unidades');
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `auditoria_unidades_${new Date().toISOString().split('T')[0]}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Relatório exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      toast.error('Erro ao exportar relatório');
-    }
-  };
-
-  // Formatar data
   const formatDate = (dateString) => {
-    if (!dateString) {
-      return 'Data não disponível';
-    }
-    
-    try {
-      return new Date(dateString).toLocaleString('pt-BR');
-    } catch (error) {
-      return 'Data inválida';
-    }
+    return new Date(dateString).toLocaleString('pt-BR');
   };
 
-  // Obter label da ação
   const getActionLabel = (action) => {
-    if (!action || typeof action !== 'string') {
-      return 'Desconhecida';
-    }
-    
-    const actions = {
-      'create': 'Criar',
-      'update': 'Editar',
-      'delete': 'Excluir',
-      'login': 'Login',
-      'logout': 'Logout',
-      'view': 'Visualizar'
+    const labels = {
+      create: 'Criar',
+      update: 'Editar',
+      delete: 'Excluir'
     };
-    return actions[action] || action;
+    return labels[action] || action;
   };
 
-  // Obter label do campo
   const getFieldLabel = (field) => {
     const labels = {
-      'nome': 'Nome',
-      'sigla': 'Sigla',
-      'status': 'Status',
-      'id': 'ID'
+      nome: 'Nome',
+      sigla: 'Sigla',
+      status: 'Status'
     };
     return labels[field] || field;
   };
 
-  // Formatar valor do campo
   const formatFieldValue = (field, value) => {
-    if (value === null || value === undefined || value === '') {
-      return 'Não informado';
+    if (value === null || value === undefined) return '-';
+    
+    if (field === 'status') {
+      return value === 1 ? 'Ativo' : 'Inativo';
     }
-
-    switch (field) {
-      case 'status':
-        return value === 1 ? 'Ativo' : 'Inativo';
-      default:
-        return value;
-    }
+    
+    return value.toString();
   };
 
-  // Abrir modal para adicionar unidade
-  const handleAddUnidade = () => {
-    setEditingUnidade(null);
-    reset();
-    setShowModal(true);
-  };
-
-  // Abrir modal para editar unidade
-  const handleEditUnidade = (unidade) => {
-    setEditingUnidade(unidade);
-    setValue('nome', unidade.nome);
-    setValue('sigla', unidade.sigla);
-    setValue('status', unidade.status);
-    setShowModal(true);
-  };
-
-  // Abrir modal para visualizar unidade
-  const handleViewUnidade = (unidade) => {
-    setEditingUnidade(unidade);
-    setViewMode(true);
-    setValue('nome', unidade.nome);
-    setValue('sigla', unidade.sigla);
-    setValue('status', unidade.status);
-    setShowModal(true);
-  };
-
-  // Fechar modal
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingUnidade(null);
-    reset();
-    setViewMode(false); // Resetar modo de visualização
-  };
-
-  // Salvar unidade
-  const onSubmit = async (data) => {
+  const handleExportXLSX = async () => {
     try {
-      if (editingUnidade) {
-        // Para edição, enviar apenas os campos que foram alterados
-        const updateData = {};
+      const params = {
+        search: searchTerm,
+        status: statusFilter !== 'todos' ? statusFilter : ''
+      };
+
+      const result = await UnidadesService.exportarXLSX(params);
+      if (result.success) {
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `unidades_${new Date().toISOString().split('T')[0]}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
         
-        if (data.nome !== editingUnidade.nome) {
-          updateData.nome = data.nome;
-        }
-        
-        if (data.sigla !== editingUnidade.sigla) {
-          updateData.sigla = data.sigla;
-        }
-        
-        if (data.status !== editingUnidade.status) {
-          updateData.status = parseInt(data.status);
-        }
-        
-        // Se não há campos para atualizar, mostrar erro
-        if (Object.keys(updateData).length === 0) {
-          toast.error('Nenhum campo foi alterado');
-          return;
-        }
-        
-        await api.put(`/unidades/${editingUnidade.id}`, updateData);
-        toast.success('Unidade atualizada com sucesso!');
+        toast.success('Relatório exportado com sucesso!');
       } else {
-        // Para criação, enviar todos os campos
-        const createData = { ...data };
-        if (createData.status) {
-          createData.status = parseInt(createData.status);
-        }
-        await api.post('/unidades', createData);
-        toast.success('Unidade criada com sucesso!');
+        toast.error(result.error || 'Erro ao exportar relatório');
       }
-      
-      handleCloseModal();
-      loadUnidades(1);
     } catch (error) {
-      console.error('Erro ao salvar unidade:', error);
-      toast.error(error.response?.data?.error || 'Erro ao salvar unidade');
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar relatório');
     }
   };
 
-  // Excluir unidade
-  const handleDeleteUnidade = async (unidadeId) => {
-    if (window.confirm('Tem certeza que deseja excluir esta unidade?')) {
-      try {
-        await api.delete(`/unidades/${unidadeId}`);
-        toast.success('Unidade excluída com sucesso!');
-        loadUnidades(1);
-      } catch (error) {
-        console.error('Erro ao excluir unidade:', error);
-        toast.error(error.response?.data?.error || 'Erro ao excluir unidade');
+  const handleExportPDF = async () => {
+    try {
+      const params = {
+        search: searchTerm,
+        status: statusFilter !== 'todos' ? statusFilter : ''
+      };
+
+      const result = await UnidadesService.exportarPDF(params);
+      if (result.success) {
+        const blob = result.data;
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `unidades_${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        toast.success('Relatório exportado com sucesso!');
+      } else {
+        toast.error(result.error || 'Erro ao exportar relatório');
       }
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar relatório');
     }
   };
 
-  // Usar unidades diretamente (filtros são aplicados no backend)
-  const filteredUnidades = unidades;
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
 
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
+  };
+
+  // Filtros
+  const filteredUnidades = Array.isArray(unidades) ? unidades.filter(unidade => {
+    const matchesSearch = !searchTerm || 
+      unidade.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      unidade.sigla.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'todos' || 
+      (statusFilter === 'ativo' && unidade.status === 1) ||
+      (statusFilter === 'inativo' && unidade.status === 0);
+    
+    return matchesSearch && matchesStatus;
+  }) : [];
+
+  // Effects
+  useEffect(() => {
+    loadUnidades();
+    loadEstatisticas();
+  }, [currentPage, itemsPerPage]);
+
+  // Loading state
   if (loading) {
     return (
-      <Container>
-        <div>Carregando unidades...</div>
-      </Container>
+      <div className="p-3 sm:p-6">
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Carregando unidades...</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container>
-      <Header>
-        <Title>Unidades</Title>
-        <div style={{ display: 'flex', gap: '12px' }}>
-          <AddButton 
+    <div className="p-3 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Unidades</h1>
+        <div className="flex gap-2 sm:gap-3">
+          <Button
             onClick={handleOpenAuditModal}
-            style={{ background: 'var(--blue)', fontSize: '12px', padding: '8px 12px' }}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
           >
-            <FaQuestionCircle />
-            Auditoria
-          </AddButton>
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+          </Button>
           {canCreate('unidades') && (
-            <AddButton onClick={handleAddUnidade}>
-              <FaPlus />
-              Adicionar Unidade
-            </AddButton>
+            <Button onClick={handleAddUnidade} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar Unidade</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
           )}
         </div>
-      </Header>
+      </div>
 
+      {/* Cards de Estatísticas */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-4 sm:mb-6">
+        <StatCard
+          title="Total de Unidades"
+          value={estatisticas.total_unidades}
+          icon={FaRuler}
+          color="blue"
+        />
+        <StatCard
+          title="Unidades Ativas"
+          value={estatisticas.unidades_ativas}
+          icon={FaCheckCircle}
+          color="green"
+        />
+        <StatCard
+          title="Unidades Inativas"
+          value={estatisticas.unidades_inativas}
+          icon={FaTimesCircle}
+          color="red"
+        />
+      </div>
+
+      {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
-        onSearchChange={(value) => { setSearchTerm(value); handleFilterChange(); }}
+        onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
-        onStatusChange={(value) => { setStatusFilter(value); handleFilterChange(); }}
-        onClear={() => { setSearchTerm(''); setStatusFilter('todos'); handleFilterChange(); }}
-        placeholder="Buscar por nome ou sigla..."
+        onStatusFilterChange={setStatusFilter}
       />
 
-      <TableContainer>
-        <Table>
-          <thead>
-            <tr>
-              <Th>Nome</Th>
-              <Th>Sigla</Th>
-              <Th>Status</Th>
-              <Th>Ações</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUnidades.length === 0 ? (
-              <tr>
-                <Td colSpan="4">
-                  <EmptyState>
-                    {searchTerm || statusFilter !== 'todos' 
-                      ? 'Nenhuma unidade encontrada com os filtros aplicados'
-                      : 'Nenhuma unidade cadastrada'
-                    }
-                  </EmptyState>
-                </Td>
-              </tr>
-            ) : (
-              filteredUnidades.map((unidade) => (
-                <tr key={unidade.id}>
-                  <Td>{unidade.nome}</Td>
-                  <Td>{unidade.sigla}</Td>
-                  <Td>
-                    <StatusBadge $status={unidade.status === 1 ? 'ativo' : 'inativo'}>
-                      {unidade.status === 1 ? 'Ativo' : 'Inativo'}
-                    </StatusBadge>
-                  </Td>
-                  <Td>
-                    <ActionButton
-                      className="view"
-                      title="Visualizar"
+      {/* Tabela */}
+      {filteredUnidades.length === 0 ? (
+        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+          {searchTerm || statusFilter !== 'todos'
+            ? 'Nenhuma unidade encontrada com os filtros aplicados'
+            : 'Nenhuma unidade cadastrada'
+          }
+        </div>
+      ) : (
+        <>
+          {/* Versão Desktop - Tabela completa */}
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+            <Table>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sigla</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUnidades.map((unidade) => (
+                  <tr key={unidade.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.nome}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.sigla}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                        unidade.status === 1 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {unidade.status === 1 ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleViewUnidade(unidade)}
+                          title="Visualizar"
+                        >
+                          <FaEye className="text-green-600 text-sm" />
+                        </Button>
+                        {canEdit('unidades') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditUnidade(unidade)}
+                            title="Editar"
+                          >
+                            <FaEdit className="text-blue-600 text-sm" />
+                          </Button>
+                        )}
+                        {canDelete('unidades') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteUnidade(unidade.id)}
+                            title="Excluir"
+                          >
+                            <FaTrash className="text-red-600 text-sm" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+
+          {/* Versão Mobile - Cards */}
+          <div className="lg:hidden space-y-3">
+            {filteredUnidades.map((unidade) => (
+              <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 text-sm">{unidade.nome}</h3>
+                    <p className="text-gray-600 text-xs">ID: {unidade.id}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="xs"
                       onClick={() => handleViewUnidade(unidade)}
+                      title="Visualizar"
+                      className="p-2"
                     >
-                      <FaEye />
-                    </ActionButton>
+                      <FaEye className="text-green-600 text-sm" />
+                    </Button>
                     {canEdit('unidades') && (
-                      <ActionButton
-                        className="edit"
-                        title="Editar"
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleEditUnidade(unidade)}
+                        title="Editar"
+                        className="p-2"
                       >
-                        <FaEdit />
-                      </ActionButton>
+                        <FaEdit className="text-blue-600 text-sm" />
+                      </Button>
                     )}
                     {canDelete('unidades') && (
-                      <ActionButton
-                        className="delete"
-                        title="Excluir"
+                      <Button
+                        variant="ghost"
+                        size="xs"
                         onClick={() => handleDeleteUnidade(unidade.id)}
+                        title="Excluir"
+                        className="p-2"
                       >
-                        <FaTrash />
-                      </ActionButton>
+                        <FaTrash className="text-red-600 text-sm" />
+                      </Button>
                     )}
-                  </Td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </TableContainer>
-      
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-      />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-gray-500">Sigla:</span>
+                    <p className="font-medium">{unidade.sigla}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Status:</span>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                      unidade.status === 1 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {unidade.status === 1 ? 'Ativo' : 'Inativo'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
+      {/* Modal de Cadastro/Edição/Visualização */}
       {showModal && (
-        <Modal onClick={handleCloseModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()}>
-            <ModalHeader>
-              <ModalTitle>
-                {editingUnidade ? 'Editar Unidade' : 'Adicionar Unidade'}
-              </ModalTitle>
-              <CloseButton onClick={handleCloseModal}>&times;</CloseButton>
-            </ModalHeader>
-
-            <Form onSubmit={handleSubmit(onSubmit)}>
-              <FormGroup>
-                <Label>Nome *</Label>
+        <Modal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          title={viewMode ? 'Visualizar Unidade' : editingUnidade ? 'Editar Unidade' : 'Adicionar Unidade'}
+          size="full"
+        >
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-3 sm:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+              <Input
+                label="Nome *"
+                type="text"
+                {...register('nome', { required: 'Nome é obrigatório' })}
+                error={errors.nome?.message}
+                disabled={viewMode}
+              />
+              <Input
+                label="Sigla *"
+                type="text"
+                {...register('sigla', { required: 'Sigla é obrigatória' })}
+                error={errors.sigla?.message}
+                disabled={viewMode}
+              />
+              {!viewMode && (
                 <Input
-                  type="text"
-                  placeholder="Nome da unidade"
-                  {...register('nome', { required: 'Nome é obrigatório' })}
-                  disabled={viewMode}
-                />
-                {errors.nome && <span style={{ color: 'red', fontSize: '12px' }}>{errors.nome.message}</span>}
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Sigla *</Label>
-                <Input
-                  type="text"
-                  placeholder="Ex: KG, L, UN"
-                  {...register('sigla', { required: 'Sigla é obrigatória' })}
-                  disabled={viewMode}
-                />
-                {errors.sigla && <span style={{ color: 'red', fontSize: '12px' }}>{errors.sigla.message}</span>}
-              </FormGroup>
-
-              <FormGroup>
-                <Label>Status</Label>
-                <Select {...register('status', { required: 'Status é obrigatório' })} disabled={viewMode}>
-                  <option value="">Selecione...</option>
-                  <option value="1">Ativo</option>
-                  <option value="0">Inativo</option>
-                </Select>
-                {errors.status && <span style={{ color: 'red', fontSize: '12px' }}>{errors.status.message}</span>}
-              </FormGroup>
-
-              <ButtonGroup>
-                <Button
-                  type="button"
-                  className="secondary"
-                  onClick={handleCloseModal}
+                  label="Status"
+                  type="select"
+                  {...register('status')}
+                  error={errors.status?.message}
                 >
-                  {viewMode ? 'Fechar' : 'Cancelar'}
+                  <option value={1}>Ativo</option>
+                  <option value={0}>Inativo</option>
+                </Input>
+              )}
+            </div>
+
+            {!viewMode && (
+              <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
+                <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
+                  Cancelar
                 </Button>
-                {!viewMode && (
-                  <Button
-                    type="submit"
-                    className="primary"
-                  >
-                    {editingUnidade ? 'Atualizar' : 'Cadastrar'}
-                  </Button>
-                )}
-              </ButtonGroup>
-            </Form>
-          </ModalContent>
+                <Button type="submit" size="sm">
+                  {editingUnidade ? 'Atualizar' : 'Cadastrar'}
+                </Button>
+              </div>
+            )}
+          </form>
         </Modal>
       )}
 
       {/* Modal de Auditoria */}
       {showAuditModal && (
-        <Modal onClick={handleCloseAuditModal}>
-          <ModalContent onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '90vh', width: '1200px' }}>
-            <ModalHeader>
-              <ModalTitle>Relatório de Auditoria - Unidades</ModalTitle>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <button
-                  onClick={handleExportXLSX}
-                  title="Exportar para Excel"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFileExcel />
-                  Excel
-                </button>
-                <button
-                  onClick={handleExportPDF}
-                  title="Exportar para PDF"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 12px',
-                    background: 'var(--primary-green)',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '6px',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseOver={(e) => e.target.style.background = 'var(--dark-green)'}
-                  onMouseOut={(e) => e.target.style.background = 'var(--primary-green)'}
-                >
-                  <FaFilePdf />
-                  PDF
-                </button>
-                <CloseButton onClick={handleCloseAuditModal}>&times;</CloseButton>
-              </div>
-            </ModalHeader>
-
+        <Modal
+          isOpen={showAuditModal}
+          onClose={handleCloseAuditModal}
+          title="Relatório de Auditoria - Unidades"
+          size="full"
+        >
+          <div className="space-y-4 sm:space-y-6">
             {/* Filtros de Auditoria */}
-            <div style={{ marginBottom: '24px', padding: '16px', background: '#f8f9fa', borderRadius: '8px' }}>
-              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px', color: 'var(--dark-gray)' }}>Filtros</h3>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Início
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataInicio}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Data Fim
-                  </label>
-                  <input
-                    type="date"
-                    value={auditFilters.dataFim}
-                    onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Ação
-                  </label>
-                  <select
-                    value={auditFilters.acao}
-                    onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Todas as ações</option>
-                    <option value="create">Criar</option>
-                    <option value="update">Editar</option>
-                    <option value="delete">Excluir</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: 'block', marginBottom: '4px', fontSize: '12px', color: 'var(--gray)' }}>
-                    Período
-                  </label>
-                  <select
-                    value={auditFilters.periodo}
-                    onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
-                    style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }}
-                  >
-                    <option value="">Período personalizado</option>
-                    <option value="7dias">Últimos 7 dias</option>
-                    <option value="30dias">Últimos 30 dias</option>
-                    <option value="90dias">Últimos 90 dias</option>
-                    <option value="todos">Todos os registros</option>
-                  </select>
-                </div>
-                <div>
-                  <button
-                    onClick={handleApplyAuditFilters}
-                    style={{
-                      marginTop: '20px',
-                      padding: '8px 16px',
-                      background: 'var(--primary-green)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Aplicar Filtros
-                  </button>
+            <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Filtros</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <Input
+                  label="Data Início"
+                  type="date"
+                  value={auditFilters.dataInicio}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataInicio: e.target.value})}
+                />
+                <Input
+                  label="Data Fim"
+                  type="date"
+                  value={auditFilters.dataFim}
+                  onChange={(e) => setAuditFilters({...auditFilters, dataFim: e.target.value})}
+                />
+                <Input
+                  label="Ação"
+                  type="select"
+                  value={auditFilters.acao}
+                  onChange={(e) => setAuditFilters({...auditFilters, acao: e.target.value})}
+                >
+                  <option value="">Todas as ações</option>
+                  <option value="create">Criar</option>
+                  <option value="update">Editar</option>
+                  <option value="delete">Excluir</option>
+                </Input>
+                <Input
+                  label="Período"
+                  type="select"
+                  value={auditFilters.periodo}
+                  onChange={(e) => setAuditFilters({...auditFilters, periodo: e.target.value})}
+                >
+                  <option value="">Período personalizado</option>
+                  <option value="7dias">Últimos 7 dias</option>
+                  <option value="30dias">Últimos 30 dias</option>
+                  <option value="90dias">Últimos 90 dias</option>
+                  <option value="todos">Todos os registros</option>
+                </Input>
+                <div className="flex items-end">
+                  <Button onClick={handleApplyAuditFilters} size="sm" className="w-full">
+                    <span className="hidden sm:inline">Aplicar Filtros</span>
+                    <span className="sm:hidden">Aplicar</span>
+                  </Button>
                 </div>
               </div>
             </div>
 
-            {/* Lista de Logs */}
-            <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+            {/* Botões de Exportação */}
+            <div className="flex gap-2 sm:gap-3">
+              <Button onClick={handleExportXLSX} variant="outline" size="sm">
+                <FaFileExcel className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar Excel</span>
+                <span className="sm:hidden">Excel</span>
+              </Button>
+              <Button onClick={handleExportPDF} variant="outline" size="sm">
+                <FaFilePdf className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Exportar PDF</span>
+                <span className="sm:hidden">PDF</span>
+              </Button>
+            </div>
+
+            {/* Resultados da Auditoria */}
+            <div className="max-h-64 sm:max-h-96 overflow-y-auto">
               {auditLoading ? (
-                <div style={{ textAlign: 'center', padding: '20px' }}>Carregando logs...</div>
+                <div className="text-center py-6 sm:py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+                  <p className="text-gray-600 text-sm">Carregando logs...</p>
+                </div>
               ) : auditLogs.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--gray)' }}>
+                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">
                   Nenhum log encontrado com os filtros aplicados
                 </div>
               ) : (
-                <div>
-                  <div style={{ marginBottom: '16px', fontSize: '14px', color: 'var(--gray)' }}>
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="text-xs sm:text-sm text-gray-600">
                     {auditLogs.length} log(s) encontrado(s)
                   </div>
                   {auditLogs.map((log, index) => (
                     <div
                       key={index}
-                      style={{
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '8px',
-                        padding: '16px',
-                        marginBottom: '12px',
-                        background: 'white'
-                      }}
+                      className="border border-gray-200 rounded-lg p-3 sm:p-4 bg-white"
                     >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '12px',
-                            fontWeight: 'bold',
-                            background: log.acao === 'create' ? '#e8f5e8' : 
-                                       log.acao === 'update' ? '#fff3cd' : 
-                                       log.acao === 'delete' ? '#f8d7da' : '#e3f2fd',
-                            color: log.acao === 'create' ? '#2e7d32' : 
-                                   log.acao === 'update' ? '#856404' : 
-                                   log.acao === 'delete' ? '#721c24' : '#1976d2'
-                          }}>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2 sm:mb-3 gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                            log.acao === 'create' ? 'bg-green-100 text-green-800' : 
+                            log.acao === 'update' ? 'bg-yellow-100 text-yellow-800' : 
+                            log.acao === 'delete' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'
+                          }`}>
                             {getActionLabel(log.acao)}
                           </span>
-                          <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                          <span className="text-xs sm:text-sm text-gray-600">
                             por {log.usuario_nome || 'Usuário desconhecido'}
                           </span>
                         </div>
-                        <span style={{ fontSize: '12px', color: 'var(--gray)' }}>
+                        <span className="text-xs sm:text-sm text-gray-600">
                           {formatDate(log.timestamp)}
                         </span>
                       </div>
                       
                       {log.detalhes && (
-                        <div style={{ fontSize: '12px', color: 'var(--dark-gray)' }}>
+                        <div className="text-xs sm:text-sm text-gray-800">
                           {log.detalhes.changes && (
-                            <div style={{ marginBottom: '8px' }}>
+                            <div className="mb-2 sm:mb-3">
                               <strong>Mudanças Realizadas:</strong>
-                              <div style={{ marginLeft: '12px', marginTop: '8px' }}>
+                              <div className="mt-1 sm:mt-2 space-y-1 sm:space-y-2">
                                 {Object.entries(log.detalhes.changes).map(([field, change]) => (
-                                  <div key={field} style={{ 
-                                    marginBottom: '6px', 
-                                    padding: '8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '4px' }}>
+                                  <div key={field} className="p-2 sm:p-3 bg-gray-50 rounded-lg border">
+                                    <div className="font-semibold text-gray-800 mb-1 sm:mb-2 text-xs sm:text-sm">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px' }}>
-                                      <span style={{ color: '#721c24' }}>
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs">
+                                      <span className="text-red-600">
                                         <strong>Antes:</strong> {formatFieldValue(field, change.from)}
                                       </span>
-                                      <span style={{ color: '#6c757d' }}>→</span>
-                                      <span style={{ color: '#2e7d32' }}>
+                                      <span className="text-gray-500 hidden sm:inline">→</span>
+                                      <span className="text-green-600">
                                         <strong>Depois:</strong> {formatFieldValue(field, change.to)}
                                       </span>
                                     </div>
@@ -1082,25 +752,13 @@ const Unidades = () => {
                           {log.detalhes.requestBody && !log.detalhes.changes && (
                             <div>
                               <strong>Dados da Unidade:</strong>
-                              <div style={{ 
-                                marginLeft: '12px', 
-                                marginTop: '8px',
-                                display: 'grid',
-                                gridTemplateColumns: '1fr 1fr',
-                                gap: '8px'
-                              }}>
+                              <div className="mt-1 sm:mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1 sm:gap-2">
                                 {Object.entries(log.detalhes.requestBody).map(([field, value]) => (
-                                  <div key={field} style={{ 
-                                    padding: '6px 8px', 
-                                    background: '#f8f9fa', 
-                                    borderRadius: '4px',
-                                    border: '1px solid #e9ecef',
-                                    fontSize: '11px'
-                                  }}>
-                                    <div style={{ fontWeight: 'bold', color: 'var(--dark-gray)', marginBottom: '2px' }}>
+                                  <div key={field} className="p-1.5 sm:p-2 bg-gray-50 rounded border text-xs">
+                                    <div className="font-semibold text-gray-800 mb-0.5 sm:mb-1">
                                       {getFieldLabel(field)}:
                                     </div>
-                                    <div style={{ color: '#2e7d32' }}>
+                                    <div className="text-green-600">
                                       {formatFieldValue(field, value)}
                                     </div>
                                   </div>
@@ -1109,15 +767,9 @@ const Unidades = () => {
                             </div>
                           )}
                           {log.detalhes.resourceId && (
-                            <div style={{ 
-                              marginTop: '8px', 
-                              padding: '6px 8px', 
-                              background: '#e3f2fd', 
-                              borderRadius: '4px',
-                              fontSize: '11px'
-                            }}>
+                            <div className="mt-2 sm:mt-3 p-1.5 sm:p-2 bg-blue-50 rounded border text-xs">
                               <strong>ID da Unidade:</strong> 
-                              <span style={{ color: '#1976d2', marginLeft: '4px' }}>
+                              <span className="text-blue-600 ml-1">
                                 #{log.detalhes.resourceId}
                               </span>
                             </div>
@@ -1129,10 +781,22 @@ const Unidades = () => {
                 </div>
               )}
             </div>
-          </ModalContent>
+          </div>
         </Modal>
       )}
-    </Container>
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          totalItems={totalItems}
+        />
+      )}
+    </div>
   );
 };
 
