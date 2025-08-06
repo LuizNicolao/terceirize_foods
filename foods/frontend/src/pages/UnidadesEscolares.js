@@ -497,8 +497,20 @@ const UnidadesEscolares = () => {
          </div>
        ) : (
                  <>
+          {console.log('🚀 UnidadesEscolares - Iniciando renderização responsiva', {
+            windowWidth: window.innerWidth,
+            shouldShowDesktop: window.innerWidth >= 1024,
+            shouldShowMobile: window.innerWidth < 1024,
+            timestamp: new Date().toISOString()
+          })}
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+            {console.log('🔍 UnidadesEscolares - Desktop view renderizando', {
+              totalItems: filteredUnidades.length,
+              windowWidth: window.innerWidth,
+              breakpoint: window.innerWidth >= 1024 ? 'lg+' : 'sm-md',
+              timestamp: new Date().toISOString()
+            })}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -599,6 +611,12 @@ const UnidadesEscolares = () => {
 
           {/* Versão Mobile - Cards */}
           <div className="lg:hidden space-y-3">
+            {console.log('📱 UnidadesEscolares - Mobile view renderizando', {
+              totalItems: filteredUnidades.length,
+              windowWidth: window.innerWidth,
+              breakpoint: window.innerWidth >= 1024 ? 'lg+' : 'sm-md',
+              timestamp: new Date().toISOString()
+            })}
             {filteredUnidades.map((unidade) => (
               <div key={unidade.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
