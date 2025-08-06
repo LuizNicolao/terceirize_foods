@@ -20,7 +20,7 @@ import {
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import FornecedoresService from '../services/fornecedores';
-import { Button, Input, Modal, StatCard } from '../components/ui';
+import { Button, Input, Modal, Table, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
 
@@ -140,6 +140,12 @@ const Fornecedores = () => {
   // Função para mudar de página
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  // Função para mudar itens por página
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Voltar para primeira página
   };
 
   const loadAuditLogs = async () => {
@@ -525,99 +531,81 @@ const Fornecedores = () => {
         <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      CNPJ
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Razão Social
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Município/UF
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Contato
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ações
-                    </th>
+            <Table>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CNPJ</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Razão Social</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Município/UF</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contato</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredFornecedores.map((fornecedor) => (
+                  <tr key={fornecedor.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{fornecedor.cnpj}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{fornecedor.razao_social}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <div>
+                        {fornecedor.email && <div>{fornecedor.email}</div>}
+                        {fornecedor.telefone && <div>{fornecedor.telefone}</div>}
+                        {!fornecedor.email && !fornecedor.telefone && '-'}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                        fornecedor.status === 1 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {getStatusLabel(fornecedor.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex gap-2">
+                        {canView('fornecedores') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleViewFornecedor(fornecedor)}
+                            title="Visualizar"
+                          >
+                            <FaEye className="text-green-600 text-sm" />
+                          </Button>
+                        )}
+                        {canEdit('fornecedores') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditFornecedor(fornecedor)}
+                            title="Editar"
+                          >
+                            <FaEdit className="text-blue-600 text-sm" />
+                          </Button>
+                        )}
+                        {canDelete('fornecedores') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteFornecedor(fornecedor.id)}
+                            title="Excluir"
+                          >
+                            <FaTrash className="text-red-600 text-sm" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredFornecedores.map((fornecedor) => (
-                    <tr key={fornecedor.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {fornecedor.cnpj}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {fornecedor.razao_social}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div>
-                          {fornecedor.email && <div>{fornecedor.email}</div>}
-                          {fornecedor.telefone && <div>{fornecedor.telefone}</div>}
-                          {!fornecedor.email && !fornecedor.telefone && '-'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                          fornecedor.status === 1 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {getStatusLabel(fornecedor.status)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
-                          {canView('fornecedores') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleViewFornecedor(fornecedor)}
-                              title="Visualizar"
-                            >
-                              <FaEye className="text-green-600 text-sm" />
-                            </Button>
-                          )}
-                          {canEdit('fornecedores') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleEditFornecedor(fornecedor)}
-                              title="Editar"
-                            >
-                              <FaEdit className="text-blue-600 text-sm" />
-                            </Button>
-                          )}
-                          {canDelete('fornecedores') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleDeleteFornecedor(fornecedor.id)}
-                              title="Excluir"
-                            >
-                              <FaTrash className="text-red-600 text-sm" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </Table>
           </div>
 
           {/* Versão Mobile - Cards */}
@@ -704,7 +692,7 @@ const Fornecedores = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         title={viewMode ? 'Visualizar Fornecedor' : editingFornecedor ? 'Editar Fornecedor' : 'Adicionar Fornecedor'}
-        size="xl"
+        size="full"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
           {/* Primeira Linha - 2 Cards */}
@@ -1007,8 +995,9 @@ const Fornecedores = () => {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
-          totalItems={totalItems}
           itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          totalItems={totalItems}
         />
       )}
                   </div>

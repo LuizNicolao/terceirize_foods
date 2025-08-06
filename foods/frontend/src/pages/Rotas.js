@@ -480,6 +480,17 @@ const Rotas = () => {
     }).format(value || 0);
   };
 
+  // Funções de paginação
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  // Função para mudar itens por página
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Voltar para primeira página
+  };
+
   // Formatar tipo de rota
   const formatTipoRota = (tipo) => {
     const tipos = {

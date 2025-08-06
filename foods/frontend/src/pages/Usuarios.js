@@ -20,7 +20,7 @@ import {
 import toast from 'react-hot-toast';
 import { usePermissions } from '../contexts/PermissionsContext';
 import UsuariosService from '../services/usuarios';
-import { Button, Input, Modal, StatCard } from '../components/ui';
+import { Button, Input, Modal, Table, StatCard } from '../components/ui';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
 
@@ -120,6 +120,12 @@ const Usuarios = () => {
   // Função para mudar de página
   const handlePageChange = (page) => {
     setCurrentPage(page);
+  };
+
+  // Função para mudar itens por página
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Voltar para primeira página
   };
 
   const loadAuditLogs = async () => {
@@ -452,7 +458,7 @@ const Usuarios = () => {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-4 sm:mb-6">
         <StatCard
           title="Total de Usuários"
           value={estatisticas.total_usuarios}
@@ -513,103 +519,77 @@ const Usuarios = () => {
                 <>
           {/* Versão Desktop - Tabela completa */}
           <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nome
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tipo de Acesso
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Nível
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Criado em
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ações
-                    </th>
+            <Table>
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Acesso</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nível</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Criado em</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsuarios.map((usuario) => (
+                  <tr key={usuario.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{usuario.nome}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.email}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getTipoAcessoLabel(usuario.tipo_de_acesso)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{getNivelAcessoLabel(usuario.nivel_de_acesso)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                        usuario.status === 'ativo' 
+                          ? 'bg-green-100 text-green-800' 
+                          : usuario.status === 'bloqueado'
+                          ? 'bg-red-100 text-red-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {getStatusLabel(usuario.status)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{usuario.criado_em ? formatDate(usuario.criado_em) : 'N/A'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex gap-2">
+                        {canView('usuarios') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleViewUser(usuario)}
+                            title="Visualizar"
+                          >
+                            <FaEye className="text-green-600 text-sm" />
+                          </Button>
+                        )}
+                        {canEdit('usuarios') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleEditUser(usuario)}
+                            title="Editar"
+                          >
+                            <FaEdit className="text-blue-600 text-sm" />
+                          </Button>
+                        )}
+                        {canDelete('usuarios') && (
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => handleDeleteUser(usuario.id)}
+                            title="Excluir"
+                          >
+                            <FaTrash className="text-red-600 text-sm" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredUsuarios.map((usuario) => (
-                    <tr key={usuario.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {usuario.nome}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {usuario.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {getTipoAcessoLabel(usuario.tipo_de_acesso)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {getNivelAcessoLabel(usuario.nivel_de_acesso)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                          usuario.status === 'ativo' 
-                            ? 'bg-green-100 text-green-800' 
-                            : usuario.status === 'bloqueado'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {getStatusLabel(usuario.status)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {usuario.criado_em ? formatDate(usuario.criado_em) : 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
-                          {canView('usuarios') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleViewUser(usuario)}
-                              title="Visualizar"
-                            >
-                              <FaEye className="text-green-600 text-sm" />
-                            </Button>
-                          )}
-                          {canEdit('usuarios') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleEditUser(usuario)}
-                              title="Editar"
-                            >
-                              <FaEdit className="text-blue-600 text-sm" />
-                            </Button>
-                          )}
-                          {canDelete('usuarios') && (
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => handleDeleteUser(usuario.id)}
-                              title="Excluir"
-                            >
-                              <FaTrash className="text-red-600 text-sm" />
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </Table>
           </div>
 
           {/* Versão Mobile - Cards */}
@@ -695,7 +675,7 @@ const Usuarios = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         title={viewMode ? 'Visualizar Usuário' : editingUsuario ? 'Editar Usuário' : 'Adicionar Usuário'}
-        size="xl"
+        size="full"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
           {/* Primeira Linha - 2 Cards */}
@@ -985,8 +965,9 @@ const Usuarios = () => {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
-          totalItems={totalItems}
           itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+          totalItems={totalItems}
         />
       )}
     </div>

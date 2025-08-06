@@ -45,45 +45,42 @@ const Pagination = ({
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row justify-center items-center gap-2 mt-6 p-4">
-      <div className="flex items-center gap-2">
-        <button
-          className={`p-2 rounded-md transition-all duration-200 ${
-            currentPage === 1
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
-              : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-          }`}
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
-          title="Página anterior"
-        >
-          <FaChevronLeft className="w-4 h-4" />
-        </button>
+    <div className="flex justify-center items-center gap-2 mt-6 p-4">
+      <button
+        className={`p-2 rounded-md transition-all duration-200 ${
+          currentPage === 1
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+        }`}
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        title="Página anterior"
+      >
+        <FaChevronLeft className="w-4 h-4" />
+      </button>
 
-        {renderPageNumbers()}
+      {renderPageNumbers()}
 
-        <button
-          className={`p-2 rounded-md transition-all duration-200 ${
-            currentPage === totalPages
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
-              : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-          }`}
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          title="Próxima página"
-        >
-          <FaChevronRight className="w-4 h-4" />
-        </button>
-      </div>
+      <button
+        className={`p-2 rounded-md transition-all duration-200 ${
+          currentPage === totalPages
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
+            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+        }`}
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        title="Próxima página"
+      >
+        <FaChevronRight className="w-4 h-4" />
+      </button>
 
-      <span className="text-gray-600 text-sm text-center sm:ml-4">
+      <span className="text-gray-600 text-sm ml-4">
         Mostrando {startItem}-{endItem} de {totalItems} itens
       </span>
       
       {onItemsPerPageChange && (
-        <div className="flex items-center gap-2 sm:ml-4">
-          <span className="text-gray-600 text-sm hidden sm:inline">Itens por página:</span>
-          <span className="text-gray-600 text-sm sm:hidden">Por página:</span>
+        <div className="flex items-center gap-2 ml-4">
+          <span className="text-gray-600 text-sm">Itens por página:</span>
           <select
             value={itemsPerPage}
             onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
