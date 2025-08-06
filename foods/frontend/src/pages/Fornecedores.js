@@ -514,11 +514,7 @@ const Fornecedores = () => {
       </div>
 
       {/* Tabela */}
-      {loading ? (
-        <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-          Carregando fornecedores...
-        </div>
-      ) : filteredFornecedores.length === 0 ? (
+      {filteredFornecedores.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
           {debouncedSearchTerm 
             ? 'Nenhum fornecedor encontrado com os filtros aplicados'
@@ -528,104 +524,104 @@ const Fornecedores = () => {
       ) : (
         <>
           {/* Versão Desktop - Tabela completa */}
-          <div className="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    CNPJ
-                  </th>
+                      CNPJ
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Razão Social
-                  </th>
+                      Razão Social
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Município/UF
-                  </th>
+                      Município/UF
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contato
-                  </th>
+                      Contato
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
+                      Status
+                    </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ações
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredFornecedores.map((fornecedor) => (
-                  <tr key={fornecedor.id} className="hover:bg-gray-50">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredFornecedores.map((fornecedor) => (
+                    <tr key={fornecedor.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
-                        {fornecedor.cnpj}
-                      </div>
-                    </td>
+                          {fornecedor.cnpj}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {fornecedor.razao_social}
-                    </td>
+                        {fornecedor.razao_social}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : '-'}
-                    </td>
+                        {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : '-'}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div>
-                        {fornecedor.email && <div>{fornecedor.email}</div>}
-                        {fornecedor.telefone && <div>{fornecedor.telefone}</div>}
-                        {!fornecedor.email && !fornecedor.telefone && '-'}
-                      </div>
-                    </td>
+                        <div>
+                          {fornecedor.email && <div>{fornecedor.email}</div>}
+                          {fornecedor.telefone && <div>{fornecedor.telefone}</div>}
+                          {!fornecedor.email && !fornecedor.telefone && '-'}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                        fornecedor.status === 1 
-                          ? 'bg-green-100 text-green-800' 
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {getStatusLabel(fornecedor.status)}
-                      </span>
-                    </td>
+                        <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                          fornecedor.status === 1 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-red-100 text-red-800'
+                        }`}>
+                          {getStatusLabel(fornecedor.status)}
+                        </span>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex gap-2">
-                        {canView('fornecedores') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleViewFornecedor(fornecedor)}
-                            title="Visualizar"
-                          >
+                          {canView('fornecedores') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleViewFornecedor(fornecedor)}
+                              title="Visualizar"
+                            >
                               <FaEye className="text-green-600 text-sm" />
-                          </Button>
-                        )}
-                        {canEdit('fornecedores') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleEditFornecedor(fornecedor)}
-                            title="Editar"
-                          >
+                            </Button>
+                          )}
+                          {canEdit('fornecedores') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleEditFornecedor(fornecedor)}
+                              title="Editar"
+                            >
                               <FaEdit className="text-blue-600 text-sm" />
-                          </Button>
-                        )}
-                        {canDelete('fornecedores') && (
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleDeleteFornecedor(fornecedor.id)}
-                            title="Excluir"
-                          >
+                            </Button>
+                          )}
+                          {canDelete('fornecedores') && (
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleDeleteFornecedor(fornecedor.id)}
+                              title="Excluir"
+                            >
                               <FaTrash className="text-red-600 text-sm" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
 
           {/* Versão Mobile - Cards */}
-          <div className="md:hidden space-y-3">
+          <div className="lg:hidden space-y-3">
             {filteredFornecedores.map((fornecedor) => (
               <div key={fornecedor.id} className="bg-white rounded-lg shadow-sm p-4 border">
                 <div className="flex justify-between items-start mb-3">
@@ -708,7 +704,7 @@ const Fornecedores = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         title={viewMode ? 'Visualizar Fornecedor' : editingFornecedor ? 'Editar Fornecedor' : 'Adicionar Fornecedor'}
-        size="full"
+        size="xl"
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
           {/* Primeira Linha - 2 Cards */}
