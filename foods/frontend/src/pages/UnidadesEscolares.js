@@ -35,6 +35,7 @@ const UnidadesEscolares = () => {
     total_cidades: 0
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
   
   // Estados de paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -104,7 +105,11 @@ const UnidadesEscolares = () => {
       (unidade.cidade && unidade.cidade.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (unidade.estado && unidade.estado.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    return matchesSearch;
+    const matchesStatus = statusFilter === 'todos' || 
+      (statusFilter === 'ativo' && unidade.status === 'ativo') ||
+      (statusFilter === 'inativo' && unidade.status === 'inativo');
+    
+    return matchesSearch && matchesStatus;
   });
 
   // Função para mudar de página
@@ -471,7 +476,12 @@ const UnidadesEscolares = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        onClear={() => setSearchTerm('')}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        onClear={() => {
+          setSearchTerm('');
+          setStatusFilter('todos');
+        }}
         placeholder="Buscar por nome, cidade ou código..."
       />
 
@@ -492,7 +502,7 @@ const UnidadesEscolares = () => {
       {/* Tabela */}
       {filteredUnidades.length === 0 ? (
         <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-          {searchTerm 
+          {searchTerm || statusFilter !== 'todos'
             ? 'Nenhuma unidade escolar encontrada com os filtros aplicados'
             : 'Nenhuma unidade escolar cadastrada'
           }
