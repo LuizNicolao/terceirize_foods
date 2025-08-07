@@ -102,6 +102,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Rota para fornecer o token CSRF ao frontend (DEVE vir ANTES do middleware CSRF)
+app.get('/api/csrf-token', (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
 // Middleware CSRF (exceto para rotas públicas)
 app.use(
   csurf({
@@ -110,11 +115,6 @@ app.use(
     ignorePaths: ['/api/auth/validate-cotacao-token']
   })
 );
-
-// Rota para fornecer o token CSRF ao frontend
-app.get('/api/csrf-token', (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
-});
 
 // Rota para validar token do sistema de cotação (antes das rotas protegidas)
 app.post('/api/auth/validate-cotacao-token', async (req, res) => {
