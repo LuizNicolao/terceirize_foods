@@ -43,7 +43,9 @@ app.use(cors({
         'http://82.29.57.43:3001', // Sistema de cotação
         'http://82.29.57.43:3002', // Sistema de cotação (porta 3002)
         'http://localhost:3001',   // Sistema de cotação local
-        'http://localhost:3002'    // Sistema de cotação local (porta 3002)
+        'http://localhost:3002',   // Sistema de cotação local (porta 3002)
+        'https://foods.terceirizemais.com.br', // Domínio de produção
+        'http://foods.terceirizemais.com.br'   // Domínio de produção (HTTP)
       ] 
     : [
         'http://localhost:3000',
