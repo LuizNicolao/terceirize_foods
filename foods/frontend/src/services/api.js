@@ -1,7 +1,18 @@
 import axios from 'axios';
 
+// Determinar a URL base da API
+const getApiUrl = () => {
+  // Se estamos em produção e acessando via subcaminho
+  if (window.location.pathname.startsWith('/foods')) {
+    return '/foods-api'; // Será roteado pelo Nginx Proxy Manager
+  }
+  
+  // Fallback para desenvolvimento ou outras situações
+  return process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+};
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3001/api',
+  baseURL: getApiUrl(),
   timeout: 10000,
 });
 
