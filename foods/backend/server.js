@@ -102,13 +102,19 @@ app.use(
       '/api/auth/validate-cotacao-token',
       '/foods-api/auth/login',
       '/foods-api/auth/verify',
-      '/foods-api/health'
+      '/foods-api/health',
+      '/foods-api/csrf-token'
     ]
   })
 );
 
 // Rota para fornecer o token CSRF ao frontend
 app.get('/api/csrf-token', (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+
+// Rota adicional para fornecer o token CSRF com prefixo /foods-api
+app.get('/foods-api/csrf-token', (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
 
