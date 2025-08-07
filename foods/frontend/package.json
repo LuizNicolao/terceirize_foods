@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Frontend do sistema de cadastro de informações Foods",
   "private": true,
+  "homepage": "/foods",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -47,5 +48,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://82.29.57.43:3001"
+  "proxy": "http://foods_backend:3001"
 } 

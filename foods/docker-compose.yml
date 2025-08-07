@@ -5,8 +5,9 @@ services:
     build: ./backend
     container_name: foods_backend
     restart: always
-    ports:
-      - "3001:3001"
+    # Removendo exposição direta de porta - será acessado via proxy
+    expose:
+      - "3001"
     environment:
       NODE_ENV: production
       DB_HOST: terceirize_mysql
@@ -36,10 +37,14 @@ services:
     build: ./frontend
     container_name: foods_frontend
     restart: always
-    ports:
-      - "3000:3000"
+    # Removendo exposição direta de porta - será acessado via proxy
+    expose:
+      - "3000"
     environment:
-      REACT_APP_API_URL: http://82.29.57.43:3001/api
+      REACT_APP_API_URL: http://foods_backend:3001/api
+      # Configuração para subcaminho
+      PUBLIC_URL: /foods
+      REACT_APP_BASE_PATH: /foods
     depends_on:
       - backend
     networks:
