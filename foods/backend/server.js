@@ -98,7 +98,12 @@ app.use(
   csurf({
     cookie: true,
     ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
-    ignorePaths: ['/api/auth/validate-cotacao-token'] // Pular CSRF para validação de token
+    ignorePaths: [
+      '/api/auth/validate-cotacao-token',
+      '/foods-api/auth/login',
+      '/foods-api/auth/verify',
+      '/foods-api/health'
+    ]
   })
 );
 
@@ -242,7 +247,13 @@ app.get('/api/fornecedores/public', async (req, res) => {
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
     // Permitir login, verify, health, validate-cotacao-token e fornecedores-public sem CSRF
+    const path = req.path.replace('/foods-api', ''); // Remove o prefixo se existir
     if (
+      path === '/api/auth/login' ||
+      path === '/api/auth/verify' ||
+      path === '/api/auth/validate-cotacao-token' ||
+      path === '/api/fornecedores/public' ||
+      path === '/api/health' ||
       req.path === '/api/auth/login' ||
       req.path === '/api/auth/verify' ||
       req.path === '/api/auth/validate-cotacao-token' ||
