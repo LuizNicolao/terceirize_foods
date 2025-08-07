@@ -4,25 +4,20 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: cotacao_frontend
-    # Expondo porta 80 para produção
-    expose:
-      - "80"
+    ports:
+      - "3002:3000"
     volumes:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - REACT_APP_API_URL=http://cotacao_backend:5000
-      - REACT_APP_MAIN_API_URL=http://foods_backend:3001/api
-      # Configuração para subcaminho
-      - PUBLIC_URL=/cotacao
-      - REACT_APP_BASE_PATH=/cotacao
+      - REACT_APP_API_URL=http://82.29.57.43:5000
+      - REACT_APP_MAIN_API_URL=http://82.29.57.43:3001/api
     depends_on:
       - backend
     networks:
       - terceirize_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
       timeout: 10s
       retries: 5
       start_period: 30s
@@ -37,10 +32,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: cotacao_backend
-    # Removendo exposição direta de porta - será acessado via proxy
-    expose:
-      - "5000"
+    ports:
+      - "5000:5000"
     volumes:
       - ./backend:/app
       - /app/node_modules

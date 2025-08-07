@@ -1,30 +1,24 @@
-FROM node:18 as build
+FROM node:18
 
 WORKDIR /app
 
 # Copiar package.json
 COPY package.json ./
 
-# Instalar dependências
-RUN npm install
+# Instalar dependências globalmente primeiro
+RUN npm install -g react-scripts
+
+# Instalar todas as dependências (incluindo devDependencies)
+RUN npm install --production=false
+
+# Verificar se react-scripts foi instalado
+RUN which react-scripts || echo "react-scripts não encontrado no PATH"
 
 # Copiar o resto dos arquivos
 COPY . .
 
-# Fazer build de produção
-RUN npm run build
+# Expor porta 3000
+EXPOSE 3000
 
-# Stage de produção
-FROM nginx:alpine
-
-# Copiar os arquivos buildados
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Copiar configuração customizada do nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expor porta 80
-EXPOSE 80
-
-# Comando para iniciar nginx
-CMD ["nginx", "-g", "daemon off;"] 
+# Comando para iniciar
+CMD ["npm", "start"] 

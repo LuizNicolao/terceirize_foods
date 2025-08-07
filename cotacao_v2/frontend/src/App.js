@@ -178,7 +178,7 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router basename={process.env.REACT_APP_BASE_PATH || '/cotacao'}>
+    <Router>
       <AuthProvider>
         <SidebarProvider>
           <AppRoutes />

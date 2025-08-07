@@ -1,21 +1,7 @@
 import axios from 'axios';
 
-// Determinar a URL base da API baseada no domínio atual
-const getApiUrl = () => {
-  const protocol = window.location.protocol;
-  const host = window.location.host;
-  
-  // Se estamos acessando via subcaminho /foods, usar /foods-api
-  if (window.location.pathname.startsWith('/foods')) {
-    return `${protocol}//${host}/foods-api`;
-  }
-  
-  // Fallback para desenvolvimento
-  return 'http://foods_backend:3001/api';
-};
-
 const api = axios.create({
-  baseURL: getApiUrl(),
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3001/api',
   timeout: 10000,
 });
 
