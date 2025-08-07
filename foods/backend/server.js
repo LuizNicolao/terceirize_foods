@@ -93,28 +93,26 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
+// Middleware para remover prefixo /foods-api
+app.use((req, res, next) => {
+  if (req.path.startsWith('/foods-api')) {
+    req.url = req.url.replace('/foods-api', '');
+    req.path = req.path.replace('/foods-api', '');
+  }
+  next();
+});
+
 // Middleware CSRF (exceto para rotas públicas)
 app.use(
   csurf({
     cookie: true,
     ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
-    ignorePaths: [
-      '/api/auth/validate-cotacao-token',
-      '/foods-api/auth/login',
-      '/foods-api/auth/verify',
-      '/foods-api/health',
-      '/foods-api/csrf-token'
-    ]
+    ignorePaths: ['/api/auth/validate-cotacao-token']
   })
 );
 
 // Rota para fornecer o token CSRF ao frontend
 app.get('/api/csrf-token', (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
-});
-
-// Rota adicional para fornecer o token CSRF com prefixo /foods-api
-app.get('/foods-api/csrf-token', (req, res) => {
   res.json({ csrfToken: req.csrfToken() });
 });
 
@@ -253,13 +251,7 @@ app.get('/api/fornecedores/public', async (req, res) => {
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
     // Permitir login, verify, health, validate-cotacao-token e fornecedores-public sem CSRF
-    const path = req.path.replace('/foods-api', ''); // Remove o prefixo se existir
     if (
-      path === '/api/auth/login' ||
-      path === '/api/auth/verify' ||
-      path === '/api/auth/validate-cotacao-token' ||
-      path === '/api/fornecedores/public' ||
-      path === '/api/health' ||
       req.path === '/api/auth/login' ||
       req.path === '/api/auth/verify' ||
       req.path === '/api/auth/validate-cotacao-token' ||
