@@ -37,9 +37,9 @@ services:
     build: ./frontend
     container_name: foods_frontend
     restart: always
-    # Removendo exposição direta de porta - será acessado via proxy
+    # Expondo porta 80 para produção
     expose:
-      - "3000"
+      - "80"
     environment:
       REACT_APP_API_URL: http://foods_backend:3001/api
       # Configuração para subcaminho
@@ -53,7 +53,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
       timeout: 10s
       retries: 5
       start_period: 30s

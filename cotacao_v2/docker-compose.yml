@@ -5,9 +5,9 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: cotacao_frontend
-    # Removendo exposição direta de porta - será acessado via proxy
+    # Expondo porta 80 para produção
     expose:
-      - "3000"
+      - "80"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -22,7 +22,7 @@ services:
     networks:
       - terceirize_network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
       timeout: 10s
       retries: 5
       start_period: 30s
