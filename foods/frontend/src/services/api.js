@@ -1,14 +1,17 @@
 import axios from 'axios';
 
-// Determinar a URL base da API
+// Determinar a URL base da API baseada no domínio atual
 const getApiUrl = () => {
-  // Se estamos em produção e acessando via subcaminho
+  const protocol = window.location.protocol;
+  const host = window.location.host;
+  
+  // Se estamos acessando via subcaminho /foods, usar /foods-api
   if (window.location.pathname.startsWith('/foods')) {
-    return '/foods-api'; // Será roteado pelo Nginx Proxy Manager
+    return `${protocol}//${host}/foods-api`;
   }
   
-  // Fallback para desenvolvimento ou outras situações
-  return process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+  // Fallback para desenvolvimento
+  return 'http://foods_backend:3001/api';
 };
 
 const api = axios.create({
