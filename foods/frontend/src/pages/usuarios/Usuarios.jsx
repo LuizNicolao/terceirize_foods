@@ -171,7 +171,7 @@ const Usuarios = () => {
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
               <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações de Acesso</h3>
               <div className="space-y-3">
-                <Input
+                  <Input
                   label="Tipo de Acesso *"
                   type="select"
                   {...register('tipo_de_acesso', { required: 'Tipo de acesso é obrigatório' })}
@@ -240,20 +240,20 @@ const Usuarios = () => {
             <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
               <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
                 Cancelar
-              </Button>
+                </Button>
               <Button type="submit" size="sm">
                 {editingUsuario ? 'Atualizar' : 'Criar'}
-              </Button>
+                  </Button>
             </div>
-          )}
+                )}
         </form>
-      </Modal>
+        </Modal>
 
       {/* Modal de Auditoria */}
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
-        title="Relatório de Auditoria - Usuários"
+          title="Relatório de Auditoria - Usuários"
         auditLogs={auditLogs}
         auditLoading={auditLoading}
         auditFilters={auditFilters}

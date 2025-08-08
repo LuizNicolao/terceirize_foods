@@ -17,6 +17,7 @@ export const useProdutos = () => {
   const [classes, setClasses] = useState([]);
   const [unidades, setUnidades] = useState([]);
   const [marcas, setMarcas] = useState([]);
+  const [fornecedores, setFornecedores] = useState([]);
 
   // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,13 +52,14 @@ export const useProdutos = () => {
         status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
       };
 
-      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes] = await Promise.all([
+      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes, fornecedoresRes] = await Promise.all([
         ProdutosService.listar(paginationParams),
         api.get('/grupos?limit=1000'),
         api.get('/subgrupos?limit=1000'),
         api.get('/classes?limit=1000'),
         api.get('/unidades?limit=1000'),
-        api.get('/marcas?limit=1000')
+        api.get('/marcas?limit=1000'),
+        api.get('/fornecedores?limit=1000')
       ]);
 
       if (produtosRes.success) {
@@ -126,6 +128,14 @@ export const useProdutos = () => {
         setMarcas(marcasRes.data.data);
       } else {
         setMarcas(marcasRes.data || []);
+      }
+
+      if (fornecedoresRes.data?.data?.items) {
+        setFornecedores(fornecedoresRes.data.data.items);
+      } else if (fornecedoresRes.data?.data) {
+        setFornecedores(fornecedoresRes.data.data);
+      } else {
+        setFornecedores(fornecedoresRes.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -296,6 +306,7 @@ export const useProdutos = () => {
     classes,
     unidades,
     marcas,
+    fornecedores,
     searchTerm,
     statusFilter,
     currentPage,

@@ -13,7 +13,7 @@ import ProdutosStats from '../../components/produtos/ProdutosStats';
 import ProdutosActions from '../../components/produtos/ProdutosActions';
 import ProdutosTable from '../../components/produtos/ProdutosTable';
 import AuditModal from '../../components/shared/AuditModal';
-
+  
 const Produtos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
@@ -29,6 +29,7 @@ const Produtos = () => {
     classes,
     unidades,
     marcas,
+    fornecedores,
     searchTerm,
     statusFilter,
     currentPage,
@@ -143,7 +144,7 @@ const Produtos = () => {
             onPageChange={handlePageChange}
             onItemsPerPageChange={setItemsPerPage}
           />
-        </div>
+          </div>
       )}
 
       {/* Modal de Produto */}
@@ -158,6 +159,7 @@ const Produtos = () => {
         classes={classes}
         unidades={unidades}
         marcas={marcas}
+        fornecedores={fornecedores}
         onPrint={() => editingProduto && handlePrintPDF(editingProduto.id, editingProduto.nome)}
       />
 
