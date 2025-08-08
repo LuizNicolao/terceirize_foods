@@ -13,6 +13,7 @@ const ProdutoModal = ({
   subgrupos = [],
   classes = [],
   unidades = [],
+  marcas = [],
   onPrint
 }) => {
   const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm();
@@ -35,6 +36,7 @@ const ProdutoModal = ({
       setValue('subgrupo_id', produto.subgrupo_id);
       setValue('classe_id', produto.classe_id);
       setValue('unidade_id', produto.unidade_id);
+      setValue('marca_id', produto.marca_id);
       setValue('agrupamento_n3', produto.agrupamento_n3);
       setValue('agrupamento_n4', produto.agrupamento_n4);
       setValue('marca', produto.marca);
@@ -52,7 +54,6 @@ const ProdutoModal = ({
       setValue('ncm', produto.ncm);
       setValue('cest', produto.cest);
       setValue('cfop', produto.cfop);
-      setValue('origem', produto.origem);
       setValue('cst_icms', produto.cst_icms);
       setValue('csosn', produto.csosn);
       setValue('aliquota_icms', produto.aliquota_icms);
@@ -181,13 +182,19 @@ const ProdutoModal = ({
                 </Input>
 
                 <Input
-                  label="Nome Genérico do Produto"
-                  type="text"
-                  placeholder="Nome genérico do produto"
+                  label="Marca (ID)"
+                  type="select"
                   disabled={isViewMode}
-                  error={errors.nome_generico?.message}
-                  {...register('nome_generico')}
-                />
+                  error={errors.marca_id?.message}
+                  {...register('marca_id')}
+                >
+                  <option value="">Selecione...</option>
+                  {marcas.map(marca => (
+                    <option key={marca.id} value={marca.id}>
+                      {marca.nome}
+                    </option>
+                  ))}
+                </Input>
               </div>
             </div>
 
@@ -246,25 +253,14 @@ const ProdutoModal = ({
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Registro Específico"
-                    type="text"
-                    placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
-                    disabled={isViewMode}
-                    error={errors.registro_especifico?.message}
-                    {...register('registro_especifico')}
-                  />
-
-                  <Input
-                    label="Tipo do Registro"
-                    type="text"
-                    placeholder="Tipo do registro"
-                    disabled={isViewMode}
-                    error={errors.tipo_registro?.message}
-                    {...register('tipo_registro')}
-                  />
-                </div>
+                <Input
+                  label="Registro Específico"
+                  type="text"
+                  placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
+                  disabled={isViewMode}
+                  error={errors.registro_especifico?.message}
+                  {...register('registro_especifico')}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
                   <Input
@@ -345,6 +341,36 @@ const ProdutoModal = ({
                     {...register('fator_conversao')}
                   />
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Quantidade"
+                    type="number"
+                    step="0.001"
+                    placeholder="Ex: 1.000"
+                    disabled={isViewMode}
+                    error={errors.quantidade?.message}
+                    {...register('quantidade')}
+                  />
+
+                  <Input
+                    label="Agrupamento N3"
+                    type="text"
+                    placeholder="Ex: BOVINO"
+                    disabled={isViewMode}
+                    error={errors.agrupamento_n3?.message}
+                    {...register('agrupamento_n3')}
+                  />
+                </div>
+
+                <Input
+                  label="Agrupamento N4"
+                  type="text"
+                  placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
+                  disabled={isViewMode}
+                  error={errors.agrupamento_n4?.message}
+                  {...register('agrupamento_n4')}
+                />
 
                 <Input
                   label="Referência de Mercado"
@@ -432,6 +458,46 @@ const ProdutoModal = ({
                 Tributação
               </h3>
               <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="NCM"
+                    type="text"
+                    placeholder="Classificação NCM"
+                    disabled={isViewMode}
+                    error={errors.ncm?.message}
+                    {...register('ncm')}
+                  />
+
+                  <Input
+                    label="CEST"
+                    type="text"
+                    placeholder="Código CEST"
+                    disabled={isViewMode}
+                    error={errors.cest?.message}
+                    {...register('cest')}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="CFOP"
+                    type="text"
+                    placeholder="Código CFOP"
+                    disabled={isViewMode}
+                    error={errors.cfop?.message}
+                    {...register('cfop')}
+                  />
+
+                  <Input
+                    label="EAN"
+                    type="text"
+                    placeholder="Código EAN"
+                    disabled={isViewMode}
+                    error={errors.ean?.message}
+                    {...register('ean')}
+                  />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     label="CST ICMS"
