@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://foods_backend:3001/api',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3001/api',
   timeout: 10000,
 });
 

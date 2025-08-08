@@ -1,5 +1,4 @@
-# Build stage
-FROM node:18 as build
+FROM node:18
 
 WORKDIR /app
 
@@ -12,37 +11,14 @@ RUN npm install -g react-scripts
 # Instalar todas as dependências (incluindo devDependencies)
 RUN npm install --production=false
 
+# Verificar se react-scripts foi instalado
+RUN which react-scripts || echo "react-scripts não encontrado no PATH"
+
 # Copiar o resto dos arquivos
 COPY . .
 
-# Build da aplicação
-RUN npm run build
+# Expor porta 3000
+EXPOSE 3000
 
-# Production stage
-FROM nginx:alpine
-
-# Copiar os arquivos de build
-COPY --from=build /app/build /usr/share/nginx/html
-
-# Copiar configuração do nginx
-RUN echo 'server { \
-    listen 80; \
-    server_name _; \
-    location /foods { \
-        alias /usr/share/nginx/html; \
-        try_files $uri $uri/ /foods/index.html; \
-        index index.html; \
-    } \
-    location /foods/ { \
-        alias /usr/share/nginx/html/; \
-        try_files $uri $uri/ /foods/index.html; \
-        index index.html; \
-    } \
-    location = /foods { \
-        return 301 /foods/; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# Comando para iniciar
+CMD ["npm", "start"] 

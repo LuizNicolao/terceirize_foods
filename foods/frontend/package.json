@@ -47,6 +47,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://82.29.57.43:3001",
-  "homepage": "/foods"
+  "proxy": "http://82.29.57.43:3001"
 } 
