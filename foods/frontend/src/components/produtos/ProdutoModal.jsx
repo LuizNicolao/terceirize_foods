@@ -10,6 +10,8 @@ const ProdutoModal = ({
   produto, 
   isViewMode = false,
   grupos = [],
+  subgrupos = [],
+  classes = [],
   unidades = [],
   onPrint
 }) => {
@@ -156,6 +158,11 @@ const ProdutoModal = ({
                   {...register('subgrupo_id')}
                 >
                   <option value="">Selecione...</option>
+                  {subgrupos.map(subgrupo => (
+                    <option key={subgrupo.id} value={subgrupo.id}>
+                      {subgrupo.nome}
+                    </option>
+                  ))}
                 </Input>
 
                 <Input
@@ -166,6 +173,11 @@ const ProdutoModal = ({
                   {...register('classe_id')}
                 >
                   <option value="">Selecione...</option>
+                  {classes.map(classe => (
+                    <option key={classe.id} value={classe.id}>
+                      {classe.nome}
+                    </option>
+                  ))}
                 </Input>
 
                 <Input

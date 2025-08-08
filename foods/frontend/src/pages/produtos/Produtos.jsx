@@ -27,6 +27,8 @@ const Produtos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   const [produtos, setProdutos] = useState([]);
   const [grupos, setGrupos] = useState([]);
+  const [subgrupos, setSubgrupos] = useState([]);
+  const [classes, setClasses] = useState([]);
   const [unidades, setUnidades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -77,9 +79,11 @@ const Produtos = () => {
         status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
       };
 
-      const [produtosRes, gruposRes, unidadesRes] = await Promise.all([
+      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes] = await Promise.all([
         ProdutosService.listar(paginationParams),
         api.get('/grupos?limit=1000'),
+        api.get('/subgrupos?limit=1000'),
+        api.get('/classes?limit=1000'),
         api.get('/unidades?limit=1000')
       ]);
 
@@ -119,6 +123,22 @@ const Produtos = () => {
         setGrupos(gruposRes.data.data);
       } else {
         setGrupos(gruposRes.data || []);
+      }
+
+      if (subgruposRes.data?.data?.items) {
+        setSubgrupos(subgruposRes.data.data.items);
+      } else if (subgruposRes.data?.data) {
+        setSubgrupos(subgruposRes.data.data);
+      } else {
+        setSubgrupos(subgruposRes.data || []);
+      }
+
+      if (classesRes.data?.data?.items) {
+        setClasses(classesRes.data.data.items);
+      } else if (classesRes.data?.data) {
+        setClasses(classesRes.data.data);
+      } else {
+        setClasses(classesRes.data || []);
       }
 
       if (unidadesRes.data?.data) {
@@ -847,6 +867,8 @@ const Produtos = () => {
         produto={editingProduto}
         isViewMode={viewMode}
         grupos={grupos}
+        subgrupos={subgrupos}
+        classes={classes}
         unidades={unidades}
         onPrint={handlePrintProduto}
       />
