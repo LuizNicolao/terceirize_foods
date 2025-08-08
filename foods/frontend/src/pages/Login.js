@@ -154,7 +154,7 @@ const Login = () => {
       
       if (result.success) {
         toast.success('Login realizado com sucesso!');
-        navigate('/foods/');
+        navigate('/');
       } else {
         // Tratamento específico para rate limiting
         if (result.isRateLimited) {

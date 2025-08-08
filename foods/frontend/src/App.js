@@ -33,7 +33,7 @@ const AuthenticatedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/foods/login" replace />;
   }
 
   return <Layout>{children}</Layout>;
@@ -48,7 +48,7 @@ const PublicRoute = ({ children }) => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/foods" replace />;
   }
 
   return children;
@@ -59,7 +59,7 @@ const App = () => {
     <Routes>
       {/* Rota pública */}
       <Route 
-        path="/login" 
+        path="/foods/login" 
         element={
           <PublicRoute>
             <Login />
@@ -69,7 +69,7 @@ const App = () => {
 
       {/* Rotas protegidas */}
       <Route 
-        path="/" 
+        path="/foods" 
         element={
           <AuthenticatedRoute>
             <Dashboard />
@@ -78,7 +78,7 @@ const App = () => {
       />
 
       <Route 
-        path="/usuarios" 
+        path="/foods/usuarios" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="usuarios">
@@ -89,7 +89,7 @@ const App = () => {
       />
 
       <Route 
-        path="/fornecedores" 
+        path="/foods/fornecedores" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="fornecedores">
@@ -100,7 +100,7 @@ const App = () => {
       />
 
       <Route 
-        path="/clientes" 
+        path="/foods/clientes" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="clientes">
@@ -111,7 +111,7 @@ const App = () => {
       />
 
       <Route 
-        path="/filiais" 
+        path="/foods/filiais" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="filiais">
@@ -122,7 +122,7 @@ const App = () => {
       />
 
       <Route 
-        path="/rotas" 
+        path="/foods/rotas" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="rotas">
@@ -133,7 +133,7 @@ const App = () => {
       />
 
       <Route 
-        path="/unidades-escolares" 
+        path="/foods/unidades-escolares" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="unidades_escolares">
@@ -144,7 +144,7 @@ const App = () => {
       />
 
       <Route 
-        path="/produtos" 
+        path="/foods/produtos" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="produtos">
@@ -155,7 +155,7 @@ const App = () => {
       />
 
       <Route 
-        path="/grupos" 
+        path="/foods/grupos" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="grupos">
@@ -166,7 +166,7 @@ const App = () => {
       />
 
       <Route 
-        path="/subgrupos" 
+        path="/foods/subgrupos" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="subgrupos">
@@ -177,7 +177,7 @@ const App = () => {
       />
 
       <Route 
-        path="/unidades" 
+        path="/foods/unidades" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="unidades">
@@ -188,7 +188,7 @@ const App = () => {
       />
 
       <Route 
-        path="/marcas" 
+        path="/foods/marcas" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="marcas">
@@ -199,7 +199,7 @@ const App = () => {
       />
 
       <Route 
-        path="/classes" 
+        path="/foods/classes" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="classes">
@@ -210,7 +210,7 @@ const App = () => {
       />
 
       <Route 
-        path="/nome-generico-produto" 
+        path="/foods/nome-generico-produto" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="nome_generico_produto">
@@ -221,7 +221,7 @@ const App = () => {
       />
 
       <Route 
-        path="/veiculos" 
+        path="/foods/veiculos" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="veiculos">
@@ -232,7 +232,7 @@ const App = () => {
       />
 
       <Route 
-        path="/motoristas" 
+        path="/foods/motoristas" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="motoristas">
@@ -243,7 +243,7 @@ const App = () => {
       />
 
       <Route 
-        path="/ajudantes" 
+        path="/foods/ajudantes" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="ajudantes">
@@ -254,7 +254,7 @@ const App = () => {
       />
 
       <Route 
-        path="/permissoes" 
+        path="/foods/permissoes" 
         element={
           <AuthenticatedRoute>
             <ProtectedRoute screen="permissoes">
@@ -265,7 +265,7 @@ const App = () => {
       />
 
       {/* Redirecionar rotas não encontradas */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/foods" replace />} />
     </Routes>
   );
 };
