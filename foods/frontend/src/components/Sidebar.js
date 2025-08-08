@@ -358,7 +358,7 @@ const menuGroups = [
   {
     title: 'Principal',
     items: [
-      { path: '/', icon: FaHome, label: 'Dashboard', screen: 'dashboard' },
+      { path: '/foods', icon: FaHome, label: 'Dashboard', screen: 'dashboard' },
     ]
   },
   {
@@ -370,38 +370,38 @@ const menuGroups = [
   {
     title: 'Logística',
     items: [
-      { path: '/rotas', icon: FaRoute, label: 'Rotas', screen: 'rotas' },
-      { path: '/unidades-escolares', icon: FaBuilding, label: 'Unidades Escolares', screen: 'unidades_escolares' },
+      { path: '/foods/rotas', icon: FaRoute, label: 'Rotas', screen: 'rotas' },
+      { path: '/foods/unidades-escolares', icon: FaBuilding, label: 'Unidades Escolares', screen: 'unidades_escolares' },
     ]
   },
   {
     title: 'Frotas',
     items: [
-      { path: '/veiculos', icon: FaCar, label: 'Veículos', screen: 'veiculos' },
-      { path: '/motoristas', icon: FaUserTie, label: 'Motoristas', screen: 'motoristas' },
-      { path: '/ajudantes', icon: FaUserTie, label: 'Ajudantes', screen: 'ajudantes' },
+      { path: '/foods/veiculos', icon: FaCar, label: 'Veículos', screen: 'veiculos' },
+      { path: '/foods/motoristas', icon: FaUserTie, label: 'Motoristas', screen: 'motoristas' },
+      { path: '/foods/ajudantes', icon: FaUserTie, label: 'Ajudantes', screen: 'ajudantes' },
     ]
   },
   {
     title: 'Cadastros',
     items: [
-      { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
-      { path: '/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
-      { path: '/clientes', icon: FaBuilding, label: 'Clientes', screen: 'clientes' },
-      { path: '/filiais', icon: FaStore, label: 'Filiais', screen: 'filiais' },
-      { path: '/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
-      { path: '/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
-      { path: '/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
-      { path: '/classes', icon: FaCubes, label: 'Classes', screen: 'classes' },
-      { path: '/nome-generico-produto', icon: FaFileAlt, label: 'Nomes Genéricos', screen: 'nome_generico_produto' },
-      { path: '/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
-      { path: '/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
+      { path: '/foods/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
+      { path: '/foods/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
+      { path: '/foods/clientes', icon: FaBuilding, label: 'Clientes', screen: 'clientes' },
+      { path: '/foods/filiais', icon: FaStore, label: 'Filiais', screen: 'filiais' },
+      { path: '/foods/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
+      { path: '/foods/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
+      { path: '/foods/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
+      { path: '/foods/classes', icon: FaCubes, label: 'Classes', screen: 'classes' },
+      { path: '/foods/nome-generico-produto', icon: FaFileAlt, label: 'Nomes Genéricos', screen: 'nome_generico_produto' },
+      { path: '/foods/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
+      { path: '/foods/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
     ]
   },
   {
     title: 'Configurações',
     items: [
-      { path: '/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
+      { path: '/foods/permissoes', icon: FaShieldAlt, label: 'Permissões', screen: 'permissoes' },
     ]
   }
 ];
