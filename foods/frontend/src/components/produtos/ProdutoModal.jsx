@@ -23,15 +23,30 @@ const ProdutoModal = ({
   const grupoId = watch('grupo_id');
   const subgrupoId = watch('subgrupo_id');
 
+
+
+  // Debug temporário
+  console.log('Modal - grupoId:', grupoId, 'tipo:', typeof grupoId);
+  console.log('Modal - subgrupoId:', subgrupoId, 'tipo:', typeof subgrupoId);
+  if (subgrupos.length > 0) {
+    console.log('Modal - primeiro subgrupo:', subgrupos[0]);
+  }
+  if (classes.length > 0) {
+    console.log('Modal - primeira classe:', classes[0]);
+  }
+
   // Filtrar subgrupos baseado no grupo selecionado
-  const subgruposFiltrados = grupoId 
-    ? subgrupos.filter(sg => sg.grupo_id === parseInt(grupoId))
+  const subgruposFiltrados = grupoId && grupoId !== '' 
+    ? subgrupos.filter(sg => String(sg.grupo_id) === String(grupoId))
     : subgrupos;
 
   // Filtrar classes baseado no subgrupo selecionado
-  const classesFiltradas = subgrupoId 
-    ? classes.filter(c => c.subgrupo_id === parseInt(subgrupoId))
+  const classesFiltradas = subgrupoId && subgrupoId !== '' 
+    ? classes.filter(c => String(c.subgrupo_id) === String(subgrupoId))
     : classes;
+
+  console.log('Modal - subgruposFiltrados:', subgruposFiltrados.length);
+  console.log('Modal - classesFiltradas:', classesFiltradas.length);
 
   useEffect(() => {
     if (produto && isOpen) {
@@ -49,6 +64,8 @@ const ProdutoModal = ({
       setValue('quantidade', 1.000);
     }
   }, [produto, isOpen, setValue, reset]);
+
+
 
   const handleFormSubmit = (data) => {
     onSubmit(data);
@@ -144,6 +161,24 @@ const ProdutoModal = ({
                   <option value={1}>Ativo</option>
                   <option value={0}>Inativo</option>
                 </Input>
+
+                <Input
+                  label="Código de Barras"
+                  type="text"
+                  placeholder="Ex: 1234567891234"
+                  disabled={isViewMode}
+                  error={errors.codigo_barras?.message}
+                  {...register('codigo_barras')}
+                />
+
+                <Input
+                  label="EAN"
+                  type="text"
+                  placeholder="Código EAN"
+                  disabled={isViewMode}
+                  error={errors.ean?.message}
+                  {...register('ean')}
+                />
               </div>
             </div>
 
@@ -212,60 +247,31 @@ const ProdutoModal = ({
                     </option>
                   ))}
                 </Input>
-              </div>
-            </div>
 
-            {/* Card 3: Códigos e Referências */}
-            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
-                Códigos e Referências
-              </h3>
-              <div className="space-y-4">
                 <Input
-                  label="Código de Barras"
+                  label="Agrupamento N3"
                   type="text"
-                  placeholder="Ex: 1234567891234"
+                  placeholder="Ex: BOVINO"
                   disabled={isViewMode}
-                  error={errors.codigo_barras?.message}
-                  {...register('codigo_barras')}
+                  error={errors.agrupamento_n3?.message}
+                  {...register('agrupamento_n3')}
                 />
 
                 <Input
-                  label="EAN"
+                  label="Agrupamento N4"
                   type="text"
-                  placeholder="Código EAN"
+                  placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
                   disabled={isViewMode}
-                  error={errors.ean?.message}
-                  {...register('ean')}
-                />
-
-                <Input
-                  label="Referência Interna"
-                  type="text"
-                  placeholder="Referência interna"
-                  disabled={isViewMode}
-                  error={errors.referencia?.message}
-                  {...register('referencia')}
-                />
-
-                <Input
-                  label="Referência Externa"
-                  type="text"
-                  placeholder="Ex: 123654"
-                  disabled={isViewMode}
-                  error={errors.referencia_externa?.message}
-                  {...register('referencia_externa')}
+                  error={errors.agrupamento_n4?.message}
+                  {...register('agrupamento_n4')}
                 />
               </div>
             </div>
-          </div>
 
-          {/* Segunda Linha - 3 Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-            {/* Card 4: Unidade e Medidas */}
+            {/* Card 3: Unidade e Dimensões */}
             <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
-                Unidade e Medidas
+                Unidade e Dimensões
               </h3>
               <div className="space-y-4">
                 <Input
@@ -283,43 +289,28 @@ const ProdutoModal = ({
                   ))}
                 </Input>
 
-                <Input
-                  label="Quantidade"
-                  type="number"
-                  step="0.001"
-                  placeholder="Ex: 1.000"
-                  disabled={isViewMode}
-                  error={errors.quantidade?.message}
-                  {...register('quantidade')}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Quantidade"
+                    type="number"
+                    step="0.001"
+                    placeholder="Ex: 1.000"
+                    disabled={isViewMode}
+                    error={errors.quantidade?.message}
+                    {...register('quantidade')}
+                  />
 
-                <Input
-                  label="Fator de Conversão"
-                  type="number"
-                  step="0.001"
-                  placeholder="Ex: 1.000"
-                  disabled={isViewMode}
-                  error={errors.fator_conversao?.message}
-                  {...register('fator_conversao')}
-                />
+                  <Input
+                    label="Fator de Conversão"
+                    type="number"
+                    step="0.001"
+                    placeholder="Ex: 1.000"
+                    disabled={isViewMode}
+                    error={errors.fator_conversao?.message}
+                    {...register('fator_conversao')}
+                  />
+                </div>
 
-                <Input
-                  label="Regra Palet (Unidades)"
-                  type="number"
-                  placeholder="Ex: 1200"
-                  disabled={isViewMode}
-                  error={errors.regra_palet_un?.message}
-                  {...register('regra_palet_un')}
-                />
-              </div>
-            </div>
-
-            {/* Card 5: Dimensões */}
-            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
-                Dimensões
-              </h3>
-              <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     label="Peso Líquido (kg)"
@@ -387,71 +378,11 @@ const ProdutoModal = ({
                 </div>
               </div>
             </div>
-
-            {/* Card 6: Validade e Agrupamentos */}
-            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
-                Validade e Agrupamentos
-              </h3>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Prazo de Validade"
-                    type="number"
-                    placeholder="Ex: 12"
-                    disabled={isViewMode}
-                    error={errors.prazo_validade?.message}
-                    {...register('prazo_validade')}
-                  />
-
-                  <Input
-                    label="Unidade de Validade"
-                    type="select"
-                    disabled={isViewMode}
-                    error={errors.unidade_validade?.message}
-                    {...register('unidade_validade')}
-                  >
-                    <option value="">Selecione...</option>
-                    <option value="DIAS">Dias</option>
-                    <option value="SEMANAS">Semanas</option>
-                    <option value="MESES">Meses</option>
-                    <option value="ANOS">Anos</option>
-                  </Input>
-                </div>
-
-                <Input
-                  label="Agrupamento N3"
-                  type="text"
-                  placeholder="Ex: BOVINO"
-                  disabled={isViewMode}
-                  error={errors.agrupamento_n3?.message}
-                  {...register('agrupamento_n3')}
-                />
-
-                <Input
-                  label="Agrupamento N4"
-                  type="text"
-                  placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
-                  disabled={isViewMode}
-                  error={errors.agrupamento_n4?.message}
-                  {...register('agrupamento_n4')}
-                />
-
-                <Input
-                  label="Referência de Mercado"
-                  type="text"
-                  placeholder="Ex: Corte Bovino / Patinho / Cubos"
-                  disabled={isViewMode}
-                  error={errors.referencia_mercado?.message}
-                  {...register('referencia_mercado')}
-                />
-              </div>
-            </div>
           </div>
 
-          {/* Terceira Linha - 2 Cards */}
+          {/* Segunda Linha - 2 Cards */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Card 7: Tributação */}
+            {/* Card 4: Tributação */}
             <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
                 Tributação
@@ -552,10 +483,10 @@ const ProdutoModal = ({
               </div>
             </div>
 
-            {/* Card 8: Comercial */}
+            {/* Card 5: Comercial e Documentos */}
             <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
-                Comercial
+                Comercial e Documentos
               </h3>
               <div className="space-y-4">
                 <Input
@@ -615,32 +546,108 @@ const ProdutoModal = ({
                   />
                 </div>
 
-                <Input
-                  label="Integração Senior"
-                  type="text"
-                  placeholder="Ex: 123654"
-                  disabled={isViewMode}
-                  error={errors.integracao_senior?.message}
-                  {...register('integracao_senior')}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Prazo de Validade"
+                    type="number"
+                    placeholder="Ex: 12"
+                    disabled={isViewMode}
+                    error={errors.prazo_validade?.message}
+                    {...register('prazo_validade')}
+                  />
+
+                  <Input
+                    label="Unidade de Validade"
+                    type="select"
+                    disabled={isViewMode}
+                    error={errors.unidade_validade?.message}
+                    {...register('unidade_validade')}
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="DIAS">Dias</option>
+                    <option value="SEMANAS">Semanas</option>
+                    <option value="MESES">Meses</option>
+                    <option value="ANOS">Anos</option>
+                  </Input>
+                </div>
 
                 <Input
-                  label="Ficha de Homologação"
-                  type="text"
-                  placeholder="Ex: 123456"
+                  label="Regra Palet (Unidades)"
+                  type="number"
+                  placeholder="Ex: 1200"
                   disabled={isViewMode}
-                  error={errors.ficha_homologacao?.message}
-                  {...register('ficha_homologacao')}
+                  error={errors.regra_palet_un?.message}
+                  {...register('regra_palet_un')}
                 />
+              </div>
+            </div>
+          </div>
 
-                <Input
-                  label="Registro Específico"
-                  type="text"
-                  placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
-                  disabled={isViewMode}
-                  error={errors.registro_especifico?.message}
-                  {...register('registro_especifico')}
-                />
+          {/* Terceira Linha - 1 Card */}
+          <div className="grid grid-cols-1 gap-6 mb-6">
+            {/* Card 6: Referências e Informações */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
+                Referências e Informações
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    label="Referência Interna"
+                    type="text"
+                    placeholder="Referência interna"
+                    disabled={isViewMode}
+                    error={errors.referencia?.message}
+                    {...register('referencia')}
+                  />
+
+                  <Input
+                    label="Referência Externa"
+                    type="text"
+                    placeholder="Ex: 123654"
+                    disabled={isViewMode}
+                    error={errors.referencia_externa?.message}
+                    {...register('referencia_externa')}
+                  />
+
+                  <Input
+                    label="Referência de Mercado"
+                    type="text"
+                    placeholder="Ex: Corte Bovino / Patinho / Cubos"
+                    disabled={isViewMode}
+                    error={errors.referencia_mercado?.message}
+                    {...register('referencia_mercado')}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Input
+                    label="Integração Senior"
+                    type="text"
+                    placeholder="Ex: 123654"
+                    disabled={isViewMode}
+                    error={errors.integracao_senior?.message}
+                    {...register('integracao_senior')}
+                  />
+
+                  <Input
+                    label="Ficha de Homologação"
+                    type="text"
+                    placeholder="Ex: 123456"
+                    disabled={isViewMode}
+                    error={errors.ficha_homologacao?.message}
+                    {...register('ficha_homologacao')}
+                  />
+
+                  <Input
+                    label="Registro Específico"
+                    type="text"
+                    placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
+                    disabled={isViewMode}
+                    error={errors.registro_especifico?.message}
+                    {...register('registro_especifico')}
+                  />
+                </div>
 
                 <Input
                   label="Informações Adicionais"
@@ -667,7 +674,7 @@ const ProdutoModal = ({
               <Button
                 type="submit"
                 variant="primary"
-                onClick={handleSubmit(handleFormSubmit)}
+                className="flex items-center gap-2"
               >
                 {produto ? 'Atualizar Produto' : 'Criar Produto'}
               </Button>
