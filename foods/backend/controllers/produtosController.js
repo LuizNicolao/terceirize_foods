@@ -179,12 +179,7 @@ class ProdutosController {
   static criarProduto = asyncHandler(async (req, res) => {
     const {
       nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, 
-      estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, classe_id, unidade_id, status,
-      codigo_produto, referencia, referencia_externa, referencia_mercado, quantidade, marca_id,
-      agrupamento_n3, agrupamento_n4, peso_liquido, peso_bruto, marca, fabricante, informacoes_adicionais,
-      foto_produto, prazo_validade, unidade_validade, regra_palet_un, ficha_homologacao, registro_especifico,
-      comprimento, largura, altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn,
-      aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins
+      estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, classe_id, unidade_id, status
     } = req.body;
 
     // Verificar se código de barras já existe
@@ -261,16 +256,9 @@ class ProdutosController {
 
     // Inserir produto
     const result = await executeQuery(
-      `INSERT INTO produtos (
-        nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, 
-        estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, classe_id, unidade_id, status,
-        codigo_produto, referencia, referencia_externa, referencia_mercado, quantidade, marca_id,
-        agrupamento_n3, agrupamento_n4, peso_liquido, peso_bruto, marca, fabricante, informacoes_adicionais,
-        foto_produto, prazo_validade, unidade_validade, regra_palet_un, ficha_homologacao, registro_especifico,
-        comprimento, largura, altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn,
-        aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, criado_em
-      )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      `INSERT INTO produtos (nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, 
+                            estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, classe_id, unidade_id, status, criado_em)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         nome, 
         descricao && descricao.trim() ? descricao.trim() : null,
@@ -285,41 +273,7 @@ class ProdutosController {
         subgrupo_id || null,
         classe_id || null,
         unidade_id || null,
-        status || 1,
-        codigo_produto && codigo_produto.trim() ? codigo_produto.trim() : null,
-        referencia && referencia.trim() ? referencia.trim() : null,
-        referencia_externa && referencia_externa.trim() ? referencia_externa.trim() : null,
-        referencia_mercado && referencia_mercado.trim() ? referencia_mercado.trim() : null,
-        quantidade || 1.000,
-        marca_id || null,
-        agrupamento_n3 && agrupamento_n3.trim() ? agrupamento_n3.trim() : null,
-        agrupamento_n4 && agrupamento_n4.trim() ? agrupamento_n4.trim() : null,
-        peso_liquido || null,
-        peso_bruto || null,
-        marca && marca.trim() ? marca.trim() : null,
-        fabricante && fabricante.trim() ? fabricante.trim() : null,
-        informacoes_adicionais && informacoes_adicionais.trim() ? informacoes_adicionais.trim() : null,
-        foto_produto && foto_produto.trim() ? foto_produto.trim() : null,
-        prazo_validade || null,
-        unidade_validade || null,
-        regra_palet_un || null,
-        ficha_homologacao && ficha_homologacao.trim() ? ficha_homologacao.trim() : null,
-        registro_especifico && registro_especifico.trim() ? registro_especifico.trim() : null,
-        comprimento || null,
-        largura || null,
-        altura || null,
-        volume || null,
-        integracao_senior && integracao_senior.trim() ? integracao_senior.trim() : null,
-        ncm && ncm.trim() ? ncm.trim() : null,
-        cest && cest.trim() ? cest.trim() : null,
-        cfop && cfop.trim() ? cfop.trim() : null,
-        ean && ean.trim() ? ean.trim() : null,
-        cst_icms && cst_icms.trim() ? cst_icms.trim() : null,
-        csosn && csosn.trim() ? csosn.trim() : null,
-        aliquota_icms || null,
-        aliquota_ipi || null,
-        aliquota_pis || null,
-        aliquota_cofins || null
+        status || 1
       ]
     );
 

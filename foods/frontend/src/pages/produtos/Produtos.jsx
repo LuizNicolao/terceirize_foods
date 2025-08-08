@@ -30,7 +30,6 @@ const Produtos = () => {
   const [subgrupos, setSubgrupos] = useState([]);
   const [classes, setClasses] = useState([]);
   const [unidades, setUnidades] = useState([]);
-  const [marcas, setMarcas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
@@ -80,13 +79,12 @@ const Produtos = () => {
         status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
       };
 
-      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes] = await Promise.all([
+      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes] = await Promise.all([
         ProdutosService.listar(paginationParams),
         api.get('/grupos?limit=1000'),
         api.get('/subgrupos?limit=1000'),
         api.get('/classes?limit=1000'),
-        api.get('/unidades?limit=1000'),
-        api.get('/marcas?limit=1000')
+        api.get('/unidades?limit=1000')
       ]);
 
       if (produtosRes.success) {
@@ -147,14 +145,6 @@ const Produtos = () => {
         setUnidades(unidadesRes.data.data);
       } else {
         setUnidades(unidadesRes.data || []);
-      }
-
-      if (marcasRes.data?.data?.items) {
-        setMarcas(marcasRes.data.data.items);
-      } else if (marcasRes.data?.data) {
-        setMarcas(marcasRes.data.data);
-      } else {
-        setMarcas(marcasRes.data || []);
       }
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -888,7 +878,6 @@ const Produtos = () => {
         subgrupos={subgrupos}
         classes={classes}
         unidades={unidades}
-        marcas={marcas}
         onPrint={handlePrintProduto}
       />
 
