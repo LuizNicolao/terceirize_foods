@@ -55,6 +55,8 @@ const PublicRoute = ({ children }) => {
 };
 
 const App = () => {
+  console.log('App component rendered');
+  
   return (
     <Routes>
       {/* Rota pública */}
@@ -221,6 +223,17 @@ const App = () => {
       />
 
       <Route 
+        path="/permissoes" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="permissoes">
+              <Permissoes />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
         path="/veiculos" 
         element={
           <AuthenticatedRoute>
@@ -252,20 +265,6 @@ const App = () => {
           </AuthenticatedRoute>
         } 
       />
-
-      <Route 
-        path="/permissoes" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="permissoes">
-              <Permissoes />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      {/* Redirecionar rotas não encontradas */}
-      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
