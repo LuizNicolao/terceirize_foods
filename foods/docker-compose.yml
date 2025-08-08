@@ -6,7 +6,7 @@ services:
     container_name: foods_backend
     restart: always
     ports:
-      - "3001:3001"
+      - "3443:3001"
     environment:
       NODE_ENV: production
       DB_HOST: terceirize_mysql
@@ -39,7 +39,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_API_URL: https://foods.terceirizemais.com.br/foods/api
+      REACT_APP_API_URL: https://foods.terceirizemais.com.br:3443/api
     depends_on:
       - backend
     networks:
