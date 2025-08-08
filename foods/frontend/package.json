@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Frontend do sistema de cadastro de informações Foods",
   "private": true,
+  "homepage": "/foods",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
