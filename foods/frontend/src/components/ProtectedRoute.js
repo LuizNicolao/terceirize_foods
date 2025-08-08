@@ -17,7 +17,7 @@ const ProtectedRoute = ({ children, screen, requiredPermission = 'visualizar' })
 
   // Verificar se o usuário pode visualizar a tela
   if (!canView(screen)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/foods" replace />;
   }
 
   return children;

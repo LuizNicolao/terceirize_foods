@@ -33,7 +33,7 @@ const AuthenticatedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/foods/login" replace />;
   }
 
   return <Layout>{children}</Layout>;
