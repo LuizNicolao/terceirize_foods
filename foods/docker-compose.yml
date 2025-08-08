@@ -39,7 +39,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      REACT_APP_API_URL: /foods/api
+      REACT_APP_API_URL: https://foods.terceirizemais.com.br/foods/api
     depends_on:
       - backend
     networks:
