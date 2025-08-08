@@ -48,7 +48,7 @@ const PublicRoute = ({ children }) => {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/foods" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
