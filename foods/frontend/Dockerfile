@@ -30,6 +30,12 @@ RUN echo 'server { \
     location /foods { \
         alias /usr/share/nginx/html; \
         try_files $uri $uri/ /foods/index.html; \
+        index index.html; \
+    } \
+    location /foods/ { \
+        alias /usr/share/nginx/html/; \
+        try_files $uri $uri/ /foods/index.html; \
+        index index.html; \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
