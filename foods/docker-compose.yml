@@ -39,7 +39,7 @@ services:
     ports:
       - "3080:80"
     environment:
-      REACT_APP_API_URL: http://82.29.57.43:3001/api
+      REACT_APP_API_URL: http://foods_backend:3001/api
     depends_on:
       - backend
     networks:
