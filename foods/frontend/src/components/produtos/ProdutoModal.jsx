@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaTimes, FaPrint, FaSave, FaEye, FaEdit, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaTimes, FaPrint, FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
 
 const ProdutoModal = ({ 
@@ -18,15 +18,6 @@ const ProdutoModal = ({
   onPrint
 }) => {
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
-  const [activeSection, setActiveSection] = useState('basico');
-  const [expandedSections, setExpandedSections] = useState({
-    basico: true,
-    classificacao: true,
-    dimensoes: true,
-    tributario: true,
-    comercial: true,
-    estoque: true
-  });
 
   // Observar mudanças nos campos para filtros dependentes
   const grupoId = watch('grupo_id');
@@ -63,35 +54,11 @@ const ProdutoModal = ({
     onSubmit(data);
   };
 
-  const toggleSection = (section) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
-
-  const SectionHeader = ({ title, section, icon: Icon }) => (
-    <div 
-      className="flex items-center justify-between p-4 bg-gray-50 border-b cursor-pointer hover:bg-gray-100 transition-colors"
-      onClick={() => toggleSection(section)}
-    >
-      <div className="flex items-center gap-3">
-        {Icon && <Icon className="w-5 h-5 text-green-600" />}
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-      </div>
-      {expandedSections[section] ? (
-        <FaChevronUp className="w-4 h-4 text-gray-500" />
-      ) : (
-        <FaChevronDown className="w-4 h-4 text-gray-500" />
-      )}
-    </div>
-  );
-
   if (!isOpen) return null;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
-      <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
           <div className="flex items-center gap-3">
@@ -131,12 +98,15 @@ const ProdutoModal = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="flex-1 overflow-y-auto">
-          {/* Seção: Informações Básicas */}
-          <div className="border-b border-gray-200">
-            <SectionHeader title="Informações Básicas" section="basico" />
-            {expandedSections.basico && (
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6">
+          {/* Primeira Linha - 3 Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            {/* Card 1: Informação Básica */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
+                Informação Básica
+              </h3>
+              <div className="space-y-4">
                 <Input
                   label="Código do Produto"
                   type="text"
@@ -165,24 +135,6 @@ const ProdutoModal = ({
                 />
 
                 <Input
-                  label="Código de Barras"
-                  type="text"
-                  placeholder="Ex: 1234567891234"
-                  disabled={isViewMode}
-                  error={errors.codigo_barras?.message}
-                  {...register('codigo_barras')}
-                />
-
-                <Input
-                  label="EAN"
-                  type="text"
-                  placeholder="Código EAN"
-                  disabled={isViewMode}
-                  error={errors.ean?.message}
-                  {...register('ean')}
-                />
-
-                <Input
                   label="Status"
                   type="select"
                   disabled={isViewMode}
@@ -193,14 +145,14 @@ const ProdutoModal = ({
                   <option value={0}>Inativo</option>
                 </Input>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Seção: Classificação */}
-          <div className="border-b border-gray-200">
-            <SectionHeader title="Classificação" section="classificacao" />
-            {expandedSections.classificacao && (
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Card 2: Classificação */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
+                Classificação
+              </h3>
+              <div className="space-y-4">
                 <Input
                   label="Grupo"
                   type="select"
@@ -260,33 +212,62 @@ const ProdutoModal = ({
                     </option>
                   ))}
                 </Input>
+              </div>
+            </div>
 
+            {/* Card 3: Códigos e Referências */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
+                Códigos e Referências
+              </h3>
+              <div className="space-y-4">
                 <Input
-                  label="Agrupamento N3"
+                  label="Código de Barras"
                   type="text"
-                  placeholder="Ex: BOVINO"
+                  placeholder="Ex: 1234567891234"
                   disabled={isViewMode}
-                  error={errors.agrupamento_n3?.message}
-                  {...register('agrupamento_n3')}
+                  error={errors.codigo_barras?.message}
+                  {...register('codigo_barras')}
                 />
 
                 <Input
-                  label="Agrupamento N4"
+                  label="EAN"
                   type="text"
-                  placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
+                  placeholder="Código EAN"
                   disabled={isViewMode}
-                  error={errors.agrupamento_n4?.message}
-                  {...register('agrupamento_n4')}
+                  error={errors.ean?.message}
+                  {...register('ean')}
+                />
+
+                <Input
+                  label="Referência Interna"
+                  type="text"
+                  placeholder="Referência interna"
+                  disabled={isViewMode}
+                  error={errors.referencia?.message}
+                  {...register('referencia')}
+                />
+
+                <Input
+                  label="Referência Externa"
+                  type="text"
+                  placeholder="Ex: 123654"
+                  disabled={isViewMode}
+                  error={errors.referencia_externa?.message}
+                  {...register('referencia_externa')}
                 />
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Seção: Dimensões e Medidas */}
-          <div className="border-b border-gray-200">
-            <SectionHeader title="Dimensões e Medidas" section="dimensoes" />
-            {expandedSections.dimensoes && (
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Segunda Linha - 3 Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            {/* Card 4: Unidade e Medidas */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
+                Unidade e Medidas
+              </h3>
+              <div className="space-y-4">
                 <Input
                   label="Unidade de Medida"
                   type="select"
@@ -323,66 +304,6 @@ const ProdutoModal = ({
                 />
 
                 <Input
-                  label="Peso Líquido (kg)"
-                  type="number"
-                  step="0.001"
-                  placeholder="Ex: 1.000"
-                  disabled={isViewMode}
-                  error={errors.peso_liquido?.message}
-                  {...register('peso_liquido')}
-                />
-
-                <Input
-                  label="Peso Bruto (kg)"
-                  type="number"
-                  step="0.001"
-                  placeholder="Ex: 1.000"
-                  disabled={isViewMode}
-                  error={errors.peso_bruto?.message}
-                  {...register('peso_bruto')}
-                />
-
-                <Input
-                  label="Comprimento (cm)"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ex: 20.00"
-                  disabled={isViewMode}
-                  error={errors.comprimento?.message}
-                  {...register('comprimento')}
-                />
-
-                <Input
-                  label="Largura (cm)"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ex: 15.00"
-                  disabled={isViewMode}
-                  error={errors.largura?.message}
-                  {...register('largura')}
-                />
-
-                <Input
-                  label="Altura (cm)"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ex: 10.00"
-                  disabled={isViewMode}
-                  error={errors.altura?.message}
-                  {...register('altura')}
-                />
-
-                <Input
-                  label="Volume (cm³)"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ex: 3000.00"
-                  disabled={isViewMode}
-                  error={errors.volume?.message}
-                  {...register('volume')}
-                />
-
-                <Input
                   label="Regra Palet (Unidades)"
                   type="number"
                   placeholder="Ex: 1200"
@@ -390,73 +311,191 @@ const ProdutoModal = ({
                   error={errors.regra_palet_un?.message}
                   {...register('regra_palet_un')}
                 />
+              </div>
+            </div>
+
+            {/* Card 5: Dimensões */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
+                Dimensões
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Peso Líquido (kg)"
+                    type="number"
+                    step="0.001"
+                    placeholder="Ex: 1.000"
+                    disabled={isViewMode}
+                    error={errors.peso_liquido?.message}
+                    {...register('peso_liquido')}
+                  />
+
+                  <Input
+                    label="Peso Bruto (kg)"
+                    type="number"
+                    step="0.001"
+                    placeholder="Ex: 1.000"
+                    disabled={isViewMode}
+                    error={errors.peso_bruto?.message}
+                    {...register('peso_bruto')}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Comprimento (cm)"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 20.00"
+                    disabled={isViewMode}
+                    error={errors.comprimento?.message}
+                    {...register('comprimento')}
+                  />
+
+                  <Input
+                    label="Largura (cm)"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 15.00"
+                    disabled={isViewMode}
+                    error={errors.largura?.message}
+                    {...register('largura')}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Altura (cm)"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 10.00"
+                    disabled={isViewMode}
+                    error={errors.altura?.message}
+                    {...register('altura')}
+                  />
+
+                  <Input
+                    label="Volume (cm³)"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 3000.00"
+                    disabled={isViewMode}
+                    error={errors.volume?.message}
+                    {...register('volume')}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Card 6: Validade e Agrupamentos */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
+                Validade e Agrupamentos
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Prazo de Validade"
+                    type="number"
+                    placeholder="Ex: 12"
+                    disabled={isViewMode}
+                    error={errors.prazo_validade?.message}
+                    {...register('prazo_validade')}
+                  />
+
+                  <Input
+                    label="Unidade de Validade"
+                    type="select"
+                    disabled={isViewMode}
+                    error={errors.unidade_validade?.message}
+                    {...register('unidade_validade')}
+                  >
+                    <option value="">Selecione...</option>
+                    <option value="DIAS">Dias</option>
+                    <option value="SEMANAS">Semanas</option>
+                    <option value="MESES">Meses</option>
+                    <option value="ANOS">Anos</option>
+                  </Input>
+                </div>
 
                 <Input
-                  label="Prazo de Validade"
-                  type="number"
-                  placeholder="Ex: 12"
+                  label="Agrupamento N3"
+                  type="text"
+                  placeholder="Ex: BOVINO"
                   disabled={isViewMode}
-                  error={errors.prazo_validade?.message}
-                  {...register('prazo_validade')}
+                  error={errors.agrupamento_n3?.message}
+                  {...register('agrupamento_n3')}
                 />
 
                 <Input
-                  label="Unidade de Validade"
-                  type="select"
+                  label="Agrupamento N4"
+                  type="text"
+                  placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
                   disabled={isViewMode}
-                  error={errors.unidade_validade?.message}
-                  {...register('unidade_validade')}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="DIAS">Dias</option>
-                  <option value="SEMANAS">Semanas</option>
-                  <option value="MESES">Meses</option>
-                  <option value="ANOS">Anos</option>
-                </Input>
+                  error={errors.agrupamento_n4?.message}
+                  {...register('agrupamento_n4')}
+                />
+
+                <Input
+                  label="Referência de Mercado"
+                  type="text"
+                  placeholder="Ex: Corte Bovino / Patinho / Cubos"
+                  disabled={isViewMode}
+                  error={errors.referencia_mercado?.message}
+                  {...register('referencia_mercado')}
+                />
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Seção: Tributário */}
-          <div className="border-b border-gray-200">
-            <SectionHeader title="Informações Tributárias" section="tributario" />
-            {expandedSections.tributario && (
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Input
-                  label="NCM"
-                  type="text"
-                  placeholder="Classificação NCM"
-                  disabled={isViewMode}
-                  error={errors.ncm?.message}
-                  {...register('ncm')}
-                />
+          {/* Terceira Linha - 2 Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Card 7: Tributação */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
+                Tributação
+              </h3>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="NCM"
+                    type="text"
+                    placeholder="Classificação NCM"
+                    disabled={isViewMode}
+                    error={errors.ncm?.message}
+                    {...register('ncm')}
+                  />
 
-                <Input
-                  label="CEST"
-                  type="text"
-                  placeholder="Código CEST"
-                  disabled={isViewMode}
-                  error={errors.cest?.message}
-                  {...register('cest')}
-                />
+                  <Input
+                    label="CEST"
+                    type="text"
+                    placeholder="Código CEST"
+                    disabled={isViewMode}
+                    error={errors.cest?.message}
+                    {...register('cest')}
+                  />
+                </div>
 
-                <Input
-                  label="CFOP"
-                  type="text"
-                  placeholder="Código CFOP"
-                  disabled={isViewMode}
-                  error={errors.cfop?.message}
-                  {...register('cfop')}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="CFOP"
+                    type="text"
+                    placeholder="Código CFOP"
+                    disabled={isViewMode}
+                    error={errors.cfop?.message}
+                    {...register('cfop')}
+                  />
 
-                <Input
-                  label="CST ICMS"
-                  type="text"
-                  placeholder="CST ICMS"
-                  disabled={isViewMode}
-                  error={errors.cst_icms?.message}
-                  {...register('cst_icms')}
-                />
+                  <Input
+                    label="CST ICMS"
+                    type="text"
+                    placeholder="CST ICMS"
+                    disabled={isViewMode}
+                    error={errors.cst_icms?.message}
+                    {...register('cst_icms')}
+                  />
+                </div>
 
                 <Input
                   label="CSOSN"
@@ -467,54 +506,58 @@ const ProdutoModal = ({
                   {...register('csosn')}
                 />
 
-                <Input
-                  label="Alíquota ICMS (%)"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ex: 18.00"
-                  disabled={isViewMode}
-                  error={errors.aliquota_icms?.message}
-                  {...register('aliquota_icms')}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Alíquota ICMS (%)"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 18.00"
+                    disabled={isViewMode}
+                    error={errors.aliquota_icms?.message}
+                    {...register('aliquota_icms')}
+                  />
 
-                <Input
-                  label="Alíquota IPI (%)"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ex: 5.00"
-                  disabled={isViewMode}
-                  error={errors.aliquota_ipi?.message}
-                  {...register('aliquota_ipi')}
-                />
+                  <Input
+                    label="Alíquota IPI (%)"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 5.00"
+                    disabled={isViewMode}
+                    error={errors.aliquota_ipi?.message}
+                    {...register('aliquota_ipi')}
+                  />
+                </div>
 
-                <Input
-                  label="Alíquota PIS (%)"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ex: 1.65"
-                  disabled={isViewMode}
-                  error={errors.aliquota_pis?.message}
-                  {...register('aliquota_pis')}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Alíquota PIS (%)"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 1.65"
+                    disabled={isViewMode}
+                    error={errors.aliquota_pis?.message}
+                    {...register('aliquota_pis')}
+                  />
 
-                <Input
-                  label="Alíquota COFINS (%)"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ex: 7.60"
-                  disabled={isViewMode}
-                  error={errors.aliquota_cofins?.message}
-                  {...register('aliquota_cofins')}
-                />
+                  <Input
+                    label="Alíquota COFINS (%)"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 7.60"
+                    disabled={isViewMode}
+                    error={errors.aliquota_cofins?.message}
+                    {...register('aliquota_cofins')}
+                  />
+                </div>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Seção: Comercial */}
-          <div className="border-b border-gray-200">
-            <SectionHeader title="Informações Comerciais" section="comercial" />
-            {expandedSections.comercial && (
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Card 8: Comercial */}
+            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
+                Comercial
+              </h3>
+              <div className="space-y-4">
                 <Input
                   label="Fornecedor"
                   type="select"
@@ -530,52 +573,47 @@ const ProdutoModal = ({
                   ))}
                 </Input>
 
-                <Input
-                  label="Preço de Custo"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ex: 15.50"
-                  disabled={isViewMode}
-                  error={errors.preco_custo?.message}
-                  {...register('preco_custo')}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Preço de Custo"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 15.50"
+                    disabled={isViewMode}
+                    error={errors.preco_custo?.message}
+                    {...register('preco_custo')}
+                  />
 
-                <Input
-                  label="Preço de Venda"
-                  type="number"
-                  step="0.01"
-                  placeholder="Ex: 25.00"
-                  disabled={isViewMode}
-                  error={errors.preco_venda?.message}
-                  {...register('preco_venda')}
-                />
+                  <Input
+                    label="Preço de Venda"
+                    type="number"
+                    step="0.01"
+                    placeholder="Ex: 25.00"
+                    disabled={isViewMode}
+                    error={errors.preco_venda?.message}
+                    {...register('preco_venda')}
+                  />
+                </div>
 
-                <Input
-                  label="Referência Interna"
-                  type="text"
-                  placeholder="Referência interna"
-                  disabled={isViewMode}
-                  error={errors.referencia?.message}
-                  {...register('referencia')}
-                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Estoque Atual"
+                    type="number"
+                    placeholder="Ex: 100"
+                    disabled={isViewMode}
+                    error={errors.estoque_atual?.message}
+                    {...register('estoque_atual')}
+                  />
 
-                <Input
-                  label="Referência Externa"
-                  type="text"
-                  placeholder="Ex: 123654"
-                  disabled={isViewMode}
-                  error={errors.referencia_externa?.message}
-                  {...register('referencia_externa')}
-                />
-
-                <Input
-                  label="Referência de Mercado"
-                  type="text"
-                  placeholder="Ex: Corte Bovino / Patinho / Cubos"
-                  disabled={isViewMode}
-                  error={errors.referencia_mercado?.message}
-                  {...register('referencia_mercado')}
-                />
+                  <Input
+                    label="Estoque Mínimo"
+                    type="number"
+                    placeholder="Ex: 10"
+                    disabled={isViewMode}
+                    error={errors.estoque_minimo?.message}
+                    {...register('estoque_minimo')}
+                  />
+                </div>
 
                 <Input
                   label="Integração Senior"
@@ -613,55 +651,29 @@ const ProdutoModal = ({
                   {...register('informacoes_adicionais')}
                 />
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Seção: Estoque */}
-          <div className="border-b border-gray-200">
-            <SectionHeader title="Controle de Estoque" section="estoque" />
-            {expandedSections.estoque && (
-              <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Input
-                  label="Estoque Atual"
-                  type="number"
-                  placeholder="Ex: 100"
-                  disabled={isViewMode}
-                  error={errors.estoque_atual?.message}
-                  {...register('estoque_atual')}
-                />
-
-                <Input
-                  label="Estoque Mínimo"
-                  type="number"
-                  placeholder="Ex: 10"
-                  disabled={isViewMode}
-                  error={errors.estoque_minimo?.message}
-                  {...register('estoque_minimo')}
-                />
-              </div>
-            )}
-          </div>
+          {/* Botões de Ação */}
+          {!isViewMode && (
+            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+                onClick={handleSubmit(handleFormSubmit)}
+              >
+                {produto ? 'Atualizar Produto' : 'Criar Produto'}
+              </Button>
+            </div>
+          )}
         </form>
-
-        {/* Footer */}
-        {!isViewMode && (
-          <div className="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              onClick={handleSubmit(handleFormSubmit)}
-            >
-              {produto ? 'Atualizar Produto' : 'Criar Produto'}
-            </Button>
-          </div>
-        )}
       </div>
     </Modal>
   );
