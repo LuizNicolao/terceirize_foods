@@ -7,6 +7,7 @@ import { Button, Input, Modal, Table, StatCard } from '../components/ui';
 import RotasService from '../services/rotas';
 import CadastroFilterBar from '../components/CadastroFilterBar';
 import Pagination from '../components/Pagination';
+import api from '../services/api';
 
 const Rotas = () => {
   const { canCreate, canEdit, canDelete } = usePermissions();
@@ -101,18 +102,8 @@ const Rotas = () => {
   const loadFiliais = async () => {
     try {
       setLoadingFiliais(true);
-      const response = await fetch('/api/filiais', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setFiliais(data.data || []);
+      const response = await api.get('/filiais');
+      setFiliais(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar filiais:', error);
       setFiliais([]);
