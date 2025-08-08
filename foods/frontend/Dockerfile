@@ -27,6 +27,7 @@ COPY --from=build /app/build /usr/share/nginx/html
 # Copiar configuração do nginx
 RUN echo 'server { \
     listen 80; \
+    server_name _; \
     location /foods { \
         alias /usr/share/nginx/html; \
         try_files $uri $uri/ /foods/index.html; \
@@ -36,6 +37,9 @@ RUN echo 'server { \
         alias /usr/share/nginx/html/; \
         try_files $uri $uri/ /foods/index.html; \
         index index.html; \
+    } \
+    location = /foods { \
+        return 301 /foods/; \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
