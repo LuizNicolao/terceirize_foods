@@ -89,6 +89,10 @@ const produtoValidations = {
       .optional()
       .isInt({ min: 1 })
       .withMessage('Subgrupo deve ser selecionado'),
+    body('classe_id')
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage('Classe deve ser selecionada'),
     body('unidade_id')
       .optional()
       .isInt({ min: 1 })
@@ -146,6 +150,10 @@ const produtoValidations = {
       .optional()
       .isInt({ min: 1 })
       .withMessage('Subgrupo deve ser selecionado'),
+    body('classe_id')
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage('Classe deve ser selecionada'),
     body('unidade_id')
       .optional()
       .isInt({ min: 1 })

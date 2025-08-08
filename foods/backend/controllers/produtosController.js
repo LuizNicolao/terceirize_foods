@@ -43,12 +43,15 @@ class ProdutosController {
         g.nome as grupo_nome,
         sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
+        c.id as classe_id,
+        c.nome as classe_nome,
         u.id as unidade_id,
         u.nome as unidade_nome
       FROM produtos p
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+      LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
       WHERE 1=1
     `;
@@ -138,12 +141,15 @@ class ProdutosController {
         g.nome as grupo_nome,
         sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
+        c.id as classe_id,
+        c.nome as classe_nome,
         u.id as unidade_id,
         u.nome as unidade_nome
        FROM produtos p
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+       LEFT JOIN classes c ON p.classe_id = c.id
        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
        WHERE p.id = ?`,
       [id]
@@ -173,7 +179,7 @@ class ProdutosController {
   static criarProduto = asyncHandler(async (req, res) => {
     const {
       nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, 
-      estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, unidade_id, status
+      estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, classe_id, unidade_id, status
     } = req.body;
 
     // Verificar se código de barras já existe
@@ -224,6 +230,18 @@ class ProdutosController {
       }
     }
 
+    // Verificar se classe existe (se fornecida)
+    if (classe_id) {
+      const classe = await executeQuery(
+        'SELECT id FROM classes WHERE id = ?',
+        [classe_id]
+      );
+
+      if (classe.length === 0) {
+        return errorResponse(res, 'Classe não encontrada', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
     // Verificar se unidade existe (se fornecida)
     if (unidade_id) {
       const unidade = await executeQuery(
@@ -239,8 +257,8 @@ class ProdutosController {
     // Inserir produto
     const result = await executeQuery(
       `INSERT INTO produtos (nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, 
-                            estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, unidade_id, status, criado_em)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+                            estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, classe_id, unidade_id, status, criado_em)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         nome, 
         descricao && descricao.trim() ? descricao.trim() : null,
@@ -253,6 +271,7 @@ class ProdutosController {
         fornecedor_id || null,
         grupo_id || null,
         subgrupo_id || null,
+        classe_id || null,
         unidade_id || null,
         status || 1
       ]
@@ -281,12 +300,15 @@ class ProdutosController {
         g.nome as grupo_nome,
         sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
+        c.id as classe_id,
+        c.nome as classe_nome,
         u.id as unidade_id,
         u.nome as unidade_nome
        FROM produtos p
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+       LEFT JOIN classes c ON p.classe_id = c.id
        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
        WHERE p.id = ?`,
       [novoProdutoId]
@@ -371,6 +393,18 @@ class ProdutosController {
       }
     }
 
+    // Verificar se classe existe (se fornecida)
+    if (updateData.classe_id) {
+      const classe = await executeQuery(
+        'SELECT id FROM classes WHERE id = ?',
+        [updateData.classe_id]
+      );
+
+      if (classe.length === 0) {
+        return errorResponse(res, 'Classe não encontrada', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
     // Verificar se unidade existe (se fornecida)
     if (updateData.unidade_id) {
       const unidade = await executeQuery(
@@ -440,12 +474,15 @@ class ProdutosController {
         g.nome as grupo_nome,
         sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
+        c.id as classe_id,
+        c.nome as classe_nome,
         u.id as unidade_id,
         u.nome as unidade_nome
        FROM produtos p
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+       LEFT JOIN classes c ON p.classe_id = c.id
        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
        WHERE p.id = ?`,
       [id]

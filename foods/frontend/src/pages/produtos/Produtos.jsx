@@ -474,6 +474,14 @@ const Produtos = () => {
           updateData.grupo_id = data.grupo_id;
         }
         
+        if (data.subgrupo_id !== editingProduto.subgrupo_id) {
+          updateData.subgrupo_id = data.subgrupo_id;
+        }
+        
+        if (data.classe_id !== editingProduto.classe_id) {
+          updateData.classe_id = data.classe_id;
+        }
+        
         if (data.unidade_id !== editingProduto.unidade_id) {
           updateData.unidade_id = data.unidade_id;
         }
