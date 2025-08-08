@@ -4,7 +4,7 @@ import axios from 'axios';
 const getBaseURL = () => {
   if (process.env.NODE_ENV === 'production') {
     // Em produção, usar o path /foods/api
-    return process.env.REACT_APP_API_URL || 'https://foods.terceirizemais.com.br/foods/api';
+    return process.env.REACT_APP_API_URL || 'http://foods.terceirizemais.com.br/foods/api';
   }
   // Em desenvolvimento, usar a URL padrão
   return process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
