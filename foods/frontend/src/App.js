@@ -59,7 +59,7 @@ const App = () => {
     <Routes>
       {/* Rota pública */}
       <Route 
-        path="/login" 
+        path="/foods/login" 
         element={
           <PublicRoute>
             <Login />
@@ -69,7 +69,7 @@ const App = () => {
 
       {/* Rotas protegidas */}
       <Route 
-        path="/" 
+        path="/foods" 
         element={
           <AuthenticatedRoute>
             <Dashboard />
