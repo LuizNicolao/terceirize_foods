@@ -53,7 +53,7 @@ const motoristaValidations = {
     
     body('cpf')
       .optional()
-      .isString().trim().matches(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/).withMessage('CPF deve estar no formato 000.000.000-00'),
+      .isString().trim().isLength({ max: 14 }).withMessage('CPF deve ter no máximo 14 caracteres'),
     
     body('cnh')
       .optional()
@@ -65,7 +65,7 @@ const motoristaValidations = {
     
     body('telefone')
       .optional()
-      .isString().trim().matches(/^\(\d{2}\) \d{4,5}-\d{4}$/).withMessage('Telefone deve estar no formato (00) 00000-0000'),
+      .isString().trim().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres'),
     
     body('email')
       .optional()
@@ -81,11 +81,11 @@ const motoristaValidations = {
     
     body('data_admissao')
       .optional()
-      .isDate().withMessage('Data de admissão deve ser uma data válida'),
+      .isString().withMessage('Data de admissão deve ser uma string válida'),
     
     body('cnh_validade')
       .optional()
-      .isDate().withMessage('Validade da CNH deve ser uma data válida'),
+      .isString().withMessage('Validade da CNH deve ser uma string válida'),
     
     body('observacoes')
       .optional()
@@ -108,7 +108,7 @@ const motoristaValidations = {
     
     body('cpf')
       .optional()
-      .isString().trim().matches(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/).withMessage('CPF deve estar no formato 000.000.000-00'),
+      .isString().trim().isLength({ max: 14 }).withMessage('CPF deve ter no máximo 14 caracteres'),
     
     body('cnh')
       .optional()
@@ -120,7 +120,7 @@ const motoristaValidations = {
     
     body('telefone')
       .optional()
-      .isString().trim().matches(/^\(\d{2}\) \d{4,5}-\d{4}$/).withMessage('Telefone deve estar no formato (00) 00000-0000'),
+      .isString().trim().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres'),
     
     body('email')
       .optional()
@@ -136,11 +136,11 @@ const motoristaValidations = {
     
     body('data_admissao')
       .optional()
-      .isDate().withMessage('Data de admissão deve ser uma data válida'),
+      .isString().withMessage('Data de admissão deve ser uma string válida'),
     
     body('cnh_validade')
       .optional()
-      .isDate().withMessage('Validade da CNH deve ser uma data válida'),
+      .isString().withMessage('Validade da CNH deve ser uma string válida'),
     
     body('observacoes')
       .optional()
