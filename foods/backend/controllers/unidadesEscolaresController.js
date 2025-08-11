@@ -190,47 +190,6 @@ class UnidadesEscolaresController {
         observacoes
       } = req.body;
 
-      // Validações específicas
-      if (!codigo_teknisa || codigo_teknisa.trim().length < 1) {
-        return res.status(400).json({
-          success: false,
-          error: 'Código Teknisa inválido',
-          message: 'O código Teknisa é obrigatório e deve ter pelo menos 1 caractere'
-        });
-      }
-
-      if (!nome_escola || nome_escola.trim().length < 3) {
-        return res.status(400).json({
-          success: false,
-          error: 'Nome da escola inválido',
-          message: 'O nome da escola deve ter pelo menos 3 caracteres'
-        });
-      }
-
-      if (!cidade || cidade.trim().length < 2) {
-        return res.status(400).json({
-          success: false,
-          error: 'Cidade inválida',
-          message: 'A cidade deve ter pelo menos 2 caracteres'
-        });
-      }
-
-      if (!estado || estado.trim().length < 2) {
-        return res.status(400).json({
-          success: false,
-          error: 'Estado inválido',
-          message: 'O estado deve ter pelo menos 2 caracteres'
-        });
-      }
-
-      if (!endereco || endereco.trim().length < 5) {
-        return res.status(400).json({
-          success: false,
-          error: 'Endereço inválido',
-          message: 'O endereço deve ter pelo menos 5 caracteres'
-        });
-      }
-
       // Verificar se a rota existe (se fornecida)
       if (rota_id) {
         const rota = await executeQuery(
@@ -270,32 +229,35 @@ class UnidadesEscolaresController {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
-      const result = await executeQuery(insertQuery, [
+      const insertParams = [
         codigo_teknisa.trim(),
         nome_escola.trim(),
         cidade.trim(),
         estado.trim(),
         pais.trim(),
         endereco.trim(),
-        numero,
-        bairro,
-        cep,
-        centro_distribuicao,
-        rota_id,
-        regional,
-        lot,
-        cc_senic,
-        codigo_senio,
-        abastecimento,
+        numero || null,
+        bairro || null,
+        cep || null,
+        centro_distribuicao || null,
+        rota_id || null,
+        regional || null,
+        lot || null,
+        cc_senior || null,
+        codigo_senior || null,
+        abastecimento || null,
         ordem_entrega,
         status,
-        observacoes
-      ]);
+        observacoes || null
+      ];
+
+      const result = await executeQuery(insertQuery, insertParams);
+      const newId = result.insertId;
 
       // Buscar unidade escolar criada
       const newUnidade = await executeQuery(
         'SELECT ue.*, r.nome as rota_nome FROM unidades_escolares ue LEFT JOIN rotas r ON ue.rota_id = r.id WHERE ue.id = ?',
-        [result.insertId]
+        [newId]
       );
 
       res.status(201).json({
@@ -351,47 +313,6 @@ class UnidadesEscolaresController {
           success: false,
           error: 'Unidade escolar não encontrada',
           message: 'A unidade escolar especificada não foi encontrada'
-        });
-      }
-
-      // Validações específicas
-      if (codigo_teknisa && codigo_teknisa.trim().length < 1) {
-        return res.status(400).json({
-          success: false,
-          error: 'Código Teknisa inválido',
-          message: 'O código Teknisa deve ter pelo menos 1 caractere'
-        });
-      }
-
-      if (nome_escola && nome_escola.trim().length < 3) {
-        return res.status(400).json({
-          success: false,
-          error: 'Nome da escola inválido',
-          message: 'O nome da escola deve ter pelo menos 3 caracteres'
-        });
-      }
-
-      if (cidade && cidade.trim().length < 2) {
-        return res.status(400).json({
-          success: false,
-          error: 'Cidade inválida',
-          message: 'A cidade deve ter pelo menos 2 caracteres'
-        });
-      }
-
-      if (estado && estado.trim().length < 2) {
-        return res.status(400).json({
-          success: false,
-          error: 'Estado inválido',
-          message: 'O estado deve ter pelo menos 2 caracteres'
-        });
-      }
-
-      if (endereco && endereco.trim().length < 5) {
-        return res.status(400).json({
-          success: false,
-          error: 'Endereço inválido',
-          message: 'O endereço deve ter pelo menos 5 caracteres'
         });
       }
 

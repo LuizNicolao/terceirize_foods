@@ -61,39 +61,63 @@ const unidadeEscolarValidations = {
     
     body('estado')
       .notEmpty().withMessage('Estado é obrigatório')
-      .isString().trim().isLength({ min: 2, max: 2 }).withMessage('Estado deve ter 2 caracteres'),
+      .isString().trim().isLength({ min: 2, max: 50 }).withMessage('Estado deve ter entre 2 e 50 caracteres'),
     
-    body('cep')
+    body('pais')
       .optional()
-      .isString().trim().matches(/^\d{5}-?\d{3}$/).withMessage('CEP deve estar no formato 00000-000'),
+      .isString().trim().isLength({ max: 50 }).withMessage('País deve ter no máximo 50 caracteres'),
     
     body('endereco')
       .notEmpty().withMessage('Endereço é obrigatório')
       .isString().trim().isLength({ max: 300 }).withMessage('Endereço deve ter no máximo 300 caracteres'),
     
-    body('rota_id')
+    body('numero')
       .optional()
-      .isInt({ min: 1 }).withMessage('ID da rota deve ser um número inteiro positivo'),
+      .isString().trim().isLength({ max: 20 }).withMessage('Número deve ter no máximo 20 caracteres'),
+    
+    body('bairro')
+      .optional()
+      .isString().trim().isLength({ max: 100 }).withMessage('Bairro deve ter no máximo 100 caracteres'),
+    
+    body('cep')
+      .optional()
+      .isString().trim().matches(/^\d{5}-?\d{3}$/).withMessage('CEP deve estar no formato 00000-000'),
     
     body('centro_distribuicao')
       .optional()
       .isString().trim().isLength({ max: 100 }).withMessage('Centro de distribuição deve ter no máximo 100 caracteres'),
     
+    body('rota_id')
+      .optional()
+      .isInt({ min: 1 }).withMessage('ID da rota deve ser um número inteiro positivo'),
+    
+    body('regional')
+      .optional()
+      .isString().trim().isLength({ max: 100 }).withMessage('Regional deve ter no máximo 100 caracteres'),
+    
+    body('lot')
+      .optional()
+      .isString().trim().isLength({ max: 50 }).withMessage('Lote deve ter no máximo 50 caracteres'),
+    
+    body('cc_senior')
+      .optional()
+      .isString().trim().isLength({ max: 50 }).withMessage('C.C. Senior deve ter no máximo 50 caracteres'),
+    
+    body('codigo_senior')
+      .optional()
+      .isString().trim().isLength({ max: 50 }).withMessage('Código Senior deve ter no máximo 50 caracteres'),
+    
+    body('abastecimento')
+      .optional()
+      .isString().trim().isLength({ max: 100 }).withMessage('Abastecimento deve ter no máximo 100 caracteres'),
+    
+    body('ordem_entrega')
+      .optional()
+      .isInt({ min: 0 }).withMessage('Ordem de entrega deve ser um número inteiro positivo'),
+    
     body('status')
       .optional()
       .isIn(['ativo', 'inativo']).withMessage('Status deve ser ativo ou inativo'),
-    
-    body('telefone')
-      .optional()
-      .isString().trim().matches(/^\(\d{2}\) \d{4,5}-\d{4}$/).withMessage('Telefone deve estar no formato (00) 00000-0000'),
-    
-    body('email')
-      .optional()
-      .isEmail().withMessage('Email deve ser válido'),
-    
-    body('diretor')
-      .optional()
-      .isString().trim().isLength({ max: 100 }).withMessage('Diretor deve ter no máximo 100 caracteres'),
     
     body('observacoes')
       .optional()
@@ -120,39 +144,63 @@ const unidadeEscolarValidations = {
     
     body('estado')
       .optional()
-      .isString().trim().isLength({ min: 2, max: 2 }).withMessage('Estado deve ter 2 caracteres'),
+      .isString().trim().isLength({ min: 2, max: 50 }).withMessage('Estado deve ter entre 2 e 50 caracteres'),
+    
+    body('pais')
+      .optional()
+      .isString().trim().isLength({ max: 50 }).withMessage('País deve ter no máximo 50 caracteres'),
+    
+    body('endereco')
+      .optional()
+      .isString().trim().isLength({ max: 300 }).withMessage('Endereço deve ter no máximo 300 caracteres'),
+    
+    body('numero')
+      .optional()
+      .isString().trim().isLength({ max: 20 }).withMessage('Número deve ter no máximo 20 caracteres'),
+    
+    body('bairro')
+      .optional()
+      .isString().trim().isLength({ max: 100 }).withMessage('Bairro deve ter no máximo 100 caracteres'),
     
     body('cep')
       .optional()
       .isString().trim().matches(/^\d{5}-?\d{3}$/).withMessage('CEP deve estar no formato 00000-000'),
     
-    body('endereco')
-      .notEmpty().withMessage('Endereço é obrigatório')
-      .isString().trim().isLength({ max: 300 }).withMessage('Endereço deve ter no máximo 300 caracteres'),
+    body('centro_distribuicao')
+      .optional()
+      .isString().trim().isLength({ max: 100 }).withMessage('Centro de distribuição deve ter no máximo 100 caracteres'),
     
     body('rota_id')
       .optional()
       .isInt({ min: 1 }).withMessage('ID da rota deve ser um número inteiro positivo'),
     
-    body('centro_distribuicao')
+    body('regional')
       .optional()
-      .isString().trim().isLength({ max: 100 }).withMessage('Centro de distribuição deve ter no máximo 100 caracteres'),
+      .isString().trim().isLength({ max: 100 }).withMessage('Regional deve ter no máximo 100 caracteres'),
+    
+    body('lot')
+      .optional()
+      .isString().trim().isLength({ max: 50 }).withMessage('Lote deve ter no máximo 50 caracteres'),
+    
+    body('cc_senior')
+      .optional()
+      .isString().trim().isLength({ max: 50 }).withMessage('C.C. Senior deve ter no máximo 50 caracteres'),
+    
+    body('codigo_senior')
+      .optional()
+      .isString().trim().isLength({ max: 50 }).withMessage('Código Senior deve ter no máximo 50 caracteres'),
+    
+    body('abastecimento')
+      .optional()
+      .isString().trim().isLength({ max: 100 }).withMessage('Abastecimento deve ter no máximo 100 caracteres'),
+    
+    body('ordem_entrega')
+      .optional()
+      .isInt({ min: 0 }).withMessage('Ordem de entrega deve ser um número inteiro positivo'),
     
     body('status')
       .optional()
       .isIn(['ativo', 'inativo']).withMessage('Status deve ser ativo ou inativo'),
-    
-    body('telefone')
-      .optional()
-      .isString().trim().matches(/^\(\d{2}\) \d{4,5}-\d{4}$/).withMessage('Telefone deve estar no formato (00) 00000-0000'),
-    
-    body('email')
-      .optional()
-      .isEmail().withMessage('Email deve ser válido'),
-    
-    body('diretor')
-      .optional()
-      .isString().trim().isLength({ max: 100 }).withMessage('Diretor deve ter no máximo 100 caracteres'),
     
     body('observacoes')
       .optional()
