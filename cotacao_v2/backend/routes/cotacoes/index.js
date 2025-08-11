@@ -17,14 +17,16 @@ router.get('/', authenticateToken, validateGetCotacoes, validate, cotacoesContro
 router.get('/stats/overview', authenticateToken, cotacoesController.getStats);
 router.get('/pendentes-supervisor', authenticateToken, cotacoesController.getCotacoesPendentesSupervisor);
 router.get('/aprovacoes', authenticateToken, cotacoesController.getCotacoesAprovacao);
-router.get('/:id', authenticateToken, validateCotacaoId, validate, cotacoesController.getCotacaoById);
 router.post('/', authenticateToken, validateCreateCotacao, validate, cotacoesController.createCotacao);
-router.put('/:id', authenticateToken, validateUpdateCotacao, validate, cotacoesController.updateCotacao);
-router.delete('/:id', authenticateToken, validateCotacaoId, validate, cotacoesController.deleteCotacao);
 
 // Rotas de workflow
 router.post('/:id/enviar-supervisor', authenticateToken, validateCotacaoId, validate, cotacoesController.enviarParaSupervisor);
 router.post('/:id/aprovar', authenticateToken, validateAprovarCotacao, validate, cotacoesController.aprovarCotacao);
 router.post('/:id/rejeitar', authenticateToken, validateRejeitarCotacao, validate, cotacoesController.rejeitarCotacao);
+
+// Rotas com parâmetros (devem vir por último para evitar conflitos)
+router.get('/:id', authenticateToken, validateCotacaoId, validate, cotacoesController.getCotacaoById);
+router.put('/:id', authenticateToken, validateUpdateCotacao, validate, cotacoesController.updateCotacao);
+router.delete('/:id', authenticateToken, validateCotacaoId, validate, cotacoesController.deleteCotacao);
 
 module.exports = router;
