@@ -1,376 +1,312 @@
 import React from 'react';
-import styled from 'styled-components';
-import { 
-  FaChartBar, 
-  FaDollarSign, 
-  FaTruck, 
-  FaCreditCard,
-  FaCrown,
-  FaMedal,
-  FaAward
-} from 'react-icons/fa';
-import { colors } from '../../design-system';
-import { Card } from '../../design-system/components';
+import { FaChartBar, FaDollarSign, FaTruck, FaCreditCard, FaTrophy } from 'react-icons/fa';
+import { formatCurrency, formatPercentage } from '../../utils/formatters';
 
-// Componentes estilizados
-const ComparativoContainer = styled(Card)`
-  padding: 24px;
-  margin-bottom: 24px;
-`;
+const ComparativoProdutos = ({ cotacao, active }) => {
+  if (!active || !cotacao) return null;
 
-const ComparativoTitle = styled.h4`
-  color: ${colors.neutral.darkGray};
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 20px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
+  const calcularComparativo = () => {
+    if (!cotacao.fornecedores) return null;
 
-const ProdutosComparativo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
+    const produtosComparativo = {};
+    let totalProdutos = 0;
+    let totalFornecedores = 0;
 
-const ProdutoComparativoItem = styled.div`
-  background: ${colors.neutral.white};
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
-`;
+    // Agrupar produtos por ID
+    cotacao.fornecedores.forEach(fornecedor => {
+      totalFornecedores++;
+      if (fornecedor.produtos) {
+        fornecedor.produtos.forEach(produto => {
+          const produtoId = produto.produto_id || produto.nome;
+          const valorUnitario = parseFloat(produto.valor_unitario) || 0;
+          const quantidade = parseFloat(produto.qtde) || 0;
+          const prazoEntrega = parseFloat(produto.prazo_entrega) || 0;
+          const prazoPagamento = parseFloat(produto.prazo_pagamento) || 0;
 
-const ProdutoComparativoHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid ${colors.primary.green};
-`;
+          if (!produtosComparativo[produtoId]) {
+            produtosComparativo[produtoId] = {
+              nome: produto.nome,
+              fornecedores: [],
+              melhorPreco: valorUnitario,
+              melhorPrazoEntrega: prazoEntrega,
+              melhorPrazoPagamento: prazoPagamento,
+              piorPreco: valorUnitario,
+              piorPrazoEntrega: prazoEntrega,
+              piorPrazoPagamento: prazoPagamento,
+              precoMedio: valorUnitario,
+              prazoEntregaMedio: prazoEntrega,
+              prazoPagamentoMedio: prazoPagamento,
+              quantidade: quantidade,
+              count: 1
+            };
+          }
 
-const ProdutoComparativoTitle = styled.h5`
-  margin: 0;
-  color: ${colors.neutral.darkGray};
-  font-size: 16px;
-  font-weight: 600;
-`;
+          produtosComparativo[produtoId].fornecedores.push({
+            nome: fornecedor.nome,
+            valorUnitario,
+            prazoEntrega,
+            prazoPagamento,
+            quantidade
+          });
 
-const ProdutoInfo = styled.div`
-  display: flex;
-  gap: 15px;
-  align-items: center;
-`;
+          // Atualizar estatísticas
+          const produto = produtosComparativo[produtoId];
+          produto.precoMedio = (produto.precoMedio * produto.count + valorUnitario) / (produto.count + 1);
+          produto.prazoEntregaMedio = (produto.prazoEntregaMedio * produto.count + prazoEntrega) / (produto.count + 1);
+          produto.prazoPagamentoMedio = (produto.prazoPagamentoMedio * produto.count + prazoPagamento) / (produto.count + 1);
+          produto.count++;
 
-const ProdutoQtdInfo = styled.span`
-  background: ${colors.primary.green};
-  color: ${colors.neutral.white};
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-`;
-
-const ProdutoFornecedoresCount = styled.span`
-  color: ${colors.neutral.gray};
-  font-size: 12px;
-  font-weight: 500;
-`;
-
-const FornecedoresComparativo = styled.div`
-  overflow-x: auto;
-`;
-
-const ComparativoTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  background: ${colors.neutral.white};
-  border-radius: 4px;
-  overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-`;
-
-const ComparativoTh = styled.th`
-  background: ${colors.primary.green};
-  color: ${colors.neutral.white};
-  padding: 12px 8px;
-  text-align: left;
-  font-weight: 600;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-`;
-
-const ComparativoTd = styled.td`
-  padding: 10px 8px;
-  border-bottom: 1px solid #f0f0f0;
-  vertical-align: middle;
-`;
-
-const FornecedorComparativoRow = styled.tr`
-  transition: background-color 0.2s ease;
-  
-  &:hover {
-    background: #f8f9fa;
-  }
-  
-  &.melhor-preco {
-    background: #f8fff8;
-    border-left: 4px solid ${colors.primary.green};
-  }
-`;
-
-const Rank = styled.span`
-  text-align: center;
-`;
-
-const RankBadge = styled.span`
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  
-  &.rank-1 {
-    background: #ffd700;
-    color: #000;
-  }
-  
-  &.rank-2 {
-    background: #c0c0c0;
-    color: #000;
-  }
-  
-  &.rank-3 {
-    background: #cd7f32;
-    color: #fff;
-  }
-  
-  &.rank-outros {
-    background: #f0f0f0;
-    color: ${colors.neutral.gray};
-  }
-`;
-
-const FornecedorNome = styled.span`
-  font-weight: 500;
-  color: ${colors.neutral.darkGray};
-`;
-
-const ValorUnitario = styled.span`
-  font-weight: 500;
-  text-align: right;
-`;
-
-const ValorComDifal = styled.span`
-  color: ${colors.primary.green};
-  font-weight: 600;
-`;
-
-const PrazoEntrega = styled.span`
-  color: ${colors.neutral.gray};
-  font-size: 11px;
-  text-align: center;
-`;
-
-const DataEntrega = styled.span`
-  color: ${colors.neutral.gray};
-  font-size: 11px;
-  text-align: center;
-`;
-
-const PrazoPagamento = styled.span`
-  color: ${colors.neutral.gray};
-  font-size: 11px;
-  text-align: center;
-`;
-
-const Economia = styled.span`
-  font-weight: 600;
-  text-align: right;
-  font-size: 11px;
-  
-  &.melhor {
-    color: #2e7d32;
-    font-weight: 700;
-  }
-  
-  &.mais-caro {
-    color: #c62828;
-  }
-  
-  &.igual {
-    color: ${colors.neutral.gray};
-  }
-`;
-
-const ViewContainer = styled.div`
-  display: ${props => props.active ? 'block' : 'none'};
-`;
-
-const ComparativoProdutos = ({ cotacao, active, formatarValor }) => {
-  if (!cotacao || !cotacao.fornecedores) return null;
-
-  // Agrupar produtos por ID e coletar dados de todos os fornecedores
-  const produtosComparativo = {};
-  
-  cotacao.fornecedores.forEach(fornecedor => {
-    if (fornecedor.produtos) {
-      fornecedor.produtos.forEach(produto => {
-        const produtoId = produto.produto_id || produto.nome;
-        const produtoNome = produto.nome;
-        
-        if (!produtosComparativo[produtoId]) {
-          produtosComparativo[produtoId] = {
-            nome: produtoNome,
-            quantidade: parseFloat(produto.qtde) || 0,
-            un: produto.un || 'UN',
-            fornecedores: []
-          };
-        }
-        
-        produtosComparativo[produtoId].fornecedores.push({
-          nome: fornecedor.nome,
-          valorUnitario: parseFloat(produto.valor_unitario) || 0,
-          prazoEntrega: produto.prazo_entrega || '-',
-          prazoPagamento: produto.prazo_pagamento || '-',
-          ultimoValorAprovado: parseFloat(produto.ult_valor_aprovado) || 0
+          if (valorUnitario < produto.melhorPreco) {
+            produto.melhorPreco = valorUnitario;
+          }
+          if (valorUnitario > produto.piorPreco) {
+            produto.piorPreco = valorUnitario;
+          }
+          if (prazoEntrega < produto.melhorPrazoEntrega) {
+            produto.melhorPrazoEntrega = prazoEntrega;
+          }
+          if (prazoEntrega > produto.piorPrazoEntrega) {
+            produto.piorPrazoEntrega = prazoEntrega;
+          }
+          if (prazoPagamento > produto.melhorPrazoPagamento) {
+            produto.melhorPrazoPagamento = prazoPagamento;
+          }
+          if (prazoPagamento < produto.piorPrazoPagamento) {
+            produto.piorPrazoPagamento = prazoPagamento;
+          }
         });
-      });
-    }
-  });
+        totalProdutos += fornecedor.produtos.length;
+      }
+    });
 
-  // Ordenar fornecedores por valor unitário para cada produto
-  Object.values(produtosComparativo).forEach(produto => {
-    produto.fornecedores.sort((a, b) => a.valorUnitario - b.valorUnitario);
-  });
-
-  const getRankBadge = (index) => {
-    if (index === 0) return <RankBadge className="rank-1">🥇</RankBadge>;
-    if (index === 1) return <RankBadge className="rank-2">🥈</RankBadge>;
-    if (index === 2) return <RankBadge className="rank-3">🥉</RankBadge>;
-    return <RankBadge className="rank-outros">{index + 1}</RankBadge>;
+    return {
+      produtosComparativo,
+      totalProdutos,
+      totalFornecedores
+    };
   };
 
-  const getEconomiaClass = (valorAtual, valorAnterior) => {
-    if (!valorAnterior || valorAnterior === 0) return 'igual';
-    if (valorAtual < valorAnterior) return 'melhor';
-    if (valorAtual > valorAnterior) return 'mais-caro';
-    return 'igual';
-  };
+  const analise = calcularComparativo();
 
-  const formatarData = (dataString) => {
-    if (!dataString) return '-';
-    try {
-      const data = new Date(dataString);
-      return data.toLocaleDateString('pt-BR');
-    } catch {
-      return dataString;
-    }
-  };
+  if (!analise) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <FaChartBar />
+          Comparativo de Produtos
+        </h3>
+        <p className="text-gray-500">Nenhum dado disponível para análise</p>
+      </div>
+    );
+  }
 
   return (
-    <ViewContainer active={active}>
-      <ComparativoContainer>
-        <ComparativoTitle>
-          <FaChartBar />
-          Comparativo de Valores por Produto
-        </ComparativoTitle>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+        <FaChartBar />
+        Comparativo de Produtos
+      </h3>
+
+      {/* Resumo */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-blue-600">
+            {Object.keys(analise.produtosComparativo).length}
+          </div>
+          <div className="text-sm text-blue-700">Produtos Únicos</div>
+        </div>
         
-        <ProdutosComparativo>
-          {Object.values(produtosComparativo).map((produto, produtoIndex) => (
-            <ProdutoComparativoItem key={produtoIndex}>
-              <ProdutoComparativoHeader>
-                <ProdutoComparativoTitle>{produto.nome}</ProdutoComparativoTitle>
-                <ProdutoInfo>
-                  <ProdutoQtdInfo>
-                    {produto.quantidade} {produto.un}
-                  </ProdutoQtdInfo>
-                  <ProdutoFornecedoresCount>
-                    {produto.fornecedores.length} fornecedor{produto.fornecedores.length > 1 ? 'es' : ''}
-                  </ProdutoFornecedoresCount>
-                </ProdutoInfo>
-              </ProdutoComparativoHeader>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-green-600">
+            {analise.totalFornecedores}
+          </div>
+          <div className="text-sm text-green-700">Fornecedores</div>
+        </div>
+        
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-purple-600">
+            {analise.totalProdutos}
+          </div>
+          <div className="text-sm text-purple-700">Total de Itens</div>
+        </div>
+      </div>
+
+      {/* Tabela de Comparativo */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Produto
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Melhor Preço
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Pior Preço
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Preço Médio
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Variação
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Melhor Entrega
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Melhor Pagamento
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {Object.entries(analise.produtosComparativo).map(([produtoId, produto], index) => {
+              const variacao = produto.piorPreco > 0 ? ((produto.piorPreco - produto.melhorPreco) / produto.piorPreco * 100) : 0;
               
-              <FornecedoresComparativo>
-                <ComparativoTable>
-                  <thead>
-                    <tr>
-                      <ComparativoTh>Rank</ComparativoTh>
-                      <ComparativoTh>Fornecedor</ComparativoTh>
-                      <ComparativoTh>Valor Unitário</ComparativoTh>
-                      <ComparativoTh>Valor Total</ComparativoTh>
-                      <ComparativoTh>Últ. Vlr. Aprovado</ComparativoTh>
-                      <ComparativoTh>Economia</ComparativoTh>
-                      <ComparativoTh>Prazo Entrega</ComparativoTh>
-                      <ComparativoTh>Prazo Pagamento</ComparativoTh>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {produto.fornecedores.map((fornecedor, fornecedorIndex) => {
-                      const valorTotal = fornecedor.valorUnitario * produto.quantidade;
-                      const economia = fornecedor.ultimoValorAprovado > 0 ? 
-                        (fornecedor.ultimoValorAprovado - fornecedor.valorUnitario) * produto.quantidade : 0;
-                      const isMelhorPreco = fornecedorIndex === 0;
-                      
-                      return (
-                        <FornecedorComparativoRow 
-                          key={fornecedorIndex}
-                          className={isMelhorPreco ? 'melhor-preco' : ''}
-                        >
-                          <ComparativoTd>
-                            <Rank>{getRankBadge(fornecedorIndex)}</Rank>
-                          </ComparativoTd>
-                          <ComparativoTd>
-                            <FornecedorNome>{fornecedor.nome}</FornecedorNome>
-                          </ComparativoTd>
-                          <ComparativoTd>
-                            <ValorUnitario>
-                              {isMelhorPreco ? (
-                                <ValorComDifal>{formatarValor(fornecedor.valorUnitario)}</ValorComDifal>
-                              ) : (
-                                formatarValor(fornecedor.valorUnitario)
-                              )}
-                            </ValorUnitario>
-                          </ComparativoTd>
-                          <ComparativoTd>
-                            <ValorUnitario>{formatarValor(valorTotal)}</ValorUnitario>
-                          </ComparativoTd>
-                          <ComparativoTd>
-                            <ValorUnitario>
-                              {fornecedor.ultimoValorAprovado > 0 ? 
-                                formatarValor(fornecedor.ultimoValorAprovado) : '-'
-                              }
-                            </ValorUnitario>
-                          </ComparativoTd>
-                          <ComparativoTd>
-                            <Economia className={getEconomiaClass(fornecedor.valorUnitario, fornecedor.ultimoValorAprovado)}>
-                              {fornecedor.ultimoValorAprovado > 0 ? formatarValor(economia) : '-'}
-                            </Economia>
-                          </ComparativoTd>
-                          <ComparativoTd>
-                            <PrazoEntrega>{fornecedor.prazoEntrega}</PrazoEntrega>
-                          </ComparativoTd>
-                          <ComparativoTd>
-                            <PrazoPagamento>{fornecedor.prazoPagamento}</PrazoPagamento>
-                          </ComparativoTd>
-                        </FornecedorComparativoRow>
-                      );
-                    })}
-                  </tbody>
-                </ComparativoTable>
-              </FornecedoresComparativo>
-            </ProdutoComparativoItem>
+              return (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {produto.nome}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
+                    {formatCurrency(produto.melhorPreco)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">
+                    {formatCurrency(produto.piorPreco)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatCurrency(produto.precoMedio)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span className={`font-medium ${variacao > 0 ? 'text-green-600' : 'text-gray-600'}`}>
+                      {formatPercentage(variacao)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex items-center gap-2">
+                      <FaTruck className="text-blue-500" />
+                      <span className="font-medium text-blue-600">
+                        {produto.melhorPrazoEntrega} dias
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex items-center gap-2">
+                      <FaCreditCard className="text-purple-500" />
+                      <span className="font-medium text-purple-600">
+                        {produto.melhorPrazoPagamento} dias
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Detalhes por Produto */}
+      <div className="mt-6 bg-gray-50 rounded-lg p-4">
+        <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+          <FaChartBar />
+          Detalhes por Produto
+        </h4>
+        
+        <div className="space-y-4">
+          {Object.entries(analise.produtosComparativo).map(([produtoId, produto], index) => (
+            <div key={index} className="bg-white p-4 rounded-lg border">
+              <h5 className="font-medium text-gray-900 mb-3">{produto.nome}</h5>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Preços */}
+                <div>
+                  <h6 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <FaDollarSign />
+                    Análise de Preços
+                  </h6>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Melhor:</span>
+                      <span className="font-medium text-green-600">{formatCurrency(produto.melhorPreco)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Pior:</span>
+                      <span className="font-medium text-red-600">{formatCurrency(produto.piorPreco)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Médio:</span>
+                      <span className="font-medium">{formatCurrency(produto.precoMedio)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Prazos de Entrega */}
+                <div>
+                  <h6 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <FaTruck />
+                    Prazos de Entrega
+                  </h6>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Melhor:</span>
+                      <span className="font-medium text-blue-600">{produto.melhorPrazoEntrega} dias</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Pior:</span>
+                      <span className="font-medium text-red-600">{produto.piorPrazoEntrega} dias</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Médio:</span>
+                      <span className="font-medium">{produto.prazoEntregaMedio.toFixed(1)} dias</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Prazos de Pagamento */}
+                <div>
+                  <h6 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                    <FaCreditCard />
+                    Prazos de Pagamento
+                  </h6>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Melhor:</span>
+                      <span className="font-medium text-purple-600">{produto.melhorPrazoPagamento} dias</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Pior:</span>
+                      <span className="font-medium text-red-600">{produto.piorPrazoPagamento} dias</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Médio:</span>
+                      <span className="font-medium">{produto.prazoPagamentoMedio.toFixed(1)} dias</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Fornecedores */}
+              <div className="mt-4 pt-3 border-t border-gray-100">
+                <h6 className="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                  <FaTrophy />
+                  Fornecedores ({produto.fornecedores.length})
+                </h6>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                  {produto.fornecedores.map((fornecedor, idx) => (
+                    <div key={idx} className="bg-gray-50 p-2 rounded text-xs">
+                      <div className="font-medium text-gray-900">{fornecedor.nome}</div>
+                      <div className="text-gray-600">
+                        {formatCurrency(fornecedor.valorUnitario)} | {fornecedor.prazoEntrega}d | {fornecedor.prazoPagamento}d
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           ))}
-        </ProdutosComparativo>
-      </ComparativoContainer>
-    </ViewContainer>
+        </div>
+      </div>
+    </div>
   );
 };
 

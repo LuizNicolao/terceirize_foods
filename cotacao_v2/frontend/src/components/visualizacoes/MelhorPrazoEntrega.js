@@ -1,307 +1,249 @@
 import React from 'react';
-import styled from 'styled-components';
-import { 
-  FaTruck, 
-  FaDollarSign, 
-  FaChartLine, 
-  FaHistory, 
-  FaCalculator 
-} from 'react-icons/fa';
-import { colors } from '../../design-system';
-import { Card } from '../../design-system/components';
+import { FaTruck, FaClock, FaChartLine, FaTrophy } from 'react-icons/fa';
+import { formatCurrency } from '../../utils/formatters';
 
-// Componentes estilizados
-const AnaliseComparativa = styled(Card)`
-  padding: 24px;
-  margin-bottom: 24px;
-`;
+const MelhorPrazoEntrega = ({ cotacao, active }) => {
+  if (!active || !cotacao) return null;
 
-const AnaliseTitle = styled.h4`
-  color: ${colors.neutral.darkGray};
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 20px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
+  const calcularMelhorPrazoEntrega = () => {
+    if (!cotacao.fornecedores) return null;
 
-const AnaliseGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-`;
+    const produtosMelhorPrazo = {};
+    let valorTotalMelhorPrazo = 0;
+    let valorTotalMedio = 0;
+    let prazoMedioTotal = 0;
+    let prazoMelhorTotal = 0;
 
-const AnaliseCard = styled.div`
-  padding: 20px;
-  border-radius: 8px;
-  background: ${colors.neutral.white};
-  border: 1px solid #e0e0e0;
-  text-align: center;
-`;
+    // Calcular melhor prazo por produto
+    cotacao.fornecedores.forEach(fornecedor => {
+      if (fornecedor.produtos) {
+        fornecedor.produtos.forEach(produto => {
+          const produtoId = produto.produto_id || produto.nome;
+          const valorUnitario = parseFloat(produto.valor_unitario) || 0;
+          const quantidade = parseFloat(produto.qtde) || 0;
+          const prazoEntrega = parseFloat(produto.prazo_entrega) || 999;
 
-const AnaliseCardTitle = styled.h5`
-  color: ${colors.neutral.darkGray};
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-`;
-
-const AnaliseCardValue = styled.div`
-  font-size: 24px;
-  font-weight: 700;
-  color: ${props => props.color || colors.neutral.darkGray};
-  margin-bottom: 4px;
-`;
-
-const AnaliseCardPercent = styled.div`
-  font-size: 14px;
-  color: ${colors.neutral.gray};
-`;
-
-const TableContainer = styled(Card)`
-  padding: 0;
-  overflow: hidden;
-`;
-
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  background: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-
-  th, td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-  }
-
-  th {
-    background-color: #f8f9fa;
-    font-weight: 600;
-    color: #555;
-    position: sticky;
-    top: 0;
-    z-index: 1;
-  }
-
-  tr:hover {
-    background-color: #f8f9fa;
-    transition: background-color 0.2s ease;
-  }
-
-  .melhor-entrega {
-    background-color: #d1ecf1;
-    font-weight: bold;
-    text-align: center;
-  }
-
-  .economia-positiva {
-    color: #28a745;
-    font-weight: 600;
-  }
-
-  .economia-negativa {
-    color: #dc3545;
-    font-weight: 600;
-  }
-`;
-
-const Th = styled.th`
-  background-color: ${colors.neutral.lightGray};
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  color: ${colors.neutral.darkGray};
-  font-size: 14px;
-  border-bottom: 1px solid #e0e0e0;
-  position: sticky;
-  top: 0;
-`;
-
-const Td = styled.td`
-  padding: 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
-  color: ${colors.neutral.darkGray};
-`;
-
-const ViewContainer = styled.div`
-  display: ${props => props.active ? 'block' : 'none'};
-`;
-
-const MelhorPrazoEntrega = ({ cotacao, active, formatarValor }) => {
-  if (!cotacao || !cotacao.fornecedores) return null;
-
-  // Agrupar produtos pelo ID, mas salvar nome e fornecedor
-  const produtosMelhorEntrega = {};
-  let valorTotalMelhorEntrega = 0;
-  let economiaTotal = 0;
-  let economiaUltimoAprovado = 0;
-  let valorSawing = 0;
-  let totalProdutos = 0;
-
-  cotacao.fornecedores.forEach(fornecedor => {
-    if (fornecedor.produtos) {
-      fornecedor.produtos.forEach(produto => {
-        const produtoId = produto.produto_id || produto.nome;
-        const prazoEntrega = parseFloat(produto.prazo_entrega) || 0;
-        const quantidade = parseFloat(produto.qtde) || 0;
-        const valorUnitario = parseFloat(produto.valor_unitario) || 0;
-        const ultimoValorAprovado = parseFloat(produto.ult_valor_aprovado) || 0;
-        const primeiroValor = parseFloat(produto.primeiro_valor) || valorUnitario;
-
-        if (!produtosMelhorEntrega[produtoId]) {
-          produtosMelhorEntrega[produtoId] = {
-            nome: produto.nome,
-            fornecedor: fornecedor.nome,
-            melhorEntrega: prazoEntrega,
-            quantidade: quantidade,
-            valorUnitario: valorUnitario,
-            ultimoValorAprovado: ultimoValorAprovado,
-            primeiroValor: primeiroValor,
-            prazoPagamento: produto.prazo_pagamento,
-            un: produto.un,
-            count: 1
-          };
-        } else {
-          produtosMelhorEntrega[produtoId].quantidade += quantidade;
-          if (prazoEntrega < produtosMelhorEntrega[produtoId].melhorEntrega) {
-            produtosMelhorEntrega[produtoId].melhorEntrega = prazoEntrega;
-            produtosMelhorEntrega[produtoId].fornecedor = fornecedor.nome;
-            produtosMelhorEntrega[produtoId].valorUnitario = valorUnitario;
-            produtosMelhorEntrega[produtoId].prazoPagamento = produto.prazo_pagamento;
+          if (!produtosMelhorPrazo[produtoId]) {
+            produtosMelhorPrazo[produtoId] = {
+              melhorPrazo: prazoEntrega,
+              precoMelhorPrazo: valorUnitario,
+              precoMedio: valorUnitario,
+              quantidade: quantidade,
+              count: 1,
+              melhorFornecedor: fornecedor.nome,
+              prazoMedio: prazoEntrega
+            };
+          } else {
+            produtosMelhorPrazo[produtoId].precoMedio += valorUnitario;
+            produtosMelhorPrazo[produtoId].prazoMedio += prazoEntrega;
+            produtosMelhorPrazo[produtoId].count += 1;
+            if (prazoEntrega < produtosMelhorPrazo[produtoId].melhorPrazo) {
+              produtosMelhorPrazo[produtoId].melhorPrazo = prazoEntrega;
+              produtosMelhorPrazo[produtoId].precoMelhorPrazo = valorUnitario;
+              produtosMelhorPrazo[produtoId].melhorFornecedor = fornecedor.nome;
+            }
           }
-          // Manter o maior valor aprovado e primeiro valor
-          if (ultimoValorAprovado > produtosMelhorEntrega[produtoId].ultimoValorAprovado) {
-            produtosMelhorEntrega[produtoId].ultimoValorAprovado = ultimoValorAprovado;
-          }
-          if (primeiroValor > produtosMelhorEntrega[produtoId].primeiroValor) {
-            produtosMelhorEntrega[produtoId].primeiroValor = primeiroValor;
-          }
-        }
-        totalProdutos++;
-      });
-    }
-  });
+        });
+      }
+    });
 
-  // Calcular totais
-  Object.values(produtosMelhorEntrega).forEach(produto => {
-    const valorTotal = produto.valorUnitario * produto.quantidade;
-    valorTotalMelhorEntrega += valorTotal;
-    
-    if (produto.ultimoValorAprovado > 0) {
-      economiaUltimoAprovado += (produto.ultimoValorAprovado - produto.valorUnitario) * produto.quantidade;
-    }
-    
-    valorSawing += (produto.primeiroValor - produto.valorUnitario) * produto.quantidade;
-  });
+    // Calcular totais
+    Object.values(produtosMelhorPrazo).forEach(produto => {
+      produto.precoMedio = produto.precoMedio / produto.count;
+      produto.prazoMedio = produto.prazoMedio / produto.count;
+      
+      valorTotalMelhorPrazo += produto.precoMelhorPrazo * produto.quantidade;
+      valorTotalMedio += produto.precoMedio * produto.quantidade;
+      prazoMelhorTotal += produto.melhorPrazo;
+      prazoMedioTotal += produto.prazoMedio;
+    });
 
-  const economiaPercentual = valorTotalMelhorEntrega > 0 ? (economiaUltimoAprovado / valorTotalMelhorEntrega * 100) : 0;
-  const valorSawingPercentual = valorTotalMelhorEntrega > 0 ? (valorSawing / valorTotalMelhorEntrega * 100) : 0;
+    const economia = valorTotalMedio - valorTotalMelhorPrazo;
+    const economiaPercentual = valorTotalMedio > 0 ? (economia / valorTotalMedio * 100) : 0;
+    const prazoMedio = prazoMedioTotal / Object.keys(produtosMelhorPrazo).length;
+    const prazoMelhor = prazoMelhorTotal / Object.keys(produtosMelhorPrazo).length;
+
+    return {
+      produtosMelhorPrazo,
+      valorTotalMelhorPrazo,
+      valorTotalMedio,
+      economia,
+      economiaPercentual,
+      prazoMedio,
+      prazoMelhor
+    };
+  };
+
+  const analise = calcularMelhorPrazoEntrega();
+
+  if (!analise) {
+    return (
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <FaTruck />
+          Melhor Prazo de Entrega
+        </h3>
+        <p className="text-gray-500">Nenhum dado disponível para análise</p>
+      </div>
+    );
+  }
 
   return (
-    <ViewContainer active={active}>
-      <AnaliseComparativa>
-        <AnaliseTitle>
-          <FaTruck />
-          Melhor Prazo de Entrega por Produto
-        </AnaliseTitle>
-        <AnaliseGrid>
-          <AnaliseCard>
-            <AnaliseCardTitle>
-              <FaDollarSign />
-              Valor Total
-            </AnaliseCardTitle>
-            <AnaliseCardValue>{formatarValor(valorTotalMelhorEntrega)}</AnaliseCardValue>
-            <AnaliseCardPercent>{totalProdutos} itens</AnaliseCardPercent>
-          </AnaliseCard>
-          
-          <AnaliseCard>
-            <AnaliseCardTitle>
-              <FaChartLine />
-              Economia vs Média dos Preços
-            </AnaliseCardTitle>
-            <AnaliseCardValue color={economiaTotal > 0 ? '#28a745' : '#dc3545'}>
-              {formatarValor(economiaTotal)}
-            </AnaliseCardValue>
-            <AnaliseCardPercent>0%</AnaliseCardPercent>
-          </AnaliseCard>
-          
-          <AnaliseCard>
-            <AnaliseCardTitle>
-              <FaHistory />
-              Diferença vs Último Aprovado
-            </AnaliseCardTitle>
-            <AnaliseCardValue color={economiaUltimoAprovado < 0 ? '#28a745' : '#dc3545'}>
-              {formatarValor(economiaUltimoAprovado)}
-            </AnaliseCardValue>
-            <AnaliseCardPercent>{economiaPercentual.toFixed(2)}%</AnaliseCardPercent>
-          </AnaliseCard>
-          
-          <AnaliseCard>
-            <AnaliseCardTitle>
-              <FaCalculator />
-              Valor Sawing
-            </AnaliseCardTitle>
-            <AnaliseCardValue color={valorSawing > 0 ? '#28a745' : '#dc3545'}>
-              {formatarValor(valorSawing)}
-            </AnaliseCardValue>
-            <AnaliseCardPercent>{valorSawingPercentual.toFixed(2)}%</AnaliseCardPercent>
-          </AnaliseCard>
-        </AnaliseGrid>
-      </AnaliseComparativa>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+        <FaTruck />
+        Análise de Melhor Prazo de Entrega
+      </h3>
 
-      <TableContainer>
-        <Table>
-          <thead>
+      {/* Resumo */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-blue-600">
+            {analise.prazoMelhor.toFixed(1)} dias
+          </div>
+          <div className="text-sm text-blue-700">Prazo Médio Melhor</div>
+        </div>
+        
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-gray-600">
+            {analise.prazoMedio.toFixed(1)} dias
+          </div>
+          <div className="text-sm text-gray-700">Prazo Médio Geral</div>
+        </div>
+        
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-green-600">
+            {formatCurrency(analise.valorTotalMelhorPrazo)}
+          </div>
+          <div className="text-sm text-green-700">Valor Total</div>
+        </div>
+        
+        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+          <div className="text-2xl font-bold text-purple-600">
+            {formatCurrency(analise.economia)}
+          </div>
+          <div className="text-sm text-purple-700">Economia vs Média</div>
+        </div>
+      </div>
+
+      {/* Tabela de Produtos */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <Th>Produto</Th>
-              <Th>Fornecedor</Th>
-              <Th>Qtd</Th>
-              <Th>Un</Th>
-              <Th>Valor Unitário</Th>
-              <Th>Valor Total</Th>
-              <Th>Últ. Vlr. Aprovado</Th>
-              <Th>Economia</Th>
-              <Th>Prazo Entrega</Th>
-              <Th>Prazo Pagamento</Th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Produto
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Melhor Prazo
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Prazo Médio
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Valor
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Economia
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Melhor Fornecedor
+              </th>
             </tr>
           </thead>
-          <tbody>
-            {Object.values(produtosMelhorEntrega).map((produto, idx) => {
-              const valorTotal = produto.valorUnitario * produto.quantidade;
-              const economia = produto.ultimoValorAprovado > 0 ? 
-                (produto.ultimoValorAprovado - produto.valorUnitario) * produto.quantidade : 0;
+          <tbody className="bg-white divide-y divide-gray-200">
+            {Object.entries(analise.produtosMelhorPrazo).map(([produtoId, produto], index) => {
+              const economia = produto.precoMedio - produto.precoMelhorPrazo;
+              const reducaoPrazo = produto.prazoMedio - produto.melhorPrazo;
               
               return (
-                <tr key={idx}>
-                  <Td>{produto.nome}</Td>
-                  <Td>{produto.fornecedor}</Td>
-                  <Td>{produto.quantidade}</Td>
-                  <Td>{produto.un || 'UN'}</Td>
-                  <Td>{formatarValor(produto.valorUnitario)}</Td>
-                  <Td>{formatarValor(valorTotal)}</Td>
-                  <Td>{produto.ultimoValorAprovado > 0 ? formatarValor(produto.ultimoValorAprovado) : '-'}</Td>
-                  <Td className={economia > 0 ? 'economia-positiva' : 'economia-negativa'}>
-                    {formatarValor(economia)}
-                  </Td>
-                  <Td className="melhor-entrega">{produto.melhorEntrega} dias</Td>
-                  <Td>{produto.prazoPagamento || '-'}</Td>
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    {produtoId}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <div className="flex items-center gap-2">
+                      <FaTruck className="text-blue-500" />
+                      <span className="font-medium text-blue-600">
+                        {produto.melhorPrazo} dias
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {produto.prazoMedio.toFixed(1)} dias
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatCurrency(produto.precoMelhorPrazo)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span className={`font-medium ${economia > 0 ? 'text-green-600' : 'text-gray-600'}`}>
+                      {formatCurrency(economia)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <div className="flex items-center gap-2">
+                      <FaTrophy className="text-yellow-500" />
+                      {produto.melhorFornecedor}
+                    </div>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
-        </Table>
-      </TableContainer>
-    </ViewContainer>
+        </table>
+      </div>
+
+      {/* Análise Detalhada */}
+      <div className="mt-6 bg-gray-50 rounded-lg p-4">
+        <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+          <FaChartLine />
+          Análise Detalhada
+        </h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="text-sm text-gray-600 mb-2">Comparação de Prazos</div>
+            <div className="space-y-2">
+              {Object.entries(analise.produtosMelhorPrazo).map(([produtoId, produto], index) => {
+                const reducaoPrazo = produto.prazoMedio - produto.melhorPrazo;
+                
+                return (
+                  <div key={index} className="flex justify-between items-center">
+                    <span className="text-sm text-gray-700 truncate">{produtoId}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-blue-600">
+                        {produto.melhorPrazo} dias
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        (vs {produto.prazoMedio.toFixed(1)} dias)
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="text-sm text-gray-600 mb-2">Recomendações</div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-start gap-2">
+                <FaTruck className="text-blue-500 mt-1" />
+                <span>Priorize fornecedores com prazos menores</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <FaClock className="text-yellow-500 mt-1" />
+                <span>Prazo médio reduzido de {analise.prazoMedio.toFixed(1)} para {analise.prazoMelhor.toFixed(1)} dias</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <FaTrophy className="text-green-500 mt-1" />
+                <span>Economia adicional de {formatCurrency(analise.economia)} vs preço médio</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
