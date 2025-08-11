@@ -3,13 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { SidebarProvider } from './contexts/SidebarContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './utils/axiosConfig'; // Importar configuração do axios
-import Login from './components/Login';
+import { Login } from './pages/auth';
 import Dashboard from './pages/dashboard/Dashboard';
 import Usuarios from './components/Usuarios';
-import Cotacoes from './components/Cotacoes';
-import NovaCotacao from './components/NovaCotacao';
-import VisualizarCotacao from './components/VisualizarCotacao';
-import EditarCotacao from './components/EditarCotacao';
+import { Cotacoes } from './pages/cotacoes';
 import EditarUsuario from './components/EditarUsuario';
 import VisualizarUsuario from './components/VisualizarUsuario';
 import Supervisor from './components/Supervisor';
@@ -78,30 +75,7 @@ function AppRoutes() {
             </ProtectedRoute>
           } 
         />
-        <Route 
-          path="/nova-cotacao" 
-          element={
-            <ProtectedRoute>
-              <NovaCotacao />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/visualizar-cotacao/:id" 
-          element={
-            <ProtectedRoute>
-              <VisualizarCotacao />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/editar-cotacao/:id" 
-          element={
-            <ProtectedRoute>
-              <EditarCotacao />
-            </ProtectedRoute>
-          } 
-        />
+
         <Route 
           path="/editar-usuario/:id" 
           element={
