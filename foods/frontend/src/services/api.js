@@ -3,8 +3,8 @@ import axios from 'axios';
 // Determinar a URL base da API baseado no ambiente
 const getBaseURL = () => {
   if (process.env.NODE_ENV === 'production') {
-    // Em produção, usar o path /foods/api
-    return process.env.REACT_APP_API_URL || 'http://foods.terceirizemais.com.br/foods/api';
+    // Em produção, usar o path /foods/api com HTTPS
+    return process.env.REACT_APP_API_URL || 'https://foods.terceirizemais.com.br/foods/api';
   }
   // Em desenvolvimento, usar a URL padrão
   return process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
