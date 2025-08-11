@@ -57,7 +57,7 @@ const rotaValidations = {
     
     body('tipo_rota')
       .notEmpty().withMessage('Tipo da rota é obrigatório')
-      .isIn(['entrada', 'saida', 'transferencia']).withMessage('Tipo deve ser entrada, saida ou transferencia'),
+      .isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Tipo deve ser semanal, quinzenal, mensal ou transferencia'),
     
     body('filial_id')
       .notEmpty().withMessage('Filial é obrigatória')
@@ -88,7 +88,7 @@ const rotaValidations = {
     
     body('tipo_rota')
       .optional()
-      .isIn(['entrada', 'saida', 'transferencia']).withMessage('Tipo deve ser entrada, saida ou transferencia'),
+      .isIn(['semanal', 'quinzenal', 'mensal', 'transferencia']).withMessage('Tipo deve ser semanal, quinzenal, mensal ou transferencia'),
     
     body('filial_id')
       .optional()

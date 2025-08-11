@@ -68,7 +68,7 @@ const unidadeEscolarValidations = {
       .isString().trim().matches(/^\d{5}-?\d{3}$/).withMessage('CEP deve estar no formato 00000-000'),
     
     body('endereco')
-      .optional()
+      .notEmpty().withMessage('Endereço é obrigatório')
       .isString().trim().isLength({ max: 300 }).withMessage('Endereço deve ter no máximo 300 caracteres'),
     
     body('rota_id')
@@ -127,7 +127,7 @@ const unidadeEscolarValidations = {
       .isString().trim().matches(/^\d{5}-?\d{3}$/).withMessage('CEP deve estar no formato 00000-000'),
     
     body('endereco')
-      .optional()
+      .notEmpty().withMessage('Endereço é obrigatório')
       .isString().trim().isLength({ max: 300 }).withMessage('Endereço deve ter no máximo 300 caracteres'),
     
     body('rota_id')

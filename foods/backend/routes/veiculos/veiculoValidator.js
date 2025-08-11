@@ -49,7 +49,7 @@ const veiculoValidations = {
   create: [
     body('placa')
       .notEmpty().withMessage('Placa é obrigatória')
-      .isString().trim().matches(/^[A-Z]{3}-\d{4}$/).withMessage('Placa deve estar no formato ABC-1234'),
+      .isString().trim().isLength({ min: 6, max: 10 }).withMessage('Placa deve ter entre 6 e 10 caracteres'),
     
     body('marca')
       .notEmpty().withMessage('Marca é obrigatória')
@@ -63,49 +63,133 @@ const veiculoValidations = {
       .optional()
       .isString().trim().isLength({ min: 17, max: 17 }).withMessage('Chassi deve ter 17 caracteres'),
     
-    body('ano_fabricacao')
-      .optional()
-      .isInt({ min: 1900, max: new Date().getFullYear() + 1 }).withMessage('Ano de fabricação deve ser válido'),
-    
-    body('ano_modelo')
-      .optional()
-      .isInt({ min: 1900, max: new Date().getFullYear() + 1 }).withMessage('Ano do modelo deve ser válido'),
-    
-    body('tipo_veiculo')
-      .optional()
-      .isIn(['caminhao', 'van', 'carro', 'moto', 'utilitario']).withMessage('Tipo deve ser caminhao, van, carro, moto ou utilitario'),
-    
-    body('categoria')
-      .optional()
-      .isIn(['leve', 'medio', 'pesado']).withMessage('Categoria deve ser leve, medio ou pesado'),
-    
-    body('status')
-      .optional()
-      .isIn(['ativo', 'inativo', 'manutencao', 'aposentado']).withMessage('Status deve ser ativo, inativo, manutencao ou aposentado'),
-    
-    body('capacidade_kg')
-      .optional()
-      .isFloat({ min: 0 }).withMessage('Capacidade em kg deve ser um número positivo'),
-    
-    body('capacidade_m3')
-      .optional()
-      .isFloat({ min: 0 }).withMessage('Capacidade em m³ deve ser um número positivo'),
-    
-    body('consumo_medio')
-      .optional()
-      .isFloat({ min: 0 }).withMessage('Consumo médio deve ser um número positivo'),
-    
-    body('cor')
-      .optional()
-      .isString().trim().isLength({ max: 30 }).withMessage('Cor deve ter no máximo 30 caracteres'),
-    
     body('renavam')
       .optional()
       .isString().trim().isLength({ min: 9, max: 11 }).withMessage('Renavam deve ter entre 9 e 11 caracteres'),
     
-    body('valor_aquisicao')
+    body('ano_fabricacao')
       .optional()
-      .isFloat({ min: 0 }).withMessage('Valor de aquisição deve ser um número positivo'),
+      .isInt({ min: 1900, max: new Date().getFullYear() + 1 }).withMessage('Ano de fabricação deve ser válido'),
+    
+    body('tipo_veiculo')
+      .optional()
+      .isIn(['caminhao', 'van', 'carro', 'moto', 'onibus']).withMessage('Tipo deve ser caminhao, van, carro, moto ou onibus'),
+    
+    body('carroceria')
+      .optional()
+      .isIn(['Bau', 'Refrigerado', 'Bipartido', 'Grade Baixa', 'Sider', 'Graneleiro', 'Tanque', 'Cacamba']).withMessage('Carroceria deve ser um dos tipos válidos'),
+    
+    body('combustivel')
+      .optional()
+      .isIn(['gasolina', 'diesel', 'etanol', 'flex', 'GNV', 'eletrico']).withMessage('Combustível deve ser um dos tipos válidos'),
+    
+    body('categoria')
+      .optional()
+      .isIn(['carga', 'passageiros', 'utilitario', 'especial']).withMessage('Categoria deve ser carga, passageiros, utilitario ou especial'),
+    
+    body('capacidade_carga')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Capacidade de carga deve ser um número positivo'),
+    
+    body('capacidade_volume')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Capacidade de volume deve ser um número positivo'),
+    
+    body('numero_eixos')
+      .optional()
+      .isInt({ min: 1 }).withMessage('Número de eixos deve ser um número inteiro positivo'),
+    
+    body('tara')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Tara deve ser um número positivo'),
+    
+    body('peso_bruto_total')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Peso bruto total deve ser um número positivo'),
+    
+    body('potencia_motor')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Potência do motor deve ser um número positivo'),
+    
+    body('tipo_tracao')
+      .optional()
+      .isIn(['4x2', '4x4', 'dianteira', 'traseira']).withMessage('Tipo de tração deve ser 4x2, 4x4, dianteira ou traseira'),
+    
+    body('quilometragem_atual')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Quilometragem atual deve ser um número positivo'),
+    
+    body('data_emplacamento')
+      .optional()
+      .isDate().withMessage('Data de emplacamento deve ser uma data válida'),
+    
+    body('vencimento_licenciamento')
+      .optional()
+      .isDate().withMessage('Vencimento do licenciamento deve ser uma data válida'),
+    
+    body('vencimento_ipva')
+      .optional()
+      .isDate().withMessage('Vencimento do IPVA deve ser uma data válida'),
+    
+    body('vencimento_dpvat')
+      .optional()
+      .isDate().withMessage('Vencimento do DPVAT deve ser uma data válida'),
+    
+    body('numero_apolice_seguro')
+      .optional()
+      .isString().trim().isLength({ max: 50 }).withMessage('Número da apólice deve ter no máximo 50 caracteres'),
+    
+    body('situacao_documental')
+      .optional()
+      .isIn(['regular', 'alienado', 'bloqueado']).withMessage('Situação documental deve ser regular, alienado ou bloqueado'),
+    
+    body('data_ultima_revisao')
+      .optional()
+      .isDate().withMessage('Data da última revisão deve ser uma data válida'),
+    
+    body('quilometragem_proxima_revisao')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Quilometragem da próxima revisão deve ser um número positivo'),
+    
+    body('data_ultima_troca_oleo')
+      .optional()
+      .isDate().withMessage('Data da última troca de óleo deve ser uma data válida'),
+    
+    body('vencimento_alinhamento_balanceamento')
+      .optional()
+      .isDate().withMessage('Vencimento do alinhamento/balanceamento deve ser uma data válida'),
+    
+    body('proxima_inspecao_veicular')
+      .optional()
+      .isDate().withMessage('Próxima inspeção veicular deve ser uma data válida'),
+    
+    body('status')
+      .optional()
+      .isIn(['ativo', 'inativo', 'manutencao']).withMessage('Status deve ser ativo, inativo ou manutencao'),
+    
+    body('status_detalhado')
+      .optional()
+      .isIn(['Ativo', 'Em manutencao', 'Alugado', 'Vendido']).withMessage('Status detalhado deve ser Ativo, Em manutencao, Alugado ou Vendido'),
+    
+    body('data_aquisicao')
+      .optional()
+      .isDate().withMessage('Data de aquisição deve ser uma data válida'),
+    
+    body('valor_compra')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Valor de compra deve ser um número positivo'),
+    
+    body('fornecedor')
+      .optional()
+      .isString().trim().isLength({ max: 200 }).withMessage('Fornecedor deve ter no máximo 200 caracteres'),
+    
+    body('numero_frota')
+      .optional()
+      .isString().trim().isLength({ max: 20 }).withMessage('Número da frota deve ter no máximo 20 caracteres'),
+    
+    body('situacao_financeira')
+      .optional()
+      .isIn(['Proprio', 'Financiado', 'leasing']).withMessage('Situação financeira deve ser Proprio, Financiado ou leasing'),
     
     body('observacoes')
       .optional()
@@ -120,7 +204,7 @@ const veiculoValidations = {
     
     body('placa')
       .optional()
-      .isString().trim().matches(/^[A-Z]{3}-\d{4}$/).withMessage('Placa deve estar no formato ABC-1234'),
+      .isString().trim().isLength({ min: 6, max: 10 }).withMessage('Placa deve ter entre 6 e 10 caracteres'),
     
     body('marca')
       .optional()
@@ -134,49 +218,133 @@ const veiculoValidations = {
       .optional()
       .isString().trim().isLength({ min: 17, max: 17 }).withMessage('Chassi deve ter 17 caracteres'),
     
-    body('ano_fabricacao')
-      .optional()
-      .isInt({ min: 1900, max: new Date().getFullYear() + 1 }).withMessage('Ano de fabricação deve ser válido'),
-    
-    body('ano_modelo')
-      .optional()
-      .isInt({ min: 1900, max: new Date().getFullYear() + 1 }).withMessage('Ano do modelo deve ser válido'),
-    
-    body('tipo_veiculo')
-      .optional()
-      .isIn(['caminhao', 'van', 'carro', 'moto', 'utilitario']).withMessage('Tipo deve ser caminhao, van, carro, moto ou utilitario'),
-    
-    body('categoria')
-      .optional()
-      .isIn(['leve', 'medio', 'pesado']).withMessage('Categoria deve ser leve, medio ou pesado'),
-    
-    body('status')
-      .optional()
-      .isIn(['ativo', 'inativo', 'manutencao', 'aposentado']).withMessage('Status deve ser ativo, inativo, manutencao ou aposentado'),
-    
-    body('capacidade_kg')
-      .optional()
-      .isFloat({ min: 0 }).withMessage('Capacidade em kg deve ser um número positivo'),
-    
-    body('capacidade_m3')
-      .optional()
-      .isFloat({ min: 0 }).withMessage('Capacidade em m³ deve ser um número positivo'),
-    
-    body('consumo_medio')
-      .optional()
-      .isFloat({ min: 0 }).withMessage('Consumo médio deve ser um número positivo'),
-    
-    body('cor')
-      .optional()
-      .isString().trim().isLength({ max: 30 }).withMessage('Cor deve ter no máximo 30 caracteres'),
-    
     body('renavam')
       .optional()
       .isString().trim().isLength({ min: 9, max: 11 }).withMessage('Renavam deve ter entre 9 e 11 caracteres'),
     
-    body('valor_aquisicao')
+    body('ano_fabricacao')
       .optional()
-      .isFloat({ min: 0 }).withMessage('Valor de aquisição deve ser um número positivo'),
+      .isInt({ min: 1900, max: new Date().getFullYear() + 1 }).withMessage('Ano de fabricação deve ser válido'),
+    
+    body('tipo_veiculo')
+      .optional()
+      .isIn(['caminhao', 'van', 'carro', 'moto', 'onibus']).withMessage('Tipo deve ser caminhao, van, carro, moto ou onibus'),
+    
+    body('carroceria')
+      .optional()
+      .isIn(['Bau', 'Refrigerado', 'Bipartido', 'Grade Baixa', 'Sider', 'Graneleiro', 'Tanque', 'Cacamba']).withMessage('Carroceria deve ser um dos tipos válidos'),
+    
+    body('combustivel')
+      .optional()
+      .isIn(['gasolina', 'diesel', 'etanol', 'flex', 'GNV', 'eletrico']).withMessage('Combustível deve ser um dos tipos válidos'),
+    
+    body('categoria')
+      .optional()
+      .isIn(['carga', 'passageiros', 'utilitario', 'especial']).withMessage('Categoria deve ser carga, passageiros, utilitario ou especial'),
+    
+    body('capacidade_carga')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Capacidade de carga deve ser um número positivo'),
+    
+    body('capacidade_volume')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Capacidade de volume deve ser um número positivo'),
+    
+    body('numero_eixos')
+      .optional()
+      .isInt({ min: 1 }).withMessage('Número de eixos deve ser um número inteiro positivo'),
+    
+    body('tara')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Tara deve ser um número positivo'),
+    
+    body('peso_bruto_total')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Peso bruto total deve ser um número positivo'),
+    
+    body('potencia_motor')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Potência do motor deve ser um número positivo'),
+    
+    body('tipo_tracao')
+      .optional()
+      .isIn(['4x2', '4x4', 'dianteira', 'traseira']).withMessage('Tipo de tração deve ser 4x2, 4x4, dianteira ou traseira'),
+    
+    body('quilometragem_atual')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Quilometragem atual deve ser um número positivo'),
+    
+    body('data_emplacamento')
+      .optional()
+      .isDate().withMessage('Data de emplacamento deve ser uma data válida'),
+    
+    body('vencimento_licenciamento')
+      .optional()
+      .isDate().withMessage('Vencimento do licenciamento deve ser uma data válida'),
+    
+    body('vencimento_ipva')
+      .optional()
+      .isDate().withMessage('Vencimento do IPVA deve ser uma data válida'),
+    
+    body('vencimento_dpvat')
+      .optional()
+      .isDate().withMessage('Vencimento do DPVAT deve ser uma data válida'),
+    
+    body('numero_apolice_seguro')
+      .optional()
+      .isString().trim().isLength({ max: 50 }).withMessage('Número da apólice deve ter no máximo 50 caracteres'),
+    
+    body('situacao_documental')
+      .optional()
+      .isIn(['regular', 'alienado', 'bloqueado']).withMessage('Situação documental deve ser regular, alienado ou bloqueado'),
+    
+    body('data_ultima_revisao')
+      .optional()
+      .isDate().withMessage('Data da última revisão deve ser uma data válida'),
+    
+    body('quilometragem_proxima_revisao')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Quilometragem da próxima revisão deve ser um número positivo'),
+    
+    body('data_ultima_troca_oleo')
+      .optional()
+      .isDate().withMessage('Data da última troca de óleo deve ser uma data válida'),
+    
+    body('vencimento_alinhamento_balanceamento')
+      .optional()
+      .isDate().withMessage('Vencimento do alinhamento/balanceamento deve ser uma data válida'),
+    
+    body('proxima_inspecao_veicular')
+      .optional()
+      .isDate().withMessage('Próxima inspeção veicular deve ser uma data válida'),
+    
+    body('status')
+      .optional()
+      .isIn(['ativo', 'inativo', 'manutencao']).withMessage('Status deve ser ativo, inativo ou manutencao'),
+    
+    body('status_detalhado')
+      .optional()
+      .isIn(['Ativo', 'Em manutencao', 'Alugado', 'Vendido']).withMessage('Status detalhado deve ser Ativo, Em manutencao, Alugado ou Vendido'),
+    
+    body('data_aquisicao')
+      .optional()
+      .isDate().withMessage('Data de aquisição deve ser uma data válida'),
+    
+    body('valor_compra')
+      .optional()
+      .isFloat({ min: 0 }).withMessage('Valor de compra deve ser um número positivo'),
+    
+    body('fornecedor')
+      .optional()
+      .isString().trim().isLength({ max: 200 }).withMessage('Fornecedor deve ter no máximo 200 caracteres'),
+    
+    body('numero_frota')
+      .optional()
+      .isString().trim().isLength({ max: 20 }).withMessage('Número da frota deve ter no máximo 20 caracteres'),
+    
+    body('situacao_financeira')
+      .optional()
+      .isIn(['Proprio', 'Financiado', 'leasing']).withMessage('Situação financeira deve ser Proprio, Financiado ou leasing'),
     
     body('observacoes')
       .optional()
