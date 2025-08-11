@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../middleware/auth');
+const { authenticateToken, checkScreenPermission } = require('../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
 const { unidadeEscolarValidations, unidadeEscolarAtualizacaoValidations, handleValidationErrors } = require('../middleware/validation');
 const { paginationMiddleware } = require('../middleware/pagination');
@@ -15,7 +15,7 @@ router.use(authenticateToken);
 
 // Listar unidades escolares com paginação, busca e filtros
 router.get('/', 
-  checkPermission('visualizar'),
+  checkScreenPermission('unidades_escolares', 'visualizar'),
   paginationMiddleware,
   unidadesEscolaresController.listarUnidadesEscolares,
   hateoasMiddleware
@@ -25,35 +25,35 @@ router.get('/',
 
 // Buscar unidades escolares ativas
 router.get('/ativas/listar', 
-  checkPermission('visualizar'),
+  checkScreenPermission('unidades_escolares', 'visualizar'),
   unidadesEscolaresController.buscarUnidadesEscolaresAtivas,
   hateoasMiddleware
 );
 
 // Buscar unidades escolares por estado
 router.get('/estado/:estado', 
-  checkPermission('visualizar'),
+  checkScreenPermission('unidades_escolares', 'visualizar'),
   unidadesEscolaresController.buscarUnidadesEscolaresPorEstado,
   hateoasMiddleware
 );
 
 // Buscar unidades escolares por rota
 router.get('/rota/:rotaId', 
-  checkPermission('visualizar'),
+  checkScreenPermission('unidades_escolares', 'visualizar'),
   unidadesEscolaresController.buscarUnidadesEscolaresPorRota,
   hateoasMiddleware
 );
 
 // Listar estados disponíveis
 router.get('/estados/listar', 
-  checkPermission('visualizar'),
+  checkScreenPermission('unidades_escolares', 'visualizar'),
   unidadesEscolaresController.listarEstados,
   hateoasMiddleware
 );
 
 // Listar centros de distribuição disponíveis
 router.get('/centros-distribuicao/listar', 
-  checkPermission('visualizar'),
+  checkScreenPermission('unidades_escolares', 'visualizar'),
   unidadesEscolaresController.listarCentrosDistribuicao,
   hateoasMiddleware
 );
@@ -62,26 +62,30 @@ router.get('/centros-distribuicao/listar',
 
 // Buscar unidade escolar por ID
 router.get('/:id', 
-  checkPermission('visualizar'),
+  checkScreenPermission('unidades_escolares', 'visualizar'),
   unidadesEscolaresController.buscarUnidadeEscolarPorId,
   hateoasMiddleware
 );
 
 // Criar unidade escolar
 router.post('/', [
-  checkPermission('criar'),
-  auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares')
+  checkScreenPermission('unidades_escolares', 'criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares'),
+  unidadeEscolarValidations,
+  handleValidationErrors
 ], unidadesEscolaresController.criarUnidadeEscolar);
 
 // Atualizar unidade escolar
 router.put('/:id', [
-  checkPermission('editar'),
-  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_escolares')
+  checkScreenPermission('unidades_escolares', 'editar'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_escolares'),
+  unidadeEscolarAtualizacaoValidations,
+  handleValidationErrors
 ], unidadesEscolaresController.atualizarUnidadeEscolar);
 
 // Excluir unidade escolar
 router.delete('/:id', [
-  checkPermission('excluir'),
+  checkScreenPermission('unidades_escolares', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'unidades_escolares')
 ], unidadesEscolaresController.excluirUnidadeEscolar);
 
