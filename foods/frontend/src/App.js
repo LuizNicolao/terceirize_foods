@@ -22,7 +22,7 @@ import NomeGenericoProduto from './pages/NomeGenericoProduto';
 import Permissoes from './pages/Permissoes';
 import Veiculos from './pages/veiculos/Veiculos';
 import Motoristas from './pages/motoristas/Motoristas';
-import Ajudantes from './pages/ajudantes/Ajudantes';
+import Ajudantes from './pages/Ajudantes';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {

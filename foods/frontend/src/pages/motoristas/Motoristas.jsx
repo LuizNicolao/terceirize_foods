@@ -1,94 +1,123 @@
 import React from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaHistory, FaDownload, FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useMotoristas } from '../../hooks/useMotoristas';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
-import MotoristasService from '../../services/motoristas';
 import { Button } from '../../components/ui';
+import { 
+  MotoristaModal, 
+  MotoristasTable, 
+  MotoristasStats 
+} from '../../components/motoristas';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
-import { MotoristaModal } from '../../components/motoristas';
-import MotoristasStats from '../../components/motoristas/MotoristasStats';
-import MotoristasActions from '../../components/motoristas/MotoristasActions';
-import MotoristasTable from '../../components/motoristas/MotoristasTable';
-import AuditModal from '../../components/shared/AuditModal';
+import AuditModal from '../../components/AuditModal';
 
 const Motoristas = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
   const {
+    // Estados
     motoristas,
     filiais,
     loading,
     showModal,
     viewMode,
     editingMotorista,
+    showAuditModal,
+    auditLogs,
+    auditLoading,
+    auditFilters,
+    estatisticas,
     searchTerm,
     currentPage,
     totalPages,
     totalItems,
     itemsPerPage,
-    estatisticas,
-    onSubmit,
-    handleDeleteMotorista,
+
+    // Setters
+    setAuditFilters,
+    setSearchTerm,
+
+    // Handlers
     handleAddMotorista,
     handleViewMotorista,
     handleEditMotorista,
     handleCloseModal,
-    handlePageChange,
-    setSearchTerm,
-    setItemsPerPage
-  } = useMotoristas();
-
-  const {
-    showAuditModal,
-    auditLogs,
-    auditLoading,
-    auditFilters,
     handleOpenAuditModal,
     handleCloseAuditModal,
     handleApplyAuditFilters,
+    handleSearch,
+    handleFilter,
+    handleSubmit,
+    handleDelete,
+    handlePageChange,
+    handleItemsPerPageChange,
+    handleExportXLSX,
+    handleExportPDF,
     handleExportAuditXLSX,
-    handleExportAuditPDF,
-    setAuditFilters
-  } = useAuditoria('motoristas');
+    handleExportAuditPDF
+  } = useMotoristas();
 
-  const { handleExportXLSX, handleExportPDF } = useExport(MotoristasService);
+  const {
+    formatDate,
+    getActionLabel,
+    getFieldLabel,
+    formatFieldValue
+  } = useAuditoria();
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
-        </div>
-      </div>
-    );
-  }
+  const {
+    handleExportXLSX: handleExportXLSXAudit,
+    handleExportPDF: handleExportPDFAudit
+  } = useExport();
 
   return (
-    <div className="p-3 sm:p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Motoristas</h1>
-        <div className="flex gap-2 sm:gap-3">
-          <Button
-            onClick={handleOpenAuditModal}
-            variant="ghost"
-            size="sm"
-            className="text-xs"
-          >
-            <FaQuestionCircle className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Auditoria</span>
-          </Button>
+    <div className="space-y-6">
+      {/* Cabeçalho */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Motoristas</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Gerencie os motoristas da frota
+          </p>
+        </div>
+        
+        <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-2">
           {canCreate('motoristas') && (
-            <Button onClick={handleAddMotorista} size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar</span>
-              <span className="sm:hidden">Adicionar</span>
+            <Button onClick={handleAddMotorista} className="flex items-center gap-2">
+              <FaPlus className="w-4 h-4" />
+              Adicionar Motorista
             </Button>
           )}
+          
+          <Button
+            variant="outline"
+            onClick={handleOpenAuditModal}
+            className="flex items-center gap-2"
+          >
+            <FaHistory className="w-4 h-4" />
+            Auditoria
+          </Button>
+          
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleExportXLSX}
+              className="flex items-center gap-2"
+              title="Exportar XLSX"
+            >
+              <FaFileExcel className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleExportPDF}
+              className="flex items-center gap-2"
+              title="Exportar PDF"
+            >
+              <FaFilePdf className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -98,33 +127,65 @@ const Motoristas = () => {
       {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onClear={() => setSearchTerm('')}
-        placeholder="Buscar por nome ou CPF..."
-      />
-
-      {/* Ações */}
-      <MotoristasActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
+        onSearch={handleSearch}
+        onFilter={handleFilter}
+        filters={[
+          {
+            name: 'status',
+            label: 'Status',
+            type: 'select',
+            options: [
+              { value: '', label: 'Todos' },
+              { value: 'ativo', label: 'Ativo' },
+              { value: 'inativo', label: 'Inativo' },
+              { value: 'ferias', label: 'Em Férias' },
+              { value: 'licenca', label: 'Em Licença' }
+            ]
+          },
+          {
+            name: 'filial_id',
+            label: 'Filial',
+            type: 'select',
+            options: [
+              { value: '', label: 'Todas' },
+              ...filiais.map(filial => ({
+                value: filial.id.toString(),
+                label: filial.filial
+              }))
+            ]
+          }
+        ]}
       />
 
       {/* Tabela */}
-      <MotoristasTable
-        motoristas={motoristas}
-        canView={canView}
-        canEdit={canEdit}
-        canDelete={canDelete}
-        onView={handleViewMotorista}
-        onEdit={handleEditMotorista}
-        onDelete={handleDeleteMotorista}
+      <div className="bg-white rounded-lg shadow">
+        <MotoristasTable
+          motoristas={motoristas}
+          loading={loading}
+          canView={canView}
+          canEdit={canEdit}
+          canDelete={canDelete}
+          onView={handleViewMotorista}
+          onEdit={handleEditMotorista}
+          onDelete={handleDelete}
+        />
+      </div>
+
+      {/* Paginação */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={handlePageChange}
+        onItemsPerPageChange={handleItemsPerPageChange}
       />
 
       {/* Modal de Motorista */}
       <MotoristaModal
         isOpen={showModal}
         onClose={handleCloseModal}
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit}
         motorista={editingMotorista}
         isViewMode={viewMode}
         filiais={filiais}
@@ -135,26 +196,19 @@ const Motoristas = () => {
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
-        title="Relatório de Auditoria - Motoristas"
-        auditLogs={auditLogs}
-        auditLoading={auditLoading}
-        auditFilters={auditFilters}
+        logs={auditLogs}
+        loading={auditLoading}
+        filters={auditFilters}
+        onFilterChange={setAuditFilters}
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
-        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+        formatDate={formatDate}
+        getActionLabel={getActionLabel}
+        getFieldLabel={getFieldLabel}
+        formatFieldValue={formatFieldValue}
+        title="Auditoria de Motoristas"
       />
-
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-        />
-      )}
     </div>
   );
 };
