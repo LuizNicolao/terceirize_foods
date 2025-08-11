@@ -1,7 +1,57 @@
 import React from 'react';
-import { FaUser, FaIdCard, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCar, FaCalendarAlt } from 'react-icons/fa';
-import { Table } from '../ui';
-import MotoristasActions from './MotoristasActions';
+import { FaUser, FaIdCard, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCar, FaCalendarAlt, FaEye, FaEdit, FaTrash } from 'react-icons/fa';
+import { Table, Button } from '../ui';
+
+// Componente interno para ações da tabela
+const TableActions = ({ 
+  motorista, 
+  canView, 
+  canEdit, 
+  canDelete, 
+  onView, 
+  onEdit, 
+  onDelete 
+}) => {
+  return (
+    <div className="flex items-center gap-1">
+      {canView('motoristas') && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onView(motorista)}
+          title="Visualizar"
+          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+        >
+          <FaEye className="w-3 h-3" />
+        </Button>
+      )}
+      
+      {canEdit('motoristas') && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onEdit(motorista)}
+          title="Editar"
+          className="text-green-600 hover:text-green-800 hover:bg-green-50"
+        >
+          <FaEdit className="w-3 h-3" />
+        </Button>
+      )}
+      
+      {canDelete('motoristas') && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onDelete(motorista.id)}
+          title="Excluir"
+          className="text-red-600 hover:text-red-800 hover:bg-red-50"
+        >
+          <FaTrash className="w-3 h-3" />
+        </Button>
+      )}
+    </div>
+  );
+};
 
 const MotoristasTable = ({ 
   motoristas, 
@@ -105,13 +155,13 @@ const MotoristasTable = ({
                     <div className="text-sm text-gray-900">
                       <div className="flex items-center">
                         <FaIdCard className="mr-2 text-gray-400" />
-                        CNH: {motorista.cnh || '-'}
+                        <span>CNH: {motorista.cnh || '-'}</span>
                       </div>
-                      <div className="text-sm text-gray-500 mt-1">
+                      <div className="text-sm text-gray-500 ml-6">
                         Categoria: {getCategoriaCNHLabel(motorista.categoria_cnh)}
                       </div>
                       {motorista.cnh_validade && (
-                        <div className="text-sm text-gray-500 mt-1">
+                        <div className="text-sm text-gray-500 ml-6">
                           Válida até: {formatDate(motorista.cnh_validade)}
                         </div>
                       )}
@@ -122,13 +172,13 @@ const MotoristasTable = ({
                       {motorista.telefone && (
                         <div className="flex items-center">
                           <FaPhone className="mr-2 text-gray-400" />
-                          {motorista.telefone}
+                          <span>{motorista.telefone}</span>
                         </div>
                       )}
                       {motorista.email && (
                         <div className="flex items-center mt-1">
                           <FaEnvelope className="mr-2 text-gray-400" />
-                          {motorista.email}
+                          <span>{motorista.email}</span>
                         </div>
                       )}
                     </div>
@@ -142,7 +192,7 @@ const MotoristasTable = ({
                     {motorista.filial_nome || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <MotoristasActions
+                    <TableActions
                       motorista={motorista}
                       canView={canView}
                       canEdit={canEdit}
@@ -177,7 +227,7 @@ const MotoristasTable = ({
                     <p className="text-sm text-gray-500">{motorista.cpf || 'CPF não informado'}</p>
                   </div>
                 </div>
-                <MotoristasActions
+                <TableActions
                   motorista={motorista}
                   canView={canView}
                   canEdit={canEdit}

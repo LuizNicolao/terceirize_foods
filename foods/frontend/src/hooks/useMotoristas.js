@@ -10,16 +10,6 @@ export const useMotoristas = () => {
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [editingMotorista, setEditingMotorista] = useState(null);
-  const [showAuditModal, setShowAuditModal] = useState(false);
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [auditLoading, setAuditLoading] = useState(false);
-  const [auditFilters, setAuditFilters] = useState({
-    dataInicio: '',
-    dataFim: '',
-    acao: '',
-    usuario_id: '',
-    periodo: ''
-  });
   const [estatisticas, setEstatisticas] = useState({
     total_motoristas: 0,
     motoristas_ativos: 0,
@@ -86,32 +76,6 @@ export const useMotoristas = () => {
     }
   };
 
-  // Carregar logs de auditoria
-  const loadAuditLogs = async () => {
-    setAuditLoading(true);
-    try {
-      const result = await MotoristasService.buscarAuditoria(auditFilters);
-      if (result.success) {
-        setAuditLogs(result.data);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar logs de auditoria:', error);
-      toast.error('Erro ao carregar logs de auditoria');
-    } finally {
-      setAuditLoading(false);
-    }
-  };
-
-  // Handlers de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (items) => {
-    setItemsPerPage(items);
-    setCurrentPage(1);
-  };
-
   // Handlers de modal
   const handleAddMotorista = () => {
     setEditingMotorista(null);
@@ -137,63 +101,22 @@ export const useMotoristas = () => {
     setViewMode(false);
   };
 
-  // Handler de auditoria
-  const handleOpenAuditModal = () => {
-    setShowAuditModal(true);
-    loadAuditLogs();
-  };
-
-  const handleCloseAuditModal = () => {
-    setShowAuditModal(false);
-    setAuditLogs([]);
-    setAuditFilters({
-      dataInicio: '',
-      dataFim: '',
-      acao: '',
-      usuario_id: '',
-      periodo: ''
-    });
-  };
-
-  const handleApplyAuditFilters = () => {
-    loadAuditLogs();
-  };
-
-  // Handler de busca
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-    setCurrentPage(1);
-    loadMotoristas({ search: term });
-  };
-
-  // Handler de filtros
-  const handleFilter = (filters) => {
-    setCurrentPage(1);
-    loadMotoristas(filters);
-  };
-
   // Handler de submit
   const handleSubmit = async (data) => {
     try {
       if (editingMotorista) {
-        // Atualizar motorista
         const result = await MotoristasService.atualizar(editingMotorista.id, data);
         if (result.success) {
           toast.success('Motorista atualizado com sucesso!');
           handleCloseModal();
           loadMotoristas();
-        } else {
-          toast.error(result.message || 'Erro ao atualizar motorista');
         }
       } else {
-        // Criar motorista
         const result = await MotoristasService.criar(data);
         if (result.success) {
           toast.success('Motorista criado com sucesso!');
           handleCloseModal();
           loadMotoristas();
-        } else {
-          toast.error(result.message || 'Erro ao criar motorista');
         }
       }
     } catch (error) {
@@ -203,21 +126,29 @@ export const useMotoristas = () => {
   };
 
   // Handler de exclusão
-  const handleDelete = async (motoristaId) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Tem certeza que deseja excluir este motorista?')) {
       try {
-        const result = await MotoristasService.excluir(motoristaId);
+        const result = await MotoristasService.excluir(id);
         if (result.success) {
           toast.success('Motorista excluído com sucesso!');
           loadMotoristas();
-        } else {
-          toast.error(result.message || 'Erro ao excluir motorista');
         }
       } catch (error) {
         console.error('Erro ao excluir motorista:', error);
         toast.error('Erro ao excluir motorista');
       }
     }
+  };
+
+  // Handlers de paginação
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1);
   };
 
   // Handlers de exportação
@@ -241,26 +172,6 @@ export const useMotoristas = () => {
     }
   };
 
-  const handleExportAuditXLSX = async () => {
-    try {
-      await MotoristasService.exportarAuditoriaXLSX(auditFilters);
-      toast.success('Exportação de auditoria XLSX iniciada!');
-    } catch (error) {
-      console.error('Erro ao exportar auditoria XLSX:', error);
-      toast.error('Erro ao exportar auditoria XLSX');
-    }
-  };
-
-  const handleExportAuditPDF = async () => {
-    try {
-      await MotoristasService.exportarAuditoriaPDF(auditFilters);
-      toast.success('Exportação de auditoria PDF iniciada!');
-    } catch (error) {
-      console.error('Erro ao exportar auditoria PDF:', error);
-      toast.error('Erro ao exportar auditoria PDF');
-    }
-  };
-
   // Carregar dados iniciais
   useEffect(() => {
     loadMotoristas();
@@ -275,10 +186,6 @@ export const useMotoristas = () => {
     showModal,
     viewMode,
     editingMotorista,
-    showAuditModal,
-    auditLogs,
-    auditLoading,
-    auditFilters,
     estatisticas,
     searchTerm,
     currentPage,
@@ -287,7 +194,6 @@ export const useMotoristas = () => {
     itemsPerPage,
 
     // Setters
-    setAuditFilters,
     setSearchTerm,
 
     // Handlers
@@ -295,23 +201,11 @@ export const useMotoristas = () => {
     handleViewMotorista,
     handleEditMotorista,
     handleCloseModal,
-    handleOpenAuditModal,
-    handleCloseAuditModal,
-    handleApplyAuditFilters,
-    handleSearch,
-    handleFilter,
     handleSubmit,
     handleDelete,
     handlePageChange,
     handleItemsPerPageChange,
     handleExportXLSX,
-    handleExportPDF,
-    handleExportAuditXLSX,
-    handleExportAuditPDF,
-
-    // Funções
-    loadMotoristas,
-    loadFiliais,
-    loadAuditLogs
+    handleExportPDF
   };
 };
