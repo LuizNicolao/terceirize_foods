@@ -157,21 +157,16 @@ const Ajudantes = () => {
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow">
-        {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <AjudantesTable
-            ajudantes={ajudantes}
-            canView={canView}
-            canEdit={canEdit}
-            canDelete={canDelete}
-            onView={handleViewAjudante}
-            onEdit={handleEditAjudante}
-            onDelete={handleDelete}
-          />
-        )}
+        <AjudantesTable
+          ajudantes={ajudantes}
+          loading={loading}
+          canView={canView}
+          canEdit={canEdit}
+          canDelete={canDelete}
+          onView={handleViewAjudante}
+          onEdit={handleEditAjudante}
+          onDelete={handleDelete}
+        />
       </div>
 
       {/* Paginação */}
