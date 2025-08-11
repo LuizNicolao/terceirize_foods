@@ -1,10 +1,16 @@
+/**
+ * Rotas de Rotas
+ * Implementa padrões RESTful com HATEOAS, paginação e validação
+ */
+
 const express = require('express');
-const { authenticateToken, checkScreenPermission } = require('../middleware/auth');
-const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
-const { rotaValidations, rotaAtualizacaoValidations, handleValidationErrors } = require('../middleware/validation');
-const { paginationMiddleware } = require('../middleware/pagination');
-const { hateoasMiddleware } = require('../middleware/hateoas');
-const rotasController = require('../controllers/rotasController');
+const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
+const { rotaValidations, commonValidations } = require('./rotaValidator');
+const { handleValidationErrors } = require('../../middleware/validation');
+const { paginationMiddleware } = require('../../middleware/pagination');
+const { hateoasMiddleware } = require('../../middleware/hateoas');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const rotasController = require('../../controllers/rotasController');
 
 const router = express.Router();
 
@@ -16,7 +22,8 @@ router.use(authenticateToken);
 // Listar rotas com paginação, busca e filtros
 router.get('/', 
   checkScreenPermission('rotas', 'visualizar'),
-  paginationMiddleware,
+  commonValidations.search,
+  commonValidations.pagination,
   rotasController.listarRotas,
   hateoasMiddleware
 );
@@ -70,6 +77,7 @@ router.get('/:id/unidades-escolares',
 // Buscar rota por ID
 router.get('/:id', 
   checkScreenPermission('rotas', 'visualizar'),
+  commonValidations.id,
   rotasController.buscarRotaPorId,
   hateoasMiddleware
 );
@@ -78,7 +86,7 @@ router.get('/:id',
 router.post('/', [
   checkScreenPermission('rotas', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'rotas'),
-  rotaValidations,
+  rotaValidations.create,
   handleValidationErrors
 ], rotasController.criarRota);
 
@@ -86,14 +94,15 @@ router.post('/', [
 router.put('/:id', [
   checkScreenPermission('rotas', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'rotas'),
-  rotaAtualizacaoValidations,
+  rotaValidations.update,
   handleValidationErrors
 ], rotasController.atualizarRota);
 
 // Excluir rota
 router.delete('/:id', [
   checkScreenPermission('rotas', 'excluir'),
-  auditMiddleware(AUDIT_ACTIONS.DELETE, 'rotas')
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'rotas'),
+  commonValidations.id
 ], rotasController.excluirRota);
 
-module.exports = router; 
+module.exports = router;

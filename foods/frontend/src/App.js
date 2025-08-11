@@ -20,7 +20,7 @@ import Marcas from './pages/Marcas';
 import Classes from './pages/Classes';
 import NomeGenericoProduto from './pages/NomeGenericoProduto';
 import Permissoes from './pages/Permissoes';
-import Veiculos from './pages/Veiculos';
+import Veiculos from './pages/veiculos/Veiculos';
 import Motoristas from './pages/Motoristas';
 import Ajudantes from './pages/Ajudantes';
 

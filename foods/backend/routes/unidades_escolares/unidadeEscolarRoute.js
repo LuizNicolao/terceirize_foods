@@ -1,10 +1,16 @@
+/**
+ * Rotas de Unidades Escolares
+ * Implementa padrões RESTful com HATEOAS, paginação e validação
+ */
+
 const express = require('express');
-const { authenticateToken, checkScreenPermission } = require('../middleware/auth');
-const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
-const { unidadeEscolarValidations, unidadeEscolarAtualizacaoValidations, handleValidationErrors } = require('../middleware/validation');
-const { paginationMiddleware } = require('../middleware/pagination');
-const { hateoasMiddleware } = require('../middleware/hateoas');
-const unidadesEscolaresController = require('../controllers/unidadesEscolaresController');
+const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
+const { unidadeEscolarValidations, commonValidations } = require('./unidadeEscolarValidator');
+const { handleValidationErrors } = require('../../middleware/validation');
+const { paginationMiddleware } = require('../../middleware/pagination');
+const { hateoasMiddleware } = require('../../middleware/hateoas');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const unidadesEscolaresController = require('../../controllers/unidadesEscolaresController');
 
 const router = express.Router();
 
@@ -16,7 +22,8 @@ router.use(authenticateToken);
 // Listar unidades escolares com paginação, busca e filtros
 router.get('/', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
-  paginationMiddleware,
+  commonValidations.search,
+  commonValidations.pagination,
   unidadesEscolaresController.listarUnidadesEscolares,
   hateoasMiddleware
 );
@@ -63,6 +70,7 @@ router.get('/centros-distribuicao/listar',
 // Buscar unidade escolar por ID
 router.get('/:id', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
+  commonValidations.id,
   unidadesEscolaresController.buscarUnidadeEscolarPorId,
   hateoasMiddleware
 );
@@ -71,7 +79,7 @@ router.get('/:id',
 router.post('/', [
   checkScreenPermission('unidades_escolares', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares'),
-  unidadeEscolarValidations,
+  unidadeEscolarValidations.create,
   handleValidationErrors
 ], unidadesEscolaresController.criarUnidadeEscolar);
 
@@ -79,14 +87,15 @@ router.post('/', [
 router.put('/:id', [
   checkScreenPermission('unidades_escolares', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_escolares'),
-  unidadeEscolarAtualizacaoValidations,
+  unidadeEscolarValidations.update,
   handleValidationErrors
 ], unidadesEscolaresController.atualizarUnidadeEscolar);
 
 // Excluir unidade escolar
 router.delete('/:id', [
   checkScreenPermission('unidades_escolares', 'excluir'),
-  auditMiddleware(AUDIT_ACTIONS.DELETE, 'unidades_escolares')
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'unidades_escolares'),
+  commonValidations.id
 ], unidadesEscolaresController.excluirUnidadeEscolar);
 
-module.exports = router; 
+module.exports = router;
