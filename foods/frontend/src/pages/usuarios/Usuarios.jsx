@@ -5,9 +5,10 @@ import { useUsuarios } from '../../hooks/useUsuarios';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import UsuariosService from '../../services/usuarios';
-import { Button, Input, Modal } from '../../components/ui';
+import { Button } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
+import { UsuarioModal } from '../../components/usuarios';
 import UsuariosStats from '../../components/usuarios/UsuariosStats';
 import UsuariosActions from '../../components/usuarios/UsuariosActions';
 import UsuariosTable from '../../components/usuarios/UsuariosTable';
@@ -29,10 +30,6 @@ const Usuarios = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
-    register,
-    handleSubmit,
-    reset,
-    errors,
     onSubmit,
     handleDeleteUser,
     handleAddUser,
@@ -132,128 +129,19 @@ const Usuarios = () => {
       />
 
       {/* Modal de Usuário */}
-      <Modal
+      <UsuarioModal
         isOpen={showModal}
         onClose={handleCloseModal}
-        title={viewMode ? 'Visualizar Usuário' : editingUsuario ? 'Editar Usuário' : 'Adicionar Usuário'}
-        size="full"
-      >
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* Primeira Linha - 2 Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Card 1: Informações Pessoais */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações Pessoais</h3>
-              <div className="space-y-3">
-                <Input
-                  label="Nome Completo *"
-                  {...register('nome', { required: 'Nome é obrigatório' })}
-                  error={errors.nome?.message}
-                  disabled={viewMode}
-                />
-                <Input
-                  label="Email *"
-                  type="email"
-                  {...register('email', { 
-                    required: 'Email é obrigatório',
-                    pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: 'Email inválido'
-                    }
-                  })}
-                  error={errors.email?.message}
-                  disabled={viewMode}
-                />
-              </div>
-            </div>
-
-            {/* Card 2: Informações de Acesso */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Informações de Acesso</h3>
-              <div className="space-y-3">
-                  <Input
-                  label="Tipo de Acesso *"
-                  type="select"
-                  {...register('tipo_de_acesso', { required: 'Tipo de acesso é obrigatório' })}
-                  error={errors.tipo_de_acesso?.message}
-                  disabled={viewMode}
-                >
-                  <option value="">Selecione o tipo de acesso</option>
-                  <option value="administrador">Administrador</option>
-                  <option value="coordenador">Coordenador</option>
-                  <option value="administrativo">Administrativo</option>
-                  <option value="gerente">Gerente</option>
-                  <option value="supervisor">Supervisor</option>
-                </Input>
-                <Input
-                  label="Nível de Acesso *"
-                  type="select"
-                  {...register('nivel_de_acesso', { required: 'Nível de acesso é obrigatório' })}
-                  error={errors.nivel_de_acesso?.message}
-                  disabled={viewMode}
-                >
-                  <option value="">Selecione o nível de acesso</option>
-                  <option value="I">Nível I</option>
-                  <option value="II">Nível II</option>
-                  <option value="III">Nível III</option>
-                </Input>
-                <Input
-                  label="Status *"
-                  type="select"
-                  {...register('status', { required: 'Status é obrigatório' })}
-                  error={errors.status?.message}
-                  disabled={viewMode}
-                >
-                  <option value="">Selecione o status</option>
-                  <option value="ativo">Ativo</option>
-                  <option value="inativo">Inativo</option>
-                  <option value="bloqueado">Bloqueado</option>
-                </Input>
-              </div>
-            </div>
-          </div>
-
-          {/* Segunda Linha - 1 Card */}
-          <div className="grid grid-cols-1 gap-4">
-            {/* Card 3: Senha */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">Senha</h3>
-              <div className="space-y-3">
-                <Input
-                  label={editingUsuario ? "Nova Senha (deixe em branco para manter a atual)" : "Senha *"}
-                  type="password"
-                  {...register('senha', { 
-                    required: !editingUsuario ? 'Senha é obrigatória' : false,
-                    minLength: {
-                      value: 6,
-                      message: 'Senha deve ter pelo menos 6 caracteres'
-                    }
-                  })}
-                  error={errors.senha?.message}
-                  disabled={viewMode}
-                />
-              </div>
-            </div>
-          </div>
-
-          {!viewMode && (
-            <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
-              <Button type="button" variant="secondary" size="sm" onClick={handleCloseModal}>
-                Cancelar
-                </Button>
-              <Button type="submit" size="sm">
-                {editingUsuario ? 'Atualizar' : 'Criar'}
-                  </Button>
-            </div>
-                )}
-        </form>
-        </Modal>
+        onSubmit={onSubmit}
+        usuario={editingUsuario}
+        isViewMode={viewMode}
+      />
 
       {/* Modal de Auditoria */}
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
-          title="Relatório de Auditoria - Usuários"
+        title="Relatório de Auditoria - Usuários"
         auditLogs={auditLogs}
         auditLoading={auditLoading}
         auditFilters={auditFilters}

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import UsuariosService from '../services/usuarios';
 
@@ -25,9 +24,6 @@ export const useUsuarios = () => {
     administradores: 0,
     coordenadores: 0
   });
-
-  // React Hook Form
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   // Carregar usuários
   const loadUsuarios = async (params = {}) => {
@@ -141,21 +137,18 @@ export const useUsuarios = () => {
   const handleAddUser = () => {
     setViewMode(false);
     setEditingUsuario(null);
-    reset();
     setShowModal(true);
   };
 
   const handleViewUser = (usuario) => {
     setViewMode(true);
     setEditingUsuario(usuario);
-    reset(usuario);
     setShowModal(true);
   };
 
   const handleEditUser = (usuario) => {
     setViewMode(false);
     setEditingUsuario(usuario);
-    reset(usuario);
     setShowModal(true);
   };
 
@@ -163,7 +156,6 @@ export const useUsuarios = () => {
     setShowModal(false);
     setViewMode(false);
     setEditingUsuario(null);
-    reset();
   };
 
   // Funções de paginação
@@ -220,23 +212,24 @@ export const useUsuarios = () => {
     itemsPerPage,
     estatisticas,
 
-    // React Hook Form
-    register,
-    handleSubmit,
-    reset,
-    errors,
-
-    // Funções
-    loadUsuarios,
+    // Funções CRUD
     onSubmit,
     handleDeleteUser,
+
+    // Funções de modal
     handleAddUser,
     handleViewUser,
     handleEditUser,
     handleCloseModal,
+
+    // Funções de paginação
     handlePageChange,
+
+    // Funções de filtros
     setSearchTerm,
     setItemsPerPage,
+
+    // Funções utilitárias
     formatDate,
     getStatusLabel,
     getNivelAcessoLabel,

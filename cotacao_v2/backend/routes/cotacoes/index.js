@@ -12,6 +12,10 @@ const {
   validateRejeitarCotacao
 } = require('./cotacaoValidator');
 
+// Debug: verificar se o controller está sendo carregado corretamente
+console.log('CotacoesController carregado:', typeof cotacoesController);
+console.log('getCotacoesPendentesSupervisor:', typeof cotacoesController.getCotacoesPendentesSupervisor);
+
 // Rotas principais
 router.get('/', authenticateToken, validateGetCotacoes, validate, cotacoesController.getCotacoes);
 router.get('/stats/overview', authenticateToken, cotacoesController.getStats);
