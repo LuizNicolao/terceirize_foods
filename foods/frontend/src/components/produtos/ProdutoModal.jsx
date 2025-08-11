@@ -23,18 +23,6 @@ const ProdutoModal = ({
   const grupoId = watch('grupo_id');
   const subgrupoId = watch('subgrupo_id');
 
-
-
-  // Debug temporário
-  console.log('Modal - grupoId:', grupoId, 'tipo:', typeof grupoId);
-  console.log('Modal - subgrupoId:', subgrupoId, 'tipo:', typeof subgrupoId);
-  if (subgrupos.length > 0) {
-    console.log('Modal - primeiro subgrupo:', subgrupos[0]);
-  }
-  if (classes.length > 0) {
-    console.log('Modal - primeira classe:', classes[0]);
-  }
-
   // Filtrar subgrupos baseado no grupo selecionado
   const subgruposFiltrados = grupoId && grupoId !== '' 
     ? subgrupos.filter(sg => String(sg.grupo_id) === String(grupoId))
@@ -44,9 +32,6 @@ const ProdutoModal = ({
   const classesFiltradas = subgrupoId && subgrupoId !== '' 
     ? classes.filter(c => String(c.subgrupo_id) === String(subgrupoId))
     : classes;
-
-  console.log('Modal - subgruposFiltrados:', subgruposFiltrados.length);
-  console.log('Modal - classesFiltradas:', classesFiltradas.length);
 
   useEffect(() => {
     if (produto && isOpen) {

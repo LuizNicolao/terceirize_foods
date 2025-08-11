@@ -26,6 +26,25 @@ router.get('/',
   ClassesController.listarClasses
 );
 
+// GET /api/classes/ativas - Buscar classes ativas
+router.get('/ativas',
+  checkPermission('visualizar'),
+  ClassesController.buscarAtivas
+);
+
+// GET /api/classes/subgrupos/list - Listar subgrupos para select
+router.get('/subgrupos/list',
+  checkPermission('visualizar'),
+  ClassesController.listarSubgrupos
+);
+
+// GET /api/classes/subgrupo/:subgrupo_id - Buscar classes por subgrupo
+router.get('/subgrupo/:subgrupo_id',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  ClassesController.buscarPorSubgrupo
+);
+
 // GET /api/classes/:id - Buscar classe por ID
 router.get('/:id', 
   checkPermission('visualizar'),
@@ -55,25 +74,6 @@ router.delete('/:id',
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'classes'),
   commonValidations.id,
   ClassesController.excluirClasse
-);
-
-// GET /api/classes/ativas - Buscar classes ativas
-router.get('/ativas',
-  checkPermission('visualizar'),
-  ClassesController.buscarAtivas
-);
-
-// GET /api/classes/subgrupo/:subgrupo_id - Buscar classes por subgrupo
-router.get('/subgrupo/:subgrupo_id',
-  checkPermission('visualizar'),
-  commonValidations.id,
-  ClassesController.buscarPorSubgrupo
-);
-
-// GET /api/classes/subgrupos/list - Listar subgrupos para select
-router.get('/subgrupos/list',
-  checkPermission('visualizar'),
-  ClassesController.listarSubgrupos
 );
 
 module.exports = router; 

@@ -117,7 +117,6 @@ export const useProdutos = () => {
       }
 
 
-
       if (unidadesRes.data?.data) {
         setUnidades(unidadesRes.data.data);
       } else {
