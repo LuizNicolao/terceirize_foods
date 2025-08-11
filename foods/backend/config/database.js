@@ -10,7 +10,10 @@ const dbConfig = {
   connectionLimit: 10,
   queueLimit: 0,
   charset: 'utf8mb4',
-  timezone: '+00:00'
+  timezone: '-03:00', // Timezone do Brasil (UTC-3)
+  dateStrings: true, // Retorna datas como strings no formato YYYY-MM-DD
+  supportBigNumbers: true,
+  bigNumberStrings: true
 };
 
 // Pool de conexões

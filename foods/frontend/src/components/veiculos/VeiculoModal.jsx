@@ -2,6 +2,25 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { Button, Input, Modal } from '../ui';
 
+// Função para converter data do formato YYYY-MM-DD para o formato do input date
+const formatDateForInput = (dateString) => {
+  if (!dateString) return '';
+  // Se já estiver no formato YYYY-MM-DD, retorna como está
+  if (typeof dateString === 'string' && dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return dateString;
+  }
+  // Se for uma data válida, converte para YYYY-MM-DD
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toISOString().split('T')[0];
+};
+
+// Função para converter data do input para o formato esperado pelo backend
+const formatDateForBackend = (dateString) => {
+  if (!dateString) return null;
+  return dateString; // O backend espera YYYY-MM-DD
+};
+
 const VeiculoModal = ({ 
   isOpen, 
   onClose, 
@@ -16,7 +35,12 @@ const VeiculoModal = ({
       // Preencher formulário com dados do veículo
       Object.keys(veiculo).forEach(key => {
         if (veiculo[key] !== null && veiculo[key] !== undefined) {
-          setValue(key, veiculo[key]);
+          // Tratamento especial para campos de data
+          if (key.includes('data_') || key.includes('vencimento_')) {
+            setValue(key, formatDateForInput(veiculo[key]));
+          } else {
+            setValue(key, veiculo[key]);
+          }
         }
       });
     } else if (!veiculo && isOpen) {
@@ -29,7 +53,30 @@ const VeiculoModal = ({
   }, [veiculo, isOpen, setValue, reset]);
 
   const handleFormSubmit = (data) => {
-    onSubmit(data);
+    // Converter datas para o formato esperado pelo backend
+    const processedData = { ...data };
+    
+    // Lista de campos de data
+    const dateFields = [
+      'data_emplacamento',
+      'vencimento_licenciamento',
+      'vencimento_ipva',
+      'vencimento_dpvat',
+      'data_ultima_revisao',
+      'data_ultima_troca_oleo',
+      'vencimento_alinhamento_balanceamento',
+      'proxima_inspecao_veicular',
+      'data_aquisicao'
+    ];
+    
+    // Processar cada campo de data
+    dateFields.forEach(field => {
+      if (processedData[field]) {
+        processedData[field] = formatDateForBackend(processedData[field]);
+      }
+    });
+    
+    onSubmit(processedData);
   };
 
   if (!isOpen) return null;

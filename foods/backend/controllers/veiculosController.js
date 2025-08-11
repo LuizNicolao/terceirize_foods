@@ -147,9 +147,25 @@ class VeiculosController {
         });
       }
 
+      // Log para debug das datas
+      const veiculo = veiculos[0];
+      console.log('🔍 DEBUG - Datas do veículo:', {
+        id: veiculo.id,
+        placa: veiculo.placa,
+        data_emplacamento: veiculo.data_emplacamento,
+        vencimento_licenciamento: veiculo.vencimento_licenciamento,
+        vencimento_ipva: veiculo.vencimento_ipva,
+        vencimento_dpvat: veiculo.vencimento_dpvat,
+        data_ultima_revisao: veiculo.data_ultima_revisao,
+        data_ultima_troca_oleo: veiculo.data_ultima_troca_oleo,
+        vencimento_alinhamento_balanceamento: veiculo.vencimento_alinhamento_balanceamento,
+        proxima_inspecao_veicular: veiculo.proxima_inspecao_veicular,
+        data_aquisicao: veiculo.data_aquisicao
+      });
+
       res.json({
         success: true,
-        data: veiculos[0]
+        data: veiculo
       });
 
     } catch (error) {
@@ -342,6 +358,21 @@ class VeiculosController {
         'SELECT v.*, f.filial as filial_nome, m.nome as motorista_nome FROM veiculos v LEFT JOIN filiais f ON v.filial_id = f.id LEFT JOIN motoristas m ON v.motorista_id = m.id WHERE v.id = ?',
         [result.insertId]
       );
+
+      // Log para debug das datas salvas
+      console.log('💾 DEBUG - Datas salvas no veículo:', {
+        id: newVeiculo[0].id,
+        placa: newVeiculo[0].placa,
+        data_emplacamento: newVeiculo[0].data_emplacamento,
+        vencimento_licenciamento: newVeiculo[0].vencimento_licenciamento,
+        vencimento_ipva: newVeiculo[0].vencimento_ipva,
+        vencimento_dpvat: newVeiculo[0].vencimento_dpvat,
+        data_ultima_revisao: newVeiculo[0].data_ultima_revisao,
+        data_ultima_troca_oleo: newVeiculo[0].data_ultima_troca_oleo,
+        vencimento_alinhamento_balanceamento: newVeiculo[0].vencimento_alinhamento_balanceamento,
+        proxima_inspecao_veicular: newVeiculo[0].proxima_inspecao_veicular,
+        data_aquisicao: newVeiculo[0].data_aquisicao
+      });
 
       res.status(201).json({
         success: true,
