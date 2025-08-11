@@ -50,9 +50,6 @@ const UsuariosTable = ({
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Criado em
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -87,9 +84,6 @@ const UsuariosTable = ({
                     }`}>
                       {getStatusLabel(usuario.status)}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {usuario.criado_em ? formatDate(usuario.criado_em) : 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2">
@@ -190,10 +184,6 @@ const UsuariosTable = ({
               <div>
                 <span className="text-gray-500">Nível:</span>
                 <p className="font-medium">{getNivelAcessoLabel(usuario.nivel_de_acesso)}</p>
-              </div>
-              <div>
-                <span className="text-gray-500">Criado em:</span>
-                <p className="font-medium">{usuario.criado_em ? formatDate(usuario.criado_em) : 'N/A'}</p>
               </div>
               <div className="col-span-2">
                 <span className="text-gray-500">Status:</span>
