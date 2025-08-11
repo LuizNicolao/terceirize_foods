@@ -43,192 +43,258 @@ const UnidadeEscolarModal = ({
       title={isViewMode ? 'Visualizar Unidade Escolar' : unidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
       size="full"
     >
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-3 sm:space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {/* Primeira linha - Informações básicas */}
-          <Input
-            label="Código Teknisa *"
-            type="text"
-            placeholder="Código da unidade"
-            {...register('codigo_teknisa', { required: 'Código Teknisa é obrigatório' })}
-            error={errors.codigo_teknisa?.message}
-            disabled={isViewMode}
-          />
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
+        {/* Primeira Linha - 2 Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Card 1: Informações Básicas */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Informações Básicas
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Código Teknisa *"
+                type="text"
+                placeholder="Código da unidade"
+                {...register('codigo_teknisa', { 
+                  required: 'Código Teknisa é obrigatório',
+                  minLength: { value: 1, message: 'Código deve ter pelo menos 1 caractere' },
+                  maxLength: { value: 50, message: 'Código deve ter no máximo 50 caracteres' }
+                })}
+                error={errors.codigo_teknisa?.message}
+                disabled={isViewMode}
+              />
 
-          <Input
-            label="Nome da Escola *"
-            type="text"
-            placeholder="Nome da escola"
-            {...register('nome_escola', { required: 'Nome da escola é obrigatório' })}
-            error={errors.nome_escola?.message}
-            disabled={isViewMode}
-          />
+              <Input
+                label="Nome da Escola *"
+                type="text"
+                placeholder="Nome da escola"
+                {...register('nome_escola', { 
+                  required: 'Nome da escola é obrigatório',
+                  minLength: { value: 2, message: 'Nome deve ter pelo menos 2 caracteres' },
+                  maxLength: { value: 200, message: 'Nome deve ter no máximo 200 caracteres' }
+                })}
+                error={errors.nome_escola?.message}
+                disabled={isViewMode}
+              />
 
-          <Input
-            label="Cidade *"
-            type="text"
-            placeholder="Cidade"
-            {...register('cidade', { required: 'Cidade é obrigatória' })}
-            error={errors.cidade?.message}
-            disabled={isViewMode}
-          />
+              <Input
+                label="Cidade *"
+                type="text"
+                placeholder="Cidade"
+                {...register('cidade', { 
+                  required: 'Cidade é obrigatória',
+                  minLength: { value: 2, message: 'Cidade deve ter pelo menos 2 caracteres' },
+                  maxLength: { value: 100, message: 'Cidade deve ter no máximo 100 caracteres' }
+                })}
+                error={errors.cidade?.message}
+                disabled={isViewMode}
+              />
 
-          {/* Segunda linha - Localização */}
-          <Input
-            label="Estado *"
-            type="text"
-            placeholder="Estado"
-            {...register('estado', { required: 'Estado é obrigatório' })}
-            error={errors.estado?.message}
-            disabled={isViewMode}
-          />
+              <Input
+                label="Estado *"
+                type="text"
+                placeholder="Estado"
+                {...register('estado', { 
+                  required: 'Estado é obrigatório',
+                  minLength: { value: 2, message: 'Estado deve ter 2 caracteres' },
+                  maxLength: { value: 2, message: 'Estado deve ter 2 caracteres' }
+                })}
+                error={errors.estado?.message}
+                disabled={isViewMode}
+              />
+            </div>
+          </div>
 
-          <Input
-            label="País"
-            type="text"
-            placeholder="País"
-            {...register('pais')}
-            disabled={isViewMode}
-          />
+          {/* Card 2: Localização */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Localização
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="País"
+                type="text"
+                placeholder="País"
+                {...register('pais', {
+                  maxLength: { value: 100, message: 'País deve ter no máximo 100 caracteres' }
+                })}
+                error={errors.pais?.message}
+                disabled={isViewMode}
+              />
 
-          <Input
-            label="Endereço *"
-            type="text"
-            placeholder="Endereço completo"
-            {...register('endereco', { required: 'Endereço é obrigatório' })}
-            error={errors.endereco?.message}
-            disabled={isViewMode}
-          />
+              <Input
+                label="CEP"
+                type="text"
+                placeholder="00000-000"
+                {...register('cep', {
+                  pattern: {
+                    value: /^\d{5}-?\d{3}$/,
+                    message: 'CEP deve estar no formato 00000-000'
+                  }
+                })}
+                error={errors.cep?.message}
+                disabled={isViewMode}
+              />
 
-          {/* Terceira linha - Detalhes do endereço */}
-          <Input
-            label="Número"
-            type="text"
-            placeholder="Número"
-            {...register('numero')}
-            disabled={isViewMode}
-          />
+              <Input
+                label="Endereço *"
+                type="text"
+                placeholder="Endereço completo"
+                {...register('endereco', { 
+                  required: 'Endereço é obrigatório',
+                  maxLength: { value: 300, message: 'Endereço deve ter no máximo 300 caracteres' }
+                })}
+                error={errors.endereco?.message}
+                disabled={isViewMode}
+              />
 
-          <Input
-            label="Bairro"
-            type="text"
-            placeholder="Bairro"
-            {...register('bairro')}
-            disabled={isViewMode}
-          />
-
-          <Input
-            label="CEP"
-            type="text"
-            placeholder="00000-000"
-            {...register('cep')}
-            disabled={isViewMode}
-          />
-
-          {/* Quarta linha - Configurações */}
-          <Input
-            label="Centro de Distribuição"
-            type="text"
-            placeholder="Centro de distribuição"
-            {...register('centro_distribuicao')}
-            disabled={isViewMode}
-          />
-
-          <Input
-            label="Rota"
-            type="select"
-            {...register('rota_id')}
-            disabled={isViewMode || loadingRotas}
-          >
-            <option value="">
-              {loadingRotas ? 'Carregando rotas...' : 'Selecione uma rota'}
-            </option>
-            {rotas.map(rota => (
-              <option key={rota.id} value={rota.id}>
-                {rota.nome} ({rota.codigo})
-              </option>
-            ))}
-          </Input>
-
-          <Input
-            label="Regional"
-            type="text"
-            placeholder="Regional"
-            {...register('regional')}
-            disabled={isViewMode}
-          />
-
-          {/* Quinta linha - Informações adicionais */}
-          <Input
-            label="Lote"
-            type="text"
-            placeholder="Lote"
-            {...register('lot')}
-            disabled={isViewMode}
-          />
-
-          <Input
-            label="C.C. Senior"
-            type="text"
-            placeholder="C.C. Senior"
-            {...register('cc_senior')}
-            disabled={isViewMode}
-          />
-
-          <Input
-            label="Código Senior"
-            type="text"
-            placeholder="Código Senior"
-            {...register('codigo_senior')}
-            disabled={isViewMode}
-          />
-
-          {/* Sexta linha - Abastecimento e Status */}
-          <Input
-            label="Tipo de Abastecimento"
-            type="text"
-            placeholder="Tipo de abastecimento"
-            {...register('abastecimento')}
-            disabled={isViewMode}
-          />
-
-          <Input
-            label="Ordem de Entrega"
-            type="number"
-            placeholder="0"
-            {...register('ordem_entrega')}
-            disabled={isViewMode}
-          />
-
-          <Input
-            label="Status"
-            type="select"
-            {...register('status')}
-            disabled={isViewMode}
-          >
-            <option value="ativo">Ativo</option>
-            <option value="inativo">Inativo</option>
-          </Input>
-
-          {/* Sétima linha - Observações */}
-          <Input
-            label="Observações"
-            type="textarea"
-            placeholder="Observações sobre a unidade escolar..."
-            {...register('observacoes')}
-            disabled={isViewMode}
-            className="md:col-span-2 lg:col-span-3"
-            rows={3}
-          />
+              <Input
+                label="Bairro"
+                type="text"
+                placeholder="Bairro"
+                {...register('bairro', {
+                  maxLength: { value: 100, message: 'Bairro deve ter no máximo 100 caracteres' }
+                })}
+                error={errors.bairro?.message}
+                disabled={isViewMode}
+              />
+            </div>
+          </div>
         </div>
 
+        {/* Segunda Linha - 2 Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Card 3: Contato */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Contato
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Telefone"
+                type="text"
+                placeholder="(00) 00000-0000"
+                {...register('telefone', {
+                  pattern: {
+                    value: /^\(\d{2}\) \d{4,5}-\d{4}$/,
+                    message: 'Telefone deve estar no formato (00) 00000-0000'
+                  }
+                })}
+                error={errors.telefone?.message}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="Email"
+                type="email"
+                placeholder="email@escola.com"
+                {...register('email', {
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: 'Email deve ser válido'
+                  }
+                })}
+                error={errors.email?.message}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="Diretor"
+                type="text"
+                placeholder="Nome do diretor"
+                {...register('diretor', {
+                  maxLength: { value: 100, message: 'Diretor deve ter no máximo 100 caracteres' }
+                })}
+                error={errors.diretor?.message}
+                disabled={isViewMode}
+              />
+            </div>
+          </div>
+
+          {/* Card 4: Configurações */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Configurações
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Rota"
+                type="select"
+                {...register('rota_id')}
+                error={errors.rota_id?.message}
+                disabled={isViewMode || loadingRotas}
+              >
+                <option value="">
+                  {loadingRotas ? 'Carregando rotas...' : 'Selecione uma rota'}
+                </option>
+                {rotas.map(rota => (
+                  <option key={rota.id} value={rota.id}>
+                    {rota.nome} ({rota.codigo})
+                  </option>
+                ))}
+              </Input>
+
+              <Input
+                label="Centro de Distribuição"
+                type="text"
+                placeholder="Centro de distribuição"
+                {...register('centro_distribuicao', {
+                  maxLength: { value: 100, message: 'Centro de distribuição deve ter no máximo 100 caracteres' }
+                })}
+                error={errors.centro_distribuicao?.message}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="Status"
+                type="select"
+                {...register('status')}
+                error={errors.status?.message}
+                disabled={isViewMode}
+              >
+                <option value="">Selecione o status</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+              </Input>
+            </div>
+          </div>
+        </div>
+
+        {/* Terceira Linha - 1 Card */}
+        <div className="grid grid-cols-1 gap-4">
+          {/* Card 5: Observações */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Observações
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Observações"
+                type="textarea"
+                placeholder="Observações sobre a unidade escolar"
+                {...register('observacoes', {
+                  maxLength: { value: 500, message: 'Observações devem ter no máximo 500 caracteres' }
+                })}
+                error={errors.observacoes?.message}
+                disabled={isViewMode}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Botões de Ação */}
         {!isViewMode && (
-          <div className="flex justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
-            <Button type="button" variant="secondary" size="sm" onClick={onClose}>
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+            >
               Cancelar
             </Button>
-            <Button type="submit" size="sm">
-              {unidade ? 'Atualizar' : 'Cadastrar'}
+            <Button type="submit">
+              {unidade ? 'Atualizar' : 'Criar'} Unidade Escolar
             </Button>
           </div>
         )}

@@ -49,23 +49,27 @@ const veiculoValidations = {
   create: [
     body('placa')
       .notEmpty().withMessage('Placa é obrigatória')
-      .isString().trim().isLength({ min: 6, max: 10 }).withMessage('Placa deve ter entre 6 e 10 caracteres'),
-    
-    body('marca')
-      .notEmpty().withMessage('Marca é obrigatória')
-      .isString().trim().isLength({ min: 2, max: 50 }).withMessage('Marca deve ter entre 2 e 50 caracteres'),
-    
-    body('modelo')
-      .notEmpty().withMessage('Modelo é obrigatório')
-      .isString().trim().isLength({ min: 2, max: 50 }).withMessage('Modelo deve ter entre 2 e 50 caracteres'),
-    
-    body('chassi')
-      .optional()
-      .isString().trim().isLength({ min: 17, max: 17 }).withMessage('Chassi deve ter 17 caracteres'),
+      .isString().trim().isLength({ min: 1, max: 10 }).withMessage('Placa deve ter entre 1 e 10 caracteres'),
     
     body('renavam')
       .optional()
-      .isString().trim().isLength({ min: 9, max: 11 }).withMessage('Renavam deve ter entre 9 e 11 caracteres'),
+      .isString().trim().isLength({ min: 1, max: 20 }).withMessage('Renavam deve ter entre 1 e 20 caracteres'),
+    
+    body('chassi')
+      .optional()
+      .isString().trim().isLength({ min: 1, max: 50 }).withMessage('Chassi deve ter entre 1 e 50 caracteres'),
+    
+    body('modelo')
+      .optional()
+      .isString().trim().isLength({ min: 1, max: 100 }).withMessage('Modelo deve ter entre 1 e 100 caracteres'),
+    
+    body('marca')
+      .optional()
+      .isString().trim().isLength({ min: 1, max: 50 }).withMessage('Marca deve ter entre 1 e 50 caracteres'),
+    
+    body('fabricante')
+      .optional()
+      .isString().trim().isLength({ min: 1, max: 100 }).withMessage('Fabricante deve ter entre 1 e 100 caracteres'),
     
     body('ano_fabricacao')
       .optional()
@@ -204,23 +208,27 @@ const veiculoValidations = {
     
     body('placa')
       .optional()
-      .isString().trim().isLength({ min: 6, max: 10 }).withMessage('Placa deve ter entre 6 e 10 caracteres'),
-    
-    body('marca')
-      .optional()
-      .isString().trim().isLength({ min: 2, max: 50 }).withMessage('Marca deve ter entre 2 e 50 caracteres'),
-    
-    body('modelo')
-      .optional()
-      .isString().trim().isLength({ min: 2, max: 50 }).withMessage('Modelo deve ter entre 2 e 50 caracteres'),
-    
-    body('chassi')
-      .optional()
-      .isString().trim().isLength({ min: 17, max: 17 }).withMessage('Chassi deve ter 17 caracteres'),
+      .isString().trim().isLength({ min: 1, max: 10 }).withMessage('Placa deve ter entre 1 e 10 caracteres'),
     
     body('renavam')
       .optional()
-      .isString().trim().isLength({ min: 9, max: 11 }).withMessage('Renavam deve ter entre 9 e 11 caracteres'),
+      .isString().trim().isLength({ min: 1, max: 20 }).withMessage('Renavam deve ter entre 1 e 20 caracteres'),
+    
+    body('chassi')
+      .optional()
+      .isString().trim().isLength({ min: 1, max: 50 }).withMessage('Chassi deve ter entre 1 e 50 caracteres'),
+    
+    body('modelo')
+      .optional()
+      .isString().trim().isLength({ min: 1, max: 100 }).withMessage('Modelo deve ter entre 1 e 100 caracteres'),
+    
+    body('marca')
+      .optional()
+      .isString().trim().isLength({ min: 1, max: 50 }).withMessage('Marca deve ter entre 1 e 50 caracteres'),
+    
+    body('fabricante')
+      .optional()
+      .isString().trim().isLength({ min: 1, max: 100 }).withMessage('Fabricante deve ter entre 1 e 100 caracteres'),
     
     body('ano_fabricacao')
       .optional()

@@ -117,7 +117,7 @@ const Veiculos = () => {
               { value: 'van', label: 'Van' },
               { value: 'carro', label: 'Carro' },
               { value: 'moto', label: 'Moto' },
-              { value: 'utilitario', label: 'Utilitário' }
+              { value: 'onibus', label: 'Ônibus' }
             ]
           }
         ]}
