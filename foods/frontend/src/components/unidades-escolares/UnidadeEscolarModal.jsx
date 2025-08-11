@@ -26,6 +26,7 @@ const UnidadeEscolarModal = ({
       // Resetar formulário para nova unidade escolar
       reset();
       setValue('status', 'ativo');
+      setValue('pais', 'Brasil');
     }
   }, [unidade, isOpen, setValue, reset]);
 
@@ -83,6 +84,40 @@ const UnidadeEscolarModal = ({
           />
 
           <Input
+            label="País"
+            type="text"
+            placeholder="País"
+            {...register('pais')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Endereço *"
+            type="text"
+            placeholder="Endereço completo"
+            {...register('endereco', { required: 'Endereço é obrigatório' })}
+            error={errors.endereco?.message}
+            disabled={isViewMode}
+          />
+
+          {/* Terceira linha - Detalhes do endereço */}
+          <Input
+            label="Número"
+            type="text"
+            placeholder="Número"
+            {...register('numero')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Bairro"
+            type="text"
+            placeholder="Bairro"
+            {...register('bairro')}
+            disabled={isViewMode}
+          />
+
+          <Input
             label="CEP"
             type="text"
             placeholder="00000-000"
@@ -90,15 +125,15 @@ const UnidadeEscolarModal = ({
             disabled={isViewMode}
           />
 
+          {/* Quarta linha - Configurações */}
           <Input
-            label="Endereço"
+            label="Centro de Distribuição"
             type="text"
-            placeholder="Endereço completo"
-            {...register('endereco')}
+            placeholder="Centro de distribuição"
+            {...register('centro_distribuicao')}
             disabled={isViewMode}
           />
 
-          {/* Terceira linha - Configurações */}
           <Input
             label="Rota"
             type="select"
@@ -116,10 +151,52 @@ const UnidadeEscolarModal = ({
           </Input>
 
           <Input
-            label="Centro de Distribuição"
+            label="Regional"
             type="text"
-            placeholder="Centro de distribuição"
-            {...register('centro_distribuicao')}
+            placeholder="Regional"
+            {...register('regional')}
+            disabled={isViewMode}
+          />
+
+          {/* Quinta linha - Informações adicionais */}
+          <Input
+            label="Lote"
+            type="text"
+            placeholder="Lote"
+            {...register('lot')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="C.C. Senior"
+            type="text"
+            placeholder="C.C. Senior"
+            {...register('cc_senior')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Código Senior"
+            type="text"
+            placeholder="Código Senior"
+            {...register('codigo_senior')}
+            disabled={isViewMode}
+          />
+
+          {/* Sexta linha - Abastecimento e Status */}
+          <Input
+            label="Tipo de Abastecimento"
+            type="text"
+            placeholder="Tipo de abastecimento"
+            {...register('abastecimento')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Ordem de Entrega"
+            type="number"
+            placeholder="0"
+            {...register('ordem_entrega')}
             disabled={isViewMode}
           />
 
@@ -133,32 +210,7 @@ const UnidadeEscolarModal = ({
             <option value="inativo">Inativo</option>
           </Input>
 
-          {/* Quarta linha - Informações adicionais */}
-          <Input
-            label="Telefone"
-            type="text"
-            placeholder="(00) 00000-0000"
-            {...register('telefone')}
-            disabled={isViewMode}
-          />
-
-          <Input
-            label="Email"
-            type="email"
-            placeholder="email@escola.com"
-            {...register('email')}
-            disabled={isViewMode}
-          />
-
-          <Input
-            label="Diretor"
-            type="text"
-            placeholder="Nome do diretor"
-            {...register('diretor')}
-            disabled={isViewMode}
-          />
-
-          {/* Quinta linha - Observações */}
+          {/* Sétima linha - Observações */}
           <Input
             label="Observações"
             type="textarea"

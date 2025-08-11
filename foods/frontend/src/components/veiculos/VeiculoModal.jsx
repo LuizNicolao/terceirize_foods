@@ -24,7 +24,7 @@ const VeiculoModal = ({
       reset();
       setValue('status', 'ativo');
       setValue('tipo_veiculo', 'caminhao');
-      setValue('categoria', 'medio');
+      setValue('categoria', 'carga');
     }
   }, [veiculo, isOpen, setValue, reset]);
 
@@ -81,18 +81,18 @@ const VeiculoModal = ({
           />
 
           <Input
-            label="Ano de Fabricação"
-            type="number"
-            placeholder="2020"
-            {...register('ano_fabricacao')}
+            label="Renavam"
+            type="text"
+            placeholder="Número do Renavam"
+            {...register('renavam')}
             disabled={isViewMode}
           />
 
           <Input
-            label="Ano do Modelo"
+            label="Ano de Fabricação"
             type="number"
             placeholder="2020"
-            {...register('ano_modelo')}
+            {...register('ano_fabricacao')}
             disabled={isViewMode}
           />
 
@@ -107,18 +107,52 @@ const VeiculoModal = ({
             <option value="van">Van</option>
             <option value="carro">Carro</option>
             <option value="moto">Moto</option>
-            <option value="utilitario">Utilitário</option>
+            <option value="onibus">Ônibus</option>
           </Input>
 
+          <Input
+            label="Carroceria"
+            type="select"
+            {...register('carroceria')}
+            disabled={isViewMode}
+          >
+            <option value="">Selecione</option>
+            <option value="Bau">Baú</option>
+            <option value="Refrigerado">Refrigerado</option>
+            <option value="Bipartido">Bipartido</option>
+            <option value="Grade Baixa">Grade Baixa</option>
+            <option value="Sider">Sider</option>
+            <option value="Graneleiro">Graneleiro</option>
+            <option value="Tanque">Tanque</option>
+            <option value="Cacamba">Caçamba</option>
+          </Input>
+
+          <Input
+            label="Combustível"
+            type="select"
+            {...register('combustivel')}
+            disabled={isViewMode}
+          >
+            <option value="">Selecione</option>
+            <option value="gasolina">Gasolina</option>
+            <option value="diesel">Diesel</option>
+            <option value="etanol">Etanol</option>
+            <option value="flex">Flex</option>
+            <option value="GNV">GNV</option>
+            <option value="eletrico">Elétrico</option>
+          </Input>
+
+          {/* Quarta linha - Categoria e Status */}
           <Input
             label="Categoria"
             type="select"
             {...register('categoria')}
             disabled={isViewMode}
           >
-            <option value="leve">Leve</option>
-            <option value="medio">Médio</option>
-            <option value="pesado">Pesado</option>
+            <option value="carga">Carga</option>
+            <option value="passageiros">Passageiros</option>
+            <option value="utilitario">Utilitário</option>
+            <option value="especial">Especial</option>
           </Input>
 
           <Input
@@ -130,64 +164,234 @@ const VeiculoModal = ({
             <option value="ativo">Ativo</option>
             <option value="inativo">Inativo</option>
             <option value="manutencao">Em Manutenção</option>
-            <option value="aposentado">Aposentado</option>
           </Input>
 
-          {/* Quarta linha - Capacidades */}
           <Input
-            label="Capacidade (kg)"
+            label="Status Detalhado"
+            type="select"
+            {...register('status_detalhado')}
+            disabled={isViewMode}
+          >
+            <option value="">Selecione</option>
+            <option value="Ativo">Ativo</option>
+            <option value="Em manutencao">Em Manutenção</option>
+            <option value="Alugado">Alugado</option>
+            <option value="Vendido">Vendido</option>
+          </Input>
+
+          {/* Quinta linha - Capacidades */}
+          <Input
+            label="Capacidade de Carga (kg)"
             type="number"
             step="0.01"
             placeholder="0.00"
-            {...register('capacidade_kg')}
+            {...register('capacidade_carga')}
             disabled={isViewMode}
           />
 
           <Input
-            label="Capacidade (m³)"
+            label="Capacidade de Volume (m³)"
             type="number"
             step="0.01"
             placeholder="0.00"
-            {...register('capacidade_m3')}
+            {...register('capacidade_volume')}
             disabled={isViewMode}
           />
 
           <Input
-            label="Consumo Médio (km/l)"
+            label="Número de Eixos"
             type="number"
-            step="0.01"
-            placeholder="0.00"
-            {...register('consumo_medio')}
+            placeholder="0"
+            {...register('numero_eixos')}
             disabled={isViewMode}
           />
 
-          {/* Quinta linha - Informações adicionais */}
+          {/* Sexta linha - Pesos */}
           <Input
-            label="Cor"
+            label="Tara (kg)"
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            {...register('tara')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Peso Bruto Total (kg)"
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            {...register('peso_bruto_total')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Potência do Motor (cv)"
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            {...register('potencia_motor')}
+            disabled={isViewMode}
+          />
+
+          {/* Sétima linha - Tração e Quilometragem */}
+          <Input
+            label="Tipo de Tração"
+            type="select"
+            {...register('tipo_tracao')}
+            disabled={isViewMode}
+          >
+            <option value="">Selecione</option>
+            <option value="4x2">4x2</option>
+            <option value="4x4">4x4</option>
+            <option value="dianteira">Dianteira</option>
+            <option value="traseira">Traseira</option>
+          </Input>
+
+          <Input
+            label="Quilometragem Atual (km)"
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            {...register('quilometragem_atual')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Data de Emplacamento"
+            type="date"
+            {...register('data_emplacamento')}
+            disabled={isViewMode}
+          />
+
+          {/* Oitava linha - Vencimentos */}
+          <Input
+            label="Vencimento Licenciamento"
+            type="date"
+            {...register('vencimento_licenciamento')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Vencimento IPVA"
+            type="date"
+            {...register('vencimento_ipva')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Vencimento DPVAT"
+            type="date"
+            {...register('vencimento_dpvat')}
+            disabled={isViewMode}
+          />
+
+          {/* Nona linha - Documentação */}
+          <Input
+            label="Número Apólice Seguro"
             type="text"
-            placeholder="Cor do veículo"
-            {...register('cor')}
+            placeholder="Número da apólice"
+            {...register('numero_apolice_seguro')}
             disabled={isViewMode}
           />
 
           <Input
-            label="Renavam"
-            type="text"
-            placeholder="Número do Renavam"
-            {...register('renavam')}
+            label="Situação Documental"
+            type="select"
+            {...register('situacao_documental')}
+            disabled={isViewMode}
+          >
+            <option value="">Selecione</option>
+            <option value="regular">Regular</option>
+            <option value="alienado">Alienado</option>
+            <option value="bloqueado">Bloqueado</option>
+          </Input>
+
+          <Input
+            label="Data Última Revisão"
+            type="date"
+            {...register('data_ultima_revisao')}
             disabled={isViewMode}
           />
 
+          {/* Décima linha - Manutenção */}
           <Input
-            label="Valor de Aquisição"
+            label="Quilometragem Próxima Revisão"
             type="number"
             step="0.01"
             placeholder="0.00"
-            {...register('valor_aquisicao')}
+            {...register('quilometragem_proxima_revisao')}
             disabled={isViewMode}
           />
 
-          {/* Sexta linha - Observações */}
+          <Input
+            label="Data Última Troca de Óleo"
+            type="date"
+            {...register('data_ultima_troca_oleo')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Vencimento Alinhamento/Balanceamento"
+            type="date"
+            {...register('vencimento_alinhamento_balanceamento')}
+            disabled={isViewMode}
+          />
+
+          {/* Décima primeira linha - Inspeção e Aquisição */}
+          <Input
+            label="Próxima Inspeção Veicular"
+            type="date"
+            {...register('proxima_inspecao_veicular')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Data de Aquisição"
+            type="date"
+            {...register('data_aquisicao')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Valor de Compra"
+            type="number"
+            step="0.01"
+            placeholder="0.00"
+            {...register('valor_compra')}
+            disabled={isViewMode}
+          />
+
+          {/* Décima segunda linha - Informações adicionais */}
+          <Input
+            label="Fornecedor"
+            type="text"
+            placeholder="Nome do fornecedor"
+            {...register('fornecedor')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Número da Frota"
+            type="text"
+            placeholder="Número da frota"
+            {...register('numero_frota')}
+            disabled={isViewMode}
+          />
+
+          <Input
+            label="Situação Financeira"
+            type="select"
+            {...register('situacao_financeira')}
+            disabled={isViewMode}
+          >
+            <option value="">Selecione</option>
+            <option value="Proprio">Próprio</option>
+            <option value="Financiado">Financiado</option>
+            <option value="leasing">Leasing</option>
+          </Input>
+
+          {/* Décima terceira linha - Observações */}
           <Input
             label="Observações"
             type="textarea"
