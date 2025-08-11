@@ -19,7 +19,7 @@ import AnalisarCotacao from './components/AnalisarCotacao';
 import AnalisarCotacaoSupervisor from './components/AnalisarCotacaoSupervisor';
 import Saving from './components/Saving';
 import VisualizarSaving from './components/VisualizarSaving';
-import './App.css';
+
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {

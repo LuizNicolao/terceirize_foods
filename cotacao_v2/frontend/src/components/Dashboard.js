@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import Layout from './Layout';
-import styled from 'styled-components';
 import { 
   FaTruck, 
   FaCheckCircle, 
@@ -12,7 +11,6 @@ import {
   FaUsers,
   FaExclamationTriangle
 } from 'react-icons/fa';
-import './Dashboard.css';
 
 const DashboardContainer = styled.div`
   padding: 24px;
