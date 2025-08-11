@@ -3,19 +3,23 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { SidebarProvider } from './contexts/SidebarContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './utils/axiosConfig'; // Importar configuração do axios
-import { Login } from './pages/auth';
-import Dashboard from './pages/dashboard/Dashboard';
-import { Usuarios } from './pages/usuarios';
-import { Cotacoes } from './pages/cotacoes';
-import EditarUsuario from './pages/usuarios/EditarUsuario';
-import VisualizarUsuario from './pages/usuarios/VisualizarUsuario';
-import { Supervisor } from './pages/supervisor';
-import { Aprovacoes } from './pages/aprovacoes';
+import './design-system'; // Importar design system
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import Usuarios from './components/Usuarios';
+import Cotacoes from './components/Cotacoes';
+import NovaCotacao from './components/NovaCotacao';
+import VisualizarCotacao from './components/VisualizarCotacao';
+import EditarCotacao from './components/EditarCotacao';
+import EditarUsuario from './components/EditarUsuario';
+import VisualizarUsuario from './components/VisualizarUsuario';
+import Supervisor from './components/Supervisor';
+import Aprovacoes from './components/Aprovacoes';
 import AnalisarCotacao from './components/AnalisarCotacao';
 import AnalisarCotacaoSupervisor from './components/AnalisarCotacaoSupervisor';
-import { Saving } from './pages/saving';
+import Saving from './components/Saving';
 import VisualizarSaving from './components/VisualizarSaving';
-
+import './App.css';
 
 // Componente para rotas protegidas
 const ProtectedRoute = ({ children }) => {
@@ -75,7 +79,30 @@ function AppRoutes() {
             </ProtectedRoute>
           } 
         />
-
+        <Route 
+          path="/nova-cotacao" 
+          element={
+            <ProtectedRoute>
+              <NovaCotacao />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/visualizar-cotacao/:id" 
+          element={
+            <ProtectedRoute>
+              <VisualizarCotacao />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/editar-cotacao/:id" 
+          element={
+            <ProtectedRoute>
+              <EditarCotacao />
+            </ProtectedRoute>
+          } 
+        />
         <Route 
           path="/editar-usuario/:id" 
           element={

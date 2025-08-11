@@ -1,230 +1,305 @@
 import React from 'react';
-import { FaTag, FaDollarSign, FaChartLine, FaTrophy } from 'react-icons/fa';
-import { formatCurrency, formatPercentage } from '../../utils/formatters';
+import styled from 'styled-components';
+import { 
+  FaDollarSign, 
+  FaChartLine, 
+  FaHistory, 
+  FaCalculator 
+} from 'react-icons/fa';
+import { colors } from '../../design-system';
+import { Card } from '../../design-system/components';
 
-const MelhorPreco = ({ cotacao, active }) => {
-  if (!active || !cotacao) return null;
+// Componentes estilizados
+const AnaliseComparativa = styled(Card)`
+  padding: 24px;
+  margin-bottom: 24px;
+`;
 
-  const calcularMelhorPreco = () => {
-    if (!cotacao.fornecedores) return null;
+const AnaliseTitle = styled.h4`
+  color: ${colors.neutral.darkGray};
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
 
-    const produtosMelhorPreco = {};
-    let valorTotalMelhorPreco = 0;
-    let valorTotalMedio = 0;
+const AnaliseGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+`;
 
-    // Calcular melhor preço por produto
-    cotacao.fornecedores.forEach(fornecedor => {
-      if (fornecedor.produtos) {
-        fornecedor.produtos.forEach(produto => {
-          const produtoId = produto.produto_id || produto.nome;
-          const valorUnitario = parseFloat(produto.valor_unitario) || 0;
-          const quantidade = parseFloat(produto.qtde) || 0;
+const AnaliseCard = styled.div`
+  padding: 20px;
+  border-radius: 8px;
+  background: ${colors.neutral.white};
+  border: 1px solid #e0e0e0;
+  text-align: center;
+`;
 
-          if (!produtosMelhorPreco[produtoId]) {
-            produtosMelhorPreco[produtoId] = {
-              melhorPreco: valorUnitario,
-              precoMedio: valorUnitario,
-              quantidade: quantidade,
-              count: 1,
-              melhorFornecedor: fornecedor.nome
-            };
-          } else {
-            produtosMelhorPreco[produtoId].precoMedio += valorUnitario;
-            produtosMelhorPreco[produtoId].count += 1;
-            if (valorUnitario < produtosMelhorPreco[produtoId].melhorPreco) {
-              produtosMelhorPreco[produtoId].melhorPreco = valorUnitario;
-              produtosMelhorPreco[produtoId].melhorFornecedor = fornecedor.nome;
-            }
-          }
-        });
-      }
-    });
+const AnaliseCardTitle = styled.h5`
+  color: ${colors.neutral.darkGray};
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+`;
 
-    // Calcular totais
-    Object.values(produtosMelhorPreco).forEach(produto => {
-      produto.precoMedio = produto.precoMedio / produto.count;
-      valorTotalMelhorPreco += produto.melhorPreco * produto.quantidade;
-      valorTotalMedio += produto.precoMedio * produto.quantidade;
-    });
+const AnaliseCardValue = styled.div`
+  font-size: 24px;
+  font-weight: 700;
+  color: ${props => props.color || colors.neutral.darkGray};
+  margin-bottom: 4px;
+`;
 
-    const economia = valorTotalMedio - valorTotalMelhorPreco;
-    const economiaPercentual = valorTotalMedio > 0 ? (economia / valorTotalMedio * 100) : 0;
+const AnaliseCardPercent = styled.div`
+  font-size: 14px;
+  color: ${colors.neutral.gray};
+`;
 
-    return {
-      produtosMelhorPreco,
-      valorTotalMelhorPreco,
-      valorTotalMedio,
-      economia,
-      economiaPercentual
-    };
-  };
+const TableContainer = styled(Card)`
+  padding: 0;
+  overflow: hidden;
+`;
 
-  const analise = calcularMelhorPreco();
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
-  if (!analise) {
-    return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <FaTag />
-          Melhor Preço
-        </h3>
-        <p className="text-gray-500">Nenhum dado disponível para análise</p>
-      </div>
-    );
+  th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
   }
 
+  th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #555;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.2s ease;
+  }
+
+  .melhor-preco {
+    background-color: #d4edda;
+    font-weight: bold;
+    text-align: center;
+  }
+
+  .economia-positiva {
+    color: #28a745;
+    font-weight: 600;
+  }
+
+  .economia-negativa {
+    color: #dc3545;
+    font-weight: 600;
+  }
+`;
+
+const Th = styled.th`
+  background-color: ${colors.neutral.lightGray};
+  padding: 16px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: ${colors.neutral.darkGray};
+  font-size: 14px;
+  border-bottom: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+`;
+
+const Td = styled.td`
+  padding: 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: ${colors.neutral.darkGray};
+`;
+
+const ViewContainer = styled.div`
+  display: ${props => props.active ? 'block' : 'none'};
+`;
+
+const MelhorPreco = ({ cotacao, active, formatarValor }) => {
+  if (!cotacao || !cotacao.fornecedores) return null;
+
+  // Agrupar produtos pelo ID, mas salvar nome e fornecedor
+  const produtosMelhorPreco = {};
+  let valorTotalMelhorPreco = 0;
+  let economiaTotal = 0;
+  let economiaUltimoAprovado = 0;
+  let valorSawing = 0;
+  let totalProdutos = 0;
+
+  cotacao.fornecedores.forEach(fornecedor => {
+    if (fornecedor.produtos) {
+      fornecedor.produtos.forEach(produto => {
+        const produtoId = produto.produto_id || produto.nome;
+        const valorUnitario = parseFloat(produto.valor_unitario) || 0;
+        const quantidade = parseFloat(produto.qtde) || 0;
+        const ultimoValorAprovado = parseFloat(produto.ult_valor_aprovado) || 0;
+        const primeiroValor = parseFloat(produto.primeiro_valor) || valorUnitario;
+
+        if (!produtosMelhorPreco[produtoId]) {
+          produtosMelhorPreco[produtoId] = {
+            nome: produto.nome,
+            fornecedor: fornecedor.nome,
+            melhorPreco: valorUnitario,
+            quantidade: quantidade,
+            ultimoValorAprovado: ultimoValorAprovado,
+            primeiroValor: primeiroValor,
+            prazoEntrega: produto.prazo_entrega,
+            prazoPagamento: produto.prazo_pagamento,
+            un: produto.un,
+            count: 1
+          };
+        } else {
+          produtosMelhorPreco[produtoId].quantidade += quantidade;
+          if (valorUnitario < produtosMelhorPreco[produtoId].melhorPreco) {
+            produtosMelhorPreco[produtoId].melhorPreco = valorUnitario;
+            produtosMelhorPreco[produtoId].fornecedor = fornecedor.nome;
+            produtosMelhorPreco[produtoId].prazoEntrega = produto.prazo_entrega;
+            produtosMelhorPreco[produtoId].prazoPagamento = produto.prazo_pagamento;
+          }
+          // Manter o maior valor aprovado e primeiro valor
+          if (ultimoValorAprovado > produtosMelhorPreco[produtoId].ultimoValorAprovado) {
+            produtosMelhorPreco[produtoId].ultimoValorAprovado = ultimoValorAprovado;
+          }
+          if (primeiroValor > produtosMelhorPreco[produtoId].primeiroValor) {
+            produtosMelhorPreco[produtoId].primeiroValor = primeiroValor;
+          }
+        }
+        totalProdutos++;
+      });
+    }
+  });
+
+  // Calcular totais
+  Object.values(produtosMelhorPreco).forEach(produto => {
+    const valorTotal = produto.melhorPreco * produto.quantidade;
+    valorTotalMelhorPreco += valorTotal;
+    
+    if (produto.ultimoValorAprovado > 0) {
+      economiaUltimoAprovado += (produto.ultimoValorAprovado - produto.melhorPreco) * produto.quantidade;
+    }
+    
+    valorSawing += (produto.primeiroValor - produto.melhorPreco) * produto.quantidade;
+  });
+
+  const economiaPercentual = valorTotalMelhorPreco > 0 ? (economiaUltimoAprovado / valorTotalMelhorPreco * 100) : 0;
+  const valorSawingPercentual = valorTotalMelhorPreco > 0 ? (valorSawing / valorTotalMelhorPreco * 100) : 0;
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
-        <FaTag />
-        Análise de Melhor Preço
-      </h3>
+    <ViewContainer active={active}>
+      <AnaliseComparativa>
+        <AnaliseTitle>
+          <FaDollarSign />
+          Melhor Preço por Produto
+        </AnaliseTitle>
+        <AnaliseGrid>
+          <AnaliseCard>
+            <AnaliseCardTitle>
+              <FaDollarSign />
+              Valor Total
+            </AnaliseCardTitle>
+            <AnaliseCardValue>{formatarValor(valorTotalMelhorPreco)}</AnaliseCardValue>
+            <AnaliseCardPercent>{totalProdutos} itens</AnaliseCardPercent>
+          </AnaliseCard>
+          
+          <AnaliseCard>
+            <AnaliseCardTitle>
+              <FaChartLine />
+              Economia vs Média dos Preços
+            </AnaliseCardTitle>
+            <AnaliseCardValue color={economiaTotal > 0 ? '#28a745' : '#dc3545'}>
+              {formatarValor(economiaTotal)}
+            </AnaliseCardValue>
+            <AnaliseCardPercent>0%</AnaliseCardPercent>
+          </AnaliseCard>
+          
+          <AnaliseCard>
+            <AnaliseCardTitle>
+              <FaHistory />
+              Diferença vs Último Aprovado
+            </AnaliseCardTitle>
+            <AnaliseCardValue color={economiaUltimoAprovado < 0 ? '#28a745' : '#dc3545'}>
+              {formatarValor(economiaUltimoAprovado)}
+            </AnaliseCardValue>
+            <AnaliseCardPercent>{economiaPercentual.toFixed(2)}%</AnaliseCardPercent>
+          </AnaliseCard>
+          
+          <AnaliseCard>
+            <AnaliseCardTitle>
+              <FaCalculator />
+              Valor Sawing
+            </AnaliseCardTitle>
+            <AnaliseCardValue color={valorSawing > 0 ? '#28a745' : '#dc3545'}>
+              {formatarValor(valorSawing)}
+            </AnaliseCardValue>
+            <AnaliseCardPercent>{valorSawingPercentual.toFixed(2)}%</AnaliseCardPercent>
+          </AnaliseCard>
+        </AnaliseGrid>
+      </AnaliseComparativa>
 
-      {/* Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">
-            {formatCurrency(analise.valorTotalMelhorPreco)}
-          </div>
-          <div className="text-sm text-green-700">Melhor Preço Total</div>
-        </div>
-        
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">
-            {formatCurrency(analise.valorTotalMedio)}
-          </div>
-          <div className="text-sm text-blue-700">Preço Médio Total</div>
-        </div>
-        
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">
-            {formatCurrency(analise.economia)}
-          </div>
-          <div className="text-sm text-green-700">Economia Total</div>
-        </div>
-        
-        <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600">
-            {formatPercentage(analise.economiaPercentual)}
-          </div>
-          <div className="text-sm text-purple-700">Redução Percentual</div>
-        </div>
-      </div>
-
-      {/* Tabela de Produtos */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <TableContainer>
+        <Table>
+          <thead>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Produto
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Melhor Preço
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Preço Médio
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Economia
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Redução
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Melhor Fornecedor
-              </th>
+              <Th>Produto</Th>
+              <Th>Fornecedor</Th>
+              <Th>Valor Unitário</Th>
+              <Th>Qtd</Th>
+              <Th>Un</Th>
+              <Th>Valor Total</Th>
+              <Th>Últ. Vlr. Aprovado</Th>
+              <Th>Economia</Th>
+              <Th>Prazo Entrega</Th>
+              <Th>Prazo Pagamento</Th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {Object.entries(analise.produtosMelhorPreco).map(([produtoId, produto], index) => {
-              const economia = produto.precoMedio - produto.melhorPreco;
-              const reducao = produto.precoMedio > 0 ? (economia / produto.precoMedio * 100) : 0;
+          <tbody>
+            {Object.values(produtosMelhorPreco).map((produto, idx) => {
+              const valorTotal = produto.melhorPreco * produto.quantidade;
+              const economia = produto.ultimoValorAprovado > 0 ? 
+                (produto.ultimoValorAprovado - produto.melhorPreco) * produto.quantidade : 0;
               
               return (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {produtoId}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
-                    {formatCurrency(produto.melhorPreco)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {formatCurrency(produto.precoMedio)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">
-                    {formatCurrency(economia)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`font-medium ${reducao > 0 ? 'text-green-600' : 'text-gray-600'}`}>
-                      {formatPercentage(reducao)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div className="flex items-center gap-2">
-                      <FaTrophy className="text-yellow-500" />
-                      {produto.melhorFornecedor}
-                    </div>
-                  </td>
+                <tr key={idx}>
+                  <Td>{produto.nome}</Td>
+                  <Td>{produto.fornecedor}</Td>
+                  <Td className="melhor-preco">{formatarValor(produto.melhorPreco)}</Td>
+                  <Td>{produto.quantidade}</Td>
+                  <Td>{produto.un || 'UN'}</Td>
+                  <Td>{formatarValor(valorTotal)}</Td>
+                  <Td>{produto.ultimoValorAprovado > 0 ? formatarValor(produto.ultimoValorAprovado) : '-'}</Td>
+                  <Td className={economia > 0 ? 'economia-positiva' : 'economia-negativa'}>
+                    {formatarValor(economia)}
+                  </Td>
+                  <Td>{produto.prazoEntrega || '-'}</Td>
+                  <Td>{produto.prazoPagamento || '-'}</Td>
                 </tr>
               );
             })}
           </tbody>
-        </table>
-      </div>
-
-      {/* Gráfico de Economia */}
-      <div className="mt-6 bg-gray-50 rounded-lg p-4">
-        <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
-          <FaChartLine />
-          Resumo da Economia
-        </h4>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-white p-4 rounded-lg border">
-            <div className="text-sm text-gray-600 mb-2">Economia por Produto</div>
-            <div className="space-y-2">
-              {Object.entries(analise.produtosMelhorPreco).map(([produtoId, produto], index) => {
-                const economia = produto.precoMedio - produto.melhorPreco;
-                const reducao = produto.precoMedio > 0 ? (economia / produto.precoMedio * 100) : 0;
-                
-                return (
-                  <div key={index} className="flex justify-between items-center">
-                    <span className="text-sm text-gray-700 truncate">{produtoId}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-green-600">
-                        {formatCurrency(economia)}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        ({formatPercentage(reducao)})
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-          
-          <div className="bg-white p-4 rounded-lg border">
-            <div className="text-sm text-gray-600 mb-2">Recomendações</div>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-start gap-2">
-                <FaTrophy className="text-yellow-500 mt-1" />
-                <span>Selecione o fornecedor com melhor preço para cada produto</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <FaDollarSign className="text-green-500 mt-1" />
-                <span>Economia potencial de {formatCurrency(analise.economia)} ({formatPercentage(analise.economiaPercentual)})</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <FaChartLine className="text-blue-500 mt-1" />
-                <span>Compare preços antes de finalizar a cotação</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+        </Table>
+      </TableContainer>
+    </ViewContainer>
   );
 };
 

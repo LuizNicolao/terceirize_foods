@@ -1,261 +1,490 @@
 import React, { useState, useEffect } from 'react';
-import { FaEye, FaEyeSlash, FaChartLine, FaDollarSign, FaPercentage, FaTrendingUp, FaTrendingDown } from 'react-icons/fa';
-import { formatCurrency, formatPercentage } from '../utils/formatters';
+import { useNavigate, useParams } from 'react-router-dom';
+import axios from 'axios';
+import Layout from './Layout';
+import styled from 'styled-components';
+import { 
+  FaArrowLeft,
+  FaChartLine,
+  FaDollarSign,
+  FaPercentage,
+  FaCalendarAlt,
+  FaSpinner,
+  FaInfoCircle,
+  FaDownload
+} from 'react-icons/fa';
+import { colors, typography, shadows } from '../design-system';
+import { Button, Card } from '../design-system/components';
+import { formatCurrency, formatDate } from '../utils/formatters';
 
-const VisualizarSaving = ({ saving, onAprovar, onReprovar }) => {
-  const [showDetails, setShowDetails] = useState(false);
+// Componentes estilizados
+const Container = styled.div`
+  padding: 24px;
+`;
 
-  if (!saving) {
-    return (
-      <div className="p-6 text-center text-gray-500">
-        Nenhum saving selecionado
-      </div>
-    );
+const Header = styled.div`
+  margin-bottom: 32px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+const BackButton = styled(Button)`
+  background: ${colors.neutral.gray};
+  color: ${colors.neutral.white};
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: ${colors.neutral.darkGray};
+    transform: translateY(-1px);
   }
+`;
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'aprovado':
-        return 'text-green-600 bg-green-100';
-      case 'reprovado':
-        return 'text-red-600 bg-red-100';
-      case 'pendente':
-        return 'text-yellow-600 bg-yellow-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
+const Title = styled.h1`
+  color: ${colors.neutral.darkGray};
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+`;
+
+const Subtitle = styled.p`
+  color: ${colors.neutral.gray};
+  font-size: 16px;
+  margin: 0;
+`;
+
+const ContentSection = styled(Card)`
+  overflow: hidden;
+`;
+
+const LoadingState = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: ${colors.neutral.gray};
+`;
+
+const ErrorState = styled.div`
+  text-align: center;
+  padding: 40px;
+  color: ${colors.status.error};
+`;
+
+const ResumoCards = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+`;
+
+const ResumoCard = styled.div`
+  background: ${colors.neutral.white};
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const ResumoValor = styled.div`
+  font-size: 24px;
+  font-weight: 700;
+  color: ${colors.neutral.darkGray};
+  margin-bottom: 8px;
+`;
+
+const ResumoLabel = styled.div`
+  font-size: 14px;
+  color: ${colors.neutral.gray};
+  font-weight: 500;
+`;
+
+const InfoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+`;
+
+const InfoItem = styled.div`
+  background: ${colors.neutral.white};
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+`;
+
+const InfoLabel = styled.div`
+  font-size: 12px;
+  color: ${colors.neutral.gray};
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+`;
+
+const InfoValue = styled.div`
+  font-size: 16px;
+  color: ${colors.neutral.darkGray};
+  font-weight: 500;
+`;
+
+const StatusBadge = styled.span`
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: ${props => props.variant === 'emergencial' ? colors.secondary.orange : colors.secondary.blue};
+  color: ${colors.neutral.white};
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+  width: fit-content;
+`;
+
+const SectionTitle = styled.h3`
+  color: ${colors.neutral.darkGray};
+  font-size: 18px;
+  font-weight: 600;
+  margin: 32px 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid ${colors.primary.green};
+`;
+
+const ProdutosTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+`;
+
+const ProdutosTh = styled.th`
+  background: ${colors.neutral.lightGray};
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: ${colors.neutral.darkGray};
+  border-bottom: 2px solid #e0e0e0;
+`;
+
+const ProdutosTd = styled.td`
+  padding: 12px;
+  border-bottom: 1px solid #e0e0e0;
+  color: ${colors.neutral.darkGray};
+`;
+
+const ExportButton = styled(Button)`
+  background: ${colors.secondary.blue};
+  color: ${colors.neutral.white};
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    background: #1976D2;
+    transform: translateY(-1px);
+  }
+`;
+
+const VisualizarSaving = () => {
+    const navigate = useNavigate();
+    const { id } = useParams();
+    const [detalhes, setDetalhes] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        carregarDetalhes();
+    }, [id]);
+
+    const carregarDetalhes = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+            
+            const response = await axios.get(`/api/saving/${id}`);
+            setDetalhes(response.data);
+        } catch (error) {
+            console.error('Erro ao carregar detalhes:', error);
+            setError('Erro ao carregar os detalhes do saving. Tente novamente.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleBack = () => {
+        navigate('/saving');
+    };
+
+    const exportarDetalhes = async (formato = 'excel') => {
+        try {
+            const response = await axios.get(`/api/saving/${id}/exportar?formato=${formato}`, {
+                responseType: 'blob'
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `saving_${id}_${new Date().toISOString().split('T')[0]}.${formato}`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error('Erro ao exportar detalhes:', error);
+        }
+    };
+
+    if (loading) {
+        return (
+            <Layout>
+                <Container>
+                    <LoadingState>
+                        <FaSpinner size={48} style={{ marginBottom: '16px', color: colors.neutral.gray }} />
+                        <h3>Carregando detalhes...</h3>
+                        <p>Aguarde um momento</p>
+                    </LoadingState>
+                </Container>
+            </Layout>
+        );
     }
-  };
 
-  const getVariationColor = (variation) => {
-    if (variation > 0) return 'text-green-600';
-    if (variation < 0) return 'text-red-600';
-    return 'text-gray-600';
-  };
+    if (error) {
+        return (
+            <Layout>
+                <Container>
+                    <ErrorState>
+                        <FaInfoCircle size={48} style={{ marginBottom: '16px', color: colors.status.error }} />
+                        <h3>Erro ao carregar dados</h3>
+                        <p>{error}</p>
+                        <BackButton onClick={handleBack}>
+                            <FaArrowLeft />
+                            Voltar
+                        </BackButton>
+                    </ErrorState>
+                </Container>
+            </Layout>
+        );
+    }
 
-  const getVariationIcon = (variation) => {
-    if (variation > 0) return <FaTrendingUp className="text-green-500" />;
-    if (variation < 0) return <FaTrendingDown className="text-red-500" />;
-    return null;
-  };
+    if (!detalhes) {
+        return (
+            <Layout>
+                <Container>
+                    <ErrorState>
+                        <FaInfoCircle size={48} style={{ marginBottom: '16px', color: colors.status.error }} />
+                        <h3>Saving não encontrado</h3>
+                        <p>O saving solicitado não foi encontrado.</p>
+                        <BackButton onClick={handleBack}>
+                            <FaArrowLeft />
+                            Voltar
+                        </BackButton>
+                    </ErrorState>
+                </Container>
+            </Layout>
+        );
+    }
 
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            Visualizar Saving
-          </h2>
-          <p className="text-gray-600">
-            ID: {saving.id} - {saving.data_criacao}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(saving.status)}`}>
-            {saving.status}
-          </span>
-          <button
-            onClick={() => setShowDetails(!showDetails)}
-            className="p-2 text-gray-500 hover:text-gray-700"
-          >
-            {showDetails ? <FaEyeSlash /> : <FaEye />}
-          </button>
-        </div>
-      </div>
+    return (
+        <Layout>
+            <Container>
+                <Header>
+                    <BackButton onClick={handleBack}>
+                        <FaArrowLeft />
+                        Voltar
+                    </BackButton>
+                    <div>
+                        <Title>Detalhes do Saving #{detalhes.id}</Title>
+                        <Subtitle>Análise completa da economia obtida</Subtitle>
+                    </div>
+                    <ExportButton onClick={() => exportarDetalhes('excel')}>
+                        <FaDownload />
+                        Exportar
+                    </ExportButton>
+                </Header>
 
-      {/* Basic Info */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="font-semibold text-gray-900 mb-2">Informações Gerais</h3>
-          <div className="space-y-2 text-sm">
-            <div>
-              <span className="text-gray-600">Solicitante:</span>
-              <span className="ml-2 font-medium">{saving.solicitante}</span>
-            </div>
-            <div>
-              <span className="text-gray-600">Departamento:</span>
-              <span className="ml-2 font-medium">{saving.departamento}</span>
-            </div>
-            <div>
-              <span className="text-gray-600">Tipo:</span>
-              <span className="ml-2 font-medium">{saving.tipo}</span>
-            </div>
-          </div>
-        </div>
+                <ContentSection>
+                    {/* Cards de Resumo */}
+                    <ResumoCards>
+                        <ResumoCard>
+                            <ResumoValor>
+                                {formatCurrency(detalhes.valor_total_inicial)}
+                            </ResumoValor>
+                            <ResumoLabel>Valor Inicial</ResumoLabel>
+                        </ResumoCard>
+                        
+                        <ResumoCard>
+                            <ResumoValor>
+                                {formatCurrency(detalhes.valor_total_final)}
+                            </ResumoValor>
+                            <ResumoLabel>Valor Final</ResumoLabel>
+                        </ResumoCard>
+                        
+                        <ResumoCard>
+                            <ResumoValor style={{ 
+                                color: detalhes.economia >= 0 ? colors.status.success : colors.status.error 
+                            }}>
+                                {formatCurrency(detalhes.economia)}
+                            </ResumoValor>
+                            <ResumoLabel>Economia</ResumoLabel>
+                        </ResumoCard>
+                        
+                        <ResumoCard>
+                            <ResumoValor style={{ 
+                                color: detalhes.economia_percentual >= 0 ? colors.status.success : colors.status.error 
+                            }}>
+                                {parseFloat(detalhes.economia_percentual || 0).toFixed(2)}%
+                            </ResumoValor>
+                            <ResumoLabel>Economia (%)</ResumoLabel>
+                        </ResumoCard>
+                    </ResumoCards>
 
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <FaDollarSign />
-            Valores
-          </h3>
-          <div className="space-y-2 text-sm">
-            <div>
-              <span className="text-gray-600">Valor Anterior:</span>
-              <span className="ml-2 font-medium">{formatCurrency(saving.valor_anterior)}</span>
-            </div>
-            <div>
-              <span className="text-gray-600">Valor Atual:</span>
-              <span className="ml-2 font-medium">{formatCurrency(saving.valor_atual)}</span>
-            </div>
-            <div>
-              <span className="text-gray-600">Economia:</span>
-              <span className={`ml-2 font-medium ${getVariationColor(saving.economia)}`}>
-                {formatCurrency(saving.economia)}
-              </span>
-            </div>
-          </div>
-        </div>
+                    {/* Informações Detalhadas */}
+                    <InfoGrid>
+                        <InfoItem>
+                            <InfoLabel>ID</InfoLabel>
+                            <InfoValue>{detalhes.id}</InfoValue>
+                        </InfoItem>
+                        
+                        <InfoItem>
+                            <InfoLabel>Data de Criação</InfoLabel>
+                            <InfoValue>{formatDate(detalhes.data_registro)}</InfoValue>
+                        </InfoItem>
+                        
+                        <InfoItem>
+                            <InfoLabel>Data de Aprovação</InfoLabel>
+                            <InfoValue>
+                                {detalhes.data_aprovacao ? 
+                                    formatDate(detalhes.data_aprovacao) : 
+                                    'Data não informada'
+                                }
+                            </InfoValue>
+                        </InfoItem>
+                        
+                        <InfoItem>
+                            <InfoLabel>Rodadas</InfoLabel>
+                            <InfoValue>{detalhes.rodadas || '1'}</InfoValue>
+                        </InfoItem>
+                        
+                        <InfoItem>
+                            <InfoLabel>Status</InfoLabel>
+                            <InfoValue>
+                                <StatusBadge variant={detalhes.status}>
+                                    {detalhes.status === 'concluido' ? 'Concluído' :
+                                     detalhes.status === 'em_andamento' ? 'Em Andamento' :
+                                     detalhes.status === 'pendente' ? 'Pendente' :
+                                     detalhes.status === 'cancelado' ? 'Cancelado' :
+                                     detalhes.status}
+                                </StatusBadge>
+                            </InfoValue>
+                        </InfoItem>
+                        
+                        <InfoItem>
+                            <InfoLabel>Tipo de Compra</InfoLabel>
+                            <InfoValue>
+                                <StatusBadge variant={detalhes.tipo}>
+                                    {detalhes.tipo === 'emergencial' ? 'Emergencial' : 'Programada'}
+                                </StatusBadge>
+                            </InfoValue>
+                        </InfoItem>
+                        
+                        <InfoItem>
+                            <InfoLabel>Local de Entrega</InfoLabel>
+                            <InfoValue>{detalhes.centro_distribuicao || 'CD CHAPECO'}</InfoValue>
+                        </InfoItem>
+                        
+                        <InfoItem>
+                            <InfoLabel>Comprador</InfoLabel>
+                            <InfoValue>{detalhes.comprador_nome || 'N/A'}</InfoValue>
+                        </InfoItem>
+                    </InfoGrid>
 
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-            <FaPercentage />
-            Percentuais
-          </h3>
-          <div className="space-y-2 text-sm">
-            <div>
-              <span className="text-gray-600">Redução:</span>
-              <span className={`ml-2 font-medium ${getVariationColor(saving.percentual_reducao)}`}>
-                {formatPercentage(saving.percentual_reducao)}
-              </span>
-            </div>
-            <div>
-              <span className="text-gray-600">Período:</span>
-              <span className="ml-2 font-medium">{saving.periodo}</span>
-            </div>
-            <div>
-              <span className="text-gray-600">Frequência:</span>
-              <span className="ml-2 font-medium">{saving.frequencia}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+                    {/* Justificativa Emergencial */}
+                    {detalhes.tipo === 'emergencial' && detalhes.motivo_emergencial && (
+                        <InfoItem style={{ gridColumn: '1 / -1' }}>
+                            <InfoLabel>Justificativa da Compra Emergencial</InfoLabel>
+                            <InfoValue>{detalhes.motivo_emergencial}</InfoValue>
+                        </InfoItem>
+                    )}
 
-      {/* Detalhes */}
-      {showDetails && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <FaChartLine />
-            Detalhes do Saving
-          </h3>
-          
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-medium text-gray-900 mb-3">Justificativa</h4>
-                <p className="text-sm text-gray-700 bg-white p-3 rounded border">
-                  {saving.justificativa || 'Nenhuma justificativa fornecida'}
-                </p>
-              </div>
-              
-              <div>
-                <h4 className="font-medium text-gray-900 mb-3">Métricas</h4>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between bg-white p-3 rounded border">
-                    <span className="text-sm text-gray-600">Economia Mensal:</span>
-                    <span className={`font-medium ${getVariationColor(saving.economia_mensal)}`}>
-                      {formatCurrency(saving.economia_mensal)}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between bg-white p-3 rounded border">
-                    <span className="text-sm text-gray-600">Economia Anual:</span>
-                    <span className={`font-medium ${getVariationColor(saving.economia_anual)}`}>
-                      {formatCurrency(saving.economia_anual)}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between bg-white p-3 rounded border">
-                    <span className="text-sm text-gray-600">ROI:</span>
-                    <span className={`font-medium ${getVariationColor(saving.roi)}`}>
-                      {formatPercentage(saving.roi)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+                    {/* Observações */}
+                    <InfoItem style={{ gridColumn: '1 / -1' }}>
+                        <InfoLabel>Observações</InfoLabel>
+                        <InfoValue>{detalhes.observacoes || 'Nenhuma observação'}</InfoValue>
+                    </InfoItem>
 
-      {/* Produtos/Serviços */}
-      {saving.produtos && saving.produtos.length > 0 && (
-        <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Produtos/Serviços</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Item
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Valor Anterior
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Valor Atual
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Economia
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Redução
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {saving.produtos.map((produto, index) => (
-                  <tr key={index}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {produto.nome}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatCurrency(produto.valor_anterior)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {formatCurrency(produto.valor_atual)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`font-medium ${getVariationColor(produto.economia)}`}>
-                        {formatCurrency(produto.economia)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center gap-2">
-                        {getVariationIcon(produto.percentual_reducao)}
-                        <span className={`font-medium ${getVariationColor(produto.percentual_reducao)}`}>
-                          {formatPercentage(produto.percentual_reducao)}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Actions */}
-      {saving.status === 'pendente' && (
-        <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
-          <button
-            onClick={() => onReprovar(saving.id)}
-            className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
-            <FaTrendingDown className="mr-2 h-4 w-4" />
-            Reprovar
-          </button>
-          <button
-            onClick={() => onAprovar(saving.id)}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-          >
-            <FaTrendingUp className="mr-2 h-4 w-4" />
-            Aprovar
-          </button>
-        </div>
-      )}
-    </div>
-  );
+                    {/* Produtos */}
+                    <SectionTitle>Produtos Negociados</SectionTitle>
+                    {detalhes.produtos && detalhes.produtos.length > 0 ? (
+                        <ProdutosTable>
+                            <thead>
+                                <tr>
+                                    <ProdutosTh>Produto</ProdutosTh>
+                                    <ProdutosTh>Quantidade</ProdutosTh>
+                                    <ProdutosTh>Valor Inicial</ProdutosTh>
+                                    <ProdutosTh>Valor Final</ProdutosTh>
+                                    <ProdutosTh>Economia</ProdutosTh>
+                                    <ProdutosTh>Economia Total</ProdutosTh>
+                                    <ProdutosTh>Fornecedor</ProdutosTh>
+                                    <ProdutosTh>Prazo Pagamento</ProdutosTh>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {detalhes.produtos.map((produto, index) => {
+                                    const valorInicial = parseFloat(produto.valor_unitario_inicial || 0);
+                                    const valorFinal = parseFloat(produto.valor_unitario_final || 0);
+                                    const quantidade = parseFloat(produto.quantidade || 0);
+                                    const economia = valorInicial - valorFinal;
+                                    const economiaTotal = economia * quantidade;
+                                    const economiaPercentual = valorInicial > 0 ? 
+                                        (economia / valorInicial * 100) : 0;
+                                    
+                                    return (
+                                        <tr key={index}>
+                                            <ProdutosTd>{produto.descricao}</ProdutosTd>
+                                            <ProdutosTd>{quantidade}</ProdutosTd>
+                                            <ProdutosTd>{formatCurrency(valorInicial)}</ProdutosTd>
+                                            <ProdutosTd>{formatCurrency(valorFinal)}</ProdutosTd>
+                                            <ProdutosTd style={{ 
+                                                color: economia > 0 ? colors.status.success : 
+                                                       economia < 0 ? colors.status.error : colors.neutral.gray 
+                                            }}>
+                                                {formatCurrency(economia)}
+                                                <br />
+                                                <small>({economiaPercentual.toFixed(2)}%)</small>
+                                            </ProdutosTd>
+                                            <ProdutosTd style={{ 
+                                                color: economiaTotal > 0 ? colors.status.success : 
+                                                       economiaTotal < 0 ? colors.status.error : colors.neutral.gray 
+                                            }}>
+                                                {formatCurrency(economiaTotal)}
+                                            </ProdutosTd>
+                                            <ProdutosTd>{produto.fornecedor}</ProdutosTd>
+                                            <ProdutosTd>{produto.prazo_pagamento || 'N/A'}</ProdutosTd>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </ProdutosTable>
+                    ) : (
+                        <p>Nenhum produto encontrado para este saving.</p>
+                    )}
+                </ContentSection>
+            </Container>
+        </Layout>
+    );
 };
 
 export default VisualizarSaving; 
