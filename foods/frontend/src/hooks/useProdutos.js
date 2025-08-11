@@ -100,21 +100,31 @@ export const useProdutos = () => {
         setGrupos(gruposRes.data || []);
       }
 
+      // Extrair dados de subgrupos considerando estrutura HATEOAS
+      let subgruposData = [];
       if (subgruposRes.data?.data?.items) {
-        setSubgrupos(subgruposRes.data.data.items);
+        subgruposData = subgruposRes.data.data.items;
       } else if (subgruposRes.data?.data) {
-        setSubgrupos(subgruposRes.data.data);
+        subgruposData = subgruposRes.data.data;
+      } else if (subgruposRes.data?.items) {
+        subgruposData = subgruposRes.data.items;
       } else {
-        setSubgrupos(subgruposRes.data || []);
+        subgruposData = subgruposRes.data || [];
       }
+      setSubgrupos(subgruposData);
 
+      // Extrair dados de classes considerando estrutura HATEOAS
+      let classesData = [];
       if (classesRes.data?.data?.items) {
-        setClasses(classesRes.data.data.items);
+        classesData = classesRes.data.data.items;
       } else if (classesRes.data?.data) {
-        setClasses(classesRes.data.data);
+        classesData = classesRes.data.data;
+      } else if (classesRes.data?.items) {
+        classesData = classesRes.data.items;
       } else {
-        setClasses(classesRes.data || []);
+        classesData = classesRes.data || [];
       }
+      setClasses(classesData);
 
 
 
