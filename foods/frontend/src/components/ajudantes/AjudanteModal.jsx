@@ -1,6 +1,6 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Modal, Input, Button } from '../../ui';
+import { Modal, Input, Button } from '../ui';
 import { FaUser, FaIdCard, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCalendarAlt, FaBuilding, FaStickyNote } from 'react-icons/fa';
 
 const AjudanteModal = ({ 

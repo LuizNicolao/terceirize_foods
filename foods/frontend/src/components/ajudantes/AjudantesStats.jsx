@@ -1,5 +1,5 @@
 import React from 'react';
-import { StatCard } from '../../ui';
+import { StatCard } from '../ui';
 import { FaUsers, FaUserCheck, FaUmbrellaBeach, FaUserClock } from 'react-icons/fa';
 
 const AjudantesStats = ({ estatisticas }) => {

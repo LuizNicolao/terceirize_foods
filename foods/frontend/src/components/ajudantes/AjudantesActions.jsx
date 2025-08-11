@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../../ui';
+import { Button } from '../ui';
 import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
 
 const AjudantesActions = ({ 
