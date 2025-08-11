@@ -171,12 +171,14 @@ class VeiculosController {
         chassi,
         modelo,
         marca,
+        fabricante,
         ano_fabricacao,
         tipo_veiculo,
         carroceria,
         combustivel,
         categoria,
         capacidade_carga,
+        capacidade_volume,
         numero_eixos,
         tara,
         peso_bruto_total,
@@ -188,6 +190,12 @@ class VeiculosController {
         proxima_inspecao_veicular,
         vencimento_ipva,
         vencimento_dpvat,
+        numero_apolice_seguro,
+        situacao_documental,
+        data_ultima_revisao,
+        quilometragem_proxima_revisao,
+        data_ultima_troca_oleo,
+        vencimento_alinhamento_balanceamento,
         status,
         status_detalhado,
         data_aquisicao,
@@ -195,22 +203,16 @@ class VeiculosController {
         fornecedor,
         numero_frota,
         situacao_financeira,
+        crlv_digitalizado,
         foto_frente,
         foto_traseira,
         foto_lateral,
+        foto_interior,
+        contrato_seguro,
         observacoes,
         filial_id,
         motorista_id
       } = req.body;
-
-      // Validações específicas
-      if (!placa || placa.trim().length < 6) {
-        return res.status(400).json({
-          success: false,
-          error: 'Placa inválida',
-          message: 'A placa deve ter pelo menos 6 caracteres'
-        });
-      }
 
       // Verificar se placa já existe
       const existingPlaca = await executeQuery(
@@ -261,15 +263,17 @@ class VeiculosController {
       // Inserir veículo
       const insertQuery = `
         INSERT INTO veiculos (
-          placa, renavam, chassi, modelo, marca, ano_fabricacao, tipo_veiculo,
-          carroceria, combustivel, categoria, capacidade_carga, numero_eixos,
+          placa, renavam, chassi, modelo, marca, fabricante, ano_fabricacao, tipo_veiculo,
+          carroceria, combustivel, categoria, capacidade_carga, capacidade_volume, numero_eixos,
           tara, peso_bruto_total, potencia_motor, tipo_tracao, quilometragem_atual,
           data_emplacamento, vencimento_licenciamento, proxima_inspecao_veicular,
-          vencimento_ipva, vencimento_dpvat, status,
-          status_detalhado, data_aquisicao, valor_compra, fornecedor, numero_frota,
-          situacao_financeira, foto_frente, foto_traseira, foto_lateral,
+          vencimento_ipva, vencimento_dpvat, numero_apolice_seguro, situacao_documental,
+          data_ultima_revisao, quilometragem_proxima_revisao, data_ultima_troca_oleo,
+          vencimento_alinhamento_balanceamento, status, status_detalhado, data_aquisicao,
+          valor_compra, fornecedor, numero_frota, situacao_financeira, crlv_digitalizado,
+          foto_frente, foto_traseira, foto_lateral, foto_interior, contrato_seguro,
           observacoes, filial_id, motorista_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       // Função auxiliar para converter string vazia em null
@@ -290,12 +294,14 @@ class VeiculosController {
         toNullIfEmpty(chassi),
         toNullIfEmpty(modelo),
         toNullIfEmpty(marca),
+        toNullIfEmpty(fabricante),
         toNullIfEmptyNumber(ano_fabricacao),
         toNullIfEmpty(tipo_veiculo),
         toNullIfEmpty(carroceria),
         toNullIfEmpty(combustivel),
         toNullIfEmpty(categoria),
         toNullIfEmptyNumber(capacidade_carga),
+        toNullIfEmptyNumber(capacidade_volume),
         toNullIfEmptyNumber(numero_eixos),
         toNullIfEmptyNumber(tara),
         toNullIfEmptyNumber(peso_bruto_total),
@@ -307,6 +313,12 @@ class VeiculosController {
         toNullIfEmpty(proxima_inspecao_veicular),
         toNullIfEmpty(vencimento_ipva),
         toNullIfEmpty(vencimento_dpvat),
+        toNullIfEmpty(numero_apolice_seguro),
+        toNullIfEmpty(situacao_documental),
+        toNullIfEmpty(data_ultima_revisao),
+        toNullIfEmptyNumber(quilometragem_proxima_revisao),
+        toNullIfEmpty(data_ultima_troca_oleo),
+        toNullIfEmpty(vencimento_alinhamento_balanceamento),
         toNullIfEmpty(status) || 'ativo',
         toNullIfEmpty(status_detalhado),
         toNullIfEmpty(data_aquisicao),
@@ -314,9 +326,12 @@ class VeiculosController {
         toNullIfEmpty(fornecedor),
         toNullIfEmpty(numero_frota),
         toNullIfEmpty(situacao_financeira),
+        toNullIfEmpty(crlv_digitalizado),
         toNullIfEmpty(foto_frente),
         toNullIfEmpty(foto_traseira),
         toNullIfEmpty(foto_lateral),
+        toNullIfEmpty(foto_interior),
+        toNullIfEmpty(contrato_seguro),
         toNullIfEmpty(observacoes),
         toNullIfEmptyNumber(filial_id),
         toNullIfEmptyNumber(motorista_id)
@@ -361,15 +376,6 @@ class VeiculosController {
           success: false,
           error: 'Veículo não encontrado',
           message: 'O veículo especificado não foi encontrado'
-        });
-      }
-
-      // Validações específicas
-      if (updateData.placa && updateData.placa.trim().length < 6) {
-        return res.status(400).json({
-          success: false,
-          error: 'Placa inválida',
-          message: 'A placa deve ter pelo menos 6 caracteres'
         });
       }
 
@@ -427,16 +433,19 @@ class VeiculosController {
 
       // Lista de campos permitidos para atualização
       const allowedFields = [
-        'placa', 'renavam', 'chassi', 'modelo', 'marca', 'ano_fabricacao',
+        'placa', 'renavam', 'chassi', 'modelo', 'marca', 'fabricante', 'ano_fabricacao',
         'tipo_veiculo', 'carroceria', 'combustivel', 'categoria',
-        'capacidade_carga', 'numero_eixos', 'tara', 'peso_bruto_total',
+        'capacidade_carga', 'capacidade_volume', 'numero_eixos', 'tara', 'peso_bruto_total',
         'potencia_motor', 'tipo_tracao', 'quilometragem_atual',
         'data_emplacamento', 'vencimento_licenciamento',
-        'proxima_inspecao_veicular', 'vencimento_ipva',
-        'vencimento_dpvat', 'status', 'status_detalhado',
+        'proxima_inspecao_veicular', 'vencimento_ipva', 'vencimento_dpvat',
+        'numero_apolice_seguro', 'situacao_documental', 'data_ultima_revisao',
+        'quilometragem_proxima_revisao', 'data_ultima_troca_oleo',
+        'vencimento_alinhamento_balanceamento', 'status', 'status_detalhado',
         'data_aquisicao', 'valor_compra', 'fornecedor', 'numero_frota',
-        'situacao_financeira', 'foto_frente', 'foto_traseira',
-        'foto_lateral', 'observacoes', 'filial_id', 'motorista_id'
+        'situacao_financeira', 'crlv_digitalizado', 'foto_frente', 'foto_traseira',
+        'foto_lateral', 'foto_interior', 'contrato_seguro', 'observacoes',
+        'filial_id', 'motorista_id'
       ];
 
       // Função auxiliar para converter string vazia em null
@@ -451,17 +460,26 @@ class VeiculosController {
         return value;
       };
 
+      // Processar cada campo permitido
       allowedFields.forEach(field => {
         if (updateData[field] !== undefined) {
           updateFields.push(`${field} = ?`);
+          
+          // Tratamento especial para placa (sempre maiúscula)
           if (field === 'placa') {
             updateParams.push(updateData[field].trim().toUpperCase());
-          } else if (typeof updateData[field] === 'string') {
-            updateParams.push(toNullIfEmpty(updateData[field]));
-          } else if (typeof updateData[field] === 'number') {
+          }
+          // Tratamento especial para campos numéricos
+          else if (['ano_fabricacao', 'numero_eixos', 'filial_id', 'motorista_id'].includes(field)) {
             updateParams.push(toNullIfEmptyNumber(updateData[field]));
-          } else {
-            updateParams.push(updateData[field]);
+          }
+          // Tratamento especial para campos de valor decimal
+          else if (['capacidade_carga', 'capacidade_volume', 'tara', 'peso_bruto_total', 'potencia_motor', 'quilometragem_atual', 'quilometragem_proxima_revisao', 'valor_compra'].includes(field)) {
+            updateParams.push(toNullIfEmptyNumber(updateData[field]));
+          }
+          // Tratamento para outros campos
+          else {
+            updateParams.push(toNullIfEmpty(updateData[field]));
           }
         }
       });
