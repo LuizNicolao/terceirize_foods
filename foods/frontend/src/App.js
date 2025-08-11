@@ -10,7 +10,7 @@ import Usuarios from './pages/usuarios/Usuarios';
 import Fornecedores from './pages/Fornecedores';
 import Clientes from './pages/Clientes';
 import Filiais from './pages/Filiais';
-import Rotas from './pages/Rotas';
+import Rotas from './pages/rotas/Rotas';
 import UnidadesEscolares from './pages/UnidadesEscolares';
 import Produtos from './pages/produtos/Produtos';
 import Grupos from './pages/Grupos';
