@@ -11,27 +11,27 @@ export const useSidebar = () => {
 };
 
 export const SidebarProvider = ({ children }) => {
-  const [isExpanded, setIsExpanded] = useState(() => {
+  const [collapsed, setCollapsed] = useState(() => {
     // Carregar estado salvo do localStorage
     const saved = localStorage.getItem('sidebarCollapsed');
     if (saved !== null) {
-      return !JSON.parse(saved); // Invertemos porque salvamos 'collapsed'
+      return JSON.parse(saved);
     }
     // Estado padrão baseado no tamanho da tela
-    return window.innerWidth > 768;
+    return window.innerWidth <= 768;
   });
 
   // Detectar tamanho da tela e ajustar sidebar automaticamente
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth <= 768) {
-        setIsExpanded(false);
+        setCollapsed(true);
         localStorage.setItem('sidebarCollapsed', 'true');
       } else {
         // Em telas maiores, manter o estado salvo pelo usuário
         const saved = localStorage.getItem('sidebarCollapsed');
         if (saved === null) {
-          setIsExpanded(true);
+          setCollapsed(false);
           localStorage.setItem('sidebarCollapsed', 'false');
         }
       }
@@ -46,13 +46,13 @@ export const SidebarProvider = ({ children }) => {
   }, []);
 
   const toggleSidebar = () => {
-    const newState = !isExpanded;
-    setIsExpanded(newState);
-    localStorage.setItem('sidebarCollapsed', JSON.stringify(!newState));
+    const newState = !collapsed;
+    setCollapsed(newState);
+    localStorage.setItem('sidebarCollapsed', JSON.stringify(newState));
   };
 
   const value = {
-    isExpanded,
+    collapsed,
     toggleSidebar,
     isSmallScreen: window.innerWidth <= 768
   };
