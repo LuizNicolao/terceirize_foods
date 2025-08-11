@@ -100,9 +100,7 @@ const veiculoValidations = {
     
     body('observacoes')
       .optional()
-      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
-    
-    handleValidationErrors
+      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres')
   ],
 
   // Validações para atualização de veículo
@@ -171,9 +169,7 @@ const veiculoValidations = {
     
     body('observacoes')
       .optional()
-      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
-    
-    handleValidationErrors
+      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres')
   ]
 };
 

@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
-const { veiculoValidations, commonValidations } = require('./veiculoValidator');
+const { veiculoValidations, commonValidations, handleValidationErrors } = require('./veiculoValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -21,8 +21,8 @@ router.use(authenticateToken);
 // Listar veículos com paginação, busca e filtros
 router.get('/', 
   checkScreenPermission('veiculos', 'visualizar'),
-  commonValidations.search,
-  commonValidations.pagination,
+  ...commonValidations.search,
+  ...commonValidations.pagination,
   veiculosController.listarVeiculos,
   hateoasMiddleware
 );
@@ -76,7 +76,7 @@ router.get('/documentacao/vencendo',
 // Buscar veículo por ID
 router.get('/:id', 
   checkScreenPermission('veiculos', 'visualizar'),
-  commonValidations.id,
+  ...commonValidations.id,
   veiculosController.buscarVeiculoPorId,
   hateoasMiddleware
 );
@@ -85,21 +85,23 @@ router.get('/:id',
 router.post('/', [
   checkScreenPermission('veiculos', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'veiculos'),
-  veiculoValidations.create
+  veiculoValidations.create,
+  handleValidationErrors
 ], veiculosController.criarVeiculo);
 
 // Atualizar veículo
 router.put('/:id', [
   checkScreenPermission('veiculos', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'veiculos'),
-  veiculoValidations.update
+  veiculoValidations.update,
+  handleValidationErrors
 ], veiculosController.atualizarVeiculo);
 
 // Excluir veículo
 router.delete('/:id', [
   checkScreenPermission('veiculos', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'veiculos'),
-  commonValidations.id
+  ...commonValidations.id
 ], veiculosController.excluirVeiculo);
 
 module.exports = router;
