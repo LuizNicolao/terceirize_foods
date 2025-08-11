@@ -8,7 +8,6 @@ import UsuariosActions from './components/UsuariosActions';
 import UsuariosFilters from './components/UsuariosFilters';
 import Pagination from '../../components/shared/Pagination';
 import LoadingSpinner from '../../components/ui/LoadingSpinner';
-import ErrorModal from '../../components/ui/ErrorModal';
 
 const Usuarios = () => {
   const {
