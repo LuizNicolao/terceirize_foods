@@ -6,7 +6,6 @@
 const express = require('express');
 const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const { unidadeEscolarValidations, commonValidations } = require('./unidadeEscolarValidator');
-const { handleValidationErrors } = require('../../middleware/validation');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -79,16 +78,14 @@ router.get('/:id',
 router.post('/', [
   checkScreenPermission('unidades_escolares', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares'),
-  unidadeEscolarValidations.create,
-  handleValidationErrors
+  unidadeEscolarValidations.create
 ], unidadesEscolaresController.criarUnidadeEscolar);
 
 // Atualizar unidade escolar
 router.put('/:id', [
   checkScreenPermission('unidades_escolares', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_escolares'),
-  unidadeEscolarValidations.update,
-  handleValidationErrors
+  unidadeEscolarValidations.update
 ], unidadesEscolaresController.atualizarUnidadeEscolar);
 
 // Excluir unidade escolar

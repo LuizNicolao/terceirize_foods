@@ -6,7 +6,6 @@
 const express = require('express');
 const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const { rotaValidations, commonValidations } = require('./rotaValidator');
-const { handleValidationErrors } = require('../../middleware/validation');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -86,16 +85,14 @@ router.get('/:id',
 router.post('/', [
   checkScreenPermission('rotas', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'rotas'),
-  rotaValidations.create,
-  handleValidationErrors
+  rotaValidations.create
 ], rotasController.criarRota);
 
 // Atualizar rota
 router.put('/:id', [
   checkScreenPermission('rotas', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'rotas'),
-  rotaValidations.update,
-  handleValidationErrors
+  rotaValidations.update
 ], rotasController.atualizarRota);
 
 // Excluir rota

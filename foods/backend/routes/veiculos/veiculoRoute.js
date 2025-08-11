@@ -6,7 +6,6 @@
 const express = require('express');
 const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const { veiculoValidations, commonValidations } = require('./veiculoValidator');
-const { handleValidationErrors } = require('../../middleware/validation');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -86,16 +85,14 @@ router.get('/:id',
 router.post('/', [
   checkScreenPermission('veiculos', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'veiculos'),
-  veiculoValidations.create,
-  handleValidationErrors
+  veiculoValidations.create
 ], veiculosController.criarVeiculo);
 
 // Atualizar veículo
 router.put('/:id', [
   checkScreenPermission('veiculos', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'veiculos'),
-  veiculoValidations.update,
-  handleValidationErrors
+  veiculoValidations.update
 ], veiculosController.atualizarVeiculo);
 
 // Excluir veículo
