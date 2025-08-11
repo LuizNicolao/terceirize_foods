@@ -1,7 +1,6 @@
 import React from 'react';
-import { FaUser, FaIdCard, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCar, FaCalendarAlt } from 'react-icons/fa';
-import { Table } from '../ui';
-import MotoristasActions from './MotoristasActions';
+import { FaUser, FaIdCard, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCar, FaCalendarAlt, FaEye, FaEdit, FaTrash } from 'react-icons/fa';
+import { Button, Table } from '../ui';
 
 const MotoristasTable = ({ 
   motoristas, 
@@ -142,15 +141,38 @@ const MotoristasTable = ({
                     {motorista.filial_nome || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <MotoristasActions
-                      motorista={motorista}
-                      canView={canView}
-                      canEdit={canEdit}
-                      canDelete={canDelete}
-                      onView={onView}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                    />
+                    <div className="flex gap-2">
+                      {canView('motoristas') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => onView(motorista)}
+                          title="Visualizar"
+                        >
+                          <FaEye className="text-green-600 text-sm" />
+                        </Button>
+                      )}
+                      {canEdit('motoristas') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => onEdit(motorista)}
+                          title="Editar"
+                        >
+                          <FaEdit className="text-blue-600 text-sm" />
+                        </Button>
+                      )}
+                      {canDelete('motoristas') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => onDelete(motorista.id)}
+                          title="Excluir"
+                        >
+                          <FaTrash className="text-red-600 text-sm" />
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );
@@ -177,15 +199,41 @@ const MotoristasTable = ({
                     <p className="text-sm text-gray-500">{motorista.cpf || 'CPF não informado'}</p>
                   </div>
                 </div>
-                <MotoristasActions
-                  motorista={motorista}
-                  canView={canView}
-                  canEdit={canEdit}
-                  canDelete={canDelete}
-                  onView={onView}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                />
+                <div className="flex gap-2">
+                  {canView('motoristas') && (
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => onView(motorista)}
+                      title="Visualizar"
+                      className="p-2"
+                    >
+                      <FaEye className="text-green-600 text-sm" />
+                    </Button>
+                  )}
+                  {canEdit('motoristas') && (
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => onEdit(motorista)}
+                      title="Editar"
+                      className="p-2"
+                    >
+                      <FaEdit className="text-blue-600 text-sm" />
+                    </Button>
+                  )}
+                  {canDelete('motoristas') && (
+                    <Button
+                      variant="ghost"
+                      size="xs"
+                      onClick={() => onDelete(motorista.id)}
+                      title="Excluir"
+                      className="p-2"
+                    >
+                      <FaTrash className="text-red-600 text-sm" />
+                    </Button>
+                  )}
+                </div>
               </div>
               
               <div className="mt-3 space-y-2">

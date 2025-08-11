@@ -1,53 +1,20 @@
 import React from 'react';
+import { FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { Button } from '../ui';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
 
-const AjudantesActions = ({ 
-  ajudante, 
-  canView, 
-  canEdit, 
-  canDelete, 
-  onView, 
-  onEdit, 
-  onDelete 
-}) => {
+const AjudantesActions = ({ onExportXLSX, onExportPDF }) => {
   return (
-    <div className="flex items-center gap-2">
-      {canView('ajudantes') && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onView(ajudante)}
-          className="text-blue-600 hover:text-blue-800"
-          title="Visualizar"
-        >
-          <FaEye className="w-4 h-4" />
-        </Button>
-      )}
-      
-      {canEdit('ajudantes') && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onEdit(ajudante)}
-          className="text-green-600 hover:text-green-800"
-          title="Editar"
-        >
-          <FaEdit className="w-4 h-4" />
-        </Button>
-      )}
-      
-      {canDelete('ajudantes') && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onDelete(ajudante.id)}
-          className="text-red-600 hover:text-red-800"
-          title="Excluir"
-        >
-          <FaTrash className="w-4 h-4" />
-        </Button>
-      )}
+    <div className="flex gap-2 sm:gap-3 mb-4">
+      <Button onClick={onExportXLSX} variant="outline" size="sm">
+        <FaFileExcel className="mr-1 sm:mr-2" />
+        <span className="hidden sm:inline">Exportar XLSX</span>
+        <span className="sm:hidden">XLSX</span>
+      </Button>
+      <Button onClick={onExportPDF} variant="outline" size="sm">
+        <FaFilePdf className="mr-1 sm:mr-2" />
+        <span className="hidden sm:inline">Exportar PDF</span>
+        <span className="sm:hidden">PDF</span>
+      </Button>
     </div>
   );
 };

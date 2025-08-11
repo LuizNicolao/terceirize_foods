@@ -1,6 +1,7 @@
 import React from 'react';
+import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
 import LoadingSpinner from '../LoadingSpinner';
-import AjudantesActions from './AjudantesActions';
+import { Button } from '../ui';
 
 const AjudantesTable = ({
   ajudantes,
@@ -114,15 +115,38 @@ const AjudantesTable = ({
                     {formatDate(ajudante.data_admissao)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <AjudantesActions
-                      ajudante={ajudante}
-                      canView={canView}
-                      canEdit={canEdit}
-                      canDelete={canDelete}
-                      onView={onView}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                    />
+                    <div className="flex gap-2">
+                      {canView('ajudantes') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => onView(ajudante)}
+                          title="Visualizar"
+                        >
+                          <FaEye className="text-green-600 text-sm" />
+                        </Button>
+                      )}
+                      {canEdit('ajudantes') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => onEdit(ajudante)}
+                          title="Editar"
+                        >
+                          <FaEdit className="text-blue-600 text-sm" />
+                        </Button>
+                      )}
+                      {canDelete('ajudantes') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => onDelete(ajudante.id)}
+                          title="Excluir"
+                        >
+                          <FaTrash className="text-red-600 text-sm" />
+                        </Button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -140,15 +164,41 @@ const AjudantesTable = ({
                 <h3 className="text-sm font-semibold text-gray-900">{ajudante.nome}</h3>
                 <p className="text-xs text-gray-500">ID: {ajudante.id}</p>
               </div>
-              <AjudantesActions
-                ajudante={ajudante}
-                canView={canView}
-                canEdit={canEdit}
-                canDelete={canDelete}
-                onView={onView}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
+              <div className="flex gap-2">
+                {canView('ajudantes') && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => onView(ajudante)}
+                    title="Visualizar"
+                    className="p-2"
+                  >
+                    <FaEye className="text-green-600 text-sm" />
+                  </Button>
+                )}
+                {canEdit('ajudantes') && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => onEdit(ajudante)}
+                    title="Editar"
+                    className="p-2"
+                  >
+                    <FaEdit className="text-blue-600 text-sm" />
+                  </Button>
+                )}
+                {canDelete('ajudantes') && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => onDelete(ajudante.id)}
+                    title="Excluir"
+                    className="p-2"
+                  >
+                    <FaTrash className="text-red-600 text-sm" />
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
