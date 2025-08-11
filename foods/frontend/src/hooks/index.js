@@ -1,7 +1,8 @@
 export { useProdutos } from './useProdutos';
 export { useUsuarios } from './useUsuarios';
+export { useVeiculos } from './useVeiculos';
 export { useRotas } from './useRotas';
 export { useUnidadesEscolares } from './useUnidadesEscolares';
-export { useVeiculos } from './useVeiculos';
+export { useMotoristas } from './useMotoristas';
 export { useAuditoria } from './useAuditoria';
 export { useExport } from './useExport';
