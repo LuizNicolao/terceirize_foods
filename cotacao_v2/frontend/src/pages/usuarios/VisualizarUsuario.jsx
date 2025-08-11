@@ -1,183 +1,17 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import styled from 'styled-components';
 import { FaArrowLeft, FaEdit, FaUser, FaEnvelope, FaShieldAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import Layout from '../../components/Layout';
 import { useUsuarios } from '../../hooks';
-import { colors } from '../../design-system';
-
-// Componentes estilizados
-const Container = styled.div`
-  padding: 24px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 32px;
-`;
-
-const Title = styled.h1`
-  color: ${colors.neutral.darkGray};
-  font-size: 28px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const BackButton = styled.button`
-  background: ${colors.neutral.lightGray};
-  color: ${colors.neutral.darkGray};
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: ${colors.neutral.gray};
-    color: ${colors.neutral.white};
-  }
-`;
-
-const EditButton = styled.button`
-  background: ${colors.secondary.blue};
-  color: ${colors.neutral.white};
-  border: none;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: #1976D2;
-    transform: translateY(-1px);
-  }
-`;
-
-const Card = styled.div`
-  background: ${colors.neutral.white};
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  padding: 32px;
-  margin-bottom: 24px;
-`;
-
-const Section = styled.div`
-  margin-bottom: 32px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-`;
-
-const SectionTitle = styled.h2`
-  color: ${colors.neutral.darkGray};
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const Grid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-`;
-
-const Field = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const Label = styled.label`
-  color: ${colors.neutral.gray};
-  font-size: 14px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const Value = styled.div`
-  color: ${colors.neutral.darkGray};
-  font-size: 16px;
-  padding: 12px 16px;
-  background: ${colors.neutral.lightGray};
-  border-radius: 8px;
-  border: 1px solid #e0e0e0;
-`;
-
-const Badge = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${props => props.status === 'ativo' ? colors.status.success : '#ffebee'};
-  color: ${props => props.status === 'ativo' ? colors.neutral.white : colors.status.error};
-`;
-
-const RoleBadge = styled.span`
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-  background: ${colors.secondary.blue};
-  color: ${colors.neutral.white};
-`;
-
-const PermissionsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-`;
-
-const PermissionItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: ${colors.neutral.lightGray};
-  border-radius: 6px;
-`;
-
-const LoadingState = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: ${colors.neutral.gray};
-  font-size: 16px;
-`;
-
-const ErrorState = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: ${colors.status.error};
-  font-size: 16px;
-`;
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
 
 const VisualizarUsuario = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { selectedUsuario, loading, error, fetchUsuario } = useUsuarios();
 
-  useEffect(() => {
-    if (id && id !== 'new') {
+  React.useEffect(() => {
+    if (id) {
       fetchUsuario(id);
     }
   }, [id, fetchUsuario]);
@@ -187,34 +21,15 @@ const VisualizarUsuario = () => {
   };
 
   const handleEdit = () => {
-    navigate(`/editar-usuario/${id}`);
-  };
-
-  const getRoleLabel = (role) => {
-    const roles = {
-      'administrador': 'Administrador',
-      'gestor': 'Gestor',
-      'supervisor': 'Supervisor',
-      'comprador': 'Comprador'
-    };
-    return roles[role] || role;
-  };
-
-  const getStatusLabel = (status) => {
-    return status === 'ativo' ? 'Ativo' : 'Inativo';
-  };
-
-  const getPermissionValue = (screen, permission) => {
-    if (!selectedUsuario?.permissions) return false;
-    return selectedUsuario.permissions[screen]?.[permission] || false;
+    navigate(`/usuarios/${id}/editar`);
   };
 
   if (loading) {
     return (
       <Layout>
-        <Container>
-          <LoadingState>Carregando dados do usuário...</LoadingState>
-        </Container>
+        <div className="flex items-center justify-center min-h-screen">
+          <LoadingSpinner />
+        </div>
       </Layout>
     );
   }
@@ -222,11 +37,13 @@ const VisualizarUsuario = () => {
   if (error) {
     return (
       <Layout>
-        <Container>
-          <ErrorState>
-            Erro ao carregar dados do usuário: {error}
-          </ErrorState>
-        </Container>
+        <div className="p-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="text-red-800">
+              <strong>Erro:</strong> {error}
+            </div>
+          </div>
+        </div>
       </Layout>
     );
   }
@@ -234,101 +51,128 @@ const VisualizarUsuario = () => {
   if (!selectedUsuario) {
     return (
       <Layout>
-        <Container>
-          <ErrorState>Usuário não encontrado</ErrorState>
-        </Container>
+        <div className="p-6">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="text-yellow-800">
+              Usuário não encontrado
+            </div>
+          </div>
+        </div>
       </Layout>
     );
   }
 
   return (
     <Layout>
-      <Container>
-        <Header>
-          <Title>Visualizar Usuário</Title>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <BackButton onClick={handleBack}>
-              <FaArrowLeft />
+      <div className="p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">
+            Visualizar Usuário
+          </h1>
+          <div className="flex gap-3">
+            <button
+              onClick={handleBack}
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              <FaArrowLeft className="mr-2 h-4 w-4" />
               Voltar
-            </BackButton>
-            <EditButton onClick={handleEdit}>
-              <FaEdit />
+            </button>
+            <button
+              onClick={handleEdit}
+              className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              <FaEdit className="mr-2 h-4 w-4" />
               Editar
-            </EditButton>
+            </button>
           </div>
-        </Header>
+        </div>
 
-        <Card>
-          <Section>
-            <SectionTitle>
-              <FaUser />
-              Informações Básicas
-            </SectionTitle>
-            <Grid>
-              <Field>
-                <Label>
-                  <FaUser />
-                  Nome
-                </Label>
-                <Value>{selectedUsuario.name}</Value>
-              </Field>
-              <Field>
-                <Label>
-                  <FaEnvelope />
-                  Email
-                </Label>
-                <Value>{selectedUsuario.email}</Value>
-              </Field>
-              <Field>
-                <Label>
-                  <FaShieldAlt />
-                  Tipo de Usuário
-                </Label>
-                <Value>
-                  <RoleBadge>
-                    {getRoleLabel(selectedUsuario.role)}
-                  </RoleBadge>
-                </Value>
-              </Field>
-              <Field>
-                <Label>
-                  {selectedUsuario.status === 'ativo' ? <FaCheckCircle /> : <FaTimesCircle />}
-                  Status
-                </Label>
-                <Value>
-                  <Badge status={selectedUsuario.status}>
-                    {getStatusLabel(selectedUsuario.status)}
-                  </Badge>
-                </Value>
-              </Field>
-            </Grid>
-          </Section>
+        {/* User Info */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Basic Info */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <FaUser />
+                Informações Básicas
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Nome
+                  </label>
+                  <p className="text-gray-900">{selectedUsuario.name}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
+                  <p className="text-gray-900">{selectedUsuario.email}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Tipo de Usuário
+                  </label>
+                  <p className="text-gray-900 capitalize">{selectedUsuario.role}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                  </label>
+                  <div className="flex items-center gap-2">
+                    {selectedUsuario.status === 'ativo' ? (
+                      <FaCheckCircle className="text-green-500" />
+                    ) : (
+                      <FaTimesCircle className="text-red-500" />
+                    )}
+                    <span className={`capitalize ${
+                      selectedUsuario.status === 'ativo' ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {selectedUsuario.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-          {selectedUsuario.permissions && (
-            <Section>
-              <SectionTitle>
+            {/* Permissions */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
                 <FaShieldAlt />
                 Permissões
-              </SectionTitle>
-              <PermissionsGrid>
-                {Object.entries(selectedUsuario.permissions).map(([screen, permissions]) => (
-                  <div key={screen}>
-                    <h4 style={{ margin: '0 0 8px 0', color: colors.neutral.darkGray }}>
-                      {screen.charAt(0).toUpperCase() + screen.slice(1)}
-                    </h4>
-                    {Object.entries(permissions).map(([permission, value]) => (
-                      <PermissionItem key={permission}>
-                        {value ? <FaCheckCircle color={colors.status.success} /> : <FaTimesCircle color={colors.status.error} />}
-                        <span>{permission}</span>
-                      </PermissionItem>
-                    ))}
-                  </div>
-                ))}
-              </PermissionsGrid>
-            </Section>
-          )}
-        </Card>
-      </Container>
+              </h2>
+              {selectedUsuario.permissions ? (
+                <div className="space-y-3">
+                  {Object.entries(selectedUsuario.permissions).map(([screen, permissions]) => (
+                    <div key={screen} className="border border-gray-200 rounded-lg p-3">
+                      <h3 className="font-medium text-gray-900 mb-2 capitalize">
+                        {screen}
+                      </h3>
+                      <div className="grid grid-cols-2 gap-2">
+                        {Object.entries(permissions).map(([permission, hasPermission]) => (
+                          <div key={permission} className="flex items-center gap-2">
+                            {hasPermission ? (
+                              <FaCheckCircle className="text-green-500 text-sm" />
+                            ) : (
+                              <FaTimesCircle className="text-red-500 text-sm" />
+                            )}
+                            <span className="text-sm text-gray-700">
+                              {permission.replace('can_', '').replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">Nenhuma permissão configurada</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </Layout>
   );
 };

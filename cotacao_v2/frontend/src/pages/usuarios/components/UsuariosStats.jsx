@@ -1,136 +1,102 @@
 import React from 'react';
-import styled from 'styled-components';
-import { FaUsers, FaUserCheck, FaUserTimes, FaShieldAlt, FaUserTie, FaUserCog } from 'react-icons/fa';
-import { colors } from '../../../design-system';
-
-const StatsContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 24px;
-  margin-bottom: 32px;
-`;
-
-const StatCard = styled.div`
-  background: white;
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2px);
-  }
-`;
-
-const IconContainer = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: ${props => props.color};
-  color: white;
-`;
-
-const StatContent = styled.div`
-  flex: 1;
-`;
-
-const StatValue = styled.div`
-  font-size: 24px;
-  font-weight: 700;
-  color: ${colors.neutral.darkGray};
-  margin-bottom: 4px;
-`;
-
-const StatLabel = styled.div`
-  font-size: 14px;
-  color: ${colors.neutral.gray};
-  font-weight: 500;
-`;
+import { FaUsers, FaUserCheck, FaUserTimes, FaUserClock } from 'react-icons/fa';
 
 const UsuariosStats = ({ usuarios }) => {
   const stats = React.useMemo(() => {
-    if (!usuarios || usuarios.length === 0) {
-      return {
-        total: 0,
-        ativos: 0,
-        inativos: 0,
-        administradores: 0,
-        gestores: 0,
-        supervisores: 0,
-        compradores: 0
-      };
-    }
+    const total = usuarios.length;
+    const ativos = usuarios.filter(u => u.status === 'ativo').length;
+    const inativos = usuarios.filter(u => u.status === 'inativo').length;
+    const admins = usuarios.filter(u => u.role === 'administrador').length;
+    const gestores = usuarios.filter(u => u.role === 'gestor').length;
+    const supervisores = usuarios.filter(u => u.role === 'supervisor').length;
+    const compradores = usuarios.filter(u => u.role === 'comprador').length;
 
     return {
-      total: usuarios.length,
-      ativos: usuarios.filter(u => u.status === 'ativo').length,
-      inativos: usuarios.filter(u => u.status === 'inativo').length,
-      administradores: usuarios.filter(u => u.role === 'administrador').length,
-      gestores: usuarios.filter(u => u.role === 'gestor').length,
-      supervisores: usuarios.filter(u => u.role === 'supervisor').length,
-      compradores: usuarios.filter(u => u.role === 'comprador').length
+      total,
+      ativos,
+      inativos,
+      admins,
+      gestores,
+      supervisores,
+      compradores
     };
   }, [usuarios]);
 
   const statCards = [
     {
-      icon: FaUsers,
-      label: 'Total de Usuários',
+      title: 'Total de Usuários',
       value: stats.total,
-      color: colors.primary.green
+      icon: <FaUsers className="text-blue-500" />,
+      color: 'bg-blue-50 border-blue-200',
+      textColor: 'text-blue-700'
     },
     {
-      icon: FaUserCheck,
-      label: 'Usuários Ativos',
+      title: 'Usuários Ativos',
       value: stats.ativos,
-      color: '#28a745'
+      icon: <FaUserCheck className="text-green-500" />,
+      color: 'bg-green-50 border-green-200',
+      textColor: 'text-green-700'
     },
     {
-      icon: FaUserTimes,
-      label: 'Usuários Inativos',
+      title: 'Usuários Inativos',
       value: stats.inativos,
-      color: '#dc3545'
+      icon: <FaUserTimes className="text-red-500" />,
+      color: 'bg-red-50 border-red-200',
+      textColor: 'text-red-700'
     },
     {
-      icon: FaShieldAlt,
-      label: 'Administradores',
-      value: stats.administradores,
-      color: '#dc3545'
+      title: 'Administradores',
+      value: stats.admins,
+      icon: <FaUsers className="text-purple-500" />,
+      color: 'bg-purple-50 border-purple-200',
+      textColor: 'text-purple-700'
     },
     {
-      icon: FaUserTie,
-      label: 'Gestores',
+      title: 'Gestores',
       value: stats.gestores,
-      color: '#fd7e14'
+      icon: <FaUsers className="text-indigo-500" />,
+      color: 'bg-indigo-50 border-indigo-200',
+      textColor: 'text-indigo-700'
     },
     {
-      icon: FaUserCog,
-      label: 'Supervisores',
+      title: 'Supervisores',
       value: stats.supervisores,
-      color: '#ffc107'
+      icon: <FaUsers className="text-yellow-500" />,
+      color: 'bg-yellow-50 border-yellow-200',
+      textColor: 'text-yellow-700'
+    },
+    {
+      title: 'Compradores',
+      value: stats.compradores,
+      icon: <FaUsers className="text-teal-500" />,
+      color: 'bg-teal-50 border-teal-200',
+      textColor: 'text-teal-700'
     }
   ];
 
   return (
-    <StatsContainer>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
       {statCards.map((card, index) => (
-        <StatCard key={index}>
-          <IconContainer color={card.color}>
-            <card.icon size={24} />
-          </IconContainer>
-          <StatContent>
-            <StatValue>{card.value}</StatValue>
-            <StatLabel>{card.label}</StatLabel>
-          </StatContent>
-        </StatCard>
+        <div
+          key={index}
+          className={`p-4 rounded-lg border ${card.color} shadow-sm`}
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className={`text-sm font-medium ${card.textColor}`}>
+                {card.title}
+              </p>
+              <p className={`text-2xl font-bold ${card.textColor}`}>
+                {card.value}
+              </p>
+            </div>
+            <div className="text-2xl">
+              {card.icon}
+            </div>
+          </div>
+        </div>
       ))}
-    </StatsContainer>
+    </div>
   );
 };
 

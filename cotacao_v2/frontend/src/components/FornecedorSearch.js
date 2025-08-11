@@ -1,301 +1,121 @@
-import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
-import { FaSearch, FaTimes, FaBuilding } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { FaSearch, FaTimes } from 'react-icons/fa';
 
-const SearchContainer = styled.div`
-  position: relative;
-  width: 100%;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.3s ease;
-  padding-right: 40px;
-
-  &:focus {
-    outline: none;
-    border-color: #00723e;
-    box-shadow: 0 0 0 3px rgba(0, 114, 62, 0.1);
-  }
-
-  &::placeholder {
-    color: #999;
-  }
-`;
-
-const SearchIcon = styled.div`
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #999;
-  cursor: pointer;
-  z-index: 2;
-`;
-
-const Dropdown = styled.div`
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  max-height: 300px;
-  overflow-y: auto;
-  z-index: 1000;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-`;
-
-const DropdownItem = styled.div`
-  padding: 12px 16px;
-  cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  &:hover {
-    background-color: #f8f9fa;
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const FornecedorInfo = styled.div`
-  flex: 1;
-`;
-
-const FornecedorName = styled.div`
-  font-weight: 600;
-  color: #333;
-  font-size: 14px;
-`;
-
-const FornecedorDetails = styled.div`
-  font-size: 12px;
-  color: #666;
-  margin-top: 2px;
-`;
-
-const NoResults = styled.div`
-  padding: 20px;
-  text-align: center;
-  color: #666;
-  font-size: 14px;
-`;
-
-const LoadingSpinner = styled.div`
-  padding: 20px;
-  text-align: center;
-  color: #666;
-  font-size: 14px;
-`;
-
-const FornecedorSearch = ({ 
-  value, 
-  onChange, 
-  placeholder = "Buscar fornecedor...",
-  onSelect,
-  disabled = false 
-}) => {
+const FornecedorSearch = ({ onSelect, placeholder = "Buscar fornecedor..." }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [fornecedores, setFornecedores] = useState([]);
+  const [filteredFornecedores, setFilteredFornecedores] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedFornecedor, setSelectedFornecedor] = useState(null);
-  const dropdownRef = useRef(null);
-
-  // URL da API do sistema principal
-  const API_URL = process.env.REACT_APP_MAIN_API_URL || 'http://82.29.57.43:3001/api';
 
   useEffect(() => {
-    // Se há um valor inicial, buscar os dados do fornecedor
-    if (value && !selectedFornecedor) {
-      setSearchTerm(value);
-    }
-  }, [value]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    fetchFornecedores();
   }, []);
 
-  const searchFornecedores = async (term) => {
-    if (!term || term.length < 2) {
-      setFornecedores([]);
-      setShowDropdown(false);
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredFornecedores([]);
       return;
     }
 
+    const filtered = fornecedores.filter(fornecedor =>
+      fornecedor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      fornecedor.cnpj.includes(searchTerm)
+    );
+    setFilteredFornecedores(filtered);
+  }, [searchTerm, fornecedores]);
+
+  const fetchFornecedores = async () => {
     setLoading(true);
     try {
-      // Usar o token do sistema de cotação
-      const token = localStorage.getItem('token');
-      
-      if (!token) {
-        console.error('Token não encontrado');
-        setFornecedores([]);
-        setShowDropdown(false);
-        return;
-      }
-
-      console.log('🔍 Buscando fornecedores diretamente no sistema principal...');
-      
-      // Buscar fornecedores usando rota segura
-      const response = await fetch(`${API_URL}/fornecedores/public?search=${encodeURIComponent(term)}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        credentials: 'omit' // Não enviar cookies para evitar CSRF
-      });
-
-      console.log('🔍 Resposta da API:', { status: response.status, ok: response.ok });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('✅ Fornecedores encontrados:', data.length);
-        setFornecedores(data);
-        setShowDropdown(data.length > 0);
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error('❌ Erro ao buscar fornecedores:', response.status, errorData);
-        setFornecedores([]);
-        setShowDropdown(false);
-      }
+      const response = await fetch('/api/fornecedores');
+      const data = await response.json();
+      setFornecedores(data);
     } catch (error) {
-      console.error('❌ Erro ao buscar fornecedores:', error);
-      setFornecedores([]);
-      setShowDropdown(false);
+      console.error('Erro ao buscar fornecedores:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    const term = e.target.value;
-    setSearchTerm(term);
-    
-    // Não chamar onChange aqui para evitar sobrescrever o nome completo
-    // onChange será chamado apenas quando um fornecedor for selecionado
-    
-    if (term.length >= 2) {
-      searchFornecedores(term);
-    } else {
-      setFornecedores([]);
-      setShowDropdown(false);
-    }
-  };
-
-  const handleSelectFornecedor = (fornecedor) => {
-    const nomeCompleto = fornecedor.razao_social || fornecedor.nome_fantasia;
-    console.log('🔍 Fornecedor selecionado:', {
-      id: fornecedor.id,
-      razao_social: fornecedor.razao_social,
-      nome_fantasia: fornecedor.nome_fantasia,
-      nomeCompleto: nomeCompleto
-    });
-    
-    setSelectedFornecedor(fornecedor);
-    setSearchTerm(nomeCompleto);
-    setShowDropdown(false);
-    setFornecedores([]);
-    
-    // Chamar onChange com o nome completo do fornecedor
-    onChange(nomeCompleto);
-    
-    if (onSelect) {
-      onSelect(fornecedor);
-    }
+  const handleSelect = (fornecedor) => {
+    onSelect(fornecedor);
+    setSearchTerm(fornecedor.nome);
+    setIsOpen(false);
   };
 
   const handleClear = () => {
     setSearchTerm('');
-    setSelectedFornecedor(null);
-    setFornecedores([]);
-    setShowDropdown(false);
-    onChange('');
-    
-    if (onSelect) {
-      onSelect(null);
+    onSelect(null);
+    setIsOpen(false);
+  };
+
+  const handleInputChange = (e) => {
+    setSearchTerm(e.target.value);
+    setIsOpen(true);
+  };
+
+  const handleInputFocus = () => {
+    if (searchTerm && filteredFornecedores.length > 0) {
+      setIsOpen(true);
     }
   };
 
-  const formatCNPJ = (cnpj) => {
-    if (!cnpj) return '';
-    return cnpj.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
-  };
-
   return (
-    <SearchContainer ref={dropdownRef}>
-      <SearchInput
-        type="text"
-        value={searchTerm}
-        onChange={handleInputChange}
-        placeholder={placeholder}
-        disabled={disabled}
-        onFocus={() => {
-          if (fornecedores.length > 0) {
-            setShowDropdown(true);
-          }
-        }}
-      />
-      
-      <SearchIcon onClick={handleClear}>
-        {searchTerm ? <FaTimes /> : <FaSearch />}
-      </SearchIcon>
+    <div className="relative">
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <FaSearch className="h-4 w-4 text-gray-400" />
+        </div>
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={handleInputChange}
+          onFocus={handleInputFocus}
+          placeholder={placeholder}
+          className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-green-500 focus:border-green-500 sm:text-sm"
+        />
+        {searchTerm && (
+          <button
+            onClick={handleClear}
+            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+          >
+            <FaTimes className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+          </button>
+        )}
+      </div>
 
-      {showDropdown && (
-        <Dropdown>
+      {isOpen && (searchTerm || loading) && (
+        <div className="absolute z-10 w-full mt-1 bg-white shadow-lg max-h-60 rounded-md py-1 text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
           {loading ? (
-            <LoadingSpinner>Carregando fornecedores...</LoadingSpinner>
-          ) : fornecedores.length > 0 ? (
-            fornecedores.map((fornecedor) => (
-              <DropdownItem
+            <div className="px-4 py-2 text-sm text-gray-500">
+              Carregando fornecedores...
+            </div>
+          ) : filteredFornecedores.length > 0 ? (
+            filteredFornecedores.map((fornecedor) => (
+              <div
                 key={fornecedor.id}
-                onClick={() => handleSelectFornecedor(fornecedor)}
+                onClick={() => handleSelect(fornecedor)}
+                className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-green-50"
               >
-                <FaBuilding style={{ color: '#00723e' }} />
-                <FornecedorInfo>
-                  <FornecedorName>
-                    {fornecedor.razao_social || fornecedor.nome_fantasia}
-                  </FornecedorName>
-                  <FornecedorDetails>
-                    {fornecedor.nome_fantasia && fornecedor.razao_social && (
-                      <div>Fantasia: {fornecedor.nome_fantasia}</div>
-                    )}
-                    <div>CNPJ: {formatCNPJ(fornecedor.cnpj)}</div>
-                    {fornecedor.municipio && fornecedor.uf && (
-                      <div>{fornecedor.municipio} - {fornecedor.uf}</div>
-                    )}
-                  </FornecedorDetails>
-                </FornecedorInfo>
-              </DropdownItem>
+                <div className="flex items-center">
+                  <span className="font-medium text-gray-900 truncate">
+                    {fornecedor.nome}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-500">
+                  CNPJ: {fornecedor.cnpj}
+                </div>
+              </div>
             ))
-          ) : (
-            <NoResults>Nenhum fornecedor encontrado</NoResults>
-          )}
-        </Dropdown>
+          ) : searchTerm ? (
+            <div className="px-4 py-2 text-sm text-gray-500">
+              Nenhum fornecedor encontrado
+            </div>
+          ) : null}
+        </div>
       )}
-    </SearchContainer>
+    </div>
   );
 };
 
