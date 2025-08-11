@@ -3,9 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { SidebarProvider } from './contexts/SidebarContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './utils/axiosConfig'; // Importar configuração do axios
-import './design-system'; // Importar design system
 import Login from './components/Login';
-import Dashboard from './components/Dashboard';
+import Dashboard from './pages/dashboard/Dashboard';
 import Usuarios from './components/Usuarios';
 import Cotacoes from './components/Cotacoes';
 import NovaCotacao from './components/NovaCotacao';
