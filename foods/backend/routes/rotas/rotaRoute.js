@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
-const { rotaValidations, commonValidations, handleValidationErrors } = require('./rotaValidator');
+const { rotaValidations, commonValidations } = require('./rotaValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -21,7 +21,7 @@ router.use(authenticateToken);
 // Listar rotas com paginação, busca e filtros
 router.get('/', 
   checkScreenPermission('rotas', 'visualizar'),
-  ...commonValidations.search,
+  commonValidations.search,
   ...commonValidations.pagination,
   rotasController.listarRotas,
   hateoasMiddleware
@@ -76,7 +76,7 @@ router.get('/:id/unidades-escolares',
 // Buscar rota por ID
 router.get('/:id', 
   checkScreenPermission('rotas', 'visualizar'),
-  ...commonValidations.id,
+  commonValidations.id,
   rotasController.buscarRotaPorId,
   hateoasMiddleware
 );
@@ -85,23 +85,21 @@ router.get('/:id',
 router.post('/', [
   checkScreenPermission('rotas', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'rotas'),
-  rotaValidations.create,
-  handleValidationErrors
+  rotaValidations.create
 ], rotasController.criarRota);
 
 // Atualizar rota
 router.put('/:id', [
   checkScreenPermission('rotas', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'rotas'),
-  rotaValidations.update,
-  handleValidationErrors
+  rotaValidations.update
 ], rotasController.atualizarRota);
 
 // Excluir rota
 router.delete('/:id', [
   checkScreenPermission('rotas', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'rotas'),
-  ...commonValidations.id
+  commonValidations.id
 ], rotasController.excluirRota);
 
 module.exports = router;

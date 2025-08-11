@@ -30,6 +30,9 @@ const ajudantesRoutes = require('./routes/ajudantes');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Configuração de trust proxy para rate-limit funcionar corretamente
+app.set('trust proxy', 1);
+
 // Configuração de segurança
 app.use(helmet());
 

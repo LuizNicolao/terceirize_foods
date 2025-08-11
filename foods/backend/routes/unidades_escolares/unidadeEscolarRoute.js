@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
-const { unidadeEscolarValidations, commonValidations, handleValidationErrors } = require('./unidadeEscolarValidator');
+const { unidadeEscolarValidations, commonValidations } = require('./unidadeEscolarValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -21,7 +21,7 @@ router.use(authenticateToken);
 // Listar unidades escolares com paginação, busca e filtros
 router.get('/', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
-  ...commonValidations.search,
+  commonValidations.search,
   ...commonValidations.pagination,
   unidadesEscolaresController.listarUnidadesEscolares,
   hateoasMiddleware
@@ -69,7 +69,7 @@ router.get('/centros-distribuicao/listar',
 // Buscar unidade escolar por ID
 router.get('/:id', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
-  ...commonValidations.id,
+  commonValidations.id,
   unidadesEscolaresController.buscarUnidadeEscolarPorId,
   hateoasMiddleware
 );
@@ -78,23 +78,21 @@ router.get('/:id',
 router.post('/', [
   checkScreenPermission('unidades_escolares', 'criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares'),
-  unidadeEscolarValidations.create,
-  handleValidationErrors
+  unidadeEscolarValidations.create
 ], unidadesEscolaresController.criarUnidadeEscolar);
 
 // Atualizar unidade escolar
 router.put('/:id', [
   checkScreenPermission('unidades_escolares', 'editar'),
   auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_escolares'),
-  unidadeEscolarValidations.update,
-  handleValidationErrors
+  unidadeEscolarValidations.update
 ], unidadesEscolaresController.atualizarUnidadeEscolar);
 
 // Excluir unidade escolar
 router.delete('/:id', [
   checkScreenPermission('unidades_escolares', 'excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'unidades_escolares'),
-  ...commonValidations.id
+  commonValidations.id
 ], unidadesEscolaresController.excluirUnidadeEscolar);
 
 module.exports = router;

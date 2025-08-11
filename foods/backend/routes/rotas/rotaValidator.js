@@ -18,19 +18,28 @@ const handleValidationErrors = (req, res, next) => {
 // Validações comuns
 const commonValidations = {
   // Validação de ID
-  id: [
-    param('id').isInt({ min: 1 }).withMessage('ID deve ser um número inteiro positivo')
-  ],
+  id: param('id')
+    .isInt({ min: 1 })
+    .withMessage('ID deve ser um número inteiro positivo'),
+  
+  // Validação de busca
+  search: query('search')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Termo de busca deve ter entre 1 e 100 caracteres'),
   
   // Validação de paginação
   pagination: [
-    query('page').optional().isInt({ min: 1 }).withMessage('Página deve ser um número inteiro positivo'),
-    query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limite deve ser entre 1 e 100')
-  ],
-  
-  // Validação de busca
-  search: [
-    query('search').optional().isString().trim().isLength({ min: 1, max: 100 }).withMessage('Termo de busca deve ter entre 1 e 100 caracteres')
+    query('page')
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage('Página deve ser um número inteiro positivo'),
+    query('limit')
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage('Limite deve ser um número entre 1 e 100')
   ]
 };
 
@@ -60,7 +69,9 @@ const rotaValidations = {
     
     body('observacoes')
       .optional()
-      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres')
+      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
+    
+    handleValidationErrors
   ],
 
   // Validações para atualização de rota
@@ -89,7 +100,9 @@ const rotaValidations = {
     
     body('observacoes')
       .optional()
-      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres')
+      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
+    
+    handleValidationErrors
   ]
 };
 
