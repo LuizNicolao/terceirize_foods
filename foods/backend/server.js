@@ -37,15 +37,17 @@ app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? [
+        'https://foods.terceirizemais.com.br', // Domínio principal HTTPS
+        'http://foods.terceirizemais.com.br',  // Domínio principal HTTP (redirecionamento)
+        'https://cotacao.terceirizemais.com.br', // Sistema de cotação HTTPS
+        'http://cotacao.terceirizemais.com.br',  // Sistema de cotação HTTP
         'http://82.29.57.43:3000', 
         'http://82.29.57.43', 
         'http://localhost:3000',
         'http://82.29.57.43:3001', // Sistema de cotação
         'http://82.29.57.43:3002', // Sistema de cotação (porta 3002)
         'http://localhost:3001',   // Sistema de cotação local
-        'http://localhost:3002',   // Sistema de cotação local (porta 3002)
-        'https://foods.terceirizemais.com.br', // Novo domínio
-        'http://foods.terceirizemais.com.br'   // Novo domínio (HTTP)
+        'http://localhost:3002'    // Sistema de cotação local (porta 3002)
       ] 
     : [
         'http://localhost:3000',
@@ -508,5 +510,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📊 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 URL: http://localhost:${PORT}`);
-  console.log(`🌐 URL Externa: http://82.29.57.43:${PORT}`);
+  console.log(`🌐 URL Externa: https://foods.terceirizemais.com.br`);
 }); 

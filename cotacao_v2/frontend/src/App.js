@@ -10,10 +10,10 @@ import { Cotacoes } from './pages/cotacoes';
 import EditarUsuario from './components/EditarUsuario';
 import VisualizarUsuario from './components/VisualizarUsuario';
 import { Supervisor } from './pages/supervisor';
-import Aprovacoes from './components/Aprovacoes';
+import { Aprovacoes } from './pages/aprovacoes';
 import AnalisarCotacao from './components/AnalisarCotacao';
 import AnalisarCotacaoSupervisor from './components/AnalisarCotacaoSupervisor';
-import Saving from './components/Saving';
+import { Saving } from './pages/saving';
 import VisualizarSaving from './components/VisualizarSaving';
 
 

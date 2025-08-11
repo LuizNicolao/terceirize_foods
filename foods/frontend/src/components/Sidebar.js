@@ -532,10 +532,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           e.preventDefault();
                           const token = localStorage.getItem('token');
                           if (token) {
-                            const ssoUrl = `http://82.29.57.43:3002?sso_token=${token}`;
+                            const ssoUrl = `https://cotacao.terceirizemais.com.br?sso_token=${token}`;
                             window.open(ssoUrl, '_blank');
                           } else {
-                            window.open('http://82.29.57.43:3002', '_blank');
+                            window.open('https://cotacao.terceirizemais.com.br', '_blank');
                           }
                         }
                         if (window.innerWidth <= 768) {
@@ -597,12 +597,12 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           
                           if (token) {
                             // Passar o token como parâmetro na URL
-                            const ssoUrl = `http://82.29.57.43:3002?sso_token=${token}`;
+                            const ssoUrl = `https://cotacao.terceirizemais.com.br?sso_token=${token}`;
                             console.log('🔍 Abrindo URL SSO:', ssoUrl);
                             window.open(ssoUrl, '_blank');
                           } else {
                             console.log('🔍 Nenhum token encontrado, abrindo sem SSO');
-                            window.open('http://82.29.57.43:3002', '_blank');
+                            window.open('https://cotacao.terceirizemais.com.br', '_blank');
                           }
                         }
                         

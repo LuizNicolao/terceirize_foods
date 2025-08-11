@@ -4,7 +4,7 @@
  */
 
 // Configuração base da API
-const API_BASE_URL = process.env.API_BASE_URL || 'http://82.29.57.43:3001/api';
+const API_BASE_URL = process.env.API_BASE_URL || 'https://foods.terceirizemais.com.br/foods/api';
 
 // Links padrão da API
 const DEFAULT_LINKS = {
