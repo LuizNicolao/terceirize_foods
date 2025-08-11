@@ -5,8 +5,8 @@ WORKDIR /app
 # Copiar package.json primeiro
 COPY package.json ./
 
-# Instalar dependências
-RUN npm install
+# Limpar cache e instalar dependências
+RUN npm cache clean --force && npm install
 
 # Copiar o resto dos arquivos
 COPY . .
