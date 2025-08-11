@@ -16,7 +16,7 @@ console.log('DB_HOST:', process.env.DB_HOST);
 console.log('DB_NAME:', process.env.DB_NAME);
 
 const authRoutes = require('./routes/auth');
-const userRoutes = require('./routes/users');
+const usuariosRoutes = require('./routes/usuarios');
 const cotacoesRoutes = require('./routes/cotacoes');
 const savingRoutes = require('./routes/saving');
 const dashboardRoutes = require('./routes/dashboard');
@@ -59,7 +59,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Rotas
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/cotacoes', cotacoesRoutes);
 app.use('/api/saving', savingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
