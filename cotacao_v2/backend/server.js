@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 // Carregar variáveis de ambiente
@@ -15,6 +14,13 @@ console.log('JWT_SECRET:', process.env.JWT_SECRET ? '✅ Definida' : '❌ Não d
 console.log('DB_HOST:', process.env.DB_HOST);
 console.log('DB_NAME:', process.env.DB_NAME);
 
+// Importar middlewares customizados
+const { addHateoasLinks } = require('./middleware/hateoas');
+const { paginateResults } = require('./middleware/pagination');
+const responseHandler = require('./middleware/responseHandler');
+const { apiLimiter, authLimiter, createLimiter } = require('./middleware/limiter');
+
+// Importar rotas
 const authRoutes = require('./routes/auth');
 const usuariosRoutes = require('./routes/usuarios/index');
 const cotacoesRoutes = require('./routes/cotacoes/index');
@@ -45,17 +51,20 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// Rate limiting - aumentando o limite
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 1000, // aumentando para 1000 requests por IP
-  message: 'Muitas requisições deste IP, tente novamente em 15 minutos.'
-});
-app.use(limiter);
+// Rate limiting
+app.use('/api/', apiLimiter);
+app.use('/api/auth', authLimiter);
+app.use('/api/cotacoes', createLimiter);
+app.use('/api/usuarios', createLimiter);
 
 // Middleware para parsing JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Middlewares customizados
+app.use(responseHandler);
+app.use(addHateoasLinks);
+app.use(paginateResults);
 
 // Rotas
 app.use('/api/auth', authRoutes);
@@ -72,27 +81,26 @@ console.log('  - GET /api/saving/compradores/listar');
 
 // Rota de teste
 app.get('/api/health', (req, res) => {
-  res.json({ 
+  res.success({ 
     message: 'Sistema de Cotação API funcionando!',
-    timestamp: new Date().toISOString()
+    version: '2.0.0',
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
 // Middleware de tratamento de erros
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ 
-    message: 'Erro interno do servidor',
-    error: process.env.NODE_ENV === 'development' ? err.message : {}
-  });
+  res.error('Erro interno do servidor', 500, process.env.NODE_ENV === 'development' ? err.message : null);
 });
 
 // Rota 404
 app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Rota não encontrada' });
+  res.notFound('Rota não encontrada');
 });
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📱 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 API Base: http://localhost:${PORT}/api`);
 }); 

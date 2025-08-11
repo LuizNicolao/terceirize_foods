@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import cotacoesService from '../services/cotacoes';
+import { formatDate, getStatusConfig } from '../utils/formatters';
 import toast from 'react-hot-toast';
 
 export const useCotacoes = () => {
@@ -104,7 +105,7 @@ export const useCotacoes = () => {
       const result = await cotacoesService.enviarParaSupervisor(cotacaoId);
       
       if (result.success) {
-        toast.success('Cotação enviada para supervisor com sucesso!');
+        toast.success('Cotação enviada para supervisor com sucesso');
         loadCotacoes(); // Recarregar lista
       } else {
         toast.error(result.error);
@@ -117,75 +118,55 @@ export const useCotacoes = () => {
 
   // Excluir cotação
   const handleDeleteCotacao = async (cotacaoId) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta cotação?')) {
-      return;
-    }
-
-    try {
-      const result = await cotacoesService.deleteCotacao(cotacaoId);
-      
-      if (result.success) {
-        toast.success('Cotação excluída com sucesso!');
-        loadCotacoes(); // Recarregar lista
-      } else {
-        toast.error(result.error);
+    if (window.confirm('Tem certeza que deseja excluir esta cotação?')) {
+      try {
+        const result = await cotacoesService.deleteCotacao(cotacaoId);
+        
+        if (result.success) {
+          toast.success('Cotação excluída com sucesso');
+          loadCotacoes(); // Recarregar lista
+        } else {
+          toast.error(result.error);
+        }
+      } catch (error) {
+        console.error('Erro ao excluir cotação:', error);
+        toast.error('Erro ao excluir cotação');
       }
-    } catch (error) {
-      console.error('Erro ao excluir cotação:', error);
-      toast.error('Erro ao excluir cotação');
     }
   };
 
-  // Navegação
+  // Visualizar cotação
   const handleViewCotacao = (id) => {
-    navigate(`/visualizar-cotacao/${id}`);
+    navigate(`/cotacoes/${id}`);
   };
 
+  // Editar cotação
   const handleEditCotacao = (id) => {
-    navigate(`/editar-cotacao/${id}`);
+    navigate(`/cotacoes/${id}/editar`);
   };
 
+  // Nova cotação
   const handleNovaCotacao = () => {
-    navigate('/nova-cotacao');
+    navigate('/cotacoes/nova');
   };
 
-  // Funções utilitárias
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR');
-  };
-
+  // Funções utilitárias usando os novos formatters
   const getStatusColor = (status) => {
-    const colorMap = {
-      'pendente': '#F59E0B',
-      'aprovada': '#10B981',
-      'rejeitada': '#EF4444',
-      'em_analise': '#3B82F6'
-    };
-    return colorMap[status] || '#6B7280';
+    const config = getStatusConfig(status);
+    return config.color;
   };
 
   const getStatusLabel = (status) => {
-    const labelMap = {
-      'pendente': 'Pendente',
-      'aprovada': 'Aprovada',
-      'rejeitada': 'Rejeitada',
-      'em_analise': 'Em Análise'
-    };
-    return labelMap[status] || status;
+    const config = getStatusConfig(status);
+    return config.label;
   };
 
   return {
-    // Estados
     cotacoes,
     loading,
     error,
     filters,
     statusCounts,
-    
-    // Funções
-    loadCotacoes,
     handleStatusFilter,
     updateFilters,
     clearFilters,

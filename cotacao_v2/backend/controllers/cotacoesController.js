@@ -1,4 +1,5 @@
 const { executeQuery, executeTransaction } = require('../config/database');
+const { applyPagination, getPaginationMeta } = require('../middleware/pagination');
 
 class CotacoesController {
   // Listar todas as cotações
@@ -35,6 +36,17 @@ class CotacoesController {
         params.push(dataFim);
       }
 
+      // Query para contar total
+      const countQuery = `
+        SELECT COUNT(*) as total
+        FROM cotacoes c
+        ${whereClause}
+      `;
+      
+      const countResult = await executeQuery(countQuery, params);
+      const total = countResult[0].total;
+
+      // Query principal com paginação
       const query = `
         SELECT 
           c.id,
@@ -53,20 +65,14 @@ class CotacoesController {
         ORDER BY c.data_criacao DESC
       `;
 
-      const cotacoes = await executeQuery(query, params);
+      const paginatedQuery = applyPagination(query, req);
+      const cotacoes = await executeQuery(paginatedQuery, params);
+      const paginationMeta = getPaginationMeta(total, req);
 
-      res.json({
-        success: true,
-        data: cotacoes,
-        message: 'Cotações carregadas com sucesso'
-      });
+      res.success(cotacoes, 'Cotações carregadas com sucesso', 200, paginationMeta);
     } catch (error) {
       console.error('Erro ao buscar cotações:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 
@@ -102,24 +108,13 @@ class CotacoesController {
       `, [id]);
 
       if (cotacao.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Cotação não encontrada'
-        });
+        return res.notFound('Cotação não encontrada');
       }
 
-      res.json({
-        success: true,
-        data: cotacao[0],
-        message: 'Cotação carregada com sucesso'
-      });
+      res.success(cotacao[0], 'Cotação carregada com sucesso');
     } catch (error) {
       console.error('Erro ao buscar cotação:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 
@@ -135,57 +130,32 @@ class CotacoesController {
         produtos
       } = req.body;
 
-      // Validar dados obrigatórios
-      if (!comprador || !local_entrega || !tipo_compra) {
-        return res.status(400).json({
-          success: false,
-          message: 'Dados obrigatórios não fornecidos'
-        });
-      }
+      const result = await executeTransaction(async (connection) => {
+        // Inserir cotação
+        const cotacaoResult = await connection.execute(`
+          INSERT INTO cotacoes (comprador, local_entrega, tipo_compra, motivo_emergencial, justificativa)
+          VALUES (?, ?, ?, ?, ?)
+        `, [comprador, local_entrega, tipo_compra, motivo_emergencial, justificativa]);
 
-      // Inserir cotação
-      const cotacaoResult = await executeQuery(`
-        INSERT INTO cotacoes (
-          comprador, local_entrega, tipo_compra, 
-          motivo_emergencial, justificativa, status, 
-          data_criacao, data_atualizacao
-        ) VALUES (?, ?, ?, ?, ?, 'pendente', NOW(), NOW())
-      `, [comprador, local_entrega, tipo_compra, motivo_emergencial, justificativa]);
+        const cotacaoId = cotacaoResult.insertId;
 
-      const cotacaoId = cotacaoResult.insertId;
-
-      // Inserir produtos
-      if (produtos && produtos.length > 0) {
-        for (const produto of produtos) {
-          await executeQuery(`
-            INSERT INTO produtos (
-              cotacao_id, nome, qtde, un, prazo_entrega,
-              ult_valor_aprovado, ult_fornecedor_aprovado,
-              valor_anterior, valor_unitario, difal, ipi,
-              data_entrega_fn, total
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `, [
-            cotacaoId, produto.nome, produto.qtde, produto.un,
-            produto.prazo_entrega, produto.ult_valor_aprovado,
-            produto.ult_fornecedor_aprovado, produto.valor_anterior,
-            produto.valor_unitario, produto.difal, produto.ipi,
-            produto.data_entrega_fn, produto.total
-          ]);
+        // Inserir produtos se fornecidos
+        if (produtos && Array.isArray(produtos)) {
+          for (const produto of produtos) {
+            await connection.execute(`
+              INSERT INTO produtos (cotacao_id, nome, qtde, un, valor_unitario)
+              VALUES (?, ?, ?, ?, ?)
+            `, [cotacaoId, produto.nome, produto.qtde, produto.un, produto.valor_unitario]);
+          }
         }
-      }
 
-      res.status(201).json({
-        success: true,
-        data: { id: cotacaoId },
-        message: 'Cotação criada com sucesso'
+        return cotacaoId;
       });
+
+      res.created({ id: result }, 'Cotação criada com sucesso');
     } catch (error) {
       console.error('Erro ao criar cotação:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 
@@ -195,38 +165,27 @@ class CotacoesController {
       const { id } = req.params;
       const updateData = req.body;
 
-      // Verificar se a cotação existe
-      const cotacao = await executeQuery('SELECT * FROM cotacoes WHERE id = ?', [id]);
-      
-      if (cotacao.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Cotação não encontrada'
-        });
+      const allowedFields = ['comprador', 'local_entrega', 'tipo_compra', 'motivo_emergencial', 'justificativa'];
+      const fieldsToUpdate = Object.keys(updateData).filter(field => allowedFields.includes(field));
+
+      if (fieldsToUpdate.length === 0) {
+        return res.badRequest('Nenhum campo válido para atualização');
       }
 
-      // Atualizar cotação
-      await executeQuery(`
-        UPDATE cotacoes SET 
-          comprador = ?, local_entrega = ?, tipo_compra = ?,
-          motivo_emergencial = ?, justificativa = ?, data_atualizacao = NOW()
-        WHERE id = ?
-      `, [
-        updateData.comprador, updateData.local_entrega, updateData.tipo_compra,
-        updateData.motivo_emergencial, updateData.justificativa, id
-      ]);
+      const setClause = fieldsToUpdate.map(field => `${field} = ?`).join(', ');
+      const values = fieldsToUpdate.map(field => updateData[field]);
+      values.push(id);
 
-      res.json({
-        success: true,
-        message: 'Cotação atualizada com sucesso'
-      });
+      await executeQuery(`
+        UPDATE cotacoes 
+        SET ${setClause}, data_atualizacao = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `, values);
+
+      res.success(null, 'Cotação atualizada com sucesso');
     } catch (error) {
       console.error('Erro ao atualizar cotação:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 
@@ -235,33 +194,16 @@ class CotacoesController {
     try {
       const { id } = req.params;
 
-      // Verificar se a cotação existe
-      const cotacao = await executeQuery('SELECT * FROM cotacoes WHERE id = ?', [id]);
-      
-      if (cotacao.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Cotação não encontrada'
-        });
+      const result = await executeQuery('DELETE FROM cotacoes WHERE id = ?', [id]);
+
+      if (result.affectedRows === 0) {
+        return res.notFound('Cotação não encontrada');
       }
 
-      // Excluir produtos primeiro
-      await executeQuery('DELETE FROM produtos WHERE cotacao_id = ?', [id]);
-
-      // Excluir cotação
-      await executeQuery('DELETE FROM cotacoes WHERE id = ?', [id]);
-
-      res.json({
-        success: true,
-        message: 'Cotação excluída com sucesso'
-      });
+      res.success(null, 'Cotação excluída com sucesso');
     } catch (error) {
       console.error('Erro ao excluir cotação:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 
@@ -270,42 +212,20 @@ class CotacoesController {
     try {
       const { id } = req.params;
 
-      // Verificar se a cotação existe e está pendente
-      const cotacao = await executeQuery('SELECT * FROM cotacoes WHERE id = ?', [id]);
-      
-      if (cotacao.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Cotação não encontrada'
-        });
-      }
-
-      if (cotacao[0].status !== 'pendente') {
-        return res.status(400).json({
-          success: false,
-          message: 'Apenas cotações pendentes podem ser enviadas para supervisor'
-        });
-      }
-
-      // Atualizar status
-      await executeQuery(`
-        UPDATE cotacoes SET 
-          status = 'em_analise', 
-          data_atualizacao = NOW()
+      const result = await executeQuery(`
+        UPDATE cotacoes 
+        SET status = 'em_analise', data_atualizacao = CURRENT_TIMESTAMP
         WHERE id = ?
       `, [id]);
 
-      res.json({
-        success: true,
-        message: 'Cotação enviada para supervisor com sucesso'
-      });
+      if (result.affectedRows === 0) {
+        return res.notFound('Cotação não encontrada');
+      }
+
+      res.success(null, 'Cotação enviada para supervisor com sucesso');
     } catch (error) {
       console.error('Erro ao enviar para supervisor:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 
@@ -315,37 +235,23 @@ class CotacoesController {
       const { id } = req.params;
       const { dadosAprovacao } = req.body;
 
-      // Verificar se a cotação existe
-      const cotacao = await executeQuery('SELECT * FROM cotacoes WHERE id = ?', [id]);
-      
-      if (cotacao.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Cotação não encontrada'
-        });
+      const result = await executeQuery(`
+        UPDATE cotacoes 
+        SET status = 'aprovada', 
+            motivo_final = ?, 
+            economia_total = ?,
+            data_atualizacao = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `, [dadosAprovacao.motivo, dadosAprovacao.economiaTotal || 0, id]);
+
+      if (result.affectedRows === 0) {
+        return res.notFound('Cotação não encontrada');
       }
 
-      // Atualizar status e dados de aprovação
-      await executeQuery(`
-        UPDATE cotacoes SET 
-          status = 'aprovada',
-          motivo_final = ?,
-          economia_total = ?,
-          data_atualizacao = NOW()
-        WHERE id = ?
-      `, [dadosAprovacao.motivo, dadosAprovacao.economiaTotal, id]);
-
-      res.json({
-        success: true,
-        message: 'Cotação aprovada com sucesso'
-      });
+      res.success(null, 'Cotação aprovada com sucesso');
     } catch (error) {
       console.error('Erro ao aprovar cotação:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 
@@ -355,36 +261,22 @@ class CotacoesController {
       const { id } = req.params;
       const { motivo } = req.body;
 
-      // Verificar se a cotação existe
-      const cotacao = await executeQuery('SELECT * FROM cotacoes WHERE id = ?', [id]);
-      
-      if (cotacao.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Cotação não encontrada'
-        });
-      }
-
-      // Atualizar status
-      await executeQuery(`
-        UPDATE cotacoes SET 
-          status = 'rejeitada',
-          motivo_final = ?,
-          data_atualizacao = NOW()
+      const result = await executeQuery(`
+        UPDATE cotacoes 
+        SET status = 'rejeitada', 
+            motivo_final = ?,
+            data_atualizacao = CURRENT_TIMESTAMP
         WHERE id = ?
       `, [motivo, id]);
 
-      res.json({
-        success: true,
-        message: 'Cotação rejeitada com sucesso'
-      });
+      if (result.affectedRows === 0) {
+        return res.notFound('Cotação não encontrada');
+      }
+
+      res.success(null, 'Cotação rejeitada com sucesso');
     } catch (error) {
       console.error('Erro ao rejeitar cotação:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 
@@ -393,31 +285,23 @@ class CotacoesController {
     try {
       const stats = await executeQuery(`
         SELECT 
-          COUNT(*) as total,
-          SUM(CASE WHEN status = 'pendente' THEN 1 ELSE 0 END) as pendentes,
-          SUM(CASE WHEN status = 'aprovada' THEN 1 ELSE 0 END) as aprovadas,
-          SUM(CASE WHEN status = 'rejeitada' THEN 1 ELSE 0 END) as rejeitadas,
-          SUM(CASE WHEN status = 'em_analise' THEN 1 ELSE 0 END) as em_analise,
-          COALESCE(SUM(economia_total), 0) as economia_total
+          COUNT(*) as total_cotacoes,
+          COUNT(CASE WHEN status = 'pendente' THEN 1 END) as pendentes,
+          COUNT(CASE WHEN status = 'aprovada' THEN 1 END) as aprovadas,
+          COUNT(CASE WHEN status = 'rejeitada' THEN 1 END) as rejeitadas,
+          COUNT(CASE WHEN status = 'em_analise' THEN 1 END) as em_analise,
+          SUM(CASE WHEN economia_total IS NOT NULL THEN economia_total ELSE 0 END) as economia_total
         FROM cotacoes
       `);
 
-      res.json({
-        success: true,
-        data: stats[0],
-        message: 'Estatísticas carregadas com sucesso'
-      });
+      res.success(stats[0], 'Estatísticas carregadas com sucesso');
     } catch (error) {
       console.error('Erro ao buscar estatísticas:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 
-  // Buscar cotações pendentes do supervisor
+  // Buscar cotações pendentes para supervisor
   async getCotacoesPendentesSupervisor(req, res) {
     try {
       const cotacoes = await executeQuery(`
@@ -426,50 +310,21 @@ class CotacoesController {
           c.comprador,
           c.local_entrega,
           c.tipo_compra,
-          c.motivo_emergencial,
           c.justificativa,
-          c.motivo_final,
           c.status,
           c.data_criacao,
-          c.data_atualizacao,
-          c.economia_total,
-          JSON_ARRAYAGG(
-            JSON_OBJECT(
-              'id', p.id,
-              'nome', p.nome,
-              'qtde', p.qtde,
-              'un', p.un,
-              'prazo_entrega', p.prazo_entrega,
-              'ult_valor_aprovado', p.ult_valor_aprovado,
-              'ult_fornecedor_aprovado', p.ult_fornecedor_aprovado,
-              'valor_anterior', p.valor_anterior,
-              'valor_unitario', p.valor_unitario,
-              'difal', p.difal,
-              'ipi', p.ipi,
-              'data_entrega_fn', p.data_entrega_fn,
-              'total', p.total,
-              'fornecedor', p.fornecedor
-            )
-          ) as produtos
+          COUNT(p.id) as total_produtos
         FROM cotacoes c
         LEFT JOIN produtos p ON c.id = p.cotacao_id
-        WHERE c.status IN ('aguardando_aprovacao_supervisor', 'renegociacao')
+        WHERE c.status = 'em_analise'
         GROUP BY c.id
         ORDER BY c.data_criacao DESC
       `);
 
-      res.json({
-        success: true,
-        data: cotacoes,
-        message: 'Cotações pendentes carregadas com sucesso'
-      });
+      res.success(cotacoes, 'Cotações pendentes carregadas com sucesso');
     } catch (error) {
       console.error('Erro ao buscar cotações pendentes:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 
@@ -482,50 +337,22 @@ class CotacoesController {
           c.comprador,
           c.local_entrega,
           c.tipo_compra,
-          c.motivo_emergencial,
           c.justificativa,
-          c.motivo_final,
           c.status,
           c.data_criacao,
-          c.data_atualizacao,
           c.economia_total,
-          JSON_ARRAYAGG(
-            JSON_OBJECT(
-              'id', p.id,
-              'nome', p.nome,
-              'qtde', p.qtde,
-              'un', p.un,
-              'prazo_entrega', p.prazo_entrega,
-              'ult_valor_aprovado', p.ult_valor_aprovado,
-              'ult_fornecedor_aprovado', p.ult_fornecedor_aprovado,
-              'valor_anterior', p.valor_anterior,
-              'valor_unitario', p.valor_unitario,
-              'difal', p.difal,
-              'ipi', p.ipi,
-              'data_entrega_fn', p.data_entrega_fn,
-              'total', p.total,
-              'fornecedor', p.fornecedor
-            )
-          ) as produtos
+          COUNT(p.id) as total_produtos
         FROM cotacoes c
         LEFT JOIN produtos p ON c.id = p.cotacao_id
-        WHERE c.status IN ('aguardando_aprovacao', 'aguardando_aprovacao_supervisor', 'aprovado', 'rejeitado', 'renegociacao')
+        WHERE c.status IN ('em_analise', 'aguardando_aprovacao')
         GROUP BY c.id
         ORDER BY c.data_criacao DESC
       `);
 
-      res.json({
-        success: true,
-        data: cotacoes,
-        message: 'Cotações para aprovação carregadas com sucesso'
-      });
+      res.success(cotacoes, 'Cotações para aprovação carregadas com sucesso');
     } catch (error) {
       console.error('Erro ao buscar cotações para aprovação:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
+      res.error('Erro interno do servidor', 500);
     }
   }
 }
