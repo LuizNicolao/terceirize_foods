@@ -5,11 +5,11 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import './utils/axiosConfig'; // Importar configuração do axios
 import { Login } from './pages/auth';
 import Dashboard from './pages/dashboard/Dashboard';
-import Usuarios from './components/Usuarios';
+import { Usuarios } from './pages/usuarios';
 import { Cotacoes } from './pages/cotacoes';
 import EditarUsuario from './components/EditarUsuario';
 import VisualizarUsuario from './components/VisualizarUsuario';
-import Supervisor from './components/Supervisor';
+import { Supervisor } from './pages/supervisor';
 import Aprovacoes from './components/Aprovacoes';
 import AnalisarCotacao from './components/AnalisarCotacao';
 import AnalisarCotacaoSupervisor from './components/AnalisarCotacaoSupervisor';

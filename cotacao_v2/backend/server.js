@@ -16,7 +16,7 @@ console.log('DB_HOST:', process.env.DB_HOST);
 console.log('DB_NAME:', process.env.DB_NAME);
 
 const authRoutes = require('./routes/auth');
-const usuariosRoutes = require('./routes/usuarios');
+const usuariosRoutes = require('./routes/usuarios/index');
 const cotacoesRoutes = require('./routes/cotacoes/index');
 const savingRoutes = require('./routes/saving');
 const dashboardRoutes = require('./routes/dashboard');

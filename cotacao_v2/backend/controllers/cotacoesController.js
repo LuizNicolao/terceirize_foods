@@ -416,6 +416,62 @@ class CotacoesController {
       });
     }
   }
+
+  // Buscar cotações pendentes do supervisor
+  async getCotacoesPendentesSupervisor(req, res) {
+    try {
+      const cotacoes = await executeQuery(`
+        SELECT 
+          c.id,
+          c.comprador,
+          c.local_entrega,
+          c.tipo_compra,
+          c.motivo_emergencial,
+          c.justificativa,
+          c.motivo_final,
+          c.status,
+          c.data_criacao,
+          c.data_atualizacao,
+          c.economia_total,
+          JSON_ARRAYAGG(
+            JSON_OBJECT(
+              'id', p.id,
+              'nome', p.nome,
+              'qtde', p.qtde,
+              'un', p.un,
+              'prazo_entrega', p.prazo_entrega,
+              'ult_valor_aprovado', p.ult_valor_aprovado,
+              'ult_fornecedor_aprovado', p.ult_fornecedor_aprovado,
+              'valor_anterior', p.valor_anterior,
+              'valor_unitario', p.valor_unitario,
+              'difal', p.difal,
+              'ipi', p.ipi,
+              'data_entrega_fn', p.data_entrega_fn,
+              'total', p.total,
+              'fornecedor', p.fornecedor
+            )
+          ) as produtos
+        FROM cotacoes c
+        LEFT JOIN produtos p ON c.id = p.cotacao_id
+        WHERE c.status IN ('aguardando_aprovacao_supervisor', 'renegociacao')
+        GROUP BY c.id
+        ORDER BY c.data_criacao DESC
+      `);
+
+      res.json({
+        success: true,
+        data: cotacoes,
+        message: 'Cotações pendentes carregadas com sucesso'
+      });
+    } catch (error) {
+      console.error('Erro ao buscar cotações pendentes:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor',
+        error: error.message
+      });
+    }
+  }
 }
 
 module.exports = new CotacoesController();

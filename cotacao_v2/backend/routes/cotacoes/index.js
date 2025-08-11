@@ -15,6 +15,7 @@ const {
 // Rotas principais
 router.get('/', authenticateToken, validateGetCotacoes, validate, cotacoesController.getCotacoes);
 router.get('/stats/overview', authenticateToken, cotacoesController.getStats);
+router.get('/pendentes-supervisor', authenticateToken, cotacoesController.getCotacoesPendentesSupervisor);
 router.get('/:id', authenticateToken, validateCotacaoId, validate, cotacoesController.getCotacaoById);
 router.post('/', authenticateToken, validateCreateCotacao, validate, cotacoesController.createCotacao);
 router.put('/:id', authenticateToken, validateUpdateCotacao, validate, cotacoesController.updateCotacao);
