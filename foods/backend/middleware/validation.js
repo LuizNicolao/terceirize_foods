@@ -174,54 +174,7 @@ const marcaValidations = {
 
 // Validações para Filiais - MOVIDAS PARA ARQUIVO ESPECÍFICO
 
-// Validações para Unidades
-const unidadeValidations = [
-  body('nome')
-    .notEmpty()
-    .withMessage('Nome da unidade é obrigatório')
-    .isLength({ min: 3, max: 100 })
-    .withMessage('Nome da unidade deve ter entre 3 e 100 caracteres')
-    .matches(/^[a-zA-ZÀ-ÿ0-9\s\-\.\(\)]+$/)
-    .withMessage('Nome da unidade contém caracteres inválidos')
-    .trim(),
-  
-  body('sigla')
-    .notEmpty()
-    .withMessage('Sigla é obrigatória')
-    .isLength({ min: 1, max: 10 })
-    .withMessage('Sigla deve ter entre 1 e 10 caracteres')
-    .matches(/^[A-Z0-9]+$/)
-    .withMessage('Sigla deve conter apenas letras maiúsculas e números')
-    .trim(),
-  
-  body('status')
-    .optional()
-    .isIn(['0', '1'])
-    .withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
-];
-
-const unidadeAtualizacaoValidations = [
-  body('nome')
-    .optional()
-    .isLength({ min: 3, max: 100 })
-    .withMessage('Nome da unidade deve ter entre 3 e 100 caracteres')
-    .matches(/^[a-zA-ZÀ-ÿ0-9\s\-\.\(\)]+$/)
-    .withMessage('Nome da unidade contém caracteres inválidos')
-    .trim(),
-  
-  body('sigla')
-    .optional()
-    .isLength({ min: 1, max: 10 })
-    .withMessage('Sigla deve ter entre 1 e 10 caracteres')
-    .matches(/^[A-Z0-9]+$/)
-    .withMessage('Sigla deve conter apenas letras maiúsculas e números')
-    .trim(),
-  
-  body('status')
-    .optional()
-    .isIn(['0', '1'])
-    .withMessage('Status deve ser 0 (Inativo) ou 1 (Ativo)')
- ];
+// Validações para Unidades - MOVIDAS PARA ARQUIVO ESPECÍFICO
 
 // Validações para Unidades Escolares - MOVIDAS PARA ARQUIVO ESPECÍFICO
 
@@ -294,11 +247,7 @@ const nomeGenericoProdutoAtualizacaoValidations = [
 module.exports = {
   handleValidationErrors,
   commonValidations,
-
   marcaValidations,
-
-  unidadeValidations,
-  unidadeAtualizacaoValidations,
   nomeGenericoProdutoValidations,
   nomeGenericoProdutoAtualizacaoValidations
 }; 
