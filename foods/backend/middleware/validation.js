@@ -146,67 +146,9 @@ const commonValidations = {
 
 // Validações para Rotas - MOVIDAS PARA ARQUIVO ESPECÍFICO
 
-// Validações para Nome Genérico de Produto
-const nomeGenericoProdutoValidations = [
-  body('nome')
-    .notEmpty()
-    .withMessage('Nome é obrigatório')
-    .isLength({ min: 3, max: 200 })
-    .withMessage('Nome deve ter entre 3 e 200 caracteres')
-    .trim(),
-  
-  body('grupo_id')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('ID do grupo deve ser um número inteiro válido'),
-  
-  body('subgrupo_id')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('ID do subgrupo deve ser um número inteiro válido'),
-  
-  body('classe_id')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('ID da classe deve ser um número inteiro válido'),
-  
-  body('status')
-    .optional()
-    .isIn([0, 1, true, false])
-    .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)')
-];
-
-const nomeGenericoProdutoAtualizacaoValidations = [
-  body('nome')
-    .optional()
-    .isLength({ min: 3, max: 200 })
-    .withMessage('Nome deve ter entre 3 e 200 caracteres')
-    .trim(),
-  
-  body('grupo_id')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('ID do grupo deve ser um número inteiro válido'),
-  
-  body('subgrupo_id')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('ID do subgrupo deve ser um número inteiro válido'),
-  
-  body('classe_id')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('ID da classe deve ser um número inteiro válido'),
-  
-  body('status')
-    .optional()
-    .isIn([0, 1, true, false])
-    .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)')
-];
+// Validações específicas para nome genérico de produto - MOVIDAS PARA routes/nome-generico-produto/nomeGenericoProdutoValidator.js
 
 module.exports = {
   handleValidationErrors,
-  commonValidations,
-  nomeGenericoProdutoValidations,
-  nomeGenericoProdutoAtualizacaoValidations
+  commonValidations
 }; 

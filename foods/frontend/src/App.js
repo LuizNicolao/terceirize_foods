@@ -18,7 +18,7 @@ import Subgrupos from './pages/subgrupos/Subgrupos';
 import Unidades from './pages/unidades/Unidades';
 import Marcas from './pages/marcas/Marcas';
 import Classes from './pages/classes/Classes';
-import NomeGenericoProduto from './pages/NomeGenericoProduto';
+import NomeGenericoProduto from './pages/nome-generico-produto';
 import Permissoes from './pages/permissoes/Permissoes';
 import Veiculos from './pages/veiculos/Veiculos';
 import Motoristas from './pages/motoristas/Motoristas';
