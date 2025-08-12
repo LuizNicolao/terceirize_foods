@@ -84,7 +84,9 @@ export const useGrupos = () => {
   // Filtrar grupos (client-side)
   const filteredGrupos = (Array.isArray(grupos) ? grupos : []).filter(grupo => {
     const matchesSearch = !searchTerm || 
-      (grupo.nome && grupo.nome.toLowerCase().includes(searchTerm.toLowerCase()));
+      (grupo.nome && grupo.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (grupo.codigo && grupo.codigo.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (grupo.descricao && grupo.descricao.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'todos' || 
       (statusFilter === 'ativo' && grupo.status === 'ativo') ||
@@ -100,6 +102,8 @@ export const useGrupos = () => {
       const cleanData = {
         ...data,
         nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
+        codigo: data.codigo && data.codigo.trim() !== '' ? data.codigo.trim().toUpperCase() : null,
+        descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null,
         status: data.status === '1' ? 'ativo' : 'inativo'
       };
 

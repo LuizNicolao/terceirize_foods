@@ -27,7 +27,9 @@ class GruposController {
     let baseQuery = `
       SELECT 
         g.id, 
-        g.nome, 
+        g.nome,
+        g.codigo,
+        g.descricao,
         g.status, 
         g.data_cadastro as criado_em,
         g.data_atualizacao as atualizado_em,
@@ -41,8 +43,8 @@ class GruposController {
 
     // Aplicar filtros
     if (search) {
-      baseQuery += ' AND g.nome LIKE ?';
-      params.push(`%${search}%`);
+      baseQuery += ' AND (g.nome LIKE ? OR g.codigo LIKE ? OR g.descricao LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
 
     if (status !== undefined) {
@@ -50,7 +52,7 @@ class GruposController {
       params.push(status === 1 ? 'ativo' : 'inativo');
     }
 
-    baseQuery += ' GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao ORDER BY g.nome ASC';
+    baseQuery += ' GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao ORDER BY g.nome ASC';
 
     // Aplicar paginação manualmente
     const limit = pagination.limit;
@@ -61,30 +63,42 @@ class GruposController {
     const grupos = await executeQuery(query, params);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(DISTINCT g.id) as total FROM grupos g WHERE 1=1${search ? ' AND g.nome LIKE ?' : ''}${status !== undefined ? ' AND g.status = ?' : ''}`;
-    const countParams = search ? [`%${search}%`] : [];
+    let countQuery = `SELECT COUNT(DISTINCT g.id) as total FROM grupos g WHERE 1=1`;
+    let countParams = [];
+    
+    if (search) {
+      countQuery += ' AND (g.nome LIKE ? OR g.codigo LIKE ? OR g.descricao LIKE ?)';
+      countParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    
     if (status !== undefined) {
+      countQuery += ' AND g.status = ?';
       countParams.push(status === 1 ? 'ativo' : 'inativo');
     }
-    const totalResult = await executeQuery(countQuery, countParams);
-    const totalItems = totalResult[0].total;
-
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
     
-    const meta = pagination.generateMeta(totalItems, '/api/grupos', queryParams);
+    const countResult = await executeQuery(countQuery, countParams);
+    const totalItems = countResult[0].total;
 
-    // Adicionar links HATEOAS
-    const data = res.addListLinks(grupos, meta.pagination, queryParams);
+    // Calcular informações de paginação
+    const totalPages = Math.ceil(totalItems / pagination.limit);
+    const currentPage = Math.floor(pagination.offset / pagination.limit) + 1;
 
-    // Gerar links de ações baseado nas permissões do usuário
+    // Adicionar links HATEOAS para cada grupo
+    const data = grupos.map(grupo => res.addResourceLinks(grupo));
+
+    // Gerar links de ações
     const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
     const actions = res.generateActionLinks(userPermissions);
 
     return successResponse(res, data, 'Grupos listados com sucesso', STATUS_CODES.OK, {
-      ...meta,
+      pagination: {
+        currentPage,
+        totalPages,
+        totalItems,
+        itemsPerPage: pagination.limit,
+        hasNextPage: currentPage < totalPages,
+        hasPrevPage: currentPage > 1
+      },
       actions
     });
   });
@@ -98,7 +112,9 @@ class GruposController {
     const grupos = await executeQuery(
       `SELECT 
         g.id, 
-        g.nome, 
+        g.nome,
+        g.codigo,
+        g.descricao,
         g.status, 
         g.data_cadastro as criado_em,
         g.data_atualizacao as atualizado_em,
@@ -106,7 +122,7 @@ class GruposController {
        FROM grupos g
        LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
        WHERE g.id = ?
-       GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao`,
+       GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao`,
       [id]
     );
 
@@ -132,7 +148,7 @@ class GruposController {
    * Criar novo grupo
    */
   static criarGrupo = asyncHandler(async (req, res) => {
-    const { nome, status } = req.body;
+    const { nome, codigo, descricao, status } = req.body;
 
     // Verificar se nome já existe
     const existingGrupo = await executeQuery(
@@ -144,10 +160,27 @@ class GruposController {
       return conflictResponse(res, 'Nome do grupo já existe');
     }
 
+    // Verificar se código já existe
+    if (codigo) {
+      const existingCodigo = await executeQuery(
+        'SELECT id FROM grupos WHERE codigo = ?',
+        [codigo]
+      );
+
+      if (existingCodigo.length > 0) {
+        return conflictResponse(res, 'Código do grupo já existe');
+      }
+    }
+
     // Inserir grupo
     const result = await executeQuery(
-      'INSERT INTO grupos (nome, status, data_cadastro) VALUES (?, ?, NOW())',
-      [nome && nome.trim() ? nome.trim() : null, status === 1 ? 'ativo' : 'inativo']
+      'INSERT INTO grupos (nome, codigo, descricao, status, data_cadastro) VALUES (?, ?, ?, ?, NOW())',
+      [
+        nome && nome.trim() ? nome.trim() : null,
+        codigo && codigo.trim() ? codigo.trim() : null,
+        descricao && descricao.trim() ? descricao.trim() : null,
+        status === 1 ? 'ativo' : 'inativo'
+      ]
     );
 
     const novoGrupoId = result.insertId;
@@ -156,7 +189,9 @@ class GruposController {
     const grupos = await executeQuery(
       `SELECT 
         g.id, 
-        g.nome, 
+        g.nome,
+        g.codigo,
+        g.descricao,
         g.status, 
         g.data_cadastro as criado_em,
         g.data_atualizacao as atualizado_em,
@@ -164,7 +199,7 @@ class GruposController {
        FROM grupos g
        LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
        WHERE g.id = ?
-       GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao`,
+       GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao`,
       [novoGrupoId]
     );
 
@@ -187,11 +222,11 @@ class GruposController {
    */
   static atualizarGrupo = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const updateData = req.body;
+    const { nome, codigo, descricao, status } = req.body;
 
     // Verificar se grupo existe
     const existingGrupo = await executeQuery(
-      'SELECT id, nome FROM grupos WHERE id = ?',
+      'SELECT id FROM grupos WHERE id = ?',
       [id]
     );
 
@@ -199,15 +234,27 @@ class GruposController {
       return notFoundResponse(res, 'Grupo não encontrado');
     }
 
-    // Verificar se nome já existe (se estiver sendo alterado)
-    if (updateData.nome) {
-      const nomeCheck = await executeQuery(
+    // Verificar se nome já existe (exceto para o próprio grupo)
+    if (nome) {
+      const existingNome = await executeQuery(
         'SELECT id FROM grupos WHERE nome = ? AND id != ?',
-        [updateData.nome, id]
+        [nome, id]
       );
 
-      if (nomeCheck.length > 0) {
+      if (existingNome.length > 0) {
         return conflictResponse(res, 'Nome do grupo já existe');
+      }
+    }
+
+    // Verificar se código já existe (exceto para o próprio grupo)
+    if (codigo) {
+      const existingCodigo = await executeQuery(
+        'SELECT id FROM grupos WHERE codigo = ? AND id != ?',
+        [codigo, id]
+      );
+
+      if (existingCodigo.length > 0) {
+        return conflictResponse(res, 'Código do grupo já existe');
       }
     }
 
@@ -215,33 +262,34 @@ class GruposController {
     const updateFields = [];
     const updateParams = [];
 
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] !== undefined) {
-        let value = updateData[key];
-        
-        // Tratar valores vazios ou undefined
-        if (value === '' || value === null || value === undefined) {
-          value = null;
-        } else if (typeof value === 'string') {
-          value = value.trim();
-          if (value === '') {
-            value = null;
-          }
-        }
-        
-        updateFields.push(`${key} = ?`);
-        updateParams.push(value);
-      }
-    });
+    if (nome !== undefined) {
+      updateFields.push('nome = ?');
+      updateParams.push(nome && nome.trim() ? nome.trim() : null);
+    }
+
+    if (codigo !== undefined) {
+      updateFields.push('codigo = ?');
+      updateParams.push(codigo && codigo.trim() ? codigo.trim() : null);
+    }
+
+    if (descricao !== undefined) {
+      updateFields.push('descricao = ?');
+      updateParams.push(descricao && descricao.trim() ? descricao.trim() : null);
+    }
+
+    if (status !== undefined) {
+      updateFields.push('status = ?');
+      updateParams.push(status === 1 ? 'ativo' : 'inativo');
+    }
 
     if (updateFields.length === 0) {
-      return errorResponse(res, 'Nenhum campo para atualizar', STATUS_CODES.BAD_REQUEST);
+      return errorResponse(res, 'Nenhum campo fornecido para atualização', STATUS_CODES.BAD_REQUEST);
     }
 
     updateFields.push('data_atualizacao = NOW()');
     updateParams.push(id);
 
-    // Executar atualização
+    // Atualizar grupo
     await executeQuery(
       `UPDATE grupos SET ${updateFields.join(', ')} WHERE id = ?`,
       updateParams
@@ -251,15 +299,17 @@ class GruposController {
     const grupos = await executeQuery(
       `SELECT 
         g.id, 
-        g.nome, 
+        g.nome,
+        g.codigo,
+        g.descricao,
         g.status, 
         g.data_cadastro as criado_em,
         g.data_atualizacao as atualizado_em,
         COUNT(sg.id) as subgrupos_count
-      FROM grupos g
-      LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
-      WHERE g.id = ?
-      GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao`,
+       FROM grupos g
+       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
+       WHERE g.id = ?
+       GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao`,
       [id]
     );
 
@@ -340,7 +390,9 @@ class GruposController {
     let baseQuery = `
       SELECT 
         g.id, 
-        g.nome, 
+        g.nome,
+        g.codigo,
+        g.descricao,
         g.status, 
         g.data_cadastro as criado_em,
         g.data_atualizacao as atualizado_em,
@@ -348,7 +400,7 @@ class GruposController {
       FROM grupos g
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
       WHERE g.status = 'ativo'
-      GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao
+      GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao
     `;
     
     let params = [];

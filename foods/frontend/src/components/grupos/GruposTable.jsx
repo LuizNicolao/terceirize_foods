@@ -36,6 +36,12 @@ const GruposTable = ({
                   Nome
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Código
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Descrição
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Subgrupos
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -55,6 +61,16 @@ const GruposTable = ({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {grupo.nome}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {grupo.codigo || '-'}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 max-w-xs truncate" title={grupo.descricao}>
+                      {grupo.descricao || '-'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -118,6 +134,9 @@ const GruposTable = ({
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">{grupo.nome}</h3>
                 <p className="text-gray-600 text-xs">ID: {grupo.id}</p>
+                {grupo.codigo && (
+                  <p className="text-gray-600 text-xs">Código: {grupo.codigo}</p>
+                )}
               </div>
               <div className="flex gap-2">
                 {canView('grupos') && (
@@ -155,6 +174,13 @@ const GruposTable = ({
                 )}
               </div>
             </div>
+            
+            {grupo.descricao && (
+              <div className="mb-3">
+                <span className="text-gray-500 text-xs">Descrição:</span>
+                <p className="text-sm text-gray-900">{grupo.descricao}</p>
+              </div>
+            )}
             
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
