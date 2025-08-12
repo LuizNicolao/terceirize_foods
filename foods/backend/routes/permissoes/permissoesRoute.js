@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkPermission, checkScreenPermission } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -14,19 +14,19 @@ router.use(hateoasMiddleware);
 
 // Rotas de usuários com permissões
 router.get('/usuarios', 
-  checkPermission('visualizar'), 
+  checkScreenPermission('permissoes', 'visualizar'), 
   PermissoesController.listarUsuarios
 );
 
 // Rotas de permissões de usuário
 router.get('/usuario/:usuarioId', 
-  checkPermission('visualizar'), 
+  checkScreenPermission('permissoes', 'visualizar'), 
   PermissoesController.buscarPermissoesUsuario
 );
 
 router.put('/usuario/:usuarioId', 
   [
-    checkPermission('editar'),
+    checkScreenPermission('permissoes', 'editar'),
     auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'permissoes')
   ],
   PermissoesController.atualizarPermissoes
@@ -34,13 +34,13 @@ router.put('/usuario/:usuarioId',
 
 // Rotas de permissões padrão
 router.get('/padrao/:tipoAcesso/:nivelAcesso', 
-  checkPermission('visualizar'), 
+  checkScreenPermission('permissoes', 'visualizar'), 
   PermissoesController.obterPermissoesPadrao
 );
 
 // Rotas de telas
 router.get('/telas', 
-  checkPermission('visualizar'), 
+  checkScreenPermission('permissoes', 'visualizar'), 
   PermissoesController.listarTelas
 );
 
