@@ -51,7 +51,6 @@ const Subgrupos = () => {
     setSearchTerm,
     setStatusFilter,
     setGrupoFilter,
-    setItemsPerPage,
     handleClearFilters,
 
     // Funções utilitárias

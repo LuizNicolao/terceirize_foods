@@ -257,7 +257,6 @@ export const useSubgrupos = () => {
     setSearchTerm,
     setStatusFilter,
     setGrupoFilter,
-    setItemsPerPage,
     handleClearFilters,
 
     // Funções utilitárias
