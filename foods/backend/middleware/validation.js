@@ -126,47 +126,7 @@ const commonValidations = {
 
 // Validações específicas para subgrupos - MOVIDAS PARA routes/subgrupos/subgrupoValidator.js
 
-// Validações específicas para marcas
-const marcaValidations = {
-  create: [
-    body('marca')
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Marca deve ter entre 2 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ0-9\s\-\.]+$/)
-      .withMessage('Marca deve conter apenas letras, números, espaços, hífens e pontos'),
-    body('fabricante')
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Fabricante deve ter entre 2 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ0-9\s\-\.]+$/)
-      .withMessage('Fabricante deve conter apenas letras, números, espaços, hífens e pontos'),
-    body('status')
-      .optional()
-      .isIn([0, 1])
-      .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
-    handleValidationErrors
-  ],
-
-  update: [
-    commonValidations.id,
-    body('marca')
-      .optional()
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Marca deve ter entre 2 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ0-9\s\-\.]+$/)
-      .withMessage('Marca deve conter apenas letras, números, espaços, hífens e pontos'),
-    body('fabricante')
-      .optional()
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Fabricante deve ter entre 2 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ0-9\s\-\.]+$/)
-      .withMessage('Fabricante deve conter apenas letras, números, espaços, hífens e pontos'),
-    body('status')
-      .optional()
-      .isIn([0, 1])
-      .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
-    handleValidationErrors
-  ]
-};
+// Validações específicas para marcas - MOVIDAS PARA ARQUIVO ESPECÍFICO
 
 // Validações específicas para classes - MOVIDAS PARA routes/classes/classeValidator.js
 
@@ -247,7 +207,6 @@ const nomeGenericoProdutoAtualizacaoValidations = [
 module.exports = {
   handleValidationErrors,
   commonValidations,
-  marcaValidations,
   nomeGenericoProdutoValidations,
   nomeGenericoProdutoAtualizacaoValidations
 }; 

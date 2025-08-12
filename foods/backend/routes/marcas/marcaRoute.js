@@ -4,12 +4,12 @@
  */
 
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../middleware/auth');
-const { marcaValidations, commonValidations } = require('../middleware/validation');
-const { paginationMiddleware } = require('../middleware/pagination');
-const { hateoasMiddleware } = require('../middleware/hateoas');
-const { auditMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
-const MarcasController = require('../controllers/marcasController');
+const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { marcaValidations, commonValidations } = require('./marcaValidator');
+const { paginationMiddleware } = require('../../middleware/pagination');
+const { hateoasMiddleware } = require('../../middleware/hateoas');
+const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const MarcasController = require('../../controllers/marcasController');
 
 const router = express.Router();
 
@@ -69,4 +69,4 @@ router.get('/fabricante/:fabricante',
   MarcasController.buscarPorFabricante
 );
 
-module.exports = router; 
+module.exports = router;

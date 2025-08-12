@@ -16,7 +16,7 @@ import Produtos from './pages/produtos/Produtos';
 import Grupos from './pages/grupos/Grupos';
 import Subgrupos from './pages/subgrupos/Subgrupos';
 import Unidades from './pages/unidades/Unidades';
-import Marcas from './pages/Marcas';
+import Marcas from './pages/marcas/Marcas';
 import Classes from './pages/classes/Classes';
 import NomeGenericoProduto from './pages/NomeGenericoProduto';
 import Permissoes from './pages/Permissoes';
