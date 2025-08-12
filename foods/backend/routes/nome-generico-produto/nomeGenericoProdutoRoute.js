@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const nomeGenericoProdutoController = require('../../controllers/nomeGenericoProdutoController');
+const NomeGenericoProdutoController = require('../../controllers/nomeGenericoProdutoController');
 const { checkPermission } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
@@ -18,7 +18,7 @@ router.get('/ativos',
   paginationMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.buscarNomesGenericosAtivos
+  NomeGenericoProdutoController.buscarNomesGenericosAtivos
 );
 
 router.get('/grupo/:grupo_id',
@@ -26,7 +26,7 @@ router.get('/grupo/:grupo_id',
   paginationMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.buscarNomesGenericosPorGrupo
+  NomeGenericoProdutoController.buscarNomesGenericosPorGrupo
 );
 
 router.get('/subgrupo/:subgrupo_id',
@@ -34,7 +34,7 @@ router.get('/subgrupo/:subgrupo_id',
   paginationMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.buscarNomesGenericosPorSubgrupo
+  NomeGenericoProdutoController.buscarNomesGenericosPorSubgrupo
 );
 
 router.get('/classe/:classe_id',
@@ -42,7 +42,7 @@ router.get('/classe/:classe_id',
   paginationMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.buscarNomesGenericosPorClasse
+  NomeGenericoProdutoController.buscarNomesGenericosPorClasse
 );
 
 // Rotas CRUD padrão
@@ -51,14 +51,14 @@ router.get('/',
   paginationMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.listarNomesGenericos
+  NomeGenericoProdutoController.listarNomesGenericos
 );
 
 router.get('/:id',
   checkPermission('nome_generico_produto', 'pode_visualizar'),
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.buscarNomeGenericoPorId
+  NomeGenericoProdutoController.buscarNomeGenericoPorId 
 );
 
 router.post('/',
@@ -67,7 +67,7 @@ router.post('/',
   auditChangesMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.criarNomeGenerico
+  NomeGenericoProdutoController.criarNomeGenerico
 );
 
 router.put('/:id',
@@ -76,7 +76,7 @@ router.put('/:id',
   auditChangesMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.atualizarNomeGenerico
+  NomeGenericoProdutoController.atualizarNomeGenerico
 );
 
 router.delete('/:id',
@@ -84,7 +84,7 @@ router.delete('/:id',
   auditChangesMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.excluirNomeGenerico
+  NomeGenericoProdutoController.excluirNomeGenerico
 );
 
 module.exports = router;
