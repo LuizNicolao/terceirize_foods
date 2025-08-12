@@ -38,6 +38,12 @@ router.get('/uf/:uf',
   FornecedoresController.buscarPorUF
 );
 
+// GET /api/fornecedores/estatisticas - Buscar estatísticas totais
+router.get('/estatisticas',
+  checkPermission('visualizar'),
+  FornecedoresController.buscarEstatisticas
+);
+
 // GET /api/fornecedores/ativos - Buscar fornecedores ativos
 router.get('/ativos',
   checkPermission('visualizar'),
