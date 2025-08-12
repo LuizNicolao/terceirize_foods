@@ -6,5 +6,7 @@ export { useUnidadesEscolares } from './useUnidadesEscolares';
 export { useMotoristas } from './useMotoristas';
 export { useAjudantes } from './useAjudantes';
 export { useFornecedores } from './useFornecedores';
+export { useFiliais } from './useFiliais';
+export { useClientes } from './useClientes';
 export { useAuditoria } from './useAuditoria';
 export { useExport } from './useExport';
