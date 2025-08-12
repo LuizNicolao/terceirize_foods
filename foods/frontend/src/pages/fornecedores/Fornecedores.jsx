@@ -35,12 +35,8 @@ const Fornecedores = () => {
     totalPages,
     totalItems,
     itemsPerPage,
-    errors,
 
     // Funções
-    register,
-    handleSubmit,
-    reset,
     loadFornecedores,
     reloadData,
     handlePageChange,
@@ -83,7 +79,7 @@ const Fornecedores = () => {
       <div className="flex justify-center items-center h-screen bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-gray-600">Carregando fornecedores...</p>
         </div>
       </div>
     );
@@ -107,7 +103,7 @@ const Fornecedores = () => {
           {canCreate('fornecedores') && (
             <Button onClick={handleAddNew} size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar</span>
+              <span className="hidden sm:inline">Adicionar Fornecedor</span>
               <span className="sm:hidden">Adicionar</span>
             </Button>
           )}
@@ -121,17 +117,8 @@ const Fornecedores = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={handleSearch}
-        onClear={() => handleSearch('')}
-        placeholder="Buscar por razão social, CNPJ ou município..."
+        placeholder="Buscar por razão social, nome fantasia ou CNPJ..."
       />
-      
-      {/* Indicador de busca */}
-      {searching && (
-        <div className="flex items-center justify-center py-2 text-sm text-gray-600">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-          Buscando...
-        </div>
-      )}
 
       {/* Ações */}
       <FornecedoresActions 
@@ -184,6 +171,7 @@ const Fornecedores = () => {
           onPageChange={handlePageChange}
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
         />
       )}
     </div>

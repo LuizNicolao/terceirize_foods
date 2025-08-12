@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import FornecedoresService from '../services/fornecedores';
 
@@ -34,7 +35,7 @@ export const useFornecedores = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
-
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   // Debounce para busca
   useEffect(() => {
@@ -132,12 +133,32 @@ export const useFornecedores = () => {
     setEditingFornecedor(fornecedor);
     setViewMode(isView);
     setShowModal(true);
+    
+    if (fornecedor) {
+      reset(fornecedor);
+    } else {
+      reset({
+        razao_social: '',
+        nome_fantasia: '',
+        cnpj: '',
+        email: '',
+        telefone: '',
+        cep: '',
+        logradouro: '',
+        numero: '',
+        bairro: '',
+        municipio: '',
+        uf: '',
+        status: 1
+      });
+    }
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingFornecedor(null);
     setViewMode(false);
+    reset();
   };
 
   const onSubmit = async (data) => {

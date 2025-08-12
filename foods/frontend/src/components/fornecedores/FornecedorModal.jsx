@@ -99,8 +99,8 @@ const FornecedorModal = ({
                     {...register('cnpj', { required: 'CNPJ é obrigatório' })}
                     error={errors.cnpj?.message}
                     disabled={viewMode}
-                    className="flex-1"
                     placeholder="00.000.000/0000-00"
+                    className="flex-1"
                   />
                   {!viewMode && (
                     <Button
@@ -109,7 +109,7 @@ const FornecedorModal = ({
                       variant="outline"
                       size="sm"
                       disabled={!cnpj}
-                      className="mt-6"
+                      className="mt-0"
                     >
                       <FaSearch className="h-4 w-4" />
                     </Button>

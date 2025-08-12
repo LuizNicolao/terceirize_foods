@@ -9,7 +9,7 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const usuariosRoutes = require('./routes/usuarios');
 const fornecedoresRoutes = require('./routes/fornecedores');
-const clientesRoutes = require('./routes/clientes/index');
+const clientesRoutes = require('./routes/clientes');
 const filiaisRoutes = require('./routes/filiais');
 const rotasRoutes = require('./routes/rotas');
 const unidadesEscolaresRoutes = require('./routes/unidades_escolares');

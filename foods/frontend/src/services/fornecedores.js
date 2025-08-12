@@ -128,6 +128,31 @@ class FornecedoresService {
     }
   }
 
+  async buscarCNPJ(cnpj) {
+    try {
+      const response = await api.get(`/fornecedores/buscar-cnpj/${cnpj}`);
+      
+      // Extrair dados da estrutura HATEOAS
+      let dados = null;
+      
+      if (response.data.data) {
+        dados = response.data.data;
+      } else {
+        dados = response.data;
+      }
+      
+      return {
+        success: true,
+        data: dados
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar dados do CNPJ'
+      };
+    }
+  }
+
   async buscarEstatisticas() {
     try {
       const response = await api.get('/fornecedores/estatisticas');
@@ -215,31 +240,6 @@ class FornecedoresService {
       return {
         success: false,
         error: 'Erro ao exportar PDF'
-      };
-    }
-  }
-
-  async buscarCNPJ(cnpj) {
-    try {
-      const response = await api.get(`/fornecedores/buscar-cnpj/${cnpj}`);
-      
-      // Extrair dados da estrutura HATEOAS
-      let dados = null;
-      
-      if (response.data.data) {
-        dados = response.data.data;
-      } else {
-        dados = response.data;
-      }
-      
-      return {
-        success: true,
-        data: dados
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Erro ao buscar dados do CNPJ'
       };
     }
   }
