@@ -4,12 +4,12 @@
  */
 
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../middleware/auth');
-const { fornecedorValidations, commonValidations } = require('../middleware/validation');
-const { paginationMiddleware } = require('../middleware/pagination');
-const { hateoasMiddleware } = require('../middleware/hateoas');
-const { auditMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
-const FornecedoresController = require('../controllers/fornecedoresController');
+const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { fornecedorValidations, commonValidations } = require('./fornecedorValidator');
+const { paginationMiddleware } = require('../../middleware/pagination');
+const { hateoasMiddleware } = require('../../middleware/hateoas');
+const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const FornecedoresController = require('../../controllers/fornecedoresController');
 
 const router = express.Router();
 
@@ -75,4 +75,4 @@ router.get('/ativos',
   FornecedoresController.buscarAtivos
 );
 
-module.exports = router; 
+module.exports = router;

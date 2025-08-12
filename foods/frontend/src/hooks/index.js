@@ -4,5 +4,7 @@ export { useVeiculos } from './useVeiculos';
 export { useRotas } from './useRotas';
 export { useUnidadesEscolares } from './useUnidadesEscolares';
 export { useMotoristas } from './useMotoristas';
+export { useAjudantes } from './useAjudantes';
+export { useFornecedores } from './useFornecedores';
 export { useAuditoria } from './useAuditoria';
 export { useExport } from './useExport';

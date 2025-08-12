@@ -117,82 +117,7 @@ const commonValidations = {
 
 // Validações específicas para usuários foram movidas para routes/usuarios/usuarioValidator.js
 
-// Validações específicas para fornecedores
-const fornecedorValidations = {
-  create: [
-    body('razao_social')
-      .isLength({ min: 3, max: 200 })
-      .withMessage('Razão social deve ter entre 3 e 200 caracteres'),
-    body('nome_fantasia')
-      .optional()
-      .isLength({ min: 3, max: 200 })
-      .withMessage('Nome fantasia deve ter entre 3 e 200 caracteres'),
-    commonValidations.cnpj,
-    commonValidations.phone,
-    commonValidations.email.optional(),
-    body('logradouro')
-      .optional()
-      .isLength({ min: 3, max: 200 })
-      .withMessage('Logradouro deve ter entre 3 e 200 caracteres'),
-    body('numero')
-      .optional()
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Número deve ter entre 1 e 20 caracteres'),
-    body('bairro')
-      .optional()
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Bairro deve ter entre 2 e 100 caracteres'),
-    body('municipio')
-      .optional()
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Município deve ter entre 2 e 100 caracteres'),
-    body('uf')
-      .optional()
-      .isLength({ min: 2, max: 2 })
-      .isUppercase()
-      .withMessage('UF deve ter 2 caracteres maiúsculos'),
-    commonValidations.cep,
-    handleValidationErrors
-  ],
-
-  update: [
-    commonValidations.id,
-    body('razao_social')
-      .optional()
-      .isLength({ min: 3, max: 200 })
-      .withMessage('Razão social deve ter entre 3 e 200 caracteres'),
-    body('nome_fantasia')
-      .optional()
-      .isLength({ min: 3, max: 200 })
-      .withMessage('Nome fantasia deve ter entre 3 e 200 caracteres'),
-    commonValidations.cnpj.optional(),
-    commonValidations.phone.optional(),
-    commonValidations.email.optional(),
-    body('logradouro')
-      .optional()
-      .isLength({ min: 3, max: 200 })
-      .withMessage('Logradouro deve ter entre 3 e 200 caracteres'),
-    body('numero')
-      .optional()
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Número deve ter entre 1 e 20 caracteres'),
-    body('bairro')
-      .optional()
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Bairro deve ter entre 2 e 100 caracteres'),
-    body('municipio')
-      .optional()
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Município deve ter entre 2 e 100 caracteres'),
-    body('uf')
-      .optional()
-      .isLength({ min: 2, max: 2 })
-      .isUppercase()
-      .withMessage('UF deve ter 2 caracteres maiúsculos'),
-    commonValidations.cep.optional(),
-    handleValidationErrors
-  ]
-};
+// Validações para Fornecedores - MOVIDAS PARA ARQUIVO ESPECÍFICO
 
 // Validações específicas para clientes
 const clienteValidations = {
@@ -725,7 +650,6 @@ const nomeGenericoProdutoAtualizacaoValidations = [
 module.exports = {
   handleValidationErrors,
   commonValidations,
-  fornecedorValidations,
   clienteValidations,
   grupoValidations,
   subgrupoValidations,

@@ -7,7 +7,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/usuarios/Usuarios';
-import Fornecedores from './pages/Fornecedores';
+import Fornecedores from './pages/fornecedores/Fornecedores';
 import Clientes from './pages/Clientes';
 import Filiais from './pages/Filiais';
 import Rotas from './pages/rotas/Rotas';

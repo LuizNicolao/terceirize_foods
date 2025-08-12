@@ -73,13 +73,13 @@ const ajudanteValidations = {
       .custom((value) => {
         if (value && value.trim() !== '') {
           const telefoneLimpo = value.replace(/\D/g, '');
-          if (telefoneLimpo.length < 8 || telefoneLimpo.length > 15) {
-            throw new Error('Telefone deve ter entre 8 e 15 dígitos');
+          if (telefoneLimpo.length < 8 || telefoneLimpo.length > 20) {
+            throw new Error('Telefone deve ter entre 8 e 20 dígitos');
           }
         }
         return true;
       })
-      .withMessage('Telefone deve ter entre 8 e 15 dígitos'),
+      .withMessage('Telefone deve ter entre 8 e 20 dígitos'),
     
     body('email')
       .optional()
@@ -96,8 +96,6 @@ const ajudanteValidations = {
     
     body('endereco')
       .optional()
-      .isLength({ max: 500 })
-      .withMessage('Endereço deve ter no máximo 500 caracteres')
       .trim(),
     
     body('status')
@@ -121,8 +119,6 @@ const ajudanteValidations = {
     
     body('observacoes')
       .optional()
-      .isLength({ max: 1000 })
-      .withMessage('Observações deve ter no máximo 1000 caracteres')
       .trim(),
     
     body('filial_id')
@@ -170,13 +166,13 @@ const ajudanteValidations = {
       .custom((value) => {
         if (value && value.trim() !== '') {
           const telefoneLimpo = value.replace(/\D/g, '');
-          if (telefoneLimpo.length < 8 || telefoneLimpo.length > 15) {
-            throw new Error('Telefone deve ter entre 8 e 15 dígitos');
+          if (telefoneLimpo.length < 8 || telefoneLimpo.length > 20) {
+            throw new Error('Telefone deve ter entre 8 e 20 dígitos');
           }
         }
         return true;
       })
-      .withMessage('Telefone deve ter entre 8 e 15 dígitos'),
+      .withMessage('Telefone deve ter entre 8 e 20 dígitos'),
     
     body('email')
       .optional()
@@ -193,8 +189,6 @@ const ajudanteValidations = {
     
     body('endereco')
       .optional()
-      .isLength({ max: 500 })
-      .withMessage('Endereço deve ter no máximo 500 caracteres')
       .trim(),
     
     body('status')
@@ -217,8 +211,6 @@ const ajudanteValidations = {
     
     body('observacoes')
       .optional()
-      .isLength({ max: 1000 })
-      .withMessage('Observações deve ter no máximo 1000 caracteres')
       .trim(),
     
     body('filial_id')
