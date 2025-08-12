@@ -1,6 +1,6 @@
 /**
- * Rotas de Ajudantes
- * Gerencia as rotas relacionadas aos ajudantes do sistema
+ * Índice das rotas de Ajudantes
+ * Centraliza a exportação das rotas organizadas
  */
 
 const ajudanteRoute = require('./ajudanteRoute');

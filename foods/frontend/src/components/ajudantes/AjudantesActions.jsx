@@ -1,38 +1,19 @@
 import React from 'react';
-import { FaPlus, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { Button } from '../ui';
 
-const AjudantesActions = ({ canCreate, onNew, onExportXLSX, onExportPDF, exportLoading }) => {
+const AjudantesActions = ({ onExportXLSX, onExportPDF }) => {
   return (
-    <div className="flex items-center space-x-3">
-      {canCreate && (
-        <Button
-          onClick={onNew}
-          variant="primary"
-          icon={<FaPlus />}
-        >
-          Novo Ajudante
-        </Button>
-      )}
-      
-      <Button
-        onClick={onExportXLSX}
-        variant="secondary"
-        icon={<FaFileExcel />}
-        loading={exportLoading}
-        disabled={exportLoading}
-      >
-        Exportar XLSX
+    <div className="flex gap-2 sm:gap-3 mb-4">
+      <Button onClick={onExportXLSX} variant="outline" size="sm">
+        <FaFileExcel className="mr-1 sm:mr-2" />
+        <span className="hidden sm:inline">Exportar XLSX</span>
+        <span className="sm:hidden">XLSX</span>
       </Button>
-      
-      <Button
-        onClick={onExportPDF}
-        variant="secondary"
-        icon={<FaFilePdf />}
-        loading={exportLoading}
-        disabled={exportLoading}
-      >
-        Exportar PDF
+      <Button onClick={onExportPDF} variant="outline" size="sm">
+        <FaFilePdf className="mr-1 sm:mr-2" />
+        <span className="hidden sm:inline">Exportar PDF</span>
+        <span className="sm:hidden">PDF</span>
       </Button>
     </div>
   );

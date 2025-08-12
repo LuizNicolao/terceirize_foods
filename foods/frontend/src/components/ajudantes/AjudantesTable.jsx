@@ -1,189 +1,224 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash, FaHistory } from 'react-icons/fa';
-import { Table, Pagination } from '../ui';
-import CadastroFilterBar from '../CadastroFilterBar';
+import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
+import { Button } from '../ui';
 
 const AjudantesTable = ({
   ajudantes,
-  filiais,
+  canView,
   canEdit,
   canDelete,
-  canView,
+  onView,
   onEdit,
   onDelete,
-  onView,
-  onAuditView,
-  currentPage,
-  totalPages,
-  totalItems,
-  itemsPerPage,
-  onPageChange,
-  onItemsPerPageChange,
-  searchTerm,
-  onSearch
+  getStatusLabel,
+  formatDate
 }) => {
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      ativo: { color: 'green', text: 'Ativo' },
-      inativo: { color: 'red', text: 'Inativo' },
-      ferias: { color: 'yellow', text: 'Em Férias' },
-      licenca: { color: 'orange', text: 'Em Licença' }
-    };
-
-    const config = statusConfig[status] || { color: 'gray', text: status };
-    
+  if (ajudantes.length === 0) {
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${config.color}-100 text-${config.color}-800`}>
-        {config.text}
-      </span>
+      <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
+        Nenhum ajudante encontrado
+      </div>
     );
-  };
-
-  const getFilialName = (filialId) => {
-    if (!filialId) return '-';
-    const filial = filiais.find(f => f.id === filialId);
-    return filial ? filial.filial : '-';
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
-
-  const TableActions = ({ ajudante }) => (
-    <div className="flex items-center space-x-2">
-      {canView && (
-        <button
-          onClick={() => onView(ajudante)}
-          className="text-blue-600 hover:text-blue-800 transition-colors"
-          title="Visualizar"
-        >
-          <FaEye size={16} />
-        </button>
-      )}
-      
-      {canEdit && (
-        <button
-          onClick={() => onEdit(ajudante)}
-          className="text-green-600 hover:text-green-800 transition-colors"
-          title="Editar"
-        >
-          <FaEdit size={16} />
-        </button>
-      )}
-      
-      {canDelete && (
-        <button
-          onClick={() => onDelete(ajudante.id)}
-          className="text-red-600 hover:text-red-800 transition-colors"
-          title="Excluir"
-        >
-          <FaTrash size={16} />
-        </button>
-      )}
-      
-      <button
-        onClick={() => onAuditView('ajudantes', ajudante.id)}
-        className="text-purple-600 hover:text-purple-800 transition-colors"
-        title="Histórico"
-      >
-        <FaHistory size={16} />
-      </button>
-    </div>
-  );
-
-  const columns = [
-    { key: 'nome', label: 'Nome', sortable: true },
-    { key: 'cpf', label: 'CPF', sortable: true },
-    { key: 'telefone', label: 'Telefone', sortable: false },
-    { key: 'email', label: 'Email', sortable: true },
-    { key: 'filial', label: 'Filial', sortable: true },
-    { key: 'status', label: 'Status', sortable: true },
-    { key: 'data_admissao', label: 'Data Admissão', sortable: true },
-    { key: 'actions', label: 'Ações', sortable: false }
-  ];
-
-  const data = ajudantes.map(ajudante => ({
-    ...ajudante,
-    filial: getFilialName(ajudante.filial_id),
-    data_admissao: formatDate(ajudante.data_admissao),
-    actions: <TableActions ajudante={ajudante} />
-  }));
+  }
 
   return (
-    <div className="bg-white rounded-lg shadow">
-      {/* Filter Bar */}
-      <CadastroFilterBar
-        searchTerm={searchTerm}
-        onSearch={onSearch}
-        placeholder="Buscar ajudantes..."
-      />
-
-      {/* Desktop Table */}
-      <div className="hidden md:block">
-        <Table
-          columns={columns}
-          data={data}
-          emptyMessage="Nenhum ajudante encontrado"
-        />
-      </div>
-
-      {/* Mobile Cards */}
-      <div className="md:hidden">
-        <div className="p-4 space-y-4">
-          {ajudantes.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              Nenhum ajudante encontrado
-            </div>
-          ) : (
-            ajudantes.map((ajudante) => (
-              <div key={ajudante.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{ajudante.nome}</h3>
-                    <p className="text-sm text-gray-600">{ajudante.cpf || '-'}</p>
-                  </div>
-                  <TableActions ajudante={ajudante} />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="font-medium text-gray-700">Telefone:</span>
-                    <p className="text-gray-600">{ajudante.telefone || '-'}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Email:</span>
-                    <p className="text-gray-600">{ajudante.email || '-'}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Filial:</span>
-                    <p className="text-gray-600">{getFilialName(ajudante.filial_id)}</p>
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700">Status:</span>
-                    <div className="mt-1">{getStatusBadge(ajudante.status)}</div>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="font-medium text-gray-700">Data Admissão:</span>
-                    <p className="text-gray-600">{formatDate(ajudante.data_admissao)}</p>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
+    <>
+      {/* Versão Desktop - Tabela completa */}
+      <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nome
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  CPF
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contato
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Filial
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Admissão
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {ajudantes.map((ajudante) => (
+                <tr key={ajudante.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {ajudante.id}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {ajudante.nome}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {ajudante.cpf || 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">{ajudante.telefone || 'N/A'}</div>
+                    <div className="text-sm text-gray-500">{ajudante.email || 'N/A'}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                      ajudante.status === 'ativo' 
+                        ? 'bg-green-100 text-green-800' 
+                        : ajudante.status === 'ferias'
+                        ? 'bg-yellow-100 text-yellow-800'
+                        : ajudante.status === 'licenca'
+                        ? 'bg-purple-100 text-purple-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {getStatusLabel(ajudante.status)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {ajudante.filial_nome || 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {ajudante.data_admissao ? formatDate(ajudante.data_admissao) : 'N/A'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex gap-2">
+                      {canView('ajudantes') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => onView(ajudante)}
+                          title="Visualizar"
+                        >
+                          <FaEye className="text-green-600 text-sm" />
+                        </Button>
+                      )}
+                      {canEdit('ajudantes') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => onEdit(ajudante)}
+                          title="Editar"
+                        >
+                          <FaEdit className="text-blue-600 text-sm" />
+                        </Button>
+                      )}
+                      {canDelete('ajudantes') && (
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => onDelete(ajudante.id)}
+                          title="Excluir"
+                        >
+                          <FaTrash className="text-red-600 text-sm" />
+                        </Button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Pagination */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-        onPageChange={onPageChange}
-        onItemsPerPageChange={onItemsPerPageChange}
-      />
-    </div>
+      {/* Versão Mobile - Cards */}
+      <div className="lg:hidden space-y-3">
+        {ajudantes.map((ajudante) => (
+          <div key={ajudante.id} className="bg-white rounded-lg shadow-sm p-4 border">
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 text-sm">{ajudante.nome}</h3>
+                <p className="text-gray-600 text-xs">ID: {ajudante.id}</p>
+              </div>
+              <div className="flex gap-2">
+                {canView('ajudantes') && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => onView(ajudante)}
+                    title="Visualizar"
+                    className="p-2"
+                  >
+                    <FaEye className="text-green-600 text-sm" />
+                  </Button>
+                )}
+                {canEdit('ajudantes') && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => onEdit(ajudante)}
+                    title="Editar"
+                    className="p-2"
+                  >
+                    <FaEdit className="text-blue-600 text-sm" />
+                  </Button>
+                )}
+                {canDelete('ajudantes') && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    onClick={() => onDelete(ajudante.id)}
+                    title="Excluir"
+                    className="p-2"
+                  >
+                    <FaTrash className="text-red-600 text-sm" />
+                  </Button>
+                )}
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <span className="text-gray-500">CPF:</span>
+                <p className="font-medium">{ajudante.cpf || 'N/A'}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">Telefone:</span>
+                <p className="font-medium">{ajudante.telefone || 'N/A'}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">Email:</span>
+                <p className="font-medium">{ajudante.email || 'N/A'}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">Filial:</span>
+                <p className="font-medium">{ajudante.filial_nome || 'N/A'}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">Admissão:</span>
+                <p className="font-medium">{ajudante.data_admissao ? formatDate(ajudante.data_admissao) : 'N/A'}</p>
+              </div>
+              <div className="col-span-2">
+                <span className="text-gray-500">Status:</span>
+                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                  ajudante.status === 'ativo' 
+                    ? 'bg-green-100 text-green-800' 
+                    : ajudante.status === 'ferias'
+                    ? 'bg-yellow-100 text-yellow-800'
+                    : ajudante.status === 'licenca'
+                    ? 'bg-purple-100 text-purple-800'
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {getStatusLabel(ajudante.status)}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
 

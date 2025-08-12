@@ -1,24 +1,25 @@
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import AjudantesService from '../services/ajudantes';
 import FiliaisService from '../services/filiais';
 
 export const useAjudantes = () => {
+  // Estados principais
   const [ajudantes, setAjudantes] = useState([]);
   const [filiais, setFiliais] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [editingAjudante, setEditingAjudante] = useState(null);
+
+  // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
-  
-  // Estados de paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  // Estados de estatísticas
   const [estatisticas, setEstatisticas] = useState({
     total_ajudantes: 0,
     ajudantes_ativos: 0,
@@ -26,13 +27,7 @@ export const useAjudantes = () => {
     em_licenca: 0
   });
 
-  const { register, handleSubmit: handleFormSubmit, reset, formState: { errors } } = useForm();
-
-  useEffect(() => {
-    loadAjudantes();
-    loadFiliais();
-  }, [currentPage, itemsPerPage]);
-
+  // Carregar filiais
   const loadFiliais = async () => {
     try {
       const result = await FiliaisService.buscarAtivas();
@@ -44,9 +39,11 @@ export const useAjudantes = () => {
     }
   };
 
+  // Carregar ajudantes
   const loadAjudantes = async (params = {}) => {
     setLoading(true);
     try {
+      // Parâmetros de paginação
       const paginationParams = {
         page: currentPage,
         limit: itemsPerPage,
@@ -57,146 +54,182 @@ export const useAjudantes = () => {
       if (result.success) {
         setAjudantes(result.data);
         
+        // Extrair informações de paginação
         if (result.pagination) {
           setTotalPages(result.pagination.totalPages || 1);
           setTotalItems(result.pagination.totalItems || result.data.length);
           setCurrentPage(result.pagination.currentPage || 1);
         } else {
-          setTotalPages(1);
+          // Fallback se não houver paginação no backend
           setTotalItems(result.data.length);
+          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
         }
+        
+        // Calcular estatísticas básicas
+        const total = result.pagination?.totalItems || result.data.length;
+        const ativos = result.data.filter(a => a.status === 'ativo').length;
+        const ferias = result.data.filter(a => a.status === 'ferias').length;
+        const licenca = result.data.filter(a => a.status === 'licenca').length;
+        
+        setEstatisticas({
+          total_ajudantes: total,
+          ajudantes_ativos: ativos,
+          em_ferias: ferias,
+          em_licenca: licenca
+        });
+      } else {
+        toast.error(result.error);
       }
     } catch (error) {
-      console.error('Erro ao carregar ajudantes:', error);
       toast.error('Erro ao carregar ajudantes');
     } finally {
       setLoading(false);
     }
   };
 
-  const loadEstatisticas = async () => {
+  // Carregar dados quando dependências mudarem
+  useEffect(() => {
+    loadAjudantes();
+    loadFiliais();
+  }, [currentPage, itemsPerPage]);
+
+  // Função para recarregar dados
+  const reloadData = () => {
+    loadAjudantes();
+  };
+
+  // Filtrar ajudantes (client-side)
+  const filteredAjudantes = ajudantes.filter(ajudante => {
+    const matchesSearch = !searchTerm || 
+      (ajudante.nome && ajudante.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ajudante.cpf && ajudante.cpf.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ajudante.telefone && ajudante.telefone.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ajudante.email && ajudante.email.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    return matchesSearch;
+  });
+
+  // Funções de CRUD
+  const onSubmit = async (data) => {
     try {
-      const result = await AjudantesService.estatisticas();
+      // Limpar campos vazios para evitar problemas de validação
+      const cleanData = {
+        ...data,
+        filial_id: data.filial_id && data.filial_id !== '' ? parseInt(data.filial_id) : null,
+        cpf: data.cpf && data.cpf.trim() !== '' ? data.cpf.trim() : null,
+        telefone: data.telefone && data.telefone.trim() !== '' ? data.telefone.trim() : null,
+        email: data.email && data.email.trim() !== '' ? data.email.trim() : null,
+        endereco: data.endereco && data.endereco.trim() !== '' ? data.endereco.trim() : null,
+        observacoes: data.observacoes && data.observacoes.trim() !== '' ? data.observacoes.trim() : null
+      };
+
+      let result;
+      if (editingAjudante) {
+        result = await AjudantesService.atualizar(editingAjudante.id, cleanData);
+      } else {
+        result = await AjudantesService.criar(cleanData);
+      }
+      
       if (result.success) {
-        setEstatisticas(result.data);
+        toast.success(editingAjudante ? 'Ajudante atualizado com sucesso!' : 'Ajudante criado com sucesso!');
+        handleCloseModal();
+        reloadData();
+      } else {
+        toast.error(result.error);
       }
     } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error);
+      toast.error('Erro ao salvar ajudante');
     }
   };
 
-  const handleCreate = () => {
-    setEditingAjudante(null);
-    setViewMode(false);
-    setShowModal(true);
-    reset();
-  };
-
-  const handleEdit = (ajudante) => {
-    setEditingAjudante(ajudante);
-    setViewMode(false);
-    setShowModal(true);
-    reset(ajudante);
-  };
-
-  const handleView = (ajudante) => {
-    setEditingAjudante(ajudante);
-    setViewMode(true);
-    setShowModal(true);
-    reset(ajudante);
-  };
-
-  const handleDelete = async (id) => {
+  const handleDeleteAjudante = async (ajudanteId) => {
     if (window.confirm('Tem certeza que deseja excluir este ajudante?')) {
       try {
-        const result = await AjudantesService.excluir(id);
+        const result = await AjudantesService.excluir(ajudanteId);
         if (result.success) {
-          toast.success('Ajudante excluído com sucesso');
-          loadAjudantes();
-          loadEstatisticas();
+          toast.success('Ajudante excluído com sucesso!');
+          reloadData();
         } else {
-          toast.error(result.message || 'Erro ao excluir ajudante');
+          toast.error(result.error);
         }
       } catch (error) {
-        console.error('Erro ao excluir ajudante:', error);
         toast.error('Erro ao excluir ajudante');
       }
     }
   };
 
-  const handleSubmit = async (data) => {
-    try {
-      let result;
-      if (editingAjudante) {
-        result = await AjudantesService.atualizar(editingAjudante.id, data);
-      } else {
-        result = await AjudantesService.criar(data);
-      }
+  // Funções de modal
+  const handleAddAjudante = () => {
+    setViewMode(false);
+    setEditingAjudante(null);
+    setShowModal(true);
+  };
 
-      if (result.success) {
-        toast.success(
-          editingAjudante 
-            ? 'Ajudante atualizado com sucesso' 
-            : 'Ajudante criado com sucesso'
-        );
-        setShowModal(false);
-        loadAjudantes();
-        loadEstatisticas();
-      } else {
-        toast.error(result.message || 'Erro ao salvar ajudante');
-      }
-    } catch (error) {
-      console.error('Erro ao salvar ajudante:', error);
-      toast.error('Erro ao salvar ajudante');
-    }
+  const handleViewAjudante = (ajudante) => {
+    setViewMode(true);
+    setEditingAjudante(ajudante);
+    setShowModal(true);
+  };
+
+  const handleEditAjudante = (ajudante) => {
+    setViewMode(false);
+    setEditingAjudante(ajudante);
+    setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingAjudante(null);
     setViewMode(false);
-    reset();
+    setEditingAjudante(null);
   };
 
+  // Funções de paginação
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
+  // Funções utilitárias
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString('pt-BR');
   };
 
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-    setCurrentPage(1);
-    loadAjudantes({ search: term });
+  const getStatusLabel = (status) => {
+    const statusMap = {
+      ativo: 'Ativo',
+      inativo: 'Inativo',
+      ferias: 'Em Férias',
+      licenca: 'Em Licença'
+    };
+    return statusMap[status] || status;
   };
 
   return {
-    ajudantes,
+    // Estados
+    ajudantes: filteredAjudantes,
     filiais,
     loading,
     showModal,
     viewMode,
     editingAjudante,
     searchTerm,
-    setSearchTerm,
     currentPage,
     totalPages,
     totalItems,
     itemsPerPage,
     estatisticas,
-    register,
-    errors,
-    handleCreate,
-    handleEdit,
-    handleDelete,
-    handleView,
-    handleSubmit: handleFormSubmit(handleSubmit),
+
+    // Funções
+    onSubmit,
+    handleDeleteAjudante,
+    handleAddAjudante,
+    handleViewAjudante,
+    handleEditAjudante,
     handleCloseModal,
     handlePageChange,
-    handleItemsPerPageChange,
-    handleSearch
+    setSearchTerm,
+    setItemsPerPage,
+    formatDate,
+    getStatusLabel
   };
 };

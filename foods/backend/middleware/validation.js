@@ -735,6 +735,7 @@ module.exports = {
   filialAtualizacaoValidations,
   unidadeValidations,
   unidadeAtualizacaoValidations,
+
   nomeGenericoProdutoValidations,
   nomeGenericoProdutoAtualizacaoValidations
 }; 

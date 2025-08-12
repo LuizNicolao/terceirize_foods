@@ -95,7 +95,7 @@ class AjudantesController {
   }
 
   // Buscar ajudante por ID
-  async buscarAjudante(req, res) {
+  async buscarAjudantePorId(req, res) {
     try {
       const { id } = req.params;
 
@@ -572,36 +572,6 @@ class AjudantesController {
         success: false,
         error: 'Erro interno do servidor',
         message: 'Não foi possível buscar os ajudantes disponíveis'
-      });
-    }
-  }
-
-  // Estatísticas dos ajudantes
-  async estatisticas(req, res) {
-    try {
-      const query = `
-        SELECT 
-          COUNT(*) as total_ajudantes,
-          SUM(CASE WHEN status = 'ativo' THEN 1 ELSE 0 END) as ajudantes_ativos,
-          SUM(CASE WHEN status = 'ferias' THEN 1 ELSE 0 END) as em_ferias,
-          SUM(CASE WHEN status = 'licenca' THEN 1 ELSE 0 END) as em_licenca
-        FROM ajudantes
-      `;
-
-      const result = await executeQuery(query);
-      const estatisticas = result[0];
-
-      res.json({
-        success: true,
-        data: estatisticas
-      });
-
-    } catch (error) {
-      console.error('Erro ao buscar estatísticas:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível buscar as estatísticas'
       });
     }
   }

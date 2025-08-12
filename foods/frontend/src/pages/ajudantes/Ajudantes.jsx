@@ -1,20 +1,23 @@
 import React from 'react';
+import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAjudantes } from '../../hooks/useAjudantes';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
-import { 
-  AjudantesStats, 
-  AjudantesTable, 
-  AjudantesActions 
-} from '../../components/ajudantes';
-import { AjudanteModal } from '../../components/ajudantes/AjudanteModal';
-import { AuditModal } from '../../components/shared';
-import { LoadingSpinner } from '../../components/LoadingSpinner';
+import AjudantesService from '../../services/ajudantes';
+import { Button } from '../../components/ui';
+import CadastroFilterBar from '../../components/CadastroFilterBar';
+import Pagination from '../../components/Pagination';
+import { AjudanteModal } from '../../components/ajudantes';
+import AjudantesStats from '../../components/ajudantes/AjudantesStats';
+import AjudantesActions from '../../components/ajudantes/AjudantesActions';
+import AjudantesTable from '../../components/ajudantes/AjudantesTable';
+import AuditModal from '../../components/shared/AuditModal';
 
 const Ajudantes = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
+  // Hooks customizados
   const {
     ajudantes,
     filiais,
@@ -23,21 +26,22 @@ const Ajudantes = () => {
     viewMode,
     editingAjudante,
     searchTerm,
-    setSearchTerm,
     currentPage,
     totalPages,
     totalItems,
     itemsPerPage,
     estatisticas,
-    handleCreate,
-    handleEdit,
-    handleDelete,
-    handleView,
-    handleSubmit,
+    onSubmit,
+    handleDeleteAjudante,
+    handleAddAjudante,
+    handleViewAjudante,
+    handleEditAjudante,
     handleCloseModal,
     handlePageChange,
-    handleItemsPerPageChange,
-    handleSearch
+    setSearchTerm,
+    setItemsPerPage,
+    formatDate,
+    getStatusLabel
   } = useAjudantes();
 
   const {
@@ -45,93 +49,116 @@ const Ajudantes = () => {
     auditLogs,
     auditLoading,
     auditFilters,
-    setAuditFilters,
-    handleAuditView,
-    handleAuditClose,
-    handleAuditSearch
-  } = useAuditoria();
+    handleOpenAuditModal,
+    handleCloseAuditModal,
+    handleApplyAuditFilters,
+    handleExportAuditXLSX,
+    handleExportAuditPDF,
+    setAuditFilters
+  } = useAuditoria('ajudantes');
 
-  const {
-    handleExportXLSX,
-    handleExportPDF,
-    exportLoading
-  } = useExport();
+  const { handleExportXLSX, handleExportPDF } = useExport(AjudantesService);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Ajudantes</h1>
-              <p className="mt-1 text-sm text-gray-500">
-                Gerencie os ajudantes do sistema
-              </p>
-            </div>
-            
-            {/* Actions */}
-            <AjudantesActions
-              canCreate={canCreate}
-              onNew={handleCreate}
-              onExportXLSX={() => handleExportXLSX(ajudantes, 'ajudantes')}
-              onExportPDF={() => handleExportPDF(ajudantes, 'ajudantes')}
-              exportLoading={exportLoading}
-            />
-          </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Ajudantes</h1>
+        <div className="flex gap-2 sm:gap-3">
+          <Button
+            onClick={handleOpenAuditModal}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
+          >
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+          </Button>
+          {canCreate('ajudantes') && (
+            <Button onClick={handleAddAjudante} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
+          )}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <AjudantesStats estatisticas={estatisticas} />
+      {/* Estatísticas */}
+      <AjudantesStats estatisticas={estatisticas} />
 
-        {/* Table */}
-        <AjudantesTable
-          ajudantes={ajudantes}
-          filiais={filiais}
-          canEdit={canEdit}
-          canDelete={canDelete}
-          canView={canView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onView={handleView}
-          onAuditView={handleAuditView}
+      {/* Filtros */}
+      <CadastroFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        onClear={() => setSearchTerm('')}
+        placeholder="Buscar por nome, CPF, telefone ou email..."
+      />
+
+      {/* Ações */}
+      <AjudantesActions 
+        onExportXLSX={handleExportXLSX}
+        onExportPDF={handleExportPDF}
+      />
+
+      {/* Tabela */}
+      <AjudantesTable
+        ajudantes={ajudantes}
+        canView={canView}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        onView={handleViewAjudante}
+        onEdit={handleEditAjudante}
+        onDelete={handleDeleteAjudante}
+        getStatusLabel={getStatusLabel}
+        formatDate={formatDate}
+      />
+
+      {/* Modal de Ajudante */}
+      <AjudanteModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        onSubmit={onSubmit}
+        ajudante={editingAjudante}
+        isViewMode={viewMode}
+        filiais={filiais}
+      />
+
+      {/* Modal de Auditoria */}
+      <AuditModal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
+        title="Relatório de Auditoria - Ajudantes"
+        auditLogs={auditLogs}
+        auditLoading={auditLoading}
+        auditFilters={auditFilters}
+        onApplyFilters={handleApplyAuditFilters}
+        onExportXLSX={handleExportAuditXLSX}
+        onExportPDF={handleExportAuditPDF}
+        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+      />
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
+          onPageChange={handlePageChange}
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
-          onPageChange={handlePageChange}
-          onItemsPerPageChange={handleItemsPerPageChange}
-          searchTerm={searchTerm}
-          onSearch={handleSearch}
         />
-      </div>
-
-      {/* Modal */}
-      <AjudanteModal
-        show={showModal}
-        viewMode={viewMode}
-        ajudante={editingAjudante}
-        filiais={filiais}
-        onSubmit={handleSubmit}
-        onClose={handleCloseModal}
-      />
-
-      {/* Audit Modal */}
-      <AuditModal
-        show={showAuditModal}
-        logs={auditLogs}
-        loading={auditLoading}
-        filters={auditFilters}
-        onFiltersChange={setAuditFilters}
-        onSearch={handleAuditSearch}
-        onClose={handleAuditClose}
-      />
+      )}
     </div>
   );
 };
