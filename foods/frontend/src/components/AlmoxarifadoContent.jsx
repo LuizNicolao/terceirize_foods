@@ -29,20 +29,15 @@ const AlmoxarifadoContent = ({
   const loadAlmoxarifados = async () => {
     if (!filialId) return;
     
-    console.log('Carregando almoxarifados para filialId:', filialId);
     setLoading(true);
     try {
       const response = await filiaisService.listarAlmoxarifados(filialId);
-      console.log('Resposta do serviço:', response);
       if (response.success) {
-        console.log('Almoxarifados carregados:', response.data);
         setAlmoxarifados(response.data || []);
       } else {
-        console.error('Erro ao carregar almoxarifados:', response.error);
         toast.error(response.error);
       }
     } catch (error) {
-      console.error('Erro na requisição:', error);
       toast.error('Erro ao carregar almoxarifados');
     } finally {
       setLoading(false);

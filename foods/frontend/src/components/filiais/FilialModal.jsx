@@ -291,7 +291,6 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
       {/* Aba de Almoxarifados */}
       {activeTab === 'almoxarifados' && filial && (
         <div className="max-h-[75vh] overflow-y-auto">
-          {console.log('Renderizando AlmoxarifadoContent com filialId:', filial.id)}
           <AlmoxarifadoContent
             filialId={filial.id}
             viewMode={isViewMode}

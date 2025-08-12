@@ -976,7 +976,7 @@ class FiliaisController {
           u.nome as unidade_nome
         FROM almoxarifado_itens ai
         INNER JOIN produtos p ON ai.produto_id = p.id
-        LEFT JOIN unidades u ON p.unidade_id = u.id
+        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
         WHERE ai.almoxarifado_id = ?
         ORDER BY p.nome ASC
       `;
@@ -1062,7 +1062,7 @@ class FiliaisController {
           u.nome as unidade_nome
         FROM almoxarifado_itens ai
         INNER JOIN produtos p ON ai.produto_id = p.id
-        LEFT JOIN unidades u ON p.unidade_id = u.id
+        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
         WHERE ai.id = ?`,
         [result.insertId]
       );
