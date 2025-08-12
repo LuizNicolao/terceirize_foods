@@ -14,7 +14,7 @@ import Rotas from './pages/rotas/Rotas';
 import UnidadesEscolares from './pages/unidades-escolares/UnidadesEscolares';
 import Produtos from './pages/produtos/Produtos';
 import Grupos from './pages/grupos/Grupos';
-import Subgrupos from './pages/Subgrupos';
+import Subgrupos from './pages/subgrupos/Subgrupos';
 import Unidades from './pages/Unidades';
 import Marcas from './pages/Marcas';
 import Classes from './pages/Classes';

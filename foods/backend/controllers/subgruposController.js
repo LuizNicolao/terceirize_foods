@@ -27,10 +27,12 @@ class SubgruposController {
       SELECT 
         sg.id, 
         sg.nome, 
+        sg.codigo,
+        sg.descricao,
         sg.grupo_id,
         sg.status, 
-        sg.criado_em,
-        sg.atualizado_em,
+        sg.data_cadastro as criado_em,
+        sg.data_atualizacao as atualizado_em,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
       FROM subgrupos sg
@@ -54,10 +56,10 @@ class SubgruposController {
 
     if (status !== undefined) {
       baseQuery += ' AND sg.status = ?';
-      params.push(status);
+      params.push(status === 1 ? 'ativo' : 'inativo');
     }
 
-    baseQuery += ' GROUP BY sg.id, sg.nome, sg.grupo_id, sg.status, sg.criado_em, sg.atualizado_em, g.nome ORDER BY sg.nome ASC';
+    baseQuery += ' GROUP BY sg.id, sg.nome, sg.codigo, sg.descricao, sg.grupo_id, sg.status, sg.data_cadastro, sg.data_atualizacao, g.nome ORDER BY sg.nome ASC';
 
     // Aplicar paginação manualmente
     const limit = pagination.limit;
@@ -69,7 +71,13 @@ class SubgruposController {
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(DISTINCT sg.id) as total FROM subgrupos sg WHERE 1=1${search ? ' AND sg.nome LIKE ?' : ''}${grupo_id ? ' AND sg.grupo_id = ?' : ''}${status !== undefined ? ' AND sg.status = ?' : ''}`;
-    const countParams = [...params];
+    const countParams = search ? [`%${search}%`] : [];
+    if (grupo_id) {
+      countParams.push(grupo_id);
+    }
+    if (status !== undefined) {
+      countParams.push(status === 1 ? 'ativo' : 'inativo');
+    }
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 
@@ -103,17 +111,19 @@ class SubgruposController {
       `SELECT 
         sg.id, 
         sg.nome, 
+        sg.codigo,
+        sg.descricao,
         sg.grupo_id,
         sg.status, 
-        sg.criado_em,
-        sg.atualizado_em,
+        sg.data_cadastro as criado_em,
+        sg.data_atualizacao as atualizado_em,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
        FROM subgrupos sg
        LEFT JOIN grupos g ON sg.grupo_id = g.id
        LEFT JOIN produtos p ON sg.id = p.subgrupo_id
        WHERE sg.id = ?
-       GROUP BY sg.id, sg.nome, sg.grupo_id, sg.status, sg.criado_em, sg.atualizado_em, g.nome`,
+       GROUP BY sg.id, sg.nome, sg.codigo, sg.descricao, sg.grupo_id, sg.status, sg.data_cadastro, sg.data_atualizacao, g.nome`,
       [id]
     );
 
@@ -163,8 +173,14 @@ class SubgruposController {
 
     // Inserir subgrupo
     const result = await executeQuery(
-      'INSERT INTO subgrupos (nome, grupo_id, status, criado_em) VALUES (?, ?, ?, NOW())',
-      [nome && nome.trim() ? nome.trim() : null, grupo_id || null, status || 1]
+      'INSERT INTO subgrupos (nome, codigo, descricao, grupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
+      [
+        nome && nome.trim() ? nome.trim() : null, 
+        req.body.codigo && req.body.codigo.trim() ? req.body.codigo.trim() : null,
+        req.body.descricao && req.body.descricao.trim() ? req.body.descricao.trim() : null,
+        grupo_id || null, 
+        status === 1 ? 'ativo' : 'inativo'
+      ]
     );
 
     const novoSubgrupoId = result.insertId;
@@ -174,17 +190,19 @@ class SubgruposController {
       `SELECT 
         sg.id, 
         sg.nome, 
+        sg.codigo,
+        sg.descricao,
         sg.grupo_id,
         sg.status, 
-        sg.criado_em,
-        sg.atualizado_em,
+        sg.data_cadastro as criado_em,
+        sg.data_atualizacao as atualizado_em,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
        FROM subgrupos sg
        LEFT JOIN grupos g ON sg.grupo_id = g.id
        LEFT JOIN produtos p ON sg.id = p.subgrupo_id
        WHERE sg.id = ?
-       GROUP BY sg.id, sg.nome, sg.grupo_id, sg.status, sg.criado_em, sg.atualizado_em, g.nome`,
+       GROUP BY sg.id, sg.nome, sg.codigo, sg.descricao, sg.grupo_id, sg.status, sg.data_cadastro, sg.data_atualizacao, g.nome`,
       [novoSubgrupoId]
     );
 
@@ -271,7 +289,7 @@ class SubgruposController {
       return errorResponse(res, 'Nenhum campo para atualizar', STATUS_CODES.BAD_REQUEST);
     }
 
-    updateFields.push('atualizado_em = NOW()');
+    updateFields.push('data_atualizacao = NOW()');
     updateParams.push(id);
 
     // Executar atualização
@@ -285,17 +303,19 @@ class SubgruposController {
       `SELECT 
         sg.id, 
         sg.nome, 
+        sg.codigo,
+        sg.descricao,
         sg.grupo_id,
         sg.status, 
-        sg.criado_em,
-        sg.atualizado_em,
+        sg.data_cadastro as criado_em,
+        sg.data_atualizacao as atualizado_em,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
        FROM subgrupos sg
        LEFT JOIN grupos g ON sg.grupo_id = g.id
        LEFT JOIN produtos p ON sg.id = p.subgrupo_id
        WHERE sg.id = ?
-       GROUP BY sg.id, sg.nome, sg.grupo_id, sg.status, sg.criado_em, sg.atualizado_em, g.nome`,
+       GROUP BY sg.id, sg.nome, sg.codigo, sg.descricao, sg.grupo_id, sg.status, sg.data_cadastro, sg.data_atualizacao, g.nome`,
       [id]
     );
 
@@ -343,9 +363,9 @@ class SubgruposController {
       return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
 
-    // Excluir subgrupo (soft delete - alterar status para 0)
+    // Excluir subgrupo (soft delete - alterar status para inativo)
     await executeQuery(
-      'UPDATE subgrupos SET status = 0, atualizado_em = NOW() WHERE id = ?',
+      'UPDATE subgrupos SET status = "inativo", data_atualizacao = NOW() WHERE id = ?',
       [id]
     );
 
@@ -363,17 +383,19 @@ class SubgruposController {
       SELECT 
         sg.id, 
         sg.nome, 
+        sg.codigo,
+        sg.descricao,
         sg.grupo_id,
         sg.status, 
-        sg.criado_em,
-        sg.atualizado_em,
+        sg.data_cadastro as criado_em,
+        sg.data_atualizacao as atualizado_em,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
       FROM subgrupos sg
       LEFT JOIN grupos g ON sg.grupo_id = g.id
       LEFT JOIN produtos p ON sg.id = p.subgrupo_id
-      WHERE sg.status = 1
-      GROUP BY sg.id, sg.nome, sg.grupo_id, sg.status, sg.criado_em, sg.atualizado_em, g.nome
+      WHERE sg.status = 'ativo'
+      GROUP BY sg.id, sg.nome, sg.codigo, sg.descricao, sg.grupo_id, sg.status, sg.data_cadastro, sg.data_atualizacao, g.nome
     `;
     
     let params = [];
@@ -388,7 +410,7 @@ class SubgruposController {
     const subgrupos = await executeQuery(query, params);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM subgrupos WHERE status = 1`;
+    const countQuery = `SELECT COUNT(*) as total FROM subgrupos WHERE status = 'ativo'`;
     const totalResult = await executeQuery(countQuery, []);
     const totalItems = totalResult[0].total;
 
@@ -427,17 +449,19 @@ class SubgruposController {
       SELECT 
         sg.id, 
         sg.nome, 
+        sg.codigo,
+        sg.descricao,
         sg.grupo_id,
         sg.status, 
-        sg.criado_em,
-        sg.atualizado_em,
+        sg.data_cadastro as criado_em,
+        sg.data_atualizacao as atualizado_em,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
       FROM subgrupos sg
       LEFT JOIN grupos g ON sg.grupo_id = g.id
       LEFT JOIN produtos p ON sg.id = p.subgrupo_id
       WHERE sg.grupo_id = ?
-      GROUP BY sg.id, sg.nome, sg.grupo_id, sg.status, sg.criado_em, sg.atualizado_em, g.nome
+      GROUP BY sg.id, sg.nome, sg.codigo, sg.descricao, sg.grupo_id, sg.status, sg.data_cadastro, sg.data_atualizacao, g.nome
     `;
     
     let params = [grupo_id];
