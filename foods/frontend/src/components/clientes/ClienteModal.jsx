@@ -2,9 +2,13 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaSearch } from 'react-icons/fa';
 import { Modal, Button, Input } from '../ui';
+import ClientesService from '../../services/clientes';
+import toast from 'react-hot-toast';
 
 const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
-  const { register, handleSubmit, reset, setValue, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
+
+  const cnpj = watch('cnpj');
 
   // Resetar formulário quando modal abrir/fechar
   useEffect(() => {
@@ -30,24 +34,36 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
     onClose();
   };
 
-  const buscarCNPJ = async () => {
-    const cnpj = document.getElementById('cnpj').value;
-    if (!cnpj || cnpj.length < 14) {
-      alert('Digite um CNPJ válido');
+  // Função para buscar CNPJ
+  const handleBuscarCNPJ = async () => {
+    if (!cnpj) {
+      toast.error('Digite um CNPJ para consultar');
       return;
     }
 
     try {
-      // Aqui você pode implementar a busca do CNPJ via API
-      console.log('Buscando CNPJ:', cnpj);
-      // const result = await ClientesService.buscarCNPJ(cnpj);
-      // if (result.success) {
-      //   setValue('razao_social', result.data.razao_social);
-      //   setValue('nome_fantasia', result.data.nome_fantasia);
-      //   // ... outros campos
-      // }
+      const response = await ClientesService.buscarCNPJ(cnpj);
+      if (response.success) {
+        const dados = response.data;
+        // Preencher os campos com os dados retornados
+        setValue('razao_social', dados.razao_social || '');
+        setValue('nome_fantasia', dados.nome_fantasia || '');
+        setValue('logradouro', dados.logradouro || '');
+        setValue('numero', dados.numero || '');
+        setValue('bairro', dados.bairro || '');
+        setValue('municipio', dados.municipio || '');
+        setValue('uf', dados.uf || '');
+        setValue('cep', dados.cep || '');
+        setValue('telefone', dados.telefone || '');
+        setValue('email', dados.email || '');
+        
+        toast.success('Dados do CNPJ carregados com sucesso!');
+      } else {
+        toast.error(response.error);
+      }
     } catch (error) {
       console.error('Erro ao buscar CNPJ:', error);
+      toast.error('Erro ao buscar dados do CNPJ');
     }
   };
 
@@ -94,9 +110,10 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
                 {!isViewMode && (
                   <Button
                     type="button"
-                    onClick={buscarCNPJ}
+                    onClick={handleBuscarCNPJ}
                     variant="outline"
                     className="mt-6"
+                    disabled={!cnpj}
                   >
                     <FaSearch className="h-4 w-4" />
                   </Button>

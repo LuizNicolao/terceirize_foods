@@ -157,9 +157,6 @@ const Fornecedores = () => {
         isOpen={showModal}
         onClose={handleCloseModal}
         onSubmit={onSubmit}
-        register={register}
-        handleSubmit={handleSubmit}
-        errors={errors}
         viewMode={viewMode}
         editingFornecedor={editingFornecedor}
       />
