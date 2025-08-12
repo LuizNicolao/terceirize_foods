@@ -113,6 +113,7 @@ export const useFornecedores = () => {
   // Função para recarregar dados
   const reloadData = () => {
     loadFornecedores();
+    loadEstatisticas();
   };
 
   const handlePageChange = (page) => {
