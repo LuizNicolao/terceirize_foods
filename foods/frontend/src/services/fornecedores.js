@@ -128,6 +128,31 @@ class FornecedoresService {
     }
   }
 
+  async buscarEstatisticas() {
+    try {
+      const response = await api.get('/fornecedores/estatisticas');
+      
+      // Extrair dados da estrutura HATEOAS
+      let estatisticas = null;
+      
+      if (response.data.data) {
+        estatisticas = response.data.data;
+      } else {
+        estatisticas = response.data;
+      }
+      
+      return {
+        success: true,
+        data: estatisticas
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar estatísticas'
+      };
+    }
+  }
+
   async buscarAtivos() {
     try {
       const response = await api.get('/fornecedores', { params: { status: 1 } });
