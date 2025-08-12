@@ -6,7 +6,7 @@ class PermissoesService {
    */
   static async listarUsuarios(params = {}) {
     try {
-      const response = await api.get('/usuarios', { params });
+      const response = await api.get('/permissoes/usuarios', { params });
       
       // Extrair dados da estrutura HATEOAS
       let usuarios = [];
