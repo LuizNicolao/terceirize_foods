@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const { body, validationResult } = require('express-validator');
+const { body, param, validationResult } = require('express-validator');
 const { executeQuery } = require('../../config/database');
 const { authenticateToken, checkPermission } = require('../../middleware/auth');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -193,7 +193,7 @@ router.get('/usuarios',
 router.get('/usuario/:id', 
   checkPermission('visualizar'),
   [
-    body('id').isInt().withMessage('ID deve ser um número inteiro'),
+    param('id').isInt().withMessage('ID deve ser um número inteiro'),
     (req, res, next) => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -250,15 +250,15 @@ router.get('/usuario/:id',
 // PUT /api/permissoes/usuario/:id - Atualizar permissões de um usuário
 router.put('/usuario/:id', 
   checkPermission('editar'),
-  auditChangesMiddleware('permissoes'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'permissoes'),
   [
-    body('id').isInt().withMessage('ID deve ser um número inteiro'),
+    param('id').isInt().withMessage('ID deve ser um número inteiro'),
     body('permissoes').isArray().withMessage('Permissões deve ser um array'),
     body('permissoes.*.tela').notEmpty().withMessage('Tela é obrigatória'),
-    body('permissoes.*.pode_visualizar').isBoolean().withMessage('pode_visualizar deve ser booleano'),
-    body('permissoes.*.pode_criar').isBoolean().withMessage('pode_criar deve ser booleano'),
-    body('permissoes.*.pode_editar').isBoolean().withMessage('pode_editar deve ser booleano'),
-    body('permissoes.*.pode_excluir').isBoolean().withMessage('pode_excluir deve ser booleano'),
+    body('permissoes.*.pode_visualizar').isIn([true, false, 0, 1]).withMessage('pode_visualizar deve ser booleano'),
+    body('permissoes.*.pode_criar').isIn([true, false, 0, 1]).withMessage('pode_criar deve ser booleano'),
+    body('permissoes.*.pode_editar').isIn([true, false, 0, 1]).withMessage('pode_editar deve ser booleano'),
+    body('permissoes.*.pode_excluir').isIn([true, false, 0, 1]).withMessage('pode_excluir deve ser booleano'),
     (req, res, next) => {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
