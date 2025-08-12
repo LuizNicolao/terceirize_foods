@@ -322,10 +322,10 @@ class DashboardController {
       try {
         // Últimos grupos criados
         const ultimosGrupos = await executeQuery(
-          `SELECT id, nome, criado_em
+          `SELECT id, nome, data_cadastro as criado_em
            FROM grupos
-           WHERE status = 1
-           ORDER BY criado_em DESC
+           WHERE status = 'ativo'
+           ORDER BY data_cadastro DESC
            LIMIT 5`
         );
         recentes.grupos = ultimosGrupos;

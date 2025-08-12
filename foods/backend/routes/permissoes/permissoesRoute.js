@@ -149,14 +149,14 @@ router.get('/usuarios',
     try {
       const { search = '', limit = 1000 } = req.query;
       
-      let query = `
-        SELECT 
-          u.id, u.nome, u.email, u.nivel_de_acesso, u.status,
-          COUNT(p.id) as permissoes_count
-        FROM usuarios u
-        LEFT JOIN permissoes p ON u.id = p.usuario_id
-        WHERE 1=1
-      `;
+             let query = `
+         SELECT 
+           u.id, u.nome, u.email, u.nivel_de_acesso, u.status,
+           COUNT(p.id) as permissoes_count
+         FROM usuarios u
+         LEFT JOIN permissoes_usuario p ON u.id = p.usuario_id
+         WHERE 1=1
+       `;
       
       let params = [];
 
@@ -223,11 +223,11 @@ router.get('/usuario/:id',
         });
       }
 
-      // Buscar permissões
-      const permissoes = await executeQuery(
-        'SELECT tela, pode_visualizar, pode_criar, pode_editar, pode_excluir FROM permissoes WHERE usuario_id = ?',
-        [id]
-      );
+             // Buscar permissões
+       const permissoes = await executeQuery(
+         'SELECT tela, pode_visualizar, pode_criar, pode_editar, pode_excluir FROM permissoes_usuario WHERE usuario_id = ?',
+         [id]
+       );
 
       res.json({
         success: true,
@@ -293,24 +293,24 @@ router.put('/usuario/:id',
       await executeQuery('START TRANSACTION');
 
       try {
-        // Remover permissões existentes
-        await executeQuery('DELETE FROM permissoes WHERE usuario_id = ?', [id]);
+                 // Remover permissões existentes
+         await executeQuery('DELETE FROM permissoes_usuario WHERE usuario_id = ?', [id]);
 
-        // Inserir novas permissões
-        for (const perm of permissoes) {
-          await executeQuery(
-            `INSERT INTO permissoes (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [
-              id,
-              perm.tela,
-              perm.pode_visualizar ? 1 : 0,
-              perm.pode_criar ? 1 : 0,
-              perm.pode_editar ? 1 : 0,
-              perm.pode_excluir ? 1 : 0
-            ]
-          );
-        }
+                 // Inserir novas permissões
+         for (const perm of permissoes) {
+           await executeQuery(
+             `INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir) 
+              VALUES (?, ?, ?, ?, ?, ?)`,
+             [
+               id,
+               perm.tela,
+               perm.pode_visualizar ? 1 : 0,
+               perm.pode_criar ? 1 : 0,
+               perm.pode_editar ? 1 : 0,
+               perm.pode_excluir ? 1 : 0
+             ]
+           );
+         }
 
         await executeQuery('COMMIT');
 
@@ -367,24 +367,24 @@ router.post('/padrao/:tipo/:nivel',
       await executeQuery('START TRANSACTION');
 
       try {
-        // Remover permissões existentes
-        await executeQuery('DELETE FROM permissoes WHERE usuario_id = ?', [usuario_id]);
+                 // Remover permissões existentes
+         await executeQuery('DELETE FROM permissoes_usuario WHERE usuario_id = ?', [usuario_id]);
 
-        // Inserir permissões padrão
-        for (const [tela, perms] of Object.entries(permissoesPadrao)) {
-          await executeQuery(
-            `INSERT INTO permissoes (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir) 
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [
-              usuario_id,
-              tela,
-              perms.visualizar ? 1 : 0,
-              perms.criar ? 1 : 0,
-              perms.editar ? 1 : 0,
-              perms.excluir ? 1 : 0
-            ]
-          );
-        }
+                 // Inserir permissões padrão
+         for (const [tela, perms] of Object.entries(permissoesPadrao)) {
+           await executeQuery(
+             `INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir) 
+              VALUES (?, ?, ?, ?, ?, ?)`,
+             [
+               usuario_id,
+               tela,
+               perms.visualizar ? 1 : 0,
+               perms.criar ? 1 : 0,
+               perms.editar ? 1 : 0,
+               perms.excluir ? 1 : 0
+             ]
+           );
+         }
 
         await executeQuery('COMMIT');
 
