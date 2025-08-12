@@ -147,7 +147,6 @@ const Fornecedores = () => {
         onView={handleView}
         onEdit={handleEdit}
         onDelete={handleDeleteFornecedor}
-        onViewAudit={handleViewAudit}
         canView={canView('fornecedores')}
         canEdit={canEdit('fornecedores')}
         canDelete={canDelete('fornecedores')}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash, FaHistory } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
 import { Button } from '../ui';
 import { usePermissions } from '../../contexts/PermissionsContext';
 
@@ -9,7 +9,6 @@ const FornecedoresTable = ({
   onView, 
   onEdit, 
   onDelete, 
-  onViewAudit,
   canView,
   canEdit,
   canDelete
@@ -133,14 +132,6 @@ const FornecedoresTable = ({
                           <FaTrash className="text-red-600 text-sm" />
                         </Button>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => onViewAudit(fornecedor.id)}
-                        title="Auditoria"
-                      >
-                        <FaHistory className="text-purple-600 text-sm" />
-                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -193,15 +184,6 @@ const FornecedoresTable = ({
                     <FaTrash className="text-red-600 text-sm" />
                   </Button>
                 )}
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={() => onViewAudit(fornecedor.id)}
-                  title="Auditoria"
-                  className="p-2"
-                >
-                  <FaHistory className="text-purple-600 text-sm" />
-                </Button>
               </div>
             </div>
             
