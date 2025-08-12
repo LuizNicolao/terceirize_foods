@@ -9,7 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/usuarios/Usuarios';
 import Fornecedores from './pages/fornecedores/Fornecedores';
 import Clientes from './pages/clientes/Clientes';
-import Filiais from './pages/Filiais';
+import Filiais from './pages/filiais/Filiais';
 import Rotas from './pages/rotas/Rotas';
 import UnidadesEscolares from './pages/unidades-escolares/UnidadesEscolares';
 import Produtos from './pages/produtos/Produtos';
