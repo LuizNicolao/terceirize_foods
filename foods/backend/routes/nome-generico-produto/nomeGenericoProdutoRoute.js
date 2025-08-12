@@ -18,7 +18,7 @@ router.get('/ativos',
   paginationMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.buscarAtivos
+  nomeGenericoProdutoController.buscarNomesGenericosAtivos
 );
 
 router.get('/grupo/:grupo_id',
@@ -26,7 +26,7 @@ router.get('/grupo/:grupo_id',
   paginationMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.buscarPorGrupo
+  nomeGenericoProdutoController.buscarNomesGenericosPorGrupo
 );
 
 router.get('/subgrupo/:subgrupo_id',
@@ -34,7 +34,7 @@ router.get('/subgrupo/:subgrupo_id',
   paginationMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.buscarPorSubgrupo
+  nomeGenericoProdutoController.buscarNomesGenericosPorSubgrupo
 );
 
 router.get('/classe/:classe_id',
@@ -42,7 +42,7 @@ router.get('/classe/:classe_id',
   paginationMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.buscarPorClasse
+  nomeGenericoProdutoController.buscarNomesGenericosPorClasse
 );
 
 // Rotas CRUD padrão
@@ -51,14 +51,14 @@ router.get('/',
   paginationMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.listar
+  nomeGenericoProdutoController.listarNomesGenericos
 );
 
 router.get('/:id',
   checkPermission('nome_generico_produto', 'pode_visualizar'),
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.buscarPorId
+  nomeGenericoProdutoController.buscarNomeGenericoPorId
 );
 
 router.post('/',
@@ -67,7 +67,7 @@ router.post('/',
   auditChangesMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.criar
+  nomeGenericoProdutoController.criarNomeGenerico
 );
 
 router.put('/:id',
@@ -76,7 +76,7 @@ router.put('/:id',
   auditChangesMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.atualizar
+  nomeGenericoProdutoController.atualizarNomeGenerico
 );
 
 router.delete('/:id',
@@ -84,7 +84,7 @@ router.delete('/:id',
   auditChangesMiddleware,
   hateoasMiddleware,
   responseHandler,
-  nomeGenericoProdutoController.excluir
+  nomeGenericoProdutoController.excluirNomeGenerico
 );
 
 module.exports = router;
