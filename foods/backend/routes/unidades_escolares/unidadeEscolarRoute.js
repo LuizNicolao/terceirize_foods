@@ -9,7 +9,7 @@ const { unidadeEscolarValidations, commonValidations } = require('./unidadeEscol
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const unidadesEscolaresController = require('../../controllers/unidadesEscolaresController');
+const unidadesEscolaresController = require('../../controllers/unidades-escolares');
 
 const router = express.Router();
 
