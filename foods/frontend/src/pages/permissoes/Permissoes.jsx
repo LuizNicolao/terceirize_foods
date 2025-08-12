@@ -29,6 +29,7 @@ const Permissoes = () => {
     searchTerm,
     isSelectOpen,
     expandedGroups,
+    showPermissionsModal,
     estatisticas,
     handleSavePermissions,
     handleUserSelect,
@@ -36,6 +37,7 @@ const Permissoes = () => {
     handleExpandGroup,
     handleSearchChange,
     setIsSelectOpen,
+    setShowPermissionsModal,
     getStatusLabel
   } = usePermissoes();
 
@@ -112,29 +114,27 @@ const Permissoes = () => {
         setIsSelectOpen={setIsSelectOpen}
       />
 
-      {/* Formulário de Permissões */}
-      {selectedUser && (
-        <PermissoesForm
-          editingPermissions={editingPermissions}
-          expandedGroups={expandedGroups}
-          saving={saving}
-          onPermissionChange={handlePermissionChange}
-          onExpandGroup={handleExpandGroup}
-          onSavePermissions={handleSavePermissions}
-        />
-      )}
-
       {/* Tabela de Usuários */}
-      {!selectedUser && (
-        <PermissoesTable
-          usuarios={usuarios}
-          canView={canView}
-          canEdit={canEdit}
-          canDelete={canDelete}
-          onUserSelect={handleUserSelect}
-          getStatusLabel={getStatusLabel}
-        />
-      )}
+      <PermissoesTable
+        usuarios={usuarios}
+        canView={canView}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        onUserSelect={handleUserSelect}
+        getStatusLabel={getStatusLabel}
+      />
+
+      {/* Modal de Permissões */}
+      <PermissoesForm
+        isOpen={showPermissionsModal}
+        onClose={() => setShowPermissionsModal(false)}
+        editingPermissions={editingPermissions}
+        expandedGroups={expandedGroups}
+        saving={saving}
+        onPermissionChange={handlePermissionChange}
+        onExpandGroup={handleExpandGroup}
+        onSavePermissions={handleSavePermissions}
+      />
 
       {/* Modal de Auditoria */}
       <AuditModal

@@ -15,6 +15,7 @@ export const usePermissoes = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({});
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
 
   // Estados de estatísticas
   const [estatisticas, setEstatisticas] = useState({
@@ -132,6 +133,7 @@ export const usePermissoes = () => {
         toast.success('Permissões salvas com sucesso!');
         setUserPermissions(JSON.parse(JSON.stringify(editingPermissions)));
         loadUsuarios(); // Recarregar para atualizar estatísticas
+        setShowPermissionsModal(false);
       } else {
         toast.error(result.error || 'Erro ao salvar permissões');
       }
@@ -152,9 +154,11 @@ export const usePermissoes = () => {
     
     if (userId) {
       await loadUserPermissions(userId);
+      setShowPermissionsModal(true);
     } else {
       setUserPermissions({});
       setEditingPermissions({});
+      setShowPermissionsModal(false);
     }
   };
 
@@ -203,6 +207,7 @@ export const usePermissoes = () => {
     searchTerm,
     isSelectOpen,
     expandedGroups,
+    showPermissionsModal,
     estatisticas,
 
     // Funções CRUD
@@ -220,6 +225,7 @@ export const usePermissoes = () => {
 
     // Funções de estado
     setIsSelectOpen,
+    setShowPermissionsModal,
 
     // Funções utilitárias
     formatDate,

@@ -80,6 +80,26 @@ class PermissoesService {
   }
 
   /**
+   * Salvar permissões de um usuário
+   */
+  static async salvarPermissoes(userId, permissoes) {
+    try {
+      const response = await api.put(`/permissoes/usuario/${userId}`, { permissoes });
+      
+      return {
+        success: true,
+        data: response.data,
+        message: 'Permissões salvas com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao salvar permissões'
+      };
+    }
+  }
+
+  /**
    * Resetar permissões de um usuário
    */
   static async resetarPermissoes(userId) {
