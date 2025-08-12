@@ -168,43 +168,7 @@ const marcaValidations = {
   ]
 };
 
-// Validações específicas para classes
-const classeValidations = {
-  create: [
-    body('nome')
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Nome da classe deve ter entre 2 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ0-9\s\-\.]+$/)
-      .withMessage('Nome deve conter apenas letras, números, espaços, hífens e pontos'),
-    body('subgrupo_id')
-      .isInt({ min: 1 })
-      .withMessage('ID do subgrupo é obrigatório e deve ser um número válido'),
-    body('status')
-      .optional()
-      .isIn([0, 1])
-      .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
-    handleValidationErrors
-  ],
-
-  update: [
-    commonValidations.id,
-    body('nome')
-      .optional()
-      .isLength({ min: 2, max: 100 })
-      .withMessage('Nome da classe deve ter entre 2 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ0-9\s\-\.]+$/)
-      .withMessage('Nome deve conter apenas letras, números, espaços, hífens e pontos'),
-    body('subgrupo_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('ID do subgrupo deve ser um número válido'),
-    body('status')
-      .optional()
-      .isIn([0, 1])
-      .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
-    handleValidationErrors
-  ]
-};
+// Validações específicas para classes - MOVIDAS PARA routes/classes/classeValidator.js
 
 // Validações específicas para produtos foram movidas para routes/produtos/produtoValidator.js
 
@@ -332,7 +296,7 @@ module.exports = {
   commonValidations,
 
   marcaValidations,
-  classeValidations,
+
   unidadeValidations,
   unidadeAtualizacaoValidations,
   nomeGenericoProdutoValidations,

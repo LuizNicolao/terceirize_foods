@@ -4,12 +4,12 @@
  */
 
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../middleware/auth');
-const { classeValidations, commonValidations } = require('../middleware/validation');
-const { paginationMiddleware } = require('../middleware/pagination');
-const { hateoasMiddleware } = require('../middleware/hateoas');
-const { auditMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
-const ClassesController = require('../controllers/classesController');
+const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { classeValidations, commonValidations } = require('./classeValidator');
+const { paginationMiddleware } = require('../../middleware/pagination');
+const { hateoasMiddleware } = require('../../middleware/hateoas');
+const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const ClassesController = require('../../controllers/classesController');
 
 const router = express.Router();
 
@@ -30,12 +30,6 @@ router.get('/',
 router.get('/ativas',
   checkPermission('visualizar'),
   ClassesController.buscarAtivas
-);
-
-// GET /api/classes/subgrupos/list - Listar subgrupos para select
-router.get('/subgrupos/list',
-  checkPermission('visualizar'),
-  ClassesController.listarSubgrupos
 );
 
 // GET /api/classes/subgrupo/:subgrupo_id - Buscar classes por subgrupo
@@ -76,4 +70,4 @@ router.delete('/:id',
   ClassesController.excluirClasse
 );
 
-module.exports = router; 
+module.exports = router;

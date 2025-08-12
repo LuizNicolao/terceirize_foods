@@ -27,10 +27,12 @@ class ClassesController {
       SELECT 
         c.id, 
         c.nome, 
+        c.codigo,
+        c.descricao,
         c.subgrupo_id,
         c.status, 
-        c.criado_em,
-        c.atualizado_em,
+        c.data_cadastro as criado_em,
+        c.data_atualizacao as atualizado_em,
         s.nome as subgrupo_nome,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
@@ -59,7 +61,7 @@ class ClassesController {
       params.push(subgrupo_id);
     }
 
-    baseQuery += ' GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome ORDER BY c.nome ASC';
+    baseQuery += ' GROUP BY c.id, c.nome, c.codigo, c.descricao, c.subgrupo_id, c.status, c.data_cadastro, c.data_atualizacao, s.nome, g.nome ORDER BY c.nome ASC';
 
     // Aplicar paginação manualmente
     const limit = pagination.limit;
@@ -105,10 +107,12 @@ class ClassesController {
       `SELECT 
         c.id, 
         c.nome, 
+        c.codigo,
+        c.descricao,
         c.subgrupo_id,
         c.status, 
-        c.criado_em,
-        c.atualizado_em,
+        c.data_cadastro as criado_em,
+        c.data_atualizacao as atualizado_em,
         s.nome as subgrupo_nome,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
@@ -118,7 +122,7 @@ class ClassesController {
        LEFT JOIN produtos p ON c.id = p.classe_id
        
        WHERE c.id = ?
-       GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome`,
+       GROUP BY c.id, c.nome, c.codigo, c.descricao, c.subgrupo_id, c.status, c.data_cadastro, c.data_atualizacao, s.nome, g.nome`,
       [id]
     );
 
@@ -144,7 +148,7 @@ class ClassesController {
    * Criar nova classe
    */
   static criarClasse = asyncHandler(async (req, res) => {
-    const { nome, subgrupo_id, status } = req.body;
+    const { nome, codigo, descricao, subgrupo_id, status } = req.body;
 
     // Verificar se subgrupo existe
     const subgrupo = await executeQuery(
@@ -166,10 +170,22 @@ class ClassesController {
       return conflictResponse(res, 'Classe já cadastrada neste subgrupo');
     }
 
+    // Verificar se código já existe
+    if (codigo) {
+      const existingCodigo = await executeQuery(
+        'SELECT id FROM classes WHERE codigo = ?',
+        [codigo]
+      );
+
+      if (existingCodigo.length > 0) {
+        return conflictResponse(res, 'Código já cadastrado');
+      }
+    }
+
     // Inserir classe
     const result = await executeQuery(
-      'INSERT INTO classes (nome, subgrupo_id, status, criado_em) VALUES (?, ?, ?, NOW())',
-      [nome && nome.trim() ? nome.trim() : null, subgrupo_id || null, status || 1]
+      'INSERT INTO classes (nome, codigo, descricao, subgrupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
+      [nome && nome.trim() ? nome.trim() : null, codigo && codigo.trim() ? codigo.trim() : null, descricao && descricao.trim() ? descricao.trim() : null, subgrupo_id || null, status || 'ativo']
     );
 
     const novaClasseId = result.insertId;
@@ -179,10 +195,12 @@ class ClassesController {
       `SELECT 
         c.id, 
         c.nome, 
+        c.codigo,
+        c.descricao,
         c.subgrupo_id,
         c.status, 
-        c.criado_em,
-        c.atualizado_em,
+        c.data_cadastro as criado_em,
+        c.data_atualizacao as atualizado_em,
         s.nome as subgrupo_nome,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
@@ -191,7 +209,7 @@ class ClassesController {
        LEFT JOIN grupos g ON s.grupo_id = g.id
        LEFT JOIN produtos p ON c.id = p.classe_id
        WHERE c.id = ?
-       GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome`,
+       GROUP BY c.id, c.nome, c.codigo, c.descricao, c.subgrupo_id, c.status, c.data_cadastro, c.data_atualizacao, s.nome, g.nome`,
       [novaClasseId]
     );
 
@@ -214,7 +232,8 @@ class ClassesController {
    */
   static atualizarClasse = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const updateData = req.body;
+    const { nome, codigo, descricao, subgrupo_id, status } = req.body;
+    const updateData = { nome, codigo, descricao, subgrupo_id, status };
 
     // Verificar se classe existe
     const existingClasse = await executeQuery(
@@ -253,6 +272,18 @@ class ClassesController {
       }
     }
 
+    // Verificar se código já existe (se estiver sendo alterado)
+    if (updateData.codigo) {
+      const codigoCheck = await executeQuery(
+        'SELECT id FROM classes WHERE codigo = ? AND id != ?',
+        [updateData.codigo, id]
+      );
+
+      if (codigoCheck.length > 0) {
+        return conflictResponse(res, 'Código já cadastrado');
+      }
+    }
+
     // Construir query de atualização dinamicamente
     const updateFields = [];
     const updateParams = [];
@@ -280,7 +311,7 @@ class ClassesController {
       return errorResponse(res, 'Nenhum campo para atualizar', STATUS_CODES.BAD_REQUEST);
     }
 
-    updateFields.push('atualizado_em = NOW()');
+    updateFields.push('data_atualizacao = NOW()');
     updateParams.push(id);
 
     // Executar atualização
@@ -294,10 +325,12 @@ class ClassesController {
       `SELECT 
         c.id, 
         c.nome, 
+        c.codigo,
+        c.descricao,
         c.subgrupo_id,
         c.status, 
-        c.criado_em,
-        c.atualizado_em,
+        c.data_cadastro as criado_em,
+        c.data_atualizacao as atualizado_em,
         s.nome as subgrupo_nome,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
@@ -306,7 +339,7 @@ class ClassesController {
        LEFT JOIN grupos g ON s.grupo_id = g.id
        LEFT JOIN produtos p ON c.id = p.classe_id
        WHERE c.id = ?
-       GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome`,
+       GROUP BY c.id, c.nome, c.codigo, c.descricao, c.subgrupo_id, c.status, c.data_cadastro, c.data_atualizacao, s.nome, g.nome`,
       [id]
     );
 
@@ -342,7 +375,7 @@ class ClassesController {
 
     // Verificar se classe está sendo usada em produtos ATIVOS
     const produtos = await executeQuery(
-      'SELECT id, nome, status FROM produtos WHERE classe_id = ? AND status = 1',
+      'SELECT id, nome, status FROM produtos WHERE classe_id = ? AND status = \'ativo\'',
       [existingClasse[0].id]
     );
 
@@ -354,9 +387,9 @@ class ClassesController {
       return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
 
-    // Excluir classe (soft delete - alterar status para 0)
+    // Excluir classe (soft delete - alterar status para inativo)
     await executeQuery(
-      'UPDATE classes SET status = 0, atualizado_em = NOW() WHERE id = ?',
+      'UPDATE classes SET status = \'inativo\', data_atualizacao = NOW() WHERE id = ?',
       [id]
     );
 
@@ -374,10 +407,12 @@ class ClassesController {
       SELECT 
         c.id, 
         c.nome, 
+        c.codigo,
+        c.descricao,
         c.subgrupo_id,
         c.status, 
-        c.criado_em,
-        c.atualizado_em,
+        c.data_cadastro as criado_em,
+        c.data_atualizacao as atualizado_em,
         s.nome as subgrupo_nome,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
@@ -385,8 +420,8 @@ class ClassesController {
       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
       LEFT JOIN grupos g ON s.grupo_id = g.id
       LEFT JOIN produtos p ON c.id = p.classe_id
-      WHERE c.status = 1
-      GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome
+      WHERE c.status = 'ativo'
+      GROUP BY c.id, c.nome, c.codigo, c.descricao, c.subgrupo_id, c.status, c.data_cadastro, c.data_atualizacao, s.nome, g.nome
     `;
     
     let params = [];
@@ -401,7 +436,7 @@ class ClassesController {
     const classes = await executeQuery(query, params);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM classes WHERE status = 1`;
+    const countQuery = `SELECT COUNT(*) as total FROM classes WHERE status = 'ativo'`;
     const totalResult = await executeQuery(countQuery, []);
     const totalItems = totalResult[0].total;
 
@@ -440,10 +475,12 @@ class ClassesController {
       SELECT 
         c.id, 
         c.nome, 
+        c.codigo,
+        c.descricao,
         c.subgrupo_id,
         c.status, 
-        c.criado_em,
-        c.atualizado_em,
+        c.data_cadastro as criado_em,
+        c.data_atualizacao as atualizado_em,
         s.nome as subgrupo_nome,
         g.nome as grupo_nome,
         COUNT(p.id) as total_produtos
@@ -452,7 +489,7 @@ class ClassesController {
       LEFT JOIN grupos g ON s.grupo_id = g.id
       LEFT JOIN produtos p ON c.id = p.classe_id
       WHERE c.subgrupo_id = ?
-      GROUP BY c.id, c.nome, c.subgrupo_id, c.status, c.criado_em, c.atualizado_em, s.nome, g.nome
+      GROUP BY c.id, c.nome, c.codigo, c.descricao, c.subgrupo_id, c.status, c.data_cadastro, c.data_atualizacao, s.nome, g.nome
     `;
     
     let params = [subgrupo_id];
@@ -492,7 +529,7 @@ class ClassesController {
       `SELECT s.id, s.nome, g.nome as grupo_nome
        FROM subgrupos s
        LEFT JOIN grupos g ON s.grupo_id = g.id
-       WHERE s.status = 1
+       WHERE s.status = 'ativo'
        ORDER BY g.nome, s.nome`
     );
 
