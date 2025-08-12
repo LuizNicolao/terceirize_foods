@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaEye, FaEdit, FaTrash, FaHistory } from 'react-icons/fa';
-import { Table, Pagination, CadastroFilterBar } from '../ui';
+import { Table, Pagination } from '../ui';
+import CadastroFilterBar from '../CadastroFilterBar';
 
 const AjudantesTable = ({
   ajudantes,
