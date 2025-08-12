@@ -76,16 +76,27 @@ export const useFornecedores = () => {
 
       const result = await FornecedoresService.listar(paginationParams);
       if (result.success) {
-        setFornecedores(result.data.fornecedores || []);
-        setTotalPages(result.data.totalPages || 1);
-        setTotalItems(result.data.totalItems || 0);
+        setFornecedores(result.data || []);
+        setTotalPages(result.pagination?.totalPages || 1);
+        setTotalItems(result.pagination?.totalItems || result.data?.length || 0);
         
         // Atualizar estatísticas se disponíveis
-        if (result.data.estatisticas) {
-          setEstatisticas(result.data.estatisticas);
+        if (result.data && Array.isArray(result.data)) {
+          // Calcular estatísticas básicas
+          const total = result.data.length;
+          const ativos = result.data.filter(f => f.status === 1).length;
+          const comEmail = result.data.filter(f => f.email && f.email.trim() !== '').length;
+          const comTelefone = result.data.filter(f => f.telefone && f.telefone.trim() !== '').length;
+          
+          setEstatisticas({
+            total_fornecedores: total,
+            fornecedores_ativos: ativos,
+            com_email: comEmail,
+            com_telefone: comTelefone
+          });
         }
       } else {
-        toast.error(result.message || 'Erro ao carregar fornecedores');
+        toast.error(result.error || 'Erro ao carregar fornecedores');
       }
     } catch (error) {
       console.error('Erro ao carregar fornecedores:', error);
