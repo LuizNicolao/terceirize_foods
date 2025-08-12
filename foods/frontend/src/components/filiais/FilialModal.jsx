@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { FaSearch, FaWarehouse } from 'react-icons/fa';
 import { Modal, Input, Button } from '../ui';
 import FiliaisService from '../../services/filiais';
-import AlmoxarifadoModal from '../AlmoxarifadoModal';
+import AlmoxarifadoContent from '../AlmoxarifadoContent';
 import toast from 'react-hot-toast';
 
 const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
@@ -291,11 +291,10 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
       {/* Aba de Almoxarifados */}
       {activeTab === 'almoxarifados' && filial && (
         <div className="max-h-[75vh] overflow-y-auto">
-          <AlmoxarifadoModal
-            isOpen={true}
-            onClose={() => setActiveTab('info')}
+          {console.log('Renderizando AlmoxarifadoContent com filialId:', filial.id)}
+          <AlmoxarifadoContent
             filialId={filial.id}
-            filialNome={filial.filial}
+            viewMode={isViewMode}
           />
         </div>
       )}
