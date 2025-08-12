@@ -29,8 +29,8 @@ class GruposController {
         g.id, 
         g.nome, 
         g.status, 
-        g.criado_em,
-        g.atualizado_em,
+        g.data_cadastro as criado_em,
+        g.data_atualizacao as atualizado_em,
         COUNT(sg.id) as subgrupos_count
       FROM grupos g
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
@@ -47,10 +47,10 @@ class GruposController {
 
     if (status !== undefined) {
       baseQuery += ' AND g.status = ?';
-      params.push(status);
+      params.push(status === 1 ? 'ativo' : 'inativo');
     }
 
-    baseQuery += ' GROUP BY g.id, g.nome, g.status, g.criado_em, g.atualizado_em ORDER BY g.nome ASC';
+    baseQuery += ' GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao ORDER BY g.nome ASC';
 
     // Aplicar paginação manualmente
     const limit = pagination.limit;
@@ -62,7 +62,10 @@ class GruposController {
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(DISTINCT g.id) as total FROM grupos g WHERE 1=1${search ? ' AND g.nome LIKE ?' : ''}${status !== undefined ? ' AND g.status = ?' : ''}`;
-    const countParams = [...params];
+    const countParams = search ? [`%${search}%`] : [];
+    if (status !== undefined) {
+      countParams.push(status === 1 ? 'ativo' : 'inativo');
+    }
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 
@@ -97,13 +100,13 @@ class GruposController {
         g.id, 
         g.nome, 
         g.status, 
-        g.criado_em,
-        g.atualizado_em,
+        g.data_cadastro as criado_em,
+        g.data_atualizacao as atualizado_em,
         COUNT(sg.id) as subgrupos_count
        FROM grupos g
        LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
        WHERE g.id = ?
-       GROUP BY g.id, g.nome, g.status, g.criado_em, g.atualizado_em`,
+       GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao`,
       [id]
     );
 
@@ -143,8 +146,8 @@ class GruposController {
 
     // Inserir grupo
     const result = await executeQuery(
-      'INSERT INTO grupos (nome, status, criado_em) VALUES (?, ?, NOW())',
-      [nome && nome.trim() ? nome.trim() : null, status || 1]
+      'INSERT INTO grupos (nome, status, data_cadastro) VALUES (?, ?, NOW())',
+      [nome && nome.trim() ? nome.trim() : null, status === 1 ? 'ativo' : 'inativo']
     );
 
     const novoGrupoId = result.insertId;
@@ -155,13 +158,13 @@ class GruposController {
         g.id, 
         g.nome, 
         g.status, 
-        g.criado_em,
-        g.atualizado_em,
+        g.data_cadastro as criado_em,
+        g.data_atualizacao as atualizado_em,
         COUNT(sg.id) as subgrupos_count
        FROM grupos g
        LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
        WHERE g.id = ?
-       GROUP BY g.id, g.nome, g.status, g.criado_em, g.atualizado_em`,
+       GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao`,
       [novoGrupoId]
     );
 
@@ -235,7 +238,7 @@ class GruposController {
       return errorResponse(res, 'Nenhum campo para atualizar', STATUS_CODES.BAD_REQUEST);
     }
 
-    updateFields.push('atualizado_em = NOW()');
+    updateFields.push('data_atualizacao = NOW()');
     updateParams.push(id);
 
     // Executar atualização
@@ -245,18 +248,18 @@ class GruposController {
     );
 
     // Buscar grupo atualizado
-        const grupos = await executeQuery(
+    const grupos = await executeQuery(
       `SELECT 
         g.id, 
         g.nome, 
         g.status, 
-        g.criado_em,
-        g.atualizado_em,
+        g.data_cadastro as criado_em,
+        g.data_atualizacao as atualizado_em,
         COUNT(sg.id) as subgrupos_count
       FROM grupos g
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
       WHERE g.id = ?
-      GROUP BY g.id, g.nome, g.status, g.criado_em, g.atualizado_em`,
+      GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao`,
       [id]
     );
 
@@ -318,9 +321,9 @@ class GruposController {
       return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
 
-    // Excluir grupo (soft delete - alterar status para 0)
+    // Excluir grupo (soft delete - alterar status para inativo)
     await executeQuery(
-      'UPDATE grupos SET status = 0, atualizado_em = NOW() WHERE id = ?',
+      'UPDATE grupos SET status = "inativo", data_atualizacao = NOW() WHERE id = ?',
       [id]
     );
 
@@ -339,13 +342,13 @@ class GruposController {
         g.id, 
         g.nome, 
         g.status, 
-        g.criado_em,
-        g.atualizado_em,
+        g.data_cadastro as criado_em,
+        g.data_atualizacao as atualizado_em,
         COUNT(sg.id) as subgrupos_count
       FROM grupos g
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
-      WHERE g.status = 1
-      GROUP BY g.id, g.nome, g.status, g.criado_em, g.atualizado_em
+      WHERE g.status = 'ativo'
+      GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao
     `;
     
     let params = [];
@@ -360,7 +363,7 @@ class GruposController {
     const grupos = await executeQuery(query, params);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM grupos WHERE status = 1`;
+    const countQuery = `SELECT COUNT(*) as total FROM grupos WHERE status = 'ativo'`;
     const totalResult = await executeQuery(countQuery, []);
     const totalItems = totalResult[0].total;
 

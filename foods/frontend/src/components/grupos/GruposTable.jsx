@@ -62,7 +62,7 @@ const GruposTable = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                      grupo.status === 1 
+                      grupo.status === 'ativo' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-red-100 text-red-800'
                     }`}>
@@ -164,7 +164,7 @@ const GruposTable = ({
               <div>
                 <span className="text-gray-500">Status:</span>
                 <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
-                  grupo.status === 1 
+                  grupo.status === 'ativo' 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-red-100 text-red-800'
                 }`}>

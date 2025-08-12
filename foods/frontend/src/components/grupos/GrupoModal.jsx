@@ -36,7 +36,7 @@ const GrupoModal = ({
             label="Status"
             name="status"
             type="select"
-            defaultValue={grupo?.status || '1'}
+            defaultValue={grupo?.status === 'ativo' ? '1' : '0'}
             disabled={isViewMode}
           >
             <option value="1">Ativo</option>

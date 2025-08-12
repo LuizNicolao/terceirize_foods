@@ -56,8 +56,8 @@ export const useGrupos = () => {
         
         // Calcular estatísticas básicas
         const total = result.pagination?.totalItems || result.data.length;
-        const ativos = result.data.filter(g => g.status === 1).length;
-        const inativos = result.data.filter(g => g.status === 0).length;
+        const ativos = result.data.filter(g => g.status === 'ativo').length;
+        const inativos = result.data.filter(g => g.status === 'inativo').length;
         const subgrupos = result.data.reduce((acc, grupo) => acc + (grupo.subgrupos_count || 0), 0);
         
         setEstatisticas({
@@ -87,8 +87,8 @@ export const useGrupos = () => {
       (grupo.nome && grupo.nome.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'todos' || 
-      (statusFilter === 'ativo' && grupo.status === 1) ||
-      (statusFilter === 'inativo' && grupo.status === 0);
+      (statusFilter === 'ativo' && grupo.status === 'ativo') ||
+      (statusFilter === 'inativo' && grupo.status === 'inativo');
     
     return matchesSearch && matchesStatus;
   });
@@ -100,7 +100,7 @@ export const useGrupos = () => {
       const cleanData = {
         ...data,
         nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
-        status: data.status || 1
+        status: data.status === '1' ? 'ativo' : 'inativo'
       };
 
       let result;
@@ -177,7 +177,7 @@ export const useGrupos = () => {
 
   // Funções utilitárias
   const getStatusLabel = (status) => {
-    return status === 1 ? 'Ativo' : 'Inativo';
+    return status === 'ativo' ? 'Ativo' : 'Inativo';
   };
 
   const formatDate = (dateString) => {
