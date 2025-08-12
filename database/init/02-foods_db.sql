@@ -915,11 +915,13 @@ INSERT INTO `fornecedores` (`id`, `cnpj`, `razao_social`, `nome_fantasia`, `logr
 
 CREATE TABLE `grupos` (
   `id` int NOT NULL,
-  `nome` varchar(100) NOT NULL,
-  `status` tinyint(1) DEFAULT '1',
-  `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
-  `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `nome` varchar(100) NOT NULL COMMENT 'Nome do grupo (ex: Eletrônicos, Roupas, Alimentos)',
+  `codigo` varchar(20) NOT NULL COMMENT 'Código do grupo (ex: ELET, ROUP, ALIM)',
+  `descricao` text COMMENT 'Descrição detalhada do grupo',
+  `status` enum('ativo','inativo') DEFAULT 'ativo' COMMENT 'Status do grupo',
+  `data_cadastro` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de cadastro',
+  `data_atualizacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela para armazenar grupos de produtos';
 
 -- --------------------------------------------------------
 

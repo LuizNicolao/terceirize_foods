@@ -63,13 +63,11 @@ const GruposTable = ({
                       {grupo.nome}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {grupo.codigo || '-'}
-                    </div>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {grupo.codigo || '-'}
                   </td>
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 max-w-xs truncate" title={grupo.descricao}>
+                  <td className="px-6 py-4 text-sm text-gray-500">
+                    <div className="max-w-xs truncate" title={grupo.descricao || ''}>
                       {grupo.descricao || '-'}
                     </div>
                   </td>
@@ -134,9 +132,6 @@ const GruposTable = ({
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">{grupo.nome}</h3>
                 <p className="text-gray-600 text-xs">ID: {grupo.id}</p>
-                {grupo.codigo && (
-                  <p className="text-gray-600 text-xs">Código: {grupo.codigo}</p>
-                )}
               </div>
               <div className="flex gap-2">
                 {canView('grupos') && (
@@ -175,28 +170,33 @@ const GruposTable = ({
               </div>
             </div>
             
-            {grupo.descricao && (
-              <div className="mb-3">
-                <span className="text-gray-500 text-xs">Descrição:</span>
-                <p className="text-sm text-gray-900">{grupo.descricao}</p>
-              </div>
-            )}
-            
             <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <span className="text-gray-500">Código:</span>
+                <p className="font-medium">{grupo.codigo || '-'}</p>
+              </div>
               <div>
                 <span className="text-gray-500">Subgrupos:</span>
                 <p className="font-medium">{grupo.subgrupos_count || 0}</p>
               </div>
-              <div>
-                <span className="text-gray-500">Status:</span>
-                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
-                  grupo.status === 'ativo' 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {getStatusLabel(grupo.status)}
-                </span>
+            </div>
+            
+            {grupo.descricao && (
+              <div className="mt-3 text-xs">
+                <span className="text-gray-500">Descrição:</span>
+                <p className="text-gray-700 mt-1">{grupo.descricao}</p>
               </div>
+            )}
+            
+            <div className="mt-3">
+              <span className="text-gray-500 text-xs">Status:</span>
+              <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                grupo.status === 'ativo' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {getStatusLabel(grupo.status)}
+              </span>
             </div>
           </div>
         ))}
