@@ -1,0 +1,315 @@
+/**
+ * Controller CRUD de Rotas
+ * Responsável por criar, atualizar e excluir rotas
+ */
+
+const { executeQuery } = require('../../config/database');
+
+class RotasCRUDController {
+  // Criar rota
+  static async criarRota(req, res) {
+    try {
+      const {
+        filial_id,
+        codigo,
+        nome,
+        distancia_km = 0.00,
+        status = 'ativo',
+        tipo_rota = 'semanal',
+        custo_diario = 0.00,
+        observacoes
+      } = req.body;
+
+      // Validações específicas
+      if (!codigo || codigo.trim().length < 3) {
+        return res.status(400).json({
+          success: false,
+          error: 'Código inválido',
+          message: 'O código deve ter pelo menos 3 caracteres'
+        });
+      }
+
+      if (!nome || nome.trim().length < 3) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nome inválido',
+          message: 'O nome deve ter pelo menos 3 caracteres'
+        });
+      }
+
+      // Verificar se código já existe na filial
+      const existingCodigo = await executeQuery(
+        'SELECT id FROM rotas WHERE codigo = ? AND filial_id = ?',
+        [codigo.trim(), filial_id]
+      );
+
+      if (existingCodigo.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Código já cadastrado',
+          message: 'Já existe uma rota com este código nesta filial'
+        });
+      }
+
+      // Verificar se a filial existe
+      const filial = await executeQuery(
+        'SELECT id FROM filiais WHERE id = ?',
+        [filial_id]
+      );
+
+      if (filial.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Filial não encontrada',
+          message: 'A filial especificada não foi encontrada'
+        });
+      }
+
+      // Inserir rota
+      const insertQuery = `
+        INSERT INTO rotas (
+          filial_id, codigo, nome, distancia_km, status, 
+          tipo_rota, custo_diario, observacoes
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      const result = await executeQuery(insertQuery, [
+        filial_id,
+        codigo.trim(),
+        nome.trim(),
+        distancia_km,
+        status,
+        tipo_rota,
+        custo_diario,
+        observacoes ? observacoes.trim() : null
+      ]);
+
+      // Buscar rota criada
+      const newRota = await executeQuery(
+        'SELECT r.*, f.filial as filial_nome FROM rotas r LEFT JOIN filiais f ON r.filial_id = f.id WHERE r.id = ?',
+        [result.insertId]
+      );
+
+      res.status(201).json({
+        success: true,
+        message: 'Rota criada com sucesso',
+        data: newRota[0]
+      });
+
+    } catch (error) {
+      console.error('Erro ao criar rota:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível criar a rota'
+      });
+    }
+  }
+
+  // Atualizar rota
+  static async atualizarRota(req, res) {
+    try {
+      const { id } = req.params;
+      const {
+        filial_id,
+        codigo,
+        nome,
+        distancia_km,
+        status,
+        tipo_rota,
+        custo_diario,
+        observacoes
+      } = req.body;
+
+      // Verificar se a rota existe
+      const existingRota = await executeQuery(
+        'SELECT * FROM rotas WHERE id = ?',
+        [id]
+      );
+
+      if (existingRota.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Rota não encontrada',
+          message: 'A rota especificada não foi encontrada'
+        });
+      }
+
+      // Validações específicas
+      if (codigo && codigo.trim().length < 3) {
+        return res.status(400).json({
+          success: false,
+          error: 'Código inválido',
+          message: 'O código deve ter pelo menos 3 caracteres'
+        });
+      }
+
+      if (nome && nome.trim().length < 3) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nome inválido',
+          message: 'O nome deve ter pelo menos 3 caracteres'
+        });
+      }
+
+      // Verificar se código já existe em outra rota da mesma filial
+      if (codigo) {
+        const codigoCheck = await executeQuery(
+          'SELECT id FROM rotas WHERE codigo = ? AND filial_id = ? AND id != ?',
+          [codigo.trim(), filial_id || existingRota[0].filial_id, id]
+        );
+
+        if (codigoCheck.length > 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Código já cadastrado',
+            message: 'Já existe outra rota com este código nesta filial'
+          });
+        }
+      }
+
+      // Verificar se a filial existe (se fornecida)
+      if (filial_id) {
+        const filial = await executeQuery(
+          'SELECT id FROM filiais WHERE id = ?',
+          [filial_id]
+        );
+
+        if (filial.length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Filial não encontrada',
+            message: 'A filial especificada não foi encontrada'
+          });
+        }
+      }
+
+      // Construir query de atualização dinamicamente
+      const updateFields = [];
+      const updateParams = [];
+
+      if (filial_id !== undefined) {
+        updateFields.push('filial_id = ?');
+        updateParams.push(filial_id);
+      }
+      if (codigo !== undefined) {
+        updateFields.push('codigo = ?');
+        updateParams.push(codigo.trim());
+      }
+      if (nome !== undefined) {
+        updateFields.push('nome = ?');
+        updateParams.push(nome.trim());
+      }
+      if (distancia_km !== undefined) {
+        updateFields.push('distancia_km = ?');
+        updateParams.push(distancia_km);
+      }
+      if (status !== undefined) {
+        updateFields.push('status = ?');
+        updateParams.push(status);
+      }
+      if (tipo_rota !== undefined) {
+        updateFields.push('tipo_rota = ?');
+        updateParams.push(tipo_rota);
+      }
+      if (custo_diario !== undefined) {
+        updateFields.push('custo_diario = ?');
+        updateParams.push(custo_diario);
+      }
+      if (observacoes !== undefined) {
+        updateFields.push('observacoes = ?');
+        updateParams.push(observacoes ? observacoes.trim() : null);
+      }
+
+      // Sempre atualizar o timestamp
+      updateFields.push('updated_at = CURRENT_TIMESTAMP');
+
+      if (updateFields.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nenhum campo para atualizar',
+          message: 'Nenhum campo foi fornecido para atualização'
+        });
+      }
+
+      updateParams.push(id);
+      await executeQuery(
+        `UPDATE rotas SET ${updateFields.join(', ')} WHERE id = ?`,
+        updateParams
+      );
+
+      // Buscar rota atualizada
+      const updatedRota = await executeQuery(
+        'SELECT r.*, f.filial as filial_nome FROM rotas r LEFT JOIN filiais f ON r.filial_id = f.id WHERE r.id = ?',
+        [id]
+      );
+
+      res.json({
+        success: true,
+        message: 'Rota atualizada com sucesso',
+        data: updatedRota[0]
+      });
+
+    } catch (error) {
+      console.error('Erro ao atualizar rota:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível atualizar a rota'
+      });
+    }
+  }
+
+  // Excluir rota
+  static async excluirRota(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Verificar se a rota existe
+      const rota = await executeQuery(
+        'SELECT * FROM rotas WHERE id = ?',
+        [id]
+      );
+
+      if (rota.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Rota não encontrada',
+          message: 'A rota especificada não foi encontrada'
+        });
+      }
+
+      // Verificar se há unidades escolares vinculadas
+      const unidadesVinculadas = await executeQuery(
+        'SELECT COUNT(*) as total FROM unidades_escolares WHERE rota_id = ?',
+        [id]
+      );
+
+      if (unidadesVinculadas[0].total > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Rota em uso',
+          message: 'Não é possível excluir a rota pois existem unidades escolares vinculadas a ela'
+        });
+      }
+
+      // Excluir rota
+      await executeQuery('DELETE FROM rotas WHERE id = ?', [id]);
+
+      res.json({
+        success: true,
+        message: 'Rota excluída com sucesso'
+      });
+
+    } catch (error) {
+      console.error('Erro ao excluir rota:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível excluir a rota'
+      });
+    }
+  }
+}
+
+module.exports = RotasCRUDController;

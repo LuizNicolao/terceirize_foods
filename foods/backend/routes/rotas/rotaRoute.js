@@ -9,7 +9,7 @@ const { rotaValidations, commonValidations } = require('./rotaValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const rotasController = require('../../controllers/rotasController');
+const rotasController = require('../../controllers/rotas');
 
 const router = express.Router();
 
