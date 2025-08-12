@@ -51,7 +51,6 @@ const grupoValidations = {
       .withMessage('Nome deve ter entre 2 e 100 caracteres')
       .trim(),
     body('codigo')
-      .optional()
       .isLength({ min: 1, max: 20 })
       .withMessage('Código deve ter entre 1 e 20 caracteres')
       .trim()

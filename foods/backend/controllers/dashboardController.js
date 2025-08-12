@@ -92,7 +92,7 @@ class DashboardController {
       try {
         // Grupos ativos
         const gruposAtivos = await executeQuery(
-          'SELECT COUNT(*) as total FROM grupos WHERE status = 1'
+          'SELECT COUNT(*) as total FROM grupos WHERE status = "ativo"'
         );
         stats.grupos = gruposAtivos[0].total;
       } catch (error) {
@@ -322,10 +322,10 @@ class DashboardController {
       try {
         // Últimos grupos criados
         const ultimosGrupos = await executeQuery(
-          `SELECT id, nome, criado_em
+          `SELECT id, nome, data_cadastro as criado_em
            FROM grupos
-           WHERE status = 1
-           ORDER BY criado_em DESC
+           WHERE status = 'ativo'
+           ORDER BY data_cadastro DESC
            LIMIT 5`
         );
         recentes.grupos = ultimosGrupos;

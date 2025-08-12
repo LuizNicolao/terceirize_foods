@@ -177,7 +177,7 @@ class GruposController {
       'INSERT INTO grupos (nome, codigo, descricao, status, data_cadastro) VALUES (?, ?, ?, ?, NOW())',
       [
         nome && nome.trim() ? nome.trim() : null,
-        codigo && codigo.trim() ? codigo.trim() : null,
+        codigo && codigo.trim() ? codigo.trim().toUpperCase() : null,
         descricao && descricao.trim() ? descricao.trim() : null,
         status === 1 ? 'ativo' : 'inativo'
       ]
@@ -269,7 +269,7 @@ class GruposController {
 
     if (codigo !== undefined) {
       updateFields.push('codigo = ?');
-      updateParams.push(codigo && codigo.trim() ? codigo.trim() : null);
+      updateParams.push(codigo && codigo.trim() ? codigo.trim().toUpperCase() : null);
     }
 
     if (descricao !== undefined) {

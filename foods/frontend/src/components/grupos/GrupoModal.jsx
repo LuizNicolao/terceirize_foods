@@ -36,12 +36,13 @@ const GrupoModal = ({
             placeholder="Ex: Frios, Eletrônicos, Roupas"
           />
           <Input
-            label="Código do Grupo"
+            label="Código do Grupo *"
             name="codigo"
             defaultValue={grupo?.codigo}
             disabled={isViewMode}
             placeholder="Ex: FRIOS, ELET, ROUP"
             maxLength={20}
+            required
           />
         </div>
 
