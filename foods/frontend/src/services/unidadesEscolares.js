@@ -95,6 +95,21 @@ class UnidadesEscolaresService {
     }
   }
 
+  static async buscarEstatisticas() {
+    try {
+      const response = await api.get('/unidades-escolares/estatisticas');
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao carregar estatísticas'
+      };
+    }
+  }
+
   static async buscarPorEstado(estado) {
     try {
       const response = await api.get(`/unidades-escolares/estado/${estado}`);

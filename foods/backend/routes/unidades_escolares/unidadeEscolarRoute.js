@@ -57,6 +57,13 @@ router.get('/estados/listar',
   hateoasMiddleware
 );
 
+// Buscar estatísticas totais
+router.get('/estatisticas', 
+  checkScreenPermission('unidades_escolares', 'visualizar'),
+  unidadesEscolaresController.buscarEstatisticas,
+  hateoasMiddleware
+);
+
 // Listar centros de distribuição disponíveis
 router.get('/centros-distribuicao/listar', 
   checkScreenPermission('unidades_escolares', 'visualizar'),

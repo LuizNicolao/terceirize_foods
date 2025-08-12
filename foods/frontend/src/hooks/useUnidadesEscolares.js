@@ -53,19 +53,6 @@ export const useUnidadesEscolares = () => {
           setTotalItems(result.data.length);
           setTotalPages(Math.ceil(result.data.length / itemsPerPage));
         }
-        
-        // Calcular estatísticas básicas
-        const total = result.pagination?.totalItems || result.data.length;
-        const ativas = result.data.filter(u => u.status === 'ativo').length;
-        const estados = new Set(result.data.map(u => u.estado)).size;
-        const cidades = new Set(result.data.map(u => u.cidade)).size;
-        
-        setEstatisticas({
-          total_unidades: total,
-          unidades_ativas: ativas,
-          total_estados: estados,
-          total_cidades: cidades
-        });
       } else {
         toast.error(result.error);
       }
@@ -74,6 +61,25 @@ export const useUnidadesEscolares = () => {
       toast.error('Erro ao carregar unidades escolares');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Carregar estatísticas
+  const loadEstatisticas = async () => {
+    try {
+      const result = await UnidadesEscolaresService.buscarEstatisticas();
+      if (result.success) {
+        setEstatisticas(result.data || {
+          total_unidades: 0,
+          unidades_ativas: 0,
+          total_estados: 0,
+          total_cidades: 0
+        });
+      } else {
+        console.error('Erro ao carregar estatísticas:', result.error);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
     }
   };
 
@@ -100,6 +106,7 @@ export const useUnidadesEscolares = () => {
   useEffect(() => {
     loadUnidades();
     loadRotas();
+    loadEstatisticas();
   }, [currentPage, itemsPerPage]);
 
   // Filtrar unidades escolares
@@ -130,7 +137,7 @@ export const useUnidadesEscolares = () => {
       if (result.success) {
         toast.success(result.message);
         handleCloseModal();
-        loadUnidades();
+        reloadData();
       } else {
         toast.error(result.error);
       }
@@ -146,7 +153,7 @@ export const useUnidadesEscolares = () => {
         const result = await UnidadesEscolaresService.excluir(unidadeId);
         if (result.success) {
           toast.success(result.message);
-          loadUnidades();
+          reloadData();
         } else {
           toast.error(result.error);
         }
@@ -180,6 +187,12 @@ export const useUnidadesEscolares = () => {
     setShowModal(false);
     setEditingUnidade(null);
     setViewMode(false);
+  };
+
+  // Função para recarregar dados
+  const reloadData = () => {
+    loadUnidades();
+    loadEstatisticas();
   };
 
   // Funções de paginação
@@ -227,6 +240,7 @@ export const useUnidadesEscolares = () => {
     // Funções CRUD
     onSubmit,
     handleDeleteUnidade,
+    reloadData,
 
     // Funções de modal
     handleAddUnidade,
