@@ -4,7 +4,7 @@ import { FaBox, FaCheckCircle, FaTimesCircle, FaTags } from 'react-icons/fa';
 
 const SubgruposStats = ({ estatisticas }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       <StatCard
         title="Total de Subgrupos"
         value={estatisticas.total_subgrupos}
