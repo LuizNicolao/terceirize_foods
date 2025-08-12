@@ -19,7 +19,7 @@ import Unidades from './pages/unidades/Unidades';
 import Marcas from './pages/marcas/Marcas';
 import Classes from './pages/classes/Classes';
 import NomeGenericoProduto from './pages/NomeGenericoProduto';
-import Permissoes from './pages/Permissoes';
+import Permissoes from './pages/permissoes/Permissoes';
 import Veiculos from './pages/veiculos/Veiculos';
 import Motoristas from './pages/motoristas/Motoristas';
 import Ajudantes from './pages/ajudantes/Ajudantes';

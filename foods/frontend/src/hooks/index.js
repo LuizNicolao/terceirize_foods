@@ -2,6 +2,7 @@ export { useProdutos } from './useProdutos';
 export { useUsuarios } from './useUsuarios';
 export { useUnidades } from './useUnidades';
 export { useMarcas } from './useMarcas';
+export { usePermissoes } from './usePermissoes';
 export { useVeiculos } from './useVeiculos';
 export { useRotas } from './useRotas';
 export { useUnidadesEscolares } from './useUnidadesEscolares';
