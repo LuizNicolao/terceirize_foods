@@ -161,6 +161,9 @@ class SubgruposService {
           // Se data é diretamente um array
           subgrupos = response.data.data;
         }
+      } else if (response.data.items) {
+        // Se tem items diretamente na resposta (estrutura HATEOAS)
+        subgrupos = response.data.items;
       } else if (Array.isArray(response.data)) {
         // Se response.data é diretamente um array
         subgrupos = response.data;
