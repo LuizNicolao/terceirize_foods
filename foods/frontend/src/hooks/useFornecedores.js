@@ -61,6 +61,7 @@ export const useFornecedores = () => {
 
   useEffect(() => {
     loadFornecedores();
+    loadEstatisticas();
   }, [currentPage, itemsPerPage, debouncedSearchTerm]);
 
   const loadFornecedores = async (params = {}) => {
