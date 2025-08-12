@@ -26,6 +26,24 @@ router.get('/',
   FornecedoresController.listarFornecedores
 );
 
+// GET /api/fornecedores/buscar-cnpj/:cnpj - Buscar dados do CNPJ via API externa
+router.get('/buscar-cnpj/:cnpj',
+  checkPermission('visualizar'),
+  FornecedoresController.buscarCNPJ
+);
+
+// GET /api/fornecedores/uf/:uf - Buscar fornecedores por UF
+router.get('/uf/:uf',
+  checkPermission('visualizar'),
+  FornecedoresController.buscarPorUF
+);
+
+// GET /api/fornecedores/ativos - Buscar fornecedores ativos
+router.get('/ativos',
+  checkPermission('visualizar'),
+  FornecedoresController.buscarAtivos
+);
+
 // GET /api/fornecedores/:id - Buscar fornecedor por ID
 router.get('/:id', 
   checkPermission('visualizar'),
@@ -55,24 +73,6 @@ router.delete('/:id',
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'fornecedores'),
   commonValidations.id,
   FornecedoresController.excluirFornecedor
-);
-
-// GET /api/fornecedores/buscar-cnpj/:cnpj - Buscar dados do CNPJ via API externa
-router.get('/buscar-cnpj/:cnpj',
-  checkPermission('visualizar'),
-  FornecedoresController.buscarCNPJ
-);
-
-// GET /api/fornecedores/uf/:uf - Buscar fornecedores por UF
-router.get('/uf/:uf',
-  checkPermission('visualizar'),
-  FornecedoresController.buscarPorUF
-);
-
-// GET /api/fornecedores/ativos - Buscar fornecedores ativos
-router.get('/ativos',
-  checkPermission('visualizar'),
-  FornecedoresController.buscarAtivos
 );
 
 module.exports = router;
