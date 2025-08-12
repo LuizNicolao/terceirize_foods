@@ -13,7 +13,7 @@ const GrupoModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isViewMode ? 'Visualizar Grupo' : grupo ? 'Editar Grupo' : 'Adicionar Grupo'}
-      size="md"
+      size="lg"
     >
       <form onSubmit={(e) => {
         e.preventDefault();
@@ -43,18 +43,16 @@ const GrupoModal = ({
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Input
-            label="Status"
-            name="status"
-            type="select"
-            defaultValue={grupo?.status === 'ativo' ? '1' : '0'}
-            disabled={isViewMode}
-          >
-            <option value="1">Ativo</option>
-            <option value="0">Inativo</option>
-          </Input>
-        </div>
+        <Input
+          label="Status"
+          name="status"
+          type="select"
+          defaultValue={grupo?.status === 'ativo' ? '1' : '0'}
+          disabled={isViewMode}
+        >
+          <option value="1">Ativo</option>
+          <option value="0">Inativo</option>
+        </Input>
 
         <Input
           label="Descrição"

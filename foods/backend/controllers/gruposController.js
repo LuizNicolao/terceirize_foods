@@ -43,8 +43,8 @@ class GruposController {
 
     // Aplicar filtros
     if (search) {
-      baseQuery += ' AND g.nome LIKE ?';
-      params.push(`%${search}%`);
+      baseQuery += ' AND (g.nome LIKE ? OR g.codigo LIKE ? OR g.descricao LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
     }
 
     if (status !== undefined) {
@@ -63,8 +63,8 @@ class GruposController {
     const grupos = await executeQuery(query, params);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(DISTINCT g.id) as total FROM grupos g WHERE 1=1${search ? ' AND g.nome LIKE ?' : ''}${status !== undefined ? ' AND g.status = ?' : ''}`;
-    const countParams = search ? [`%${search}%`] : [];
+    const countQuery = `SELECT COUNT(DISTINCT g.id) as total FROM grupos g WHERE 1=1${search ? ' AND (g.nome LIKE ? OR g.codigo LIKE ? OR g.descricao LIKE ?)' : ''}${status !== undefined ? ' AND g.status = ?' : ''}`;
+    const countParams = search ? [`%${search}%`, `%${search}%`, `%${search}%`] : [];
     if (status !== undefined) {
       countParams.push(status === 1 ? 'ativo' : 'inativo');
     }
@@ -262,6 +262,11 @@ class GruposController {
           }
         }
         
+        // Tratamento específico para o campo status
+        if (key === 'status') {
+          value = value === 1 || value === '1' ? 'ativo' : 'inativo';
+        }
+        
         updateFields.push(`${key} = ?`);
         updateParams.push(value);
       }
@@ -376,8 +381,6 @@ class GruposController {
       SELECT 
         g.id, 
         g.nome, 
-        g.codigo,
-        g.descricao,
         g.status, 
         g.data_cadastro as criado_em,
         g.data_atualizacao as atualizado_em,
@@ -385,7 +388,7 @@ class GruposController {
       FROM grupos g
       LEFT JOIN subgrupos sg ON g.id = sg.grupo_id
       WHERE g.status = 'ativo'
-      GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao
+      GROUP BY g.id, g.nome, g.status, g.data_cadastro, g.data_atualizacao
     `;
     
     let params = [];

@@ -107,7 +107,7 @@ const Grupos = () => {
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}
-        placeholder="Buscar por nome..."
+        placeholder="Buscar por nome, código ou descrição..."
       />
 
       {/* Ações */}

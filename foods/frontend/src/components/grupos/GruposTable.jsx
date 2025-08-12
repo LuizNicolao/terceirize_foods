@@ -39,9 +39,6 @@ const GruposTable = ({
                   Código
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Descrição
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Subgrupos
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -62,14 +59,14 @@ const GruposTable = ({
                     <div className="text-sm font-medium text-gray-900">
                       {grupo.nome}
                     </div>
+                    {grupo.descricao && (
+                      <div className="text-sm text-gray-500 truncate max-w-xs">
+                        {grupo.descricao}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {grupo.codigo || '-'}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
-                    <div className="max-w-xs truncate" title={grupo.descricao || ''}>
-                      {grupo.descricao || '-'}
-                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {grupo.subgrupos_count || 0}
