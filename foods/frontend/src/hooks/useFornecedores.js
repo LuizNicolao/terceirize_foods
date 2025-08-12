@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import FornecedoresService from '../services/fornecedores';
 
-const useFornecedores = () => {
+export const useFornecedores = () => {
   const [fornecedores, setFornecedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -282,5 +282,3 @@ const useFornecedores = () => {
     handleExport
   };
 };
-
-export default useFornecedores;
