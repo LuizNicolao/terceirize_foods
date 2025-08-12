@@ -13,7 +13,7 @@ import Filiais from './pages/filiais/Filiais';
 import Rotas from './pages/rotas/Rotas';
 import UnidadesEscolares from './pages/unidades-escolares/UnidadesEscolares';
 import Produtos from './pages/produtos/Produtos';
-import Grupos from './pages/Grupos';
+import Grupos from './pages/grupos/Grupos';
 import Subgrupos from './pages/Subgrupos';
 import Unidades from './pages/Unidades';
 import Marcas from './pages/Marcas';

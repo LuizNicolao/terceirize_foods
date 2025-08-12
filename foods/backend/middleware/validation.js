@@ -121,34 +121,8 @@ const commonValidations = {
 
 // Validações específicas para clientes - MOVIDAS PARA ARQUIVO ESPECÍFICO
 
-// Validações específicas para grupos
-const grupoValidations = {
-  create: [
-    body('nome')
-      .trim()
-      .isLength({ min: 1, max: 100 })
-      .withMessage('Nome do grupo deve ter entre 1 e 100 caracteres'),
-    body('status')
-      .optional()
-      .isIn([0, 1])
-      .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
-    handleValidationErrors
-  ],
+// Validações específicas para grupos - MOVIDAS PARA routes/grupos/grupoValidator.js
 
-  update: [
-    commonValidations.id,
-    body('nome')
-      .optional()
-      .trim()
-      .isLength({ min: 1, max: 100 })
-      .withMessage('Nome do grupo deve ter entre 1 e 100 caracteres'),
-    body('status')
-      .optional()
-      .isIn([0, 1])
-      .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
-    handleValidationErrors
-  ]
-};
 
 // Validações específicas para subgrupos
 const subgrupoValidations = {
@@ -390,7 +364,6 @@ const nomeGenericoProdutoAtualizacaoValidations = [
 module.exports = {
   handleValidationErrors,
   commonValidations,
-  grupoValidations,
   subgrupoValidations,
   marcaValidations,
   classeValidations,
