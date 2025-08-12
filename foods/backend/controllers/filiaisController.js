@@ -972,7 +972,7 @@ class FiliaisController {
         SELECT 
           ai.id, ai.almoxarifado_id, ai.produto_id, ai.quantidade,
           ai.criado_em, ai.atualizado_em,
-          p.nome as produto_nome, p.codigo as produto_codigo,
+          p.nome as produto_nome, p.codigo_produto as produto_codigo,
           u.nome as unidade_nome
         FROM almoxarifado_itens ai
         INNER JOIN produtos p ON ai.produto_id = p.id
@@ -1058,7 +1058,7 @@ class FiliaisController {
         `SELECT 
           ai.id, ai.almoxarifado_id, ai.produto_id, ai.quantidade,
           ai.criado_em, ai.atualizado_em,
-          p.nome as produto_nome, p.codigo as produto_codigo,
+          p.nome as produto_nome, p.codigo_produto as produto_codigo,
           u.nome as unidade_nome
         FROM almoxarifado_itens ai
         INNER JOIN produtos p ON ai.produto_id = p.id
