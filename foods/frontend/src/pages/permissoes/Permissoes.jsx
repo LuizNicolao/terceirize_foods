@@ -11,10 +11,11 @@ import { PermissoesStats } from '../../components/permissoes';
 import PermissoesActions from '../../components/permissoes/PermissoesActions';
 import PermissoesTable from '../../components/permissoes/PermissoesTable';
 import PermissoesForm from '../../components/permissoes/PermissoesForm';
+import UserSelector from '../../components/permissoes/UserSelector';
 import AuditModal from '../../components/shared/AuditModal';
 
 const Permissoes = () => {
-  const { canView } = usePermissions();
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
   // Hooks customizados
   const {
@@ -30,15 +31,12 @@ const Permissoes = () => {
     expandedGroups,
     estatisticas,
     handleSavePermissions,
-    handleResetPermissions,
-    handleSelectUser,
+    handleUserSelect,
     handlePermissionChange,
     handleExpandGroup,
-    setSearchTerm,
+    handleSearchChange,
     setIsSelectOpen,
-    getStatusLabel,
-    getTelaLabel,
-    getPermissionLabel
+    getStatusLabel
   } = usePermissoes();
 
   const {
@@ -71,7 +69,7 @@ const Permissoes = () => {
     <div className="p-3 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Gerenciamento de Permissões</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Gerenciar Permissões</h1>
         <div className="flex gap-2 sm:gap-3">
           <Button
             onClick={handleOpenAuditModal}
@@ -91,10 +89,9 @@ const Permissoes = () => {
       {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        onClear={() => setSearchTerm('')}
+        onSearchChange={handleSearchChange}
+        onClear={() => handleSearchChange('')}
         placeholder="Buscar por nome ou email..."
-        hideStatusFilter
       />
 
       {/* Ações */}
@@ -103,37 +100,41 @@ const Permissoes = () => {
         onExportPDF={handleExportPDF}
       />
 
-      {/* Layout em duas colunas */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        {/* Tabela de Usuários */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">Usuários</h2>
-          <PermissoesTable
-            usuarios={usuarios}
-            canView={canView}
-            onSelectUser={handleSelectUser}
-            selectedUserId={selectedUserId}
-            getStatusLabel={getStatusLabel}
-          />
-        </div>
+      {/* Seletor de Usuário */}
+      <UserSelector
+        usuarios={usuarios}
+        selectedUserId={selectedUserId}
+        selectedUser={selectedUser}
+        isSelectOpen={isSelectOpen}
+        searchTerm={searchTerm}
+        onUserSelect={handleUserSelect}
+        onSearchChange={handleSearchChange}
+        setIsSelectOpen={setIsSelectOpen}
+      />
 
-        {/* Formulário de Permissões */}
-        <div>
-          <h2 className="text-lg font-semibold text-gray-800 mb-3">Permissões</h2>
-          <PermissoesForm
-            selectedUser={selectedUser}
-            editingPermissions={editingPermissions}
-            saving={saving}
-            expandedGroups={expandedGroups}
-            onSave={handleSavePermissions}
-            onReset={handleResetPermissions}
-            onPermissionChange={handlePermissionChange}
-            onExpandGroup={handleExpandGroup}
-            getTelaLabel={getTelaLabel}
-            getPermissionLabel={getPermissionLabel}
-          />
-        </div>
-      </div>
+      {/* Formulário de Permissões */}
+      {selectedUser && (
+        <PermissoesForm
+          editingPermissions={editingPermissions}
+          expandedGroups={expandedGroups}
+          saving={saving}
+          onPermissionChange={handlePermissionChange}
+          onExpandGroup={handleExpandGroup}
+          onSavePermissions={handleSavePermissions}
+        />
+      )}
+
+      {/* Tabela de Usuários */}
+      {!selectedUser && (
+        <PermissoesTable
+          usuarios={usuarios}
+          canView={canView}
+          canEdit={canEdit}
+          canDelete={canDelete}
+          onUserSelect={handleUserSelect}
+          getStatusLabel={getStatusLabel}
+        />
+      )}
 
       {/* Modal de Auditoria */}
       <AuditModal

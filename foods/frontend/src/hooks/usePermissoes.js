@@ -126,15 +126,12 @@ export const usePermissoes = () => {
         pode_excluir: perms.pode_excluir ? 1 : 0
       }));
 
-      const result = await PermissoesService.atualizarPermissoes(selectedUserId, {
-        permissoes: permissoesArray
-      });
-
+      const result = await PermissoesService.salvarPermissoes(selectedUserId, permissoesArray);
+      
       if (result.success) {
-        toast.success('Permissões atualizadas com sucesso!');
+        toast.success('Permissões salvas com sucesso!');
         setUserPermissions(JSON.parse(JSON.stringify(editingPermissions)));
-        // Recarregar usuários para atualizar contadores
-        loadUsuarios();
+        loadUsuarios(); // Recarregar para atualizar estatísticas
       } else {
         toast.error(result.error || 'Erro ao salvar permissões');
       }
@@ -146,39 +143,42 @@ export const usePermissoes = () => {
     }
   };
 
-  const handleResetPermissions = () => {
-    setEditingPermissions(JSON.parse(JSON.stringify(userPermissions)));
-  };
-
-  const handleSelectUser = (userId) => {
+  // Funções de seleção de usuário
+  const handleUserSelect = async (userId) => {
     setSelectedUserId(userId);
     const user = usuarios.find(u => u.id === userId);
     setSelectedUser(user);
     setIsSelectOpen(false);
     
     if (userId) {
-      loadUserPermissions(userId);
+      await loadUserPermissions(userId);
     } else {
       setUserPermissions({});
       setEditingPermissions({});
     }
   };
 
-  const handlePermissionChange = (tela, permission, value) => {
+  // Funções de permissões
+  const handlePermissionChange = (tela, action, value) => {
     setEditingPermissions(prev => ({
       ...prev,
       [tela]: {
         ...prev[tela],
-        [permission]: value
+        [action]: value
       }
     }));
   };
 
-  const handleExpandGroup = (group) => {
+  const handleExpandGroup = (groupName) => {
     setExpandedGroups(prev => ({
       ...prev,
-      [group]: !prev[group]
+      [groupName]: !prev[groupName]
     }));
+  };
+
+  // Funções de busca
+  const handleSearchChange = (value) => {
+    setSearchTerm(value);
   };
 
   // Funções utilitárias
@@ -189,40 +189,6 @@ export const usePermissoes = () => {
 
   const getStatusLabel = (status) => {
     return status === 'ativo' ? 'Ativo' : 'Inativo';
-  };
-
-  const getTelaLabel = (tela) => {
-    const labels = {
-      usuarios: 'Usuários',
-      fornecedores: 'Fornecedores',
-      clientes: 'Clientes',
-      filiais: 'Filiais',
-      rotas: 'Rotas',
-      produtos: 'Produtos',
-      grupos: 'Grupos',
-      subgrupos: 'Subgrupos',
-      classes: 'Classes',
-      nome_generico_produto: 'Nome Genérico',
-      unidades: 'Unidades',
-      unidades_escolares: 'Unidades Escolares',
-      marcas: 'Marcas',
-      veiculos: 'Veículos',
-      motoristas: 'Motoristas',
-      ajudantes: 'Ajudantes',
-      cotacao: 'Cotação',
-      permissoes: 'Permissões'
-    };
-    return labels[tela] || tela;
-  };
-
-  const getPermissionLabel = (permission) => {
-    const labels = {
-      pode_visualizar: 'Visualizar',
-      pode_criar: 'Criar',
-      pode_editar: 'Editar',
-      pode_excluir: 'Excluir'
-    };
-    return labels[permission] || permission;
   };
 
   return {
@@ -241,19 +207,22 @@ export const usePermissoes = () => {
 
     // Funções CRUD
     handleSavePermissions,
-    handleResetPermissions,
-    handleSelectUser,
+
+    // Funções de seleção
+    handleUserSelect,
+
+    // Funções de permissões
     handlePermissionChange,
     handleExpandGroup,
 
-    // Funções de filtros
-    setSearchTerm,
+    // Funções de busca
+    handleSearchChange,
+
+    // Funções de estado
     setIsSelectOpen,
 
     // Funções utilitárias
     formatDate,
-    getStatusLabel,
-    getTelaLabel,
-    getPermissionLabel
+    getStatusLabel
   };
 };

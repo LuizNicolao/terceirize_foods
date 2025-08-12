@@ -1,136 +1,230 @@
 import React from 'react';
-import { FaChevronDown, FaChevronRight, FaSave, FaUndo } from 'react-icons/fa';
+import { FaEye, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronRight, FaSave, FaTimes } from 'react-icons/fa';
 import { Button } from '../ui';
 
 const PermissoesForm = ({ 
-  selectedUser,
-  editingPermissions,
+  editingPermissions, 
+  expandedGroups, 
   saving,
-  expandedGroups,
-  onSave,
-  onReset,
-  onPermissionChange,
-  onExpandGroup,
-  getTelaLabel,
-  getPermissionLabel
+  onPermissionChange, 
+  onExpandGroup, 
+  onSavePermissions 
 }) => {
-  if (!selectedUser) {
+  // Grupos de telas organizados por categoria
+  const gruposTelas = {
+    'Cadastros Básicos': [
+      { key: 'usuarios', label: 'Usuários' },
+      { key: 'fornecedores', label: 'Fornecedores' },
+      { key: 'clientes', label: 'Clientes' },
+      { key: 'filiais', label: 'Filiais' }
+    ],
+    'Produtos e Categorias': [
+      { key: 'produtos', label: 'Produtos' },
+      { key: 'grupos', label: 'Grupos' },
+      { key: 'subgrupos', label: 'Subgrupos' },
+      { key: 'classes', label: 'Classes' },
+      { key: 'nome_generico_produto', label: 'Nome Genérico' },
+      { key: 'unidades', label: 'Unidades' },
+      { key: 'unidades_escolares', label: 'Unidades Escolares' },
+      { key: 'marcas', label: 'Marcas' }
+    ],
+    'Logística': [
+      { key: 'veiculos', label: 'Veículos' },
+      { key: 'motoristas', label: 'Motoristas' },
+      { key: 'ajudantes', label: 'Ajudantes' },
+      { key: 'rotas', label: 'Rotas' }
+    ],
+    'Sistema': [
+      { key: 'cotacao', label: 'Cotação' },
+      { key: 'permissoes', label: 'Permissões' }
+    ]
+  };
+
+  const renderPermissionRow = (tela, label) => {
+    const perms = editingPermissions[tela] || {
+      pode_visualizar: false,
+      pode_criar: false,
+      pode_editar: false,
+      pode_excluir: false
+    };
+
     return (
-      <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-        Selecione um usuário para gerenciar suas permissões
+      <div key={tela} className="grid grid-cols-5 gap-2 p-3 border-b border-gray-100 hover:bg-gray-50">
+        <div className="col-span-1 flex items-center">
+          <span className="text-sm font-medium text-gray-700">{label}</span>
+        </div>
+        
+        <div className="col-span-1 flex justify-center">
+          <input
+            type="checkbox"
+            checked={perms.pode_visualizar}
+            onChange={(e) => onPermissionChange(tela, 'pode_visualizar', e.target.checked)}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+          />
+        </div>
+        
+        <div className="col-span-1 flex justify-center">
+          <input
+            type="checkbox"
+            checked={perms.pode_criar}
+            onChange={(e) => onPermissionChange(tela, 'pode_criar', e.target.checked)}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+          />
+        </div>
+        
+        <div className="col-span-1 flex justify-center">
+          <input
+            type="checkbox"
+            checked={perms.pode_editar}
+            onChange={(e) => onPermissionChange(tela, 'pode_editar', e.target.checked)}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+          />
+        </div>
+        
+        <div className="col-span-1 flex justify-center">
+          <input
+            type="checkbox"
+            checked={perms.pode_excluir}
+            onChange={(e) => onPermissionChange(tela, 'pode_excluir', e.target.checked)}
+            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+          />
+        </div>
       </div>
     );
-  }
-
-  // Agrupar telas por categoria
-  const telasPorGrupo = {
-    'Cadastros Básicos': ['usuarios', 'fornecedores', 'clientes', 'filiais'],
-    'Produtos': ['produtos', 'grupos', 'subgrupos', 'classes', 'nome_generico_produto', 'unidades', 'marcas'],
-    'Logística': ['rotas', 'veiculos', 'motoristas', 'ajudantes', 'unidades_escolares'],
-    'Sistema': ['cotacao', 'permissoes']
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6">
-      {/* Header do usuário selecionado */}
-      <div className="mb-4 sm:mb-6 pb-4 border-b">
-        <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
-          Permissões de: {selectedUser.nome}
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-sm">
-          <div>
-            <span className="text-gray-500">Email:</span>
-            <p className="font-medium">{selectedUser.email}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Nível:</span>
-            <p className="font-medium">{selectedUser.nivel_de_acesso}</p>
-          </div>
-          <div>
-            <span className="text-gray-500">Status:</span>
-            <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
-              selectedUser.status === 'ativo' 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {selectedUser.status === 'ativo' ? 'Ativo' : 'Inativo'}
-            </span>
+    <div className="bg-white rounded-lg shadow-sm border">
+      {/* Header do formulário */}
+      <div className="px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-medium text-gray-900">Configurar Permissões</h3>
+          <div className="flex gap-2">
+            <Button
+              onClick={onSavePermissions}
+              disabled={saving}
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <FaSave className="text-sm" />
+              {saving ? 'Salvando...' : 'Salvar Permissões'}
+            </Button>
           </div>
         </div>
       </div>
 
-      {/* Formulário de permissões */}
-      <div className="space-y-4">
-        {Object.entries(telasPorGrupo).map(([grupo, telas]) => (
-          <div key={grupo} className="border border-gray-200 rounded-lg">
-            <button
-              type="button"
-              onClick={() => onExpandGroup(grupo)}
-              className="w-full px-4 py-3 text-left bg-gray-50 hover:bg-gray-100 rounded-t-lg flex items-center justify-between"
-            >
-              <span className="font-medium text-gray-800">{grupo}</span>
-              {expandedGroups[grupo] ? (
-                <FaChevronDown className="text-gray-500" />
-              ) : (
-                <FaChevronRight className="text-gray-500" />
-              )}
-            </button>
-            
-            {expandedGroups[grupo] && (
-              <div className="p-4 space-y-4">
-                {telas.map(tela => (
-                  <div key={tela} className="border border-gray-200 rounded-lg p-3">
-                    <h4 className="font-medium text-gray-800 mb-3">
-                      {getTelaLabel(tela)}
-                    </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {['pode_visualizar', 'pode_criar', 'pode_editar', 'pode_excluir'].map(permission => (
-                        <label key={permission} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            checked={editingPermissions[tela]?.[permission] || false}
-                            onChange={(e) => onPermissionChange(tela, permission, e.target.checked)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-700">
-                            {getPermissionLabel(permission)}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+      {/* Tabela de permissões */}
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Tela
+              </th>
+              <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center justify-center gap-1">
+                  <FaEye className="text-sm" />
+                  <span className="hidden sm:inline">Visualizar</span>
+                </div>
+              </th>
+              <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center justify-center gap-1">
+                  <FaPlus className="text-sm" />
+                  <span className="hidden sm:inline">Criar</span>
+                </div>
+              </th>
+              <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center justify-center gap-1">
+                  <FaEdit className="text-sm" />
+                  <span className="hidden sm:inline">Editar</span>
+                </div>
+              </th>
+              <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <div className="flex items-center justify-center gap-1">
+                  <FaTrash className="text-sm" />
+                  <span className="hidden sm:inline">Excluir</span>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {Object.entries(gruposTelas).map(([grupoNome, telas]) => (
+              <React.Fragment key={grupoNome}>
+                {/* Cabeçalho do grupo */}
+                <tr className="bg-gray-50">
+                  <td colSpan="5" className="px-6 py-3">
+                    <button
+                      onClick={() => onExpandGroup(grupoNome)}
+                      className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900"
+                    >
+                      {expandedGroups[grupoNome] ? (
+                        <FaChevronDown className="text-xs" />
+                      ) : (
+                        <FaChevronRight className="text-xs" />
+                      )}
+                      {grupoNome}
+                    </button>
+                  </td>
+                </tr>
+                
+                {/* Telas do grupo */}
+                {expandedGroups[grupoNome] && telas.map(({ key, label }) => (
+                  <tr key={key} className="hover:bg-gray-50">
+                    <td className="px-6 py-3 text-sm text-gray-900">
+                      {label}
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={editingPermissions[key]?.pode_visualizar || false}
+                        onChange={(e) => onPermissionChange(key, 'pode_visualizar', e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={editingPermissions[key]?.pode_criar || false}
+                        onChange={(e) => onPermissionChange(key, 'pode_criar', e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={editingPermissions[key]?.pode_editar || false}
+                        onChange={(e) => onPermissionChange(key, 'pode_editar', e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                    </td>
+                    <td className="px-3 py-3 text-center">
+                      <input
+                        type="checkbox"
+                        checked={editingPermissions[key]?.pode_excluir || false}
+                        onChange={(e) => onPermissionChange(key, 'pode_excluir', e.target.checked)}
+                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      />
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            )}
-          </div>
-        ))}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      {/* Botões de ação */}
-      <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
-        <Button
-          onClick={onReset}
-          variant="secondary"
-          size="sm"
-          disabled={saving}
-        >
-          <FaUndo className="mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Desfazer</span>
-          <span className="sm:hidden">Desfazer</span>
-        </Button>
-        <Button
-          onClick={onSave}
-          size="sm"
-          disabled={saving}
-        >
-          <FaSave className="mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">
+      {/* Footer com botões */}
+      <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex justify-end gap-3">
+          <Button
+            onClick={onSavePermissions}
+            disabled={saving}
+            className="flex items-center gap-2"
+          >
+            <FaSave className="text-sm" />
             {saving ? 'Salvando...' : 'Salvar Permissões'}
-          </span>
-          <span className="sm:hidden">
-            {saving ? 'Salvando...' : 'Salvar'}
-          </span>
-        </Button>
+          </Button>
+        </div>
       </div>
     </div>
   );
