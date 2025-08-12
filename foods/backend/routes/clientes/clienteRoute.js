@@ -4,12 +4,12 @@
  */
 
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../middleware/auth');
-const { clienteValidations, commonValidations } = require('../middleware/validation');
-const { paginationMiddleware } = require('../middleware/pagination');
-const { hateoasMiddleware } = require('../middleware/hateoas');
-const { auditMiddleware, AUDIT_ACTIONS } = require('../utils/audit');
-const ClientesController = require('../controllers/clientesController');
+const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { clienteValidations, commonValidations } = require('./clienteValidator');
+const { paginationMiddleware } = require('../../middleware/pagination');
+const { hateoasMiddleware } = require('../../middleware/hateoas');
+const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const ClientesController = require('../../controllers/clientesController');
 
 const router = express.Router();
 
@@ -75,4 +75,4 @@ router.get('/ativos',
   ClientesController.buscarAtivos
 );
 
-module.exports = router; 
+module.exports = router;

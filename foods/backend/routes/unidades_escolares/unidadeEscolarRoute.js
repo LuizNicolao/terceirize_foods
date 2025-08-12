@@ -13,8 +13,10 @@ const unidadesEscolaresController = require('../../controllers/unidadesEscolares
 
 const router = express.Router();
 
-// Aplicar autenticação em todas as rotas
+// Aplicar middlewares globais
 router.use(authenticateToken);
+router.use(paginationMiddleware);
+router.use(hateoasMiddleware('unidades_escolares'));
 
 // ===== ROTAS PRINCIPAIS DE UNIDADES ESCOLARES =====
 
@@ -23,8 +25,7 @@ router.get('/',
   checkScreenPermission('unidades_escolares', 'visualizar'),
   commonValidations.search,
   ...commonValidations.pagination,
-  unidadesEscolaresController.listarUnidadesEscolares,
-  hateoasMiddleware
+  unidadesEscolaresController.listarUnidadesEscolares
 );
 
 // ===== ROTAS ESPECÍFICAS =====
@@ -32,43 +33,37 @@ router.get('/',
 // Buscar unidades escolares ativas
 router.get('/ativas/listar', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
-  unidadesEscolaresController.buscarUnidadesEscolaresAtivas,
-  hateoasMiddleware
+  unidadesEscolaresController.buscarUnidadesEscolaresAtivas
 );
 
 // Buscar unidades escolares por estado
 router.get('/estado/:estado', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
-  unidadesEscolaresController.buscarUnidadesEscolaresPorEstado,
-  hateoasMiddleware
+  unidadesEscolaresController.buscarUnidadesEscolaresPorEstado
 );
 
 // Buscar unidades escolares por rota
 router.get('/rota/:rotaId', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
-  unidadesEscolaresController.buscarUnidadesEscolaresPorRota,
-  hateoasMiddleware
+  unidadesEscolaresController.buscarUnidadesEscolaresPorRota
 );
 
 // Listar estados disponíveis
 router.get('/estados/listar', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
-  unidadesEscolaresController.listarEstados,
-  hateoasMiddleware
+  unidadesEscolaresController.listarEstados
 );
 
 // Buscar estatísticas totais
 router.get('/estatisticas', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
-  unidadesEscolaresController.buscarEstatisticas,
-  hateoasMiddleware
+  unidadesEscolaresController.buscarEstatisticas
 );
 
 // Listar centros de distribuição disponíveis
 router.get('/centros-distribuicao/listar', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
-  unidadesEscolaresController.listarCentrosDistribuicao,
-  hateoasMiddleware
+  unidadesEscolaresController.listarCentrosDistribuicao
 );
 
 // ===== ROTAS CRUD PRINCIPAIS =====
@@ -77,8 +72,7 @@ router.get('/centros-distribuicao/listar',
 router.get('/:id', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
   commonValidations.id,
-  unidadesEscolaresController.buscarUnidadeEscolarPorId,
-  hateoasMiddleware
+  unidadesEscolaresController.buscarUnidadeEscolarPorId
 );
 
 // Criar unidade escolar

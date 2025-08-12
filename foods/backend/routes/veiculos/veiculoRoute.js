@@ -13,8 +13,10 @@ const veiculosController = require('../../controllers/veiculosController');
 
 const router = express.Router();
 
-// Aplicar autenticação em todas as rotas
+// Aplicar middlewares globais
 router.use(authenticateToken);
+router.use(paginationMiddleware);
+router.use(hateoasMiddleware('veiculos'));
 
 // ===== ROTAS PRINCIPAIS DE VEÍCULOS =====
 
@@ -23,8 +25,7 @@ router.get('/',
   checkScreenPermission('veiculos', 'visualizar'),
   commonValidations.search,
   ...commonValidations.pagination,
-  veiculosController.listarVeiculos,
-  hateoasMiddleware
+  veiculosController.listarVeiculos
 );
 
 // ===== ROTAS ESPECÍFICAS =====
@@ -32,43 +33,37 @@ router.get('/',
 // Buscar veículos ativos
 router.get('/ativos/listar', 
   checkScreenPermission('veiculos', 'visualizar'),
-  veiculosController.buscarVeiculosAtivos,
-  hateoasMiddleware
+  veiculosController.buscarVeiculosAtivos
 );
 
 // Buscar veículos por filial
 router.get('/filial/:filialId', 
   checkScreenPermission('veiculos', 'visualizar'),
-  veiculosController.buscarVeiculosPorFilial,
-  hateoasMiddleware
+  veiculosController.buscarVeiculosPorFilial
 );
 
 // Buscar veículos por tipo
 router.get('/tipo/:tipo', 
   checkScreenPermission('veiculos', 'visualizar'),
-  veiculosController.buscarVeiculosPorTipo,
-  hateoasMiddleware
+  veiculosController.buscarVeiculosPorTipo
 );
 
 // Listar tipos de veículos
 router.get('/tipos/listar', 
   checkScreenPermission('veiculos', 'visualizar'),
-  veiculosController.listarTiposVeiculos,
-  hateoasMiddleware
+  veiculosController.listarTiposVeiculos
 );
 
 // Listar categorias de veículos
 router.get('/categorias/listar', 
   checkScreenPermission('veiculos', 'visualizar'),
-  veiculosController.listarCategoriasVeiculos,
-  hateoasMiddleware
+  veiculosController.listarCategoriasVeiculos
 );
 
 // Buscar veículos com documentação vencendo
 router.get('/documentacao/vencendo', 
   checkScreenPermission('veiculos', 'visualizar'),
-  veiculosController.buscarVeiculosDocumentacaoVencendo,
-  hateoasMiddleware
+  veiculosController.buscarVeiculosDocumentacaoVencendo
 );
 
 // ===== ROTAS CRUD PRINCIPAIS =====
@@ -77,8 +72,7 @@ router.get('/documentacao/vencendo',
 router.get('/:id', 
   checkScreenPermission('veiculos', 'visualizar'),
   commonValidations.id,
-  veiculosController.buscarVeiculoPorId,
-  hateoasMiddleware
+  veiculosController.buscarVeiculoPorId
 );
 
 // Criar veículo
