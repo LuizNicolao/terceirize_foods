@@ -13,8 +13,10 @@ const rotasController = require('../../controllers/rotasController');
 
 const router = express.Router();
 
-// Aplicar autenticação em todas as rotas
+// Aplicar middlewares globais
 router.use(authenticateToken);
+router.use(paginationMiddleware);
+router.use(hateoasMiddleware('rotas'));
 
 // ===== ROTAS PRINCIPAIS DE ROTAS =====
 
@@ -23,8 +25,7 @@ router.get('/',
   checkScreenPermission('rotas', 'visualizar'),
   commonValidations.search,
   ...commonValidations.pagination,
-  rotasController.listarRotas,
-  hateoasMiddleware
+  rotasController.listarRotas
 );
 
 // ===== ROTAS ESPECÍFICAS =====
@@ -32,43 +33,37 @@ router.get('/',
 // Buscar rotas ativas
 router.get('/ativas/listar', 
   checkScreenPermission('rotas', 'visualizar'),
-  rotasController.buscarRotasAtivas,
-  hateoasMiddleware
+  rotasController.buscarRotasAtivas
 );
 
 // Buscar rotas por filial
 router.get('/filial/:filialId', 
   checkScreenPermission('rotas', 'visualizar'),
-  rotasController.buscarRotasPorFilial,
-  hateoasMiddleware
+  rotasController.buscarRotasPorFilial
 );
 
 // Buscar rotas por tipo
 router.get('/tipo/:tipo', 
   checkScreenPermission('rotas', 'visualizar'),
-  rotasController.buscarRotasPorTipo,
-  hateoasMiddleware
+  rotasController.buscarRotasPorTipo
 );
 
 // Listar tipos de rota
 router.get('/tipos/listar', 
   checkScreenPermission('rotas', 'visualizar'),
-  rotasController.listarTiposRota,
-  hateoasMiddleware
+  rotasController.listarTiposRota
 );
 
 // Buscar estatísticas das rotas
 router.get('/estatisticas', 
   checkScreenPermission('rotas', 'visualizar'),
-  rotasController.buscarEstatisticasRotas,
-  hateoasMiddleware
+  rotasController.buscarEstatisticasRotas
 );
 
 // Buscar unidades escolares de uma rota
 router.get('/:id/unidades-escolares', 
   checkScreenPermission('rotas', 'visualizar'),
-  rotasController.buscarUnidadesEscolaresRota,
-  hateoasMiddleware
+  rotasController.buscarUnidadesEscolaresRota
 );
 
 // ===== ROTAS CRUD PRINCIPAIS =====
@@ -77,8 +72,7 @@ router.get('/:id/unidades-escolares',
 router.get('/:id', 
   checkScreenPermission('rotas', 'visualizar'),
   commonValidations.id,
-  rotasController.buscarRotaPorId,
-  hateoasMiddleware
+  rotasController.buscarRotaPorId
 );
 
 // Criar rota
