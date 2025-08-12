@@ -25,8 +25,8 @@ const nomeGenericoProdutoValidations = {
     
     body('status')
       .optional()
-      .isIn(['ativo', 'inativo'])
-      .withMessage('Status deve ser "ativo" ou "inativo"')
+      .isIn([0, 1, '0', '1'])
+      .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)')
   ],
 
   atualizar: [
@@ -52,8 +52,8 @@ const nomeGenericoProdutoValidations = {
     
     body('status')
       .optional()
-      .isIn(['ativo', 'inativo'])
-      .withMessage('Status deve ser "ativo" ou "inativo"')
+      .isIn([0, 1, '0', '1'])
+      .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)')
   ]
 };
 

@@ -80,16 +80,16 @@ const NomeGenericoProdutoTable = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                      nomeGenerico.status === 'ativo'
+                      nomeGenerico.status === 1
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
                       {getStatusLabel(nomeGenerico.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(nomeGenerico.criado_em)}
-                  </td>
+                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                     {formatDate(nomeGenerico.created_at)}
+                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2">
                       {canView('nome_generico_produto') && (
@@ -193,19 +193,19 @@ const NomeGenericoProdutoTable = ({
               <div>
                 <span className="text-gray-500">Status:</span>
                 <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
-                  nomeGenerico.status === 'ativo'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
+                                     nomeGenerico.status === 1
+                     ? 'bg-green-100 text-green-800'
+                     : 'bg-red-100 text-red-800'
                 }`}>
                   {getStatusLabel(nomeGenerico.status)}
                 </span>
               </div>
             </div>
             
-            <div className="mt-3 text-xs">
-              <span className="text-gray-500">Criado em:</span>
-              <p className="font-medium">{formatDate(nomeGenerico.criado_em)}</p>
-            </div>
+                         <div className="mt-3 text-xs">
+               <span className="text-gray-500">Criado em:</span>
+               <p className="font-medium">{formatDate(nomeGenerico.created_at)}</p>
+             </div>
           </div>
         ))}
       </div>

@@ -79,30 +79,30 @@ const NomeGenericoProduto = () => {
   const { exportToXLSX, exportToPDF } = useExport();
 
   // Funções de exportação
-  const handleExportXLSX = () => {
-    const data = nomesGenericos.map(nomeGenerico => ({
-      ID: nomeGenerico.id,
-      Nome: nomeGenerico.nome,
-      Grupo: getGrupoNome(nomeGenerico.grupo_id),
-      Subgrupo: getSubgrupoNome(nomeGenerico.subgrupo_id),
-      Classe: getClasseNome(nomeGenerico.classe_id),
-      Status: getStatusLabel(nomeGenerico.status),
-      'Criado em': formatDate(nomeGenerico.criado_em)
-    }));
+     const handleExportXLSX = () => {
+     const data = nomesGenericos.map(nomeGenerico => ({
+       ID: nomeGenerico.id,
+       Nome: nomeGenerico.nome,
+       Grupo: getGrupoNome(nomeGenerico.grupo_id),
+       Subgrupo: getSubgrupoNome(nomeGenerico.subgrupo_id),
+       Classe: getClasseNome(nomeGenerico.classe_id),
+       Status: getStatusLabel(nomeGenerico.status),
+       'Criado em': formatDate(nomeGenerico.created_at)
+     }));
 
     exportToXLSX(data, 'nomes-genericos-produto');
   };
 
-  const handleExportPDF = () => {
-    const data = nomesGenericos.map(nomeGenerico => ({
-      ID: nomeGenerico.id,
-      Nome: nomeGenerico.nome,
-      Grupo: getGrupoNome(nomeGenerico.grupo_id),
-      Subgrupo: getSubgrupoNome(nomeGenerico.subgrupo_id),
-      Classe: getClasseNome(nomeGenerico.classe_id),
-      Status: getStatusLabel(nomeGenerico.status),
-      'Criado em': formatDate(nomeGenerico.criado_em)
-    }));
+     const handleExportPDF = () => {
+     const data = nomesGenericos.map(nomeGenerico => ({
+       ID: nomeGenerico.id,
+       Nome: nomeGenerico.nome,
+       Grupo: getGrupoNome(nomeGenerico.grupo_id),
+       Subgrupo: getSubgrupoNome(nomeGenerico.subgrupo_id),
+       Classe: getClasseNome(nomeGenerico.classe_id),
+       Status: getStatusLabel(nomeGenerico.status),
+       'Criado em': formatDate(nomeGenerico.created_at)
+     }));
 
     exportToPDF(data, 'Nomes Genéricos de Produto', 'nomes-genericos-produto');
   };

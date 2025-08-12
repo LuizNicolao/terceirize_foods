@@ -46,7 +46,7 @@ export const useNomeGenericoProduto = () => {
         page: currentPage,
         limit: itemsPerPage,
         search: searchTerm,
-        status: statusFilter === 'ativo' ? 'ativo' : statusFilter === 'inativo' ? 'inativo' : undefined,
+        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined,
         grupo_id: grupoFilter === 'todos' ? undefined : grupoFilter,
         subgrupo_id: subgrupoFilter === 'todos' ? undefined : subgrupoFilter,
         classe_id: classeFilter === 'todos' ? undefined : classeFilter,
@@ -70,8 +70,8 @@ export const useNomeGenericoProduto = () => {
         
         // Calcular estatísticas básicas
         const total = result.pagination?.totalItems || result.data.length;
-        const ativos = result.data.filter(n => n.status === 'ativo').length;
-        const inativos = result.data.filter(n => n.status === 'inativo').length;
+        const ativos = result.data.filter(n => n.status === 1).length;
+        const inativos = result.data.filter(n => n.status === 0).length;
         
         setEstatisticas({
           total_nomes_genericos: total,
@@ -165,8 +165,8 @@ export const useNomeGenericoProduto = () => {
       (nomeGenerico.nome && nomeGenerico.nome.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'todos' || 
-      (statusFilter === 'ativo' && nomeGenerico.status === 'ativo') ||
-      (statusFilter === 'inativo' && nomeGenerico.status === 'inativo');
+      (statusFilter === 'ativo' && nomeGenerico.status === 1) ||
+      (statusFilter === 'inativo' && nomeGenerico.status === 0);
     
     const matchesGrupo = grupoFilter === 'todos' || 
       nomeGenerico.grupo_id === parseInt(grupoFilter);
@@ -190,7 +190,7 @@ export const useNomeGenericoProduto = () => {
         grupo_id: data.grupo_id ? parseInt(data.grupo_id) : null,
         subgrupo_id: data.subgrupo_id ? parseInt(data.subgrupo_id) : null,
         classe_id: data.classe_id ? parseInt(data.classe_id) : null,
-        status: data.status === '1' ? 'ativo' : 'inativo'
+        status: data.status === '1' ? 1 : 0
       };
 
       let result;
@@ -270,7 +270,7 @@ export const useNomeGenericoProduto = () => {
 
   // Funções utilitárias
   const getStatusLabel = (status) => {
-    return status === 'ativo' ? 'Ativo' : 'Inativo';
+    return status === 1 ? 'Ativo' : 'Inativo';
   };
 
   const formatDate = (dateString) => {

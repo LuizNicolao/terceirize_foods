@@ -55,7 +55,7 @@ const NomeGenericoProdutoModal = ({
       setValue('grupo_id', editingNomeGenerico.grupo_id?.toString() || '');
       setValue('subgrupo_id', editingNomeGenerico.subgrupo_id?.toString() || '');
       setValue('classe_id', editingNomeGenerico.classe_id?.toString() || '');
-      setValue('status', editingNomeGenerico.status === 'ativo' ? '1' : '0');
+      setValue('status', editingNomeGenerico.status === 1 ? '1' : '0');
     } else {
       reset();
     }
