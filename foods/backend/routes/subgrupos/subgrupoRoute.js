@@ -1,60 +1,71 @@
+/**
+ * Rotas de Subgrupos
+ * Implementa padrões RESTful com HATEOAS, paginação e validação
+ */
+
 const express = require('express');
-const router = express.Router();
+const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { subgrupoValidations, commonValidations } = require('./subgrupoValidator');
+const { paginationMiddleware } = require('../../middleware/pagination');
+const { hateoasMiddleware } = require('../../middleware/hateoas');
+const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const SubgruposController = require('../../controllers/subgruposController');
-const { 
-  subgrupoValidations, 
-  commonValidations 
-} = require('./subgrupoValidator');
-const { auditMiddleware, auditChangesMiddleware } = require('../../middleware/audit');
-const { getUserPermissions } = require('../../middleware/auth');
 
-// Middleware para verificar permissões
-const checkPermission = (permission) => {
-  return (req, res, next) => {
-    const userPermissions = getUserPermissions(req.user);
-    if (!userPermissions.includes(permission)) {
-      return res.status(403).json({
-        success: false,
-        error: 'Acesso negado'
-      });
-    }
-    next();
-  };
-};
+const router = express.Router();
 
-// Rotas com validação e auditoria
+// Aplicar middlewares globais
+router.use(authenticateToken);
+router.use(paginationMiddleware);
+router.use(hateoasMiddleware('subgrupos'));
+
+// GET /api/subgrupos - Listar subgrupos com paginação e busca
 router.get('/', 
+  checkPermission('visualizar'),
+  commonValidations.search,
   commonValidations.pagination,
   SubgruposController.listarSubgrupos
 );
 
+// GET /api/subgrupos/ativos - Buscar subgrupos ativos
 router.get('/ativos',
-  commonValidations.pagination,
+  checkPermission('visualizar'),
   SubgruposController.buscarAtivos
 );
 
-router.get('/:id',
+// GET /api/subgrupos/grupo/:grupo_id - Buscar subgrupos por grupo
+router.get('/grupo/:grupo_id',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  SubgruposController.buscarPorGrupo
+);
+
+// GET /api/subgrupos/:id - Buscar subgrupo por ID
+router.get('/:id', 
+  checkPermission('visualizar'),
   commonValidations.id,
   SubgruposController.buscarSubgrupoPorId
 );
 
-router.post('/',
-  checkPermission('subgrupos:create'),
-  auditMiddleware('subgrupos', 'create'),
+// POST /api/subgrupos - Criar novo subgrupo
+router.post('/', 
+  checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'subgrupos'),
   subgrupoValidations.create,
   SubgruposController.criarSubgrupo
 );
 
-router.put('/:id',
-  checkPermission('subgrupos:update'),
-  auditChangesMiddleware('subgrupos', 'update'),
+// PUT /api/subgrupos/:id - Atualizar subgrupo
+router.put('/:id', 
+  checkPermission('editar'),
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'subgrupos'),
   subgrupoValidations.update,
   SubgruposController.atualizarSubgrupo
 );
 
-router.delete('/:id',
-  checkPermission('subgrupos:delete'),
-  auditMiddleware('subgrupos', 'delete'),
+// DELETE /api/subgrupos/:id - Excluir subgrupo (soft delete)
+router.delete('/:id', 
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'subgrupos'),
   commonValidations.id,
   SubgruposController.excluirSubgrupo
 );
