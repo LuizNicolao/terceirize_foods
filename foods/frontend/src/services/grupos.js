@@ -135,16 +135,17 @@ class GruposService {
       // Extrair dados da estrutura HATEOAS
       let grupos = [];
       
-      if (response.data.data) {
-        // Se tem data.items (estrutura HATEOAS)
-        if (response.data.data.items) {
-          grupos = response.data.data.items;
-        } else {
-          // Se data é diretamente um array
-          grupos = response.data.data;
-        }
+      if (response.data.data && response.data.data.items) {
+        // Estrutura: { success: true, data: { items: [...], _links: {...} } }
+        grupos = response.data.data.items;
+      } else if (response.data.data && Array.isArray(response.data.data)) {
+        // Estrutura: { success: true, data: [...] }
+        grupos = response.data.data;
+      } else if (response.data.items) {
+        // Estrutura: { items: [...], _links: {...} }
+        grupos = response.data.items;
       } else if (Array.isArray(response.data)) {
-        // Se response.data é diretamente um array
+        // Estrutura: [...]
         grupos = response.data;
       }
       

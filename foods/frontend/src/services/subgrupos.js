@@ -153,19 +153,17 @@ class SubgruposService {
       // Extrair dados da estrutura HATEOAS
       let subgrupos = [];
       
-      if (response.data.data) {
-        // Se tem data.items (estrutura HATEOAS)
-        if (response.data.data.items) {
-          subgrupos = response.data.data.items;
-        } else {
-          // Se data é diretamente um array
-          subgrupos = response.data.data;
-        }
+      if (response.data.data && response.data.data.items) {
+        // Estrutura: { success: true, data: { items: [...], _links: {...} } }
+        subgrupos = response.data.data.items;
+      } else if (response.data.data && Array.isArray(response.data.data)) {
+        // Estrutura: { success: true, data: [...] }
+        subgrupos = response.data.data;
       } else if (response.data.items) {
-        // Se tem items diretamente na resposta (estrutura HATEOAS)
+        // Estrutura: { items: [...], _links: {...} }
         subgrupos = response.data.items;
       } else if (Array.isArray(response.data)) {
-        // Se response.data é diretamente um array
+        // Estrutura: [...]
         subgrupos = response.data;
       }
       
