@@ -26,6 +26,19 @@ router.get('/',
   GruposController.listarGrupos
 );
 
+// GET /api/grupos/ativos - Buscar grupos ativos
+router.get('/ativos',
+  checkPermission('visualizar'),
+  GruposController.buscarAtivos
+);
+
+// GET /api/grupos/:id/subgrupos - Buscar subgrupos de um grupo
+router.get('/:id/subgrupos',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  GruposController.buscarSubgrupos
+);
+
 // GET /api/grupos/:id - Buscar grupo por ID
 router.get('/:id', 
   checkPermission('visualizar'),
@@ -55,19 +68,6 @@ router.delete('/:id',
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'grupos'),
   commonValidations.id,
   GruposController.excluirGrupo
-);
-
-// GET /api/grupos/ativos - Buscar grupos ativos
-router.get('/ativos',
-  checkPermission('visualizar'),
-  GruposController.buscarAtivos
-);
-
-// GET /api/grupos/:id/subgrupos - Buscar subgrupos de um grupo
-router.get('/:id/subgrupos',
-  checkPermission('visualizar'),
-  commonValidations.id,
-  GruposController.buscarSubgrupos
 );
 
 module.exports = router;

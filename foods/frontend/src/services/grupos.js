@@ -130,7 +130,7 @@ class GruposService {
 
   async buscarAtivos() {
     try {
-      const response = await api.get('/grupos', { params: { status: 1 } });
+      const response = await api.get('/grupos/ativos');
       
       // Extrair dados da estrutura HATEOAS
       let grupos = [];
