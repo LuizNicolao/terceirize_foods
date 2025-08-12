@@ -80,22 +80,6 @@ export const useFornecedores = () => {
         setFornecedores(result.data || []);
         setTotalPages(result.pagination?.totalPages || 1);
         setTotalItems(result.pagination?.totalItems || result.data?.length || 0);
-        
-        // Atualizar estatísticas se disponíveis
-        if (result.data && Array.isArray(result.data)) {
-          // Calcular estatísticas básicas
-          const total = result.data.length;
-          const ativos = result.data.filter(f => f.status === 1).length;
-          const comEmail = result.data.filter(f => f.email && f.email.trim() !== '').length;
-          const comTelefone = result.data.filter(f => f.telefone && f.telefone.trim() !== '').length;
-          
-          setEstatisticas({
-            total_fornecedores: total,
-            fornecedores_ativos: ativos,
-            com_email: comEmail,
-            com_telefone: comTelefone
-          });
-        }
       } else {
         toast.error(result.error || 'Erro ao carregar fornecedores');
       }
@@ -105,6 +89,24 @@ export const useFornecedores = () => {
     } finally {
       setLoading(false);
       setSearching(false);
+    }
+  };
+
+  const loadEstatisticas = async () => {
+    try {
+      const result = await FornecedoresService.buscarEstatisticas();
+      if (result.success) {
+        setEstatisticas(result.data || {
+          total_fornecedores: 0,
+          fornecedores_ativos: 0,
+          com_email: 0,
+          com_telefone: 0
+        });
+      } else {
+        console.error('Erro ao carregar estatísticas:', result.error);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
     }
   };
 
