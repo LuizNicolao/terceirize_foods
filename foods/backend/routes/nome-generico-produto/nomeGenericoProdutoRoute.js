@@ -1,89 +1,86 @@
+/**
+ * Rotas de Nomes Genéricos de Produto
+ * Implementa padrões RESTful com HATEOAS, paginação e validação
+ */
+
 const express = require('express');
-const router = express.Router();
-const NomeGenericoProdutoController = require('../../controllers/nomeGenericoProdutoController');
-const { checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { nomeGenericoProdutoValidations, commonValidations } = require('./nomeGenericoProdutoValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
-const { responseHandler } = require('../../middleware/responseHandler');
-const { auditMiddleware, auditChangesMiddleware } = require('../../utils/audit');
-const { validate } = require('../../middleware/validation');
-const nomeGenericoProdutoValidations = require('./nomeGenericoProdutoValidator');
+const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const NomeGenericoProdutoController = require('../../controllers/nomeGenericoProdutoController');
 
-// Middleware de auditoria para todas as rotas
-router.use(auditMiddleware);
+const router = express.Router();
 
-// Rotas específicas primeiro
-router.get('/ativos', 
-  checkPermission('nome_generico_produto', 'pode_visualizar'),
-  paginationMiddleware,
-  hateoasMiddleware,
-  responseHandler,
-  NomeGenericoProdutoController.buscarNomesGenericosAtivos
-);
+// Aplicar middlewares globais
+router.use(authenticateToken);
+router.use(paginationMiddleware);
+router.use(hateoasMiddleware('nome-generico-produto'));
 
-router.get('/grupo/:grupo_id',
-  checkPermission('nome_generico_produto', 'pode_visualizar'),
-  paginationMiddleware,
-  hateoasMiddleware,
-  responseHandler,
-  NomeGenericoProdutoController.buscarNomesGenericosPorGrupo
-);
-
-router.get('/subgrupo/:subgrupo_id',
-  checkPermission('nome_generico_produto', 'pode_visualizar'),
-  paginationMiddleware,
-  hateoasMiddleware,
-  responseHandler,
-  NomeGenericoProdutoController.buscarNomesGenericosPorSubgrupo
-);
-
-router.get('/classe/:classe_id',
-  checkPermission('nome_generico_produto', 'pode_visualizar'),
-  paginationMiddleware,
-  hateoasMiddleware,
-  responseHandler,
-  NomeGenericoProdutoController.buscarNomesGenericosPorClasse
-);
-
-// Rotas CRUD padrão
-router.get('/',
-  checkPermission('nome_generico_produto', 'pode_visualizar'),
-  paginationMiddleware,
-  hateoasMiddleware,
-  responseHandler,
+// GET /api/nome-generico-produto - Listar nomes genéricos com paginação e busca
+router.get('/', 
+  checkPermission('visualizar'),
+  commonValidations.search,
+  commonValidations.pagination,
   NomeGenericoProdutoController.listarNomesGenericos
 );
 
-router.get('/:id',
-  checkPermission('nome_generico_produto', 'pode_visualizar'),
-  hateoasMiddleware,
-  responseHandler,
-  NomeGenericoProdutoController.buscarNomeGenericoPorId 
+// GET /api/nome-generico-produto/ativos - Buscar nomes genéricos ativos
+router.get('/ativos',
+  checkPermission('visualizar'),
+  NomeGenericoProdutoController.buscarNomesGenericosAtivos
 );
 
-router.post('/',
-  checkPermission('nome_generico_produto', 'pode_criar'),
-  validate(nomeGenericoProdutoValidations.criar),
-  auditChangesMiddleware,
-  hateoasMiddleware,
-  responseHandler,
+// GET /api/nome-generico-produto/grupo/:grupoId - Buscar por grupo
+router.get('/grupo/:grupoId',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  NomeGenericoProdutoController.buscarNomesGenericosPorGrupo
+);
+
+// GET /api/nome-generico-produto/subgrupo/:subgrupoId - Buscar por subgrupo
+router.get('/subgrupo/:subgrupoId',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  NomeGenericoProdutoController.buscarNomesGenericosPorSubgrupo
+);
+
+// GET /api/nome-generico-produto/classe/:classeId - Buscar por classe
+router.get('/classe/:classeId',
+  checkPermission('visualizar'),
+  commonValidations.id,
+  NomeGenericoProdutoController.buscarNomesGenericosPorClasse
+);
+
+// GET /api/nome-generico-produto/:id - Buscar nome genérico por ID
+router.get('/:id', 
+  checkPermission('visualizar'),
+  commonValidations.id,
+  NomeGenericoProdutoController.buscarNomeGenericoPorId
+);
+
+// POST /api/nome-generico-produto - Criar novo nome genérico
+router.post('/', 
+  checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'nome-generico-produto'),
+  nomeGenericoProdutoValidations.create,
   NomeGenericoProdutoController.criarNomeGenerico
 );
 
-router.put('/:id',
-  checkPermission('nome_generico_produto', 'pode_editar'),
-  validate(nomeGenericoProdutoValidations.atualizar),
-  auditChangesMiddleware,
-  hateoasMiddleware,
-  responseHandler,
+// PUT /api/nome-generico-produto/:id - Atualizar nome genérico
+router.put('/:id', 
+  checkPermission('editar'),
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'nome-generico-produto'),
+  nomeGenericoProdutoValidations.update,
   NomeGenericoProdutoController.atualizarNomeGenerico
 );
 
-router.delete('/:id',
-  checkPermission('nome_generico_produto', 'pode_excluir'),
-  auditChangesMiddleware,
-  hateoasMiddleware,
-  responseHandler,
+// DELETE /api/nome-generico-produto/:id - Excluir nome genérico (soft delete)
+router.delete('/:id', 
+  checkPermission('excluir'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'nome-generico-produto'),
+  commonValidations.id,
   NomeGenericoProdutoController.excluirNomeGenerico
 );
 
