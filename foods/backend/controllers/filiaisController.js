@@ -749,6 +749,375 @@ class FiliaisController {
       });
     }
   }
+
+  // ===== MÉTODOS DE ALMOXARIFADOS =====
+
+  // Listar almoxarifados de uma filial
+  async listarAlmoxarifados(req, res) {
+    try {
+      const { filialId } = req.params;
+
+      const query = `
+        SELECT 
+          id, filial_id, nome, status, criado_em, atualizado_em
+        FROM almoxarifados 
+        WHERE filial_id = ?
+        ORDER BY nome ASC
+      `;
+
+      const almoxarifados = await executeQuery(query, [filialId]);
+
+      res.json({
+        success: true,
+        data: almoxarifados
+      });
+
+    } catch (error) {
+      console.error('Erro ao listar almoxarifados:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível listar os almoxarifados'
+      });
+    }
+  }
+
+  // Criar almoxarifado
+  async criarAlmoxarifado(req, res) {
+    try {
+      const { filialId } = req.params;
+      const { nome } = req.body;
+
+      if (!nome || nome.trim() === '') {
+        return res.status(400).json({
+          success: false,
+          error: 'Nome obrigatório',
+          message: 'O nome do almoxarifado é obrigatório'
+        });
+      }
+
+      // Verificar se a filial existe
+      const filial = await executeQuery('SELECT id FROM filiais WHERE id = ?', [filialId]);
+      if (filial.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Filial não encontrada',
+          message: 'Filial não encontrada'
+        });
+      }
+
+      // Verificar se já existe um almoxarifado com o mesmo nome na filial
+      const almoxarifadoExistente = await executeQuery(
+        'SELECT id FROM almoxarifados WHERE filial_id = ? AND nome = ?',
+        [filialId, nome.trim()]
+      );
+
+      if (almoxarifadoExistente.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Almoxarifado já existe',
+          message: 'Já existe um almoxarifado com este nome nesta filial'
+        });
+      }
+
+      const query = `
+        INSERT INTO almoxarifados (filial_id, nome, status, criado_em, atualizado_em)
+        VALUES (?, ?, 1, NOW(), NOW())
+      `;
+
+      const result = await executeQuery(query, [filialId, nome.trim()]);
+
+      // Buscar o almoxarifado criado
+      const almoxarifado = await executeQuery(
+        'SELECT * FROM almoxarifados WHERE id = ?',
+        [result.insertId]
+      );
+
+      res.status(201).json({
+        success: true,
+        data: almoxarifado[0],
+        message: 'Almoxarifado criado com sucesso'
+      });
+
+    } catch (error) {
+      console.error('Erro ao criar almoxarifado:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível criar o almoxarifado'
+      });
+    }
+  }
+
+  // Atualizar almoxarifado
+  async atualizarAlmoxarifado(req, res) {
+    try {
+      const { id } = req.params;
+      const { nome, status } = req.body;
+
+      if (!nome || nome.trim() === '') {
+        return res.status(400).json({
+          success: false,
+          error: 'Nome obrigatório',
+          message: 'O nome do almoxarifado é obrigatório'
+        });
+      }
+
+      // Verificar se o almoxarifado existe
+      const almoxarifado = await executeQuery('SELECT * FROM almoxarifados WHERE id = ?', [id]);
+      if (almoxarifado.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Almoxarifado não encontrado',
+          message: 'Almoxarifado não encontrado'
+        });
+      }
+
+      // Verificar se já existe outro almoxarifado com o mesmo nome na mesma filial
+      const almoxarifadoExistente = await executeQuery(
+        'SELECT id FROM almoxarifados WHERE filial_id = ? AND nome = ? AND id != ?',
+        [almoxarifado[0].filial_id, nome.trim(), id]
+      );
+
+      if (almoxarifadoExistente.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Nome já existe',
+          message: 'Já existe um almoxarifado com este nome nesta filial'
+        });
+      }
+
+      const query = `
+        UPDATE almoxarifados 
+        SET nome = ?, status = ?, atualizado_em = NOW()
+        WHERE id = ?
+      `;
+
+      await executeQuery(query, [nome.trim(), status, id]);
+
+      // Buscar o almoxarifado atualizado
+      const almoxarifadoAtualizado = await executeQuery(
+        'SELECT * FROM almoxarifados WHERE id = ?',
+        [id]
+      );
+
+      res.json({
+        success: true,
+        data: almoxarifadoAtualizado[0],
+        message: 'Almoxarifado atualizado com sucesso'
+      });
+
+    } catch (error) {
+      console.error('Erro ao atualizar almoxarifado:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível atualizar o almoxarifado'
+      });
+    }
+  }
+
+  // Excluir almoxarifado
+  async excluirAlmoxarifado(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Verificar se o almoxarifado existe
+      const almoxarifado = await executeQuery('SELECT * FROM almoxarifados WHERE id = ?', [id]);
+      if (almoxarifado.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Almoxarifado não encontrado',
+          message: 'Almoxarifado não encontrado'
+        });
+      }
+
+      // Verificar se há itens no almoxarifado
+      const itens = await executeQuery(
+        'SELECT COUNT(*) as count FROM almoxarifado_itens WHERE almoxarifado_id = ?',
+        [id]
+      );
+
+      if (itens[0].count > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Almoxarifado com itens',
+          message: 'Não é possível excluir um almoxarifado que possui itens'
+        });
+      }
+
+      await executeQuery('DELETE FROM almoxarifados WHERE id = ?', [id]);
+
+      res.json({
+        success: true,
+        message: 'Almoxarifado excluído com sucesso'
+      });
+
+    } catch (error) {
+      console.error('Erro ao excluir almoxarifado:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível excluir o almoxarifado'
+      });
+    }
+  }
+
+  // Listar itens de um almoxarifado
+  async listarItensAlmoxarifado(req, res) {
+    try {
+      const { almoxarifadoId } = req.params;
+
+      const query = `
+        SELECT 
+          ai.id, ai.almoxarifado_id, ai.produto_id, ai.quantidade,
+          ai.criado_em, ai.atualizado_em,
+          p.nome as produto_nome, p.codigo as produto_codigo,
+          u.nome as unidade_nome
+        FROM almoxarifado_itens ai
+        INNER JOIN produtos p ON ai.produto_id = p.id
+        LEFT JOIN unidades u ON p.unidade_id = u.id
+        WHERE ai.almoxarifado_id = ?
+        ORDER BY p.nome ASC
+      `;
+
+      const itens = await executeQuery(query, [almoxarifadoId]);
+
+      res.json({
+        success: true,
+        data: itens
+      });
+
+    } catch (error) {
+      console.error('Erro ao listar itens do almoxarifado:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível listar os itens do almoxarifado'
+      });
+    }
+  }
+
+  // Adicionar item ao almoxarifado
+  async adicionarItemAlmoxarifado(req, res) {
+    try {
+      const { almoxarifadoId } = req.params;
+      const { produto_id, quantidade } = req.body;
+
+      if (!produto_id || !quantidade) {
+        return res.status(400).json({
+          success: false,
+          error: 'Dados obrigatórios',
+          message: 'Produto e quantidade são obrigatórios'
+        });
+      }
+
+      // Verificar se o almoxarifado existe
+      const almoxarifado = await executeQuery('SELECT id FROM almoxarifados WHERE id = ?', [almoxarifadoId]);
+      if (almoxarifado.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Almoxarifado não encontrado',
+          message: 'Almoxarifado não encontrado'
+        });
+      }
+
+      // Verificar se o produto existe
+      const produto = await executeQuery('SELECT id FROM produtos WHERE id = ?', [produto_id]);
+      if (produto.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Produto não encontrado',
+          message: 'Produto não encontrado'
+        });
+      }
+
+      // Verificar se o item já existe no almoxarifado
+      const itemExistente = await executeQuery(
+        'SELECT id FROM almoxarifado_itens WHERE almoxarifado_id = ? AND produto_id = ?',
+        [almoxarifadoId, produto_id]
+      );
+
+      if (itemExistente.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Item já existe',
+          message: 'Este produto já está no almoxarifado'
+        });
+      }
+
+      const query = `
+        INSERT INTO almoxarifado_itens (almoxarifado_id, produto_id, quantidade, criado_em, atualizado_em)
+        VALUES (?, ?, ?, NOW(), NOW())
+      `;
+
+      const result = await executeQuery(query, [almoxarifadoId, produto_id, quantidade]);
+
+      // Buscar o item criado
+      const item = await executeQuery(
+        `SELECT 
+          ai.id, ai.almoxarifado_id, ai.produto_id, ai.quantidade,
+          ai.criado_em, ai.atualizado_em,
+          p.nome as produto_nome, p.codigo as produto_codigo,
+          u.nome as unidade_nome
+        FROM almoxarifado_itens ai
+        INNER JOIN produtos p ON ai.produto_id = p.id
+        LEFT JOIN unidades u ON p.unidade_id = u.id
+        WHERE ai.id = ?`,
+        [result.insertId]
+      );
+
+      res.status(201).json({
+        success: true,
+        data: item[0],
+        message: 'Item adicionado com sucesso'
+      });
+
+    } catch (error) {
+      console.error('Erro ao adicionar item ao almoxarifado:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível adicionar o item ao almoxarifado'
+      });
+    }
+  }
+
+  // Remover item do almoxarifado
+  async removerItemAlmoxarifado(req, res) {
+    try {
+      const { almoxarifadoId, itemId } = req.params;
+
+      // Verificar se o item existe
+      const item = await executeQuery(
+        'SELECT id FROM almoxarifado_itens WHERE id = ? AND almoxarifado_id = ?',
+        [itemId, almoxarifadoId]
+      );
+
+      if (item.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Item não encontrado',
+          message: 'Item não encontrado'
+        });
+      }
+
+      await executeQuery('DELETE FROM almoxarifado_itens WHERE id = ?', [itemId]);
+
+      res.json({
+        success: true,
+        message: 'Item removido com sucesso'
+      });
+
+    } catch (error) {
+      console.error('Erro ao remover item do almoxarifado:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível remover o item do almoxarifado'
+      });
+    }
+  }
 }
 
 module.exports = new FiliaisController(); 

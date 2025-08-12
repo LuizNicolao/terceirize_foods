@@ -4,6 +4,7 @@ import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import { Button, Input, Table } from './ui';
 import LoadingSpinner from './LoadingSpinner';
 import filiaisService from '../services/filiais';
+import api from '../services/api';
 import toast from 'react-hot-toast';
 
 const AlmoxarifadoModal = ({ 

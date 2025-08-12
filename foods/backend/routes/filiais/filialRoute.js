@@ -78,4 +78,48 @@ router.get('/consulta-cnpj/:cnpj',
   filiaisController.consultarCNPJ
 );
 
+// ===== ROTAS DE ALMOXARIFADOS =====
+
+// Listar almoxarifados de uma filial
+router.get('/:filialId/almoxarifados', 
+  commonValidations.id,
+  filiaisController.listarAlmoxarifados
+);
+
+// Criar almoxarifado para uma filial
+router.post('/:filialId/almoxarifados', 
+  commonValidations.id,
+  filiaisController.criarAlmoxarifado
+);
+
+// Atualizar almoxarifado
+router.put('/almoxarifados/:id', 
+  commonValidations.id,
+  filiaisController.atualizarAlmoxarifado
+);
+
+// Excluir almoxarifado
+router.delete('/almoxarifados/:id', 
+  commonValidations.id,
+  filiaisController.excluirAlmoxarifado
+);
+
+// Listar itens de um almoxarifado
+router.get('/almoxarifados/:almoxarifadoId/itens', 
+  commonValidations.id,
+  filiaisController.listarItensAlmoxarifado
+);
+
+// Adicionar item ao almoxarifado
+router.post('/almoxarifados/:almoxarifadoId/itens', 
+  commonValidations.id,
+  filiaisController.adicionarItemAlmoxarifado
+);
+
+// Remover item do almoxarifado
+router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId', 
+  commonValidations.id,
+  filiaisController.removerItemAlmoxarifado
+);
+
 module.exports = router;
