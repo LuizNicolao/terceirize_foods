@@ -176,9 +176,9 @@ class GruposController {
     const result = await executeQuery(
       'INSERT INTO grupos (nome, codigo, descricao, status, data_cadastro) VALUES (?, ?, ?, ?, NOW())',
       [
-        nome && nome.trim() ? nome.trim() : null,
-        codigo && codigo.trim() ? codigo.trim().toUpperCase() : null,
-        descricao && descricao.trim() ? descricao.trim() : null,
+        nome && nome.trim() ? nome.trim() : '',
+        codigo && codigo.trim() ? codigo.trim().toUpperCase() : '',
+        descricao && descricao.trim() ? descricao.trim() : '',
         status === 1 ? 'ativo' : 'inativo'
       ]
     );

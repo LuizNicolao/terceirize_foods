@@ -54,8 +54,8 @@ const grupoValidations = {
       .isLength({ min: 1, max: 20 })
       .withMessage('Código deve ter entre 1 e 20 caracteres')
       .trim()
-      .matches(/^[A-Z0-9]+$/)
-      .withMessage('Código deve conter apenas letras maiúsculas e números'),
+      .matches(/^[A-Za-z0-9]+$/)
+      .withMessage('Código deve conter apenas letras e números'),
     body('descricao')
       .optional()
       .isLength({ max: 1000 })
@@ -80,8 +80,8 @@ const grupoValidations = {
       .isLength({ min: 1, max: 20 })
       .withMessage('Código deve ter entre 1 e 20 caracteres')
       .trim()
-      .matches(/^[A-Z0-9]+$/)
-      .withMessage('Código deve conter apenas letras maiúsculas e números'),
+      .matches(/^[A-Za-z0-9]+$/)
+      .withMessage('Código deve conter apenas letras e números'),
     body('descricao')
       .optional()
       .isLength({ max: 1000 })

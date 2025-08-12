@@ -15,17 +15,17 @@ const GrupoModal = ({
       title={isViewMode ? 'Visualizar Grupo' : grupo ? 'Editar Grupo' : 'Adicionar Grupo'}
       size="lg"
     >
-      <form onSubmit={(e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const data = {
-          nome: formData.get('nome'),
-          codigo: formData.get('codigo'),
-          descricao: formData.get('descricao'),
-          status: formData.get('status')
-        };
-        onSubmit(data);
-      }} className="space-y-4">
+             <form onSubmit={(e) => {
+         e.preventDefault();
+         const formData = new FormData(e.target);
+         const data = {
+           nome: formData.get('nome'),
+           codigo: formData.get('codigo')?.toUpperCase(),
+           descricao: formData.get('descricao'),
+           status: formData.get('status')
+         };
+         onSubmit(data);
+       }} className="space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Input
             label="Nome do Grupo *"
@@ -35,15 +35,17 @@ const GrupoModal = ({
             required
             placeholder="Ex: Frios, Eletrônicos, Roupas"
           />
-          <Input
-            label="Código do Grupo *"
-            name="codigo"
-            defaultValue={grupo?.codigo}
-            disabled={isViewMode}
-            placeholder="Ex: FRIOS, ELET, ROUP"
-            maxLength={20}
-            required
-          />
+                     <Input
+             label="Código do Grupo *"
+             name="codigo"
+             defaultValue={grupo?.codigo}
+             disabled={isViewMode}
+             placeholder="Ex: FRIOS, ELET, ROUP"
+             maxLength={20}
+             required
+             pattern="[A-Za-z0-9]+"
+             title="Apenas letras e números são permitidos"
+           />
         </div>
 
         <div className="grid grid-cols-1 gap-4">

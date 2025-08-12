@@ -101,9 +101,9 @@ export const useGrupos = () => {
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
-        nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
-        codigo: data.codigo && data.codigo.trim() !== '' ? data.codigo.trim().toUpperCase() : null,
-        descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null,
+        nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : '',
+        codigo: data.codigo && data.codigo.trim() !== '' ? data.codigo.trim().toUpperCase() : '',
+        descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : '',
         status: data.status === '1' ? 'ativo' : 'inativo'
       };
 
