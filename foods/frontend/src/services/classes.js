@@ -183,7 +183,7 @@ class ClassesService {
    */
   static async buscarPorSubgrupo(subgrupoId, params = {}) {
     try {
-      const response = await api.get(`/subgrupos/${subgrupoId}/classes`, { params });
+      const response = await api.get(`/classes/subgrupo/${subgrupoId}`, { params });
       
       // Extrair dados da estrutura HATEOAS
       let classes = [];
