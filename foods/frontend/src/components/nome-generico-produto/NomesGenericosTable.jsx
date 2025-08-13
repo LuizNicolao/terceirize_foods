@@ -35,7 +35,13 @@ const NomesGenericosTable = ({
                 Nome Genérico
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Descrição
+                Grupo
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Subgrupo
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Classe
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -59,9 +65,19 @@ const NomesGenericosTable = ({
                     {nomeGenerico.nome || '-'}
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 max-w-xs truncate">
-                    {nomeGenerico.descricao || '-'}
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {nomeGenerico.grupo_nome || '-'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {nomeGenerico.subgrupo_nome || '-'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-900">
+                    {nomeGenerico.classe_nome || '-'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -73,11 +89,11 @@ const NomesGenericosTable = ({
                   {nomeGenerico.total_produtos || 0}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(nomeGenerico.criado_em)}
+                  {formatDate(nomeGenerico.created_at)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
-                    {canView('nome-generico-produto') && (
+                                         {canView('nome_generico_produto') && (
                       <Button
                         onClick={() => onView(nomeGenerico)}
                         variant="ghost"
@@ -88,7 +104,7 @@ const NomesGenericosTable = ({
                       </Button>
                     )}
                     
-                    {canEdit('nome-generico-produto') && (
+                                         {canEdit('nome_generico_produto') && (
                       <Button
                         onClick={() => onEdit(nomeGenerico)}
                         variant="ghost"
@@ -99,7 +115,7 @@ const NomesGenericosTable = ({
                       </Button>
                     )}
                     
-                    {canDelete('nome-generico-produto') && (
+                                         {canDelete('nome_generico_produto') && (
                       <Button
                         onClick={() => onDelete(nomeGenerico.id)}
                         variant="ghost"

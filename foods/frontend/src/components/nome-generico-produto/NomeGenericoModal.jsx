@@ -11,7 +11,9 @@ const NomeGenericoModal = ({
 }) => {
   const [formData, setFormData] = React.useState({
     nome: '',
-    descricao: '',
+    grupo_id: '',
+    subgrupo_id: '',
+    classe_id: '',
     status: 'ativo'
   });
 
@@ -22,13 +24,17 @@ const NomeGenericoModal = ({
     if (nomeGenerico) {
       setFormData({
         nome: nomeGenerico.nome || '',
-        descricao: nomeGenerico.descricao || '',
-        status: nomeGenerico.status || 'ativo'
+        grupo_id: nomeGenerico.grupo_id || '',
+        subgrupo_id: nomeGenerico.subgrupo_id || '',
+        classe_id: nomeGenerico.classe_id || '',
+        status: nomeGenerico.status === 1 ? 'ativo' : 'inativo'
       });
     } else {
       setFormData({
         nome: '',
-        descricao: '',
+        grupo_id: '',
+        subgrupo_id: '',
+        classe_id: '',
         status: 'ativo'
       });
     }
@@ -55,10 +61,6 @@ const NomeGenericoModal = ({
 
     if (!formData.nome || formData.nome.trim() === '') {
       newErrors.nome = 'Nome é obrigatório';
-    }
-
-    if (!formData.descricao || formData.descricao.trim() === '') {
-      newErrors.descricao = 'Descrição é obrigatória';
     }
 
     setErrors(newErrors);
@@ -117,24 +119,49 @@ const NomeGenericoModal = ({
             )}
           </div>
 
-          {/* Descrição */}
+          {/* Grupo */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Descrição *
+              Grupo
             </label>
-            <textarea
-              value={formData.descricao}
-              onChange={(e) => handleInputChange('descricao', e.target.value)}
+            <input
+              type="number"
+              value={formData.grupo_id}
+              onChange={(e) => handleInputChange('grupo_id', e.target.value)}
               disabled={isViewMode}
-              placeholder="Digite a descrição"
-              rows={3}
-              className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed ${
-                errors.descricao ? 'border-red-500' : 'border-gray-300'
-              }`}
+              placeholder="ID do grupo"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
             />
-            {errors.descricao && (
-              <p className="mt-1 text-sm text-red-600">{errors.descricao}</p>
-            )}
+          </div>
+
+          {/* Subgrupo */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Subgrupo
+            </label>
+            <input
+              type="number"
+              value={formData.subgrupo_id}
+              onChange={(e) => handleInputChange('subgrupo_id', e.target.value)}
+              disabled={isViewMode}
+              placeholder="ID do subgrupo"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            />
+          </div>
+
+          {/* Classe */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Classe
+            </label>
+            <input
+              type="number"
+              value={formData.classe_id}
+              onChange={(e) => handleInputChange('classe_id', e.target.value)}
+              disabled={isViewMode}
+              placeholder="ID da classe"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            />
           </div>
 
           {/* Status */}

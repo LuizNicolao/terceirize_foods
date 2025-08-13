@@ -53,8 +53,8 @@ export const useNomeGenericoProduto = () => {
         
         // Calcular estatísticas básicas
         const total = result.pagination?.totalItems || result.data.length;
-        const ativos = result.data.filter(n => n.status === 'ativo').length;
-        const inativos = result.data.filter(n => n.status === 'inativo').length;
+        const ativos = result.data.filter(n => n.status === 1 || n.status === 'ativo').length;
+        const inativos = result.data.filter(n => n.status === 0 || n.status === 'inativo').length;
         const comProdutos = result.data.filter(n => n.total_produtos > 0).length;
         
         setEstatisticas({
@@ -82,7 +82,9 @@ export const useNomeGenericoProduto = () => {
   const filteredNomesGenericos = (Array.isArray(nomesGenericos) ? nomesGenericos : []).filter(nomeGenerico => {
     const matchesSearch = !searchTerm || 
       (nomeGenerico.nome && nomeGenerico.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (nomeGenerico.descricao && nomeGenerico.descricao.toLowerCase().includes(searchTerm.toLowerCase()));
+      (nomeGenerico.grupo_nome && nomeGenerico.grupo_nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (nomeGenerico.subgrupo_nome && nomeGenerico.subgrupo_nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (nomeGenerico.classe_nome && nomeGenerico.classe_nome.toLowerCase().includes(searchTerm.toLowerCase()));
     
     return matchesSearch;
   });
@@ -94,7 +96,10 @@ export const useNomeGenericoProduto = () => {
       const cleanData = {
         ...data,
         nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
-        descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null
+        grupo_id: data.grupo_id ? parseInt(data.grupo_id) : null,
+        subgrupo_id: data.subgrupo_id ? parseInt(data.subgrupo_id) : null,
+        classe_id: data.classe_id ? parseInt(data.classe_id) : null,
+        status: data.status === 'ativo' ? 1 : 0
       };
 
       let result;
@@ -170,6 +175,8 @@ export const useNomeGenericoProduto = () => {
 
   const getStatusLabel = (status) => {
     const statusMap = {
+      1: 'Ativo',
+      0: 'Inativo',
       ativo: 'Ativo',
       inativo: 'Inativo'
     };
@@ -178,6 +185,8 @@ export const useNomeGenericoProduto = () => {
 
   const getStatusColor = (status) => {
     const colorMap = {
+      1: 'text-green-600',
+      0: 'text-red-600',
       ativo: 'text-green-600',
       inativo: 'text-red-600'
     };

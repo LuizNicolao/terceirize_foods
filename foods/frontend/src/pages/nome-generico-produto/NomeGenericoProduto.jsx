@@ -87,7 +87,7 @@ const NomeGenericoProduto = () => {
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
           </Button>
-          {canCreate('nome-generico-produto') && (
+          {canCreate('nome_generico_produto') && (
             <Button onClick={handleAddNomeGenerico} size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Adicionar</span>
@@ -105,7 +105,7 @@ const NomeGenericoProduto = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onClear={() => setSearchTerm('')}
-        placeholder="Buscar por nome ou descrição..."
+        placeholder="Buscar por nome, grupo, subgrupo ou classe..."
       />
 
       {/* Ações */}
