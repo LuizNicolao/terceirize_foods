@@ -137,8 +137,15 @@ class FornecedoresCRUDController {
     const updateFields = [];
     const updateParams = [];
 
+    // Lista de campos válidos da tabela fornecedores
+    const camposValidos = [
+      'cnpj', 'razao_social', 'nome_fantasia', 'logradouro', 'numero', 
+      'bairro', 'municipio', 'uf', 'cep', 'email', 'telefone', 'status'
+    ];
+
     Object.keys(updateData).forEach(key => {
-      if (updateData[key] !== undefined) {
+      // Verificar se o campo é válido para a tabela
+      if (camposValidos.includes(key) && updateData[key] !== undefined) {
         let value = updateData[key];
         
         // Tratar valores vazios ou undefined
