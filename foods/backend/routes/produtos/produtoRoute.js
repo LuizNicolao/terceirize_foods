@@ -9,7 +9,7 @@ const { produtoValidations, commonValidations } = require('./produtoValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const ProdutosController = require('../../controllers/produtosController');
+const ProdutosController = require('../../controllers/produtos');
 
 const router = express.Router();
 
@@ -57,23 +57,66 @@ router.delete('/:id',
   ProdutosController.excluirProduto
 );
 
-// PUT /api/produtos/:id/estoque - Atualizar estoque do produto
-router.put('/:id/estoque',
-  checkPermission('editar'),
-  produtoValidations.estoque,
-  ProdutosController.atualizarEstoque
-);
+
 
 // GET /api/produtos/grupo/:grupo_id - Buscar produtos por grupo
 router.get('/grupo/:grupo_id',
   checkPermission('visualizar'),
-  ProdutosController.buscarPorGrupo
+  ProdutosController.buscarProdutosPorGrupo
 );
 
 // GET /api/produtos/fornecedor/:fornecedor_id - Buscar produtos por fornecedor
 router.get('/fornecedor/:fornecedor_id',
   checkPermission('visualizar'),
-  ProdutosController.buscarPorFornecedor
+  ProdutosController.buscarProdutosPorFornecedor
+);
+
+// GET /api/produtos/ativos - Buscar produtos ativos
+router.get('/ativos',
+  checkPermission('visualizar'),
+  ProdutosController.buscarProdutosAtivos
+);
+
+// GET /api/produtos/estoque-baixo - Buscar produtos com estoque baixo
+router.get('/estoque-baixo',
+  checkPermission('visualizar'),
+  ProdutosController.buscarProdutosEstoqueBaixo
+);
+
+// GET /api/produtos/codigo/:codigo_barras - Buscar produto por código de barras
+router.get('/codigo/:codigo_barras',
+  checkPermission('visualizar'),
+  ProdutosController.buscarProdutosPorCodigoBarras
+);
+
+// GET /api/produtos/grupos - Listar grupos disponíveis
+router.get('/grupos',
+  checkPermission('visualizar'),
+  ProdutosController.listarGrupos
+);
+
+// GET /api/produtos/subgrupos - Listar subgrupos disponíveis
+router.get('/subgrupos',
+  checkPermission('visualizar'),
+  ProdutosController.listarSubgrupos
+);
+
+// GET /api/produtos/classes - Listar classes disponíveis
+router.get('/classes',
+  checkPermission('visualizar'),
+  ProdutosController.listarClasses
+);
+
+// GET /api/produtos/unidades - Listar unidades de medida disponíveis
+router.get('/unidades',
+  checkPermission('visualizar'),
+  ProdutosController.listarUnidades
+);
+
+// GET /api/produtos/estatisticas - Buscar estatísticas de produtos
+router.get('/estatisticas',
+  checkPermission('visualizar'),
+  ProdutosController.buscarEstatisticas
 );
 
 module.exports = router; 
