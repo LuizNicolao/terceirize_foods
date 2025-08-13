@@ -22,19 +22,19 @@ class ProdutosStatsController {
     );
 
     const produtosAtivos = await executeQuery(
-      'SELECT COUNT(*) as total FROM produtos WHERE status = "ativo"'
+      'SELECT COUNT(*) as total FROM produtos WHERE status = 1'
     );
 
     const produtosInativos = await executeQuery(
-      'SELECT COUNT(*) as total FROM produtos WHERE status = "inativo"'
+      'SELECT COUNT(*) as total FROM produtos WHERE status = 0'
     );
 
     const produtosEstoqueBaixo = await executeQuery(
-      'SELECT COUNT(*) as total FROM produtos WHERE estoque_atual <= estoque_minimo AND status = "ativo"'
+      'SELECT COUNT(*) as total FROM produtos WHERE estoque_atual <= estoque_minimo AND status = 1'
     );
 
     const produtosSemEstoque = await executeQuery(
-      'SELECT COUNT(*) as total FROM produtos WHERE estoque_atual = 0 AND status = "ativo"'
+      'SELECT COUNT(*) as total FROM produtos WHERE estoque_atual = 0 AND status = 1'
     );
 
     // Valor total do estoque
@@ -48,8 +48,8 @@ class ProdutosStatsController {
         g.nome as grupo,
         COUNT(p.id) as quantidade
       FROM grupos g
-      LEFT JOIN produtos p ON g.id = p.grupo_id AND p.status = 'ativo'
-      WHERE g.status = 'ativo'
+      LEFT JOIN produtos p ON g.id = p.grupo_id AND p.status = 1
+      WHERE g.status = 1
       GROUP BY g.id, g.nome
       ORDER BY quantidade DESC
     `);
@@ -60,7 +60,7 @@ class ProdutosStatsController {
         f.razao_social as fornecedor,
         COUNT(p.id) as quantidade
       FROM fornecedores f
-      LEFT JOIN produtos p ON f.id = p.fornecedor_id AND p.status = 'ativo'
+      LEFT JOIN produtos p ON f.id = p.fornecedor_id AND p.status = 1
       WHERE f.status = 1
       GROUP BY f.id, f.razao_social
       ORDER BY quantidade DESC
@@ -76,7 +76,7 @@ class ProdutosStatsController {
         g.nome as grupo
       FROM produtos p
       LEFT JOIN grupos g ON p.grupo_id = g.id
-      WHERE p.status = 'ativo'
+      WHERE p.status = 1
       ORDER BY p.estoque_atual DESC
       LIMIT 10
     `);
@@ -90,7 +90,7 @@ class ProdutosStatsController {
         g.nome as grupo
       FROM produtos p
       LEFT JOIN grupos g ON p.grupo_id = g.id
-      WHERE p.status = 'ativo' AND p.preco_venda IS NOT NULL
+      WHERE p.status = 1 AND p.preco_venda IS NOT NULL
       ORDER BY p.preco_venda DESC
       LIMIT 10
     `);

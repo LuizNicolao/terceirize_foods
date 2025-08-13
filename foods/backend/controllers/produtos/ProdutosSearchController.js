@@ -89,7 +89,7 @@ class ProdutosSearchController {
       LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
       LEFT JOIN marcas m ON p.marca_id = m.id
-      WHERE p.status = 'ativo'
+      WHERE p.status = 1
     `;
     
     let params = [];
@@ -206,7 +206,7 @@ class ProdutosSearchController {
       LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
       LEFT JOIN marcas m ON p.marca_id = m.id
-      WHERE p.grupo_id = ? AND p.status = 'ativo'
+      WHERE p.grupo_id = ? AND p.status = 1
     `;
     
     let params = [grupo_id];
@@ -323,7 +323,7 @@ class ProdutosSearchController {
       LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
       LEFT JOIN marcas m ON p.marca_id = m.id
-      WHERE p.fornecedor_id = ? AND p.status = 'ativo'
+      WHERE p.fornecedor_id = ? AND p.status = 1
     `;
     
     let params = [fornecedor_id];
@@ -519,7 +519,7 @@ class ProdutosSearchController {
       LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
       LEFT JOIN marcas m ON p.marca_id = m.id
-      WHERE p.estoque_atual <= p.estoque_minimo AND p.status = 'ativo'
+      WHERE p.estoque_atual <= p.estoque_minimo AND p.status = 1
     `;
     
     let params = [];
@@ -557,7 +557,7 @@ class ProdutosSearchController {
     const query = `
       SELECT id, nome, descricao, status, criado_em, atualizado_em
       FROM grupos 
-      WHERE status = 'ativo'
+      WHERE status = 1
       ORDER BY nome ASC
     `;
 
@@ -576,7 +576,7 @@ class ProdutosSearchController {
     const query = `
       SELECT id, nome, descricao, grupo_id, status, criado_em, atualizado_em
       FROM subgrupos 
-      WHERE status = 'ativo'
+      WHERE status = 1
       ORDER BY nome ASC
     `;
 
@@ -595,7 +595,7 @@ class ProdutosSearchController {
     const query = `
       SELECT id, nome, descricao, status, criado_em, atualizado_em
       FROM classes 
-      WHERE status = 'ativo'
+      WHERE status = 1
       ORDER BY nome ASC
     `;
 
@@ -612,9 +612,9 @@ class ProdutosSearchController {
    */
   static listarUnidades = asyncHandler(async (req, res) => {
     const query = `
-      SELECT id, nome, sigla, descricao, status, criado_em, atualizado_em
+      SELECT id, nome, sigla, status, criado_em, atualizado_em
       FROM unidades_medida 
-      WHERE status = 'ativo'
+      WHERE status = 1
       ORDER BY nome ASC
     `;
 
