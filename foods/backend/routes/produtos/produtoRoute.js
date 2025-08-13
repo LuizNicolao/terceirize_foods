@@ -26,12 +26,7 @@ router.get('/',
   ProdutosController.listarProdutos
 );
 
-// GET /api/produtos/:id - Buscar produto por ID
-router.get('/:id', 
-  checkPermission('visualizar'),
-  commonValidations.id,
-  ProdutosController.buscarProdutoPorId
-);
+
 
 // POST /api/produtos - Criar novo produto
 router.post('/', 
@@ -107,12 +102,6 @@ router.get('/classes',
   ProdutosController.listarClasses
 );
 
-// GET /api/produtos/unidades - Listar unidades de medida disponíveis
-router.get('/unidades',
-  checkPermission('visualizar'),
-  ProdutosController.listarUnidades
-);
-
 // GET /api/produtos/marcas - Listar marcas disponíveis
 router.get('/marcas',
   checkPermission('visualizar'),
@@ -123,6 +112,19 @@ router.get('/marcas',
 router.get('/estatisticas',
   checkPermission('visualizar'),
   ProdutosController.buscarEstatisticas
+);
+
+// GET /api/produtos/unidades - Listar unidades de medida disponíveis (deve vir antes de :id)
+router.get('/unidades',
+  checkPermission('visualizar'),
+  ProdutosController.listarUnidades
+);
+
+// GET /api/produtos/:id - Buscar produto por ID (deve vir por último)
+router.get('/:id', 
+  checkPermission('visualizar'),
+  commonValidations.id,
+  ProdutosController.buscarProdutoPorId
 );
 
 module.exports = router; 

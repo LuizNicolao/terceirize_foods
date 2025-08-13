@@ -620,10 +620,8 @@ class ProdutosSearchController {
 
     const unidades = await executeQuery(query);
 
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, unidades, 'Unidades de medida listadas com sucesso', STATUS_CODES.OK, {
-      _links: res.addListLinks(unidades)._links
-    });
+    // Retornar resposta simples sem HATEOAS para debug
+    return successResponse(res, unidades, 'Unidades de medida listadas com sucesso', STATUS_CODES.OK);
   });
 
   /**
