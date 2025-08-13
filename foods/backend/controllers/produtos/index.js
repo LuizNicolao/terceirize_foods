@@ -28,6 +28,7 @@ module.exports = {
   listarSubgrupos: ProdutosSearchController.listarSubgrupos,
   listarClasses: ProdutosSearchController.listarClasses,
   listarUnidades: ProdutosSearchController.listarUnidades,
+  listarMarcas: ProdutosSearchController.listarMarcas,
   
   // Métodos de Estatísticas
   buscarEstatisticas: ProdutosStatsController.buscarEstatisticas

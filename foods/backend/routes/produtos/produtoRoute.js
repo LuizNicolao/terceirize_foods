@@ -113,6 +113,12 @@ router.get('/unidades',
   ProdutosController.listarUnidades
 );
 
+// GET /api/produtos/marcas - Listar marcas disponíveis
+router.get('/marcas',
+  checkPermission('visualizar'),
+  ProdutosController.listarMarcas
+);
+
 // GET /api/produtos/estatisticas - Buscar estatísticas de produtos
 router.get('/estatisticas',
   checkPermission('visualizar'),

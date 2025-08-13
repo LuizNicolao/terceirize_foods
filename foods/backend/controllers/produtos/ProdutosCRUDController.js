@@ -20,8 +20,14 @@ class ProdutosCRUDController {
    */
   static criarProduto = asyncHandler(async (req, res) => {
     const {
-      nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, 
-      estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, classe_id, unidade_id, status
+      codigo_produto, nome, descricao, codigo_barras, referencia, referencia_externa, 
+      referencia_mercado, unidade_id, quantidade, grupo_id, subgrupo_id, classe_id, 
+      marca_id, agrupamento_n3, agrupamento_n4, peso_liquido, peso_bruto, marca, 
+      fabricante, informacoes_adicionais, foto_produto, prazo_validade, unidade_validade, 
+      regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura, 
+      altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn, 
+      aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, preco_custo, 
+      preco_venda, estoque_atual, estoque_minimo, fornecedor_id, status, fator_conversao
     } = req.body;
 
     // Verificar se código de barras já existe
@@ -96,26 +102,81 @@ class ProdutosCRUDController {
       }
     }
 
+    // Verificar se marca existe (se fornecida)
+    if (marca_id) {
+      const marca = await executeQuery(
+        'SELECT id FROM marcas WHERE id = ?',
+        [marca_id]
+      );
+
+      if (marca.length === 0) {
+        return errorResponse(res, 'Marca não encontrada', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
     // Inserir produto
     const result = await executeQuery(
-      `INSERT INTO produtos (nome, descricao, codigo_barras, fator_conversao, preco_custo, preco_venda, 
-                            estoque_atual, estoque_minimo, fornecedor_id, grupo_id, subgrupo_id, classe_id, unidade_id, status, criado_em)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      `INSERT INTO produtos (
+        codigo_produto, nome, descricao, codigo_barras, referencia, referencia_externa, 
+        referencia_mercado, unidade_id, quantidade, grupo_id, subgrupo_id, classe_id, 
+        marca_id, agrupamento_n3, agrupamento_n4, peso_liquido, peso_bruto, marca, 
+        fabricante, informacoes_adicionais, foto_produto, prazo_validade, unidade_validade, 
+        regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura, 
+        altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn, 
+        aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, preco_custo, 
+        preco_venda, estoque_atual, estoque_minimo, fornecedor_id, status, fator_conversao, 
+        usuario_criador_id, criado_em
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
+        codigo_produto && codigo_produto.trim() ? codigo_produto.trim() : null,
         nome, 
         descricao && descricao.trim() ? descricao.trim() : null,
         codigo_barras && codigo_barras.trim() ? codigo_barras.trim() : null,
-        fator_conversao || 1.000,
+        referencia && referencia.trim() ? referencia.trim() : null,
+        referencia_externa && referencia_externa.trim() ? referencia_externa.trim() : null,
+        referencia_mercado && referencia_mercado.trim() ? referencia_mercado.trim() : null,
+        unidade_id || null,
+        quantidade || 1.000,
+        grupo_id || null,
+        subgrupo_id || null,
+        classe_id || null,
+        marca_id || null,
+        agrupamento_n3 && agrupamento_n3.trim() ? agrupamento_n3.trim() : null,
+        agrupamento_n4 && agrupamento_n4.trim() ? agrupamento_n4.trim() : null,
+        peso_liquido || null,
+        peso_bruto || null,
+        marca && marca.trim() ? marca.trim() : null,
+        fabricante && fabricante.trim() ? fabricante.trim() : null,
+        informacoes_adicionais && informacoes_adicionais.trim() ? informacoes_adicionais.trim() : null,
+        foto_produto && foto_produto.trim() ? foto_produto.trim() : null,
+        prazo_validade || null,
+        unidade_validade || null,
+        regra_palet_un || null,
+        ficha_homologacao && ficha_homologacao.trim() ? ficha_homologacao.trim() : null,
+        registro_especifico && registro_especifico.trim() ? registro_especifico.trim() : null,
+        comprimento || null,
+        largura || null,
+        altura || null,
+        volume || null,
+        integracao_senior && integracao_senior.trim() ? integracao_senior.trim() : null,
+        ncm && ncm.trim() ? ncm.trim() : null,
+        cest && cest.trim() ? cest.trim() : null,
+        cfop && cfop.trim() ? cfop.trim() : null,
+        ean && ean.trim() ? ean.trim() : null,
+        cst_icms && cst_icms.trim() ? cst_icms.trim() : null,
+        csosn && csosn.trim() ? csosn.trim() : null,
+        aliquota_icms || null,
+        aliquota_ipi || null,
+        aliquota_pis || null,
+        aliquota_cofins || null,
         preco_custo || null,
         preco_venda || null,
         estoque_atual || 0,
         estoque_minimo || 0,
         fornecedor_id || null,
-        grupo_id || null,
-        subgrupo_id || null,
-        classe_id || null,
-        unidade_id || null,
-        status || 1
+        status || 1,
+        fator_conversao || 1.000,
+        req.user ? req.user.id : null
       ]
     );
 
@@ -125,33 +186,71 @@ class ProdutosCRUDController {
     const produtos = await executeQuery(
       `SELECT 
         p.id,
+        p.codigo_produto,
         p.nome,
         p.descricao,
         p.codigo_barras,
-        p.fator_conversao,
+        p.referencia,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.quantidade,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.marca_id,
+        p.agrupamento_n3,
+        p.agrupamento_n4,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.marca,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
         p.preco_custo,
         p.preco_venda,
         p.estoque_atual,
         p.estoque_minimo,
+        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
-        f.id as fornecedor_id,
+        p.usuario_criador_id,
+        p.usuario_atualizador_id,
+        p.fator_conversao,
         f.razao_social as fornecedor_nome,
-        g.id as grupo_id,
         g.nome as grupo_nome,
-        sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
-        c.id as classe_id,
         c.nome as classe_nome,
-        u.id as unidade_id,
-        u.nome as unidade_nome
+        u.nome as unidade_nome,
+        m.nome as marca_nome
        FROM produtos p
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
        LEFT JOIN classes c ON p.classe_id = c.id
        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+       LEFT JOIN marcas m ON p.marca_id = m.id
        WHERE p.id = ?`,
       [novoProdutoId]
     );
@@ -259,13 +358,32 @@ class ProdutosCRUDController {
       }
     }
 
+    // Verificar se marca existe (se fornecida)
+    if (updateData.marca_id) {
+      const marca = await executeQuery(
+        'SELECT id FROM marcas WHERE id = ?',
+        [updateData.marca_id]
+      );
+
+      if (marca.length === 0) {
+        return errorResponse(res, 'Marca não encontrada', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
     // Construir query de atualização dinamicamente
     const updateFields = [];
     const updateParams = [];
     const camposValidos = [
-      'nome', 'descricao', 'codigo_barras', 'fator_conversao', 'preco_custo', 
-      'preco_venda', 'estoque_atual', 'estoque_minimo', 'fornecedor_id', 
-      'grupo_id', 'subgrupo_id', 'classe_id', 'unidade_id', 'status'
+      'codigo_produto', 'nome', 'descricao', 'codigo_barras', 'referencia', 
+      'referencia_externa', 'referencia_mercado', 'unidade_id', 'quantidade', 
+      'grupo_id', 'subgrupo_id', 'classe_id', 'marca_id', 'agrupamento_n3', 
+      'agrupamento_n4', 'peso_liquido', 'peso_bruto', 'marca', 'fabricante', 
+      'informacoes_adicionais', 'foto_produto', 'prazo_validade', 'unidade_validade', 
+      'regra_palet_un', 'ficha_homologacao', 'registro_especifico', 'comprimento', 
+      'largura', 'altura', 'volume', 'integracao_senior', 'ncm', 'cest', 'cfop', 
+      'ean', 'cst_icms', 'csosn', 'aliquota_icms', 'aliquota_ipi', 'aliquota_pis', 
+      'aliquota_cofins', 'preco_custo', 'preco_venda', 'estoque_atual', 
+      'estoque_minimo', 'fornecedor_id', 'status', 'fator_conversao'
     ];
 
     Object.keys(updateData).forEach(key => {
@@ -304,33 +422,71 @@ class ProdutosCRUDController {
     const produtos = await executeQuery(
       `SELECT 
         p.id,
+        p.codigo_produto,
         p.nome,
         p.descricao,
         p.codigo_barras,
-        p.fator_conversao,
+        p.referencia,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.quantidade,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.marca_id,
+        p.agrupamento_n3,
+        p.agrupamento_n4,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.marca,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
         p.preco_custo,
         p.preco_venda,
         p.estoque_atual,
         p.estoque_minimo,
+        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
-        f.id as fornecedor_id,
+        p.usuario_criador_id,
+        p.usuario_atualizador_id,
+        p.fator_conversao,
         f.razao_social as fornecedor_nome,
-        g.id as grupo_id,
         g.nome as grupo_nome,
-        sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
-        c.id as classe_id,
         c.nome as classe_nome,
-        u.id as unidade_id,
-        u.nome as unidade_nome
+        u.nome as unidade_nome,
+        m.nome as marca_nome
        FROM produtos p
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
        LEFT JOIN classes c ON p.classe_id = c.id
        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+       LEFT JOIN marcas m ON p.marca_id = m.id
        WHERE p.id = ?`,
       [id]
     );
@@ -377,7 +533,7 @@ class ProdutosCRUDController {
 
     // Excluir produto (soft delete - alterar status para inativo)
     await executeQuery(
-      'UPDATE produtos SET status = 0, atualizado_em = NOW() WHERE id = ?',
+      'UPDATE produtos SET status = "inativo", atualizado_em = NOW() WHERE id = ?',
       [id]
     );
 

@@ -24,34 +24,72 @@ class ProdutosSearchController {
     let baseQuery = `
       SELECT 
         p.id,
+        p.codigo_produto,
         p.nome,
         p.descricao,
         p.codigo_barras,
-        p.fator_conversao,
+        p.referencia,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.quantidade,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.marca_id,
+        p.agrupamento_n3,
+        p.agrupamento_n4,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.marca,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
         p.preco_custo,
         p.preco_venda,
         p.estoque_atual,
         p.estoque_minimo,
+        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
-        f.id as fornecedor_id,
+        p.usuario_criador_id,
+        p.usuario_atualizador_id,
+        p.fator_conversao,
         f.razao_social as fornecedor_nome,
-        g.id as grupo_id,
         g.nome as grupo_nome,
-        sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
-        c.id as classe_id,
         c.nome as classe_nome,
-        u.id as unidade_id,
-        u.nome as unidade_nome
+        u.nome as unidade_nome,
+        m.nome as marca_nome
       FROM produtos p
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      WHERE p.status = 1
+      LEFT JOIN marcas m ON p.marca_id = m.id
+      WHERE p.status = 'ativo'
     `;
     
     let params = [];
@@ -64,7 +102,7 @@ class ProdutosSearchController {
     const produtos = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE status = 1`;
+    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE status = 'ativo'`;
     const totalResult = await executeQuery(countQuery, []);
     const totalItems = totalResult[0].total;
 
@@ -103,31 +141,72 @@ class ProdutosSearchController {
     let baseQuery = `
       SELECT 
         p.id,
+        p.codigo_produto,
         p.nome,
         p.descricao,
         p.codigo_barras,
-        p.fator_conversao,
+        p.referencia,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.quantidade,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.marca_id,
+        p.agrupamento_n3,
+        p.agrupamento_n4,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.marca,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
         p.preco_custo,
         p.preco_venda,
         p.estoque_atual,
         p.estoque_minimo,
+        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
-        f.id as fornecedor_id,
+        p.usuario_criador_id,
+        p.usuario_atualizador_id,
+        p.fator_conversao,
         f.razao_social as fornecedor_nome,
-        g.id as grupo_id,
         g.nome as grupo_nome,
-        sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
-        u.id as unidade_id,
-        u.nome as unidade_nome
+        c.nome as classe_nome,
+        u.nome as unidade_nome,
+        m.nome as marca_nome
       FROM produtos p
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+      LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      WHERE p.grupo_id = ? AND p.status = 1
+      LEFT JOIN marcas m ON p.marca_id = m.id
+      WHERE p.grupo_id = ? AND p.status = 'ativo'
     `;
     
     let params = [grupo_id];
@@ -140,7 +219,7 @@ class ProdutosSearchController {
     const produtos = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE grupo_id = ? AND status = 1`;
+    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE grupo_id = ? AND status = 'ativo'`;
     const totalResult = await executeQuery(countQuery, [grupo_id]);
     const totalItems = totalResult[0].total;
 
@@ -179,31 +258,72 @@ class ProdutosSearchController {
     let baseQuery = `
       SELECT 
         p.id,
+        p.codigo_produto,
         p.nome,
         p.descricao,
         p.codigo_barras,
-        p.fator_conversao,
+        p.referencia,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.quantidade,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.marca_id,
+        p.agrupamento_n3,
+        p.agrupamento_n4,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.marca,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
         p.preco_custo,
         p.preco_venda,
         p.estoque_atual,
         p.estoque_minimo,
+        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
-        f.id as fornecedor_id,
+        p.usuario_criador_id,
+        p.usuario_atualizador_id,
+        p.fator_conversao,
         f.razao_social as fornecedor_nome,
-        g.id as grupo_id,
         g.nome as grupo_nome,
-        sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
-        u.id as unidade_id,
-        u.nome as unidade_nome
+        c.nome as classe_nome,
+        u.nome as unidade_nome,
+        m.nome as marca_nome
       FROM produtos p
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+      LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      WHERE p.fornecedor_id = ? AND p.status = 1
+      LEFT JOIN marcas m ON p.marca_id = m.id
+      WHERE p.fornecedor_id = ? AND p.status = 'ativo'
     `;
     
     let params = [fornecedor_id];
@@ -216,7 +336,7 @@ class ProdutosSearchController {
     const produtos = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE fornecedor_id = ? AND status = 1`;
+    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE fornecedor_id = ? AND status = 'ativo'`;
     const totalResult = await executeQuery(countQuery, [fornecedor_id]);
     const totalItems = totalResult[0].total;
 
@@ -243,33 +363,71 @@ class ProdutosSearchController {
     const produtos = await executeQuery(
       `SELECT 
         p.id,
+        p.codigo_produto,
         p.nome,
         p.descricao,
         p.codigo_barras,
-        p.fator_conversao,
+        p.referencia,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.quantidade,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.marca_id,
+        p.agrupamento_n3,
+        p.agrupamento_n4,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.marca,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
         p.preco_custo,
         p.preco_venda,
         p.estoque_atual,
         p.estoque_minimo,
+        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
-        f.id as fornecedor_id,
+        p.usuario_criador_id,
+        p.usuario_atualizador_id,
+        p.fator_conversao,
         f.razao_social as fornecedor_nome,
-        g.id as grupo_id,
         g.nome as grupo_nome,
-        sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
-        c.id as classe_id,
         c.nome as classe_nome,
-        u.id as unidade_id,
-        u.nome as unidade_nome
+        u.nome as unidade_nome,
+        m.nome as marca_nome
        FROM produtos p
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
        LEFT JOIN classes c ON p.classe_id = c.id
        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+       LEFT JOIN marcas m ON p.marca_id = m.id
        WHERE p.codigo_barras = ?`,
       [codigo_barras]
     );
@@ -296,34 +454,72 @@ class ProdutosSearchController {
     let baseQuery = `
       SELECT 
         p.id,
+        p.codigo_produto,
         p.nome,
         p.descricao,
         p.codigo_barras,
-        p.fator_conversao,
+        p.referencia,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.quantidade,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.marca_id,
+        p.agrupamento_n3,
+        p.agrupamento_n4,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.marca,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
         p.preco_custo,
         p.preco_venda,
         p.estoque_atual,
         p.estoque_minimo,
+        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
-        f.id as fornecedor_id,
+        p.usuario_criador_id,
+        p.usuario_atualizador_id,
+        p.fator_conversao,
         f.razao_social as fornecedor_nome,
-        g.id as grupo_id,
         g.nome as grupo_nome,
-        sg.id as subgrupo_id,
         sg.nome as subgrupo_nome,
-        c.id as classe_id,
         c.nome as classe_nome,
-        u.id as unidade_id,
-        u.nome as unidade_nome
+        u.nome as unidade_nome,
+        m.nome as marca_nome
       FROM produtos p
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      WHERE p.estoque_atual <= p.estoque_minimo AND p.status = 1
+      LEFT JOIN marcas m ON p.marca_id = m.id
+      WHERE p.estoque_atual <= p.estoque_minimo AND p.status = 'ativo'
     `;
     
     let params = [];
@@ -336,7 +532,7 @@ class ProdutosSearchController {
     const produtos = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE estoque_atual <= estoque_minimo AND status = 1`;
+    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE estoque_atual <= estoque_minimo AND status = 'ativo'`;
     const totalResult = await executeQuery(countQuery, []);
     const totalItems = totalResult[0].total;
 
@@ -359,9 +555,9 @@ class ProdutosSearchController {
    */
   static listarGrupos = asyncHandler(async (req, res) => {
     const query = `
-      SELECT id, nome, status, criado_em, atualizado_em
+      SELECT id, nome, descricao, status, criado_em, atualizado_em
       FROM grupos 
-      WHERE status = 1
+      WHERE status = 'ativo'
       ORDER BY nome ASC
     `;
 
@@ -378,9 +574,9 @@ class ProdutosSearchController {
    */
   static listarSubgrupos = asyncHandler(async (req, res) => {
     const query = `
-      SELECT id, nome, grupo_id, status, criado_em, atualizado_em
+      SELECT id, nome, descricao, grupo_id, status, criado_em, atualizado_em
       FROM subgrupos 
-      WHERE status = 1
+      WHERE status = 'ativo'
       ORDER BY nome ASC
     `;
 
@@ -397,9 +593,9 @@ class ProdutosSearchController {
    */
   static listarClasses = asyncHandler(async (req, res) => {
     const query = `
-      SELECT id, nome, status, criado_em, atualizado_em
+      SELECT id, nome, descricao, status, criado_em, atualizado_em
       FROM classes 
-      WHERE status = 1
+      WHERE status = 'ativo'
       ORDER BY nome ASC
     `;
 
@@ -416,9 +612,9 @@ class ProdutosSearchController {
    */
   static listarUnidades = asyncHandler(async (req, res) => {
     const query = `
-      SELECT id, nome, sigla, status, criado_em, atualizado_em
+      SELECT id, nome, sigla, descricao, status, criado_em, atualizado_em
       FROM unidades_medida 
-      WHERE status = 1
+      WHERE status = 'ativo'
       ORDER BY nome ASC
     `;
 
@@ -427,6 +623,25 @@ class ProdutosSearchController {
     // Retornar resposta no formato esperado pelo frontend
     return successResponse(res, unidades, 'Unidades de medida listadas com sucesso', STATUS_CODES.OK, {
       _links: res.addListLinks(unidades)._links
+    });
+  });
+
+  /**
+   * Listar marcas disponíveis
+   */
+  static listarMarcas = asyncHandler(async (req, res) => {
+    const query = `
+      SELECT id, nome, descricao, status, criado_em, atualizado_em
+      FROM marcas 
+      WHERE status = 'ativo'
+      ORDER BY nome ASC
+    `;
+
+    const marcas = await executeQuery(query);
+
+    // Retornar resposta no formato esperado pelo frontend
+    return successResponse(res, marcas, 'Marcas listadas com sucesso', STATUS_CODES.OK, {
+      _links: res.addListLinks(marcas)._links
     });
   });
 }
