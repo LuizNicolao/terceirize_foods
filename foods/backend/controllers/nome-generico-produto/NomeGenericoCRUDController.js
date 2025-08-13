@@ -74,7 +74,7 @@ class NomeGenericoCRUDController {
 
     // Inserir nome genérico
     const result = await executeQuery(
-      'INSERT INTO nome_generico_produto (nome, grupo_id, subgrupo_id, classe_id, status, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
+      'INSERT INTO nome_generico_produto (nome, grupo_id, subgrupo_id, classe_id, status) VALUES (?, ?, ?, ?, ?)',
       [
         nome && nome.trim() ? nome.trim() : null,
         grupo_id || null,
@@ -95,8 +95,8 @@ class NomeGenericoCRUDController {
         ngp.subgrupo_id,
         ngp.classe_id,
         ngp.status, 
-        ngp.data_cadastro as criado_em,
-        ngp.data_atualizacao as atualizado_em,
+        ngp.created_at as criado_em,
+        ngp.updated_at as atualizado_em,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
@@ -107,7 +107,7 @@ class NomeGenericoCRUDController {
        LEFT JOIN classes c ON ngp.classe_id = c.id
        LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
        WHERE ngp.id = ?
-       GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.data_cadastro, ngp.data_atualizacao, g.nome, sg.nome, c.nome`,
+       GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome`,
       [novoNomeGenericoId]
     );
 
@@ -224,7 +224,7 @@ class NomeGenericoCRUDController {
       return errorResponse(res, 'Nenhum campo para atualizar', STATUS_CODES.BAD_REQUEST);
     }
 
-    updateFields.push('data_atualizacao = NOW()');
+    updateFields.push('updated_at = NOW()');
     updateParams.push(id);
 
     // Executar atualização
@@ -242,8 +242,8 @@ class NomeGenericoCRUDController {
         ngp.subgrupo_id,
         ngp.classe_id,
         ngp.status, 
-        ngp.data_cadastro as criado_em,
-        ngp.data_atualizacao as atualizado_em,
+        ngp.created_at as criado_em,
+        ngp.updated_at as atualizado_em,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
@@ -254,7 +254,7 @@ class NomeGenericoCRUDController {
        LEFT JOIN classes c ON ngp.classe_id = c.id
        LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
        WHERE ngp.id = ?
-       GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.data_cadastro, ngp.data_atualizacao, g.nome, sg.nome, c.nome`,
+       GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome`,
       [id]
     );
 
@@ -304,7 +304,7 @@ class NomeGenericoCRUDController {
 
     // Soft delete - marcar como inativo
     await executeQuery(
-      'UPDATE nome_generico_produto SET status = 0, data_atualizacao = NOW() WHERE id = ?',
+      'UPDATE nome_generico_produto SET status = 0, updated_at = NOW() WHERE id = ?',
       [id]
     );
 

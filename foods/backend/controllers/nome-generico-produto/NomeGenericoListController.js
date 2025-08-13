@@ -20,28 +20,28 @@ class NomeGenericoListController {
     const { search = '', status, grupo_id, subgrupo_id, classe_id } = req.query;
     const pagination = req.pagination;
 
-    // Query base com informações do grupo, subgrupo e classe
-    let baseQuery = `
-      SELECT 
-        ngp.id, 
-        ngp.nome, 
-        ngp.grupo_id,
-        ngp.subgrupo_id,
-        ngp.classe_id,
-        ngp.status, 
-        ngp.data_cadastro as criado_em,
-        ngp.data_atualizacao as atualizado_em,
-        g.nome as grupo_nome,
-        sg.nome as subgrupo_nome,
-        c.nome as classe_nome,
-        COUNT(p.id) as total_produtos
-      FROM nome_generico_produto ngp
-      LEFT JOIN grupos g ON ngp.grupo_id = g.id
-      LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
-      LEFT JOIN classes c ON ngp.classe_id = c.id
-      LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
-      WHERE 1=1
-    `;
+          // Query base com informações do grupo, subgrupo e classe
+      let baseQuery = `
+        SELECT 
+          ngp.id, 
+          ngp.nome, 
+          ngp.grupo_id,
+          ngp.subgrupo_id,
+          ngp.classe_id,
+          ngp.status, 
+          ngp.created_at as criado_em,
+          ngp.updated_at as atualizado_em,
+          g.nome as grupo_nome,
+          sg.nome as subgrupo_nome,
+          c.nome as classe_nome,
+          COUNT(p.id) as total_produtos
+        FROM nome_generico_produto ngp
+        LEFT JOIN grupos g ON ngp.grupo_id = g.id
+        LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
+        LEFT JOIN classes c ON ngp.classe_id = c.id
+        LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
+        WHERE 1=1
+      `;
     
     let params = [];
 
@@ -71,7 +71,7 @@ class NomeGenericoListController {
       params.push(classe_id);
     }
 
-    baseQuery += ' GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.data_cadastro, ngp.data_atualizacao, g.nome, sg.nome, c.nome ORDER BY ngp.nome ASC';
+    baseQuery += ' GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome ORDER BY ngp.nome ASC';
 
     // Aplicar paginação manualmente
     const limit = pagination.limit;
@@ -124,29 +124,29 @@ class NomeGenericoListController {
   static buscarNomeGenericoPorId = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const nomesGenericos = await executeQuery(
-      `SELECT 
-        ngp.id, 
-        ngp.nome, 
-        ngp.grupo_id,
-        ngp.subgrupo_id,
-        ngp.classe_id,
-        ngp.status, 
-        ngp.data_cadastro as criado_em,
-        ngp.data_atualizacao as atualizado_em,
-        g.nome as grupo_nome,
-        sg.nome as subgrupo_nome,
-        c.nome as classe_nome,
-        COUNT(p.id) as total_produtos
-       FROM nome_generico_produto ngp
-       LEFT JOIN grupos g ON ngp.grupo_id = g.id
-       LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
-       LEFT JOIN classes c ON ngp.classe_id = c.id
-       LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
-       WHERE ngp.id = ?
-       GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.data_cadastro, ngp.data_atualizacao, g.nome, sg.nome, c.nome`,
-      [id]
-    );
+          const nomesGenericos = await executeQuery(
+        `SELECT 
+          ngp.id, 
+          ngp.nome, 
+          ngp.grupo_id,
+          ngp.subgrupo_id,
+          ngp.classe_id,
+          ngp.status, 
+          ngp.created_at as criado_em,
+          ngp.updated_at as atualizado_em,
+          g.nome as grupo_nome,
+          sg.nome as subgrupo_nome,
+          c.nome as classe_nome,
+          COUNT(p.id) as total_produtos
+         FROM nome_generico_produto ngp
+         LEFT JOIN grupos g ON ngp.grupo_id = g.id
+         LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
+         LEFT JOIN classes c ON ngp.classe_id = c.id
+         LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
+         WHERE ngp.id = ?
+         GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome`,
+        [id]
+      );
 
     if (nomesGenericos.length === 0) {
       return notFoundResponse(res, 'Nome genérico não encontrado');

@@ -28,8 +28,8 @@ class NomeGenericoSearchController {
         ngp.subgrupo_id,
         ngp.classe_id,
         ngp.status, 
-        ngp.data_cadastro as criado_em,
-        ngp.data_atualizacao as atualizado_em,
+        ngp.created_at as criado_em,
+        ngp.updated_at as atualizado_em,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
@@ -39,8 +39,8 @@ class NomeGenericoSearchController {
       LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
       LEFT JOIN classes c ON ngp.classe_id = c.id
       LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
-      WHERE ngp.status = 1
-      GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.data_cadastro, ngp.data_atualizacao, g.nome, sg.nome, c.nome
+              WHERE ngp.status = 1
+        GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome
     `;
     
     let params = [];
@@ -99,8 +99,8 @@ class NomeGenericoSearchController {
         ngp.subgrupo_id,
         ngp.classe_id,
         ngp.status, 
-        ngp.data_cadastro as criado_em,
-        ngp.data_atualizacao as atualizado_em,
+        ngp.created_at as criado_em,
+        ngp.updated_at as atualizado_em,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
@@ -111,7 +111,7 @@ class NomeGenericoSearchController {
       LEFT JOIN classes c ON ngp.classe_id = c.id
       LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
       WHERE ngp.grupo_id = ? AND ngp.status = 1
-      GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.data_cadastro, ngp.data_atualizacao, g.nome, sg.nome, c.nome
+      GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome
     `;
     
     let params = [grupo_id];
@@ -170,8 +170,8 @@ class NomeGenericoSearchController {
         ngp.subgrupo_id,
         ngp.classe_id,
         ngp.status, 
-        ngp.data_cadastro as criado_em,
-        ngp.data_atualizacao as atualizado_em,
+        ngp.created_at as criado_em,
+        ngp.updated_at as atualizado_em,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
@@ -182,7 +182,7 @@ class NomeGenericoSearchController {
       LEFT JOIN classes c ON ngp.classe_id = c.id
       LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
       WHERE ngp.subgrupo_id = ? AND ngp.status = 1
-      GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.data_cadastro, ngp.data_atualizacao, g.nome, sg.nome, c.nome
+      GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome
     `;
     
     let params = [subgrupo_id];
@@ -241,8 +241,8 @@ class NomeGenericoSearchController {
         ngp.subgrupo_id,
         ngp.classe_id,
         ngp.status, 
-        ngp.data_cadastro as criado_em,
-        ngp.data_atualizacao as atualizado_em,
+        ngp.created_at as criado_em,
+        ngp.updated_at as atualizado_em,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
@@ -253,7 +253,7 @@ class NomeGenericoSearchController {
       LEFT JOIN classes c ON ngp.classe_id = c.id
       LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
       WHERE ngp.classe_id = ? AND ngp.status = 1
-      GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.data_cadastro, ngp.data_atualizacao, g.nome, sg.nome, c.nome
+      GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome
     `;
     
     let params = [classe_id];

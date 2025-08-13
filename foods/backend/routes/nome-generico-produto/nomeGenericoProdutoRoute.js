@@ -16,6 +16,7 @@ const router = express.Router();
 // Aplicar middlewares globais
 router.use(authenticateToken);
 router.use(paginationMiddleware);
+router.use(hateoasMiddleware('nome-generico-produto'));
 
 // GET /api/nome-generico-produto - Listar nomes genéricos com paginação e busca
 router.get('/', 
