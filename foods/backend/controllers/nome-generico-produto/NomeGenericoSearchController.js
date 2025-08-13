@@ -19,7 +19,7 @@ class NomeGenericoSearchController {
   static buscarNomesGenericosAtivos = asyncHandler(async (req, res) => {
     const pagination = req.pagination;
 
-    // Query base
+        // Query base
     let baseQuery = `
       SELECT 
         ngp.id, 
@@ -33,14 +33,12 @@ class NomeGenericoSearchController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        COUNT(p.id) as total_produtos
+        0 as total_produtos
       FROM nome_generico_produto ngp
       LEFT JOIN grupos g ON ngp.grupo_id = g.id
       LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
       LEFT JOIN classes c ON ngp.classe_id = c.id
-      LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
-              WHERE ngp.status = 1
-        GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome
+      WHERE ngp.status = 1
     `;
     
     let params = [];
@@ -104,14 +102,12 @@ class NomeGenericoSearchController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        COUNT(p.id) as total_produtos
+        0 as total_produtos
       FROM nome_generico_produto ngp
       LEFT JOIN grupos g ON ngp.grupo_id = g.id
       LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
       LEFT JOIN classes c ON ngp.classe_id = c.id
-      LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
       WHERE ngp.grupo_id = ? AND ngp.status = 1
-      GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome
     `;
     
     let params = [grupo_id];
@@ -175,14 +171,12 @@ class NomeGenericoSearchController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        COUNT(p.id) as total_produtos
+        0 as total_produtos
       FROM nome_generico_produto ngp
       LEFT JOIN grupos g ON ngp.grupo_id = g.id
       LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
       LEFT JOIN classes c ON ngp.classe_id = c.id
-      LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
       WHERE ngp.subgrupo_id = ? AND ngp.status = 1
-      GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome
     `;
     
     let params = [subgrupo_id];
@@ -246,14 +240,12 @@ class NomeGenericoSearchController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        COUNT(p.id) as total_produtos
+        0 as total_produtos
       FROM nome_generico_produto ngp
       LEFT JOIN grupos g ON ngp.grupo_id = g.id
       LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
       LEFT JOIN classes c ON ngp.classe_id = c.id
-      LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
       WHERE ngp.classe_id = ? AND ngp.status = 1
-      GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome
     `;
     
     let params = [classe_id];
@@ -288,6 +280,7 @@ class NomeGenericoSearchController {
 
   /**
    * Buscar produtos de um nome genérico
+   * NOTA: Esta funcionalidade não está implementada no banco de dados
    */
   static buscarProdutosNomeGenerico = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -302,20 +295,8 @@ class NomeGenericoSearchController {
       return notFoundResponse(res, 'Nome genérico não encontrado');
     }
 
-    const produtos = await executeQuery(
-      `SELECT 
-        p.id, p.nome, p.codigo, p.descricao, p.status,
-        f.nome as fornecedor_nome,
-        m.marca as marca_nome,
-        u.sigla as unidade_sigla
-       FROM produtos p
-       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-       LEFT JOIN marcas m ON p.marca_id = m.id
-       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-       WHERE p.nome_generico_id = ? AND p.status = 1
-       ORDER BY p.nome ASC`,
-      [id]
-    );
+    // Como não há relação implementada, retornar lista vazia
+    const produtos = [];
 
     // Adicionar links HATEOAS
     const data = res.addListLinks(produtos);

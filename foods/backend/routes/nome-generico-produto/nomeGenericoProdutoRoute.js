@@ -55,10 +55,11 @@ router.get('/classe/:classe_id',
 );
 
 // GET /api/nome-generico-produto/:id/produtos - Buscar produtos de um nome genérico
-router.get('/:id/produtos',
-  checkPermission('visualizar'),
-  NomeGenericoProdutoController.buscarProdutosNomeGenerico
-);
+// Rota desabilitada - funcionalidade não implementada no banco de dados
+// router.get('/:id/produtos',
+//   checkPermission('visualizar'),
+//   NomeGenericoProdutoController.buscarProdutosNomeGenerico
+// );
 
 // GET /api/nome-generico-produto/:id - Buscar nome genérico por ID
 router.get('/:id', 

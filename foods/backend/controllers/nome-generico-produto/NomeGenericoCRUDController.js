@@ -100,14 +100,12 @@ class NomeGenericoCRUDController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        COUNT(p.id) as total_produtos
+        0 as total_produtos
        FROM nome_generico_produto ngp
        LEFT JOIN grupos g ON ngp.grupo_id = g.id
        LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
        LEFT JOIN classes c ON ngp.classe_id = c.id
-       LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
-       WHERE ngp.id = ?
-       GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome`,
+       WHERE ngp.id = ?`,
       [novoNomeGenericoId]
     );
 
@@ -247,14 +245,12 @@ class NomeGenericoCRUDController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        COUNT(p.id) as total_produtos
+        0 as total_produtos
        FROM nome_generico_produto ngp
        LEFT JOIN grupos g ON ngp.grupo_id = g.id
        LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
        LEFT JOIN classes c ON ngp.classe_id = c.id
-       LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
-       WHERE ngp.id = ?
-       GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome`,
+       WHERE ngp.id = ?`,
       [id]
     );
 
@@ -289,18 +285,19 @@ class NomeGenericoCRUDController {
     }
 
     // Verificar se nome genérico está sendo usado em produtos ATIVOS
-    const produtos = await executeQuery(
-      'SELECT id, nome, status FROM produtos WHERE nome_generico_id = ? AND status = 1',
-      [id]
-    );
+    // Como não há relação direta implementada, vamos pular essa verificação por enquanto
+    // const produtos = await executeQuery(
+    //   'SELECT id, nome, status FROM produtos WHERE nome_generico_id = ? AND status = 1',
+    //   [id]
+    // );
 
-    if (produtos.length > 0) {
-      let mensagem = `Nome genérico não pode ser excluído pois possui ${produtos.length} produto(s) ativo(s) vinculado(s):`;
-      mensagem += `\n- ${produtos.map(p => p.nome).join(', ')}`;
-      mensagem += '\n\nPara excluir o nome genérico, primeiro desative todos os produtos vinculados.';
+    // if (produtos.length > 0) {
+    //   let mensagem = `Nome genérico não pode ser excluído pois possui ${produtos.length} produto(s) ativo(s) vinculado(s):`;
+    //   mensagem += `\n- ${produtos.map(p => p.nome).join(', ')}`;
+    //   mensagem += '\n\nPara excluir o nome genérico, primeiro desative todos os produtos vinculados.';
       
-      return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
-    }
+    //   return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
+    // }
 
     // Soft delete - marcar como inativo
     await executeQuery(

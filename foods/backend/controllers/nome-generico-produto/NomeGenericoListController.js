@@ -34,12 +34,11 @@ class NomeGenericoListController {
           g.nome as grupo_nome,
           sg.nome as subgrupo_nome,
           c.nome as classe_nome,
-          COUNT(p.id) as total_produtos
+          0 as total_produtos
         FROM nome_generico_produto ngp
         LEFT JOIN grupos g ON ngp.grupo_id = g.id
         LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
         LEFT JOIN classes c ON ngp.classe_id = c.id
-        LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
         WHERE 1=1
       `;
     
@@ -71,7 +70,7 @@ class NomeGenericoListController {
       params.push(classe_id);
     }
 
-    baseQuery += ' GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome ORDER BY ngp.nome ASC';
+    baseQuery += ' ORDER BY ngp.nome ASC';
 
     // Aplicar paginação manualmente
     const limit = pagination.limit;
@@ -137,14 +136,12 @@ class NomeGenericoListController {
           g.nome as grupo_nome,
           sg.nome as subgrupo_nome,
           c.nome as classe_nome,
-          COUNT(p.id) as total_produtos
+          0 as total_produtos
          FROM nome_generico_produto ngp
          LEFT JOIN grupos g ON ngp.grupo_id = g.id
          LEFT JOIN subgrupos sg ON ngp.subgrupo_id = sg.id
          LEFT JOIN classes c ON ngp.classe_id = c.id
-         LEFT JOIN produtos p ON ngp.id = p.nome_generico_id
-         WHERE ngp.id = ?
-         GROUP BY ngp.id, ngp.nome, ngp.grupo_id, ngp.subgrupo_id, ngp.classe_id, ngp.status, ngp.created_at, ngp.updated_at, g.nome, sg.nome, c.nome`,
+         WHERE ngp.id = ?`,
         [id]
       );
 

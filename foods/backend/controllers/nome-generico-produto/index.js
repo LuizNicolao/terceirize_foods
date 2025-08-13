@@ -23,7 +23,7 @@ module.exports = {
   buscarNomesGenericosPorGrupo: NomeGenericoSearchController.buscarNomesGenericosPorGrupo,
   buscarNomesGenericosPorSubgrupo: NomeGenericoSearchController.buscarNomesGenericosPorSubgrupo,
   buscarNomesGenericosPorClasse: NomeGenericoSearchController.buscarNomesGenericosPorClasse,
-  buscarProdutosNomeGenerico: NomeGenericoSearchController.buscarProdutosNomeGenerico,
+  // buscarProdutosNomeGenerico: NomeGenericoSearchController.buscarProdutosNomeGenerico, // Não implementado no banco
   
   // Métodos de Estatísticas
   buscarEstatisticas: NomeGenericoStatsController.buscarEstatisticas
