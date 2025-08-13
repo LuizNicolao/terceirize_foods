@@ -224,8 +224,8 @@ export const useSubgrupos = () => {
 
   return {
     // Estados
-    subgrupos: filteredSubgrupos,
-    grupos,
+    subgrupos: Array.isArray(filteredSubgrupos) ? filteredSubgrupos : [],
+    grupos: Array.isArray(grupos) ? grupos : [],
     loading,
     loadingGrupos,
     showModal,

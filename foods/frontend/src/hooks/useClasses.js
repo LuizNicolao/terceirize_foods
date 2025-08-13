@@ -226,8 +226,8 @@ export const useClasses = () => {
 
   return {
     // Estados
-    classes: filteredClasses,
-    subgrupos,
+    classes: Array.isArray(filteredClasses) ? filteredClasses : [],
+    subgrupos: Array.isArray(subgrupos) ? subgrupos : [],
     loading,
     loadingSubgrupos,
     showModal,

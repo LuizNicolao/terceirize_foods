@@ -182,7 +182,7 @@ export const useClientes = () => {
 
   return {
     // Estados
-    clientes: filteredClientes,
+    clientes: Array.isArray(filteredClientes) ? filteredClientes : [],
     loading,
     showModal,
     viewMode,

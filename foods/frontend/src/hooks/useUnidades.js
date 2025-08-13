@@ -178,7 +178,7 @@ export const useUnidades = () => {
 
   return {
     // Estados
-    unidades: filteredUnidades,
+    unidades: Array.isArray(filteredUnidades) ? filteredUnidades : [],
     loading,
     showModal,
     viewMode,

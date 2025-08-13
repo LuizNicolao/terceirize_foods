@@ -191,7 +191,7 @@ export const useGrupos = () => {
 
   return {
     // Estados
-    grupos: filteredGrupos,
+    grupos: Array.isArray(filteredGrupos) ? filteredGrupos : [],
     loading,
     showModal,
     viewMode,

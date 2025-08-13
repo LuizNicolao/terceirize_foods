@@ -178,7 +178,7 @@ export const useMarcas = () => {
 
   return {
     // Estados
-    marcas: filteredMarcas,
+    marcas: Array.isArray(filteredMarcas) ? filteredMarcas : [],
     loading,
     showModal,
     viewMode,

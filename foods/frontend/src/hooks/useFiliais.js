@@ -182,7 +182,7 @@ export const useFiliais = () => {
 
   return {
     // Estados
-    filiais: filteredFiliais,
+    filiais: Array.isArray(filteredFiliais) ? filteredFiliais : [],
     loading,
     showModal,
     viewMode,

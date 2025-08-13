@@ -260,7 +260,7 @@ export const useFornecedores = () => {
 
   return {
     // Estados
-    fornecedores,
+    fornecedores: Array.isArray(fornecedores) ? fornecedores : [],
     loading,
     showModal,
     viewMode,
