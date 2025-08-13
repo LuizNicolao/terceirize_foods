@@ -19,7 +19,9 @@
     "jsonwebtoken": "^9.0.0",
     "multer": "^2.0.1",
     "mysql2": "^3.3.1",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "cookie-parser": "^1.4.6",
+    "csurf": "^1.11.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
@@ -29,8 +31,9 @@
     "express",
     "mysql",
     "jwt",
-    "api"
+    "api",
+    "cotacao"
   ],
-  "author": "",
+  "author": "Terceirize Foods",
   "license": "ISC"
 }

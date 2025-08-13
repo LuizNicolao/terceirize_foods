@@ -2,19 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const path = require('path');
+const cookieParser = require('cookie-parser');
+const csurf = require('csurf');
+require('dotenv').config();
 
-// Carregar variáveis de ambiente
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+// Importar configuração do banco
+const { testConnection } = require('./config/database');
 
-// Debug: verificar se as variáveis estão carregadas
-console.log('🔧 Variáveis de ambiente carregadas:');
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('PORT:', process.env.PORT);
-console.log('JWT_SECRET:', process.env.JWT_SECRET ? '✅ Definida' : '❌ Não definida');
-console.log('DB_HOST:', process.env.DB_HOST);
-console.log('DB_NAME:', process.env.DB_NAME);
+// Importar middlewares
+const { errorHandler } = require('./middleware/responseHandler');
 
+// Importar rotas organizadas
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const cotacoesRoutes = require('./routes/cotacoes');
@@ -24,38 +22,74 @@ const dashboardRoutes = require('./routes/dashboard');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS - deve vir antes do helmet
+// Configuração de trust proxy para rate-limit funcionar corretamente
+app.set('trust proxy', 1);
+
+// Configuração de segurança
+app.use(helmet());
+
+// Configuração de CORS
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://82.29.57.43:3000', 'http://82.29.57.43:3002'],
+  origin: process.env.NODE_ENV === 'production' 
+    ? [
+        'https://cotacao.terceirizemais.com.br',
+        'http://cotacao.terceirizemais.com.br',
+        'https://foods.terceirizemais.com.br',
+        'http://foods.terceirizemais.com.br',
+        'http://82.29.57.43:3000', 
+        'http://82.29.57.43:3002',
+        'http://82.29.57.43', 
+        'http://localhost:3000',
+        'http://localhost:3002'
+      ] 
+    : [
+        'http://localhost:3000',
+        'http://localhost:3002'
+      ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token', 'X-CSRF-Token']
 }));
 
-// Middleware para garantir resposta a preflight OPTIONS em todas as rotas
-app.options('*', cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://82.29.57.43:3000', 'http://82.29.57.43:3002'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Middleware de segurança
-app.use(helmet({
-  crossOriginResourcePolicy: { policy: "cross-origin" }
-}));
-
-// Rate limiting - aumentando o limite
+// Rate limiting mais flexível para sistema em produção
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 1000, // aumentando para 1000 requests por IP
-  message: 'Muitas requisições deste IP, tente novamente em 15 minutos.'
+  max: 2000, // limite de 2000 requisições por IP
+  message: 'Muitas requisições deste IP, tente novamente mais tarde.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    return req.path === '/api/health' || 
+           req.path === '/api/auth/verify' ||
+           req.path.startsWith('/api/dashboard');
+  }
 });
-app.use(limiter);
 
-// Middleware para parsing JSON
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Rate limiting específico para login
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 20, // limite de 20 tentativas de login por IP
+  message: 'Muitas tentativas de login, tente novamente em 15 minutos.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    return req.path !== '/api/auth/login';
+  }
+});
+
+app.use('/api/', limiter);
+app.use('/api/auth', loginLimiter);
+
+// Middleware para parsing
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
+
+// Configuração CSRF
+app.use(csurf({ cookie: true }));
+
+// Middleware para garantir resposta a preflight OPTIONS
+app.options('*', cors());
 
 // Rotas
 app.use('/api/auth', authRoutes);
@@ -64,35 +98,42 @@ app.use('/api/cotacoes', cotacoesRoutes);
 app.use('/api/saving', savingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 
-// Log das rotas carregadas
-console.log('🚀 Rotas de saving carregadas - Endpoints disponíveis:');
-console.log('  - GET /api/saving/');
-console.log('  - GET /api/saving/:id');
-console.log('  - GET /api/saving/compradores/listar');
-
-// Rota de teste
+// Rota de health check
 app.get('/api/health', (req, res) => {
   res.json({ 
     message: 'Sistema de Cotação API funcionando!',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// Middleware de tratamento de erros global
+app.use(errorHandler);
+
+// Rota 404
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    success: false,
+    message: 'Rota não encontrada',
     timestamp: new Date().toISOString()
   });
 });
 
-// Middleware de tratamento de erros
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    message: 'Erro interno do servidor',
-    error: process.env.NODE_ENV === 'development' ? err.message : {}
-  });
-});
+// Inicializar servidor
+const startServer = async () => {
+  try {
+    // Testar conexão com banco
+    await testConnection();
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor rodando na porta ${PORT}`);
+      console.log(`📱 Ambiente: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
+    });
+  } catch (error) {
+    console.error('❌ Erro ao inicializar servidor:', error);
+    process.exit(1);
+  }
+};
 
-// Rota 404
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Rota não encontrada' });
-});
-
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📱 Ambiente: ${process.env.NODE_ENV || 'development'}`);
-}); 
+startServer(); 

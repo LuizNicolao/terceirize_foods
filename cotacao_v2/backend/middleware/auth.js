@@ -1,161 +1,182 @@
-const jwt = require('jsonwebtoken');
-
 /**
- * Middleware de autenticação
- * Verifica se o token JWT é válido
+ * Middleware de Autenticação
+ * Implementa autenticação JWT e verificação de permissões
  */
-const auth = (req, res, next) => {
-    try {
-        // Obter token do header Authorization
-        const authHeader = req.headers.authorization;
-        
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ 
-                error: 'Token de acesso não fornecido',
-                message: 'É necessário fornecer um token de autenticação válido'
-            });
+
+const jwt = require('jsonwebtoken');
+const { executeQuery } = require('../config/database');
+const { 
+  unauthorizedResponse, 
+  forbiddenResponse,
+  errorResponse,
+  STATUS_CODES 
+} = require('./responseHandler');
+
+// Middleware de autenticação JWT
+const authenticateToken = async (req, res, next) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (!token) {
+      return unauthorizedResponse(res, 'Token de acesso necessário');
+    }
+
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+      if (err) {
+        if (err.name === 'TokenExpiredError') {
+          return unauthorizedResponse(res, 'Token expirado');
+        }
+        return unauthorizedResponse(res, 'Token inválido');
+      }
+
+      // Buscar usuário no banco para verificar se ainda existe e está ativo
+      try {
+        const users = await executeQuery(
+          'SELECT id, name, email, role, status FROM users WHERE id = ?',
+          [decoded.id]
+        );
+
+        if (users.length === 0) {
+          return unauthorizedResponse(res, 'Usuário não encontrado');
         }
 
-        // Extrair token (remover "Bearer " do início)
-        const token = authHeader.substring(7);
-        
-        if (!token) {
-            return res.status(401).json({ 
-                error: 'Token inválido',
-                message: 'Token de autenticação não pode estar vazio'
-            });
+        const user = users[0];
+
+        if (user.status !== 1) {
+          return forbiddenResponse(res, 'Usuário inativo');
         }
 
-        // Verificar e decodificar token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
         // Adicionar informações do usuário ao request
         req.user = {
-            id: decoded.id,
-            name: decoded.name,
-            email: decoded.email,
-            role: decoded.role
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role
         };
 
         next();
-        
+      } catch (dbError) {
+        console.error('Erro ao verificar usuário:', dbError);
+        return errorResponse(res, 'Erro interno do servidor', STATUS_CODES.INTERNAL_SERVER_ERROR);
+      }
+    });
+  } catch (error) {
+    console.error('Erro no middleware de autenticação:', error);
+    return errorResponse(res, 'Erro interno do servidor', STATUS_CODES.INTERNAL_SERVER_ERROR);
+  }
+};
+
+// Middleware para verificar permissões por role
+const requireRole = (roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return unauthorizedResponse(res, 'Usuário não autenticado');
+    }
+
+    const userRole = req.user.role;
+    
+    if (Array.isArray(roles)) {
+      if (!roles.includes(userRole)) {
+        return forbiddenResponse(res, 'Acesso negado - permissão insuficiente');
+      }
+    } else {
+      if (userRole !== roles) {
+        return forbiddenResponse(res, 'Acesso negado - permissão insuficiente');
+      }
+    }
+
+    next();
+  };
+};
+
+// Middleware para verificar se o usuário é o proprietário do recurso
+const requireOwnership = (resourceTable, resourceIdField = 'id') => {
+  return async (req, res, next) => {
+    try {
+      if (!req.user) {
+        return unauthorizedResponse(res, 'Usuário não autenticado');
+      }
+
+      const userId = req.user.id;
+      const userRole = req.user.role;
+      const resourceId = req.params[resourceIdField];
+
+      // Gestores e administradores podem acessar qualquer recurso
+      if (['gestor', 'administrador'].includes(userRole)) {
+        return next();
+      }
+
+      // Verificar se o usuário é o proprietário do recurso
+      const resource = await executeQuery(
+        `SELECT comprador FROM ${resourceTable} WHERE ${resourceIdField} = ?`,
+        [resourceId]
+      );
+
+      if (resource.length === 0) {
+        return errorResponse(res, 'Recurso não encontrado', STATUS_CODES.NOT_FOUND);
+      }
+
+      if (resource[0].comprador !== userId) {
+        return forbiddenResponse(res, 'Acesso negado - você não é o proprietário deste recurso');
+      }
+
+      next();
     } catch (error) {
-        console.error('Erro na autenticação:', error.message);
-        
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ 
-                error: 'Token expirado',
-                message: 'Seu token de acesso expirou. Faça login novamente.'
-            });
-        }
-        
-        if (error.name === 'JsonWebTokenError') {
-            return res.status(401).json({ 
-                error: 'Token inválido',
-                message: 'Token de autenticação inválido'
-            });
-        }
-        
-        return res.status(500).json({ 
-            error: 'Erro interno de autenticação',
-            message: 'Erro ao processar autenticação'
-        });
+      console.error('Erro no middleware de ownership:', error);
+      return errorResponse(res, 'Erro interno do servidor', STATUS_CODES.INTERNAL_SERVER_ERROR);
     }
+  };
 };
 
-/**
- * Middleware para verificar permissões específicas
- * @param {string} screen - Tela que o usuário está tentando acessar
- * @param {string} action - Ação que o usuário está tentando realizar (view, create, edit, delete)
- */
-const checkPermission = (screen, action = 'view') => {
-    return async (req, res, next) => {
-        try {
-            const userId = req.user.id;
-            
-            // Buscar permissões do usuário
-            const db = require('../config/database');
-            const [permissions] = await db.execute(`
-                SELECT can_view, can_create, can_edit, can_delete
-                FROM user_permissions
-                WHERE user_id = ? AND screen = ?
-            `, [userId, screen]);
-            
-            if (permissions.length === 0) {
-                return res.status(403).json({ 
-                    error: 'Acesso negado',
-                    message: 'Você não tem permissão para acessar esta funcionalidade'
-                });
-            }
-            
-            const permission = permissions[0];
-            let hasPermission = false;
-            
-            switch (action) {
-                case 'view':
-                    hasPermission = permission.can_view === 1;
-                    break;
-                case 'create':
-                    hasPermission = permission.can_create === 1;
-                    break;
-                case 'edit':
-                    hasPermission = permission.can_edit === 1;
-                    break;
-                case 'delete':
-                    hasPermission = permission.can_delete === 1;
-                    break;
-                default:
-                    hasPermission = false;
-            }
-            
-            if (!hasPermission) {
-                return res.status(403).json({ 
-                    error: 'Acesso negado',
-                    message: `Você não tem permissão para ${action} nesta funcionalidade`
-                });
-            }
-            
-            next();
-            
-        } catch (error) {
-            console.error('Erro ao verificar permissões:', error);
-            return res.status(500).json({ 
-                error: 'Erro interno',
-                message: 'Erro ao verificar permissões'
-            });
-        }
-    };
-};
-
-/**
- * Middleware para verificar se o usuário é administrador
- */
-const requireAdmin = (req, res, next) => {
-    if (req.user.role !== 'administrador') {
-        return res.status(403).json({ 
-            error: 'Acesso negado',
-            message: 'Apenas administradores podem acessar esta funcionalidade'
-        });
+// Middleware para verificar se o usuário pode editar a cotação
+const canEditCotacao = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return unauthorizedResponse(res, 'Usuário não autenticado');
     }
+
+    const userId = req.user.id;
+    const userRole = req.user.role;
+    const cotacaoId = req.params.id;
+
+    // Gestores e administradores podem editar qualquer cotação
+    if (['gestor', 'administrador'].includes(userRole)) {
+      return next();
+    }
+
+    // Verificar se a cotação existe e qual o status
+    const cotacao = await executeQuery(
+      'SELECT comprador, status FROM cotacoes WHERE id = ?',
+      [cotacaoId]
+    );
+
+    if (cotacao.length === 0) {
+      return errorResponse(res, 'Cotação não encontrada', STATUS_CODES.NOT_FOUND);
+    }
+
+    const cotacaoData = cotacao[0];
+
+    // Verificar se o usuário é o comprador
+    if (cotacaoData.comprador !== userId) {
+      return forbiddenResponse(res, 'Acesso negado - você não é o comprador desta cotação');
+    }
+
+    // Verificar se a cotação pode ser editada
+    if (['em_analise', 'aprovada', 'rejeitada'].includes(cotacaoData.status)) {
+      return forbiddenResponse(res, 'Não é possível editar uma cotação em análise, aprovada ou rejeitada');
+    }
+
     next();
-};
-
-/**
- * Middleware para verificar se o usuário é gestor ou administrador
- */
-const requireGestor = (req, res, next) => {
-    if (!['administrador', 'gestor'].includes(req.user.role)) {
-        return res.status(403).json({ 
-            error: 'Acesso negado',
-            message: 'Apenas gestores e administradores podem acessar esta funcionalidade'
-        });
-    }
-    next();
+  } catch (error) {
+    console.error('Erro no middleware canEditCotacao:', error);
+    return errorResponse(res, 'Erro interno do servidor', STATUS_CODES.INTERNAL_SERVER_ERROR);
+  }
 };
 
 module.exports = {
-    auth,
-    checkPermission,
-    requireAdmin,
-    requireGestor
+  authenticateToken,
+  requireRole,
+  requireOwnership,
+  canEditCotacao
 }; 

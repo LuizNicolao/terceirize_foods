@@ -1,0 +1,350 @@
+/**
+ * Estilos para a Página de Cotações
+ * Implementa design responsivo e moderno
+ */
+
+.cotacoes-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Header */
+.cotacoes-page__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+}
+
+.cotacoes-page__title h1 {
+  margin: 0 0 8px 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.cotacoes-page__title p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.cotacoes-page__actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* Filtros */
+.cotacoes-page__filtros {
+  margin-bottom: 24px;
+}
+
+.filtros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.filtro-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filtro-item label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 14px;
+}
+
+.filtro-item input,
+.filtro-item select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease-in-out;
+}
+
+.filtro-item input:focus,
+.filtro-item select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Content */
+.cotacoes-page__content {
+  min-height: 400px;
+}
+
+/* Loading */
+.cotacoes-page__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.loading-spinner {
+  color: #6b7280;
+  font-size: 16px;
+}
+
+/* Error */
+.cotacoes-page__error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.error-message {
+  text-align: center;
+  color: #dc2626;
+}
+
+.error-message p {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+}
+
+/* Empty State */
+.cotacoes-page__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.empty-state {
+  text-align: center;
+  color: #6b7280;
+}
+
+.empty-state p {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+}
+
+/* Grid de Cotações */
+.cotacoes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.cotacao-card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.cotacao-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Status Badge */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-pendente {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.status-analise {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.status-aprovada {
+  background-color: #d1fae5;
+  color: #059669;
+}
+
+.status-rejeitada {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.status-cancelada {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-default {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+/* Informações da Cotação */
+.cotacao-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.info-item strong {
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Ações da Cotação */
+.cotacao-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Paginação */
+.cotacoes-page__paginacao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.paginacao-info {
+  font-size: 14px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .cotacoes-page {
+    padding: 16px;
+  }
+  
+  .cotacoes-page__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  
+  .cotacoes-page__title h1 {
+    font-size: 24px;
+  }
+  
+  .cotacoes-page__actions {
+    justify-content: stretch;
+  }
+  
+  .cotacoes-page__actions .btn {
+    flex: 1;
+  }
+  
+  .filtros-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .cotacoes-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .cotacao-actions {
+    flex-direction: column;
+  }
+  
+  .cotacao-actions .btn {
+    width: 100%;
+  }
+  
+  .cotacoes-page__paginacao {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cotacoes-page {
+    padding: 12px;
+  }
+  
+  .cotacoes-page__title h1 {
+    font-size: 20px;
+  }
+  
+  .cotacoes-page__title p {
+    font-size: 14px;
+  }
+  
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+/* Animações */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cotacao-card {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.cotacao-card:nth-child(1) { animation-delay: 0.1s; }
+.cotacao-card:nth-child(2) { animation-delay: 0.2s; }
+.cotacao-card:nth-child(3) { animation-delay: 0.3s; }
+.cotacao-card:nth-child(4) { animation-delay: 0.4s; }
+.cotacao-card:nth-child(5) { animation-delay: 0.5s; }
+.cotacao-card:nth-child(6) { animation-delay: 0.6s; }
+
+/* Estados de hover melhorados */
+.cotacao-card:hover .status-badge {
+  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Foco para acessibilidade */
+.cotacao-card:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Scrollbar personalizada */
+.cotacoes-page::-webkit-scrollbar {
+  width: 8px;
+}
+
+.cotacoes-page::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.cotacoes-page::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.cotacoes-page::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
