@@ -9,7 +9,7 @@ const { classeValidations, commonValidations } = require('./classeValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const ClassesController = require('../../controllers/classesController');
+const ClassesController = require('../../controllers/classes');
 
 const router = express.Router();
 
@@ -29,14 +29,26 @@ router.get('/',
 // GET /api/classes/ativas - Buscar classes ativas
 router.get('/ativas',
   checkPermission('visualizar'),
-  ClassesController.buscarAtivas
+  ClassesController.buscarClassesAtivas
+);
+
+// GET /api/classes/estatisticas - Buscar estatísticas de classes
+router.get('/estatisticas',
+  checkPermission('visualizar'),
+  ClassesController.buscarEstatisticas
+);
+
+// GET /api/classes/codigo/:codigo - Buscar classe por código
+router.get('/codigo/:codigo',
+  checkPermission('visualizar'),
+  ClassesController.buscarClassesPorCodigo
 );
 
 // GET /api/classes/subgrupo/:subgrupo_id - Buscar classes por subgrupo
 router.get('/subgrupo/:subgrupo_id',
   checkPermission('visualizar'),
   commonValidations.id,
-  ClassesController.buscarPorSubgrupo
+  ClassesController.buscarClassesPorSubgrupo
 );
 
 // GET /api/classes/:id - Buscar classe por ID
