@@ -65,10 +65,11 @@ class FiliaisSearchController {
     
     const meta = pagination.generateMeta(totalItems, '/api/filiais/ativas', queryParams);
 
-    // Adicionar links HATEOAS
-    const data = res.addListLinks(filiais, meta.pagination, queryParams);
-
-    return successResponse(res, data, 'Filiais ativas listadas com sucesso', STATUS_CODES.OK, meta);
+    // Retornar resposta no formato esperado pelo frontend
+    return successResponse(res, filiais, 'Filiais ativas listadas com sucesso', STATUS_CODES.OK, {
+      ...meta,
+      _links: res.addListLinks(filiais, meta.pagination, queryParams)._links
+    });
   });
 
   /**
@@ -122,10 +123,11 @@ class FiliaisSearchController {
     
     const meta = pagination.generateMeta(totalItems, `/api/filiais/estado/${estado}`, queryParams);
 
-    // Adicionar links HATEOAS
-    const data = res.addListLinks(filiais, meta.pagination, queryParams);
-
-    return successResponse(res, data, `Filiais do estado ${estado} listadas com sucesso`, STATUS_CODES.OK, meta);
+    // Retornar resposta no formato esperado pelo frontend
+    return successResponse(res, filiais, `Filiais do estado ${estado} listadas com sucesso`, STATUS_CODES.OK, {
+      ...meta,
+      _links: res.addListLinks(filiais, meta.pagination, queryParams)._links
+    });
   });
 
   /**
@@ -179,10 +181,11 @@ class FiliaisSearchController {
     
     const meta = pagination.generateMeta(totalItems, `/api/filiais/supervisao/${supervisao}`, queryParams);
 
-    // Adicionar links HATEOAS
-    const data = res.addListLinks(filiais, meta.pagination, queryParams);
-
-    return successResponse(res, data, `Filiais da supervisão ${supervisao} listadas com sucesso`, STATUS_CODES.OK, meta);
+    // Retornar resposta no formato esperado pelo frontend
+    return successResponse(res, filiais, `Filiais da supervisão ${supervisao} listadas com sucesso`, STATUS_CODES.OK, {
+      ...meta,
+      _links: res.addListLinks(filiais, meta.pagination, queryParams)._links
+    });
   });
 
   /**
@@ -236,10 +239,11 @@ class FiliaisSearchController {
     
     const meta = pagination.generateMeta(totalItems, `/api/filiais/coordenacao/${coordenacao}`, queryParams);
 
-    // Adicionar links HATEOAS
-    const data = res.addListLinks(filiais, meta.pagination, queryParams);
-
-    return successResponse(res, data, `Filiais da coordenação ${coordenacao} listadas com sucesso`, STATUS_CODES.OK, meta);
+    // Retornar resposta no formato esperado pelo frontend
+    return successResponse(res, filiais, `Filiais da coordenação ${coordenacao} listadas com sucesso`, STATUS_CODES.OK, {
+      ...meta,
+      _links: res.addListLinks(filiais, meta.pagination, queryParams)._links
+    });
   });
 
   /**

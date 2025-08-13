@@ -95,16 +95,15 @@ class FiliaisListController {
     
     const meta = pagination.generateMeta(totalItems, '/api/filiais', queryParams);
 
-    // Adicionar links HATEOAS
-    const data = res.addListLinks(filiais, meta.pagination, queryParams);
-
     // Gerar links de ações baseado nas permissões do usuário
     const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
     const actions = res.generateActionLinks(userPermissions);
 
-    return successResponse(res, data, 'Filiais listadas com sucesso', STATUS_CODES.OK, {
+    // Retornar resposta no formato esperado pelo frontend
+    return successResponse(res, filiais, 'Filiais listadas com sucesso', STATUS_CODES.OK, {
       ...meta,
-      actions
+      actions,
+      _links: res.addListLinks(filiais, meta.pagination, queryParams)._links
     });
   });
 
@@ -174,10 +173,10 @@ class FiliaisListController {
 
     const almoxarifados = await executeQuery(query, [filialId]);
 
-    // Adicionar links HATEOAS
-    const data = res.addListLinks(almoxarifados);
-
-    return successResponse(res, data, 'Almoxarifados listados com sucesso', STATUS_CODES.OK);
+    // Retornar resposta no formato esperado pelo frontend
+    return successResponse(res, almoxarifados, 'Almoxarifados listados com sucesso', STATUS_CODES.OK, {
+      _links: res.addListLinks(almoxarifados)._links
+    });
   });
 
   /**
@@ -201,10 +200,10 @@ class FiliaisListController {
 
     const itens = await executeQuery(query, [almoxarifadoId]);
 
-    // Adicionar links HATEOAS
-    const data = res.addListLinks(itens);
-
-    return successResponse(res, data, 'Itens do almoxarifado listados com sucesso', STATUS_CODES.OK);
+    // Retornar resposta no formato esperado pelo frontend
+    return successResponse(res, itens, 'Itens do almoxarifado listados com sucesso', STATUS_CODES.OK, {
+      _links: res.addListLinks(itens)._links
+    });
   });
 }
 
