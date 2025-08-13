@@ -42,7 +42,8 @@ const NomeGenericoProduto = () => {
     setSearchTerm,
     setItemsPerPage,
     formatDate,
-    getStatusLabel
+    getStatusLabel,
+    getStatusColor
   } = useNomeGenericoProduto();
 
   const {
@@ -86,7 +87,7 @@ const NomeGenericoProduto = () => {
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
           </Button>
-          {canCreate('nome_generico_produto') && (
+          {canCreate('nome-generico-produto') && (
             <Button onClick={handleAddNomeGenerico} size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Adicionar</span>
@@ -123,6 +124,7 @@ const NomeGenericoProduto = () => {
         onEdit={handleEditNomeGenerico}
         onDelete={handleDeleteNomeGenerico}
         getStatusLabel={getStatusLabel}
+        getStatusColor={getStatusColor}
         formatDate={formatDate}
       />
 
