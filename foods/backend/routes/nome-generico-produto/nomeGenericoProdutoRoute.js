@@ -32,7 +32,7 @@ router.get('/ativos',
 // GET /api/nome-generico-produto/estatisticas - Buscar estatísticas
 router.get('/estatisticas',
   checkPermission('visualizar'),
-  NomeGenericoProdutoController.buscarEstatisticasNomesGenericos
+  NomeGenericoProdutoController.buscarEstatisticas
 );
 
 // GET /api/nome-generico-produto/grupo/:grupo_id - Buscar nomes genéricos por grupo
