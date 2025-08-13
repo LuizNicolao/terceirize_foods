@@ -51,7 +51,7 @@ class ProdutosSearchController {
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      WHERE p.status = 'ativo'
+      WHERE p.status = 1
     `;
     
     let params = [];
@@ -64,7 +64,7 @@ class ProdutosSearchController {
     const produtos = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE status = 'ativo'`;
+    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE status = 1`;
     const totalResult = await executeQuery(countQuery, []);
     const totalItems = totalResult[0].total;
 
@@ -127,7 +127,7 @@ class ProdutosSearchController {
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      WHERE p.grupo_id = ? AND p.status = 'ativo'
+      WHERE p.grupo_id = ? AND p.status = 1
     `;
     
     let params = [grupo_id];
@@ -140,7 +140,7 @@ class ProdutosSearchController {
     const produtos = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE grupo_id = ? AND status = 'ativo'`;
+    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE grupo_id = ? AND status = 1`;
     const totalResult = await executeQuery(countQuery, [grupo_id]);
     const totalItems = totalResult[0].total;
 
@@ -203,7 +203,7 @@ class ProdutosSearchController {
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      WHERE p.fornecedor_id = ? AND p.status = 'ativo'
+      WHERE p.fornecedor_id = ? AND p.status = 1
     `;
     
     let params = [fornecedor_id];
@@ -216,7 +216,7 @@ class ProdutosSearchController {
     const produtos = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE fornecedor_id = ? AND status = 'ativo'`;
+    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE fornecedor_id = ? AND status = 1`;
     const totalResult = await executeQuery(countQuery, [fornecedor_id]);
     const totalItems = totalResult[0].total;
 
@@ -323,7 +323,7 @@ class ProdutosSearchController {
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      WHERE p.estoque_atual <= p.estoque_minimo AND p.status = 'ativo'
+      WHERE p.estoque_atual <= p.estoque_minimo AND p.status = 1
     `;
     
     let params = [];
@@ -336,7 +336,7 @@ class ProdutosSearchController {
     const produtos = await executeQuery(query, paginatedParams);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE estoque_atual <= estoque_minimo AND status = 'ativo'`;
+    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE estoque_atual <= estoque_minimo AND status = 1`;
     const totalResult = await executeQuery(countQuery, []);
     const totalItems = totalResult[0].total;
 
@@ -359,9 +359,9 @@ class ProdutosSearchController {
    */
   static listarGrupos = asyncHandler(async (req, res) => {
     const query = `
-      SELECT id, nome, descricao, status, criado_em, atualizado_em
+      SELECT id, nome, status, criado_em, atualizado_em
       FROM grupos 
-      WHERE status = 'ativo'
+      WHERE status = 1
       ORDER BY nome ASC
     `;
 
@@ -378,9 +378,9 @@ class ProdutosSearchController {
    */
   static listarSubgrupos = asyncHandler(async (req, res) => {
     const query = `
-      SELECT id, nome, descricao, grupo_id, status, criado_em, atualizado_em
+      SELECT id, nome, grupo_id, status, criado_em, atualizado_em
       FROM subgrupos 
-      WHERE status = 'ativo'
+      WHERE status = 1
       ORDER BY nome ASC
     `;
 
@@ -397,9 +397,9 @@ class ProdutosSearchController {
    */
   static listarClasses = asyncHandler(async (req, res) => {
     const query = `
-      SELECT id, nome, descricao, status, criado_em, atualizado_em
+      SELECT id, nome, status, criado_em, atualizado_em
       FROM classes 
-      WHERE status = 'ativo'
+      WHERE status = 1
       ORDER BY nome ASC
     `;
 
@@ -416,9 +416,9 @@ class ProdutosSearchController {
    */
   static listarUnidades = asyncHandler(async (req, res) => {
     const query = `
-      SELECT id, nome, sigla, descricao, status, criado_em, atualizado_em
+      SELECT id, nome, sigla, status, criado_em, atualizado_em
       FROM unidades_medida 
-      WHERE status = 'ativo'
+      WHERE status = 1
       ORDER BY nome ASC
     `;
 

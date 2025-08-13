@@ -72,7 +72,7 @@ class ProdutosListController {
       params.push(fornecedor_id);
     }
 
-    if (status) {
+    if (status !== undefined) {
       baseQuery += ' AND p.status = ?';
       params.push(status);
     }

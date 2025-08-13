@@ -377,7 +377,7 @@ class ProdutosCRUDController {
 
     // Excluir produto (soft delete - alterar status para inativo)
     await executeQuery(
-      'UPDATE produtos SET status = "inativo", atualizado_em = NOW() WHERE id = ?',
+      'UPDATE produtos SET status = 0, atualizado_em = NOW() WHERE id = ?',
       [id]
     );
 
