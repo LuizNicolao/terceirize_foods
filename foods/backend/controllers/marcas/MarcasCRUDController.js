@@ -154,14 +154,14 @@ class MarcasCRUDController {
       [id]
     );
 
-    const marca = marcas[0];
+    const marcaAtualizada = marcas[0];
 
     // Adicionar links HATEOAS
-    const data = res.addResourceLinks(marca);
+    const data = res.addResourceLinks(marcaAtualizada);
 
     // Gerar links de ações
     const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
-    const actions = res.generateActionLinks(userPermissions, marca.id);
+    const actions = res.generateActionLinks(userPermissions, marcaAtualizada.id);
 
     return successResponse(res, data, 'Marca atualizada com sucesso', STATUS_CODES.OK, {
       actions
