@@ -176,14 +176,6 @@ export const useNomeGenericoProduto = () => {
     return statusMap[status] || status;
   };
 
-  const getStatusColor = (status) => {
-    const colorMap = {
-      ativo: 'text-green-600',
-      inativo: 'text-red-600'
-    };
-    return colorMap[status] || 'text-gray-600';
-  };
-
   return {
     // Estados
     nomesGenericos: filteredNomesGenericos,
@@ -217,7 +209,6 @@ export const useNomeGenericoProduto = () => {
 
     // Funções utilitárias
     formatDate,
-    getStatusLabel,
-    getStatusColor
+    getStatusLabel
   };
 };

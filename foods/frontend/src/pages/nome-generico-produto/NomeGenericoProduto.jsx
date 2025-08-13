@@ -42,8 +42,7 @@ const NomeGenericoProduto = () => {
     setSearchTerm,
     setItemsPerPage,
     formatDate,
-    getStatusLabel,
-    getStatusColor
+    getStatusLabel
   } = useNomeGenericoProduto();
 
   const {
@@ -124,7 +123,6 @@ const NomeGenericoProduto = () => {
         onEdit={handleEditNomeGenerico}
         onDelete={handleDeleteNomeGenerico}
         getStatusLabel={getStatusLabel}
-        getStatusColor={getStatusColor}
         formatDate={formatDate}
       />
 
