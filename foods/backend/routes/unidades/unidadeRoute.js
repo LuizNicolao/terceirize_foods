@@ -9,7 +9,7 @@ const { unidadeValidations, commonValidations } = require('./unidadeValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const UnidadesController = require('../../controllers/unidadesController');
+const UnidadesController = require('../../controllers/unidades');
 
 const router = express.Router();
 
@@ -57,8 +57,8 @@ router.delete('/:id',
   UnidadesController.excluirUnidade
 );
 
-// GET /api/unidades/ativas/listar - Buscar unidades ativas
-router.get('/ativas/listar', 
+// GET /api/unidades/ativas - Buscar unidades ativas
+router.get('/ativas', 
   checkPermission('visualizar'),
   UnidadesController.buscarUnidadesAtivas
 );
@@ -69,8 +69,8 @@ router.get('/tipo/:tipo',
   UnidadesController.buscarUnidadesPorTipo
 );
 
-// GET /api/unidades/tipos/listar - Listar tipos de unidades
-router.get('/tipos/listar', 
+// GET /api/unidades/tipos - Listar tipos de unidades
+router.get('/tipos', 
   checkPermission('visualizar'),
   UnidadesController.listarTiposUnidades
 );
