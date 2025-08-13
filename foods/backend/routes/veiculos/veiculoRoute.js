@@ -9,7 +9,7 @@ const { veiculoValidations, commonValidations } = require('./veiculoValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const veiculosController = require('../../controllers/veiculosController');
+const veiculosController = require('../../controllers/veiculos');
 
 const router = express.Router();
 
