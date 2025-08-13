@@ -26,7 +26,17 @@ module.exports = {
   listarEstados: FiliaisSearchController.listarEstados,
   listarSupervisoes: FiliaisSearchController.listarSupervisoes,
   listarCoordenacoes: FiliaisSearchController.listarCoordenacoes,
+  consultarCNPJ: FiliaisSearchController.consultarCNPJ,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: FiliaisStatsController.buscarEstatisticas
+  buscarEstatisticas: FiliaisStatsController.buscarEstatisticas,
+  
+  // Métodos de Almoxarifados
+  listarAlmoxarifados: FiliaisListController.listarAlmoxarifados,
+  criarAlmoxarifado: FiliaisCRUDController.criarAlmoxarifado,
+  atualizarAlmoxarifado: FiliaisCRUDController.atualizarAlmoxarifado,
+  excluirAlmoxarifado: FiliaisCRUDController.excluirAlmoxarifado,
+  listarItensAlmoxarifado: FiliaisListController.listarItensAlmoxarifado,
+  adicionarItemAlmoxarifado: FiliaisCRUDController.adicionarItemAlmoxarifado,
+  removerItemAlmoxarifado: FiliaisCRUDController.removerItemAlmoxarifado
 };

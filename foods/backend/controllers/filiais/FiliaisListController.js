@@ -157,6 +157,55 @@ class FiliaisListController {
     // Por enquanto, retorna permissões básicas
     return ['visualizar', 'criar', 'editar', 'excluir'];
   }
+
+  /**
+   * Listar almoxarifados de uma filial
+   */
+  static listarAlmoxarifados = asyncHandler(async (req, res) => {
+    const { filialId } = req.params;
+
+    const query = `
+      SELECT 
+        id, filial_id, nome, status, criado_em, atualizado_em
+      FROM almoxarifados 
+      WHERE filial_id = ?
+      ORDER BY nome ASC
+    `;
+
+    const almoxarifados = await executeQuery(query, [filialId]);
+
+    // Adicionar links HATEOAS
+    const data = res.addListLinks(almoxarifados);
+
+    return successResponse(res, data, 'Almoxarifados listados com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
+   * Listar itens de um almoxarifado
+   */
+  static listarItensAlmoxarifado = asyncHandler(async (req, res) => {
+    const { almoxarifadoId } = req.params;
+
+    const query = `
+      SELECT 
+        ai.id, ai.almoxarifado_id, ai.produto_id, ai.quantidade,
+        ai.criado_em, ai.atualizado_em,
+        p.nome as produto_nome, p.codigo_produto as produto_codigo,
+        u.nome as unidade_nome
+      FROM almoxarifado_itens ai
+      INNER JOIN produtos p ON ai.produto_id = p.id
+      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+      WHERE ai.almoxarifado_id = ?
+      ORDER BY p.nome ASC
+    `;
+
+    const itens = await executeQuery(query, [almoxarifadoId]);
+
+    // Adicionar links HATEOAS
+    const data = res.addListLinks(itens);
+
+    return successResponse(res, data, 'Itens do almoxarifado listados com sucesso', STATUS_CODES.OK);
+  });
 }
 
 module.exports = FiliaisListController;
