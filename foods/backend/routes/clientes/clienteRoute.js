@@ -9,7 +9,7 @@ const { clienteValidations, commonValidations } = require('./clienteValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const ClientesController = require('../../controllers/clientesController');
+const ClientesController = require('../../controllers/clientes');
 
 const router = express.Router();
 
