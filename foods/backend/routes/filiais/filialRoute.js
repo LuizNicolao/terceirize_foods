@@ -2,7 +2,7 @@ const express = require('express');
 const { authenticateToken } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
-const filiaisController = require('../../controllers/filiaisController');
+const FiliaisController = require('../../controllers/filiais');
 const { filialValidations, filialAtualizacaoValidations, commonValidations } = require('./filialValidator');
 
 const router = express.Router();
@@ -18,64 +18,64 @@ router.use(hateoasMiddleware('filiais'));
 router.get('/', 
   commonValidations.search,
   ...commonValidations.pagination,
-  filiaisController.listarFiliais
+  FiliaisController.listarFiliais
 );
 
 // Buscar filial por ID
 router.get('/:id', 
   commonValidations.id,
-  filiaisController.buscarFilialPorId
+  FiliaisController.buscarFilialPorId
 );
 
 // Criar filial
 router.post('/', 
   filialValidations,
-  filiaisController.criarFilial
+  FiliaisController.criarFilial
 );
 
 // Atualizar filial
 router.put('/:id', 
   commonValidations.id,
   filialAtualizacaoValidations,
-  filiaisController.atualizarFilial
+  FiliaisController.atualizarFilial
 );
 
 // Excluir filial
 router.delete('/:id', 
   commonValidations.id,
-  filiaisController.excluirFilial
+  FiliaisController.excluirFilial
 );
 
 // ===== ROTAS ESPECÍFICAS =====
 
 // Buscar filiais ativas
 router.get('/ativas/listar', 
-  filiaisController.buscarFiliaisAtivas
+  FiliaisController.buscarFiliaisAtivas
 );
 
 // Buscar filiais por estado
 router.get('/estado/:estado', 
-  filiaisController.buscarFiliaisPorEstado
+  FiliaisController.buscarFiliaisPorEstado
 );
 
 // Listar estados disponíveis
 router.get('/estados/listar', 
-  filiaisController.listarEstados
+  FiliaisController.listarEstados
 );
 
 // Listar supervisões disponíveis
 router.get('/supervisoes/listar', 
-  filiaisController.listarSupervisoes
+  FiliaisController.listarSupervisoes
 );
 
 // Listar coordenações disponíveis
 router.get('/coordenacoes/listar', 
-  filiaisController.listarCoordenacoes
+  FiliaisController.listarCoordenacoes
 );
 
 // Consultar CNPJ na API externa
 router.get('/consulta-cnpj/:cnpj', 
-  filiaisController.consultarCNPJ
+  FiliaisController.consultarCNPJ
 );
 
 // ===== ROTAS DE ALMOXARIFADOS =====
