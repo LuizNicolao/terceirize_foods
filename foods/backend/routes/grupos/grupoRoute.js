@@ -9,7 +9,7 @@ const { grupoValidations, commonValidations } = require('./grupoValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const GruposController = require('../../controllers/gruposController');
+const GruposController = require('../../controllers/grupos');
 
 const router = express.Router();
 
@@ -29,14 +29,26 @@ router.get('/',
 // GET /api/grupos/ativos - Buscar grupos ativos
 router.get('/ativos',
   checkPermission('visualizar'),
-  GruposController.buscarAtivos
+  GruposController.buscarGruposAtivos
+);
+
+// GET /api/grupos/estatisticas - Buscar estatísticas de grupos
+router.get('/estatisticas',
+  checkPermission('visualizar'),
+  GruposController.buscarEstatisticas
+);
+
+// GET /api/grupos/codigo/:codigo - Buscar grupo por código
+router.get('/codigo/:codigo',
+  checkPermission('visualizar'),
+  GruposController.buscarGruposPorCodigo
 );
 
 // GET /api/grupos/:id/subgrupos - Buscar subgrupos de um grupo
 router.get('/:id/subgrupos',
   checkPermission('visualizar'),
   commonValidations.id,
-  GruposController.buscarSubgrupos
+  GruposController.buscarSubgruposPorGrupo
 );
 
 // GET /api/grupos/:id - Buscar grupo por ID
