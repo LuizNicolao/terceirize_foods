@@ -9,7 +9,7 @@ const { motoristaValidations, commonValidations } = require('./motoristaValidato
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const motoristasController = require('../../controllers/motoristasController');
+const motoristasController = require('../../controllers/motoristas');
 
 const router = express.Router();
 
