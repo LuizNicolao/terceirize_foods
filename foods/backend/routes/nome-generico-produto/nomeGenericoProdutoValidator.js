@@ -1,110 +1,94 @@
 /**
- * Validações para Nomes Genéricos de Produtos
- * Implementa validações com Yup para criação e atualização
+ * Validações específicas para Nomes Genéricos de Produtos
+ * Implementa validações usando express-validator
  */
 
-const yup = require('yup');
+const { body, param, query, validationResult } = require('express-validator');
+const { validationResponse } = require('../../middleware/responseHandler');
+
+// Middleware para capturar erros de validação
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return validationResponse(res, errors.array());
+  }
+  next();
+};
 
 // Validações comuns
 const commonValidations = {
-  id: yup.object({
-    params: yup.object({
-      id: yup.number().integer().positive().required('ID é obrigatório')
-    })
-  }),
+  // Validação de ID numérico
+  id: param('id')
+    .isInt({ min: 1 })
+    .withMessage('ID deve ser um número inteiro positivo'),
 
-  search: yup.object({
-    query: yup.object({
-      search: yup.string().optional()
-    })
-  }),
+  // Validação de busca
+  search: query('search')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Termo de busca deve ter entre 1 e 100 caracteres'),
 
-  pagination: yup.object({
-    query: yup.object({
-      page: yup.number().integer().min(1).optional(),
-      limit: yup.number().integer().min(1).max(100).optional()
-    })
-  })
+  // Validação de paginação
+  pagination: [
+    query('page')
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage('Página deve ser um número inteiro positivo'),
+    query('limit')
+      .optional()
+      .isInt({ min: 1, max: 100 })
+      .withMessage('Limite deve ser um número entre 1 e 100')
+  ]
 };
 
 // Validações específicas para nomes genéricos
 const nomeGenericoProdutoValidations = [
-  yup.object({
-    body: yup.object({
-      nome: yup
-        .string()
-        .required('Nome é obrigatório')
-        .min(2, 'Nome deve ter pelo menos 2 caracteres')
-        .max(100, 'Nome deve ter no máximo 100 caracteres')
-        .trim(),
-      
-      descricao: yup
-        .string()
-        .required('Descrição é obrigatória')
-        .min(10, 'Descrição deve ter pelo menos 10 caracteres')
-        .max(500, 'Descrição deve ter no máximo 500 caracteres')
-        .trim(),
-      
-      status: yup
-        .string()
-        .oneOf(['ativo', 'inativo'], 'Status deve ser ativo ou inativo')
-        .default('ativo')
-    })
-  })
+  body('nome')
+    .notEmpty()
+    .withMessage('Nome é obrigatório')
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Nome deve ter entre 2 e 100 caracteres')
+    .trim(),
+  
+  body('descricao')
+    .notEmpty()
+    .withMessage('Descrição é obrigatória')
+    .isLength({ min: 10, max: 500 })
+    .withMessage('Descrição deve ter entre 10 e 500 caracteres')
+    .trim(),
+  
+  body('status')
+    .optional()
+    .isIn(['ativo', 'inativo'])
+    .withMessage('Status deve ser ativo ou inativo'),
+  
+  handleValidationErrors
 ];
 
 const nomeGenericoProdutoAtualizacaoValidations = [
-  yup.object({
-    params: yup.object({
-      id: yup.number().integer().positive().required('ID é obrigatório')
-    }),
-    body: yup.object({
-      nome: yup
-        .string()
-        .optional()
-        .min(2, 'Nome deve ter pelo menos 2 caracteres')
-        .max(100, 'Nome deve ter no máximo 100 caracteres')
-        .trim(),
-      
-      descricao: yup
-        .string()
-        .optional()
-        .min(10, 'Descrição deve ter pelo menos 10 caracteres')
-        .max(500, 'Descrição deve ter no máximo 500 caracteres')
-        .trim(),
-      
-      status: yup
-        .string()
-        .oneOf(['ativo', 'inativo'], 'Status deve ser ativo ou inativo')
-        .optional()
-    })
-  })
+  commonValidations.id,
+  
+  body('nome')
+    .optional()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Nome deve ter entre 2 e 100 caracteres')
+    .trim(),
+  
+  body('descricao')
+    .optional()
+    .isLength({ min: 10, max: 500 })
+    .withMessage('Descrição deve ter entre 10 e 500 caracteres')
+    .trim(),
+  
+  body('status')
+    .optional()
+    .isIn(['ativo', 'inativo'])
+    .withMessage('Status deve ser ativo ou inativo'),
+  
+  handleValidationErrors
 ];
-
-// Middleware para tratar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  try {
-    // Aplicar validações
-    const validations = req.route.stack
-      .filter(layer => layer.name === 'validate')
-      .map(layer => layer.handle);
-
-    validations.forEach(validation => {
-      validation(req, res, () => {});
-    });
-
-    next();
-  } catch (error) {
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Erro de validação',
-        errors: error.errors
-      });
-    }
-    next(error);
-  }
-};
 
 module.exports = {
   commonValidations,
