@@ -9,7 +9,7 @@ const { ajudanteValidations, commonValidations } = require('./ajudanteValidator'
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const AjudantesController = require('../../controllers/ajudantesController');
+const AjudantesController = require('../../controllers/ajudantes');
 
 const router = express.Router();
 
