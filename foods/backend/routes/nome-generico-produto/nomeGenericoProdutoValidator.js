@@ -48,21 +48,29 @@ const nomeGenericoProdutoValidations = [
   body('nome')
     .notEmpty()
     .withMessage('Nome é obrigatório')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Nome deve ter entre 2 e 100 caracteres')
+    .isLength({ min: 2, max: 200 })
+    .withMessage('Nome deve ter entre 2 e 200 caracteres')
     .trim(),
   
-  body('descricao')
-    .notEmpty()
-    .withMessage('Descrição é obrigatória')
-    .isLength({ min: 10, max: 500 })
-    .withMessage('Descrição deve ter entre 10 e 500 caracteres')
-    .trim(),
+  body('grupo_id')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('ID do grupo deve ser um número inteiro positivo'),
+  
+  body('subgrupo_id')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('ID do subgrupo deve ser um número inteiro positivo'),
+  
+  body('classe_id')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('ID da classe deve ser um número inteiro positivo'),
   
   body('status')
     .optional()
-    .isIn(['ativo', 'inativo'])
-    .withMessage('Status deve ser ativo ou inativo'),
+    .isIn([0, 1, '0', '1'])
+    .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
   
   handleValidationErrors
 ];
@@ -72,20 +80,29 @@ const nomeGenericoProdutoAtualizacaoValidations = [
   
   body('nome')
     .optional()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Nome deve ter entre 2 e 100 caracteres')
+    .isLength({ min: 2, max: 200 })
+    .withMessage('Nome deve ter entre 2 e 200 caracteres')
     .trim(),
   
-  body('descricao')
+  body('grupo_id')
     .optional()
-    .isLength({ min: 10, max: 500 })
-    .withMessage('Descrição deve ter entre 10 e 500 caracteres')
-    .trim(),
+    .isInt({ min: 1 })
+    .withMessage('ID do grupo deve ser um número inteiro positivo'),
+  
+  body('subgrupo_id')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('ID do subgrupo deve ser um número inteiro positivo'),
+  
+  body('classe_id')
+    .optional()
+    .isInt({ min: 1 })
+    .withMessage('ID da classe deve ser um número inteiro positivo'),
   
   body('status')
     .optional()
-    .isIn(['ativo', 'inativo'])
-    .withMessage('Status deve ser ativo ou inativo'),
+    .isIn([0, 1, '0', '1'])
+    .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
   
   handleValidationErrors
 ];
