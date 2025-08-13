@@ -81,7 +81,7 @@ class ProdutosSearchController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.nome as marca_nome
+        m.marca as marca_nome
       FROM produtos p
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
@@ -198,7 +198,7 @@ class ProdutosSearchController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.nome as marca_nome
+        m.marca as marca_nome
       FROM produtos p
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
@@ -315,7 +315,7 @@ class ProdutosSearchController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.nome as marca_nome
+        m.marca as marca_nome
       FROM produtos p
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
@@ -420,7 +420,7 @@ class ProdutosSearchController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.nome as marca_nome
+        m.marca as marca_nome
        FROM produtos p
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
@@ -511,7 +511,7 @@ class ProdutosSearchController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.nome as marca_nome
+        m.marca as marca_nome
       FROM produtos p
       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
@@ -631,10 +631,10 @@ class ProdutosSearchController {
    */
   static listarMarcas = asyncHandler(async (req, res) => {
     const query = `
-      SELECT id, nome, descricao, status, criado_em, atualizado_em
+      SELECT id, marca, fabricante, status, criado_em, atualizado_em
       FROM marcas 
-      WHERE status = 'ativo'
-      ORDER BY nome ASC
+      WHERE status = 1
+      ORDER BY marca ASC
     `;
 
     const marcas = await executeQuery(query);

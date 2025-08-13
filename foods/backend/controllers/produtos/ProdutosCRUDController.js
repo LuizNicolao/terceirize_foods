@@ -243,7 +243,7 @@ class ProdutosCRUDController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.nome as marca_nome
+        m.marca as marca_nome
        FROM produtos p
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
@@ -479,7 +479,7 @@ class ProdutosCRUDController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.nome as marca_nome
+        m.marca as marca_nome
        FROM produtos p
        LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
        LEFT JOIN grupos g ON p.grupo_id = g.id
