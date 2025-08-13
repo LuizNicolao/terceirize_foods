@@ -33,12 +33,15 @@ const AlmoxarifadoContent = ({
     try {
       const response = await filiaisService.listarAlmoxarifados(filialId);
       if (response.success) {
-        setAlmoxarifados(response.data || []);
+        const almoxarifadosData = response.data || [];
+        setAlmoxarifados(Array.isArray(almoxarifadosData) ? almoxarifadosData : []);
       } else {
         toast.error(response.error);
+        setAlmoxarifados([]);
       }
     } catch (error) {
       toast.error('Erro ao carregar almoxarifados');
+      setAlmoxarifados([]);
     } finally {
       setLoading(false);
     }
@@ -48,9 +51,11 @@ const AlmoxarifadoContent = ({
   const loadProdutos = async () => {
     try {
       const response = await api.get('/produtos');
-      setProdutos(response.data.data || []);
+      const produtosData = response.data?.data || response.data || [];
+      setProdutos(Array.isArray(produtosData) ? produtosData : []);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
+      setProdutos([]);
     }
   };
 
@@ -60,12 +65,15 @@ const AlmoxarifadoContent = ({
     try {
       const response = await filiaisService.listarItensAlmoxarifado(almoxarifadoId);
       if (response.success) {
-        setItensAlmoxarifado(response.data || []);
+        const itensData = response.data || [];
+        setItensAlmoxarifado(Array.isArray(itensData) ? itensData : []);
       } else {
         toast.error(response.error);
+        setItensAlmoxarifado([]);
       }
     } catch (error) {
       toast.error('Erro ao carregar itens');
+      setItensAlmoxarifado([]);
     } finally {
       setLoadingItens(false);
     }
@@ -367,7 +375,7 @@ const AlmoxarifadoContent = ({
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     >
                       <option value="">Selecione um produto...</option>
-                      {produtos.map(produto => (
+                      {Array.isArray(produtos) && produtos.map(produto => (
                         <option key={produto.id} value={produto.id}>
                           {produto.nome}
                         </option>
@@ -416,7 +424,7 @@ const AlmoxarifadoContent = ({
                       <Table.HeaderCell>Ações</Table.HeaderCell>
                     </Table.Header>
                     <Table.Body>
-                      {itensAlmoxarifado.map(item => (
+                      {Array.isArray(itensAlmoxarifado) && itensAlmoxarifado.map(item => (
                         <Table.Row key={item.id}>
                           <Table.Cell>{item.produto_nome}</Table.Cell>
                           <Table.Cell>{item.quantidade}</Table.Cell>
