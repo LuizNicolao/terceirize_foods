@@ -9,7 +9,7 @@ const { subgrupoValidations, commonValidations } = require('./subgrupoValidator'
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const SubgruposController = require('../../controllers/subgruposController');
+const SubgruposController = require('../../controllers/subgrupos');
 
 const router = express.Router();
 
@@ -29,14 +29,26 @@ router.get('/',
 // GET /api/subgrupos/ativos - Buscar subgrupos ativos
 router.get('/ativos',
   checkPermission('visualizar'),
-  SubgruposController.buscarAtivos
+  SubgruposController.buscarSubgruposAtivos
+);
+
+// GET /api/subgrupos/estatisticas - Buscar estatísticas de subgrupos
+router.get('/estatisticas',
+  checkPermission('visualizar'),
+  SubgruposController.buscarEstatisticas
+);
+
+// GET /api/subgrupos/codigo/:codigo - Buscar subgrupo por código
+router.get('/codigo/:codigo',
+  checkPermission('visualizar'),
+  SubgruposController.buscarSubgruposPorCodigo
 );
 
 // GET /api/subgrupos/grupo/:grupo_id - Buscar subgrupos por grupo
 router.get('/grupo/:grupo_id',
   checkPermission('visualizar'),
   commonValidations.id,
-  SubgruposController.buscarPorGrupo
+  SubgruposController.buscarSubgruposPorGrupo
 );
 
 // GET /api/subgrupos/:id - Buscar subgrupo por ID
