@@ -63,7 +63,7 @@ const NomeGenericoModal = ({
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Card 1: Informações Básicas */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-blue-500">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
               Informações Básicas
             </h3>
             <div className="space-y-3">
@@ -88,7 +88,7 @@ const NomeGenericoModal = ({
 
           {/* Card 2: Classificação */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-blue-500">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
               Classificação
             </h3>
             <div className="space-y-3">
