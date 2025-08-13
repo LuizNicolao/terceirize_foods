@@ -9,7 +9,7 @@ const { nomeGenericoProdutoValidations, nomeGenericoProdutoAtualizacaoValidation
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const NomeGenericoProdutoController = require('../../controllers/nomeGenericoProdutoController');
+const NomeGenericoProdutoController = require('../../controllers/nome-generico-produto');
 
 const router = express.Router();
 
@@ -23,8 +23,8 @@ router.get('/',
   NomeGenericoProdutoController.listarNomesGenericos
 );
 
-// GET /api/nome-generico-produto/ativos/listar - Buscar nomes genéricos ativos
-router.get('/ativos/listar',
+// GET /api/nome-generico-produto/ativos - Buscar nomes genéricos ativos
+router.get('/ativos',
   checkPermission('visualizar'),
   NomeGenericoProdutoController.buscarNomesGenericosAtivos
 );
@@ -35,20 +35,20 @@ router.get('/estatisticas',
   NomeGenericoProdutoController.buscarEstatisticasNomesGenericos
 );
 
-// GET /api/nome-generico-produto/grupo/:grupoId - Buscar nomes genéricos por grupo
-router.get('/grupo/:grupoId',
+// GET /api/nome-generico-produto/grupo/:grupo_id - Buscar nomes genéricos por grupo
+router.get('/grupo/:grupo_id',
   checkPermission('visualizar'),
   NomeGenericoProdutoController.buscarNomesGenericosPorGrupo
 );
 
-// GET /api/nome-generico-produto/subgrupo/:subgrupoId - Buscar nomes genéricos por subgrupo
-router.get('/subgrupo/:subgrupoId',
+// GET /api/nome-generico-produto/subgrupo/:subgrupo_id - Buscar nomes genéricos por subgrupo
+router.get('/subgrupo/:subgrupo_id',
   checkPermission('visualizar'),
   NomeGenericoProdutoController.buscarNomesGenericosPorSubgrupo
 );
 
-// GET /api/nome-generico-produto/classe/:classeId - Buscar nomes genéricos por classe
-router.get('/classe/:classeId',
+// GET /api/nome-generico-produto/classe/:classe_id - Buscar nomes genéricos por classe
+router.get('/classe/:classe_id',
   checkPermission('visualizar'),
   NomeGenericoProdutoController.buscarNomesGenericosPorClasse
 );
