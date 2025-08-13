@@ -4,6 +4,9 @@ import { usePermissions } from '../../contexts/PermissionsContext';
 import { useNomeGenericoProduto } from '../../hooks/useNomeGenericoProduto';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
+import { useGrupos } from '../../hooks/useGrupos';
+import { useSubgrupos } from '../../hooks/useSubgrupos';
+import { useClasses } from '../../hooks/useClasses';
 import NomeGenericoProdutoService from '../../services/nomeGenericoProduto';
 import { Button } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
@@ -45,6 +48,11 @@ const NomeGenericoProduto = () => {
     getStatusLabel,
     getStatusColor
   } = useNomeGenericoProduto();
+
+  // Hooks para dropdowns
+  const { grupos } = useGrupos();
+  const { subgrupos } = useSubgrupos();
+  const { classes } = useClasses();
 
   const {
     showAuditModal,
@@ -135,6 +143,9 @@ const NomeGenericoProduto = () => {
         onSubmit={onSubmit}
         nomeGenerico={editingNomeGenerico}
         isViewMode={viewMode}
+        grupos={grupos}
+        subgrupos={subgrupos}
+        classes={classes}
       />
 
       {/* Modal de Auditoria */}
