@@ -614,13 +614,16 @@ class ProdutosSearchController {
     const query = `
       SELECT id, nome, sigla, status, criado_em, atualizado_em
       FROM unidades_medida 
-      WHERE status = 1
       ORDER BY nome ASC
     `;
 
     const unidades = await executeQuery(query);
 
-    // Retornar resposta simples sem HATEOAS para debug
+    // Log para debug
+    console.log('Unidades encontradas:', unidades);
+    console.log('Quantidade de unidades:', unidades.length);
+
+    // Retornar resposta no formato esperado pelo frontend
     return successResponse(res, unidades, 'Unidades de medida listadas com sucesso', STATUS_CODES.OK);
   });
 
