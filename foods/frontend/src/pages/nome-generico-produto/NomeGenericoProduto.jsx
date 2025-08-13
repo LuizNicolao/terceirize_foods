@@ -86,7 +86,7 @@ const NomeGenericoProduto = () => {
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
           </Button>
-          {canCreate('nome-generico-produto') && (
+          {canCreate('nome_generico_produto') && (
             <Button onClick={handleAddNomeGenerico} size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
               <span className="hidden sm:inline">Adicionar</span>

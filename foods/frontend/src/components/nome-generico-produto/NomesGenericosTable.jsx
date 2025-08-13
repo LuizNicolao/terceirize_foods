@@ -79,7 +79,7 @@ const NomesGenericosTable = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2">
-                      {canView('nome-generico-produto') && (
+                      {canView('nome_generico_produto') && (
                         <Button
                           variant="ghost"
                           size="xs"
@@ -89,7 +89,7 @@ const NomesGenericosTable = ({
                           <FaEye className="text-green-600 text-sm" />
                         </Button>
                       )}
-                      {canEdit('nome-generico-produto') && (
+                      {canEdit('nome_generico_produto') && (
                         <Button
                           variant="ghost"
                           size="xs"
@@ -99,7 +99,7 @@ const NomesGenericosTable = ({
                           <FaEdit className="text-blue-600 text-sm" />
                         </Button>
                       )}
-                      {canDelete('nome-generico-produto') && (
+                      {canDelete('nome_generico_produto') && (
                         <Button
                           variant="ghost"
                           size="xs"
@@ -146,7 +146,7 @@ const NomesGenericosTable = ({
             </div>
             
             <div className="flex gap-2">
-              {canView('nome-generico-produto') && (
+              {canView('nome_generico_produto') && (
                 <Button
                   variant="ghost"
                   size="xs"
@@ -156,7 +156,7 @@ const NomesGenericosTable = ({
                   <FaEye className="text-green-600 text-sm" />
                 </Button>
               )}
-              {canEdit('nome-generico-produto') && (
+              {canEdit('nome_generico_produto') && (
                 <Button
                   variant="ghost"
                   size="xs"
@@ -166,7 +166,7 @@ const NomesGenericosTable = ({
                   <FaEdit className="text-blue-600 text-sm" />
                 </Button>
               )}
-              {canDelete('nome-generico-produto') && (
+              {canDelete('nome_generico_produto') && (
                 <Button
                   variant="ghost"
                   size="xs"
