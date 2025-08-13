@@ -1,4 +1,4 @@
-export { default as NomeGenericoProdutoStats } from './NomeGenericoProdutoStats';
-export { default as NomeGenericoProdutoActions } from './NomeGenericoProdutoActions';
-export { default as NomeGenericoProdutoTable } from './NomeGenericoProdutoTable';
-export { default as NomeGenericoProdutoModal } from './NomeGenericoProdutoModal';
+export { default as NomeGenericoModal } from './NomeGenericoModal';
+export { default as NomesGenericosStats } from './NomesGenericosStats';
+export { default as NomesGenericosActions } from './NomesGenericosActions';
+export { default as NomesGenericosTable } from './NomesGenericosTable';

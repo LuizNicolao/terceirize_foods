@@ -1,11 +1,11 @@
 /**
- * Rotas de Nomes Genéricos de Produto
+ * Rotas de Nomes Genéricos de Produtos
  * Implementa padrões RESTful com HATEOAS, paginação e validação
  */
 
 const express = require('express');
 const { authenticateToken, checkPermission } = require('../../middleware/auth');
-const { nomeGenericoProdutoValidations, commonValidations } = require('./nomeGenericoProdutoValidator');
+const { nomeGenericoProdutoValidations, nomeGenericoProdutoAtualizacaoValidations } = require('./nomeGenericoProdutoValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -21,42 +21,12 @@ router.use(hateoasMiddleware('nome-generico-produto'));
 // GET /api/nome-generico-produto - Listar nomes genéricos com paginação e busca
 router.get('/', 
   checkPermission('visualizar'),
-  commonValidations.search,
-  commonValidations.pagination,
   NomeGenericoProdutoController.listarNomesGenericos
-);
-
-// GET /api/nome-generico-produto/ativos - Buscar nomes genéricos ativos
-router.get('/ativos',
-  checkPermission('visualizar'),
-  NomeGenericoProdutoController.buscarNomesGenericosAtivos
-);
-
-// GET /api/nome-generico-produto/grupo/:grupoId - Buscar por grupo
-router.get('/grupo/:grupoId',
-  checkPermission('visualizar'),
-  commonValidations.id,
-  NomeGenericoProdutoController.buscarNomesGenericosPorGrupo
-);
-
-// GET /api/nome-generico-produto/subgrupo/:subgrupoId - Buscar por subgrupo
-router.get('/subgrupo/:subgrupoId',
-  checkPermission('visualizar'),
-  commonValidations.id,
-  NomeGenericoProdutoController.buscarNomesGenericosPorSubgrupo
-);
-
-// GET /api/nome-generico-produto/classe/:classeId - Buscar por classe
-router.get('/classe/:classeId',
-  checkPermission('visualizar'),
-  commonValidations.id,
-  NomeGenericoProdutoController.buscarNomesGenericosPorClasse
 );
 
 // GET /api/nome-generico-produto/:id - Buscar nome genérico por ID
 router.get('/:id', 
   checkPermission('visualizar'),
-  commonValidations.id,
   NomeGenericoProdutoController.buscarNomeGenericoPorId
 );
 
@@ -64,7 +34,7 @@ router.get('/:id',
 router.post('/', 
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'nome-generico-produto'),
-  nomeGenericoProdutoValidations.create,
+  nomeGenericoProdutoValidations,
   NomeGenericoProdutoController.criarNomeGenerico
 );
 
@@ -72,7 +42,7 @@ router.post('/',
 router.put('/:id', 
   checkPermission('editar'),
   auditMiddleware(AUDIT_ACTIONS.UPDATE, 'nome-generico-produto'),
-  nomeGenericoProdutoValidations.update,
+  nomeGenericoProdutoAtualizacaoValidations,
   NomeGenericoProdutoController.atualizarNomeGenerico
 );
 
@@ -80,8 +50,43 @@ router.put('/:id',
 router.delete('/:id', 
   checkPermission('excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'nome-generico-produto'),
-  commonValidations.id,
   NomeGenericoProdutoController.excluirNomeGenerico
+);
+
+// GET /api/nome-generico-produto/ativos/listar - Buscar nomes genéricos ativos
+router.get('/ativos/listar',
+  checkPermission('visualizar'),
+  NomeGenericoProdutoController.buscarNomesGenericosAtivos
+);
+
+// GET /api/nome-generico-produto/grupo/:grupoId - Buscar nomes genéricos por grupo
+router.get('/grupo/:grupoId',
+  checkPermission('visualizar'),
+  NomeGenericoProdutoController.buscarNomesGenericosPorGrupo
+);
+
+// GET /api/nome-generico-produto/subgrupo/:subgrupoId - Buscar nomes genéricos por subgrupo
+router.get('/subgrupo/:subgrupoId',
+  checkPermission('visualizar'),
+  NomeGenericoProdutoController.buscarNomesGenericosPorSubgrupo
+);
+
+// GET /api/nome-generico-produto/classe/:classeId - Buscar nomes genéricos por classe
+router.get('/classe/:classeId',
+  checkPermission('visualizar'),
+  NomeGenericoProdutoController.buscarNomesGenericosPorClasse
+);
+
+// GET /api/nome-generico-produto/estatisticas - Buscar estatísticas
+router.get('/estatisticas',
+  checkPermission('visualizar'),
+  NomeGenericoProdutoController.buscarEstatisticasNomesGenericos
+);
+
+// GET /api/nome-generico-produto/:id/produtos - Buscar produtos de um nome genérico
+router.get('/:id/produtos',
+  checkPermission('visualizar'),
+  NomeGenericoProdutoController.buscarProdutosNomeGenerico
 );
 
 module.exports = router;

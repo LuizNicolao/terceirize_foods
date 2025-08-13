@@ -115,38 +115,6 @@ const commonValidations = {
     .withMessage('Status deve ser ativo, inativo ou bloqueado')
 };
 
-// Validações específicas para usuários foram movidas para routes/usuarios/usuarioValidator.js
-
-// Validações para Fornecedores - MOVIDAS PARA ARQUIVO ESPECÍFICO
-
-// Validações específicas para clientes - MOVIDAS PARA ARQUIVO ESPECÍFICO
-
-// Validações específicas para grupos - MOVIDAS PARA routes/grupos/grupoValidator.js
-
-
-// Validações específicas para subgrupos - MOVIDAS PARA routes/subgrupos/subgrupoValidator.js
-
-// Validações específicas para marcas - MOVIDAS PARA ARQUIVO ESPECÍFICO
-
-// Validações específicas para classes - MOVIDAS PARA routes/classes/classeValidator.js
-
-// Validações específicas para produtos foram movidas para routes/produtos/produtoValidator.js
-
-// Validações para Filiais - MOVIDAS PARA ARQUIVO ESPECÍFICO
-
-// Validações para Unidades - MOVIDAS PARA ARQUIVO ESPECÍFICO
-
-// Validações para Unidades Escolares - MOVIDAS PARA ARQUIVO ESPECÍFICO
-
-// Validações para Motoristas - MOVIDAS PARA ARQUIVO ESPECÍFICO
-
-// Validações para Ajudantes - MOVIDAS PARA ARQUIVO ESPECÍFICO
-
-// Validações para Veículos - MOVIDAS PARA ARQUIVO ESPECÍFICO
-
-// Validações para Rotas - MOVIDAS PARA ARQUIVO ESPECÍFICO
-
-// Validações específicas para nome genérico de produto - MOVIDAS PARA routes/nome-generico-produto/nomeGenericoProdutoValidator.js
 
 module.exports = {
   handleValidationErrors,

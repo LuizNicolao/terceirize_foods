@@ -1,3 +1,3 @@
-const nomeGenericoProdutoRoute = require('./nomeGenericoProdutoRoute');
+const nomeGenericoProdutoRoutes = require('./nomeGenericoProdutoRoute');
 
-module.exports = nomeGenericoProdutoRoute;
+module.exports = nomeGenericoProdutoRoutes;
