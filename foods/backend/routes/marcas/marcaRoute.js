@@ -9,7 +9,7 @@ const { marcaValidations, commonValidations } = require('./marcaValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const MarcasController = require('../../controllers/marcasController');
+const MarcasController = require('../../controllers/marcas');
 
 const router = express.Router();
 
