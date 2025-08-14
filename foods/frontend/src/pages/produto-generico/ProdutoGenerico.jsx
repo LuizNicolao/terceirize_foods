@@ -87,34 +87,35 @@ const ProdutoGenerico = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+      <div className="p-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+          <span className="ml-3 text-gray-600">Carregando produtos genéricos...</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-3 sm:p-6">
+    <div className="p-4 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Produtos Genéricos</h1>
-        <div className="flex gap-2 sm:gap-3">
+        
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Button
             onClick={handleOpenAuditModal}
             variant="ghost"
             size="sm"
-            className="text-xs"
           >
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
+            <span className="sm:hidden">Auditoria</span>
           </Button>
           {canCreate('produto_generico') && (
-            <Button onClick={handleAddProdutoGenerico} size="sm">
+            <Button onClick={handleAddProdutoGenerico} variant="primary" size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar</span>
+              <span className="hidden sm:inline">Adicionar Produto Genérico</span>
               <span className="sm:hidden">Adicionar</span>
             </Button>
           )}
