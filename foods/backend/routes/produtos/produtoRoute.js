@@ -5,7 +5,7 @@
 
 const express = require('express');
 const { authenticateToken, checkPermission } = require('../../middleware/auth');
-const { produtoValidations, commonValidations } = require('./produtoValidator');
+const { produtoValidations, commonValidations, handleValidationErrors } = require('./produtoValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -22,15 +22,9 @@ router.use(hateoasMiddleware('produtos'));
 router.get('/', 
   checkPermission('visualizar'),
   commonValidations.search,
-  commonValidations.pagination,
+  ...commonValidations.pagination,
+  handleValidationErrors,
   ProdutosController.listarProdutos
-);
-
-// GET /api/produtos/:id - Buscar produto por ID
-router.get('/:id', 
-  checkPermission('visualizar'),
-  commonValidations.id,
-  ProdutosController.buscarProdutoPorId
 );
 
 // POST /api/produtos - Criar novo produto
@@ -38,6 +32,7 @@ router.post('/',
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'produtos'),
   produtoValidations.create,
+  handleValidationErrors,
   ProdutosController.criarProduto
 );
 
@@ -46,6 +41,7 @@ router.put('/:id',
   checkPermission('editar'),
   auditMiddleware(AUDIT_ACTIONS.UPDATE, 'produtos'),
   produtoValidations.update,
+  handleValidationErrors,
   ProdutosController.atualizarProduto
 );
 
@@ -54,6 +50,7 @@ router.delete('/:id',
   checkPermission('excluir'),
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'produtos'),
   commonValidations.id,
+  handleValidationErrors,
   ProdutosController.excluirProduto
 );
 
@@ -123,6 +120,14 @@ router.get('/marcas',
 router.get('/estatisticas',
   checkPermission('visualizar'),
   ProdutosController.buscarEstatisticas
+);
+
+// GET /api/produtos/:id - Buscar produto por ID (deve vir por último para não conflitar com rotas específicas)
+router.get('/:id', 
+  checkPermission('visualizar'),
+  commonValidations.id,
+  handleValidationErrors,
+  ProdutosController.buscarProdutoPorId
 );
 
 module.exports = router; 

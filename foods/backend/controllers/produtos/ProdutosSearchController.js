@@ -284,6 +284,506 @@ class ProdutosSearchController {
 
     return successResponse(res, response, STATUS_CODES.OK);
   });
+
+  /**
+   * Buscar produtos por grupo
+   */
+  static buscarProdutosPorGrupo = asyncHandler(async (req, res) => {
+    const { grupo_id } = req.params;
+    const pagination = req.pagination;
+
+    const baseQuery = `
+      SELECT 
+        p.id,
+        p.codigo_produto,
+        p.nome,
+        p.codigo_barras,
+        p.fator_conversao,
+        p.referencia_interna,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.nome_generico_id,
+        p.marca_id,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
+        p.status,
+        p.criado_em,
+        p.atualizado_em,
+        p.tipo_registro,
+        p.embalagem_secundaria_id,
+        p.fator_conversao_embalagem,
+        g.nome as grupo_nome,
+        sg.nome as subgrupo_nome,
+        c.nome as classe_nome,
+        u.nome as unidade_nome,
+        m.marca as marca_nome,
+        ng.nome as nome_generico_nome,
+        ue.nome as embalagem_secundaria_nome
+      FROM produtos p
+      LEFT JOIN grupos g ON p.grupo_id = g.id
+      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+      LEFT JOIN classes c ON p.classe_id = c.id
+      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+      LEFT JOIN marcas m ON p.marca_id = m.id
+      LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
+      LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
+      WHERE p.grupo_id = ? AND p.status = 1
+    `;
+    
+    const limitNum = parseInt(pagination.limit);
+    const offset = (parseInt(pagination.page) - 1) * limitNum;
+    const query = `${baseQuery} ORDER BY p.nome ASC LIMIT ${limitNum} OFFSET ${offset}`;
+    
+    const produtos = await executeQuery(query, [grupo_id]);
+
+    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE grupo_id = ? AND status = 1`;
+    const totalResult = await executeQuery(countQuery, [grupo_id]);
+    const totalItems = totalResult[0].total;
+
+    const response = {
+      data: {
+        items: produtos,
+        _meta: {
+          pagination: {
+            page: parseInt(pagination.page),
+            limit: limitNum,
+            totalItems,
+            totalPages: Math.ceil(totalItems / limitNum)
+          }
+        }
+      }
+    };
+
+    return successResponse(res, response, 'Produtos do grupo obtidos com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
+   * Buscar produtos por fornecedor
+   */
+  static buscarProdutosPorFornecedor = asyncHandler(async (req, res) => {
+    const { fornecedor_id } = req.params;
+    const pagination = req.pagination;
+
+    const baseQuery = `
+      SELECT 
+        p.id,
+        p.codigo_produto,
+        p.nome,
+        p.codigo_barras,
+        p.fator_conversao,
+        p.referencia_interna,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.nome_generico_id,
+        p.marca_id,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
+        p.status,
+        p.criado_em,
+        p.atualizado_em,
+        p.tipo_registro,
+        p.embalagem_secundaria_id,
+        p.fator_conversao_embalagem,
+        g.nome as grupo_nome,
+        sg.nome as subgrupo_nome,
+        c.nome as classe_nome,
+        u.nome as unidade_nome,
+        m.marca as marca_nome,
+        ng.nome as nome_generico_nome,
+        ue.nome as embalagem_secundaria_nome
+      FROM produtos p
+      LEFT JOIN grupos g ON p.grupo_id = g.id
+      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+      LEFT JOIN classes c ON p.classe_id = c.id
+      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+      LEFT JOIN marcas m ON p.marca_id = m.id
+      LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
+      LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
+      LEFT JOIN produto_fornecedor pf ON p.id = pf.produto_id
+      WHERE pf.fornecedor_id = ? AND p.status = 1
+    `;
+    
+    const limitNum = parseInt(pagination.limit);
+    const offset = (parseInt(pagination.page) - 1) * limitNum;
+    const query = `${baseQuery} ORDER BY p.nome ASC LIMIT ${limitNum} OFFSET ${offset}`;
+    
+    const produtos = await executeQuery(query, [fornecedor_id]);
+
+    const countQuery = `
+      SELECT COUNT(*) as total 
+      FROM produtos p 
+      LEFT JOIN produto_fornecedor pf ON p.id = pf.produto_id 
+      WHERE pf.fornecedor_id = ? AND p.status = 1
+    `;
+    const totalResult = await executeQuery(countQuery, [fornecedor_id]);
+    const totalItems = totalResult[0].total;
+
+    const response = {
+      data: {
+        items: produtos,
+        _meta: {
+          pagination: {
+            page: parseInt(pagination.page),
+            limit: limitNum,
+            totalItems,
+            totalPages: Math.ceil(totalItems / limitNum)
+          }
+        }
+      }
+    };
+
+    return successResponse(res, response, 'Produtos do fornecedor obtidos com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
+   * Buscar produtos por código de barras
+   */
+  static buscarProdutosPorCodigoBarras = asyncHandler(async (req, res) => {
+    const { codigo_barras } = req.params;
+
+    const query = `
+      SELECT 
+        p.id,
+        p.codigo_produto,
+        p.nome,
+        p.codigo_barras,
+        p.fator_conversao,
+        p.referencia_interna,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.nome_generico_id,
+        p.marca_id,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
+        p.status,
+        p.criado_em,
+        p.atualizado_em,
+        p.tipo_registro,
+        p.embalagem_secundaria_id,
+        p.fator_conversao_embalagem,
+        g.nome as grupo_nome,
+        sg.nome as subgrupo_nome,
+        c.nome as classe_nome,
+        u.nome as unidade_nome,
+        m.marca as marca_nome,
+        ng.nome as nome_generico_nome,
+        ue.nome as embalagem_secundaria_nome
+      FROM produtos p
+      LEFT JOIN grupos g ON p.grupo_id = g.id
+      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+      LEFT JOIN classes c ON p.classe_id = c.id
+      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+      LEFT JOIN marcas m ON p.marca_id = m.id
+      LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
+      LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
+      WHERE p.codigo_barras = ? AND p.status = 1
+    `;
+    
+    const produtos = await executeQuery(query, [codigo_barras]);
+
+    if (produtos.length === 0) {
+      return notFoundResponse(res, 'Produto não encontrado');
+    }
+
+    return successResponse(res, produtos[0], 'Produto encontrado com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
+   * Buscar produtos com estoque baixo
+   */
+  static buscarProdutosEstoqueBaixo = asyncHandler(async (req, res) => {
+    const pagination = req.pagination;
+
+    const baseQuery = `
+      SELECT 
+        p.id,
+        p.codigo_produto,
+        p.nome,
+        p.codigo_barras,
+        p.fator_conversao,
+        p.referencia_interna,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.nome_generico_id,
+        p.marca_id,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
+        p.status,
+        p.criado_em,
+        p.atualizado_em,
+        p.tipo_registro,
+        p.embalagem_secundaria_id,
+        p.fator_conversao_embalagem,
+        g.nome as grupo_nome,
+        sg.nome as subgrupo_nome,
+        c.nome as classe_nome,
+        u.nome as unidade_nome,
+        m.marca as marca_nome,
+        ng.nome as nome_generico_nome,
+        ue.nome as embalagem_secundaria_nome
+      FROM produtos p
+      LEFT JOIN grupos g ON p.grupo_id = g.id
+      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+      LEFT JOIN classes c ON p.classe_id = c.id
+      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+      LEFT JOIN marcas m ON p.marca_id = m.id
+      LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
+      LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
+      LEFT JOIN estoque e ON p.id = e.produto_id
+      WHERE p.status = 1 AND (e.quantidade IS NULL OR e.quantidade <= e.estoque_minimo)
+    `;
+    
+    const limitNum = parseInt(pagination.limit);
+    const offset = (parseInt(pagination.page) - 1) * limitNum;
+    const query = `${baseQuery} ORDER BY e.quantidade ASC LIMIT ${limitNum} OFFSET ${offset}`;
+    
+    const produtos = await executeQuery(query);
+
+    const countQuery = `
+      SELECT COUNT(*) as total 
+      FROM produtos p 
+      LEFT JOIN estoque e ON p.id = e.produto_id 
+      WHERE p.status = 1 AND (e.quantidade IS NULL OR e.quantidade <= e.estoque_minimo)
+    `;
+    const totalResult = await executeQuery(countQuery);
+    const totalItems = totalResult[0].total;
+
+    const response = {
+      data: {
+        items: produtos,
+        _meta: {
+          pagination: {
+            page: parseInt(pagination.page),
+            limit: limitNum,
+            totalItems,
+            totalPages: Math.ceil(totalItems / limitNum)
+          }
+        }
+      }
+    };
+
+    return successResponse(res, response, 'Produtos com estoque baixo obtidos com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
+   * Listar grupos disponíveis
+   */
+  static listarGrupos = asyncHandler(async (req, res) => {
+    const query = `
+      SELECT 
+        id,
+        nome,
+        descricao,
+        status,
+        criado_em,
+        atualizado_em
+      FROM grupos
+      WHERE status = 1
+      ORDER BY nome ASC
+    `;
+    
+    const grupos = await executeQuery(query);
+
+    return successResponse(res, grupos, 'Grupos obtidos com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
+   * Listar subgrupos disponíveis
+   */
+  static listarSubgrupos = asyncHandler(async (req, res) => {
+    const query = `
+      SELECT 
+        id,
+        nome,
+        descricao,
+        grupo_id,
+        status,
+        criado_em,
+        atualizado_em
+      FROM subgrupos
+      WHERE status = 1
+      ORDER BY nome ASC
+    `;
+    
+    const subgrupos = await executeQuery(query);
+
+    return successResponse(res, subgrupos, 'Subgrupos obtidos com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
+   * Listar classes disponíveis
+   */
+  static listarClasses = asyncHandler(async (req, res) => {
+    const query = `
+      SELECT 
+        id,
+        nome,
+        descricao,
+        status,
+        criado_em,
+        atualizado_em
+      FROM classes
+      WHERE status = 1
+      ORDER BY nome ASC
+    `;
+    
+    const classes = await executeQuery(query);
+
+    return successResponse(res, classes, 'Classes obtidas com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
+   * Listar unidades de medida disponíveis
+   */
+  static listarUnidades = asyncHandler(async (req, res) => {
+    const query = `
+      SELECT 
+        id,
+        nome,
+        sigla,
+        descricao,
+        status,
+        criado_em,
+        atualizado_em
+      FROM unidades_medida
+      WHERE status = 1
+      ORDER BY nome ASC
+    `;
+    
+    const unidades = await executeQuery(query);
+
+    return successResponse(res, unidades, 'Unidades de medida obtidas com sucesso', STATUS_CODES.OK);
+  });
+
+  /**
+   * Listar marcas disponíveis
+   */
+  static listarMarcas = asyncHandler(async (req, res) => {
+    const query = `
+      SELECT 
+        id,
+        marca,
+        descricao,
+        status,
+        criado_em,
+        atualizado_em
+      FROM marcas
+      WHERE status = 1
+      ORDER BY marca ASC
+    `;
+    
+    const marcas = await executeQuery(query);
+
+    return successResponse(res, marcas, 'Marcas obtidas com sucesso', STATUS_CODES.OK);
+  });
 }
 
 module.exports = ProdutosSearchController;

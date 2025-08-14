@@ -31,5 +31,5 @@ module.exports = {
   listarMarcas: ProdutosSearchController.listarMarcas,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: ProdutosStatsController.buscarEstatisticas
+  buscarEstatisticas: ProdutosStatsController.estatisticasGerais
 };
