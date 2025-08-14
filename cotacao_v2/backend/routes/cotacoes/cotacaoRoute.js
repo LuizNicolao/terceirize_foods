@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const { authenticateToken } = require('../../middleware/auth');
+const { auth } = require('../../middleware/auth');
 const { validateCotacao } = require('./cotacaoValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
@@ -14,7 +14,7 @@ const cotacoesController = require('../../controllers/cotacoes');
 const router = express.Router();
 
 // Aplicar middlewares globais
-router.use(authenticateToken);
+router.use(auth);
 // router.use(paginationMiddleware); // Comentado temporariamente para debug
 // router.use(hateoasMiddleware('cotacoes')); // Comentado temporariamente para debug
 
