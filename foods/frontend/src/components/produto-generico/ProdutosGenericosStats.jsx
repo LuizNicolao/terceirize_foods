@@ -13,13 +13,13 @@ const ProdutosGenericosStats = ({ estatisticas }) => {
       />
       <StatCard
         title="Produtos Ativos"
-        value={estatisticas.produtos_genericos_ativos || 0}
+        value={estatisticas.produtos_ativos || 0}
         icon={FaCheckCircle}
         color="green"
       />
       <StatCard
         title="Produtos Inativos"
-        value={estatisticas.produtos_genericos_inativos || 0}
+        value={estatisticas.produtos_inativos || 0}
         icon={FaTimesCircle}
         color="red"
       />

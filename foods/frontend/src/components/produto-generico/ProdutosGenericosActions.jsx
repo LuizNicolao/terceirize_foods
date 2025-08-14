@@ -2,7 +2,7 @@ import React from 'react';
 import { FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { Button } from '../../components/ui';
 
-const ProdutosGenericosActions = ({ onExportXLSX, onExportPDF }) => {
+const ProdutosGenericosActions = ({ onExportXLSX, onExportPDF, totalItems }) => {
   return (
     <div className="flex flex-wrap gap-2 mb-4">
       <Button

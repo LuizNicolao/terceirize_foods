@@ -12,7 +12,12 @@ const ProdutosGenericosTable = ({
   onDelete,
   getStatusLabel,
   getStatusColor,
-  formatDate
+  formatDate,
+  getGrupoName,
+  getSubgrupoName,
+  getClasseName,
+  getProdutoOrigemName,
+  getUnidadeMedidaName
 }) => {
   if (!Array.isArray(produtosGenericos) || produtosGenericos.length === 0) {
     return (
@@ -81,17 +86,17 @@ const ProdutosGenericosTable = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {produtoGenerico.grupo_nome || '-'}
+                    {getGrupoName ? getGrupoName(produtoGenerico.grupo_id) : (produtoGenerico.grupo_nome || '-')}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {produtoGenerico.subgrupo_nome || '-'}
+                    {getSubgrupoName ? getSubgrupoName(produtoGenerico.subgrupo_id) : (produtoGenerico.subgrupo_nome || '-')}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {produtoGenerico.classe_nome || '-'}
+                    {getClasseName ? getClasseName(produtoGenerico.classe_id) : (produtoGenerico.classe_nome || '-')}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -106,7 +111,7 @@ const ProdutosGenericosTable = ({
                     <div className="flex items-center">
                       <FaExchangeAlt className="w-3 h-3 text-blue-500 mr-1" />
                       <span className="text-sm text-gray-900">
-                        {produtoGenerico.produto_origem_nome || 'Sim'}
+                        {getProdutoOrigemName ? getProdutoOrigemName(produtoGenerico.produto_origem_id) : (produtoGenerico.produto_origem_nome || '-')}
                       </span>
                     </div>
                   ) : (
@@ -126,9 +131,9 @@ const ProdutosGenericosTable = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
-                    {canView && canView('produto_generico') && onView && (
+                    {canView && onView && (
                       <Button
-                        onClick={() => onView(produtoGenerico)}
+                        onClick={() => onView(produtoGenerico.id)}
                         variant="ghost"
                         size="sm"
                         className="text-blue-600 hover:text-blue-900"
@@ -137,9 +142,9 @@ const ProdutosGenericosTable = ({
                       </Button>
                     )}
                     
-                    {canEdit && canEdit('produto_generico') && onEdit && (
+                    {canEdit && onEdit && (
                       <Button
-                        onClick={() => onEdit(produtoGenerico)}
+                        onClick={() => onEdit(produtoGenerico.id)}
                         variant="ghost"
                         size="sm"
                         className="text-green-600 hover:text-green-900"
@@ -148,7 +153,7 @@ const ProdutosGenericosTable = ({
                       </Button>
                     )}
                     
-                    {canDelete && canDelete('produto_generico') && onDelete && (
+                    {canDelete && onDelete && (
                       <Button
                         onClick={() => onDelete(produtoGenerico.id)}
                         variant="ghost"
