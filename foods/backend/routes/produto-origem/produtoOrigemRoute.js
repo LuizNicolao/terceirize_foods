@@ -43,8 +43,14 @@ router.post('/',
 
 // PUT /api/produto-origem/:id - Atualizar produto origem
 router.put('/:id', 
-  checkPermission('editar'),
+  checkPermission('atualizar'),
   auditMiddleware(AUDIT_ACTIONS.UPDATE, 'produto_origem'),
+  (req, res, next) => {
+    console.log('=== ATUALIZAÇÃO PRODUTO ORIGEM ===');
+    console.log('ID:', req.params.id);
+    console.log('Body:', req.body);
+    next();
+  },
   produtoOrigemValidations.update,
   ProdutoOrigemController.atualizarProdutoOrigem
 );
