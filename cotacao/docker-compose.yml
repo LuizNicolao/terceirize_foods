@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # Backend API
+  cotacao-backend:
+    build: ./backend
+    container_name: cotacao-backend
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=host.docker.internal
+      - DB_USER=root
+      - DB_PASSWORD=password
+      - DB_NAME=cotacao_db
+      - DB_PORT=8080
+      - JWT_SECRET=your-super-secret-jwt-key-here
+      - PORT=3000
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - cotacao-network
+    restart: unless-stopped
+
+  # Frontend React App
+  cotacao-frontend:
+    build: ./frontend
+    container_name: cotacao-frontend
+    ports:
+      - "3081:80"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - cotacao-backend
+    networks:
+      - cotacao-network
+    restart: unless-stopped
+
+networks:
+  cotacao-network:
+    driver: bridge
