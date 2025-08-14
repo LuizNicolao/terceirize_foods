@@ -25,7 +25,6 @@ const PermissoesForm = ({
       { key: 'grupos', label: 'Grupos' },
       { key: 'subgrupos', label: 'Subgrupos' },
       { key: 'classes', label: 'Classes' },
-      // Removido: { key: 'nome_generico_produto', label: 'Nome Genérico' },
       { key: 'unidades', label: 'Unidades' },
       { key: 'unidades_escolares', label: 'Unidades Escolares' },
       { key: 'marcas', label: 'Marcas' },
