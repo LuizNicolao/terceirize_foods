@@ -59,10 +59,9 @@ const ProdutoOrigemModal = ({
       classe_id: data.classe_id ? parseInt(data.classe_id) : null,
       peso_liquido: data.peso_liquido ? parseFloat(data.peso_liquido) : null,
       produto_generico_padrao_id: data.produto_generico_padrao_id && data.produto_generico_padrao_id !== '' ? parseInt(data.produto_generico_padrao_id) : null,
-      status: data.status ? 1 : 0
+      status: parseInt(data.status) || 1
     };
 
-    console.log('Dados do formulário processados:', formData);
     onSubmit(formData);
   };
 
@@ -251,12 +250,15 @@ const ProdutoOrigemModal = ({
 
           {/* Status */}
           <Input
-            label="Produto ativo"
-            type="checkbox"
+            label="Status"
+            type="select"
             {...register('status')}
             error={errors.status?.message}
             disabled={viewMode}
-          />
+          >
+            <option value={1}>Ativo</option>
+            <option value={0}>Inativo</option>
+          </Input>
 
           {/* Footer */}
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">

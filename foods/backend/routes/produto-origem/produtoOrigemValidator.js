@@ -8,76 +8,57 @@ const { validationResponse } = require('../../middleware/responseHandler');
 
 // Middleware para capturar erros de validação
 const handleValidationErrors = (req, res, next) => {
-  console.log('=== VALIDAÇÃO PRODUTO ORIGEM ===');
-  console.log('Dados após limpeza:', req.body);
-  
   const errors = validationResult(req);
-  console.log('Erros de validação:', errors.array());
   
   if (!errors.isEmpty()) {
-    console.log('Validação falhou:', errors.array());
     return validationResponse(res, errors.array());
   }
   
-  console.log('Validação passou!');
   next();
 };
 
 // Middleware para limpar campos vazios
 const cleanEmptyFields = (req, res, next) => {
-  console.log('=== LIMPEZA DE CAMPOS ===');
-  console.log('Dados originais:', req.body);
-  
   // Converter campos vazios para null
   const fieldsToClean = ['grupo_id', 'subgrupo_id', 'classe_id', 'produto_generico_padrao_id', 'peso_liquido', 'referencia_mercado'];
   
   fieldsToClean.forEach(field => {
     if (req.body[field] === '' || req.body[field] === undefined || req.body[field] === 'null') {
       req.body[field] = null;
-      console.log(`Campo ${field} convertido para null`);
     }
   });
 
   // Converter campos numéricos
   if (req.body.unidade_medida_id && req.body.unidade_medida_id !== '') {
     req.body.unidade_medida_id = parseInt(req.body.unidade_medida_id);
-    console.log(`unidade_medida_id convertido para: ${req.body.unidade_medida_id}`);
   }
   
   if (req.body.fator_conversao && req.body.fator_conversao !== '') {
     req.body.fator_conversao = parseFloat(req.body.fator_conversao);
-    console.log(`fator_conversao convertido para: ${req.body.fator_conversao}`);
   }
 
   if (req.body.grupo_id && req.body.grupo_id !== '') {
     req.body.grupo_id = parseInt(req.body.grupo_id);
-    console.log(`grupo_id convertido para: ${req.body.grupo_id}`);
   }
 
   if (req.body.subgrupo_id && req.body.subgrupo_id !== '') {
     req.body.subgrupo_id = parseInt(req.body.subgrupo_id);
-    console.log(`subgrupo_id convertido para: ${req.body.subgrupo_id}`);
   }
 
   if (req.body.classe_id && req.body.classe_id !== '') {
     req.body.classe_id = parseInt(req.body.classe_id);
-    console.log(`classe_id convertido para: ${req.body.classe_id}`);
   }
 
   if (req.body.peso_liquido && req.body.peso_liquido !== '') {
     req.body.peso_liquido = parseFloat(req.body.peso_liquido);
-    console.log(`peso_liquido convertido para: ${req.body.peso_liquido}`);
   }
 
   if (req.body.produto_generico_padrao_id && req.body.produto_generico_padrao_id !== '' && req.body.produto_generico_padrao_id !== 'null') {
     req.body.produto_generico_padrao_id = parseInt(req.body.produto_generico_padrao_id);
-    console.log(`produto_generico_padrao_id convertido para: ${req.body.produto_generico_padrao_id}`);
   } else {
     req.body.produto_generico_padrao_id = null;
-    console.log(`produto_generico_padrao_id definido como null`);
   }
 
-  console.log('Dados após limpeza:', req.body);
   next();
 };
 

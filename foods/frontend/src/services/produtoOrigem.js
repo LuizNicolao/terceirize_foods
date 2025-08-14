@@ -71,7 +71,6 @@ class ProdutoOrigemService {
 
   async criar(data) {
     try {
-      console.log('Service - Dados recebidos:', data);
       const response = await api.post('/produto-origem', data);
       
       // Extrair dados da estrutura HATEOAS
@@ -89,10 +88,6 @@ class ProdutoOrigemService {
         message: 'Produto origem criado com sucesso!'
       };
     } catch (error) {
-      console.error('Service - Erro completo:', error);
-      console.error('Service - Response data:', error.response?.data);
-      console.error('Service - Validation errors:', error.response?.data?.errors);
-      
       // Se tem erros de validação, retornar eles
       if (error.response?.data?.errors && error.response.data.errors.length > 0) {
         const validationMessages = error.response.data.errors.map(err => err.msg).join(', ');

@@ -141,14 +141,11 @@ export const useProdutoOrigem = () => {
     try {
       setLoading(true);
       
-      console.log('Dados sendo enviados:', data);
-      
       if (editingProdutoOrigem) {
         const response = await ProdutoOrigemService.atualizar(editingProdutoOrigem.id, data);
         if (response.success) {
           toast.success(response.message || 'Produto origem atualizado com sucesso!');
         } else {
-          console.error('Erro na resposta:', response);
           throw new Error(response.error);
         }
       } else {
@@ -156,7 +153,6 @@ export const useProdutoOrigem = () => {
         if (response.success) {
           toast.success(response.message || 'Produto origem criado com sucesso!');
         } else {
-          console.error('Erro na resposta:', response);
           throw new Error(response.error);
         }
       }
@@ -164,10 +160,6 @@ export const useProdutoOrigem = () => {
       handleCloseModal();
       carregarProdutosOrigem();
     } catch (error) {
-      console.error('Erro completo:', error);
-      console.error('Response data:', error.response?.data);
-      console.error('Validation errors:', error.response?.data?.errors);
-      
       let message = 'Erro ao salvar produto origem';
       
       if (error.response?.data?.errors) {
@@ -239,6 +231,7 @@ export const useProdutoOrigem = () => {
       setLoading(true);
       const response = await ProdutoOrigemService.buscarPorId(id);
       if (response.success) {
+        console.log('Dados retornados do backend:', response.data);
         setEditingProdutoOrigem(response.data);
         setViewMode(false);
         setShowModal(true);

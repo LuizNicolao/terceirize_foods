@@ -37,12 +37,6 @@ router.get('/:id',
 router.post('/', 
   checkPermission('criar'),
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'produto_origem'),
-  (req, res, next) => {
-    console.log('=== ROTA POST PRODUTO ORIGEM ===');
-    console.log('Body recebido:', req.body);
-    console.log('Headers:', req.headers);
-    next();
-  },
   produtoOrigemValidations.create,
   ProdutoOrigemController.criarProdutoOrigem
 );
