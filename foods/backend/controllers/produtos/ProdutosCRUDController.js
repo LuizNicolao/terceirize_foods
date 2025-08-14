@@ -26,8 +26,7 @@ class ProdutosCRUDController {
       fabricante, informacoes_adicionais, foto_produto, prazo_validade, unidade_validade, 
       regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura, 
       altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn, 
-      aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, preco_custo, 
-      preco_venda, estoque_atual, estoque_minimo, fornecedor_id, status, fator_conversao
+      aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, status, fator_conversao
     } = req.body;
 
     // Verificar se código de barras já existe
@@ -42,17 +41,7 @@ class ProdutosCRUDController {
       }
     }
 
-    // Verificar se fornecedor existe (se fornecido)
-    if (fornecedor_id) {
-      const fornecedor = await executeQuery(
-        'SELECT id FROM fornecedores WHERE id = ? AND status = 1',
-        [fornecedor_id]
-      );
-
-      if (fornecedor.length === 0) {
-        return errorResponse(res, 'Fornecedor não encontrado ou inativo', STATUS_CODES.BAD_REQUEST);
-      }
-    }
+    // Verificação de fornecedor removida pois a tabela não possui fornecedor_id
 
     // Verificar se grupo existe (se fornecido)
     if (grupo_id) {
@@ -169,11 +158,6 @@ class ProdutosCRUDController {
         aliquota_ipi || null,
         aliquota_pis || null,
         aliquota_cofins || null,
-        preco_custo || null,
-        preco_venda || null,
-        estoque_atual || 0,
-        estoque_minimo || 0,
-        fornecedor_id || null,
         status || 1,
         fator_conversao || 1.000,
         req.user ? req.user.id : null
@@ -227,11 +211,7 @@ class ProdutosCRUDController {
         p.aliquota_ipi,
         p.aliquota_pis,
         p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
+
         p.status,
         p.criado_em,
         p.atualizado_em,
@@ -298,17 +278,7 @@ class ProdutosCRUDController {
       }
     }
 
-    // Verificar se fornecedor existe (se fornecido)
-    if (updateData.fornecedor_id) {
-      const fornecedor = await executeQuery(
-        'SELECT id FROM fornecedores WHERE id = ? AND status = 1',
-        [updateData.fornecedor_id]
-      );
-
-      if (fornecedor.length === 0) {
-        return errorResponse(res, 'Fornecedor não encontrado ou inativo', STATUS_CODES.BAD_REQUEST);
-      }
-    }
+    // Verificação de fornecedor removida pois a tabela não possui fornecedor_id
 
     // Verificar se grupo existe (se fornecido)
     if (updateData.grupo_id) {
@@ -382,8 +352,7 @@ class ProdutosCRUDController {
       'regra_palet_un', 'ficha_homologacao', 'registro_especifico', 'comprimento', 
       'largura', 'altura', 'volume', 'integracao_senior', 'ncm', 'cest', 'cfop', 
       'ean', 'cst_icms', 'csosn', 'aliquota_icms', 'aliquota_ipi', 'aliquota_pis', 
-      'aliquota_cofins', 'preco_custo', 'preco_venda', 'estoque_atual', 
-      'estoque_minimo', 'fornecedor_id', 'status', 'fator_conversao'
+      'aliquota_cofins', 'status', 'fator_conversao'
     ];
 
     Object.keys(updateData).forEach(key => {
@@ -463,25 +432,19 @@ class ProdutosCRUDController {
         p.aliquota_ipi,
         p.aliquota_pis,
         p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
         p.usuario_criador_id,
         p.usuario_atualizador_id,
         p.fator_conversao,
-        f.razao_social as fornecedor_nome,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
         m.marca as marca_nome
        FROM produtos p
-       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
+
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
        LEFT JOIN classes c ON p.classe_id = c.id

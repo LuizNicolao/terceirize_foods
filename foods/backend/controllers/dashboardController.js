@@ -212,36 +212,14 @@ class DashboardController {
 
       // ===== ESTATÍSTICAS DE ESTOQUE =====
 
-      try {
-        // Calcular valor total do estoque
-        const valorEstoque = await executeQuery(
-          'SELECT COALESCE(SUM(preco_custo * estoque_atual), 0) as total FROM produtos WHERE status = 1'
-        );
-        stats.valorEstoque = valorEstoque[0].total;
-      } catch (error) {
-        console.error('Erro ao calcular valor estoque:', error.message);
-      }
+      // Valor total do estoque - Removido pois a tabela não possui colunas de preço e estoque
+      stats.valorEstoque = 0;
 
-      try {
-        // Produtos com estoque baixo
-        const produtosEstoqueBaixo = await executeQuery(
-          `SELECT COUNT(*) as total FROM produtos 
-           WHERE status = 1 AND estoque_atual <= estoque_minimo AND estoque_minimo > 0`
-        );
-        stats.produtosEstoqueBaixo = produtosEstoqueBaixo[0].total;
-      } catch (error) {
-        console.error('Erro ao contar produtos estoque baixo:', error.message);
-      }
+      // Produtos com estoque baixo - Removido pois a tabela não possui colunas de estoque
+      stats.produtosEstoqueBaixo = 0;
 
-      try {
-        // Produtos sem estoque
-        const produtosSemEstoque = await executeQuery(
-          'SELECT COUNT(*) as total FROM produtos WHERE status = 1 AND estoque_atual = 0'
-        );
-        stats.produtosSemEstoque = produtosSemEstoque[0].total;
-      } catch (error) {
-        console.error('Erro ao contar produtos sem estoque:', error.message);
-      }
+      // Produtos sem estoque - Removido pois a tabela não possui colunas de estoque
+      stats.produtosSemEstoque = 0;
 
       // ===== ESTATÍSTICAS DE VENCIMENTO =====
 
@@ -280,9 +258,8 @@ class DashboardController {
       try {
         // Últimos produtos criados
         const ultimosProdutos = await executeQuery(
-          `SELECT p.id, p.nome, p.criado_em, f.razao_social as fornecedor
+          `SELECT p.id, p.nome, p.criado_em
            FROM produtos p
-           LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
            WHERE p.status = 1
            ORDER BY p.criado_em DESC
            LIMIT 5`
@@ -614,31 +591,15 @@ class DashboardController {
       };
 
       try {
-        // Produtos com estoque baixo
-        const produtosEstoqueBaixo = await executeQuery(
-          `SELECT p.id, p.nome, p.estoque_atual, p.estoque_minimo, f.razao_social as fornecedor
-           FROM produtos p
-           LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-           WHERE p.status = 1 AND p.estoque_atual <= p.estoque_minimo AND p.estoque_minimo > 0
-           ORDER BY p.estoque_atual ASC
-           LIMIT 10`
-        );
-        alertas.produtosEstoqueBaixo = produtosEstoqueBaixo;
+        // Produtos com estoque baixo - Removido pois a tabela não possui colunas de estoque
+        alertas.produtosEstoqueBaixo = [];
       } catch (error) {
         console.error('Erro ao buscar produtos com estoque baixo:', error.message);
       }
 
       try {
-        // Produtos sem estoque
-        const produtosSemEstoque = await executeQuery(
-          `SELECT p.id, p.nome, f.razao_social as fornecedor
-           FROM produtos p
-           LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-           WHERE p.status = 1 AND p.estoque_atual = 0
-           ORDER BY p.nome ASC
-           LIMIT 10`
-        );
-        alertas.produtosSemEstoque = produtosSemEstoque;
+        // Produtos sem estoque - Removido pois a tabela não possui colunas de estoque
+        alertas.produtosSemEstoque = [];
       } catch (error) {
         console.error('Erro ao buscar produtos sem estoque:', error.message);
       }

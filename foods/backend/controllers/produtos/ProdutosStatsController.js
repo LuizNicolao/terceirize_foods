@@ -29,18 +29,10 @@ class ProdutosStatsController {
       'SELECT COUNT(*) as total FROM produtos WHERE status = 0'
     );
 
-    const produtosEstoqueBaixo = await executeQuery(
-      'SELECT COUNT(*) as total FROM produtos WHERE estoque_atual <= estoque_minimo AND status = 1'
-    );
-
-    const produtosSemEstoque = await executeQuery(
-      'SELECT COUNT(*) as total FROM produtos WHERE estoque_atual = 0 AND status = 1'
-    );
-
-    // Valor total do estoque
-    const valorEstoque = await executeQuery(
-      'SELECT SUM(estoque_atual * preco_custo) as valor_total FROM produtos WHERE status = "ativo" AND preco_custo IS NOT NULL'
-    );
+    // Estatísticas de estoque removidas pois a tabela não possui colunas de estoque
+    const produtosEstoqueBaixo = [{ total: 0 }];
+    const produtosSemEstoque = [{ total: 0 }];
+    const valorEstoque = [{ valor_total: 0 }];
 
     // Produtos por grupo
     const produtosPorGrupo = await executeQuery(`
@@ -54,46 +46,14 @@ class ProdutosStatsController {
       ORDER BY quantidade DESC
     `);
 
-    // Produtos por fornecedor
-    const produtosPorFornecedor = await executeQuery(`
-      SELECT 
-        f.razao_social as fornecedor,
-        COUNT(p.id) as quantidade
-      FROM fornecedores f
-      LEFT JOIN produtos p ON f.id = p.fornecedor_id AND p.status = 1
-      WHERE f.status = 1
-      GROUP BY f.id, f.razao_social
-      ORDER BY quantidade DESC
-      LIMIT 10
-    `);
+    // Produtos por fornecedor - Removido pois a tabela não possui fornecedor_id
+    const produtosPorFornecedor = [];
 
-    // Top produtos com maior estoque
-    const topEstoque = await executeQuery(`
-      SELECT 
-        p.nome,
-        p.estoque_atual,
-        p.estoque_minimo,
-        g.nome as grupo
-      FROM produtos p
-      LEFT JOIN grupos g ON p.grupo_id = g.id
-      WHERE p.status = 1
-      ORDER BY p.estoque_atual DESC
-      LIMIT 10
-    `);
+    // Top produtos com maior estoque - Removido pois a tabela não possui colunas de estoque
+    const topEstoque = [];
 
-    // Produtos mais caros
-    const produtosMaisCaros = await executeQuery(`
-      SELECT 
-        p.nome,
-        p.preco_venda,
-        p.preco_custo,
-        g.nome as grupo
-      FROM produtos p
-      LEFT JOIN grupos g ON p.grupo_id = g.id
-      WHERE p.status = 1 AND p.preco_venda IS NOT NULL
-      ORDER BY p.preco_venda DESC
-      LIMIT 10
-    `);
+    // Produtos mais caros - Removido pois a tabela não possui colunas de preço
+    const produtosMaisCaros = [];
 
     const estatisticas = {
       geral: {

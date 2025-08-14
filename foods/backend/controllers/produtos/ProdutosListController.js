@@ -65,25 +65,19 @@ class ProdutosListController {
         p.aliquota_ipi,
         p.aliquota_pis,
         p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
         p.usuario_criador_id,
         p.usuario_atualizador_id,
         p.fator_conversao,
-        f.razao_social as fornecedor_nome,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
         m.marca as marca_nome
       FROM produtos p
-      LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
+
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       LEFT JOIN classes c ON p.classe_id = c.id
@@ -105,10 +99,7 @@ class ProdutosListController {
       params.push(grupo_id);
     }
 
-    if (fornecedor_id) {
-      baseQuery += ' AND p.fornecedor_id = ?';
-      params.push(fornecedor_id);
-    }
+    // Filtro por fornecedor removido pois a tabela não possui fornecedor_id
 
     if (status !== undefined) {
       baseQuery += ' AND p.status = ?';
@@ -126,7 +117,7 @@ class ProdutosListController {
     const produtos = await executeQuery(query, params);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos p WHERE 1=1${search ? ' AND (p.nome LIKE ? OR p.descricao LIKE ? OR p.codigo_barras LIKE ?)' : ''}${grupo_id ? ' AND p.grupo_id = ?' : ''}${fornecedor_id ? ' AND p.fornecedor_id = ?' : ''}${status ? ' AND p.status = ?' : ''}`;
+    const countQuery = `SELECT COUNT(*) as total FROM produtos p WHERE 1=1${search ? ' AND (p.nome LIKE ? OR p.descricao LIKE ? OR p.codigo_barras LIKE ?)' : ''}${grupo_id ? ' AND p.grupo_id = ?' : ''}${status ? ' AND p.status = ?' : ''}`;
     const countParams = [...params];
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
@@ -200,25 +191,19 @@ class ProdutosListController {
         p.aliquota_ipi,
         p.aliquota_pis,
         p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
         p.usuario_criador_id,
         p.usuario_atualizador_id,
         p.fator_conversao,
-        f.razao_social as fornecedor_nome,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
         m.nome as marca_nome
        FROM produtos p
-       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
+
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
        LEFT JOIN classes c ON p.classe_id = c.id

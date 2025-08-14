@@ -65,25 +65,19 @@ class ProdutosSearchController {
         p.aliquota_ipi,
         p.aliquota_pis,
         p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
         p.usuario_criador_id,
         p.usuario_atualizador_id,
         p.fator_conversao,
-        f.razao_social as fornecedor_nome,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
         m.marca as marca_nome
       FROM produtos p
-      LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
+
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       LEFT JOIN classes c ON p.classe_id = c.id
@@ -238,120 +232,10 @@ class ProdutosSearchController {
   });
 
   /**
-   * Buscar produtos por fornecedor
+   * Buscar produtos por fornecedor - Removido pois a tabela não possui fornecedor_id
    */
   static buscarProdutosPorFornecedor = asyncHandler(async (req, res) => {
-    const { fornecedor_id } = req.params;
-    const pagination = req.pagination;
-
-    // Verificar se fornecedor existe
-    const fornecedor = await executeQuery(
-      'SELECT id, razao_social FROM fornecedores WHERE id = ? AND status = 1',
-      [fornecedor_id]
-    );
-
-    if (fornecedor.length === 0) {
-      return notFoundResponse(res, 'Fornecedor não encontrado ou inativo');
-    }
-
-    // Query base
-    let baseQuery = `
-      SELECT 
-        p.id,
-        p.codigo_produto,
-        p.nome,
-        p.descricao,
-        p.codigo_barras,
-        p.referencia,
-        p.referencia_externa,
-        p.referencia_mercado,
-        p.unidade_id,
-        p.quantidade,
-        p.grupo_id,
-        p.subgrupo_id,
-        p.classe_id,
-        p.marca_id,
-        p.agrupamento_n3,
-        p.agrupamento_n4,
-        p.peso_liquido,
-        p.peso_bruto,
-        p.marca,
-        p.fabricante,
-        p.informacoes_adicionais,
-        p.foto_produto,
-        p.prazo_validade,
-        p.unidade_validade,
-        p.regra_palet_un,
-        p.ficha_homologacao,
-        p.registro_especifico,
-        p.comprimento,
-        p.largura,
-        p.altura,
-        p.volume,
-        p.integracao_senior,
-        p.ncm,
-        p.cest,
-        p.cfop,
-        p.ean,
-        p.cst_icms,
-        p.csosn,
-        p.aliquota_icms,
-        p.aliquota_ipi,
-        p.aliquota_pis,
-        p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
-        p.status,
-        p.criado_em,
-        p.atualizado_em,
-        p.usuario_criador_id,
-        p.usuario_atualizador_id,
-        p.fator_conversao,
-        f.razao_social as fornecedor_nome,
-        g.nome as grupo_nome,
-        sg.nome as subgrupo_nome,
-        c.nome as classe_nome,
-        u.nome as unidade_nome,
-        m.marca as marca_nome
-      FROM produtos p
-      LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-      LEFT JOIN grupos g ON p.grupo_id = g.id
-      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-      LEFT JOIN classes c ON p.classe_id = c.id
-      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      LEFT JOIN marcas m ON p.marca_id = m.id
-      WHERE p.fornecedor_id = ? AND p.status = 1
-    `;
-    
-    let params = [fornecedor_id];
-    baseQuery += ' ORDER BY p.nome ASC';
-
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
-    
-    // Executar query paginada
-    const produtos = await executeQuery(query, paginatedParams);
-
-    // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE fornecedor_id = ? AND status = 'ativo'`;
-    const totalResult = await executeQuery(countQuery, [fornecedor_id]);
-    const totalItems = totalResult[0].total;
-
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, `/api/produtos/fornecedor/${fornecedor_id}`, queryParams);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, produtos, `Produtos do fornecedor ${fornecedor[0].razao_social} listados com sucesso`, STATUS_CODES.OK, {
-      ...meta,
-      _links: res.addListLinks(produtos, meta.pagination, queryParams)._links
-    });
+    return errorResponse(res, 'Funcionalidade não disponível - tabela produtos não possui fornecedor_id', STATUS_CODES.NOT_IMPLEMENTED);
   });
 
   /**
@@ -445,109 +329,10 @@ class ProdutosSearchController {
   });
 
   /**
-   * Buscar produtos com estoque baixo
+   * Buscar produtos com estoque baixo - Removido pois a tabela não possui colunas de estoque
    */
   static buscarProdutosEstoqueBaixo = asyncHandler(async (req, res) => {
-    const pagination = req.pagination;
-
-    // Query base
-    let baseQuery = `
-      SELECT 
-        p.id,
-        p.codigo_produto,
-        p.nome,
-        p.descricao,
-        p.codigo_barras,
-        p.referencia,
-        p.referencia_externa,
-        p.referencia_mercado,
-        p.unidade_id,
-        p.quantidade,
-        p.grupo_id,
-        p.subgrupo_id,
-        p.classe_id,
-        p.marca_id,
-        p.agrupamento_n3,
-        p.agrupamento_n4,
-        p.peso_liquido,
-        p.peso_bruto,
-        p.marca,
-        p.fabricante,
-        p.informacoes_adicionais,
-        p.foto_produto,
-        p.prazo_validade,
-        p.unidade_validade,
-        p.regra_palet_un,
-        p.ficha_homologacao,
-        p.registro_especifico,
-        p.comprimento,
-        p.largura,
-        p.altura,
-        p.volume,
-        p.integracao_senior,
-        p.ncm,
-        p.cest,
-        p.cfop,
-        p.ean,
-        p.cst_icms,
-        p.csosn,
-        p.aliquota_icms,
-        p.aliquota_ipi,
-        p.aliquota_pis,
-        p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
-        p.status,
-        p.criado_em,
-        p.atualizado_em,
-        p.usuario_criador_id,
-        p.usuario_atualizador_id,
-        p.fator_conversao,
-        f.razao_social as fornecedor_nome,
-        g.nome as grupo_nome,
-        sg.nome as subgrupo_nome,
-        c.nome as classe_nome,
-        u.nome as unidade_nome,
-        m.marca as marca_nome
-      FROM produtos p
-      LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-      LEFT JOIN grupos g ON p.grupo_id = g.id
-      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-      LEFT JOIN classes c ON p.classe_id = c.id
-      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      LEFT JOIN marcas m ON p.marca_id = m.id
-      WHERE p.estoque_atual <= p.estoque_minimo AND p.status = 1
-    `;
-    
-    let params = [];
-    baseQuery += ' ORDER BY (p.estoque_minimo - p.estoque_atual) DESC';
-
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
-    
-    // Executar query paginada
-    const produtos = await executeQuery(query, paginatedParams);
-
-    // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE estoque_atual <= estoque_minimo AND status = 'ativo'`;
-    const totalResult = await executeQuery(countQuery, []);
-    const totalItems = totalResult[0].total;
-
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, '/api/produtos/estoque-baixo', queryParams);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, produtos, 'Produtos com estoque baixo listados com sucesso', STATUS_CODES.OK, {
-      ...meta,
-      _links: res.addListLinks(produtos, meta.pagination, queryParams)._links
-    });
+    return errorResponse(res, 'Funcionalidade não disponível - tabela produtos não possui colunas de estoque', STATUS_CODES.NOT_IMPLEMENTED);
   });
 
   /**
