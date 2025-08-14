@@ -256,6 +256,17 @@ const App = () => {
       />
 
       <Route 
+        path="/foods/produto-generico" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="produto_generico">
+              <ProdutoGenerico />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
         path="/foods/permissoes" 
         element={
           <AuthenticatedRoute>
