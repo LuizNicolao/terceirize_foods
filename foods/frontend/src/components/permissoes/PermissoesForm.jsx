@@ -28,7 +28,8 @@ const PermissoesForm = ({
       { key: 'nome_generico_produto', label: 'Nome Genérico' },
       { key: 'unidades', label: 'Unidades' },
       { key: 'unidades_escolares', label: 'Unidades Escolares' },
-      { key: 'marcas', label: 'Marcas' }
+      { key: 'marcas', label: 'Marcas' },
+      { key: 'produto_origem', label: 'Produtos Origem' }
     ],
     'Logística': [
       { key: 'veiculos', label: 'Veículos' },

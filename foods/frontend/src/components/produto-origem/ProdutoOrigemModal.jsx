@@ -163,10 +163,9 @@ const ProdutoOrigemModal = ({
 
             {/* Unidade de Medida */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Unidade de Medida *
-              </label>
-              <Select
+              <Input
+                label="Unidade de Medida *"
+                type="select"
                 {...register('unidade_medida_id', { required: 'Unidade de medida é obrigatória' })}
                 disabled={viewMode}
                 error={errors.unidade_medida_id?.message}
@@ -177,7 +176,7 @@ const ProdutoOrigemModal = ({
                     {unidade.nome}
                   </option>
                 ))}
-              </Select>
+              </Input>
             </div>
 
             {/* Fator de Conversão */}
