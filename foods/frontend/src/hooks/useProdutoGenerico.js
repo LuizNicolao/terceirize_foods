@@ -112,7 +112,7 @@ export const useProdutoGenerico = () => {
         page: currentPage,
         limit: itemsPerPage,
         search: searchTerm,
-        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined,
+        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : statusFilter === 'todos' ? undefined : statusFilter,
         grupo_id: grupoFilter || undefined,
         subgrupo_id: subgrupoFilter || undefined,
         classe_id: classeFilter || undefined,
