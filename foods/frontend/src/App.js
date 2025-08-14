@@ -23,6 +23,7 @@ import Permissoes from './pages/permissoes/Permissoes';
 import Veiculos from './pages/veiculos/Veiculos';
 import Motoristas from './pages/motoristas/Motoristas';
 import Ajudantes from './pages/ajudantes/Ajudantes';
+import ProdutoOrigem from './pages/produto-origem/ProdutoOrigem';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -248,6 +249,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="ajudantes">
               <Ajudantes />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/produto-origem" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="produto_origem">
+              <ProdutoOrigem />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

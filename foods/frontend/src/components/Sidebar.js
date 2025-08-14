@@ -394,6 +394,7 @@ const menuGroups = [
       { path: '/foods/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
       { path: '/foods/classes', icon: FaCubes, label: 'Classes', screen: 'classes' },
       { path: '/foods/nome-generico-produto', icon: FaFileAlt, label: 'Nomes Genéricos', screen: 'nome_generico_produto' },
+      { path: '/foods/produto-origem', icon: FaBox, label: 'Produtos Origem', screen: 'produto_origem' },
       { path: '/foods/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
       { path: '/foods/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
     ]

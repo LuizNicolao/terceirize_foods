@@ -26,6 +26,7 @@ const auditoriaRoutes = require('./routes/auditoria');
 const veiculosRoutes = require('./routes/veiculos');
 const motoristasRoutes = require('./routes/motoristas');
 const ajudantesRoutes = require('./routes/ajudantes');
+const produtoOrigemRoutes = require('./routes/produto-origem');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -430,6 +431,7 @@ app.use('/api/auditoria', auditoriaRoutes);
 app.use('/api/veiculos', veiculosRoutes);
 app.use('/api/motoristas', motoristasRoutes);
 app.use('/api/ajudantes', ajudantesRoutes);
+app.use('/api/produto-origem', produtoOrigemRoutes);
 
 // Rotas duplicadas para /foods
 app.use('/foods/api/auth', authRoutes);
@@ -452,6 +454,7 @@ app.use('/foods/api/auditoria', auditoriaRoutes);
 app.use('/foods/api/veiculos', veiculosRoutes);
 app.use('/foods/api/motoristas', motoristasRoutes);
 app.use('/foods/api/ajudantes', ajudantesRoutes);
+app.use('/foods/api/produto-origem', produtoOrigemRoutes);
 
 // Rota de health check
 app.get('/api/health', (req, res) => {
