@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
+import { gerarCodigoProdutoOrigem } from '../../utils/codigoGenerator';
 
 const ProdutoOrigemModal = ({
   isOpen,
@@ -49,6 +50,9 @@ const ProdutoOrigemModal = ({
       reset();
       setValue('status', 1);
       setValue('fator_conversao', 1.000);
+      // Gerar código automático para novo produto origem
+      const codigoGerado = gerarCodigoProdutoOrigem();
+      setValue('codigo', codigoGerado);
     }
   }, [produtoOrigem, isOpen, setValue, reset]);
 
@@ -107,17 +111,12 @@ const ProdutoOrigemModal = ({
             {/* Código */}
             <Input
               label="Código *"
+              placeholder="Código gerado automaticamente"
               {...register('codigo', {
-                required: 'Código é obrigatório',
-                minLength: { value: 1, message: 'Código deve ter pelo menos 1 caractere' },
-                maxLength: { value: 20, message: 'Código deve ter no máximo 20 caracteres' },
-                pattern: {
-                  value: /^[a-zA-Z0-9\-_]+$/,
-                  message: 'Código deve conter apenas letras, números, hífens e underscores'
-                }
+                required: 'Código é obrigatório'
               })}
               error={errors.codigo?.message}
-              disabled={viewMode}
+              disabled={true}
             />
 
             {/* Nome */}

@@ -7,6 +7,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
+import { gerarCodigoProdutoGenerico } from '../../utils/codigoGenerator';
 
 const ProdutoGenericoModal = ({
   isOpen,
@@ -62,6 +63,9 @@ const ProdutoGenericoModal = ({
       setValue('status', 1);
       setValue('fator_conversao', 1.000);
       setValue('produto_padrao', 'Não');
+      // Gerar código automático para novo produto genérico
+      const codigoGerado = gerarCodigoProdutoGenerico();
+      setValue('codigo', codigoGerado);
     }
   }, [produtoGenerico, isOpen, setValue, reset]);
 
@@ -126,14 +130,13 @@ const ProdutoGenericoModal = ({
             <div>
               <Input
                 label="Código *"
-                type="number"
+                type="text"
                 {...register('codigo', { 
-                  required: 'Código é obrigatório',
-                  min: { value: 1, message: 'Código deve ser maior que 0' }
+                  required: 'Código é obrigatório'
                 })}
                 error={errors.codigo?.message}
-                disabled={viewMode}
-                placeholder="Digite o código"
+                disabled={true}
+                placeholder="Código gerado automaticamente"
               />
             </div>
 

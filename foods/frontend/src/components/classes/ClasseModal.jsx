@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
+import { gerarCodigoClasse } from '../../utils/codigoGenerator';
 
 const ClasseModal = ({ 
   isOpen, 
@@ -9,6 +10,18 @@ const ClasseModal = ({
   isViewMode,
   subgrupos = []
 }) => {
+  const [codigoGerado, setCodigoGerado] = useState('');
+
+  useEffect(() => {
+    if (!classe && isOpen) {
+      // Gerar código automático para nova classe
+      const codigo = gerarCodigoClasse();
+      setCodigoGerado(codigo);
+    } else if (classe) {
+      setCodigoGerado(classe.codigo || '');
+    }
+  }, [classe, isOpen]);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -39,9 +52,10 @@ const ClasseModal = ({
           <Input
             label="Código da Classe *"
             name="codigo"
-            defaultValue={classe?.codigo}
-            disabled={isViewMode}
+            value={codigoGerado}
+            disabled={true}
             required
+            placeholder="Código gerado automaticamente"
           />
         </div>
 

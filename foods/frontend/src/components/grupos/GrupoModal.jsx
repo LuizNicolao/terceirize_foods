@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
+import { gerarCodigoGrupo } from '../../utils/codigoGenerator';
 
 const GrupoModal = ({ 
   isOpen, 
@@ -8,6 +9,18 @@ const GrupoModal = ({
   grupo, 
   isViewMode 
 }) => {
+  const [codigoGerado, setCodigoGerado] = useState('');
+
+  useEffect(() => {
+    if (!grupo && isOpen) {
+      // Gerar código automático para novo grupo
+      const codigo = gerarCodigoGrupo();
+      setCodigoGerado(codigo);
+    } else if (grupo) {
+      setCodigoGerado(grupo.codigo || '');
+    }
+  }, [grupo, isOpen]);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -37,9 +50,10 @@ const GrupoModal = ({
           <Input
             label="Código do Grupo *"
             name="codigo"
-            defaultValue={grupo?.codigo}
-            disabled={isViewMode}
+            value={codigoGerado}
+            disabled={true}
             required
+            placeholder="Código gerado automaticamente"
           />
         </div>
 

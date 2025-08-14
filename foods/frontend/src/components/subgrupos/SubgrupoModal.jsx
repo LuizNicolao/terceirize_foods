@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
+import { gerarCodigoSubgrupo } from '../../utils/codigoGenerator';
 
 const SubgrupoModal = ({ 
   isOpen, 
@@ -9,6 +10,18 @@ const SubgrupoModal = ({
   isViewMode,
   grupos = []
 }) => {
+  const [codigoGerado, setCodigoGerado] = useState('');
+
+  useEffect(() => {
+    if (!subgrupo && isOpen) {
+      // Gerar código automático para novo subgrupo
+      const codigo = gerarCodigoSubgrupo();
+      setCodigoGerado(codigo);
+    } else if (subgrupo) {
+      setCodigoGerado(subgrupo.codigo || '');
+    }
+  }, [subgrupo, isOpen]);
+
   return (
     <Modal
       isOpen={isOpen}
@@ -39,9 +52,10 @@ const SubgrupoModal = ({
           <Input
             label="Código do Subgrupo *"
             name="codigo"
-            defaultValue={subgrupo?.codigo}
-            disabled={isViewMode}
+            value={codigoGerado}
+            disabled={true}
             required
+            placeholder="Código gerado automaticamente"
           />
         </div>
 
