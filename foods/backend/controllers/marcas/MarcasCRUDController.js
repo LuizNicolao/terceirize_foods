@@ -50,7 +50,7 @@ class MarcasCRUDController {
         m.atualizado_em,
         COUNT(p.id) as total_produtos
        FROM marcas m
-       LEFT JOIN produtos p ON m.marca = p.marca
+       LEFT JOIN produtos p ON m.id = p.marca_id
        WHERE m.id = ?
        GROUP BY m.id, m.marca, m.fabricante, m.status, m.criado_em, m.atualizado_em`,
       [novaMarcaId]
@@ -148,7 +148,7 @@ class MarcasCRUDController {
         m.atualizado_em,
         COUNT(p.id) as total_produtos
        FROM marcas m
-       LEFT JOIN produtos p ON m.marca = p.marca
+       LEFT JOIN produtos p ON m.id = p.marca_id
        WHERE m.id = ?
        GROUP BY m.id, m.marca, m.fabricante, m.status, m.criado_em, m.atualizado_em`,
       [id]
@@ -186,8 +186,8 @@ class MarcasCRUDController {
 
     // Verificar se marca está sendo usada em produtos ATIVOS
     const produtos = await executeQuery(
-      'SELECT id, nome, status FROM produtos WHERE marca = ? AND status = 1',
-      [existingMarca[0].marca]
+      'SELECT id, nome, status FROM produtos WHERE marca_id = ? AND status = 1',
+      [id]
     );
 
     if (produtos.length > 0) {

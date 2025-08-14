@@ -29,7 +29,7 @@ class MarcasSearchController {
         m.atualizado_em,
         COUNT(p.id) as total_produtos
       FROM marcas m
-      LEFT JOIN produtos p ON m.marca = p.marca
+      LEFT JOIN produtos p ON m.id = p.marca_id
       WHERE m.status = 1
       GROUP BY m.id, m.marca, m.fabricante, m.status, m.criado_em, m.atualizado_em
     `;
@@ -82,7 +82,7 @@ class MarcasSearchController {
         m.atualizado_em,
         COUNT(p.id) as total_produtos
       FROM marcas m
-      LEFT JOIN produtos p ON m.marca = p.marca
+      LEFT JOIN produtos p ON m.id = p.marca_id
       WHERE m.fabricante LIKE ?
       GROUP BY m.id, m.marca, m.fabricante, m.status, m.criado_em, m.atualizado_em
     `;
