@@ -155,7 +155,6 @@ const Dashboard = () => {
     totalMarcas: dashboardData.marcas || 0,
     totalUnidades: dashboardData.unidades || 0,
     totalAjudantes: dashboardData.ajudantes || 0,
-    totalNomeGenerico: dashboardData.nome_generico_produto || 0,
     valorEstoque: dashboardData.valorEstoque || 0,
     produtosEstoqueBaixo: dashboardData.produtosEstoqueBaixo || 0,
     produtosSemEstoque: dashboardData.produtosSemEstoque || 0,

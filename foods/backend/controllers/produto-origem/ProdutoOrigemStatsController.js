@@ -151,14 +151,14 @@ class ProdutoOrigemStatsController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        ngp.nome as produto_generico_padrao_nome,
+        pg.nome as produto_generico_padrao_nome,
         uc.nome as usuario_criador_nome
       FROM produto_origem po
       LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
-      LEFT JOIN nome_generico_produto ngp ON po.produto_generico_padrao_id = ngp.id
+      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
       LEFT JOIN usuarios uc ON po.usuario_criador_id = uc.id
       ORDER BY po.data_criacao DESC
       LIMIT ?
@@ -180,14 +180,14 @@ class ProdutoOrigemStatsController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        ngp.nome as produto_generico_padrao_nome,
+        pg.nome as produto_generico_padrao_nome,
         ua.nome as usuario_atualizador_nome
       FROM produto_origem po
       LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
-      LEFT JOIN nome_generico_produto ngp ON po.produto_generico_padrao_id = ngp.id
+      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
       LEFT JOIN usuarios ua ON po.usuario_atualizador_id = ua.id
       WHERE po.data_atualizacao IS NOT NULL
       ORDER BY po.data_atualizacao DESC

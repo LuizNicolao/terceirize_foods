@@ -40,7 +40,7 @@ class ProdutoOrigemSearchController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        ngp.nome as produto_generico_padrao_nome,
+        pg.nome as produto_generico_padrao_nome,
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome
       FROM produto_origem po
@@ -48,7 +48,7 @@ class ProdutoOrigemSearchController {
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
-      LEFT JOIN nome_generico_produto ngp ON po.produto_generico_padrao_id = ngp.id
+      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
       LEFT JOIN usuarios uc ON po.usuario_criador_id = uc.id
       LEFT JOIN usuarios ua ON po.usuario_atualizador_id = ua.id
       WHERE 1=1
@@ -163,13 +163,13 @@ class ProdutoOrigemSearchController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        ngp.nome as produto_generico_padrao_nome
+        pg.nome as produto_generico_padrao_nome
       FROM produto_origem po
       LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
-      LEFT JOIN nome_generico_produto ngp ON po.produto_generico_padrao_id = ngp.id
+      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
       WHERE po.nome LIKE ? AND po.status = 1
       ORDER BY 
         CASE 
@@ -205,13 +205,13 @@ class ProdutoOrigemSearchController {
           g.nome as grupo_nome,
           sg.nome as subgrupo_nome,
           c.nome as classe_nome,
-          ngp.nome as produto_generico_padrao_nome
+          pg.nome as produto_generico_padrao_nome
         FROM produto_origem po
         LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
         LEFT JOIN grupos g ON po.grupo_id = g.id
         LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
         LEFT JOIN classes c ON po.classe_id = c.id
-        LEFT JOIN nome_generico_produto ngp ON po.produto_generico_padrao_id = ngp.id
+        LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
         WHERE po.codigo = ?
       `;
       params = [codigo];
@@ -223,13 +223,13 @@ class ProdutoOrigemSearchController {
           g.nome as grupo_nome,
           sg.nome as subgrupo_nome,
           c.nome as classe_nome,
-          ngp.nome as produto_generico_padrao_nome
+          pg.nome as produto_generico_padrao_nome
         FROM produto_origem po
         LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
         LEFT JOIN grupos g ON po.grupo_id = g.id
         LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
         LEFT JOIN classes c ON po.classe_id = c.id
-        LEFT JOIN nome_generico_produto ngp ON po.produto_generico_padrao_id = ngp.id
+        LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
         WHERE po.codigo LIKE ? AND po.status = 1
         ORDER BY po.codigo ASC
       `;
@@ -257,13 +257,13 @@ class ProdutoOrigemSearchController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        ngp.nome as produto_generico_padrao_nome
+        pg.nome as produto_generico_padrao_nome
       FROM produto_origem po
       LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
-      LEFT JOIN nome_generico_produto ngp ON po.produto_generico_padrao_id = ngp.id
+      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
       WHERE (po.grupo_id IS NULL OR po.subgrupo_id IS NULL OR po.classe_id IS NULL)
         AND po.status = 1
       ORDER BY po.nome ASC

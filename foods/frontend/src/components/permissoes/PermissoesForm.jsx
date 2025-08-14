@@ -25,11 +25,12 @@ const PermissoesForm = ({
       { key: 'grupos', label: 'Grupos' },
       { key: 'subgrupos', label: 'Subgrupos' },
       { key: 'classes', label: 'Classes' },
-      { key: 'nome_generico_produto', label: 'Nome Genérico' },
+      // Removido: { key: 'nome_generico_produto', label: 'Nome Genérico' },
       { key: 'unidades', label: 'Unidades' },
       { key: 'unidades_escolares', label: 'Unidades Escolares' },
       { key: 'marcas', label: 'Marcas' },
-      { key: 'produto_origem', label: 'Produtos Origem' }
+      { key: 'produto_origem', label: 'Produtos Origem' },
+      { key: 'produto_generico', label: 'Produtos Genéricos' }
     ],
     'Logística': [
       { key: 'veiculos', label: 'Veículos' },

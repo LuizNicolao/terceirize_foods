@@ -2,7 +2,7 @@ import React from 'react';
 import { FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { Button } from '../../components/ui';
 
-const NomesGenericosActions = ({ onExportXLSX, onExportPDF }) => {
+const ProdutosGenericosActions = ({ onExportXLSX, onExportPDF }) => {
   return (
     <div className="flex flex-wrap gap-2 mb-4">
       <Button
@@ -30,4 +30,4 @@ const NomesGenericosActions = ({ onExportXLSX, onExportPDF }) => {
   );
 };
 
-export default NomesGenericosActions;
+export default ProdutosGenericosActions;

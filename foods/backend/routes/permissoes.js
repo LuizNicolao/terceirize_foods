@@ -31,6 +31,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -52,6 +53,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -73,6 +75,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -96,6 +99,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -117,6 +121,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -138,6 +143,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -161,6 +167,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -182,6 +189,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: true, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: true, editar: true, excluir: false },
+      produto_generico: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -203,6 +211,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: true, editar: true, excluir: false },     
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: true, editar: true, excluir: false },
+      produto_generico: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -226,6 +235,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -247,6 +257,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -268,6 +279,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -291,6 +303,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: false, editar: false, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -312,6 +325,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: true, editar: true, excluir: false },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -333,6 +347,7 @@ const PERMISSOES_PADRAO = {
       ajudantes: { visualizar: true, criar: true, editar: true, excluir: true },
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -469,7 +484,6 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
       'grupos',
       'subgrupos',
       'classes',
-      'nome_generico_produto',
       'produto_origem',
       'unidades',
       'unidades_escolares',
@@ -478,6 +492,7 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
       'motoristas',
       'ajudantes',
       'cotacao',
+      'produto_generico',
       'permissoes'
     ];
 
@@ -664,7 +679,6 @@ router.get('/telas', checkPermission('visualizar'), (req, res) => {
     { nome: 'grupos', descricao: 'Gerenciamento de Grupos' },
     { nome: 'subgrupos', descricao: 'Gerenciamento de Subgrupos' },
     { nome: 'classes', descricao: 'Gerenciamento de Classes' },
-    { nome: 'nome_generico_produto', descricao: 'Gerenciamento de Nomes Genéricos de Produtos' },
     { nome: 'unidades', descricao: 'Gerenciamento de Unidades de Medida' },
     { nome: 'unidades_escolares', descricao: 'Gerenciamento de Unidades Escolares' },
     { nome: 'marcas', descricao: 'Gerenciamento de Marcas' },
@@ -673,6 +687,7 @@ router.get('/telas', checkPermission('visualizar'), (req, res) => {
     { nome: 'ajudantes', descricao: 'Gerenciamento de Ajudantes' },
     { nome: 'cotacao', descricao: 'Sistema de Cotação' },
     { nome: 'produto_origem', descricao: 'Gerenciamento de Produtos Origem' },
+    { nome: 'produto_generico', descricao: 'Gerenciamento de Produtos Genéricos' },
     { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
   ];
 

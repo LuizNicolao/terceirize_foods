@@ -1,9 +1,9 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrash, FaStar, FaExchangeAlt } from 'react-icons/fa';
 import { Button } from '../../components/ui';
 
-const NomesGenericosTable = ({
-  nomesGenericos,
+const ProdutosGenericosTable = ({
+  produtosGenericos,
   canView,
   canEdit,
   canDelete,
@@ -14,12 +14,12 @@ const NomesGenericosTable = ({
   getStatusColor,
   formatDate
 }) => {
-  if (!Array.isArray(nomesGenericos) || nomesGenericos.length === 0) {
+  if (!Array.isArray(produtosGenericos) || produtosGenericos.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <p className="text-gray-500 text-lg">Nenhum nome genérico encontrado</p>
+        <p className="text-gray-500 text-lg">Nenhum produto genérico encontrado</p>
         <p className="text-gray-400 text-sm mt-2">
-          Tente ajustar os filtros de busca ou adicionar um novo nome genérico
+          Tente ajustar os filtros de busca ou adicionar um novo produto genérico
         </p>
       </div>
     );
@@ -32,7 +32,10 @@ const NomesGenericosTable = ({
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nome Genérico
+                Código
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Nome
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Grupo
@@ -42,6 +45,12 @@ const NomesGenericosTable = ({
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Classe
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Padrão
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Origem
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
@@ -58,44 +67,68 @@ const NomesGenericosTable = ({
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {nomesGenericos.map((nomeGenerico) => (
-              <tr key={nomeGenerico.id} className="hover:bg-gray-50">
+            {produtosGenericos.map((produtoGenerico) => (
+              <tr key={produtoGenerico.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
-                    {nomeGenerico.nome || '-'}
+                    {produtoGenerico.codigo || '-'}
+                  </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">
+                    {produtoGenerico.nome || '-'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {nomeGenerico.grupo_nome || '-'}
+                    {produtoGenerico.grupo_nome || '-'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {nomeGenerico.subgrupo_nome || '-'}
+                    {produtoGenerico.subgrupo_nome || '-'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {nomeGenerico.classe_nome || '-'}
+                    {produtoGenerico.classe_nome || '-'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(nomeGenerico.status)}`}>
-                    {getStatusLabel(nomeGenerico.status)}
+                  {produtoGenerico.produto_padrao === 'Sim' ? (
+                    <FaStar className="w-4 h-4 text-yellow-500" title="Produto Padrão" />
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {produtoGenerico.produto_origem_id ? (
+                    <div className="flex items-center">
+                      <FaExchangeAlt className="w-3 h-3 text-blue-500 mr-1" />
+                      <span className="text-sm text-gray-900">
+                        {produtoGenerico.produto_origem_nome || 'Sim'}
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(produtoGenerico.status)}`}>
+                    {getStatusLabel(produtoGenerico.status)}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {nomeGenerico.total_produtos || 0}
+                  {produtoGenerico.total_produtos || 0}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(nomeGenerico.created_at)}
+                  {formatDate(produtoGenerico.criado_em)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
-                                         {canView('nome_generico_produto') && (
+                    {canView('produto_generico') && (
                       <Button
-                        onClick={() => onView(nomeGenerico)}
+                        onClick={() => onView(produtoGenerico)}
                         variant="ghost"
                         size="sm"
                         className="text-blue-600 hover:text-blue-900"
@@ -104,9 +137,9 @@ const NomesGenericosTable = ({
                       </Button>
                     )}
                     
-                                         {canEdit('nome_generico_produto') && (
+                    {canEdit('produto_generico') && (
                       <Button
-                        onClick={() => onEdit(nomeGenerico)}
+                        onClick={() => onEdit(produtoGenerico)}
                         variant="ghost"
                         size="sm"
                         className="text-green-600 hover:text-green-900"
@@ -115,9 +148,9 @@ const NomesGenericosTable = ({
                       </Button>
                     )}
                     
-                                         {canDelete('nome_generico_produto') && (
+                    {canDelete('produto_generico') && (
                       <Button
-                        onClick={() => onDelete(nomeGenerico.id)}
+                        onClick={() => onDelete(produtoGenerico.id)}
                         variant="ghost"
                         size="sm"
                         className="text-red-600 hover:text-red-900"
@@ -136,4 +169,4 @@ const NomesGenericosTable = ({
   );
 };
 
-export default NomesGenericosTable;
+export default ProdutosGenericosTable;

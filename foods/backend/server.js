@@ -19,7 +19,6 @@ const subgruposRoutes = require('./routes/subgrupos');
 const unidadesRoutes = require('./routes/unidades');
 const marcasRoutes = require('./routes/marcas');
 const classesRoutes = require('./routes/classes');
-const nomeGenericoProdutoRoutes = require('./routes/nome-generico-produto');
 const { router: permissoesRoutes } = require('./routes/permissoes');
 const dashboardRoutes = require('./routes/dashboard');
 const auditoriaRoutes = require('./routes/auditoria');
@@ -27,7 +26,7 @@ const veiculosRoutes = require('./routes/veiculos');
 const motoristasRoutes = require('./routes/motoristas');
 const ajudantesRoutes = require('./routes/ajudantes');
 const produtoOrigemRoutes = require('./routes/produto-origem');
-
+const produtoGenericoRoutes = require('./routes/produto-generico');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -424,7 +423,6 @@ app.use('/api/subgrupos', subgruposRoutes);
 app.use('/api/unidades', unidadesRoutes);
 app.use('/api/marcas', marcasRoutes);
 app.use('/api/classes', classesRoutes);
-app.use('/api/nome-generico-produto', nomeGenericoProdutoRoutes);
 app.use('/api/permissoes', permissoesRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/auditoria', auditoriaRoutes);
@@ -432,6 +430,7 @@ app.use('/api/veiculos', veiculosRoutes);
 app.use('/api/motoristas', motoristasRoutes);
 app.use('/api/ajudantes', ajudantesRoutes);
 app.use('/api/produto-origem', produtoOrigemRoutes);
+app.use('/api/produto-generico', produtoGenericoRoutes);
 
 // Rotas duplicadas para /foods
 app.use('/foods/api/auth', authRoutes);
@@ -447,7 +446,6 @@ app.use('/foods/api/subgrupos', subgruposRoutes);
 app.use('/foods/api/unidades', unidadesRoutes);
 app.use('/foods/api/marcas', marcasRoutes);
 app.use('/foods/api/classes', classesRoutes);
-app.use('/foods/api/nome-generico-produto', nomeGenericoProdutoRoutes);
 app.use('/foods/api/permissoes', permissoesRoutes);
 app.use('/foods/api/dashboard', dashboardRoutes);
 app.use('/foods/api/auditoria', auditoriaRoutes);
@@ -455,6 +453,7 @@ app.use('/foods/api/veiculos', veiculosRoutes);
 app.use('/foods/api/motoristas', motoristasRoutes);
 app.use('/foods/api/ajudantes', ajudantesRoutes);
 app.use('/foods/api/produto-origem', produtoOrigemRoutes);
+app.use('/foods/api/produto-generico', produtoGenericoRoutes);
 
 // Rota de health check
 app.get('/api/health', (req, res) => {

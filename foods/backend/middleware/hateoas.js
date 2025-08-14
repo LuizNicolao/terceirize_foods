@@ -140,9 +140,9 @@ class HateoasHelper {
       ajudantes: `${this.baseUrl}/ajudantes`,
       veiculos: `${this.baseUrl}/veiculos`,
       rotas: `${this.baseUrl}/rotas`,
-      nome_generico_produto: `${this.baseUrl}/nome-generico-produto`,
       auditoria: `${this.baseUrl}/auditoria`,
-      permissoes: `${this.baseUrl}/permissoes`
+      permissoes: `${this.baseUrl}/permissoes`,
+      produto_generico: `${this.baseUrl}/produto-generico`
     };
   }
 

@@ -18,12 +18,12 @@ import Subgrupos from './pages/subgrupos/Subgrupos';
 import Unidades from './pages/unidades/Unidades';
 import Marcas from './pages/marcas/Marcas';
 import Classes from './pages/classes/Classes';
-import NomeGenericoProduto from './pages/nome-generico-produto';
 import Permissoes from './pages/permissoes/Permissoes';
 import Veiculos from './pages/veiculos/Veiculos';
 import Motoristas from './pages/motoristas/Motoristas';
 import Ajudantes from './pages/ajudantes/Ajudantes';
 import ProdutoOrigem from './pages/produto-origem/ProdutoOrigem';
+import ProdutoGenerico from './pages/produto-generico/ProdutoGenerico';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -210,16 +210,6 @@ const App = () => {
         } 
       />
 
-      <Route 
-        path="/foods/nome-generico-produto" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="nome_generico_produto">
-              <NomeGenericoProduto />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
 
       <Route 
         path="/foods/veiculos" 
