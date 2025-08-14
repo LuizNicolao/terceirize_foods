@@ -35,6 +35,11 @@ const ProdutoGenerico = () => {
     produtosOrigem,
     unidadesMedida,
     searchTerm,
+    statusFilter,
+    grupoFilter,
+    subgrupoFilter,
+    classeFilter,
+    produtoOrigemFilter,
     currentPage,
     totalPages,
     totalItems,
@@ -47,7 +52,13 @@ const ProdutoGenerico = () => {
     handleEditProdutoGenerico,
     handleCloseModal,
     handlePageChange,
+    handleClearFilters,
     setSearchTerm,
+    setStatusFilter,
+    setGrupoFilter,
+    setSubgrupoFilter,
+    setClasseFilter,
+    setProdutoOrigemFilter,
     setItemsPerPage,
     formatDate,
     getStatusLabel,
@@ -117,32 +128,50 @@ const ProdutoGenerico = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        onClear={() => setSearchTerm('')}
+        statusFilter={statusFilter}
+        onStatusFilterChange={setStatusFilter}
+        onClear={handleClearFilters}
         placeholder="Buscar por nome..."
         additionalFilters={[
           {
             label: 'Grupo',
-            value: '',
-            onChange: () => {},
-            options: grupos.map(g => ({ value: g.id, label: g.nome }))
+            value: grupoFilter,
+            onChange: setGrupoFilter,
+            options: [
+              { value: '', label: 'Todos os Grupos' },
+              ...grupos.map(g => ({ value: g.id.toString(), label: g.nome }))
+            ]
           },
           {
             label: 'Subgrupo',
-            value: '',
-            onChange: () => {},
-            options: subgrupos.map(sg => ({ value: sg.id, label: sg.nome }))
+            value: subgrupoFilter,
+            onChange: setSubgrupoFilter,
+            options: [
+              { value: '', label: 'Todos os Subgrupos' },
+              ...subgrupos
+                .filter(sg => !grupoFilter || sg.grupo_id === parseInt(grupoFilter))
+                .map(sg => ({ value: sg.id.toString(), label: sg.nome }))
+            ]
           },
           {
             label: 'Classe',
-            value: '',
-            onChange: () => {},
-            options: classes.map(c => ({ value: c.id, label: c.nome }))
+            value: classeFilter,
+            onChange: setClasseFilter,
+            options: [
+              { value: '', label: 'Todas as Classes' },
+              ...classes
+                .filter(c => !subgrupoFilter || c.subgrupo_id === parseInt(subgrupoFilter))
+                .map(c => ({ value: c.id.toString(), label: c.nome }))
+            ]
           },
           {
             label: 'Produto Origem',
-            value: '',
-            onChange: () => {},
-            options: produtosOrigem.map(po => ({ value: po.id, label: po.nome }))
+            value: produtoOrigemFilter,
+            onChange: setProdutoOrigemFilter,
+            options: [
+              { value: '', label: 'Todos os Produtos Origem' },
+              ...produtosOrigem.map(po => ({ value: po.id.toString(), label: po.nome }))
+            ]
           }
         ]}
       />

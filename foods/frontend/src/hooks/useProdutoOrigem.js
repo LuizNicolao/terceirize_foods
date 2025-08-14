@@ -86,8 +86,24 @@ export const useProdutoOrigem = () => {
         setUnidadesMedida(unidadesRes.data || []);
       }
 
-      // Por enquanto, produtos genéricos padrão fica vazio até criar a tela
-      setProdutosGenericosPadrao([]);
+      // Carregar produtos genéricos padrão
+      try {
+        const produtosGenericosRes = await api.get('/produto-generico?status=1&limit=1000');
+        let produtosGenericos = [];
+        
+        if (produtosGenericosRes.data?.data?.items) {
+          produtosGenericos = produtosGenericosRes.data.data.items;
+        } else if (produtosGenericosRes.data?.data) {
+          produtosGenericos = produtosGenericosRes.data.data;
+        } else {
+          produtosGenericos = produtosGenericosRes.data || [];
+        }
+        
+        setProdutosGenericosPadrao(produtosGenericos);
+      } catch (error) {
+        console.error('Erro ao carregar produtos genéricos padrão:', error);
+        setProdutosGenericosPadrao([]);
+      }
     } catch (error) {
       console.error('Erro ao carregar dados auxiliares:', error);
       toast.error('Erro ao carregar dados auxiliares');

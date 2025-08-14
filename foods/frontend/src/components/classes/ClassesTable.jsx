@@ -49,9 +49,6 @@ const ClassesTable = ({
                   Produtos
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Criado em
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -89,9 +86,6 @@ const ClassesTable = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {classe.total_produtos || 0}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(classe.criado_em)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2">
@@ -181,7 +175,7 @@ const ClassesTable = ({
               </div>
             </div>
             
-            <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="grid grid-cols-3 gap-3 text-xs">
               <div>
                 <span className="text-gray-500">Subgrupo:</span>
                 <p className="font-medium">{getSubgrupoNome(classe.subgrupo_id)}</p>
@@ -200,10 +194,7 @@ const ClassesTable = ({
                 <span className="text-gray-500">Produtos:</span>
                 <p className="font-medium">{classe.total_produtos || 0}</p>
               </div>
-              <div>
-                <span className="text-gray-500">Criado em:</span>
-                <p className="font-medium">{formatDate(classe.criado_em)}</p>
-              </div>
+
             </div>
             
             {classe.descricao && (

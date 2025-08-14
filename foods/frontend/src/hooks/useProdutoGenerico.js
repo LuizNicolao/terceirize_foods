@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import produtoGenericoService from '../services/produtoGenerico';
+import api from '../services/api';
 
 export const useProdutoGenerico = () => {
   // Estados principais
@@ -17,6 +18,11 @@ export const useProdutoGenerico = () => {
 
   // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
+  const [grupoFilter, setGrupoFilter] = useState('');
+  const [subgrupoFilter, setSubgrupoFilter] = useState('');
+  const [classeFilter, setClasseFilter] = useState('');
+  const [produtoOrigemFilter, setProdutoOrigemFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -40,20 +46,60 @@ export const useProdutoGenerico = () => {
   const carregarDadosAuxiliares = async () => {
     try {
       const [gruposRes, subgruposRes, classesRes, produtosOrigemRes, unidadesRes] = await Promise.all([
-        produtoGenericoService.getGrupos(),
-        produtoGenericoService.getSubgrupos(),
-        produtoGenericoService.getClasses(),
-        produtoGenericoService.getProdutosOrigem(),
-        produtoGenericoService.getUnidadesMedida()
+        api.get('/grupos?limit=1000'),
+        api.get('/subgrupos?limit=1000'),
+        api.get('/classes?limit=1000'),
+        api.get('/produto-origem?limit=1000'),
+        api.get('/unidades?limit=1000')
       ]);
 
-      setGrupos(gruposRes.data || []);
-      setSubgrupos(subgruposRes.data || []);
-      setClasses(classesRes.data || []);
-      setProdutosOrigem(produtosOrigemRes.data || []);
-      setUnidadesMedida(unidadesRes.data || []);
+      // Carregar grupos
+      if (gruposRes.data?.data?.items) {
+        setGrupos(gruposRes.data.data.items);
+      } else if (gruposRes.data?.data) {
+        setGrupos(gruposRes.data.data);
+      } else {
+        setGrupos(gruposRes.data || []);
+      }
+
+      // Carregar subgrupos
+      if (subgruposRes.data?.data?.items) {
+        setSubgrupos(subgruposRes.data.data.items);
+      } else if (subgruposRes.data?.data) {
+        setSubgrupos(subgruposRes.data.data);
+      } else {
+        setSubgrupos(subgruposRes.data || []);
+      }
+
+      // Carregar classes
+      if (classesRes.data?.data?.items) {
+        setClasses(classesRes.data.data.items);
+      } else if (classesRes.data?.data) {
+        setClasses(classesRes.data.data);
+      } else {
+        setClasses(classesRes.data || []);
+      }
+
+      // Carregar produtos origem
+      if (produtosOrigemRes.data?.data?.items) {
+        setProdutosOrigem(produtosOrigemRes.data.data.items);
+      } else if (produtosOrigemRes.data?.data) {
+        setProdutosOrigem(produtosOrigemRes.data.data);
+      } else {
+        setProdutosOrigem(produtosOrigemRes.data || []);
+      }
+
+      // Carregar unidades de medida
+      if (unidadesRes.data?.data?.items) {
+        setUnidadesMedida(unidadesRes.data.data.items);
+      } else if (unidadesRes.data?.data) {
+        setUnidadesMedida(unidadesRes.data.data);
+      } else {
+        setUnidadesMedida(unidadesRes.data || []);
+      }
     } catch (error) {
       console.error('Erro ao carregar dados auxiliares:', error);
+      toast.error('Erro ao carregar dados auxiliares');
     }
   };
 
@@ -66,6 +112,11 @@ export const useProdutoGenerico = () => {
         page: currentPage,
         limit: itemsPerPage,
         search: searchTerm,
+        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined,
+        grupo_id: grupoFilter || undefined,
+        subgrupo_id: subgrupoFilter || undefined,
+        classe_id: classeFilter || undefined,
+        produto_origem_id: produtoOrigemFilter || undefined,
         ...params
       };
 
@@ -108,7 +159,7 @@ export const useProdutoGenerico = () => {
   useEffect(() => {
     carregarDadosAuxiliares();
     loadProdutosGenericos();
-  }, [currentPage, itemsPerPage]);
+  }, [currentPage, itemsPerPage, searchTerm, statusFilter, grupoFilter, subgrupoFilter, classeFilter, produtoOrigemFilter]);
 
   // Filtrar produtos genéricos (client-side)
   const filteredProdutosGenericos = (Array.isArray(produtosGenericos) ? produtosGenericos : []).filter(produto => {
@@ -214,6 +265,17 @@ export const useProdutoGenerico = () => {
     setCurrentPage(page);
   };
 
+  // Limpar filtros
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('todos');
+    setGrupoFilter('');
+    setSubgrupoFilter('');
+    setClasseFilter('');
+    setProdutoOrigemFilter('');
+    setCurrentPage(1);
+  };
+
   // Funções auxiliares
   const formatDate = (date) => {
     if (!date) return '-';
@@ -266,6 +328,11 @@ export const useProdutoGenerico = () => {
     produtosOrigem,
     unidadesMedida,
     searchTerm,
+    statusFilter,
+    grupoFilter,
+    subgrupoFilter,
+    classeFilter,
+    produtoOrigemFilter,
     currentPage,
     totalPages,
     totalItems,
@@ -280,7 +347,13 @@ export const useProdutoGenerico = () => {
     handleEditProdutoGenerico,
     handleCloseModal,
     handlePageChange,
+    handleClearFilters,
     setSearchTerm,
+    setStatusFilter,
+    setGrupoFilter,
+    setSubgrupoFilter,
+    setClasseFilter,
+    setProdutoOrigemFilter,
     setItemsPerPage,
 
     // Funções auxiliares

@@ -63,9 +63,6 @@ const ProdutosGenericosTable = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Produtos Vinculados
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Criado em
-              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Ações
               </th>
@@ -125,9 +122,6 @@ const ProdutosGenericosTable = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {produtoGenerico.total_produtos || 0}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate ? formatDate(produtoGenerico.criado_em) : new Date(produtoGenerico.criado_em).toLocaleDateString('pt-BR')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
