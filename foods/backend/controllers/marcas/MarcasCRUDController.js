@@ -148,7 +148,7 @@ class MarcasCRUDController {
         m.atualizado_em,
         COUNT(p.id) as total_produtos
        FROM marcas m
-       LEFT JOIN produtos p ON m.id = p.marca_id
+       LEFT JOIN produtos p ON m.marca = p.marca
        WHERE m.id = ?
        GROUP BY m.id, m.marca, m.fabricante, m.status, m.criado_em, m.atualizado_em`,
       [id]
@@ -173,7 +173,6 @@ class MarcasCRUDController {
    */
   static excluirMarca = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body; // Assuming status is sent in the body for soft delete
 
     // Verificar se marca existe
     const existingMarca = await executeQuery(
@@ -185,26 +184,18 @@ class MarcasCRUDController {
       return notFoundResponse(res, 'Marca não encontrada');
     }
 
-    // Verificar se marca já existe
-    const existingMarcaCheck = await executeQuery(
-      'SELECT id FROM marcas WHERE marca = ?',
+    // Verificar se marca está sendo usada em produtos ATIVOS
+    const produtos = await executeQuery(
+      'SELECT id, nome, status FROM produtos WHERE marca = ? AND status = 1',
       [existingMarca[0].marca]
     );
 
-    if (existingMarcaCheck.length > 0) {
-      return conflictResponse(res, 'Marca já cadastrada');
-    }
-
-    // Verificar se há produtos usando esta marca (se estiver sendo excluída)
-    if (status === 0) {
-      const produtosComMarca = await executeQuery(
-        'SELECT COUNT(*) as total FROM produtos WHERE marca_id = ?',
-        [id]
-      );
-
-      if (produtosComMarca[0].total > 0) {
-        return errorResponse(res, 'Não é possível inativar marca que possui produtos vinculados', STATUS_CODES.BAD_REQUEST);
-      }
+    if (produtos.length > 0) {
+      let mensagem = `Marca não pode ser desativada pois possui ${produtos.length} produto(s) ativo(s) vinculado(s):`;
+      mensagem += `\n- ${produtos.map(p => p.nome).join(', ')}`;
+      mensagem += '\n\nPara desativar a marca, primeiro desative todos os produtos vinculados.';
+      
+      return errorResponse(res, mensagem, STATUS_CODES.BAD_REQUEST);
     }
 
     // Excluir marca (soft delete - alterar status para 0)

@@ -31,7 +31,7 @@ class MarcasListController {
         m.atualizado_em,
         COUNT(p.id) as total_produtos
       FROM marcas m
-      LEFT JOIN produtos p ON m.id = p.marca_id
+      LEFT JOIN produtos p ON m.marca = p.marca
       WHERE 1=1
     `;
     
@@ -99,7 +99,7 @@ class MarcasListController {
         m.atualizado_em,
         COUNT(p.id) as total_produtos
        FROM marcas m
-       LEFT JOIN produtos p ON m.id = p.marca_id
+       LEFT JOIN produtos p ON m.marca = p.marca
        WHERE m.id = ?
        GROUP BY m.id, m.marca, m.fabricante, m.status, m.criado_em, m.atualizado_em`,
       [id]

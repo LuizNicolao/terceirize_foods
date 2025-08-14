@@ -20,14 +20,14 @@ class ProdutosCRUDController {
    */
   static criarProduto = asyncHandler(async (req, res) => {
     const {
-      codigo_produto, nome, codigo_barras, fator_conversao, referencia_interna, 
-      referencia_externa, referencia_mercado, unidade_id, grupo_id, subgrupo_id, 
-      classe_id, nome_generico_id, marca_id, peso_liquido, peso_bruto, fabricante, 
-      informacoes_adicionais, foto_produto, prazo_validade, unidade_validade, 
+      codigo_produto, nome, descricao, codigo_barras, referencia, referencia_externa, 
+      referencia_mercado, unidade_id, quantidade, grupo_id, subgrupo_id, classe_id, 
+      marca_id, agrupamento_n3, agrupamento_n4, peso_liquido, peso_bruto, marca, 
+      fabricante, informacoes_adicionais, foto_produto, prazo_validade, unidade_validade, 
       regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura, 
       altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn, 
-      aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, status, 
-      tipo_registro, embalagem_secundaria_id, fator_conversao_embalagem
+      aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, preco_custo, 
+      preco_venda, estoque_atual, estoque_minimo, fornecedor_id, status, fator_conversao
     } = req.body;
 
     // Verificar se código de barras já existe
@@ -42,15 +42,15 @@ class ProdutosCRUDController {
       }
     }
 
-    // Verificar se código do produto já existe
-    if (codigo_produto) {
-      const existingProduto = await executeQuery(
-        'SELECT id FROM produtos WHERE codigo_produto = ?',
-        [codigo_produto]
+    // Verificar se fornecedor existe (se fornecido)
+    if (fornecedor_id) {
+      const fornecedor = await executeQuery(
+        'SELECT id FROM fornecedores WHERE id = ? AND status = 1',
+        [fornecedor_id]
       );
 
-      if (existingProduto.length > 0) {
-        return conflictResponse(res, 'Código do produto já cadastrado');
+      if (fornecedor.length === 0) {
+        return errorResponse(res, 'Fornecedor não encontrado ou inativo', STATUS_CODES.BAD_REQUEST);
       }
     }
 
@@ -98,19 +98,7 @@ class ProdutosCRUDController {
       );
 
       if (unidade.length === 0) {
-        return errorResponse(res, 'Unidade de medida não encontrada', STATUS_CODES.BAD_REQUEST);
-      }
-    }
-
-    // Verificar se nome genérico existe (se fornecido)
-    if (nome_generico_id) {
-      const nomeGenerico = await executeQuery(
-        'SELECT id FROM produto_generico WHERE id = ?',
-        [nome_generico_id]
-      );
-
-      if (nomeGenerico.length === 0) {
-        return errorResponse(res, 'Nome genérico não encontrado', STATUS_CODES.BAD_REQUEST);
+        return errorResponse(res, 'Unidade não encontrada', STATUS_CODES.BAD_REQUEST);
       }
     }
 
@@ -126,73 +114,159 @@ class ProdutosCRUDController {
       }
     }
 
-    // Verificar se embalagem secundária existe (se fornecida)
-    if (embalagem_secundaria_id) {
-      const embalagem = await executeQuery(
-        'SELECT id FROM unidades_medida WHERE id = ?',
-        [embalagem_secundaria_id]
-      );
-
-      if (embalagem.length === 0) {
-        return errorResponse(res, 'Unidade de embalagem secundária não encontrada', STATUS_CODES.BAD_REQUEST);
-      }
-    }
-
     // Inserir produto
-    const insertQuery = `
-      INSERT INTO produtos (
-        codigo_produto, nome, codigo_barras, fator_conversao, referencia_interna,
-        referencia_externa, referencia_mercado, unidade_id, grupo_id, subgrupo_id,
-        classe_id, nome_generico_id, marca_id, peso_liquido, peso_bruto, fabricante,
-        informacoes_adicionais, foto_produto, prazo_validade, unidade_validade,
-        regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura,
-        altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn,
-        aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, status,
-        tipo_registro, embalagem_secundaria_id, fator_conversao_embalagem,
-        usuario_criador_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+    const result = await executeQuery(
+      `INSERT INTO produtos (
+        codigo_produto, nome, descricao, codigo_barras, referencia, referencia_externa, 
+        referencia_mercado, unidade_id, quantidade, grupo_id, subgrupo_id, classe_id, 
+        marca_id, agrupamento_n3, agrupamento_n4, peso_liquido, peso_bruto, marca, 
+        fabricante, informacoes_adicionais, foto_produto, prazo_validade, unidade_validade, 
+        regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura, 
+        altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn, 
+        aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, preco_custo, 
+        preco_venda, estoque_atual, estoque_minimo, fornecedor_id, status, fator_conversao, 
+        usuario_criador_id, criado_em
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
+      [
+        codigo_produto && codigo_produto.trim() ? codigo_produto.trim() : null,
+        nome, 
+        descricao && descricao.trim() ? descricao.trim() : null,
+        codigo_barras && codigo_barras.trim() ? codigo_barras.trim() : null,
+        referencia && referencia.trim() ? referencia.trim() : null,
+        referencia_externa && referencia_externa.trim() ? referencia_externa.trim() : null,
+        referencia_mercado && referencia_mercado.trim() ? referencia_mercado.trim() : null,
+        unidade_id || null,
+        quantidade || 1.000,
+        grupo_id || null,
+        subgrupo_id || null,
+        classe_id || null,
+        marca_id || null,
+        agrupamento_n3 && agrupamento_n3.trim() ? agrupamento_n3.trim() : null,
+        agrupamento_n4 && agrupamento_n4.trim() ? agrupamento_n4.trim() : null,
+        peso_liquido || null,
+        peso_bruto || null,
+        marca && marca.trim() ? marca.trim() : null,
+        fabricante && fabricante.trim() ? fabricante.trim() : null,
+        informacoes_adicionais && informacoes_adicionais.trim() ? informacoes_adicionais.trim() : null,
+        foto_produto && foto_produto.trim() ? foto_produto.trim() : null,
+        prazo_validade || null,
+        unidade_validade || null,
+        regra_palet_un || null,
+        ficha_homologacao && ficha_homologacao.trim() ? ficha_homologacao.trim() : null,
+        registro_especifico && registro_especifico.trim() ? registro_especifico.trim() : null,
+        comprimento || null,
+        largura || null,
+        altura || null,
+        volume || null,
+        integracao_senior && integracao_senior.trim() ? integracao_senior.trim() : null,
+        ncm && ncm.trim() ? ncm.trim() : null,
+        cest && cest.trim() ? cest.trim() : null,
+        cfop && cfop.trim() ? cfop.trim() : null,
+        ean && ean.trim() ? ean.trim() : null,
+        cst_icms && cst_icms.trim() ? cst_icms.trim() : null,
+        csosn && csosn.trim() ? csosn.trim() : null,
+        aliquota_icms || null,
+        aliquota_ipi || null,
+        aliquota_pis || null,
+        aliquota_cofins || null,
+        preco_custo || null,
+        preco_venda || null,
+        estoque_atual || 0,
+        estoque_minimo || 0,
+        fornecedor_id || null,
+        status || 1,
+        fator_conversao || 1.000,
+        req.user ? req.user.id : null
+      ]
+    );
 
-    const insertParams = [
-      codigo_produto, nome, codigo_barras, fator_conversao || 1.000, referencia_interna,
-      referencia_externa, referencia_mercado, unidade_id, grupo_id, subgrupo_id,
-      classe_id, nome_generico_id, marca_id, peso_liquido, peso_bruto, fabricante,
-      informacoes_adicionais, foto_produto, prazo_validade, unidade_validade,
-      regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura,
-      altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn,
-      aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, status || 1,
-      tipo_registro, embalagem_secundaria_id, fator_conversao_embalagem || 1,
-      req.user.id
-    ];
+    const novoProdutoId = result.insertId;
 
-    const result = await executeQuery(insertQuery, insertParams);
-    const produtoId = result.insertId;
-
-    // Buscar produto criado com joins
-    const produto = await executeQuery(`
-      SELECT 
-        p.*,
+    // Buscar produto criado
+    const produtos = await executeQuery(
+      `SELECT 
+        p.id,
+        p.codigo_produto,
+        p.nome,
+        p.descricao,
+        p.codigo_barras,
+        p.referencia,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.quantidade,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.marca_id,
+        p.agrupamento_n3,
+        p.agrupamento_n4,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.marca,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
+        p.preco_custo,
+        p.preco_venda,
+        p.estoque_atual,
+        p.estoque_minimo,
+        p.fornecedor_id,
+        p.status,
+        p.criado_em,
+        p.atualizado_em,
+        p.usuario_criador_id,
+        p.usuario_atualizador_id,
+        p.fator_conversao,
+        f.razao_social as fornecedor_nome,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.marca as marca_nome,
-        ng.nome as nome_generico_nome,
-        ue.nome as embalagem_secundaria_nome,
-        uc.nome as usuario_criador_nome
-      FROM produtos p
-      LEFT JOIN grupos g ON p.grupo_id = g.id
-      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-      LEFT JOIN classes c ON p.classe_id = c.id
-      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      LEFT JOIN marcas m ON p.marca_id = m.id
-      LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
-      LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
-      LEFT JOIN usuarios uc ON p.usuario_criador_id = uc.id
-      WHERE p.id = ?
-    `, [produtoId]);
+        m.marca as marca_nome
+       FROM produtos p
+       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
+       LEFT JOIN grupos g ON p.grupo_id = g.id
+       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+       LEFT JOIN classes c ON p.classe_id = c.id
+       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+       LEFT JOIN marcas m ON p.marca_id = m.id
+       WHERE p.id = ?`,
+      [novoProdutoId]
+    );
 
-    return successResponse(res, produto[0], 'Produto criado com sucesso', STATUS_CODES.CREATED);
+    const produto = produtos[0];
+
+    // Adicionar links HATEOAS
+    const data = res.addResourceLinks(produto);
+
+    // Gerar links de ações
+    const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
+    const actions = res.generateActionLinks(userPermissions, produto.id);
+
+    return successResponse(res, data, 'Produto criado com sucesso', STATUS_CODES.CREATED, {
+      actions
+    });
   });
 
   /**
@@ -200,16 +274,7 @@ class ProdutosCRUDController {
    */
   static atualizarProduto = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const {
-      codigo_produto, nome, codigo_barras, fator_conversao, referencia_interna, 
-      referencia_externa, referencia_mercado, unidade_id, grupo_id, subgrupo_id, 
-      classe_id, nome_generico_id, marca_id, peso_liquido, peso_bruto, fabricante, 
-      informacoes_adicionais, foto_produto, prazo_validade, unidade_validade, 
-      regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura, 
-      altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn, 
-      aliquota_icms, aliquota_ipi, aliquota_pis, aliquota_cofins, status, 
-      tipo_registro, embalagem_secundaria_id, fator_conversao_embalagem
-    } = req.body;
+    const updateData = req.body;
 
     // Verificar se produto existe
     const existingProduto = await executeQuery(
@@ -222,10 +287,10 @@ class ProdutosCRUDController {
     }
 
     // Verificar se código de barras já existe (se estiver sendo alterado)
-    if (codigo_barras) {
+    if (updateData.codigo_barras) {
       const codigoCheck = await executeQuery(
         'SELECT id FROM produtos WHERE codigo_barras = ? AND id != ?',
-        [codigo_barras, id]
+        [updateData.codigo_barras, id]
       );
 
       if (codigoCheck.length > 0) {
@@ -233,23 +298,23 @@ class ProdutosCRUDController {
       }
     }
 
-    // Verificar se código do produto já existe (se estiver sendo alterado)
-    if (codigo_produto) {
-      const codigoCheck = await executeQuery(
-        'SELECT id FROM produtos WHERE codigo_produto = ? AND id != ?',
-        [codigo_produto, id]
+    // Verificar se fornecedor existe (se fornecido)
+    if (updateData.fornecedor_id) {
+      const fornecedor = await executeQuery(
+        'SELECT id FROM fornecedores WHERE id = ? AND status = 1',
+        [updateData.fornecedor_id]
       );
 
-      if (codigoCheck.length > 0) {
-        return conflictResponse(res, 'Código do produto já cadastrado');
+      if (fornecedor.length === 0) {
+        return errorResponse(res, 'Fornecedor não encontrado ou inativo', STATUS_CODES.BAD_REQUEST);
       }
     }
 
     // Verificar se grupo existe (se fornecido)
-    if (grupo_id) {
+    if (updateData.grupo_id) {
       const grupo = await executeQuery(
         'SELECT id FROM grupos WHERE id = ?',
-        [grupo_id]
+        [updateData.grupo_id]
       );
 
       if (grupo.length === 0) {
@@ -258,10 +323,10 @@ class ProdutosCRUDController {
     }
 
     // Verificar se subgrupo existe (se fornecido)
-    if (subgrupo_id) {
+    if (updateData.subgrupo_id) {
       const subgrupo = await executeQuery(
         'SELECT id FROM subgrupos WHERE id = ?',
-        [subgrupo_id]
+        [updateData.subgrupo_id]
       );
 
       if (subgrupo.length === 0) {
@@ -270,10 +335,10 @@ class ProdutosCRUDController {
     }
 
     // Verificar se classe existe (se fornecida)
-    if (classe_id) {
+    if (updateData.classe_id) {
       const classe = await executeQuery(
         'SELECT id FROM classes WHERE id = ?',
-        [classe_id]
+        [updateData.classe_id]
       );
 
       if (classe.length === 0) {
@@ -282,34 +347,22 @@ class ProdutosCRUDController {
     }
 
     // Verificar se unidade existe (se fornecida)
-    if (unidade_id) {
+    if (updateData.unidade_id) {
       const unidade = await executeQuery(
         'SELECT id FROM unidades_medida WHERE id = ?',
-        [unidade_id]
+        [updateData.unidade_id]
       );
 
       if (unidade.length === 0) {
-        return errorResponse(res, 'Unidade de medida não encontrada', STATUS_CODES.BAD_REQUEST);
-      }
-    }
-
-    // Verificar se nome genérico existe (se fornecido)
-    if (nome_generico_id) {
-      const nomeGenerico = await executeQuery(
-        'SELECT id FROM produto_generico WHERE id = ?',
-        [nome_generico_id]
-      );
-
-      if (nomeGenerico.length === 0) {
-        return errorResponse(res, 'Nome genérico não encontrado', STATUS_CODES.BAD_REQUEST);
+        return errorResponse(res, 'Unidade não encontrada', STATUS_CODES.BAD_REQUEST);
       }
     }
 
     // Verificar se marca existe (se fornecida)
-    if (marca_id) {
+    if (updateData.marca_id) {
       const marca = await executeQuery(
         'SELECT id FROM marcas WHERE id = ?',
-        [marca_id]
+        [updateData.marca_id]
       );
 
       if (marca.length === 0) {
@@ -317,234 +370,139 @@ class ProdutosCRUDController {
       }
     }
 
-    // Verificar se embalagem secundária existe (se fornecida)
-    if (embalagem_secundaria_id) {
-      const embalagem = await executeQuery(
-        'SELECT id FROM unidades_medida WHERE id = ?',
-        [embalagem_secundaria_id]
-      );
-
-      if (embalagem.length === 0) {
-        return errorResponse(res, 'Unidade de embalagem secundária não encontrada', STATUS_CODES.BAD_REQUEST);
-      }
-    }
-
     // Construir query de atualização dinamicamente
     const updateFields = [];
     const updateParams = [];
+    const camposValidos = [
+      'codigo_produto', 'nome', 'descricao', 'codigo_barras', 'referencia', 
+      'referencia_externa', 'referencia_mercado', 'unidade_id', 'quantidade', 
+      'grupo_id', 'subgrupo_id', 'classe_id', 'marca_id', 'agrupamento_n3', 
+      'agrupamento_n4', 'peso_liquido', 'peso_bruto', 'marca', 'fabricante', 
+      'informacoes_adicionais', 'foto_produto', 'prazo_validade', 'unidade_validade', 
+      'regra_palet_un', 'ficha_homologacao', 'registro_especifico', 'comprimento', 
+      'largura', 'altura', 'volume', 'integracao_senior', 'ncm', 'cest', 'cfop', 
+      'ean', 'cst_icms', 'csosn', 'aliquota_icms', 'aliquota_ipi', 'aliquota_pis', 
+      'aliquota_cofins', 'preco_custo', 'preco_venda', 'estoque_atual', 
+      'estoque_minimo', 'fornecedor_id', 'status', 'fator_conversao'
+    ];
 
-    if (codigo_produto !== undefined) {
-      updateFields.push('codigo_produto = ?');
-      updateParams.push(codigo_produto);
-    }
-    if (nome !== undefined) {
-      updateFields.push('nome = ?');
-      updateParams.push(nome);
-    }
-    if (codigo_barras !== undefined) {
-      updateFields.push('codigo_barras = ?');
-      updateParams.push(codigo_barras);
-    }
-    if (fator_conversao !== undefined) {
-      updateFields.push('fator_conversao = ?');
-      updateParams.push(fator_conversao);
-    }
-    if (referencia_interna !== undefined) {
-      updateFields.push('referencia_interna = ?');
-      updateParams.push(referencia_interna);
-    }
-    if (referencia_externa !== undefined) {
-      updateFields.push('referencia_externa = ?');
-      updateParams.push(referencia_externa);
-    }
-    if (referencia_mercado !== undefined) {
-      updateFields.push('referencia_mercado = ?');
-      updateParams.push(referencia_mercado);
-    }
-    if (unidade_id !== undefined) {
-      updateFields.push('unidade_id = ?');
-      updateParams.push(unidade_id);
-    }
-    if (grupo_id !== undefined) {
-      updateFields.push('grupo_id = ?');
-      updateParams.push(grupo_id);
-    }
-    if (subgrupo_id !== undefined) {
-      updateFields.push('subgrupo_id = ?');
-      updateParams.push(subgrupo_id);
-    }
-    if (classe_id !== undefined) {
-      updateFields.push('classe_id = ?');
-      updateParams.push(classe_id);
-    }
-    if (nome_generico_id !== undefined) {
-      updateFields.push('nome_generico_id = ?');
-      updateParams.push(nome_generico_id);
-    }
-    if (marca_id !== undefined) {
-      updateFields.push('marca_id = ?');
-      updateParams.push(marca_id);
-    }
-    if (peso_liquido !== undefined) {
-      updateFields.push('peso_liquido = ?');
-      updateParams.push(peso_liquido);
-    }
-    if (peso_bruto !== undefined) {
-      updateFields.push('peso_bruto = ?');
-      updateParams.push(peso_bruto);
-    }
-    if (fabricante !== undefined) {
-      updateFields.push('fabricante = ?');
-      updateParams.push(fabricante);
-    }
-    if (informacoes_adicionais !== undefined) {
-      updateFields.push('informacoes_adicionais = ?');
-      updateParams.push(informacoes_adicionais);
-    }
-    if (foto_produto !== undefined) {
-      updateFields.push('foto_produto = ?');
-      updateParams.push(foto_produto);
-    }
-    if (prazo_validade !== undefined) {
-      updateFields.push('prazo_validade = ?');
-      updateParams.push(prazo_validade);
-    }
-    if (unidade_validade !== undefined) {
-      updateFields.push('unidade_validade = ?');
-      updateParams.push(unidade_validade);
-    }
-    if (regra_palet_un !== undefined) {
-      updateFields.push('regra_palet_un = ?');
-      updateParams.push(regra_palet_un);
-    }
-    if (ficha_homologacao !== undefined) {
-      updateFields.push('ficha_homologacao = ?');
-      updateParams.push(ficha_homologacao);
-    }
-    if (registro_especifico !== undefined) {
-      updateFields.push('registro_especifico = ?');
-      updateParams.push(registro_especifico);
-    }
-    if (comprimento !== undefined) {
-      updateFields.push('comprimento = ?');
-      updateParams.push(comprimento);
-    }
-    if (largura !== undefined) {
-      updateFields.push('largura = ?');
-      updateParams.push(largura);
-    }
-    if (altura !== undefined) {
-      updateFields.push('altura = ?');
-      updateParams.push(altura);
-    }
-    if (volume !== undefined) {
-      updateFields.push('volume = ?');
-      updateParams.push(volume);
-    }
-    if (integracao_senior !== undefined) {
-      updateFields.push('integracao_senior = ?');
-      updateParams.push(integracao_senior);
-    }
-    if (ncm !== undefined) {
-      updateFields.push('ncm = ?');
-      updateParams.push(ncm);
-    }
-    if (cest !== undefined) {
-      updateFields.push('cest = ?');
-      updateParams.push(cest);
-    }
-    if (cfop !== undefined) {
-      updateFields.push('cfop = ?');
-      updateParams.push(cfop);
-    }
-    if (ean !== undefined) {
-      updateFields.push('ean = ?');
-      updateParams.push(ean);
-    }
-    if (cst_icms !== undefined) {
-      updateFields.push('cst_icms = ?');
-      updateParams.push(cst_icms);
-    }
-    if (csosn !== undefined) {
-      updateFields.push('csosn = ?');
-      updateParams.push(csosn);
-    }
-    if (aliquota_icms !== undefined) {
-      updateFields.push('aliquota_icms = ?');
-      updateParams.push(aliquota_icms);
-    }
-    if (aliquota_ipi !== undefined) {
-      updateFields.push('aliquota_ipi = ?');
-      updateParams.push(aliquota_ipi);
-    }
-    if (aliquota_pis !== undefined) {
-      updateFields.push('aliquota_pis = ?');
-      updateParams.push(aliquota_pis);
-    }
-    if (aliquota_cofins !== undefined) {
-      updateFields.push('aliquota_cofins = ?');
-      updateParams.push(aliquota_cofins);
-    }
-    if (status !== undefined) {
-      updateFields.push('status = ?');
-      updateParams.push(status);
-    }
-    if (tipo_registro !== undefined) {
-      updateFields.push('tipo_registro = ?');
-      updateParams.push(tipo_registro);
-    }
-    if (embalagem_secundaria_id !== undefined) {
-      updateFields.push('embalagem_secundaria_id = ?');
-      updateParams.push(embalagem_secundaria_id);
-    }
-    if (fator_conversao_embalagem !== undefined) {
-      updateFields.push('fator_conversao_embalagem = ?');
-      updateParams.push(fator_conversao_embalagem);
+    Object.keys(updateData).forEach(key => {
+      if (camposValidos.includes(key) && updateData[key] !== undefined) {
+        let value = updateData[key];
+        
+        // Tratar valores vazios ou undefined
+        if (value === '' || value === null || value === undefined) {
+          value = null;
+        } else if (typeof value === 'string') {
+          value = value.trim();
+          if (value === '') {
+            value = null;
+          }
+        }
+        
+        updateFields.push(`${key} = ?`);
+        updateParams.push(value);
+      }
+    });
+
+    if (updateFields.length === 0) {
+      return errorResponse(res, 'Nenhum campo para atualizar', STATUS_CODES.BAD_REQUEST);
     }
 
-    // Adicionar campos de auditoria
-    updateFields.push('usuario_atualizador_id = ?');
-    updateParams.push(req.user.id);
-
-    // Adicionar ID do produto
+    updateFields.push('atualizado_em = NOW()');
     updateParams.push(id);
 
     // Executar atualização
-    const updateQuery = `
-      UPDATE produtos 
-      SET ${updateFields.join(', ')}
-      WHERE id = ?
-    `;
+    await executeQuery(
+      `UPDATE produtos SET ${updateFields.join(', ')} WHERE id = ?`,
+      updateParams
+    );
 
-    await executeQuery(updateQuery, updateParams);
-
-    // Buscar produto atualizado com joins
-    const produto = await executeQuery(`
-      SELECT 
-        p.*,
+    // Buscar produto atualizado
+    const produtos = await executeQuery(
+      `SELECT 
+        p.id,
+        p.codigo_produto,
+        p.nome,
+        p.descricao,
+        p.codigo_barras,
+        p.referencia,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.quantidade,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.marca_id,
+        p.agrupamento_n3,
+        p.agrupamento_n4,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.marca,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
+        p.preco_custo,
+        p.preco_venda,
+        p.estoque_atual,
+        p.estoque_minimo,
+        p.fornecedor_id,
+        p.status,
+        p.criado_em,
+        p.atualizado_em,
+        p.usuario_criador_id,
+        p.usuario_atualizador_id,
+        p.fator_conversao,
+        f.razao_social as fornecedor_nome,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.marca as marca_nome,
-        ng.nome as nome_generico_nome,
-        ue.nome as embalagem_secundaria_nome,
-        uc.nome as usuario_criador_nome,
-        ua.nome as usuario_atualizador_nome
-      FROM produtos p
-      LEFT JOIN grupos g ON p.grupo_id = g.id
-      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-      LEFT JOIN classes c ON p.classe_id = c.id
-      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      LEFT JOIN marcas m ON p.marca_id = m.id
-      LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
-      LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
-      LEFT JOIN usuarios uc ON p.usuario_criador_id = uc.id
-      LEFT JOIN usuarios ua ON p.usuario_atualizador_id = ua.id
-      WHERE p.id = ?
-    `, [id]);
+        m.marca as marca_nome
+       FROM produtos p
+       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
+       LEFT JOIN grupos g ON p.grupo_id = g.id
+       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+       LEFT JOIN classes c ON p.classe_id = c.id
+       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+       LEFT JOIN marcas m ON p.marca_id = m.id
+       WHERE p.id = ?`,
+      [id]
+    );
 
-    return successResponse(res, produto[0], 'Produto atualizado com sucesso');
+    const produto = produtos[0];
+
+    // Adicionar links HATEOAS
+    const data = res.addResourceLinks(produto);
+
+    // Gerar links de ações
+    const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
+    const actions = res.generateActionLinks(userPermissions, produto.id);
+
+    return successResponse(res, data, 'Produto atualizado com sucesso', STATUS_CODES.OK, {
+      actions
+    });
   });
 
   /**

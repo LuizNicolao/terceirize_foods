@@ -18,7 +18,7 @@ class MarcasSearchController {
   static buscarAtivas = asyncHandler(async (req, res) => {
     const pagination = req.pagination;
 
-    // Query base com contagem de produtos
+    // Query base
     let baseQuery = `
       SELECT 
         m.id, 
@@ -29,8 +29,9 @@ class MarcasSearchController {
         m.atualizado_em,
         COUNT(p.id) as total_produtos
       FROM marcas m
-      LEFT JOIN produtos p ON m.id = p.marca_id
-      WHERE 1=1
+      LEFT JOIN produtos p ON m.marca = p.marca
+      WHERE m.status = 1
+      GROUP BY m.id, m.marca, m.fabricante, m.status, m.criado_em, m.atualizado_em
     `;
     
     let params = [];
@@ -81,7 +82,7 @@ class MarcasSearchController {
         m.atualizado_em,
         COUNT(p.id) as total_produtos
       FROM marcas m
-      LEFT JOIN produtos p ON m.id = p.marca_id
+      LEFT JOIN produtos p ON m.marca = p.marca
       WHERE m.fabricante LIKE ?
       GROUP BY m.id, m.marca, m.fabricante, m.status, m.criado_em, m.atualizado_em
     `;

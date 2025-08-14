@@ -1,6 +1,6 @@
 /**
  * Controller de Estatísticas de Produtos
- * Responsável por gerar relatórios e estatísticas
+ * Responsável por relatórios e estatísticas
  */
 
 const { executeQuery } = require('../../config/database');
@@ -13,9 +13,9 @@ const { asyncHandler } = require('../../middleware/responseHandler');
 class ProdutosStatsController {
   
   /**
-   * Obter estatísticas gerais de produtos
+   * Buscar estatísticas gerais de produtos
    */
-  static estatisticasGerais = asyncHandler(async (req, res) => {
+  static buscarEstatisticas = asyncHandler(async (req, res) => {
     // Estatísticas gerais
     const totalProdutos = await executeQuery(
       'SELECT COUNT(*) as total FROM produtos'
@@ -29,16 +29,17 @@ class ProdutosStatsController {
       'SELECT COUNT(*) as total FROM produtos WHERE status = 0'
     );
 
-    const produtosComNomeGenerico = await executeQuery(
-      'SELECT COUNT(*) as total FROM produtos WHERE nome_generico_id IS NOT NULL AND status = 1'
+    const produtosEstoqueBaixo = await executeQuery(
+      'SELECT COUNT(*) as total FROM produtos WHERE estoque_atual <= estoque_minimo AND status = 1'
     );
 
-    const produtosComMarca = await executeQuery(
-      'SELECT COUNT(*) as total FROM produtos WHERE marca_id IS NOT NULL AND status = 1'
+    const produtosSemEstoque = await executeQuery(
+      'SELECT COUNT(*) as total FROM produtos WHERE estoque_atual = 0 AND status = 1'
     );
 
-    const produtosComFoto = await executeQuery(
-      'SELECT COUNT(*) as total FROM produtos WHERE foto_produto IS NOT NULL AND status = 1'
+    // Valor total do estoque
+    const valorEstoque = await executeQuery(
+      'SELECT SUM(estoque_atual * preco_custo) as valor_total FROM produtos WHERE status = "ativo" AND preco_custo IS NOT NULL'
     );
 
     // Produtos por grupo
@@ -53,39 +54,44 @@ class ProdutosStatsController {
       ORDER BY quantidade DESC
     `);
 
-    // Produtos por marca
-    const produtosPorMarca = await executeQuery(`
+    // Produtos por fornecedor
+    const produtosPorFornecedor = await executeQuery(`
       SELECT 
-        m.marca as marca,
+        f.razao_social as fornecedor,
         COUNT(p.id) as quantidade
-      FROM marcas m
-      LEFT JOIN produtos p ON m.id = p.marca_id AND p.status = 1
-      WHERE m.status = 1
-      GROUP BY m.id, m.marca
+      FROM fornecedores f
+      LEFT JOIN produtos p ON f.id = p.fornecedor_id AND p.status = 1
+      WHERE f.status = 1
+      GROUP BY f.id, f.razao_social
       ORDER BY quantidade DESC
       LIMIT 10
     `);
 
-    // Produtos por tipo de registro
-    const produtosPorTipoRegistro = await executeQuery(`
+    // Top produtos com maior estoque
+    const topEstoque = await executeQuery(`
       SELECT 
-        tipo_registro,
-        COUNT(*) as quantidade
-      FROM produtos
-      WHERE status = 1 AND tipo_registro IS NOT NULL
-      GROUP BY tipo_registro
-      ORDER BY quantidade DESC
+        p.nome,
+        p.estoque_atual,
+        p.estoque_minimo,
+        g.nome as grupo
+      FROM produtos p
+      LEFT JOIN grupos g ON p.grupo_id = g.id
+      WHERE p.status = 1
+      ORDER BY p.estoque_atual DESC
+      LIMIT 10
     `);
 
-    // Produtos por fabricante
-    const produtosPorFabricante = await executeQuery(`
+    // Produtos mais caros
+    const produtosMaisCaros = await executeQuery(`
       SELECT 
-        fabricante,
-        COUNT(*) as quantidade
-      FROM produtos
-      WHERE status = 1 AND fabricante IS NOT NULL
-      GROUP BY fabricante
-      ORDER BY quantidade DESC
+        p.nome,
+        p.preco_venda,
+        p.preco_custo,
+        g.nome as grupo
+      FROM produtos p
+      LEFT JOIN grupos g ON p.grupo_id = g.id
+      WHERE p.status = 1 AND p.preco_venda IS NOT NULL
+      ORDER BY p.preco_venda DESC
       LIMIT 10
     `);
 
@@ -94,14 +100,14 @@ class ProdutosStatsController {
         total: totalProdutos[0].total,
         ativos: produtosAtivos[0].total,
         inativos: produtosInativos[0].total,
-        com_nome_generico: produtosComNomeGenerico[0].total,
-        com_marca: produtosComMarca[0].total,
-        com_foto: produtosComFoto[0].total
+        estoque_baixo: produtosEstoqueBaixo[0].total,
+        sem_estoque: produtosSemEstoque[0].total,
+        valor_total_estoque: valorEstoque[0].valor_total || 0
       },
       por_grupo: produtosPorGrupo,
-      por_marca: produtosPorMarca,
-      por_tipo_registro: produtosPorTipoRegistro,
-      por_fabricante: produtosPorFabricante
+      por_fornecedor: produtosPorFornecedor,
+      top_estoque: topEstoque,
+      produtos_mais_caros: produtosMaisCaros
     };
 
     return successResponse(res, estatisticas, 'Estatísticas de produtos obtidas com sucesso', STATUS_CODES.OK);
