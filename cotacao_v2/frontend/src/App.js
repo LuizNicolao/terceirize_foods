@@ -7,8 +7,10 @@ import './design-system'; // Importar design system
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import Usuarios from './components/Usuarios';
-import Cotacoes from './pages/cotacoes';
-import { NovaCotacao, VisualizarCotacao, EditarCotacao } from './pages/cotacoes';
+import Cotacoes from './components/Cotacoes';
+import NovaCotacao from './components/NovaCotacao';
+import VisualizarCotacao from './components/VisualizarCotacao';
+import EditarCotacao from './components/EditarCotacao';
 import EditarUsuario from './components/EditarUsuario';
 import VisualizarUsuario from './components/VisualizarUsuario';
 import Supervisor from './components/Supervisor';
