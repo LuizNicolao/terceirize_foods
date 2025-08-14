@@ -71,6 +71,7 @@ class ProdutoOrigemService {
 
   async criar(data) {
     try {
+      console.log('Service - Dados recebidos:', data);
       const response = await api.post('/produto-origem', data);
       
       // Extrair dados da estrutura HATEOAS
@@ -88,9 +89,13 @@ class ProdutoOrigemService {
         message: 'Produto origem criado com sucesso!'
       };
     } catch (error) {
+      console.error('Service - Erro completo:', error);
+      console.error('Service - Response data:', error.response?.data);
+      
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar produto origem'
+        error: error.response?.data?.message || 'Erro ao criar produto origem',
+        validationErrors: error.response?.data?.errors || []
       };
     }
   }
