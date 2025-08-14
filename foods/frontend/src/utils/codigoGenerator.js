@@ -28,10 +28,15 @@ export const gerarCodigo = (tipo, ultimoCodigo = 0) => {
   // Se não há último código, começa do 1
   const proximoNumero = ultimoCodigo + 1;
   
-  // Formata o número com zeros à esquerda (mínimo 4 dígitos)
-  const numeroFormatado = proximoNumero.toString().padStart(4, '0');
+  // Para produtos, usar formato mais curto (máximo 10 caracteres)
+  if (tipo === 'PRODUTO') {
+    // Formato: PROD + número (ex: PROD0001)
+    const numeroFormatado = proximoNumero.toString().padStart(4, '0');
+    return `${prefixo}${numeroFormatado}`;
+  }
   
-  // Adiciona timestamp para garantir unicidade
+  // Para outras entidades, manter formato original
+  const numeroFormatado = proximoNumero.toString().padStart(4, '0');
   const timestamp = Date.now().toString().slice(-6);
   
   return `${prefixo}${numeroFormatado}${timestamp}`;
@@ -96,12 +101,19 @@ export const gerarCodigoClasse = (ultimoCodigo = 0) => {
 /**
  * Extrai o número base de um código gerado
  * @param {string} codigo - Código gerado
+ * @param {string} tipo - Tipo da entidade (opcional)
  * @returns {number} Número base extraído
  */
-export const extrairNumeroBase = (codigo) => {
+export const extrairNumeroBase = (codigo, tipo = null) => {
   if (!codigo || typeof codigo !== 'string') return 0;
   
-  // Remove o prefixo (4 letras) e o timestamp (6 dígitos)
+  // Para produtos, formato é PROD + 4 dígitos
+  if (tipo === 'PRODUTO') {
+    const numeroBase = codigo.slice(4);
+    return parseInt(numeroBase) || 0;
+  }
+  
+  // Para outras entidades, formato é prefixo + 4 dígitos + 6 dígitos timestamp
   const numeroBase = codigo.slice(4, -6);
   return parseInt(numeroBase) || 0;
 };
@@ -121,7 +133,14 @@ export const validarCodigo = (codigo, tipo) => {
   // Verifica se começa com o prefixo correto
   if (!codigo.startsWith(prefixo)) return false;
   
-  // Verifica se tem o tamanho correto (prefixo + 4 dígitos + 6 dígitos timestamp)
+  // Para produtos, formato é PROD + 4 dígitos (total: 8 caracteres)
+  if (tipo === 'PRODUTO') {
+    if (codigo.length !== 8) return false;
+    const parteNumerica = codigo.slice(4);
+    return /^\d{4}$/.test(parteNumerica);
+  }
+  
+  // Para outras entidades, formato é prefixo + 4 dígitos + 6 dígitos timestamp (total: 14 caracteres)
   if (codigo.length !== 14) return false;
   
   // Verifica se os caracteres após o prefixo são números
