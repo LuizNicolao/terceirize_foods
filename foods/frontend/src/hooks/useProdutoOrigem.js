@@ -50,11 +50,11 @@ export const useProdutoOrigem = () => {
         ProdutoOrigemService.listarProdutosGenericosPadrao()
       ]);
 
-      setGrupos(gruposRes.data || []);
-      setSubgrupos(subgruposRes.data || []);
-      setClasses(classesRes.data || []);
-      setUnidadesMedida(unidadesRes.data || []);
-      setProdutosGenericosPadrao(produtosGenericosRes.data || []);
+      setGrupos(gruposRes || []);
+      setSubgrupos(subgruposRes || []);
+      setClasses(classesRes || []);
+      setUnidadesMedida(unidadesRes || []);
+      setProdutosGenericosPadrao(produtosGenericosRes || []);
     } catch (error) {
       console.error('Erro ao carregar dados auxiliares:', error);
       toast.error('Erro ao carregar dados auxiliares');
@@ -76,12 +76,16 @@ export const useProdutoOrigem = () => {
         classe_id: classeFilter
       };
 
-      const response = await ProdutoOrigemService.listarProdutosOrigem(params);
+      const response = await ProdutoOrigemService.listar(params);
       
-      setProdutosOrigem(response.data || []);
-      setTotalPages(response.pagination?.pages || 1);
-      setTotalItems(response.pagination?.total || 0);
-      setEstatisticas(response.statistics || { total: 0, ativos: 0, inativos: 0 });
+      if (response.success) {
+        setProdutosOrigem(response.data || []);
+        setTotalPages(response.pagination?.pages || 1);
+        setTotalItems(response.pagination?.total || 0);
+        setEstatisticas(response.statistics || { total: 0, ativos: 0, inativos: 0 });
+      } else {
+        toast.error(response.error || 'Erro ao carregar produtos origem');
+      }
     } catch (error) {
       console.error('Erro ao carregar produtos origem:', error);
       toast.error('Erro ao carregar produtos origem');
@@ -105,18 +109,26 @@ export const useProdutoOrigem = () => {
       setLoading(true);
       
       if (editingProdutoOrigem) {
-        await ProdutoOrigemService.atualizarProdutoOrigem(editingProdutoOrigem.id, data);
-        toast.success('Produto origem atualizado com sucesso!');
+        const response = await ProdutoOrigemService.atualizar(editingProdutoOrigem.id, data);
+        if (response.success) {
+          toast.success(response.message || 'Produto origem atualizado com sucesso!');
+        } else {
+          throw new Error(response.error);
+        }
       } else {
-        await ProdutoOrigemService.criarProdutoOrigem(data);
-        toast.success('Produto origem criado com sucesso!');
+        const response = await ProdutoOrigemService.criar(data);
+        if (response.success) {
+          toast.success(response.message || 'Produto origem criado com sucesso!');
+        } else {
+          throw new Error(response.error);
+        }
       }
       
       handleCloseModal();
       carregarProdutosOrigem();
     } catch (error) {
       console.error('Erro ao salvar produto origem:', error);
-      const message = error.response?.data?.message || 'Erro ao salvar produto origem';
+      const message = error.message || 'Erro ao salvar produto origem';
       toast.error(message);
     } finally {
       setLoading(false);
@@ -130,12 +142,16 @@ export const useProdutoOrigem = () => {
 
     try {
       setLoading(true);
-      await ProdutoOrigemService.excluirProdutoOrigem(id);
-      toast.success('Produto origem excluído com sucesso!');
+      const response = await ProdutoOrigemService.excluir(id);
+      if (response.success) {
+        toast.success(response.message || 'Produto origem excluído com sucesso!');
+      } else {
+        throw new Error(response.error);
+      }
       carregarProdutosOrigem();
     } catch (error) {
       console.error('Erro ao excluir produto origem:', error);
-      const message = error.response?.data?.message || 'Erro ao excluir produto origem';
+      const message = error.message || 'Erro ao excluir produto origem';
       toast.error(message);
     } finally {
       setLoading(false);
@@ -151,13 +167,18 @@ export const useProdutoOrigem = () => {
   const handleViewProdutoOrigem = async (id) => {
     try {
       setLoading(true);
-      const response = await ProdutoOrigemService.buscarProdutoOrigemPorId(id);
-      setEditingProdutoOrigem(response.data);
-      setViewMode(true);
-      setShowModal(true);
+      const response = await ProdutoOrigemService.buscarPorId(id);
+      if (response.success) {
+        setEditingProdutoOrigem(response.data);
+        setViewMode(true);
+        setShowModal(true);
+      } else {
+        throw new Error(response.error);
+      }
     } catch (error) {
       console.error('Erro ao buscar produto origem:', error);
-      toast.error('Erro ao carregar dados do produto origem');
+      const message = error.message || 'Erro ao carregar dados do produto origem';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -166,13 +187,18 @@ export const useProdutoOrigem = () => {
   const handleEditProdutoOrigem = async (id) => {
     try {
       setLoading(true);
-      const response = await ProdutoOrigemService.buscarProdutoOrigemPorId(id);
-      setEditingProdutoOrigem(response.data);
-      setViewMode(false);
-      setShowModal(true);
+      const response = await ProdutoOrigemService.buscarPorId(id);
+      if (response.success) {
+        setEditingProdutoOrigem(response.data);
+        setViewMode(false);
+        setShowModal(true);
+      } else {
+        throw new Error(response.error);
+      }
     } catch (error) {
       console.error('Erro ao buscar produto origem:', error);
-      toast.error('Erro ao carregar dados do produto origem');
+      const message = error.message || 'Erro ao carregar dados do produto origem';
+      toast.error(message);
     } finally {
       setLoading(false);
     }
