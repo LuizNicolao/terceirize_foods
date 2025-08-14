@@ -1,1 +1,0 @@
-export { useCotacoes } from './useCotacoes';

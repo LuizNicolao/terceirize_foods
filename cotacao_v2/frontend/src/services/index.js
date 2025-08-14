@@ -1,1 +1,0 @@
-export { cotacoesService } from './cotacoesService';
