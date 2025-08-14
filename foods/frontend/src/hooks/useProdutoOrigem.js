@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import ProdutoOrigemService from '../services/produtoOrigem';
 
 export const useProdutoOrigem = () => {
