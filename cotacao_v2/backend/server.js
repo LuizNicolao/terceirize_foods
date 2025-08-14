@@ -21,6 +21,10 @@ const cotacoesRoutes = require('./routes/cotacoes');
 const savingRoutes = require('./routes/saving');
 const dashboardRoutes = require('./routes/dashboard');
 
+// Middlewares
+const { responseMiddleware } = require('./middleware/response');
+const { errorHandler, notFoundHandler } = require('./middleware/errorHandler');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -57,6 +61,9 @@ app.use(limiter);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Middleware de resposta padronizada
+app.use(responseMiddleware);
+
 // Rotas
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -78,19 +85,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Middleware de tratamento de erros
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    message: 'Erro interno do servidor',
-    error: process.env.NODE_ENV === 'development' ? err.message : {}
-  });
-});
+// Middleware de tratamento de erros (deve ser o último)
+app.use(errorHandler);
 
-// Rota 404
-app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Rota não encontrada' });
-});
+// Rota 404 (deve ser a última)
+app.use('*', notFoundHandler);
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);

@@ -1,69 +1,106 @@
-/**
- * Formata um valor para moeda brasileira (BRL)
- * @param {number} value - Valor a ser formatado
- * @returns {string} - Valor formatado como moeda
- */
-export const formatCurrency = (value) => {
-  if (!value && value !== 0) return 'R$ 0,00';
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL'
-  }).format(value);
-};
+// Utilitários de formatação genéricos
 
-/**
- * Formata uma data para o formato brasileiro
- * @param {string} dateString - Data em formato string
- * @returns {string} - Data formatada
- */
-export const formatDate = (dateString) => {
+export const formatDate = (dateString, options = {}) => {
   if (!dateString) return '-';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR', {
+  
+  const defaultOptions = {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
-  });
-};
+  };
 
-/**
- * Formata uma data apenas com data (sem hora)
- * @param {string} dateString - Data em formato string
- * @returns {string} - Data formatada
- */
-export const formatDateOnly = (dateString) => {
-  if (!dateString) return '-';
   const date = new Date(dateString);
-  return date.toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  });
+  return date.toLocaleDateString('pt-BR', { ...defaultOptions, ...options });
 };
 
-/**
- * Formata um número para percentual
- * @param {number} value - Valor a ser formatado
- * @param {number} decimals - Número de casas decimais (padrão: 2)
- * @returns {string} - Percentual formatado
- */
-export const formatPercentage = (value, decimals = 2) => {
-  if (!value && value !== 0) return '0%';
-  return `${value.toFixed(decimals)}%`;
+export const formatCurrency = (value, currency = 'BRL') => {
+  if (!value && value !== 0) return '-';
+  
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: currency
+  }).format(value);
 };
 
-/**
- * Formata um número para formato brasileiro
- * @param {number} value - Valor a ser formatado
- * @param {number} decimals - Número de casas decimais (padrão: 2)
- * @returns {string} - Número formatado
- */
 export const formatNumber = (value, decimals = 2) => {
-  if (!value && value !== 0) return '0';
+  if (!value && value !== 0) return '-';
+  
   return new Intl.NumberFormat('pt-BR', {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals
   }).format(value);
+};
+
+export const formatPercentage = (value, decimals = 2) => {
+  if (!value && value !== 0) return '-';
+  
+  return `${new Intl.NumberFormat('pt-BR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(value)}%`;
+};
+
+export const formatPhone = (phone) => {
+  if (!phone) return '-';
+  
+  // Remove tudo que não é número
+  const numbers = phone.replace(/\D/g, '');
+  
+  // Formata baseado no tamanho
+  if (numbers.length === 11) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7)}`;
+  } else if (numbers.length === 10) {
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
+  }
+  
+  return phone;
+};
+
+export const formatCPF = (cpf) => {
+  if (!cpf) return '-';
+  
+  const numbers = cpf.replace(/\D/g, '');
+  
+  if (numbers.length === 11) {
+    return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9)}`;
+  }
+  
+  return cpf;
+};
+
+export const formatCNPJ = (cnpj) => {
+  if (!cnpj) return '-';
+  
+  const numbers = cnpj.replace(/\D/g, '');
+  
+  if (numbers.length === 14) {
+    return `${numbers.slice(0, 2)}.${numbers.slice(2, 5)}.${numbers.slice(5, 8)}/${numbers.slice(8, 12)}-${numbers.slice(12)}`;
+  }
+  
+  return cnpj;
+};
+
+export const truncateText = (text, maxLength = 50) => {
+  if (!text) return '-';
+  
+  if (text.length <= maxLength) return text;
+  
+  return `${text.slice(0, maxLength)}...`;
+};
+
+export const capitalizeFirst = (text) => {
+  if (!text) return '';
+  
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+};
+
+export const formatFileSize = (bytes) => {
+  if (!bytes) return '0 B';
+  
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  
+  return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
 }; 

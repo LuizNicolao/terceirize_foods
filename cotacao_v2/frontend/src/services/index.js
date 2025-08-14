@@ -1,0 +1,1 @@
+export { cotacoesService } from './cotacoesService';
