@@ -3,7 +3,7 @@
  * Gerencia todas as operações de API relacionadas a produtos origem
  */
 
-import api from '../utils/api';
+import api from './api';
 
 class ProdutoOrigemService {
   /**
