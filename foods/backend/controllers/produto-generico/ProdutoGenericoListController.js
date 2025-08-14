@@ -106,12 +106,18 @@ class ProdutoGenericoListController {
         COUNT(*) as total,
         SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) as ativos,
         SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as inativos,
-        SUM(CASE WHEN produto_padrao = 'Sim' THEN 1 ELSE 0 END) as produtos_padrao
+        SUM(CASE WHEN produto_padrao = 'Sim' THEN 1 ELSE 0 END) as produtos_padrao,
+        SUM(CASE WHEN produto_origem_id IS NOT NULL AND produto_origem_id > 0 THEN 1 ELSE 0 END) as com_produto_origem,
+        0 as total_produtos_vinculados
       FROM produto_generico
     `;
+    
+    console.log('Query de estatísticas:', statsQuery);
     const stats = await executeQuery(statsQuery);
+    
+    console.log('Estatísticas calculadas:', stats[0]);
 
-    res.json({
+    const response = {
       success: true,
       data: produtosGenericos,
       pagination: {
@@ -121,7 +127,10 @@ class ProdutoGenericoListController {
         pages: Math.ceil(totalItems / limitNum)
       },
       statistics: stats[0]
-    });
+    };
+    
+    console.log('Resposta final:', response);
+    res.json(response);
   });
 
   /**

@@ -135,16 +135,34 @@ export const useProdutoGenerico = () => {
           setTotalPages(Math.ceil(result.data.length / itemsPerPage));
         }
         
-        // Calcular estatísticas básicas
-        const total = result.pagination?.totalItems || result.data.length;
-        const ativos = result.data.filter(p => p.status === 1).length;
-        const inativos = result.data.filter(p => p.status === 0).length;
+        // Usar estatísticas do backend
+        console.log('Resultado da API:', result);
+        console.log('Estatísticas recebidas:', result.statistics);
         
-        setEstatisticas({
-          total_produtos_genericos: total,
-          produtos_ativos: ativos,
-          produtos_inativos: inativos
-        });
+        if (result.statistics) {
+          setEstatisticas({
+            total_produtos_genericos: result.statistics.total || 0,
+            produtos_ativos: result.statistics.ativos || 0,
+            produtos_inativos: result.statistics.inativos || 0,
+            produtos_padrao: result.statistics.produtos_padrao || 0,
+            com_produto_origem: result.statistics.com_produto_origem || 0,
+            total_produtos_vinculados: result.statistics.total_produtos_vinculados || 0
+          });
+        } else {
+          // Fallback para estatísticas básicas
+          const total = result.pagination?.totalItems || result.data.length;
+          const ativos = result.data.filter(p => p.status === 1).length;
+          const inativos = result.data.filter(p => p.status === 0).length;
+          
+          setEstatisticas({
+            total_produtos_genericos: total,
+            produtos_ativos: ativos,
+            produtos_inativos: inativos,
+            produtos_padrao: 0,
+            com_produto_origem: 0,
+            total_produtos_vinculados: 0
+          });
+        }
       } else {
         toast.error(result.error || 'Erro ao carregar produtos genéricos');
       }
