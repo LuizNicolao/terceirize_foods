@@ -15,8 +15,8 @@ const router = express.Router();
 
 // Aplicar middlewares globais
 router.use(authenticateToken);
-router.use(paginationMiddleware);
-router.use(hateoasMiddleware('cotacoes'));
+// router.use(paginationMiddleware); // Comentado temporariamente para debug
+// router.use(hateoasMiddleware('cotacoes')); // Comentado temporariamente para debug
 
 // ===== ROTAS PRINCIPAIS DE COTAÇÕES =====
 
