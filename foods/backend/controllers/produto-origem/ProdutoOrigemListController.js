@@ -144,7 +144,7 @@ class ProdutoOrigemListController {
       return notFoundResponse(res, 'Produto origem não encontrado');
     }
 
-    successResponse(res, 'Produto origem encontrado', produtoOrigem[0]);
+    successResponse(res, produtoOrigem[0], 'Produto origem encontrado');
   });
 
   /**
@@ -172,7 +172,7 @@ class ProdutoOrigemListController {
       [grupo_id]
     );
 
-    successResponse(res, 'Produtos origem encontrados', produtosOrigem);
+    successResponse(res, produtosOrigem, 'Produtos origem encontrados');
   });
 
   /**
@@ -200,7 +200,7 @@ class ProdutoOrigemListController {
       [subgrupo_id]
     );
 
-    successResponse(res, 'Produtos origem encontrados', produtosOrigem);
+    successResponse(res, produtosOrigem, 'Produtos origem encontrados');
   });
 
   /**
@@ -228,7 +228,7 @@ class ProdutoOrigemListController {
       [classe_id]
     );
 
-    successResponse(res, 'Produtos origem encontrados', produtosOrigem);
+    successResponse(res, produtosOrigem, 'Produtos origem encontrados');
   });
 
   /**
@@ -253,7 +253,7 @@ class ProdutoOrigemListController {
       ORDER BY po.nome ASC`
     );
 
-    successResponse(res, 'Produtos origem ativos encontrados', produtosOrigem);
+    successResponse(res, produtosOrigem, 'Produtos origem ativos encontrados');
   });
 
   /**
@@ -284,7 +284,7 @@ class ProdutoOrigemListController {
       return notFoundResponse(res, 'Produto origem não encontrado');
     }
 
-    successResponse(res, 'Produto origem encontrado', produtoOrigem[0]);
+    successResponse(res, produtoOrigem[0], 'Produto origem encontrado');
   });
 
   /**
@@ -295,7 +295,7 @@ class ProdutoOrigemListController {
       'SELECT id, nome FROM grupos WHERE status = 1 ORDER BY nome ASC'
     );
 
-    successResponse(res, 'Grupos encontrados', grupos);
+    successResponse(res, grupos, 'Grupos encontrados');
   });
 
   /**
@@ -306,7 +306,7 @@ class ProdutoOrigemListController {
       'SELECT id, nome FROM subgrupos WHERE status = 1 ORDER BY nome ASC'
     );
 
-    successResponse(res, 'Subgrupos encontrados', subgrupos);
+    successResponse(res, subgrupos, 'Subgrupos encontrados');
   });
 
   /**
@@ -317,7 +317,7 @@ class ProdutoOrigemListController {
       'SELECT id, nome FROM classes WHERE status = 1 ORDER BY nome ASC'
     );
 
-    successResponse(res, 'Classes encontradas', classes);
+    successResponse(res, classes, 'Classes encontradas');
   });
 
   /**
@@ -328,7 +328,7 @@ class ProdutoOrigemListController {
       'SELECT id, nome FROM unidades_medida WHERE status = 1 ORDER BY nome ASC'
     );
 
-    successResponse(res, 'Unidades de medida encontradas', unidades);
+    successResponse(res, unidades, 'Unidades de medida encontradas');
   });
 
   /**
@@ -339,7 +339,7 @@ class ProdutoOrigemListController {
       'SELECT id, nome FROM nome_generico_produto WHERE status = 1 ORDER BY nome ASC'
     );
 
-    successResponse(res, 'Produtos genéricos padrão encontrados', produtosGenericos);
+    successResponse(res, produtosGenericos, 'Produtos genéricos padrão encontrados');
   });
 }
 

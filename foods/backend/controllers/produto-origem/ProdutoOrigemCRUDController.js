@@ -128,7 +128,7 @@ class ProdutoOrigemCRUDController {
       [result.insertId]
     );
 
-    successResponse(res, 'Produto origem criado com sucesso', novoProdutoOrigem[0]);
+    successResponse(res, novoProdutoOrigem[0], 'Produto origem criado com sucesso');
   });
 
   /**
@@ -261,7 +261,7 @@ class ProdutoOrigemCRUDController {
       [id]
     );
 
-    successResponse(res, 'Produto origem atualizado com sucesso', produtoOrigemAtualizado[0]);
+    successResponse(res, produtoOrigemAtualizado[0], 'Produto origem atualizado com sucesso');
   });
 
   /**
@@ -286,7 +286,7 @@ class ProdutoOrigemCRUDController {
       [req.user.id, id]
     );
 
-    successResponse(res, 'Produto origem excluído com sucesso', { id, nome: produtoOrigem[0].nome });
+    successResponse(res, { id, nome: produtoOrigem[0].nome }, 'Produto origem excluído com sucesso');
   });
 }
 

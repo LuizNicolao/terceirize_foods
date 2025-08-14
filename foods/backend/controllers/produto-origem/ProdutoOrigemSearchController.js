@@ -182,7 +182,7 @@ class ProdutoOrigemSearchController {
       [`%${nome}%`, nome, `${nome}%`, parseInt(limit)]
     );
 
-    successResponse(res, 'Produtos origem encontrados por similaridade', produtosOrigem);
+    successResponse(res, produtosOrigem, 'Produtos origem encontrados por similaridade');
   });
 
   /**
@@ -238,7 +238,7 @@ class ProdutoOrigemSearchController {
 
     const produtosOrigem = await executeQuery(query, params);
 
-    successResponse(res, 'Produtos origem encontrados por código', produtosOrigem);
+    successResponse(res, produtosOrigem, 'Produtos origem encontrados por código');
   });
 
   /**

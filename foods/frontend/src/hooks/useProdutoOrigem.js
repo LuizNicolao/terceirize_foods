@@ -231,7 +231,6 @@ export const useProdutoOrigem = () => {
       setLoading(true);
       const response = await ProdutoOrigemService.buscarPorId(id);
       if (response.success) {
-        console.log('Dados retornados do backend:', response.data);
         setEditingProdutoOrigem(response.data);
         setViewMode(false);
         setShowModal(true);
