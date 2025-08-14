@@ -49,9 +49,10 @@ const ProdutoOrigemModal = ({
   }, [produtoOrigem, isOpen, setValue, reset]);
 
   const handleFormSubmit = (data) => {
-    // Converter campos numéricos
+    // Converter campos numéricos e enviar apenas os campos editáveis
     const formData = {
-      ...data,
+      codigo: data.codigo,
+      nome: data.nome,
       unidade_medida_id: data.unidade_medida_id ? parseInt(data.unidade_medida_id) : null,
       fator_conversao: data.fator_conversao ? parseFloat(data.fator_conversao) : 1.000,
       grupo_id: data.grupo_id ? parseInt(data.grupo_id) : null,
@@ -59,6 +60,7 @@ const ProdutoOrigemModal = ({
       classe_id: data.classe_id ? parseInt(data.classe_id) : null,
       peso_liquido: data.peso_liquido ? parseFloat(data.peso_liquido) : null,
       produto_generico_padrao_id: data.produto_generico_padrao_id && data.produto_generico_padrao_id !== '' ? parseInt(data.produto_generico_padrao_id) : null,
+      referencia_mercado: data.referencia_mercado,
       status: parseInt(data.status) || 1
     };
 
