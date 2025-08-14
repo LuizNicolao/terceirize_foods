@@ -119,7 +119,7 @@ const produtoOrigemValidations = {
     
     body('nome')
       .isLength({ min: 3, max: 200 })
-      .withMessage('Nome deve ter entre 3 e 200 caracteres'),
+      .withMessage('Nome deve ter pelo menos 3 caracteres e no máximo 200 caracteres'),
     
     body('unidade_medida_id')
       .notEmpty()
