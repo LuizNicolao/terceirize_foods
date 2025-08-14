@@ -8,8 +8,7 @@ const router = express.Router();
 
 // Middlewares
 const { checkPermission } = require('../../middleware/auth');
-const { auditMiddleware } = require('../../middleware/audit');
-const { AUDIT_ACTIONS } = require('../../utils/audit');
+const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 
 // Controllers
 const ProdutoGenericoController = require('../../controllers/produto-generico');
