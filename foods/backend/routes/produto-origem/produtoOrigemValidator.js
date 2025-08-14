@@ -223,7 +223,15 @@ const produtoOrigemValidations = {
     
     body('produto_generico_padrao_id')
       .optional()
-      .isInt({ min: 1 })
+      .custom((value) => {
+        if (value && value !== '' && value !== null && value !== undefined) {
+          const numValue = parseInt(value);
+          if (isNaN(numValue) || numValue < 1) {
+            throw new Error('Produto genérico padrão deve ser um número válido');
+          }
+        }
+        return true;
+      })
       .withMessage('Produto genérico padrão deve ser selecionado'),
     
     body('status')
