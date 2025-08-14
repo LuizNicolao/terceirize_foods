@@ -3,7 +3,7 @@
  * Componente para criação e edição de produtos genéricos
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
@@ -29,46 +29,23 @@ const ProdutoGenericoModal = ({
     formState: { errors }
   } = useForm();
 
-  const [subgruposFiltrados, setSubgruposFiltrados] = useState([]);
-  const [classesFiltradas, setClassesFiltradas] = useState([]);
-
-  // Observar mudanças nos campos dependentes
+  // Observar mudanças nos campos para filtros dependentes
   const grupoId = watch('grupo_id');
   const subgrupoId = watch('subgrupo_id');
 
   // Filtrar subgrupos baseado no grupo selecionado
-  useEffect(() => {
-    if (grupoId && grupoId !== '') {
-      const filtrados = subgrupos.filter(sg => String(sg.grupo_id) === String(grupoId));
-      setSubgruposFiltrados(filtrados);
-      
-      // Limpar subgrupo se não for compatível
-      if (produtoGenerico && produtoGenerico.grupo_id !== parseInt(grupoId)) {
-        setValue('subgrupo_id', '');
-        setValue('classe_id', '');
-      }
-    } else {
-      setSubgruposFiltrados([]);
-      setValue('subgrupo_id', '');
-      setValue('classe_id', '');
-    }
-  }, [grupoId, subgrupos, setValue, produtoGenerico]);
+  const subgruposFiltrados = grupoId && grupoId !== '' 
+    ? subgrupos.filter(sg => String(sg.grupo_id) === String(grupoId))
+    : produtoGenerico && produtoGenerico.grupo_id 
+      ? subgrupos.filter(sg => String(sg.grupo_id) === String(produtoGenerico.grupo_id))
+      : [];
 
   // Filtrar classes baseado no subgrupo selecionado
-  useEffect(() => {
-    if (subgrupoId && subgrupoId !== '') {
-      const filtradas = classes.filter(c => String(c.subgrupo_id) === String(subgrupoId));
-      setClassesFiltradas(filtradas);
-      
-      // Limpar classe se não for compatível
-      if (produtoGenerico && produtoGenerico.subgrupo_id !== parseInt(subgrupoId)) {
-        setValue('classe_id', '');
-      }
-    } else {
-      setClassesFiltradas([]);
-      setValue('classe_id', '');
-    }
-  }, [subgrupoId, classes, setValue, produtoGenerico]);
+  const classesFiltradas = subgrupoId && subgrupoId !== '' 
+    ? classes.filter(c => String(c.subgrupo_id) === String(subgrupoId))
+    : produtoGenerico && produtoGenerico.subgrupo_id 
+      ? classes.filter(c => String(c.subgrupo_id) === String(produtoGenerico.subgrupo_id))
+      : [];
 
   // Carregar dados quando o modal abrir
   useEffect(() => {
@@ -177,28 +154,20 @@ const ProdutoGenericoModal = ({
             </div>
 
             {/* Produto Origem */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Produto Origem
-              </label>
-              <select
-                {...register('produto_origem_id')}
-                disabled={viewMode}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.produto_origem_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                }`}
-              >
-                <option value="">Selecione um produto origem</option>
-                {produtosOrigem?.map(produto => (
-                  <option key={produto.id} value={produto.id}>
-                    {produto.codigo} - {produto.nome}
-                  </option>
-                ))}
-              </select>
-              {errors.produto_origem_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.produto_origem_id.message}</p>
-              )}
-            </div>
+            <Input
+              label="Produto Origem"
+              type="select"
+              {...register('produto_origem_id')}
+              error={errors.produto_origem_id?.message}
+              disabled={viewMode}
+            >
+              <option value="">Selecione um produto origem</option>
+              {produtosOrigem?.map(produto => (
+                <option key={produto.id} value={produto.id}>
+                  {produto.codigo} - {produto.nome}
+                </option>
+              ))}
+            </Input>
 
             {/* Fator de Conversão */}
             <div>
@@ -217,130 +186,90 @@ const ProdutoGenericoModal = ({
             </div>
 
             {/* Status */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Status
-              </label>
-              <select
-                {...register('status')}
-                disabled={viewMode}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value={1}>Ativo</option>
-                <option value={0}>Inativo</option>
-              </select>
-            </div>
+            <Input
+              label="Status"
+              type="select"
+              {...register('status')}
+              disabled={viewMode}
+            >
+              <option value={1}>Ativo</option>
+              <option value={0}>Inativo</option>
+            </Input>
 
             {/* Grupo */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Grupo
-              </label>
-              <select
-                {...register('grupo_id')}
-                disabled={viewMode}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.grupo_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                }`}
-              >
-                <option value="">Selecione um grupo</option>
-                {grupos?.map(grupo => (
-                  <option key={grupo.id} value={grupo.id}>
-                    {grupo.nome}
-                  </option>
-                ))}
-              </select>
-              {errors.grupo_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.grupo_id.message}</p>
-              )}
-            </div>
+            <Input
+              label="Grupo"
+              type="select"
+              {...register('grupo_id')}
+              error={errors.grupo_id?.message}
+              disabled={viewMode}
+            >
+              <option value="">Selecione um grupo</option>
+              {grupos?.map(grupo => (
+                <option key={grupo.id} value={grupo.id}>
+                  {grupo.nome}
+                </option>
+              ))}
+            </Input>
 
             {/* Subgrupo */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Subgrupo
-              </label>
-              <select
-                {...register('subgrupo_id')}
-                disabled={viewMode}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.subgrupo_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                }`}
-              >
-                <option value="">Selecione um subgrupo</option>
-                {subgruposFiltrados?.map(subgrupo => (
-                  <option key={subgrupo.id} value={subgrupo.id}>
-                    {subgrupo.nome}
-                  </option>
-                ))}
-              </select>
-              {errors.subgrupo_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.subgrupo_id.message}</p>
-              )}
-            </div>
+            <Input
+              label="Subgrupo"
+              type="select"
+              {...register('subgrupo_id')}
+              error={errors.subgrupo_id?.message}
+              disabled={viewMode || !grupoId}
+            >
+              <option value="">Selecione um subgrupo</option>
+              {subgruposFiltrados.map(subgrupo => (
+                <option key={subgrupo.id} value={subgrupo.id}>
+                  {subgrupo.nome}
+                </option>
+              ))}
+            </Input>
 
             {/* Classe */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Classe
-              </label>
-              <select
-                {...register('classe_id')}
-                disabled={viewMode}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.classe_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                }`}
-              >
-                <option value="">Selecione uma classe</option>
-                {classesFiltradas?.map(classe => (
-                  <option key={classe.id} value={classe.id}>
-                    {classe.nome}
-                  </option>
-                ))}
-              </select>
-              {errors.classe_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.classe_id.message}</p>
-              )}
-            </div>
+            <Input
+              label="Classe"
+              type="select"
+              {...register('classe_id')}
+              error={errors.classe_id?.message}
+              disabled={viewMode || !subgrupoId}
+            >
+              <option value="">Selecione uma classe</option>
+              {classesFiltradas.map(classe => (
+                <option key={classe.id} value={classe.id}>
+                  {classe.nome}
+                </option>
+              ))}
+            </Input>
 
             {/* Unidade de Medida */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Unidade de Medida
-              </label>
-              <select
-                {...register('unidade_medida_id')}
-                disabled={viewMode}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                  errors.unidade_medida_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                }`}
-              >
-                <option value="">Selecione uma unidade</option>
-                {unidadesMedida?.map(unidade => (
-                  <option key={unidade.id} value={unidade.id}>
-                    {unidade.nome}
-                  </option>
-                ))}
-              </select>
-              {errors.unidade_medida_id && (
-                <p className="mt-1 text-sm text-red-600">{errors.unidade_medida_id.message}</p>
-              )}
-            </div>
+            <Input
+              label="Unidade de Medida"
+              type="select"
+              {...register('unidade_medida_id')}
+              error={errors.unidade_medida_id?.message}
+              disabled={viewMode}
+            >
+              <option value="">Selecione uma unidade</option>
+              {unidadesMedida?.map(unidade => (
+                <option key={unidade.id} value={unidade.id}>
+                  {unidade.nome}
+                </option>
+              ))}
+            </Input>
 
             {/* Produto Padrão */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Produto Padrão
-              </label>
-              <select
-                {...register('produto_padrao')}
-                disabled={viewMode}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="Não">Não</option>
-                <option value="Sim">Sim</option>
-              </select>
-            </div>
+            <Input
+              label="Produto Padrão"
+              type="select"
+              {...register('produto_padrao')}
+              disabled={viewMode}
+            >
+              <option value="Não">Não</option>
+              <option value="Sim">Sim</option>
+            </Input>
 
             {/* Referência de Mercado */}
             <div>
