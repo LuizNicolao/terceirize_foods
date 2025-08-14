@@ -1,12 +1,9 @@
--- Usar banco de dados do sistema principal (foods)
-USE foods_db;
-
 -- phpMyAdmin SQL Dump
 -- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql:3306
--- Tempo de geração: 01/08/2025 às 18:45
+-- Tempo de geração: 14/08/2025 às 16:30
 -- Versão do servidor: 8.0.43
 -- Versão do PHP: 8.2.27
 
@@ -32,14 +29,14 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `ajudantes` (
   `id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `cpf` varchar(14) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `telefone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `endereco` text COLLATE utf8mb4_general_ci,
-  `status` enum('ativo','inativo','ferias','licenca') COLLATE utf8mb4_general_ci DEFAULT 'ativo',
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `cpf` varchar(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `endereco` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `status` enum('ativo','inativo','ferias','licenca') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ativo',
   `data_admissao` date DEFAULT NULL,
-  `observacoes` text COLLATE utf8mb4_general_ci,
+  `observacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `filial_id` int DEFAULT NULL
@@ -54,7 +51,7 @@ CREATE TABLE `ajudantes` (
 CREATE TABLE `almoxarifados` (
   `id` int NOT NULL,
   `filial_id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
   `status` tinyint(1) DEFAULT '1',
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -530,7 +527,10 @@ INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`
 (521, 4, 'update', 'filiais', '{\"url\": \"/api/filiais/1\", \"method\": \"PUT\", \"changes\": {\"filial\": {\"to\": \"CD CHAPECOo\", \"from\": \"CD CHAPECO\"}}, \"userAgent\": \"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36\", \"resourceId\": \"1\", \"statusCode\": 200, \"requestBody\": {\"filial\": \"CD CHAPECOo\"}}', '::ffff:179.151.167.117', '2025-07-31 20:05:02'),
 (522, 4, 'update', 'filiais', '{\"url\": \"/api/filiais/1\", \"method\": \"PUT\", \"changes\": {\"filial\": {\"to\": \"CD CHAPECO\", \"from\": \"CD CHAPECOo\"}}, \"userAgent\": \"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36\", \"resourceId\": \"1\", \"statusCode\": 200, \"requestBody\": {\"filial\": \"CD CHAPECO\"}}', '::ffff:179.151.167.117', '2025-07-31 20:05:11'),
 (523, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '177.75.142.157', '2025-08-01 17:55:26'),
-(524, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '177.75.142.157', '2025-08-01 18:22:02');
+(524, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '177.75.142.157', '2025-08-01 18:22:02'),
+(525, 4, 'update', 'rotas', '{\"url\": \"/foods/api/rotas/2\", \"method\": \"PUT\", \"changes\": {\"status\": {\"to\": \"inativo\", \"from\": \"ativo\"}, \"filial_nome\": {\"to\": \"CD CURITIBANOS\"}, \"total_unidades\": {\"to\": \"15\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"2\", \"statusCode\": 200, \"requestBody\": {\"id\": 2, \"nome\": \"R01 - Canoinhas\", \"codigo\": \"ROTA 01 CTB\", \"status\": \"inativo\", \"filial_id\": 3, \"tipo_rota\": \"semanal\", \"created_at\": \"2025-07-20 04:19:37\", \"updated_at\": \"2025-07-23 20:06:52\", \"filial_nome\": \"CD CURITIBANOS\", \"observacoes\": \"\", \"custo_diario\": \"2700.00\", \"distancia_km\": \"0.00\", \"total_unidades\": \"15\"}}', '187.45.102.250', '2025-08-14 13:57:17'),
+(526, 4, 'update', 'rotas', '{\"url\": \"/foods/api/rotas/2\", \"method\": \"PUT\", \"changes\": {\"status\": {\"to\": \"ativo\", \"from\": \"inativo\"}, \"filial_nome\": {\"to\": \"CD CURITIBANOS\"}, \"observacoes\": {\"to\": \"\", \"from\": null}, \"total_unidades\": {\"to\": \"15\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"2\", \"statusCode\": 200, \"requestBody\": {\"id\": 2, \"nome\": \"R01 - Canoinhas\", \"codigo\": \"ROTA 01 CTB\", \"status\": \"ativo\", \"filial_id\": 3, \"tipo_rota\": \"semanal\", \"created_at\": \"2025-07-20 04:19:37\", \"updated_at\": \"2025-08-14 13:57:17\", \"filial_nome\": \"CD CURITIBANOS\", \"observacoes\": \"\", \"custo_diario\": \"2700.00\", \"distancia_km\": \"0.00\", \"total_unidades\": \"15\"}}', '187.45.102.250', '2025-08-14 13:57:20'),
+(527, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"nome_generico_produto\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-14 16:24:37');
 
 -- --------------------------------------------------------
 
@@ -540,12 +540,26 @@ INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`
 
 CREATE TABLE `classes` (
   `id` int NOT NULL,
-  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Nome da classe (ex: BOVINO, SUÍNO, FRANGO)',
+  `nome` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome da classe (ex: BOVINO, SUÍNO, FRANGO)',
+  `codigo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código da classe (ex: BOVI, SUIN, FRAN)',
   `subgrupo_id` int NOT NULL COMMENT 'ID do subgrupo ao qual a classe pertence',
-  `status` tinyint(1) DEFAULT '1' COMMENT 'Status da classe (1=ativo, 0=inativo)',
-  `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `descricao` text COLLATE utf8mb4_unicode_ci COMMENT 'Descrição detalhada da classe',
+  `status` enum('ativo','inativo') COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status da classe',
+  `data_cadastro` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de cadastro',
+  `data_atualizacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela para armazenar classes de produtos';
+
+--
+-- Despejando dados para a tabela `classes`
+--
+
+INSERT INTO `classes` (`id`, `nome`, `codigo`, `subgrupo_id`, `descricao`, `status`, `data_cadastro`, `data_atualizacao`) VALUES
+(22, 'Bovinas', '1', 1, '', 'ativo', '2025-07-26 02:30:23', '2025-08-07 16:55:44'),
+(23, 'Suinas', '2', 1, '', 'ativo', '2025-07-26 02:31:13', '2025-08-07 16:55:57'),
+(36, 'Aves', '3', 1, '', 'ativo', '2025-08-07 16:56:30', '2025-08-07 16:56:30'),
+(37, 'Pescados', '4', 1, '', 'ativo', '2025-08-07 16:57:38', '2025-08-07 16:57:38'),
+(38, 'Hortifruti Processado', '5', 1, '', 'ativo', '2025-08-07 16:58:03', '2025-08-07 17:06:59'),
+(39, 'Lacteos', '6', 2, '', 'ativo', '2025-08-11 16:14:31', '2025-08-11 16:14:31');
 
 -- --------------------------------------------------------
 
@@ -555,17 +569,17 @@ CREATE TABLE `classes` (
 
 CREATE TABLE `clientes` (
   `id` int NOT NULL,
-  `cnpj` varchar(18) COLLATE utf8mb4_general_ci NOT NULL,
-  `razao_social` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
-  `nome_fantasia` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `logradouro` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `numero` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `cep` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bairro` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `municipio` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `uf` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `telefone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cnpj` varchar(18) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `razao_social` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nome_fantasia` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `logradouro` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cep` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bairro` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `municipio` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `uf` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `status` tinyint(1) DEFAULT '1'
@@ -613,17 +627,17 @@ INSERT INTO `filiais` (`id`, `codigo_filial`, `cnpj`, `filial`, `razao_social`, 
 
 CREATE TABLE `fornecedores` (
   `id` int NOT NULL,
-  `cnpj` varchar(18) COLLATE utf8mb4_general_ci NOT NULL,
-  `razao_social` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
-  `nome_fantasia` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `logradouro` varchar(150) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `numero` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `cep` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `bairro` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `municipio` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `uf` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `telefone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cnpj` varchar(18) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `razao_social` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nome_fantasia` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `logradouro` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cep` varchar(15) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bairro` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `municipio` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `uf` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `status` tinyint(1) DEFAULT '1'
@@ -915,11 +929,20 @@ INSERT INTO `fornecedores` (`id`, `cnpj`, `razao_social`, `nome_fantasia`, `logr
 
 CREATE TABLE `grupos` (
   `id` int NOT NULL,
-  `nome` varchar(100) NOT NULL,
-  `status` tinyint(1) DEFAULT '1',
-  `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
-  `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `nome` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome do grupo (ex: Eletrônicos, Roupas, Alimentos)',
+  `codigo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código do grupo (ex: ELET, ROUP, ALIM)',
+  `descricao` text COLLATE utf8mb4_unicode_ci COMMENT 'Descrição detalhada do grupo',
+  `status` enum('ativo','inativo') COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status do grupo',
+  `data_cadastro` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de cadastro',
+  `data_atualizacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela para armazenar grupos de produtos';
+
+--
+-- Despejando dados para a tabela `grupos`
+--
+
+INSERT INTO `grupos` (`id`, `nome`, `codigo`, `descricao`, `status`, `data_cadastro`, `data_atualizacao`) VALUES
+(1, 'Frios', '1', '', 'ativo', '2025-07-26 02:02:04', '2025-07-26 02:02:04');
 
 -- --------------------------------------------------------
 
@@ -944,16 +967,16 @@ CREATE TABLE `marcas` (
 
 CREATE TABLE `motoristas` (
   `id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `cpf` varchar(14) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `cnh` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `categoria_cnh` varchar(5) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `telefone` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `endereco` text COLLATE utf8mb4_general_ci,
-  `status` enum('ativo','inativo','ferias','licenca') COLLATE utf8mb4_general_ci DEFAULT 'ativo',
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `cpf` varchar(14) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `cnh` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `categoria_cnh` varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `telefone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `endereco` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
+  `status` enum('ativo','inativo','ferias','licenca') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ativo',
   `data_admissao` date DEFAULT NULL,
-  `observacoes` text COLLATE utf8mb4_general_ci,
+  `observacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `filial_id` int DEFAULT NULL,
@@ -1033,24 +1056,6 @@ INSERT INTO `permissoes_usuario` (`id`, `usuario_id`, `tela`, `pode_visualizar`,
 (648, 6, 'subgrupos', 1, 1, 1, 1, '2025-07-21 20:11:12', '2025-07-21 20:11:12'),
 (649, 6, 'unidades', 1, 1, 1, 1, '2025-07-21 20:11:12', '2025-07-21 20:11:12'),
 (650, 6, 'marcas', 1, 1, 1, 1, '2025-07-21 20:11:12', '2025-07-21 20:11:12'),
-(775, 4, 'usuarios', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(776, 4, 'fornecedores', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(777, 4, 'clientes', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(778, 4, 'filiais', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(779, 4, 'rotas', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(780, 4, 'produtos', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(781, 4, 'grupos', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(782, 4, 'subgrupos', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(783, 4, 'classes', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(784, 4, 'nome_generico_produto', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(785, 4, 'unidades', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(786, 4, 'unidades_escolares', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(787, 4, 'marcas', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(788, 4, 'veiculos', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(789, 4, 'motoristas', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(790, 4, 'ajudantes', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(791, 4, 'cotacao', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
-(792, 4, 'permissoes', 1, 1, 1, 1, '2025-07-28 11:24:56', '2025-07-28 11:24:56'),
 (793, 5, 'fornecedores', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
 (794, 5, 'clientes', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
 (795, 5, 'filiais', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
@@ -1065,7 +1070,26 @@ INSERT INTO `permissoes_usuario` (`id`, `usuario_id`, `tela`, `pode_visualizar`,
 (804, 5, 'marcas', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
 (805, 5, 'veiculos', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
 (806, 5, 'motoristas', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(807, 5, 'ajudantes', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32');
+(807, 5, 'ajudantes', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
+(808, 4, 'usuarios', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(809, 4, 'fornecedores', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(810, 4, 'clientes', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(811, 4, 'filiais', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(812, 4, 'rotas', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(813, 4, 'produtos', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(814, 4, 'grupos', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(815, 4, 'subgrupos', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(816, 4, 'classes', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(817, 4, 'nome_generico_produto', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(818, 4, 'produto_origem', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(819, 4, 'unidades', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(820, 4, 'unidades_escolares', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(821, 4, 'marcas', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(822, 4, 'veiculos', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(823, 4, 'motoristas', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(824, 4, 'ajudantes', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(825, 4, 'cotacao', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
+(826, 4, 'permissoes', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37');
 
 -- --------------------------------------------------------
 
@@ -1132,19 +1156,53 @@ CREATE TABLE `produtos` (
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `produto_origem`
+--
+
+CREATE TABLE `produto_origem` (
+  `id` int NOT NULL,
+  `codigo` varchar(20) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Código do produto origem',
+  `nome` varchar(200) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Nome do Produto Origem',
+  `unidade_medida_id` int NOT NULL COMMENT 'ID da unidade de medida',
+  `fator_conversao` decimal(10,3) DEFAULT '1.000' COMMENT 'Fator de conversão',
+  `grupo_id` int DEFAULT NULL COMMENT 'ID do grupo',
+  `subgrupo_id` int DEFAULT NULL COMMENT 'ID do subgrupo',
+  `classe_id` int DEFAULT NULL COMMENT 'ID da classe',
+  `peso_liquido` decimal(10,3) DEFAULT NULL COMMENT 'Peso líquido em kg',
+  `referencia_mercado` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência de mercado',
+  `produto_generico_padrao_id` int DEFAULT NULL COMMENT 'ID do produto genérico padrão vinculado',
+  `status` tinyint(1) DEFAULT '1' COMMENT 'Status (1=ativo, 0=inativo)',
+  `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `usuario_criador_id` int DEFAULT NULL COMMENT 'ID do usuário que criou',
+  `usuario_atualizador_id` int DEFAULT NULL COMMENT 'ID do usuário que atualizou'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `produto_origem`
+--
+
+INSERT INTO `produto_origem` (`id`, `codigo`, `nome`, `unidade_medida_id`, `fator_conversao`, `grupo_id`, `subgrupo_id`, `classe_id`, `peso_liquido`, `referencia_mercado`, `produto_generico_padrao_id`, `status`, `criado_em`, `atualizado_em`, `usuario_criador_id`, `usuario_atualizador_id`) VALUES
+(4, '000001', 'PATINHO BOVINO CUBOS', 1, 1.000, 1, 1, 22, 1.000, 'CORTE BOVINO', 18, 1, '2025-08-12 16:36:29', '2025-08-13 18:57:24', 1, 1),
+(5, '000002', 'PATINHO BOVINO ISCA', 1, 1.000, 1, 1, 22, 1.000, 'CORTE BOVINO', 19, 1, '2025-08-12 16:37:08', '2025-08-13 18:59:14', 1, NULL),
+(6, '000003', 'PATINHO BOVINO MOIDO', 1, 1.000, 1, 1, 22, 1.000, 'CORTE BOVINO', 20, 1, '2025-08-12 16:37:33', '2025-08-13 19:01:06', 1, NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `rotas`
 --
 
 CREATE TABLE `rotas` (
   `id` int NOT NULL,
   `filial_id` int NOT NULL,
-  `codigo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `codigo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `distancia_km` decimal(10,2) DEFAULT '0.00',
-  `status` enum('ativo','inativo') COLLATE utf8mb4_unicode_ci DEFAULT 'ativo',
-  `tipo_rota` enum('semanal','quinzenal','mensal','transferencia') COLLATE utf8mb4_unicode_ci DEFAULT 'semanal',
+  `status` enum('ativo','inativo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'ativo',
+  `tipo_rota` enum('semanal','quinzenal','mensal','transferencia') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'semanal',
   `custo_diario` decimal(10,2) DEFAULT '0.00',
-  `observacoes` text COLLATE utf8mb4_unicode_ci,
+  `observacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1155,7 +1213,7 @@ CREATE TABLE `rotas` (
 
 INSERT INTO `rotas` (`id`, `filial_id`, `codigo`, `nome`, `distancia_km`, `status`, `tipo_rota`, `custo_diario`, `observacoes`, `created_at`, `updated_at`) VALUES
 (1, 3, 'ROTA 03 CTB', 'R03 - Taio', 0.00, 'ativo', 'semanal', 2700.00, '', '2025-07-20 04:19:37', '2025-07-20 21:51:00'),
-(2, 3, 'ROTA 01 CTB', 'R01 - Canoinhas', 0.00, 'ativo', 'semanal', 2700.00, '', '2025-07-20 04:19:37', '2025-07-23 20:06:52'),
+(2, 3, 'ROTA 01 CTB', 'R01 - Canoinhas', 0.00, 'ativo', 'semanal', 2700.00, NULL, '2025-07-20 04:19:37', '2025-08-14 13:57:20'),
 (3, 3, 'ROTA 02 CTB', 'R02 - Ibirama', 0.00, 'ativo', 'semanal', 2700.00, '', '2025-07-20 04:19:37', '2025-07-20 21:50:29'),
 (4, 3, 'ROTA 04 CTB', 'R04 - Curitibanos', 0.00, 'ativo', 'quinzenal', 2700.00, '', '2025-07-20 04:19:37', '2025-07-20 21:51:24'),
 (6, 3, 'ROTA 05 CTB', 'R05 - Pouso Redondo', 0.00, 'ativo', 'semanal', 2700.00, '', '2025-07-20 17:19:45', '2025-07-20 21:51:37'),
@@ -1172,12 +1230,22 @@ INSERT INTO `rotas` (`id`, `filial_id`, `codigo`, `nome`, `distancia_km`, `statu
 
 CREATE TABLE `subgrupos` (
   `id` int NOT NULL,
-  `nome` varchar(100) NOT NULL,
-  `grupo_id` int NOT NULL,
-  `status` tinyint(1) DEFAULT '1',
-  `criado_em` datetime DEFAULT CURRENT_TIMESTAMP,
-  `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  `nome` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome do subgrupo (ex: Smartphones, Notebooks, Tablets)',
+  `codigo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código do subgrupo (ex: SMAR, NOTE, TABL)',
+  `descricao` text COLLATE utf8mb4_unicode_ci COMMENT 'Descrição detalhada do subgrupo',
+  `grupo_id` int NOT NULL COMMENT 'ID do grupo pai',
+  `status` enum('ativo','inativo') COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status do subgrupo',
+  `data_cadastro` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de cadastro',
+  `data_atualizacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela para armazenar subgrupos de produtos';
+
+--
+-- Despejando dados para a tabela `subgrupos`
+--
+
+INSERT INTO `subgrupos` (`id`, `nome`, `codigo`, `descricao`, `grupo_id`, `status`, `data_cadastro`, `data_atualizacao`) VALUES
+(1, 'Congelado', '1', '', 1, 'ativo', '2025-07-26 02:15:06', '2025-07-26 02:15:06'),
+(2, 'Refrigerado', '2', '', 1, 'ativo', '2025-07-26 02:19:23', '2025-07-26 02:19:51');
 
 -- --------------------------------------------------------
 
@@ -1188,24 +1256,24 @@ CREATE TABLE `subgrupos` (
 CREATE TABLE `unidades_escolares` (
   `id` int NOT NULL,
   `codigo_teknisa` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código teknisa da unidade',
-  `nome_escola` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome da escola/unidade',
-  `cidade` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Cidade da unidade',
-  `estado` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Estado da unidade',
-  `pais` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT 'Brasil' COMMENT 'País da unidade',
-  `endereco` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Endereço completo',
-  `numero` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Número do endereço',
-  `bairro` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Bairro da unidade',
-  `cep` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'CEP da unidade',
-  `centro_distribuicao` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Centro de distribuição responsável',
+  `nome_escola` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome da escola/unidade',
+  `cidade` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Cidade da unidade',
+  `estado` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Estado da unidade',
+  `pais` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'Brasil' COMMENT 'País da unidade',
+  `endereco` varchar(300) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Endereço completo',
+  `numero` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Número do endereço',
+  `bairro` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Bairro da unidade',
+  `cep` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'CEP da unidade',
+  `centro_distribuicao` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Centro de distribuição responsável',
   `rota_id` int DEFAULT NULL COMMENT 'Rota que atende esta unidade',
-  `regional` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Regional da unidade',
-  `lot` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Lote da unidade',
+  `regional` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Regional da unidade',
+  `lot` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Lote da unidade',
   `cc_senior` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'C.C. Senior',
   `codigo_senior` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Código Senior',
-  `abastecimento` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Tipo de abastecimento',
+  `abastecimento` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Tipo de abastecimento',
   `ordem_entrega` int DEFAULT '0' COMMENT 'Ordem de entrega na rota',
-  `status` enum('ativo','inativo') COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status da unidade',
-  `observacoes` text COLLATE utf8mb4_unicode_ci COMMENT 'Observações adicionais',
+  `status` enum('ativo','inativo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status da unidade',
+  `observacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Observações adicionais',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de criação',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1375,11 +1443,11 @@ INSERT INTO `unidades_medida` (`id`, `nome`, `sigla`, `status`, `criado_em`, `at
 
 CREATE TABLE `usuarios` (
   `id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `email` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `senha` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
-  `nivel_de_acesso` enum('I','II','III') COLLATE utf8mb4_general_ci DEFAULT 'I',
-  `tipo_de_acesso` enum('administrador','coordenador','administrativo','gerente','supervisor') COLLATE utf8mb4_general_ci DEFAULT 'administrativo',
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `senha` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `nivel_de_acesso` enum('I','II','III') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'I',
+  `tipo_de_acesso` enum('administrador','coordenador','administrativo','gerente','supervisor') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'administrativo',
   `status` enum('ativo','inativo','bloqueado') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ativo',
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -1404,50 +1472,50 @@ INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `nivel_de_acesso`, `tipo
 
 CREATE TABLE `veiculos` (
   `id` int NOT NULL,
-  `placa` varchar(10) COLLATE utf8mb4_general_ci NOT NULL,
-  `renavam` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `chassi` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `modelo` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `marca` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `fabricante` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `placa` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `renavam` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `chassi` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `modelo` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `marca` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `fabricante` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `ano_fabricacao` int DEFAULT NULL,
-  `tipo_veiculo` enum('passeio','caminhao','moto','utilitario') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `carroceria` enum('Bau','Refrigerado','Bipartido','Grade Baixa','Sider','Graneleiro','Tanque','Cacamba') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `combustivel` enum('gasolina','diesel','etanol','flex','GNV','eletrico') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `categoria` enum('Frota','Agregado','Terceiro') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo_veiculo` enum('passeio','caminhao','moto','utilitario') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `carroceria` enum('Bau','Refrigerado','Bipartido','Grade Baixa','Sider','Graneleiro','Tanque','Cacamba') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `combustivel` enum('gasolina','diesel','etanol','flex','GNV','eletrico') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `categoria` enum('Frota','Agregado','Terceiro') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `capacidade_carga` decimal(10,2) DEFAULT NULL,
   `capacidade_volume` decimal(10,2) DEFAULT NULL,
   `numero_eixos` int DEFAULT NULL,
   `tara` decimal(10,2) DEFAULT NULL,
   `peso_bruto_total` decimal(10,2) DEFAULT NULL,
   `potencia_motor` decimal(8,2) DEFAULT NULL,
-  `tipo_tracao` enum('4x2','4x4','dianteira','traseira') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `tipo_tracao` enum('4x2','4x4','dianteira','traseira') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `quilometragem_atual` decimal(12,2) DEFAULT NULL,
   `data_emplacamento` date DEFAULT NULL,
   `vencimento_licenciamento` date DEFAULT NULL,
   `vencimento_ipva` date DEFAULT NULL,
   `vencimento_dpvat` date DEFAULT NULL,
-  `numero_apolice_seguro` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `situacao_documental` enum('regular','alienado','bloqueado') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero_apolice_seguro` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `situacao_documental` enum('regular','alienado','bloqueado') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `data_ultima_revisao` date DEFAULT NULL,
   `quilometragem_proxima_revisao` decimal(12,2) DEFAULT NULL,
   `data_ultima_troca_oleo` date DEFAULT NULL,
   `vencimento_alinhamento_balanceamento` date DEFAULT NULL,
   `proxima_inspecao_veicular` date DEFAULT NULL,
-  `status` enum('ativo','inativo','manutencao') COLLATE utf8mb4_general_ci DEFAULT 'ativo',
-  `status_detalhado` enum('Ativo','Em manutencao','Alugado','Vendido') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `status` enum('ativo','inativo','manutencao') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ativo',
+  `status_detalhado` enum('Ativo','Em manutencao','Alugado','Vendido') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
   `data_aquisicao` date DEFAULT NULL,
   `valor_compra` decimal(12,2) DEFAULT NULL,
-  `fornecedor` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `numero_frota` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `situacao_financeira` enum('Proprio','Financiado','leasing') COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `crlv_digitalizado` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `foto_frente` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `foto_traseira` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `foto_lateral` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `foto_interior` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `contrato_seguro` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `observacoes` text COLLATE utf8mb4_general_ci,
+  `fornecedor` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `numero_frota` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `situacao_financeira` enum('Proprio','Financiado','leasing') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `crlv_digitalizado` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `foto_frente` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `foto_traseira` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `foto_lateral` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `foto_interior` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `contrato_seguro` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `observacoes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci,
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `filial_id` int DEFAULT NULL,
@@ -1509,7 +1577,11 @@ ALTER TABLE `auditoria_acoes`
 --
 ALTER TABLE `classes`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `classes_ibfk_1` (`subgrupo_id`);
+  ADD UNIQUE KEY `uk_nome` (`nome`),
+  ADD UNIQUE KEY `uk_codigo` (`codigo`),
+  ADD KEY `idx_classes_nome` (`nome`),
+  ADD KEY `idx_classes_subgrupo` (`subgrupo_id`),
+  ADD KEY `idx_classes_status` (`status`);
 
 --
 -- Índices de tabela `clientes`
@@ -1534,7 +1606,9 @@ ALTER TABLE `fornecedores`
 -- Índices de tabela `grupos`
 --
 ALTER TABLE `grupos`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_nome` (`nome`),
+  ADD UNIQUE KEY `uk_codigo` (`codigo`);
 
 --
 -- Índices de tabela `marcas`
@@ -1595,6 +1669,23 @@ ALTER TABLE `produtos`
   ADD KEY `idx_produtos_codigo_produto` (`codigo_produto`);
 
 --
+-- Índices de tabela `produto_origem`
+--
+ALTER TABLE `produto_origem`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `codigo` (`codigo`),
+  ADD UNIQUE KEY `uk_produto_origem_codigo` (`codigo`),
+  ADD KEY `usuario_criador_id` (`usuario_criador_id`),
+  ADD KEY `usuario_atualizador_id` (`usuario_atualizador_id`),
+  ADD KEY `idx_produto_origem_codigo` (`codigo`),
+  ADD KEY `idx_produto_origem_nome` (`nome`),
+  ADD KEY `idx_produto_origem_unidade_medida_id` (`unidade_medida_id`),
+  ADD KEY `idx_produto_origem_grupo_id` (`grupo_id`),
+  ADD KEY `idx_produto_origem_subgrupo_id` (`subgrupo_id`),
+  ADD KEY `idx_produto_origem_classe_id` (`classe_id`),
+  ADD KEY `idx_produto_origem_status` (`status`);
+
+--
 -- Índices de tabela `rotas`
 --
 ALTER TABLE `rotas`
@@ -1609,7 +1700,10 @@ ALTER TABLE `rotas`
 -- Índices de tabela `subgrupos`
 --
 ALTER TABLE `subgrupos`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_nome` (`nome`),
+  ADD UNIQUE KEY `uk_codigo` (`codigo`),
+  ADD KEY `fk_subgrupos_grupo` (`grupo_id`);
 
 --
 -- Índices de tabela `unidades_escolares`
@@ -1676,13 +1770,13 @@ ALTER TABLE `almoxarifado_itens`
 -- AUTO_INCREMENT de tabela `auditoria_acoes`
 --
 ALTER TABLE `auditoria_acoes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=525;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=528;
 
 --
 -- AUTO_INCREMENT de tabela `classes`
 --
 ALTER TABLE `classes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT de tabela `clientes`
@@ -1706,7 +1800,7 @@ ALTER TABLE `fornecedores`
 -- AUTO_INCREMENT de tabela `grupos`
 --
 ALTER TABLE `grupos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT de tabela `marcas`
@@ -1724,7 +1818,13 @@ ALTER TABLE `nome_generico_produto`
 -- AUTO_INCREMENT de tabela `permissoes_usuario`
 --
 ALTER TABLE `permissoes_usuario`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=808;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=827;
+
+--
+-- AUTO_INCREMENT de tabela `produto_origem`
+--
+ALTER TABLE `produto_origem`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT de tabela `rotas`
@@ -1736,7 +1836,7 @@ ALTER TABLE `rotas`
 -- AUTO_INCREMENT de tabela `subgrupos`
 --
 ALTER TABLE `subgrupos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT de tabela `unidades_escolares`
@@ -1780,16 +1880,16 @@ ALTER TABLE `auditoria_acoes`
   ADD CONSTRAINT `auditoria_acoes_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
 
 --
--- Restrições para tabelas `classes`
---
-ALTER TABLE `classes`
-  ADD CONSTRAINT `classes_ibfk_1` FOREIGN KEY (`subgrupo_id`) REFERENCES `subgrupos` (`id`) ON DELETE CASCADE;
-
---
 -- Restrições para tabelas `permissoes_usuario`
 --
 ALTER TABLE `permissoes_usuario`
   ADD CONSTRAINT `permissoes_usuario_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `subgrupos`
+--
+ALTER TABLE `subgrupos`
+  ADD CONSTRAINT `fk_subgrupos_grupo` FOREIGN KEY (`grupo_id`) REFERENCES `grupos` (`id`) ON UPDATE CASCADE;
 
 --
 -- Restrições para tabelas `unidades_escolares`

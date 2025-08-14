@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { FaTimes, FaSave } from 'react-icons/fa';
-import { Button, Input } from '../ui';
+import { Modal, Input, Button } from '../ui';
 
 const ProdutoOrigemModal = ({
   isOpen,
@@ -16,333 +14,215 @@ const ProdutoOrigemModal = ({
   produtosGenericosPadrao,
   loading
 }) => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    setValue,
-    formState: { errors }
-  } = useForm();
-
   const [selectedGrupo, setSelectedGrupo] = useState('');
   const [selectedSubgrupo, setSelectedSubgrupo] = useState('');
 
-  // Observar mudanças no grupo para filtrar subgrupos
-  const grupoId = watch('grupo_id');
-
   // Filtrar subgrupos baseado no grupo selecionado
-  const subgruposFiltrados = grupoId 
-    ? subgrupos.filter(sg => sg.grupo_id === parseInt(grupoId))
+  const subgruposFiltrados = selectedGrupo 
+    ? subgrupos.filter(sg => sg.grupo_id === parseInt(selectedGrupo))
     : [];
 
   // Filtrar classes baseado no subgrupo selecionado
-  const subgrupoId = watch('subgrupo_id');
-  const classesFiltradas = subgrupoId 
-    ? classes.filter(c => c.subgrupo_id === parseInt(subgrupoId))
+  const classesFiltradas = selectedSubgrupo 
+    ? classes.filter(c => c.subgrupo_id === parseInt(selectedSubgrupo))
     : [];
 
   useEffect(() => {
     if (produtoOrigem) {
-      reset({
-        codigo: produtoOrigem.codigo || '',
-        nome: produtoOrigem.nome || '',
-        unidade_medida_id: produtoOrigem.unidade_medida_id || '',
-        fator_conversao: produtoOrigem.fator_conversao || '1.000',
-        grupo_id: produtoOrigem.grupo_id || '',
-        subgrupo_id: produtoOrigem.subgrupo_id || '',
-        classe_id: produtoOrigem.classe_id || '',
-        peso_liquido: produtoOrigem.peso_liquido || '',
-        referencia_mercado: produtoOrigem.referencia_mercado || '',
-        produto_generico_padrao_id: produtoOrigem.produto_generico_padrao_id || '',
-        status: produtoOrigem.status !== undefined ? produtoOrigem.status : 1
-      });
       setSelectedGrupo(produtoOrigem.grupo_id || '');
       setSelectedSubgrupo(produtoOrigem.subgrupo_id || '');
     } else {
-      reset({
-        codigo: '',
-        nome: '',
-        unidade_medida_id: '',
-        fator_conversao: '1.000',
-        grupo_id: '',
-        subgrupo_id: '',
-        classe_id: '',
-        peso_liquido: '',
-        referencia_mercado: '',
-        produto_generico_padrao_id: '',
-        status: 1
-      });
       setSelectedGrupo('');
       setSelectedSubgrupo('');
     }
-  }, [produtoOrigem, reset]);
+  }, [produtoOrigem]);
 
-  const handleFormSubmit = (data) => {
-    // Converter valores numéricos
-    const formData = {
-      ...data,
-      fator_conversao: data.fator_conversao ? parseFloat(data.fator_conversao) : 1.000,
-      peso_liquido: data.peso_liquido ? parseFloat(data.peso_liquido) : null,
-      grupo_id: data.grupo_id ? parseInt(data.grupo_id) : null,
-      subgrupo_id: data.subgrupo_id ? parseInt(data.subgrupo_id) : null,
-      classe_id: data.classe_id ? parseInt(data.classe_id) : null,
-      produto_generico_padrao_id: data.produto_generico_padrao_id ? parseInt(data.produto_generico_padrao_id) : null,
-      status: data.status ? 1 : 0
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    const data = {
+      codigo: formData.get('codigo'),
+      nome: formData.get('nome'),
+      unidade_medida_id: formData.get('unidade_medida_id') ? parseInt(formData.get('unidade_medida_id')) : null,
+      fator_conversao: formData.get('fator_conversao') ? parseFloat(formData.get('fator_conversao')) : 1.000,
+      grupo_id: formData.get('grupo_id') ? parseInt(formData.get('grupo_id')) : null,
+      subgrupo_id: formData.get('subgrupo_id') ? parseInt(formData.get('subgrupo_id')) : null,
+      classe_id: formData.get('classe_id') ? parseInt(formData.get('classe_id')) : null,
+      peso_liquido: formData.get('peso_liquido') ? parseFloat(formData.get('peso_liquido')) : null,
+      referencia_mercado: formData.get('referencia_mercado'),
+      produto_generico_padrao_id: formData.get('produto_generico_padrao_id') ? parseInt(formData.get('produto_generico_padrao_id')) : null,
+      status: formData.get('status') ? 1 : 0
     };
 
-    onSubmit(formData);
+    onSubmit(data);
   };
 
   const handleGrupoChange = (e) => {
     const grupoId = e.target.value;
     setSelectedGrupo(grupoId);
-    setValue('subgrupo_id', '');
-    setValue('classe_id', '');
     setSelectedSubgrupo('');
   };
 
   const handleSubgrupoChange = (e) => {
     const subgrupoId = e.target.value;
     setSelectedSubgrupo(subgrupoId);
-    setValue('classe_id', '');
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
-            {viewMode ? 'Visualizar' : produtoOrigem ? 'Editar' : 'Novo'} Produto Origem
-          </h2>
-          <Button onClick={onClose} variant="ghost" size="sm">
-            <FaTimes className="h-5 w-5" />
-          </Button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={viewMode ? 'Visualizar Produto Origem' : produtoOrigem ? 'Editar Produto Origem' : 'Novo Produto Origem'}
+      size="xl"
+    >
+      <form onSubmit={handleFormSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <Input
+            label="Código *"
+            name="codigo"
+            defaultValue={produtoOrigem?.codigo}
+            disabled={viewMode}
+            required
+            pattern="[a-zA-Z0-9\-_]+"
+            title="Apenas letras, números, hífens e underscores"
+          />
+          
+          <Input
+            label="Nome *"
+            name="nome"
+            defaultValue={produtoOrigem?.nome}
+            disabled={viewMode}
+            required
+            minLength={3}
+          />
+          
+          <Input
+            label="Unidade de Medida *"
+            name="unidade_medida_id"
+            type="select"
+            defaultValue={produtoOrigem?.unidade_medida_id}
+            disabled={viewMode}
+            required
+          >
+            <option value="">Selecione uma unidade</option>
+            {unidadesMedida.map(unidade => (
+              <option key={unidade.id} value={unidade.id}>
+                {unidade.nome}
+              </option>
+            ))}
+          </Input>
+          
+          <Input
+            label="Fator de Conversão"
+            name="fator_conversao"
+            type="number"
+            step="0.001"
+            min="0.001"
+            defaultValue={produtoOrigem?.fator_conversao || '1.000'}
+            disabled={viewMode}
+          />
+          
+          <Input
+            label="Grupo"
+            name="grupo_id"
+            type="select"
+            defaultValue={produtoOrigem?.grupo_id}
+            onChange={handleGrupoChange}
+            disabled={viewMode}
+          >
+            <option value="">Selecione um grupo</option>
+            {grupos.map(grupo => (
+              <option key={grupo.id} value={grupo.id}>
+                {grupo.nome}
+              </option>
+            ))}
+          </Input>
+          
+          <Input
+            label="Subgrupo"
+            name="subgrupo_id"
+            type="select"
+            defaultValue={produtoOrigem?.subgrupo_id}
+            onChange={handleSubgrupoChange}
+            disabled={viewMode || !selectedGrupo}
+          >
+            <option value="">Selecione um subgrupo</option>
+            {subgruposFiltrados.map(subgrupo => (
+              <option key={subgrupo.id} value={subgrupo.id}>
+                {subgrupo.nome}
+              </option>
+            ))}
+          </Input>
+          
+          <Input
+            label="Classe"
+            name="classe_id"
+            type="select"
+            defaultValue={produtoOrigem?.classe_id}
+            disabled={viewMode || !selectedSubgrupo}
+          >
+            <option value="">Selecione uma classe</option>
+            {classesFiltradas.map(classe => (
+              <option key={classe.id} value={classe.id}>
+                {classe.nome}
+              </option>
+            ))}
+          </Input>
+          
+          <Input
+            label="Peso Líquido (kg)"
+            name="peso_liquido"
+            type="number"
+            step="0.001"
+            min="0.001"
+            defaultValue={produtoOrigem?.peso_liquido}
+            disabled={viewMode}
+          />
+          
+          <Input
+            label="Produto Genérico Padrão"
+            name="produto_generico_padrao_id"
+            type="select"
+            defaultValue={produtoOrigem?.produto_generico_padrao_id}
+            disabled={viewMode}
+          >
+            <option value="">Selecione um produto genérico</option>
+            {produtosGenericosPadrao.map(produto => (
+              <option key={produto.id} value={produto.id}>
+                {produto.nome}
+              </option>
+            ))}
+          </Input>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Código */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Código *
-              </label>
-              <Input
-                {...register('codigo', { 
-                  required: 'Código é obrigatório',
-                  pattern: {
-                    value: /^[a-zA-Z0-9\-_]+$/,
-                    message: 'Código deve conter apenas letras, números, hífens e underscores'
-                  }
-                })}
-                placeholder="Digite o código"
-                disabled={viewMode}
-                error={errors.codigo?.message}
-              />
-            </div>
+        <Input
+          label="Referência de Mercado"
+          name="referencia_mercado"
+          defaultValue={produtoOrigem?.referencia_mercado}
+          disabled={viewMode}
+        />
 
-            {/* Nome */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Nome *
-              </label>
-              <Input
-                {...register('nome', { 
-                  required: 'Nome é obrigatório',
-                  minLength: { value: 3, message: 'Nome deve ter pelo menos 3 caracteres' }
-                })}
-                placeholder="Digite o nome"
-                disabled={viewMode}
-                error={errors.nome?.message}
-              />
-            </div>
+        <Input
+          label="Produto ativo"
+          name="status"
+          type="checkbox"
+          defaultChecked={produtoOrigem?.status !== 0}
+          disabled={viewMode}
+        />
 
-            {/* Unidade de Medida */}
-            <div>
-              <Input
-                label="Unidade de Medida *"
-                type="select"
-                {...register('unidade_medida_id', { required: 'Unidade de medida é obrigatória' })}
-                disabled={viewMode}
-                error={errors.unidade_medida_id?.message}
-              >
-                <option value="">Selecione uma unidade</option>
-                {unidadesMedida.map(unidade => (
-                  <option key={unidade.id} value={unidade.id}>
-                    {unidade.nome}
-                  </option>
-                ))}
-              </Input>
-            </div>
-
-            {/* Fator de Conversão */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Fator de Conversão
-              </label>
-              <Input
-                {...register('fator_conversao', {
-                  pattern: {
-                    value: /^\d+(\.\d{1,3})?$/,
-                    message: 'Fator de conversão deve ser um número válido'
-                  }
-                })}
-                type="number"
-                step="0.001"
-                min="0.001"
-                placeholder="1.000"
-                disabled={viewMode}
-                error={errors.fator_conversao?.message}
-              />
-            </div>
-
-            {/* Grupo */}
-            <div>
-              <Input
-                label="Grupo"
-                type="select"
-                {...register('grupo_id')}
-                onChange={handleGrupoChange}
-                disabled={viewMode}
-                error={errors.grupo_id?.message}
-              >
-                <option value="">Selecione um grupo</option>
-                {grupos.map(grupo => (
-                  <option key={grupo.id} value={grupo.id}>
-                    {grupo.nome}
-                  </option>
-                ))}
-              </Input>
-            </div>
-
-            {/* Subgrupo */}
-            <div>
-              <Input
-                label="Subgrupo"
-                type="select"
-                {...register('subgrupo_id')}
-                onChange={handleSubgrupoChange}
-                disabled={viewMode || !grupoId}
-                error={errors.subgrupo_id?.message}
-              >
-                <option value="">Selecione um subgrupo</option>
-                {subgruposFiltrados.map(subgrupo => (
-                  <option key={subgrupo.id} value={subgrupo.id}>
-                    {subgrupo.nome}
-                  </option>
-                ))}
-              </Input>
-            </div>
-
-            {/* Classe */}
-            <div>
-              <Input
-                label="Classe"
-                type="select"
-                {...register('classe_id')}
-                disabled={viewMode || !subgrupoId}
-                error={errors.classe_id?.message}
-              >
-                <option value="">Selecione uma classe</option>
-                {classesFiltradas.map(classe => (
-                  <option key={classe.id} value={classe.id}>
-                    {classe.nome}
-                  </option>
-                ))}
-              </Input>
-            </div>
-
-            {/* Peso Líquido */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Peso Líquido (kg)
-              </label>
-              <Input
-                {...register('peso_liquido', {
-                  pattern: {
-                    value: /^\d+(\.\d{1,3})?$/,
-                    message: 'Peso líquido deve ser um número válido'
-                  }
-                })}
-                type="number"
-                step="0.001"
-                min="0.001"
-                placeholder="0.000"
-                disabled={viewMode}
-                error={errors.peso_liquido?.message}
-              />
-            </div>
-
-            {/* Produto Genérico Padrão */}
-            <div>
-              <Input
-                label="Produto Genérico Padrão"
-                type="select"
-                {...register('produto_generico_padrao_id')}
-                disabled={viewMode}
-                error={errors.produto_generico_padrao_id?.message}
-              >
-                <option value="">Selecione um produto genérico</option>
-                {produtosGenericosPadrao.map(produto => (
-                  <option key={produto.id} value={produto.id}>
-                    {produto.nome}
-                  </option>
-                ))}
-              </Input>
-            </div>
-          </div>
-
-          {/* Referência de Mercado */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Referência de Mercado
-            </label>
-            <Input
-              {...register('referencia_mercado')}
-              placeholder="Digite a referência de mercado"
-              disabled={viewMode}
-              error={errors.referencia_mercado?.message}
-            />
-          </div>
-
-          {/* Status */}
-          <div>
-            <Input
-              label="Produto ativo"
-              type="checkbox"
-              {...register('status')}
-              disabled={viewMode}
-            />
-          </div>
-
-          {/* Footer */}
-          <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-            <Button
-              type="button"
-              onClick={onClose}
-              variant="ghost"
-              disabled={loading}
-            >
-              Cancelar
+        <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
+          {!viewMode && (
+            <Button type="submit" variant="primary" size="lg" disabled={loading}>
+              {loading ? 'Salvando...' : produtoOrigem ? 'Atualizar' : 'Criar'}
             </Button>
-            {!viewMode && (
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={loading}
-              >
-                <FaSave className="mr-2 h-4 w-4" />
-                {loading ? 'Salvando...' : produtoOrigem ? 'Atualizar' : 'Criar'}
-              </Button>
-            )}
-          </div>
-        </form>
-      </div>
-    </div>
+          )}
+          <Button type="button" variant="outline" size="lg" onClick={onClose}>
+            {viewMode ? 'Fechar' : 'Cancelar'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 
