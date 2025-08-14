@@ -1,13 +1,12 @@
 /**
  * Controller de Busca de Produtos
- * Responsável por funcionalidades de busca e filtros
+ * Responsável por operações de busca avançada
  */
 
 const { executeQuery } = require('../../config/database');
 const { 
   successResponse, 
   notFoundResponse, 
-  errorResponse,
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
@@ -15,33 +14,197 @@ const { asyncHandler } = require('../../middleware/responseHandler');
 class ProdutosSearchController {
   
   /**
+   * Busca avançada de produtos
+   */
+  static buscaAvancada = asyncHandler(async (req, res) => {
+    const { 
+      search, grupo_id, subgrupo_id, classe_id, marca_id, nome_generico_id,
+      status, unidade_id, fabricante, tipo_registro
+    } = req.query;
+    const pagination = req.pagination;
+
+    // Query base com joins
+    let baseQuery = `
+      SELECT 
+        p.id,
+        p.codigo_produto,
+        p.nome,
+        p.codigo_barras,
+        p.fator_conversao,
+        p.referencia_interna,
+        p.referencia_externa,
+        p.referencia_mercado,
+        p.unidade_id,
+        p.grupo_id,
+        p.subgrupo_id,
+        p.classe_id,
+        p.nome_generico_id,
+        p.marca_id,
+        p.peso_liquido,
+        p.peso_bruto,
+        p.fabricante,
+        p.informacoes_adicionais,
+        p.foto_produto,
+        p.prazo_validade,
+        p.unidade_validade,
+        p.regra_palet_un,
+        p.ficha_homologacao,
+        p.registro_especifico,
+        p.comprimento,
+        p.largura,
+        p.altura,
+        p.volume,
+        p.integracao_senior,
+        p.ncm,
+        p.cest,
+        p.cfop,
+        p.ean,
+        p.cst_icms,
+        p.csosn,
+        p.aliquota_icms,
+        p.aliquota_ipi,
+        p.aliquota_pis,
+        p.aliquota_cofins,
+        p.status,
+        p.criado_em,
+        p.atualizado_em,
+        p.tipo_registro,
+        p.embalagem_secundaria_id,
+        p.fator_conversao_embalagem,
+        g.nome as grupo_nome,
+        sg.nome as subgrupo_nome,
+        c.nome as classe_nome,
+        u.nome as unidade_nome,
+        m.marca as marca_nome,
+        ng.nome as nome_generico_nome,
+        ue.nome as embalagem_secundaria_nome
+      FROM produtos p
+      LEFT JOIN grupos g ON p.grupo_id = g.id
+      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
+      LEFT JOIN classes c ON p.classe_id = c.id
+      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
+      LEFT JOIN marcas m ON p.marca_id = m.id
+      LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
+      LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
+      WHERE 1=1
+    `;
+    
+    let params = [];
+
+    // Aplicar filtros
+    if (search) {
+      baseQuery += ' AND (p.nome LIKE ? OR p.codigo_produto LIKE ? OR p.codigo_barras LIKE ? OR p.referencia_mercado LIKE ? OR p.fabricante LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    if (status !== undefined && status !== '') {
+      baseQuery += ' AND p.status = ?';
+      params.push(parseInt(status));
+    }
+
+    if (grupo_id) {
+      baseQuery += ' AND p.grupo_id = ?';
+      params.push(parseInt(grupo_id));
+    }
+
+    if (subgrupo_id) {
+      baseQuery += ' AND p.subgrupo_id = ?';
+      params.push(parseInt(subgrupo_id));
+    }
+
+    if (classe_id) {
+      baseQuery += ' AND p.classe_id = ?';
+      params.push(parseInt(classe_id));
+    }
+
+    if (marca_id) {
+      baseQuery += ' AND p.marca_id = ?';
+      params.push(parseInt(marca_id));
+    }
+
+    if (nome_generico_id) {
+      baseQuery += ' AND p.nome_generico_id = ?';
+      params.push(parseInt(nome_generico_id));
+    }
+
+    if (unidade_id) {
+      baseQuery += ' AND p.unidade_id = ?';
+      params.push(parseInt(unidade_id));
+    }
+
+    if (fabricante) {
+      baseQuery += ' AND p.fabricante LIKE ?';
+      params.push(`%${fabricante}%`);
+    }
+
+    if (tipo_registro) {
+      baseQuery += ' AND p.tipo_registro = ?';
+      params.push(tipo_registro);
+    }
+
+    baseQuery += ' ORDER BY p.nome ASC';
+
+    // Aplicar paginação
+    const limitNum = parseInt(pagination.limit);
+    const offset = (parseInt(pagination.page) - 1) * limitNum;
+    const query = `${baseQuery} LIMIT ${limitNum} OFFSET ${offset}`;
+    
+    // Executar query paginada
+    const produtos = await executeQuery(query, params);
+
+    // Contar total de registros
+    const countQuery = `
+      SELECT COUNT(*) as total 
+      FROM produtos p
+      WHERE 1=1${search ? ' AND (p.nome LIKE ? OR p.codigo_produto LIKE ? OR p.codigo_barras LIKE ? OR p.referencia_mercado LIKE ? OR p.fabricante LIKE ?)' : ''}${status !== undefined && status !== '' ? ' AND p.status = ?' : ''}${grupo_id ? ' AND p.grupo_id = ?' : ''}${subgrupo_id ? ' AND p.subgrupo_id = ?' : ''}${classe_id ? ' AND p.classe_id = ?' : ''}${marca_id ? ' AND p.marca_id = ?' : ''}${nome_generico_id ? ' AND p.nome_generico_id = ?' : ''}${unidade_id ? ' AND p.unidade_id = ?' : ''}${fabricante ? ' AND p.fabricante LIKE ?' : ''}${tipo_registro ? ' AND p.tipo_registro = ?' : ''}
+    `;
+    const countParams = [...params.slice(0, search ? 5 : 0), ...params.slice(search ? 5 : 0)];
+    const totalResult = await executeQuery(countQuery, countParams);
+    const totalItems = totalResult[0].total;
+
+    // Preparar resposta com HATEOAS
+    const response = {
+      data: {
+        items: produtos,
+        _meta: {
+          pagination: {
+            page: parseInt(pagination.page),
+            limit: limitNum,
+            totalItems,
+            totalPages: Math.ceil(totalItems / limitNum)
+          }
+        }
+      }
+    };
+
+    return successResponse(res, response, STATUS_CODES.OK);
+  });
+
+  /**
    * Buscar produtos ativos
    */
   static buscarProdutosAtivos = asyncHandler(async (req, res) => {
     const pagination = req.pagination;
 
-    // Query base
+    // Query base com joins
     let baseQuery = `
       SELECT 
         p.id,
         p.codigo_produto,
         p.nome,
-        p.descricao,
         p.codigo_barras,
-        p.referencia,
+        p.fator_conversao,
+        p.referencia_interna,
         p.referencia_externa,
         p.referencia_mercado,
         p.unidade_id,
-        p.quantidade,
         p.grupo_id,
         p.subgrupo_id,
         p.classe_id,
+        p.nome_generico_id,
         p.marca_id,
-        p.agrupamento_n3,
-        p.agrupamento_n4,
         p.peso_liquido,
         p.peso_bruto,
-        p.marca,
         p.fabricante,
         p.informacoes_adicionais,
         p.foto_produto,
@@ -65,584 +228,61 @@ class ProdutosSearchController {
         p.aliquota_ipi,
         p.aliquota_pis,
         p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
         p.status,
         p.criado_em,
         p.atualizado_em,
-        p.usuario_criador_id,
-        p.usuario_atualizador_id,
-        p.fator_conversao,
-        f.razao_social as fornecedor_nome,
+        p.tipo_registro,
+        p.embalagem_secundaria_id,
+        p.fator_conversao_embalagem,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.marca as marca_nome
+        m.marca as marca_nome,
+        ng.nome as nome_generico_nome,
+        ue.nome as embalagem_secundaria_nome
       FROM produtos p
-      LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
       LEFT JOIN marcas m ON p.marca_id = m.id
+      LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
+      LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
       WHERE p.status = 1
     `;
     
-    let params = [];
     baseQuery += ' ORDER BY p.nome ASC';
 
     // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    const limitNum = parseInt(pagination.limit);
+    const offset = (parseInt(pagination.page) - 1) * limitNum;
+    const query = `${baseQuery} LIMIT ${limitNum} OFFSET ${offset}`;
     
     // Executar query paginada
-    const produtos = await executeQuery(query, paginatedParams);
+    const produtos = await executeQuery(query);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE status = 'ativo'`;
-    const totalResult = await executeQuery(countQuery, []);
+    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE status = 1`;
+    const totalResult = await executeQuery(countQuery);
     const totalItems = totalResult[0].total;
 
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, '/api/produtos/ativos', queryParams);
+    // Preparar resposta com HATEOAS
+    const response = {
+      data: {
+        items: produtos,
+        _meta: {
+          pagination: {
+            page: parseInt(pagination.page),
+            limit: limitNum,
+            totalItems,
+            totalPages: Math.ceil(totalItems / limitNum)
+          }
+        }
+      }
+    };
 
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, produtos, 'Produtos ativos listados com sucesso', STATUS_CODES.OK, {
-      ...meta,
-      _links: res.addListLinks(produtos, meta.pagination, queryParams)._links
-    });
-  });
-
-  /**
-   * Buscar produtos por grupo
-   */
-  static buscarProdutosPorGrupo = asyncHandler(async (req, res) => {
-    const { grupo_id } = req.params;
-    const pagination = req.pagination;
-
-    // Verificar se grupo existe
-    const grupo = await executeQuery(
-      'SELECT id, nome FROM grupos WHERE id = ?',
-      [grupo_id]
-    );
-
-    if (grupo.length === 0) {
-      return notFoundResponse(res, 'Grupo não encontrado');
-    }
-
-    // Query base
-    let baseQuery = `
-      SELECT 
-        p.id,
-        p.codigo_produto,
-        p.nome,
-        p.descricao,
-        p.codigo_barras,
-        p.referencia,
-        p.referencia_externa,
-        p.referencia_mercado,
-        p.unidade_id,
-        p.quantidade,
-        p.grupo_id,
-        p.subgrupo_id,
-        p.classe_id,
-        p.marca_id,
-        p.agrupamento_n3,
-        p.agrupamento_n4,
-        p.peso_liquido,
-        p.peso_bruto,
-        p.marca,
-        p.fabricante,
-        p.informacoes_adicionais,
-        p.foto_produto,
-        p.prazo_validade,
-        p.unidade_validade,
-        p.regra_palet_un,
-        p.ficha_homologacao,
-        p.registro_especifico,
-        p.comprimento,
-        p.largura,
-        p.altura,
-        p.volume,
-        p.integracao_senior,
-        p.ncm,
-        p.cest,
-        p.cfop,
-        p.ean,
-        p.cst_icms,
-        p.csosn,
-        p.aliquota_icms,
-        p.aliquota_ipi,
-        p.aliquota_pis,
-        p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
-        p.status,
-        p.criado_em,
-        p.atualizado_em,
-        p.usuario_criador_id,
-        p.usuario_atualizador_id,
-        p.fator_conversao,
-        f.razao_social as fornecedor_nome,
-        g.nome as grupo_nome,
-        sg.nome as subgrupo_nome,
-        c.nome as classe_nome,
-        u.nome as unidade_nome,
-        m.marca as marca_nome
-      FROM produtos p
-      LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-      LEFT JOIN grupos g ON p.grupo_id = g.id
-      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-      LEFT JOIN classes c ON p.classe_id = c.id
-      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      LEFT JOIN marcas m ON p.marca_id = m.id
-      WHERE p.grupo_id = ? AND p.status = 1
-    `;
-    
-    let params = [grupo_id];
-    baseQuery += ' ORDER BY p.nome ASC';
-
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
-    
-    // Executar query paginada
-    const produtos = await executeQuery(query, paginatedParams);
-
-    // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE grupo_id = ? AND status = 'ativo'`;
-    const totalResult = await executeQuery(countQuery, [grupo_id]);
-    const totalItems = totalResult[0].total;
-
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, `/api/produtos/grupo/${grupo_id}`, queryParams);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, produtos, `Produtos do grupo ${grupo[0].nome} listados com sucesso`, STATUS_CODES.OK, {
-      ...meta,
-      _links: res.addListLinks(produtos, meta.pagination, queryParams)._links
-    });
-  });
-
-  /**
-   * Buscar produtos por fornecedor
-   */
-  static buscarProdutosPorFornecedor = asyncHandler(async (req, res) => {
-    const { fornecedor_id } = req.params;
-    const pagination = req.pagination;
-
-    // Verificar se fornecedor existe
-    const fornecedor = await executeQuery(
-      'SELECT id, razao_social FROM fornecedores WHERE id = ? AND status = 1',
-      [fornecedor_id]
-    );
-
-    if (fornecedor.length === 0) {
-      return notFoundResponse(res, 'Fornecedor não encontrado ou inativo');
-    }
-
-    // Query base
-    let baseQuery = `
-      SELECT 
-        p.id,
-        p.codigo_produto,
-        p.nome,
-        p.descricao,
-        p.codigo_barras,
-        p.referencia,
-        p.referencia_externa,
-        p.referencia_mercado,
-        p.unidade_id,
-        p.quantidade,
-        p.grupo_id,
-        p.subgrupo_id,
-        p.classe_id,
-        p.marca_id,
-        p.agrupamento_n3,
-        p.agrupamento_n4,
-        p.peso_liquido,
-        p.peso_bruto,
-        p.marca,
-        p.fabricante,
-        p.informacoes_adicionais,
-        p.foto_produto,
-        p.prazo_validade,
-        p.unidade_validade,
-        p.regra_palet_un,
-        p.ficha_homologacao,
-        p.registro_especifico,
-        p.comprimento,
-        p.largura,
-        p.altura,
-        p.volume,
-        p.integracao_senior,
-        p.ncm,
-        p.cest,
-        p.cfop,
-        p.ean,
-        p.cst_icms,
-        p.csosn,
-        p.aliquota_icms,
-        p.aliquota_ipi,
-        p.aliquota_pis,
-        p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
-        p.status,
-        p.criado_em,
-        p.atualizado_em,
-        p.usuario_criador_id,
-        p.usuario_atualizador_id,
-        p.fator_conversao,
-        f.razao_social as fornecedor_nome,
-        g.nome as grupo_nome,
-        sg.nome as subgrupo_nome,
-        c.nome as classe_nome,
-        u.nome as unidade_nome,
-        m.marca as marca_nome
-      FROM produtos p
-      LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-      LEFT JOIN grupos g ON p.grupo_id = g.id
-      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-      LEFT JOIN classes c ON p.classe_id = c.id
-      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      LEFT JOIN marcas m ON p.marca_id = m.id
-      WHERE p.fornecedor_id = ? AND p.status = 1
-    `;
-    
-    let params = [fornecedor_id];
-    baseQuery += ' ORDER BY p.nome ASC';
-
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
-    
-    // Executar query paginada
-    const produtos = await executeQuery(query, paginatedParams);
-
-    // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE fornecedor_id = ? AND status = 'ativo'`;
-    const totalResult = await executeQuery(countQuery, [fornecedor_id]);
-    const totalItems = totalResult[0].total;
-
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, `/api/produtos/fornecedor/${fornecedor_id}`, queryParams);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, produtos, `Produtos do fornecedor ${fornecedor[0].razao_social} listados com sucesso`, STATUS_CODES.OK, {
-      ...meta,
-      _links: res.addListLinks(produtos, meta.pagination, queryParams)._links
-    });
-  });
-
-  /**
-   * Buscar produtos por código de barras
-   */
-  static buscarProdutosPorCodigoBarras = asyncHandler(async (req, res) => {
-    const { codigo_barras } = req.params;
-
-    const produtos = await executeQuery(
-      `SELECT 
-        p.id,
-        p.codigo_produto,
-        p.nome,
-        p.descricao,
-        p.codigo_barras,
-        p.referencia,
-        p.referencia_externa,
-        p.referencia_mercado,
-        p.unidade_id,
-        p.quantidade,
-        p.grupo_id,
-        p.subgrupo_id,
-        p.classe_id,
-        p.marca_id,
-        p.agrupamento_n3,
-        p.agrupamento_n4,
-        p.peso_liquido,
-        p.peso_bruto,
-        p.marca,
-        p.fabricante,
-        p.informacoes_adicionais,
-        p.foto_produto,
-        p.prazo_validade,
-        p.unidade_validade,
-        p.regra_palet_un,
-        p.ficha_homologacao,
-        p.registro_especifico,
-        p.comprimento,
-        p.largura,
-        p.altura,
-        p.volume,
-        p.integracao_senior,
-        p.ncm,
-        p.cest,
-        p.cfop,
-        p.ean,
-        p.cst_icms,
-        p.csosn,
-        p.aliquota_icms,
-        p.aliquota_ipi,
-        p.aliquota_pis,
-        p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
-        p.status,
-        p.criado_em,
-        p.atualizado_em,
-        p.usuario_criador_id,
-        p.usuario_atualizador_id,
-        p.fator_conversao,
-        f.razao_social as fornecedor_nome,
-        g.nome as grupo_nome,
-        sg.nome as subgrupo_nome,
-        c.nome as classe_nome,
-        u.nome as unidade_nome,
-        m.marca as marca_nome
-       FROM produtos p
-       LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-       LEFT JOIN grupos g ON p.grupo_id = g.id
-       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-       LEFT JOIN classes c ON p.classe_id = c.id
-       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-       LEFT JOIN marcas m ON p.marca_id = m.id
-       WHERE p.codigo_barras = ?`,
-      [codigo_barras]
-    );
-
-    if (produtos.length === 0) {
-      return notFoundResponse(res, 'Produto não encontrado');
-    }
-
-    const produto = produtos[0];
-
-    // Adicionar links HATEOAS
-    const data = res.addResourceLinks(produto);
-
-    return successResponse(res, data, 'Produto encontrado com sucesso', STATUS_CODES.OK);
-  });
-
-  /**
-   * Buscar produtos com estoque baixo
-   */
-  static buscarProdutosEstoqueBaixo = asyncHandler(async (req, res) => {
-    const pagination = req.pagination;
-
-    // Query base
-    let baseQuery = `
-      SELECT 
-        p.id,
-        p.codigo_produto,
-        p.nome,
-        p.descricao,
-        p.codigo_barras,
-        p.referencia,
-        p.referencia_externa,
-        p.referencia_mercado,
-        p.unidade_id,
-        p.quantidade,
-        p.grupo_id,
-        p.subgrupo_id,
-        p.classe_id,
-        p.marca_id,
-        p.agrupamento_n3,
-        p.agrupamento_n4,
-        p.peso_liquido,
-        p.peso_bruto,
-        p.marca,
-        p.fabricante,
-        p.informacoes_adicionais,
-        p.foto_produto,
-        p.prazo_validade,
-        p.unidade_validade,
-        p.regra_palet_un,
-        p.ficha_homologacao,
-        p.registro_especifico,
-        p.comprimento,
-        p.largura,
-        p.altura,
-        p.volume,
-        p.integracao_senior,
-        p.ncm,
-        p.cest,
-        p.cfop,
-        p.ean,
-        p.cst_icms,
-        p.csosn,
-        p.aliquota_icms,
-        p.aliquota_ipi,
-        p.aliquota_pis,
-        p.aliquota_cofins,
-        p.preco_custo,
-        p.preco_venda,
-        p.estoque_atual,
-        p.estoque_minimo,
-        p.fornecedor_id,
-        p.status,
-        p.criado_em,
-        p.atualizado_em,
-        p.usuario_criador_id,
-        p.usuario_atualizador_id,
-        p.fator_conversao,
-        f.razao_social as fornecedor_nome,
-        g.nome as grupo_nome,
-        sg.nome as subgrupo_nome,
-        c.nome as classe_nome,
-        u.nome as unidade_nome,
-        m.marca as marca_nome
-      FROM produtos p
-      LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
-      LEFT JOIN grupos g ON p.grupo_id = g.id
-      LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
-      LEFT JOIN classes c ON p.classe_id = c.id
-      LEFT JOIN unidades_medida u ON p.unidade_id = u.id
-      LEFT JOIN marcas m ON p.marca_id = m.id
-      WHERE p.estoque_atual <= p.estoque_minimo AND p.status = 1
-    `;
-    
-    let params = [];
-    baseQuery += ' ORDER BY (p.estoque_minimo - p.estoque_atual) DESC';
-
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
-    
-    // Executar query paginada
-    const produtos = await executeQuery(query, paginatedParams);
-
-    // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos WHERE estoque_atual <= estoque_minimo AND status = 'ativo'`;
-    const totalResult = await executeQuery(countQuery, []);
-    const totalItems = totalResult[0].total;
-
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, '/api/produtos/estoque-baixo', queryParams);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, produtos, 'Produtos com estoque baixo listados com sucesso', STATUS_CODES.OK, {
-      ...meta,
-      _links: res.addListLinks(produtos, meta.pagination, queryParams)._links
-    });
-  });
-
-  /**
-   * Listar grupos disponíveis
-   */
-  static listarGrupos = asyncHandler(async (req, res) => {
-    const query = `
-      SELECT id, nome, descricao, status, criado_em, atualizado_em
-      FROM grupos 
-      WHERE status = 1
-      ORDER BY nome ASC
-    `;
-
-    const grupos = await executeQuery(query);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, grupos, 'Grupos listados com sucesso', STATUS_CODES.OK, {
-      _links: res.addListLinks(grupos)._links
-    });
-  });
-
-  /**
-   * Listar subgrupos disponíveis
-   */
-  static listarSubgrupos = asyncHandler(async (req, res) => {
-    const query = `
-      SELECT id, nome, descricao, grupo_id, status, criado_em, atualizado_em
-      FROM subgrupos 
-      WHERE status = 1
-      ORDER BY nome ASC
-    `;
-
-    const subgrupos = await executeQuery(query);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, subgrupos, 'Subgrupos listados com sucesso', STATUS_CODES.OK, {
-      _links: res.addListLinks(subgrupos)._links
-    });
-  });
-
-  /**
-   * Listar classes disponíveis
-   */
-  static listarClasses = asyncHandler(async (req, res) => {
-    const query = `
-      SELECT id, nome, descricao, status, criado_em, atualizado_em
-      FROM classes 
-      WHERE status = 1
-      ORDER BY nome ASC
-    `;
-
-    const classes = await executeQuery(query);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, classes, 'Classes listadas com sucesso', STATUS_CODES.OK, {
-      _links: res.addListLinks(classes)._links
-    });
-  });
-
-  /**
-   * Listar unidades de medida disponíveis
-   */
-  static listarUnidades = asyncHandler(async (req, res) => {
-    const query = `
-      SELECT id, nome, sigla, status, criado_em, atualizado_em
-      FROM unidades_medida 
-      WHERE status = 1
-      ORDER BY nome ASC
-    `;
-
-    const unidades = await executeQuery(query);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, unidades, 'Unidades de medida listadas com sucesso', STATUS_CODES.OK, {
-      _links: res.addListLinks(unidades)._links
-    });
-  });
-
-  /**
-   * Listar marcas disponíveis
-   */
-  static listarMarcas = asyncHandler(async (req, res) => {
-    const query = `
-      SELECT id, marca, fabricante, status, criado_em, atualizado_em
-      FROM marcas 
-      WHERE status = 1
-      ORDER BY marca ASC
-    `;
-
-    const marcas = await executeQuery(query);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, marcas, 'Marcas listadas com sucesso', STATUS_CODES.OK, {
-      _links: res.addListLinks(marcas)._links
-    });
+    return successResponse(res, response, STATUS_CODES.OK);
   });
 }
 

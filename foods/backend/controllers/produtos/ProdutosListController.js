@@ -17,7 +17,7 @@ class ProdutosListController {
    * Listar produtos com paginação, busca e HATEOAS
    */
   static listarProdutos = asyncHandler(async (req, res) => {
-    const { search = '', grupo_id, fornecedor_id, status } = req.query;
+    const { search = '', grupo_id, status } = req.query;
     const pagination = req.pagination;
 
     // Query base com joins
@@ -70,7 +70,6 @@ class ProdutosListController {
         p.tipo_registro,
         p.embalagem_secundaria_id,
         p.fator_conversao_embalagem,
-        f.razao_social as fornecedor_nome,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
@@ -81,7 +80,6 @@ class ProdutosListController {
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome
       FROM produtos p
-      LEFT JOIN fornecedores f ON p.fornecedor_id = f.id
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
       LEFT JOIN classes c ON p.classe_id = c.id
@@ -112,11 +110,6 @@ class ProdutosListController {
       params.push(parseInt(grupo_id));
     }
 
-    if (fornecedor_id) {
-      baseQuery += ' AND p.fornecedor_id = ?';
-      params.push(parseInt(fornecedor_id));
-    }
-
     baseQuery += ' ORDER BY p.nome ASC';
 
     // Aplicar paginação
@@ -131,7 +124,7 @@ class ProdutosListController {
     const countQuery = `
       SELECT COUNT(*) as total 
       FROM produtos p
-      WHERE 1=1${search ? ' AND (p.nome LIKE ? OR p.codigo_produto LIKE ? OR p.codigo_barras LIKE ? OR p.referencia_mercado LIKE ?)' : ''}${status !== undefined && status !== '' ? ' AND p.status = ?' : ''}${grupo_id ? ' AND p.grupo_id = ?' : ''}${fornecedor_id ? ' AND p.fornecedor_id = ?' : ''}
+      WHERE 1=1${search ? ' AND (p.nome LIKE ? OR p.codigo_produto LIKE ? OR p.codigo_barras LIKE ? OR p.referencia_mercado LIKE ?)' : ''}${status !== undefined && status !== '' ? ' AND p.status = ?' : ''}${grupo_id ? ' AND p.grupo_id = ?' : ''}
     `;
     const countParams = [...params.slice(0, search ? 4 : 0), ...params.slice(search ? 4 : 0)];
     const totalResult = await executeQuery(countQuery, countParams);
