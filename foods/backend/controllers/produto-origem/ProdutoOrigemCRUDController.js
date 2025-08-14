@@ -113,7 +113,7 @@ class ProdutoOrigemCRUDController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        ngp.nome as produto_generico_padrao_nome,
+        pg.nome as produto_generico_padrao_nome,
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome
       FROM produto_origem po

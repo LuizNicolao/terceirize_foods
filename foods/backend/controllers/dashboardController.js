@@ -22,7 +22,8 @@ class DashboardController {
         motoristas: 0,
         ajudantes: 0,
         veiculos: 0,
-        nome_generico_produto: 0,
+        produto_generico: 0,
+        produto_origem: 0,
         valorEstoque: 0,
         produtosEstoqueBaixo: 0,
         produtosSemEstoque: 0,
@@ -200,13 +201,13 @@ class DashboardController {
       }
 
       try {
-        // Nomes genéricos ativos
-        const nomesGenericosAtivos = await executeQuery(
-          'SELECT COUNT(*) as total FROM nome_generico_produto WHERE status = 1'
+        // Produtos genéricos ativos
+        const produtosGenericosAtivos = await executeQuery(
+          'SELECT COUNT(*) as total FROM produto_generico WHERE status = 1'
         );
-        stats.nome_generico_produto = nomesGenericosAtivos[0].total;
+        stats.produto_generico = produtosGenericosAtivos[0].total;
       } catch (error) {
-        console.error('Erro ao contar nomes genéricos:', error.message);
+        console.error('Erro ao contar produtos genéricos:', error.message);
       }
 
       // ===== ESTATÍSTICAS DE ESTOQUE =====
