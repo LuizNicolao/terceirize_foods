@@ -34,10 +34,8 @@ class ProdutoGenericoService {
       }
       
       // Extrair estatísticas
-      console.log('Resposta completa da API:', response.data);
       if (response.data.statistics) {
         statistics = response.data.statistics;
-        console.log('Estatísticas extraídas:', statistics);
       }
       
       return {

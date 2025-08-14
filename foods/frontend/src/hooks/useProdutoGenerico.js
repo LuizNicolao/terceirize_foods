@@ -136,8 +136,6 @@ export const useProdutoGenerico = () => {
         }
         
         // Usar estatísticas do backend
-        console.log('Resultado da API:', result);
-        console.log('Estatísticas recebidas:', result.statistics);
         
         if (result.statistics) {
           setEstatisticas({

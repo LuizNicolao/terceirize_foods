@@ -17,7 +17,7 @@ export const useProdutos = () => {
   const [classes, setClasses] = useState([]);
   const [unidades, setUnidades] = useState([]);
   const [marcas, setMarcas] = useState([]);
-  const [fornecedores, setFornecedores] = useState([]);
+  const [produtosGenericos, setProdutosGenericos] = useState([]);
 
   // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,7 +32,9 @@ export const useProdutos = () => {
     total_produtos: 0,
     produtos_ativos: 0,
     produtos_inativos: 0,
-    grupos_diferentes: 0
+    com_nome_generico: 0,
+    com_marca: 0,
+    com_foto: 0
   });
 
   // Carregar dados principais
@@ -52,14 +54,14 @@ export const useProdutos = () => {
         status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
       };
 
-      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes, fornecedoresRes] = await Promise.all([
+      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes, produtosGenericosRes] = await Promise.all([
         ProdutosService.listar(paginationParams),
         api.get('/grupos?limit=1000'),
         api.get('/subgrupos?limit=1000'),
         api.get('/classes?limit=1000'),
         api.get('/unidades?limit=1000'),
         api.get('/marcas?limit=1000'),
-        api.get('/fornecedores?limit=1000')
+        api.get('/produto-generico?limit=1000')
       ]);
 
       if (produtosRes.success) {
@@ -75,18 +77,34 @@ export const useProdutos = () => {
           setTotalPages(Math.ceil(produtosRes.data.length / itemsPerPage));
         }
         
-        // Calcular estatísticas
-        const total = produtosRes.pagination?.totalItems || produtosRes.data.length;
-        const ativos = produtosRes.data.filter(p => p.status === 1).length;
-        const inativos = produtosRes.data.filter(p => p.status === 0).length;
-        const gruposUnicos = new Set(produtosRes.data.map(p => p.grupo_id)).size;
-        
-        setEstatisticas({
-          total_produtos: total,
-          produtos_ativos: ativos,
-          produtos_inativos: inativos,
-          grupos_diferentes: gruposUnicos
-        });
+        // Usar estatísticas do backend se disponíveis
+        if (produtosRes.statistics) {
+          setEstatisticas({
+            total_produtos: produtosRes.statistics.total || 0,
+            produtos_ativos: produtosRes.statistics.ativos || 0,
+            produtos_inativos: produtosRes.statistics.inativos || 0,
+            com_nome_generico: produtosRes.statistics.com_nome_generico || 0,
+            com_marca: produtosRes.statistics.com_marca || 0,
+            com_foto: produtosRes.statistics.com_foto || 0
+          });
+        } else {
+          // Fallback para estatísticas básicas
+          const total = produtosRes.pagination?.totalItems || produtosRes.data.length;
+          const ativos = produtosRes.data.filter(p => p.status === 1).length;
+          const inativos = produtosRes.data.filter(p => p.status === 0).length;
+          const comNomeGenerico = produtosRes.data.filter(p => p.nome_generico_id).length;
+          const comMarca = produtosRes.data.filter(p => p.marca_id).length;
+          const comFoto = produtosRes.data.filter(p => p.foto_produto).length;
+          
+          setEstatisticas({
+            total_produtos: total,
+            produtos_ativos: ativos,
+            produtos_inativos: inativos,
+            com_nome_generico: comNomeGenerico,
+            com_marca: comMarca,
+            com_foto: comFoto
+          });
+        }
       } else {
         toast.error(produtosRes.error);
       }
@@ -116,8 +134,9 @@ export const useProdutos = () => {
         setClasses(classesRes.data || []);
       }
 
-
-      if (unidadesRes.data?.data) {
+      if (unidadesRes.data?.data?.items) {
+        setUnidades(unidadesRes.data.data.items);
+      } else if (unidadesRes.data?.data) {
         setUnidades(unidadesRes.data.data);
       } else {
         setUnidades(unidadesRes.data || []);
@@ -131,13 +150,14 @@ export const useProdutos = () => {
         setMarcas(marcasRes.data || []);
       }
 
-      if (fornecedoresRes.data?.data?.items) {
-        setFornecedores(fornecedoresRes.data.data.items);
-      } else if (fornecedoresRes.data?.data) {
-        setFornecedores(fornecedoresRes.data.data);
+      if (produtosGenericosRes.data?.data?.items) {
+        setProdutosGenericos(produtosGenericosRes.data.data.items);
+      } else if (produtosGenericosRes.data?.data) {
+        setProdutosGenericos(produtosGenericosRes.data.data);
       } else {
-        setFornecedores(fornecedoresRes.data || []);
+        setProdutosGenericos(produtosGenericosRes.data || []);
       }
+
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar dados');
@@ -307,7 +327,7 @@ export const useProdutos = () => {
     classes: Array.isArray(classes) ? classes : [],
     unidades: Array.isArray(unidades) ? unidades : [],
     marcas: Array.isArray(marcas) ? marcas : [],
-    fornecedores: Array.isArray(fornecedores) ? fornecedores : [],
+    produtosGenericos: Array.isArray(produtosGenericos) ? produtosGenericos : [],
     searchTerm,
     statusFilter,
     currentPage,

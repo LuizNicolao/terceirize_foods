@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql:3306
--- Tempo de geração: 14/08/2025 às 16:30
+-- Tempo de geração: 14/08/2025 às 19:59
 -- Versão do servidor: 8.0.43
 -- Versão do PHP: 8.2.27
 
@@ -530,7 +530,22 @@ INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`
 (524, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '177.75.142.157', '2025-08-01 18:22:02'),
 (525, 4, 'update', 'rotas', '{\"url\": \"/foods/api/rotas/2\", \"method\": \"PUT\", \"changes\": {\"status\": {\"to\": \"inativo\", \"from\": \"ativo\"}, \"filial_nome\": {\"to\": \"CD CURITIBANOS\"}, \"total_unidades\": {\"to\": \"15\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"2\", \"statusCode\": 200, \"requestBody\": {\"id\": 2, \"nome\": \"R01 - Canoinhas\", \"codigo\": \"ROTA 01 CTB\", \"status\": \"inativo\", \"filial_id\": 3, \"tipo_rota\": \"semanal\", \"created_at\": \"2025-07-20 04:19:37\", \"updated_at\": \"2025-07-23 20:06:52\", \"filial_nome\": \"CD CURITIBANOS\", \"observacoes\": \"\", \"custo_diario\": \"2700.00\", \"distancia_km\": \"0.00\", \"total_unidades\": \"15\"}}', '187.45.102.250', '2025-08-14 13:57:17'),
 (526, 4, 'update', 'rotas', '{\"url\": \"/foods/api/rotas/2\", \"method\": \"PUT\", \"changes\": {\"status\": {\"to\": \"ativo\", \"from\": \"inativo\"}, \"filial_nome\": {\"to\": \"CD CURITIBANOS\"}, \"observacoes\": {\"to\": \"\", \"from\": null}, \"total_unidades\": {\"to\": \"15\"}}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"2\", \"statusCode\": 200, \"requestBody\": {\"id\": 2, \"nome\": \"R01 - Canoinhas\", \"codigo\": \"ROTA 01 CTB\", \"status\": \"ativo\", \"filial_id\": 3, \"tipo_rota\": \"semanal\", \"created_at\": \"2025-07-20 04:19:37\", \"updated_at\": \"2025-08-14 13:57:17\", \"filial_nome\": \"CD CURITIBANOS\", \"observacoes\": \"\", \"custo_diario\": \"2700.00\", \"distancia_km\": \"0.00\", \"total_unidades\": \"15\"}}', '187.45.102.250', '2025-08-14 13:57:20'),
-(527, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"nome_generico_produto\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-14 16:24:37');
+(527, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"nome_generico_produto\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-14 16:24:37'),
+(528, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\"}', '186.227.148.185', '2025-08-14 16:45:33'),
+(529, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\"}', '187.45.102.250', '2025-08-14 16:53:34'),
+(530, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\"}', '187.45.102.250', '2025-08-14 16:57:05'),
+(531, 4, 'create', 'produto_origem', '{\"url\": \"/foods/api/produto-origem\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"ASDASDASD\", \"codigo\": \"ASDDASASD\", \"status\": 0, \"grupo_id\": 1, \"classe_id\": 36, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 37, \"referencia_mercado\": \"asdasd\", \"produto_generico_padrao_id\": null}}', '187.45.102.250', '2025-08-14 17:13:44'),
+(532, 4, 'create', 'produto_origem', '{\"url\": \"/foods/api/produto-origem\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"TESTE\", \"codigo\": \"TESTE\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 37, \"referencia_mercado\": \"TESTE\", \"produto_generico_padrao_id\": null}}', '187.45.102.250', '2025-08-14 17:40:35'),
+(533, 4, 'update', 'produto_origem', '{\"url\": \"/foods/api/produto-origem/7\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"7\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"ASDASDASD\", \"codigo\": \"ASDDASASD\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 37, \"referencia_mercado\": \"asdasd\", \"produto_generico_padrao_id\": null}}', '187.45.102.250', '2025-08-14 17:43:48'),
+(534, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/5\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"5\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"nome_generico_produto\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"permissoes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}]}}', '187.45.102.250', '2025-08-14 17:44:04'),
+(535, 5, 'login', 'auth', '{\"email\": \"arlindo.borges@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\"}', '187.108.215.189', '2025-08-14 17:46:11'),
+(536, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\"}', '187.45.102.250', '2025-08-14 18:44:56'),
+(537, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-14 18:48:56'),
+(538, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/5\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"5\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"produto_generico\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}]}}', '187.45.102.250', '2025-08-14 18:50:45'),
+(539, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"PATINHO BOVINO CUBOS 1 KG\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-13 18:59:37\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 7, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"registro_especifico\": \"123\", \"prazo_validade_padrao\": 12, \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 1}}', '187.45.102.250', '2025-08-14 19:18:56'),
+(540, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"PATINHO BOVINO CUBOS 1 KG\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-14 19:18:56\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 7, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"ASDASDASD\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"ASDDASASD\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '187.45.102.250', '2025-08-14 19:19:07'),
+(541, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"PATINHO BOVINO CUBOS 1 KG\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Aves\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-14 19:19:07\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 7, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"ASDASDASD\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"ASDDASASD\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '187.45.102.250', '2025-08-14 19:27:30'),
+(542, 4, 'update', 'produto_origem', '{\"url\": \"/foods/api/produto-origem/7\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"7\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"ASDASDASD\", \"codigo\": \"ASDDASASD\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 37, \"referencia_mercado\": \"asdasd\", \"produto_generico_padrao_id\": 18}}', '187.45.102.250', '2025-08-14 19:28:07');
 
 -- --------------------------------------------------------
 
@@ -995,23 +1010,6 @@ INSERT INTO `motoristas` (`id`, `nome`, `cpf`, `cnh`, `categoria_cnh`, `telefone
 -- --------------------------------------------------------
 
 --
--- Estrutura para tabela `nome_generico_produto`
---
-
-CREATE TABLE `nome_generico_produto` (
-  `id` int NOT NULL,
-  `nome` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  `grupo_id` int DEFAULT NULL,
-  `subgrupo_id` int DEFAULT NULL,
-  `classe_id` int DEFAULT NULL,
-  `status` tinyint(1) DEFAULT '1',
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Estrutura para tabela `permissoes_usuario`
 --
 
@@ -1056,40 +1054,41 @@ INSERT INTO `permissoes_usuario` (`id`, `usuario_id`, `tela`, `pode_visualizar`,
 (648, 6, 'subgrupos', 1, 1, 1, 1, '2025-07-21 20:11:12', '2025-07-21 20:11:12'),
 (649, 6, 'unidades', 1, 1, 1, 1, '2025-07-21 20:11:12', '2025-07-21 20:11:12'),
 (650, 6, 'marcas', 1, 1, 1, 1, '2025-07-21 20:11:12', '2025-07-21 20:11:12'),
-(793, 5, 'fornecedores', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(794, 5, 'clientes', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(795, 5, 'filiais', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(796, 5, 'rotas', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(797, 5, 'produtos', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(798, 5, 'grupos', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(799, 5, 'subgrupos', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(800, 5, 'classes', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(801, 5, 'nome_generico_produto', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(802, 5, 'unidades', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(803, 5, 'unidades_escolares', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(804, 5, 'marcas', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(805, 5, 'veiculos', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(806, 5, 'motoristas', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(807, 5, 'ajudantes', 1, 1, 1, 1, '2025-07-29 20:40:32', '2025-07-29 20:40:32'),
-(808, 4, 'usuarios', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(809, 4, 'fornecedores', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(810, 4, 'clientes', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(811, 4, 'filiais', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(812, 4, 'rotas', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(813, 4, 'produtos', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(814, 4, 'grupos', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(815, 4, 'subgrupos', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(816, 4, 'classes', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(817, 4, 'nome_generico_produto', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(818, 4, 'produto_origem', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(819, 4, 'unidades', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(820, 4, 'unidades_escolares', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(821, 4, 'marcas', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(822, 4, 'veiculos', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(823, 4, 'motoristas', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(824, 4, 'ajudantes', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(825, 4, 'cotacao', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37'),
-(826, 4, 'permissoes', 1, 1, 1, 1, '2025-08-14 16:24:37', '2025-08-14 16:24:37');
+(843, 4, 'usuarios', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(844, 4, 'fornecedores', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(845, 4, 'clientes', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(846, 4, 'filiais', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(847, 4, 'rotas', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(848, 4, 'produtos', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(849, 4, 'grupos', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(850, 4, 'subgrupos', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(851, 4, 'classes', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(852, 4, 'produto_origem', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(853, 4, 'unidades', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(854, 4, 'unidades_escolares', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(855, 4, 'marcas', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(856, 4, 'veiculos', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(857, 4, 'motoristas', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(858, 4, 'ajudantes', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(859, 4, 'cotacao', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(860, 4, 'produto_generico', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(861, 4, 'permissoes', 1, 1, 1, 1, '2025-08-14 18:48:56', '2025-08-14 18:48:56'),
+(862, 5, 'fornecedores', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(863, 5, 'clientes', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(864, 5, 'filiais', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(865, 5, 'rotas', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(866, 5, 'produtos', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(867, 5, 'grupos', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(868, 5, 'subgrupos', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(869, 5, 'classes', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(870, 5, 'produto_origem', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(871, 5, 'unidades', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(872, 5, 'unidades_escolares', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(873, 5, 'marcas', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(874, 5, 'veiculos', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(875, 5, 'motoristas', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(876, 5, 'ajudantes', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
+(877, 5, 'produto_generico', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45');
 
 -- --------------------------------------------------------
 
@@ -1099,59 +1098,98 @@ INSERT INTO `permissoes_usuario` (`id`, `usuario_id`, `tela`, `pode_visualizar`,
 
 CREATE TABLE `produtos` (
   `id` int NOT NULL,
-  `codigo_produto` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nome` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Exemplo: PATINHO BOVINO EM CUBOS KING',
-  `descricao` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'Descrição detalhada do produto',
-  `codigo_barras` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 1234567891234',
-  `referencia` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência interna do produto',
-  `referencia_externa` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123654',
-  `referencia_mercado` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: Corte Bovino / Patinho / Cubos',
+  `codigo_produto` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nome` varchar(200) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Exemplo: PATINHO BOVINO EM CUBOS KING',
+  `codigo_barras` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 1234567891234',
+  `fator_conversao` decimal(10,3) DEFAULT '1.000' COMMENT 'Fator de conversão do produto',
+  `referencia_interna` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência interna do produto',
+  `referencia_externa` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123654',
+  `referencia_mercado` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: Corte Bovino / Patinho / Cubos',
   `unidade_id` int DEFAULT NULL COMMENT 'ID da unidade de medida - Exemplo: PCT',
-  `quantidade` decimal(10,3) DEFAULT '1.000' COMMENT 'Exemplo: 1',
   `grupo_id` int DEFAULT NULL COMMENT 'Agrupamento N1 - Exemplo: FRIOS',
   `subgrupo_id` int DEFAULT NULL COMMENT 'Agrupamento N2 - Exemplo: CONGELADO',
   `classe_id` int DEFAULT NULL,
+  `nome_generico_id` int DEFAULT NULL COMMENT 'ID do nome genérico do produto',
   `marca_id` int DEFAULT NULL,
-  `agrupamento_n3` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Agrupamento N3 - Exemplo: BOVINO',
-  `agrupamento_n4` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Agrupamento N4 - Exemplo: PATINHO BOVINO EM CUBOS 1KG',
   `peso_liquido` decimal(10,3) DEFAULT NULL COMMENT 'Peso líquido em kg - Exemplo: 1',
   `peso_bruto` decimal(10,3) DEFAULT NULL COMMENT 'Peso bruto em kg - Exemplo: 1',
-  `marca` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: KING',
-  `fabricante` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: KING',
-  `informacoes_adicionais` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'Exemplo: PRODUTO COM 5% DE GORDURA',
-  `foto_produto` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Caminho da foto - Exemplo: IMAGEM',
+  `fabricante` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: KING',
+  `informacoes_adicionais` text COLLATE utf8mb4_general_ci COMMENT 'Exemplo: PRODUTO COM 5% DE GORDURA',
+  `foto_produto` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Caminho da foto - Exemplo: IMAGEM',
   `prazo_validade` int DEFAULT NULL COMMENT 'Prazo de validade (número) - Exemplo: 12',
-  `unidade_validade` enum('DIAS','SEMANAS','MESES','ANOS') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: DIAS',
+  `unidade_validade` enum('DIAS','SEMANAS','MESES','ANOS') COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: DIAS',
   `regra_palet_un` int DEFAULT NULL COMMENT 'Regra palet (unidades) - Exemplo: 1200',
-  `ficha_homologacao` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123456',
-  `registro_especifico` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 1234456 CA, REGISTRO, MODELO, Nº SERIE',
+  `ficha_homologacao` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123456',
+  `registro_especifico` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 1234456 CA, REGISTRO, MODELO, Nº SERIE',
   `comprimento` decimal(10,2) DEFAULT NULL COMMENT 'Comprimento em cm - Exemplo: 20',
   `largura` decimal(10,2) DEFAULT NULL COMMENT 'Largura em cm - Exemplo: 15',
   `altura` decimal(10,2) DEFAULT NULL COMMENT 'Altura em cm - Exemplo: 10',
   `volume` decimal(10,2) DEFAULT NULL COMMENT 'Volume em cm³ - Exemplo: 3000',
-  `integracao_senior` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123654',
-  `ncm` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Classificação NCM',
-  `cest` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código CEST',
-  `cfop` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código CFOP',
-  `ean` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código EAN',
-  `cst_icms` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'CST ICMS',
-  `csosn` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'CSOSN',
+  `integracao_senior` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123654',
+  `ncm` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Classificação NCM',
+  `cest` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código CEST',
+  `cfop` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código CFOP',
+  `ean` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código EAN',
+  `cst_icms` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'CST ICMS',
+  `csosn` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'CSOSN',
   `aliquota_icms` decimal(5,2) DEFAULT NULL COMMENT 'Alíquota ICMS (%)',
   `aliquota_ipi` decimal(5,2) DEFAULT NULL COMMENT 'Alíquota IPI (%)',
   `aliquota_pis` decimal(5,2) DEFAULT NULL COMMENT 'Alíquota PIS (%)',
   `aliquota_cofins` decimal(5,2) DEFAULT NULL COMMENT 'Alíquota COFINS (%)',
-  `preco_custo` decimal(10,2) DEFAULT NULL COMMENT 'Preço de custo',
-  `preco_venda` decimal(10,2) DEFAULT NULL COMMENT 'Preço de venda',
-  `estoque_atual` int DEFAULT '0' COMMENT 'Estoque atual',
-  `estoque_minimo` int DEFAULT '0' COMMENT 'Estoque mínimo',
-  `fornecedor_id` int DEFAULT NULL COMMENT 'ID do fornecedor',
   `status` tinyint(1) DEFAULT '1' COMMENT 'Status do produto (1=ativo, 0=inativo)',
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `usuario_criador_id` int DEFAULT NULL COMMENT 'ID do usuário que criou o produto',
   `usuario_atualizador_id` int DEFAULT NULL COMMENT 'ID do usuário que atualizou o produto',
-  `fator_conversao` decimal(10,3) DEFAULT '1.000'
+  `tipo_registro` enum('ANVISA','MAPA','OUTROS') COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Tipo do registro específico',
+  `embalagem_secundaria_id` int DEFAULT NULL COMMENT 'ID da unidade de medida da embalagem secundária (ex: CX, PCT, FD)',
+  `fator_conversao_embalagem` int DEFAULT '1' COMMENT 'Fator de conversão da embalagem secundária (ex: 1 CX = 12 UN)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `produto_generico`
+--
+
+CREATE TABLE `produto_generico` (
+  `id` int NOT NULL,
+  `codigo` int NOT NULL,
+  `nome` varchar(200) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Nome do produto genérico',
+  `produto_origem_id` int DEFAULT NULL COMMENT 'ID do produto de origem',
+  `fator_conversao` decimal(10,3) DEFAULT '1.000' COMMENT 'Fator de conversão (3 casas decimais)',
+  `grupo_id` int DEFAULT NULL COMMENT 'ID do grupo',
+  `subgrupo_id` int DEFAULT NULL COMMENT 'ID do subgrupo',
+  `classe_id` int DEFAULT NULL COMMENT 'ID da classe',
+  `unidade_medida_id` int DEFAULT NULL COMMENT 'ID da unidade de medida',
+  `referencia_mercado` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência de mercado',
+  `produto_padrao` enum('Sim','Não') COLLATE utf8mb4_general_ci DEFAULT 'Não' COMMENT 'Indica se é produto padrão',
+  `peso_liquido` decimal(10,3) DEFAULT NULL COMMENT 'Peso líquido em kg',
+  `peso_bruto` decimal(10,3) DEFAULT NULL COMMENT 'Peso bruto em kg',
+  `regra_palet` int DEFAULT NULL COMMENT 'Regra palet (número inteiro)',
+  `informacoes_adicionais` text COLLATE utf8mb4_general_ci COMMENT 'Informações adicionais do produto',
+  `referencia_interna` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência interna do produto',
+  `referencia_externa` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência externa do produto',
+  `registro_especifico` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Registro específico (número)',
+  `tipo_registro` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Tipo de registro',
+  `prazo_validade_padrao` int DEFAULT NULL COMMENT 'Prazo de validade padrão (número inteiro)',
+  `unidade_validade` enum('Dias','Semanas','Meses','Anos') COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Unidade de validade',
+  `integracao_senior` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código de integração com sistema Senior',
+  `status` tinyint(1) DEFAULT '1' COMMENT 'Status (1=ativo, 0=inativo)',
+  `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `usuario_criador_id` int DEFAULT NULL COMMENT 'ID do usuário que criou o registro',
+  `usuario_atualizador_id` int DEFAULT NULL COMMENT 'ID do usuário que atualizou o registro'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `produto_generico`
+--
+
+INSERT INTO `produto_generico` (`id`, `codigo`, `nome`, `produto_origem_id`, `fator_conversao`, `grupo_id`, `subgrupo_id`, `classe_id`, `unidade_medida_id`, `referencia_mercado`, `produto_padrao`, `peso_liquido`, `peso_bruto`, `regra_palet`, `informacoes_adicionais`, `referencia_interna`, `referencia_externa`, `registro_especifico`, `tipo_registro`, `prazo_validade_padrao`, `unidade_validade`, `integracao_senior`, `status`, `criado_em`, `atualizado_em`, `usuario_criador_id`, `usuario_atualizador_id`) VALUES
+(18, 1, 'PATINHO BOVINO CUBOS 1 KG', 7, 1.000, 1, 1, 36, 35, 'CORTE BOVINO', 'Sim', 1.000, 1.000, 1200, 'TESTE', '1001001', '2001001', '123', 'TESTE', 12, 'Meses', '123456', 1, '2025-08-13 16:16:49', '2025-08-14 19:19:07', 1, 4),
+(19, 2, 'PATINHO BOVINO ISCAS 1 KG', 5, 1.000, 1, 1, 22, 1, 'CORTE BOVINO', 'Sim', 1.000, 1.000, 1200, NULL, NULL, NULL, NULL, NULL, 12, 'Meses', NULL, 1, '2025-08-13 18:59:14', '2025-08-13 18:59:14', 1, NULL),
+(20, 3, 'PATINHO BOVINO MOIDO 1 KG', 6, 1.000, 1, 1, 22, 1, 'CORTE BOVINO', 'Sim', 1.000, 1.000, 1200, NULL, NULL, NULL, NULL, NULL, 12, 'Meses', NULL, 1, '2025-08-13 19:01:06', '2025-08-13 19:01:06', 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -1183,9 +1221,8 @@ CREATE TABLE `produto_origem` (
 --
 
 INSERT INTO `produto_origem` (`id`, `codigo`, `nome`, `unidade_medida_id`, `fator_conversao`, `grupo_id`, `subgrupo_id`, `classe_id`, `peso_liquido`, `referencia_mercado`, `produto_generico_padrao_id`, `status`, `criado_em`, `atualizado_em`, `usuario_criador_id`, `usuario_atualizador_id`) VALUES
-(4, '000001', 'PATINHO BOVINO CUBOS', 1, 1.000, 1, 1, 22, 1.000, 'CORTE BOVINO', 18, 1, '2025-08-12 16:36:29', '2025-08-13 18:57:24', 1, 1),
-(5, '000002', 'PATINHO BOVINO ISCA', 1, 1.000, 1, 1, 22, 1.000, 'CORTE BOVINO', 19, 1, '2025-08-12 16:37:08', '2025-08-13 18:59:14', 1, NULL),
-(6, '000003', 'PATINHO BOVINO MOIDO', 1, 1.000, 1, 1, 22, 1.000, 'CORTE BOVINO', 20, 1, '2025-08-12 16:37:33', '2025-08-13 19:01:06', 1, NULL);
+(7, 'ASDDASASD', 'ASDASDASD', 37, 1.000, 1, 1, 36, 1.000, 'asdasd', 18, 1, '2025-08-14 17:13:43', '2025-08-14 19:28:07', 4, 4),
+(8, 'TESTE', 'TESTE', 37, 1.000, 1, 1, 22, 1.000, 'TESTE', NULL, 1, '2025-08-14 17:40:35', '2025-08-14 17:40:35', 4, NULL);
 
 -- --------------------------------------------------------
 
@@ -1626,13 +1663,6 @@ ALTER TABLE `motoristas`
   ADD KEY `idx_motoristas_cnh_validade` (`cnh_validade`);
 
 --
--- Índices de tabela `nome_generico_produto`
---
-ALTER TABLE `nome_generico_produto`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uk_nome_generico` (`nome`);
-
---
 -- Índices de tabela `permissoes_usuario`
 --
 ALTER TABLE `permissoes_usuario`
@@ -1644,16 +1674,12 @@ ALTER TABLE `permissoes_usuario`
 --
 ALTER TABLE `produtos`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `codigo_produto` (`codigo_produto`),
   ADD KEY `idx_produtos_nome` (`nome`),
   ADD KEY `idx_produtos_codigo_barras` (`codigo_barras`),
-  ADD KEY `idx_produtos_referencia` (`referencia`),
+  ADD KEY `idx_produtos_referencia` (`referencia_interna`),
   ADD KEY `idx_produtos_referencia_externa` (`referencia_externa`),
   ADD KEY `idx_produtos_referencia_mercado` (`referencia_mercado`),
-  ADD KEY `idx_produtos_marca` (`marca`),
   ADD KEY `idx_produtos_fabricante` (`fabricante`),
-  ADD KEY `idx_produtos_agrupamento_n3` (`agrupamento_n3`),
-  ADD KEY `idx_produtos_agrupamento_n4` (`agrupamento_n4`),
   ADD KEY `idx_produtos_integracao_senior` (`integracao_senior`),
   ADD KEY `idx_produtos_ncm` (`ncm`),
   ADD KEY `idx_produtos_cest` (`cest`),
@@ -1662,11 +1688,27 @@ ALTER TABLE `produtos`
   ADD KEY `idx_produtos_csosn` (`csosn`),
   ADD KEY `idx_produtos_grupo` (`grupo_id`),
   ADD KEY `idx_produtos_subgrupo` (`subgrupo_id`),
-  ADD KEY `idx_produtos_fornecedor` (`fornecedor_id`),
   ADD KEY `idx_produtos_status` (`status`),
   ADD KEY `idx_produtos_classe_id` (`classe_id`),
   ADD KEY `idx_produtos_marca_id` (`marca_id`),
-  ADD KEY `idx_produtos_codigo_produto` (`codigo_produto`);
+  ADD KEY `idx_produtos_codigo_produto` (`codigo_produto`),
+  ADD KEY `idx_produtos_nome_generico` (`nome_generico_id`),
+  ADD KEY `idx_produtos_fator_conversao` (`fator_conversao`),
+  ADD KEY `idx_produtos_embalagem_secundaria` (`embalagem_secundaria_id`);
+
+--
+-- Índices de tabela `produto_generico`
+--
+ALTER TABLE `produto_generico`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uk_codigo_novo` (`codigo`),
+  ADD KEY `unidade_medida_id` (`unidade_medida_id`),
+  ADD KEY `idx_produto_generico_nome` (`nome`),
+  ADD KEY `idx_produto_generico_status` (`status`),
+  ADD KEY `idx_produto_generico_grupo` (`grupo_id`),
+  ADD KEY `idx_produto_generico_subgrupo` (`subgrupo_id`),
+  ADD KEY `idx_produto_generico_classe` (`classe_id`),
+  ADD KEY `idx_produto_origem_id` (`produto_origem_id`);
 
 --
 -- Índices de tabela `produto_origem`
@@ -1770,7 +1812,7 @@ ALTER TABLE `almoxarifado_itens`
 -- AUTO_INCREMENT de tabela `auditoria_acoes`
 --
 ALTER TABLE `auditoria_acoes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=528;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=543;
 
 --
 -- AUTO_INCREMENT de tabela `classes`
@@ -1809,22 +1851,28 @@ ALTER TABLE `marcas`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT de tabela `nome_generico_produto`
---
-ALTER TABLE `nome_generico_produto`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
 -- AUTO_INCREMENT de tabela `permissoes_usuario`
 --
 ALTER TABLE `permissoes_usuario`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=827;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=878;
+
+--
+-- AUTO_INCREMENT de tabela `produtos`
+--
+ALTER TABLE `produtos`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de tabela `produto_generico`
+--
+ALTER TABLE `produto_generico`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT de tabela `produto_origem`
 --
 ALTER TABLE `produto_origem`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT de tabela `rotas`
@@ -1884,6 +1932,12 @@ ALTER TABLE `auditoria_acoes`
 --
 ALTER TABLE `permissoes_usuario`
   ADD CONSTRAINT `permissoes_usuario_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `produtos`
+--
+ALTER TABLE `produtos`
+  ADD CONSTRAINT `fk_produtos_unid_sec` FOREIGN KEY (`embalagem_secundaria_id`) REFERENCES `unidades_medida` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Restrições para tabelas `subgrupos`
