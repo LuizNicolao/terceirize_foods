@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import ProdutoOrigemService from '../services/produtoOrigem';
+import api from '../services/api';
 
 export const useProdutoOrigem = () => {
   const [produtosOrigem, setProdutosOrigem] = useState([]);
@@ -42,19 +43,51 @@ export const useProdutoOrigem = () => {
   // Carregar dados auxiliares
   const carregarDadosAuxiliares = useCallback(async () => {
     try {
-      const [gruposRes, subgruposRes, classesRes, unidadesRes, produtosGenericosRes] = await Promise.all([
-        ProdutoOrigemService.listarGrupos(),
-        ProdutoOrigemService.listarSubgrupos(),
-        ProdutoOrigemService.listarClasses(),
-        ProdutoOrigemService.listarUnidadesMedida(),
-        ProdutoOrigemService.listarProdutosGenericosPadrao()
+      const [gruposRes, subgruposRes, classesRes, unidadesRes] = await Promise.all([
+        api.get('/grupos?limit=1000'),
+        api.get('/subgrupos?limit=1000'),
+        api.get('/classes?limit=1000'),
+        api.get('/unidades?limit=1000')
       ]);
 
-      setGrupos(gruposRes || []);
-      setSubgrupos(subgruposRes || []);
-      setClasses(classesRes || []);
-      setUnidadesMedida(unidadesRes || []);
-      setProdutosGenericosPadrao(produtosGenericosRes || []);
+      // Carregar grupos
+      if (gruposRes.data?.data?.items) {
+        setGrupos(gruposRes.data.data.items);
+      } else if (gruposRes.data?.data) {
+        setGrupos(gruposRes.data.data);
+      } else {
+        setGrupos(gruposRes.data || []);
+      }
+
+      // Carregar subgrupos
+      if (subgruposRes.data?.data?.items) {
+        setSubgrupos(subgruposRes.data.data.items);
+      } else if (subgruposRes.data?.data) {
+        setSubgrupos(subgruposRes.data.data);
+      } else {
+        setSubgrupos(subgruposRes.data || []);
+      }
+
+      // Carregar classes
+      if (classesRes.data?.data?.items) {
+        setClasses(classesRes.data.data.items);
+      } else if (classesRes.data?.data) {
+        setClasses(classesRes.data.data);
+      } else {
+        setClasses(classesRes.data || []);
+      }
+
+      // Carregar unidades de medida
+      if (unidadesRes.data?.data?.items) {
+        setUnidadesMedida(unidadesRes.data.data.items);
+      } else if (unidadesRes.data?.data) {
+        setUnidadesMedida(unidadesRes.data.data);
+      } else {
+        setUnidadesMedida(unidadesRes.data || []);
+      }
+
+      // Por enquanto, produtos genéricos padrão fica vazio até criar a tela
+      setProdutosGenericosPadrao([]);
     } catch (error) {
       console.error('Erro ao carregar dados auxiliares:', error);
       toast.error('Erro ao carregar dados auxiliares');
