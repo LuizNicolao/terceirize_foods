@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave } from 'react-icons/fa';
-import { Button, Input, Select, Textarea, Checkbox } from '../ui';
+import { Button, Input } from '../ui';
 
 const ProdutoOrigemModal = ({
   isOpen,
@@ -203,10 +203,9 @@ const ProdutoOrigemModal = ({
 
             {/* Grupo */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Grupo
-              </label>
-              <Select
+              <Input
+                label="Grupo"
+                type="select"
                 {...register('grupo_id')}
                 onChange={handleGrupoChange}
                 disabled={viewMode}
@@ -218,15 +217,14 @@ const ProdutoOrigemModal = ({
                     {grupo.nome}
                   </option>
                 ))}
-              </Select>
+              </Input>
             </div>
 
             {/* Subgrupo */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Subgrupo
-              </label>
-              <Select
+              <Input
+                label="Subgrupo"
+                type="select"
                 {...register('subgrupo_id')}
                 onChange={handleSubgrupoChange}
                 disabled={viewMode || !grupoId}
@@ -238,15 +236,14 @@ const ProdutoOrigemModal = ({
                     {subgrupo.nome}
                   </option>
                 ))}
-              </Select>
+              </Input>
             </div>
 
             {/* Classe */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Classe
-              </label>
-              <Select
+              <Input
+                label="Classe"
+                type="select"
                 {...register('classe_id')}
                 disabled={viewMode || !subgrupoId}
                 error={errors.classe_id?.message}
@@ -257,7 +254,7 @@ const ProdutoOrigemModal = ({
                     {classe.nome}
                   </option>
                 ))}
-              </Select>
+              </Input>
             </div>
 
             {/* Peso Líquido */}
@@ -283,10 +280,9 @@ const ProdutoOrigemModal = ({
 
             {/* Produto Genérico Padrão */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Produto Genérico Padrão
-              </label>
-              <Select
+              <Input
+                label="Produto Genérico Padrão"
+                type="select"
                 {...register('produto_generico_padrao_id')}
                 disabled={viewMode}
                 error={errors.produto_generico_padrao_id?.message}
@@ -297,7 +293,7 @@ const ProdutoOrigemModal = ({
                     {produto.nome}
                   </option>
                 ))}
-              </Select>
+              </Input>
             </div>
           </div>
 
@@ -316,10 +312,11 @@ const ProdutoOrigemModal = ({
 
           {/* Status */}
           <div>
-            <Checkbox
+            <Input
+              label="Produto ativo"
+              type="checkbox"
               {...register('status')}
               disabled={viewMode}
-              label="Produto ativo"
             />
           </div>
 
