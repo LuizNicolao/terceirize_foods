@@ -32,7 +32,7 @@ const cleanEmptyFields = (req, res, next) => {
   const fieldsToClean = ['grupo_id', 'subgrupo_id', 'classe_id', 'produto_generico_padrao_id', 'peso_liquido', 'referencia_mercado'];
   
   fieldsToClean.forEach(field => {
-    if (req.body[field] === '' || req.body[field] === undefined) {
+    if (req.body[field] === '' || req.body[field] === undefined || req.body[field] === 'null') {
       req.body[field] = null;
       console.log(`Campo ${field} convertido para null`);
     }
@@ -69,9 +69,12 @@ const cleanEmptyFields = (req, res, next) => {
     console.log(`peso_liquido convertido para: ${req.body.peso_liquido}`);
   }
 
-  if (req.body.produto_generico_padrao_id && req.body.produto_generico_padrao_id !== '') {
+  if (req.body.produto_generico_padrao_id && req.body.produto_generico_padrao_id !== '' && req.body.produto_generico_padrao_id !== 'null') {
     req.body.produto_generico_padrao_id = parseInt(req.body.produto_generico_padrao_id);
     console.log(`produto_generico_padrao_id convertido para: ${req.body.produto_generico_padrao_id}`);
+  } else {
+    req.body.produto_generico_padrao_id = null;
+    console.log(`produto_generico_padrao_id definido como null`);
   }
 
   console.log('Dados após limpeza:', req.body);
@@ -168,7 +171,15 @@ const produtoOrigemValidations = {
     
     body('produto_generico_padrao_id')
       .optional()
-      .isInt({ min: 1 })
+      .custom((value) => {
+        if (value && value !== '' && value !== null && value !== undefined) {
+          const numValue = parseInt(value);
+          if (isNaN(numValue) || numValue < 1) {
+            throw new Error('Produto genérico padrão deve ser um número válido');
+          }
+        }
+        return true;
+      })
       .withMessage('Produto genérico padrão deve ser selecionado'),
     
     body('status')

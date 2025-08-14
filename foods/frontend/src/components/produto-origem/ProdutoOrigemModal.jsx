@@ -58,10 +58,11 @@ const ProdutoOrigemModal = ({
       subgrupo_id: data.subgrupo_id ? parseInt(data.subgrupo_id) : null,
       classe_id: data.classe_id ? parseInt(data.classe_id) : null,
       peso_liquido: data.peso_liquido ? parseFloat(data.peso_liquido) : null,
-      produto_generico_padrao_id: data.produto_generico_padrao_id ? parseInt(data.produto_generico_padrao_id) : null,
+      produto_generico_padrao_id: data.produto_generico_padrao_id && data.produto_generico_padrao_id !== '' ? parseInt(data.produto_generico_padrao_id) : null,
       status: data.status ? 1 : 0
     };
 
+    console.log('Dados do formulário processados:', formData);
     onSubmit(formData);
   };
 
