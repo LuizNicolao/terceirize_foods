@@ -10,7 +10,7 @@ import ProdutosGenericosTable from '../../components/produto-generico/ProdutosGe
 import ProdutosGenericosStats from '../../components/produto-generico/ProdutosGenericosStats';
 import ProdutosGenericosActions from '../../components/produto-generico/ProdutosGenericosActions';
 import ProdutosGenericosFilters from '../../components/produto-generico/ProdutosGenericosFilters';
-import Pagination from '../../components/shared/Pagination';
+import Pagination from '../../components/Pagination';
 import { FaPlus, FaSearch, FaFilter, FaDownload, FaFileExcel, FaFilePdf } from 'react-icons/fa';
 
 const ProdutoGenerico = () => {
