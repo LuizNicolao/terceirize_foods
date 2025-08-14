@@ -3,251 +3,213 @@
  * Interface principal para gerenciamento de produtos genéricos
  */
 
-import React, { useState } from 'react';
+import React from 'react';
+import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useProdutoGenerico } from '../../hooks/useProdutoGenerico';
-import ProdutoGenericoModal from '../../components/produto-generico/ProdutoGenericoModal';
-import ProdutosGenericosTable from '../../components/produto-generico/ProdutosGenericosTable';
-import ProdutosGenericosStats from '../../components/produto-generico/ProdutosGenericosStats';
-import ProdutosGenericosActions from '../../components/produto-generico/ProdutosGenericosActions';
+import { useAuditoria } from '../../hooks/useAuditoria';
+import { useExport } from '../../hooks/useExport';
+import produtoGenericoService from '../../services/produtoGenerico';
+import { Button } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
-import { FaPlus } from 'react-icons/fa';
+import { ProdutoGenericoModal } from '../../components/produto-generico';
+import ProdutosGenericosStats from '../../components/produto-generico/ProdutosGenericosStats';
+import ProdutosGenericosActions from '../../components/produto-generico/ProdutosGenericosActions';
+import ProdutosGenericosTable from '../../components/produto-generico/ProdutosGenericosTable';
+import AuditModal from '../../components/shared/AuditModal';
 
 const ProdutoGenerico = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
+  // Hooks customizados
   const {
     produtosGenericos,
     loading,
-    pagination,
-    statistics,
-    filters,
+    showModal,
+    viewMode,
+    editingProdutoGenerico,
     grupos,
     subgrupos,
     classes,
     produtosOrigem,
     unidadesMedida,
-    carregarProdutosGenericos,
-    buscarProdutoGenericoPorId,
-    criarProdutoGenerico,
-    atualizarProdutoGenerico,
-    excluirProdutoGenerico,
-    exportarXLSX,
-    exportarPDF,
-    atualizarFiltros,
-    limparFiltros,
-    mudarPagina,
-    mudarLimite,
-    handleView
+    searchTerm,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    estatisticas,
+    onSubmit,
+    handleDeleteProdutoGenerico,
+    handleAddProdutoGenerico,
+    handleViewProdutoGenerico,
+    handleEditProdutoGenerico,
+    handleCloseModal,
+    handlePageChange,
+    setSearchTerm,
+    setItemsPerPage,
+    formatDate,
+    getStatusLabel,
+    getStatusColor,
+    getGrupoName,
+    getSubgrupoName,
+    getClasseName,
+    getProdutoOrigemName,
+    getUnidadeMedidaName
   } = useProdutoGenerico();
 
-  // Estados locais
-  const [showModal, setShowModal] = useState(false);
-  const [modalMode, setModalMode] = useState('create'); // 'create' ou 'edit'
-  const [selectedProdutoGenerico, setSelectedProdutoGenerico] = useState(null);
+  const {
+    showAuditModal,
+    auditLogs,
+    auditLoading,
+    auditFilters,
+    handleOpenAuditModal,
+    handleCloseAuditModal,
+    handleApplyAuditFilters,
+    handleExportAuditXLSX,
+    handleExportAuditPDF,
+    setAuditFilters
+  } = useAuditoria('produto_generico');
 
-  // Abrir modal de criação
-  const handleCreate = () => {
-    setModalMode('create');
-    setSelectedProdutoGenerico(null);
-    setShowModal(true);
-  };
+  const { handleExportXLSX, handleExportPDF } = useExport(produtoGenericoService);
 
-  // Abrir modal de edição
-  const handleEdit = async (id) => {
-    setModalMode('edit');
-    
-    try {
-      const produtoGenerico = await buscarProdutoGenericoPorId(id);
-      if (produtoGenerico) {
-        setSelectedProdutoGenerico(produtoGenerico);
-        setShowModal(true);
-      }
-    } catch (error) {
-      console.error('Erro ao buscar produto genérico:', error);
-    }
-  };
-
-  // Fechar modal
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setSelectedProdutoGenerico(null);
-  };
-
-  // Salvar produto genérico
-  const handleSave = async (data) => {
-    try {
-      if (modalMode === 'create') {
-        await criarProdutoGenerico(data);
-      } else {
-        await atualizarProdutoGenerico(selectedProdutoGenerico.id, data);
-      }
-      handleCloseModal();
-    } catch (error) {
-      console.error('Erro ao salvar produto genérico:', error);
-    }
-  };
-
-  // Excluir produto genérico
-  const handleDelete = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este produto genérico?')) {
-      await excluirProdutoGenerico(id);
-    }
-  };
-
-
-
-
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Produtos Genéricos</h1>
-              <p className="text-gray-600 mt-1">
-                Gerencie os produtos genéricos do sistema
-              </p>
-            </div>
-            
-            <div className="mt-4 sm:mt-0 flex flex-wrap gap-2">
-              {canCreate('produto_generico') && (
-                <button
-                  onClick={handleCreate}
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <FaPlus className="mr-2" />
-                  Novo Produto Genérico
-                </button>
-              )}
-              
-
-              
-
-            </div>
-          </div>
+    <div className="p-3 sm:p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Produtos Genéricos</h1>
+        <div className="flex gap-2 sm:gap-3">
+          <Button
+            onClick={handleOpenAuditModal}
+            variant="ghost"
+            size="sm"
+            className="text-xs"
+          >
+            <FaQuestionCircle className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Auditoria</span>
+          </Button>
+          {canCreate('produto_generico') && (
+            <Button onClick={handleAddProdutoGenerico} size="sm">
+              <FaPlus className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Adicionar</span>
+              <span className="sm:hidden">Adicionar</span>
+            </Button>
+          )}
         </div>
-
-        {/* Estatísticas */}
-        {statistics && (
-          <ProdutosGenericosStats estatisticas={statistics} />
-        )}
-
-        {/* Filtros */}
-        <CadastroFilterBar
-          searchTerm={filters.search}
-          onSearchChange={(value) => atualizarFiltros({ ...filters, search: value })}
-          statusFilter={filters.status}
-          onStatusFilterChange={(value) => atualizarFiltros({ ...filters, status: value })}
-          onClear={limparFiltros}
-          placeholder="Buscar por nome..."
-          additionalFilters={[
-            {
-              label: 'Grupo',
-              value: filters.grupo_id,
-              onChange: (value) => atualizarFiltros({ ...filters, grupo_id: value }),
-              options: [
-                { value: '', label: 'Todos os Grupos' },
-                ...grupos.map(grupo => ({
-                  value: grupo.id.toString(),
-                  label: grupo.nome
-                }))
-              ]
-            },
-            {
-              label: 'Subgrupo',
-              value: filters.subgrupo_id,
-              onChange: (value) => atualizarFiltros({ ...filters, subgrupo_id: value }),
-              options: [
-                { value: '', label: 'Todos os Subgrupos' },
-                ...subgrupos.map(subgrupo => ({
-                  value: subgrupo.id.toString(),
-                  label: subgrupo.nome
-                }))
-              ]
-            },
-            {
-              label: 'Classe',
-              value: filters.classe_id,
-              onChange: (value) => atualizarFiltros({ ...filters, classe_id: value }),
-              options: [
-                { value: '', label: 'Todas as Classes' },
-                ...classes.map(classe => ({
-                  value: classe.id.toString(),
-                  label: classe.nome
-                }))
-              ]
-            },
-            {
-              label: 'Produto Origem',
-              value: filters.produto_origem_id,
-              onChange: (value) => atualizarFiltros({ ...filters, produto_origem_id: value }),
-              options: [
-                { value: '', label: 'Todos os Produtos Origem' },
-                ...produtosOrigem.map(produto => ({
-                  value: produto.id.toString(),
-                  label: produto.nome
-                }))
-              ]
-            }
-          ]}
-        />
-
-        {/* Ações */}
-        <ProdutosGenericosActions
-          onExportXLSX={exportarXLSX}
-          onExportPDF={exportarPDF}
-        />
-
-        {/* Tabela */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <ProdutosGenericosTable
-            produtosGenericos={produtosGenericos}
-            canView={canView}
-            canEdit={canEdit}
-            canDelete={canDelete}
-            onView={handleView}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            getStatusLabel={(status) => status === 1 ? 'Ativo' : 'Inativo'}
-            getStatusColor={(status) => status === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
-            formatDate={(date) => new Date(date).toLocaleDateString('pt-BR')}
-          />
-        </div>
-
-        {/* Paginação */}
-        {pagination && (
-          <div className="mt-6">
-            <Pagination
-              currentPage={pagination.page}
-              totalPages={pagination.pages}
-              totalItems={pagination.total}
-              itemsPerPage={pagination.limit}
-              onPageChange={mudarPagina}
-              onItemsPerPageChange={mudarLimite}
-            />
-          </div>
-        )}
-
-        {/* Modal */}
-        {showModal && (
-          <ProdutoGenericoModal
-            isOpen={showModal}
-            onClose={handleCloseModal}
-            mode={modalMode}
-            produtoGenerico={selectedProdutoGenerico}
-            grupos={grupos}
-            subgrupos={subgrupos}
-            classes={classes}
-            produtosOrigem={produtosOrigem}
-            unidadesMedida={unidadesMedida}
-            onSubmit={handleSave}
-          />
-        )}
       </div>
+
+      {/* Estatísticas */}
+      <ProdutosGenericosStats estatisticas={estatisticas} />
+
+      {/* Filtros */}
+      <CadastroFilterBar
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        onClear={() => setSearchTerm('')}
+        placeholder="Buscar por nome..."
+        additionalFilters={[
+          {
+            label: 'Grupo',
+            value: '',
+            onChange: () => {},
+            options: grupos.map(g => ({ value: g.id, label: g.nome }))
+          },
+          {
+            label: 'Subgrupo',
+            value: '',
+            onChange: () => {},
+            options: subgrupos.map(sg => ({ value: sg.id, label: sg.nome }))
+          },
+          {
+            label: 'Classe',
+            value: '',
+            onChange: () => {},
+            options: classes.map(c => ({ value: c.id, label: c.nome }))
+          },
+          {
+            label: 'Produto Origem',
+            value: '',
+            onChange: () => {},
+            options: produtosOrigem.map(po => ({ value: po.id, label: po.nome }))
+          }
+        ]}
+      />
+
+      {/* Ações */}
+      <ProdutosGenericosActions
+        onExportXLSX={handleExportXLSX}
+        onExportPDF={handleExportPDF}
+        totalItems={totalItems}
+      />
+
+      {/* Tabela */}
+      <ProdutosGenericosTable
+        produtosGenericos={produtosGenericos}
+        onView={handleViewProdutoGenerico}
+        onEdit={handleEditProdutoGenerico}
+        onDelete={handleDeleteProdutoGenerico}
+        canView={canView('produto_generico')}
+        canEdit={canEdit('produto_generico')}
+        canDelete={canDelete('produto_generico')}
+        getStatusLabel={getStatusLabel}
+        getStatusColor={getStatusColor}
+        formatDate={formatDate}
+        getGrupoName={getGrupoName}
+        getSubgrupoName={getSubgrupoName}
+        getClasseName={getClasseName}
+        getProdutoOrigemName={getProdutoOrigemName}
+        getUnidadeMedidaName={getUnidadeMedidaName}
+      />
+
+      {/* Paginação */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        totalItems={totalItems}
+      />
+
+      {/* Modal */}
+      <ProdutoGenericoModal
+        isOpen={showModal}
+        onClose={handleCloseModal}
+        onSubmit={onSubmit}
+        produtoGenerico={editingProdutoGenerico}
+        viewMode={viewMode}
+        grupos={grupos}
+        subgrupos={subgrupos}
+        classes={classes}
+        produtosOrigem={produtosOrigem}
+        unidadesMedida={unidadesMedida}
+        loading={loading}
+      />
+
+      {/* Modal de Auditoria */}
+      <AuditModal
+        isOpen={showAuditModal}
+        onClose={handleCloseAuditModal}
+        logs={auditLogs}
+        loading={auditLoading}
+        filters={auditFilters}
+        onApplyFilters={handleApplyAuditFilters}
+        onExportXLSX={handleExportAuditXLSX}
+        onExportPDF={handleExportAuditPDF}
+        onFiltersChange={setAuditFilters}
+      />
     </div>
   );
 };

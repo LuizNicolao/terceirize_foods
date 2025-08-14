@@ -11,7 +11,6 @@ import { Button, Input, Modal } from '../ui';
 const ProdutoGenericoModal = ({
   isOpen,
   onClose,
-  mode,
   produtoGenerico,
   grupos,
   subgrupos,
@@ -19,7 +18,7 @@ const ProdutoGenericoModal = ({
   produtosOrigem,
   unidadesMedida,
   onSubmit,
-  isViewMode = false
+  viewMode = false
 }) => {
   const {
     register,
@@ -120,14 +119,14 @@ const ProdutoGenericoModal = ({
         <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-              {isViewMode ? <FaEye className="w-5 h-5 text-white" /> : produtoGenerico ? <FaEdit className="w-5 h-5 text-white" /> : <FaSave className="w-5 h-5 text-white" />}
+              {viewMode ? <FaEye className="w-5 h-5 text-white" /> : produtoGenerico ? <FaEdit className="w-5 h-5 text-white" /> : <FaSave className="w-5 h-5 text-white" />}
             </div>
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                {isViewMode ? 'Visualizar Produto Genérico' : produtoGenerico ? 'Editar Produto Genérico' : 'Novo Produto Genérico'}
+                {viewMode ? 'Visualizar Produto Genérico' : produtoGenerico ? 'Editar Produto Genérico' : 'Novo Produto Genérico'}
               </h2>
               <p className="text-sm text-gray-600">
-                {isViewMode ? 'Visualizando informações do produto genérico' : produtoGenerico ? 'Editando informações do produto genérico' : 'Preencha as informações do novo produto genérico'}
+                                  {viewMode ? 'Visualizando informações do produto genérico' : produtoGenerico ? 'Editando informações do produto genérico' : 'Preencha as informações do novo produto genérico'}
               </p>
             </div>
           </div>
@@ -156,7 +155,7 @@ const ProdutoGenericoModal = ({
                   min: { value: 1, message: 'Código deve ser maior que 0' }
                 })}
                 error={errors.codigo?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="Digite o código"
               />
             </div>
@@ -172,7 +171,7 @@ const ProdutoGenericoModal = ({
                   maxLength: { value: 200, message: 'Nome deve ter no máximo 200 caracteres' }
                 })}
                 error={errors.nome?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="Digite o nome do produto genérico"
               />
             </div>
@@ -184,7 +183,7 @@ const ProdutoGenericoModal = ({
               </label>
               <select
                 {...register('produto_origem_id')}
-                disabled={isViewMode}
+                disabled={viewMode}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
                   errors.produto_origem_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
                 }`}
@@ -212,7 +211,7 @@ const ProdutoGenericoModal = ({
                   max: { value: 999999.999, message: 'Fator deve ser menor que 999999.999' }
                 })}
                 error={errors.fator_conversao?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="1.000"
               />
             </div>
@@ -224,7 +223,7 @@ const ProdutoGenericoModal = ({
               </label>
               <select
                 {...register('status')}
-                disabled={isViewMode}
+                disabled={viewMode}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value={1}>Ativo</option>
@@ -239,7 +238,7 @@ const ProdutoGenericoModal = ({
               </label>
               <select
                 {...register('grupo_id')}
-                disabled={isViewMode}
+                disabled={viewMode}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
                   errors.grupo_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
                 }`}
@@ -263,7 +262,7 @@ const ProdutoGenericoModal = ({
               </label>
               <select
                 {...register('subgrupo_id')}
-                disabled={isViewMode}
+                disabled={viewMode}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
                   errors.subgrupo_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
                 }`}
@@ -287,7 +286,7 @@ const ProdutoGenericoModal = ({
               </label>
               <select
                 {...register('classe_id')}
-                disabled={isViewMode}
+                disabled={viewMode}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
                   errors.classe_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
                 }`}
@@ -311,7 +310,7 @@ const ProdutoGenericoModal = ({
               </label>
               <select
                 {...register('unidade_medida_id')}
-                disabled={isViewMode}
+                disabled={viewMode}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
                   errors.unidade_medida_id ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
                 }`}
@@ -335,7 +334,7 @@ const ProdutoGenericoModal = ({
               </label>
               <select
                 {...register('produto_padrao')}
-                disabled={isViewMode}
+                disabled={viewMode}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="Não">Não</option>
@@ -352,7 +351,7 @@ const ProdutoGenericoModal = ({
                   maxLength: { value: 200, message: 'Referência deve ter no máximo 200 caracteres' }
                 })}
                 error={errors.referencia_mercado?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="Digite a referência de mercado"
               />
             </div>
@@ -368,7 +367,7 @@ const ProdutoGenericoModal = ({
                   max: { value: 999999.999, message: 'Peso deve ser menor que 999999.999' }
                 })}
                 error={errors.peso_liquido?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="0.000"
               />
             </div>
@@ -384,7 +383,7 @@ const ProdutoGenericoModal = ({
                   max: { value: 999999.999, message: 'Peso deve ser menor que 999999.999' }
                 })}
                 error={errors.peso_bruto?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="0.000"
               />
             </div>
@@ -398,7 +397,7 @@ const ProdutoGenericoModal = ({
                   min: { value: 1, message: 'Regra deve ser maior que 0' }
                 })}
                 error={errors.regra_palet?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="Digite a regra palet"
               />
             </div>
@@ -412,7 +411,7 @@ const ProdutoGenericoModal = ({
                   maxLength: { value: 200, message: 'Referência deve ter no máximo 200 caracteres' }
                 })}
                 error={errors.referencia_interna?.message}
-                disabled={isViewMode}
+                disabled={viewMode}   
                 placeholder="Digite a referência interna"
               />
             </div>
@@ -426,7 +425,7 @@ const ProdutoGenericoModal = ({
                   maxLength: { value: 200, message: 'Referência deve ter no máximo 200 caracteres' }
                 })}
                 error={errors.referencia_externa?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="Digite a referência externa"
               />
             </div>
@@ -440,7 +439,7 @@ const ProdutoGenericoModal = ({
                   maxLength: { value: 200, message: 'Registro deve ter no máximo 200 caracteres' }
                 })}
                 error={errors.registro_especifico?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="Digite o registro específico"
               />
             </div>
@@ -454,7 +453,7 @@ const ProdutoGenericoModal = ({
                   maxLength: { value: 100, message: 'Tipo deve ter no máximo 100 caracteres' }
                 })}
                 error={errors.tipo_registro?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="Digite o tipo de registro"
               />
             </div>
@@ -468,7 +467,7 @@ const ProdutoGenericoModal = ({
                   min: { value: 1, message: 'Prazo deve ser maior que 0' }
                 })}
                 error={errors.prazo_validade_padrao?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="Digite o prazo de validade"
               />
             </div>
@@ -480,7 +479,7 @@ const ProdutoGenericoModal = ({
               </label>
               <select
                 {...register('unidade_validade')}
-                disabled={isViewMode}
+                disabled={viewMode}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Selecione</option>
@@ -500,7 +499,7 @@ const ProdutoGenericoModal = ({
                   maxLength: { value: 50, message: 'Integração deve ter no máximo 50 caracteres' }
                 })}
                 error={errors.integracao_senior?.message}
-                disabled={isViewMode}
+                disabled={viewMode}
                 placeholder="Digite a integração Senior"
               />
             </div>
@@ -514,7 +513,7 @@ const ProdutoGenericoModal = ({
                 {...register('informacoes_adicionais', {
                   maxLength: { value: 65535, message: 'Informações devem ter no máximo 65535 caracteres' }
                 })}
-                disabled={isViewMode}
+                disabled={viewMode}
                 rows={4}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
                   errors.informacoes_adicionais ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
@@ -528,7 +527,7 @@ const ProdutoGenericoModal = ({
           </div>
 
           {/* Footer */}
-          {!isViewMode && (
+                      {!viewMode && (
             <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
               <Button
                 type="button"

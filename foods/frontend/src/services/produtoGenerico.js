@@ -335,6 +335,82 @@ class ProdutoGenericoService {
       };
     }
   }
+
+  // Métodos auxiliares para carregar dados relacionados
+  async getGrupos() {
+    try {
+      const response = await api.get('/grupos');
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar grupos'
+      };
+    }
+  }
+
+  async getSubgrupos() {
+    try {
+      const response = await api.get('/subgrupos');
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar subgrupos'
+      };
+    }
+  }
+
+  async getClasses() {
+    try {
+      const response = await api.get('/classes');
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar classes'
+      };
+    }
+  }
+
+  async getProdutosOrigem() {
+    try {
+      const response = await api.get('/produto-origem');
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar produtos origem'
+      };
+    }
+  }
+
+  async getUnidadesMedida() {
+    try {
+      const response = await api.get('/unidades');
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar unidades de medida'
+      };
+    }
+  }
 }
 
 export default new ProdutoGenericoService();
