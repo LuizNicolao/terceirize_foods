@@ -24,7 +24,7 @@ export const useProdutoOrigem = () => {
   
   // Filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
   const [grupoFilter, setGrupoFilter] = useState('');
   const [subgrupoFilter, setSubgrupoFilter] = useState('');
   const [classeFilter, setClasseFilter] = useState('');
@@ -119,7 +119,7 @@ export const useProdutoOrigem = () => {
         page: currentPage,
         limit: itemsPerPage,
         search: searchTerm,
-        status: statusFilter,
+        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : statusFilter === 'todos' ? undefined : statusFilter,
         grupo_id: grupoFilter,
         subgrupo_id: subgrupoFilter,
         classe_id: classeFilter
@@ -274,7 +274,7 @@ export const useProdutoOrigem = () => {
 
   const handleClearFilters = () => {
     setSearchTerm('');
-    setStatusFilter('');
+    setStatusFilter('todos');
     setGrupoFilter('');
     setSubgrupoFilter('');
     setClasseFilter('');

@@ -119,8 +119,8 @@ const ProdutoOrigem = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        onClearFilters={handleClearFilters}
+        onStatusFilterChange={setStatusFilter}
+        onClear={handleClearFilters}
         additionalFilters={[
           {
             label: 'Grupo',
