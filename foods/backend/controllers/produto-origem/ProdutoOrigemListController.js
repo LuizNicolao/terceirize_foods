@@ -303,7 +303,7 @@ class ProdutoOrigemListController {
    */
   static listarSubgrupos = asyncHandler(async (req, res) => {
     const subgrupos = await executeQuery(
-      'SELECT id, nome FROM subgrupos WHERE status = 1 ORDER BY nome ASC'
+      'SELECT id, nome, grupo_id FROM subgrupos WHERE status = "ativo" ORDER BY nome ASC'
     );
 
     successResponse(res, subgrupos, 'Subgrupos encontrados');
@@ -314,7 +314,7 @@ class ProdutoOrigemListController {
    */
   static listarClasses = asyncHandler(async (req, res) => {
     const classes = await executeQuery(
-      'SELECT id, nome FROM classes WHERE status = 1 ORDER BY nome ASC'
+      'SELECT id, nome, subgrupo_id FROM classes WHERE status = "ativo" ORDER BY nome ASC'
     );
 
     successResponse(res, classes, 'Classes encontradas');
