@@ -57,30 +57,16 @@ router.delete('/:id',
   ProdutosController.excluirProduto
 );
 
-
-
 // GET /api/produtos/grupo/:grupo_id - Buscar produtos por grupo
 router.get('/grupo/:grupo_id',
   checkPermission('visualizar'),
   ProdutosController.buscarProdutosPorGrupo
 );
 
-// GET /api/produtos/fornecedor/:fornecedor_id - Buscar produtos por fornecedor
-router.get('/fornecedor/:fornecedor_id',
-  checkPermission('visualizar'),
-  ProdutosController.buscarProdutosPorFornecedor
-);
-
 // GET /api/produtos/ativos - Buscar produtos ativos
 router.get('/ativos',
   checkPermission('visualizar'),
   ProdutosController.buscarProdutosAtivos
-);
-
-// GET /api/produtos/estoque-baixo - Buscar produtos com estoque baixo
-router.get('/estoque-baixo',
-  checkPermission('visualizar'),
-  ProdutosController.buscarProdutosEstoqueBaixo
 );
 
 // GET /api/produtos/codigo/:codigo_barras - Buscar produto por código de barras

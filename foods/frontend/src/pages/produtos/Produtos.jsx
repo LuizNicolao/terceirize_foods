@@ -29,7 +29,7 @@ const Produtos = () => {
     classes,
     unidades,
     marcas,
-    fornecedores,
+    produtoGenerico,
     searchTerm,
     statusFilter,
     currentPage,
@@ -112,42 +112,39 @@ const Produtos = () => {
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}
-        placeholder="Buscar por nome, código ou grupo..."
+        placeholder="Buscar por nome ou código..."
       />
 
       {/* Ações */}
       <ProdutosActions 
         onExportXLSX={handleExportXLSX}
         onExportPDF={handleExportPDF}
+        onPrintPDF={handlePrintPDF}
+        totalItems={totalItems}
+        selectedItems={[]}
       />
 
       {/* Tabela */}
       <ProdutosTable
         produtos={produtos}
-        canView={canView}
-        canEdit={canEdit}
-        canDelete={canDelete}
-        onView={handleViewProduto}
-        onEdit={handleEditProduto}
-        onDelete={handleDeleteProduto}
+        onView={canView('produtos') ? handleViewProduto : null}
+        onEdit={canEdit('produtos') ? handleEditProduto : null}
+        onDelete={canDelete('produtos') ? handleDeleteProduto : null}
         getGrupoName={getGrupoName}
+        getUnidadeName={getUnidadeName}
       />
 
       {/* Paginação */}
-      {totalItems > 0 && (
-        <div className="mt-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={setItemsPerPage}
-          />
-          </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={handlePageChange}
+        onItemsPerPageChange={setItemsPerPage}
+      />
 
-      {/* Modal de Produto */}
+      {/* Modal */}
       <ProdutoModal
         isOpen={showModal}
         onClose={handleCloseModal}
@@ -159,22 +156,21 @@ const Produtos = () => {
         classes={classes}
         unidades={unidades}
         marcas={marcas}
-        fornecedores={fornecedores}
-        onPrint={() => editingProduto && handlePrintPDF(editingProduto.id, editingProduto.nome)}
+        produtoGenerico={produtoGenerico}
+        onPrint={() => handlePrintPDF(editingProduto)}
       />
 
       {/* Modal de Auditoria */}
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
-        title="Relatório de Auditoria - Produtos"
-        auditLogs={auditLogs}
-        auditLoading={auditLoading}
-        auditFilters={auditFilters}
+        logs={auditLogs}
+        loading={auditLoading}
+        filters={auditFilters}
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
-        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+        onSetFilters={setAuditFilters}
       />
     </div>
   );

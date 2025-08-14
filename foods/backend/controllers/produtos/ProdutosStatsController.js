@@ -29,11 +29,6 @@ class ProdutosStatsController {
       'SELECT COUNT(*) as total FROM produtos WHERE status = 0'
     );
 
-    // Estatísticas de estoque removidas pois a tabela não possui colunas de estoque
-    const produtosEstoqueBaixo = [{ total: 0 }];
-    const produtosSemEstoque = [{ total: 0 }];
-    const valorEstoque = [{ valor_total: 0 }];
-
     // Produtos por grupo
     const produtosPorGrupo = await executeQuery(`
       SELECT 
@@ -46,28 +41,64 @@ class ProdutosStatsController {
       ORDER BY quantidade DESC
     `);
 
-    // Produtos por fornecedor - Removido pois a tabela não possui fornecedor_id
-    const produtosPorFornecedor = [];
+    // Produtos por subgrupo
+    const produtosPorSubgrupo = await executeQuery(`
+      SELECT 
+        sg.nome as subgrupo,
+        COUNT(p.id) as quantidade
+      FROM subgrupos sg
+      LEFT JOIN produtos p ON sg.id = p.subgrupo_id AND p.status = 1
+      WHERE sg.status = 1
+      GROUP BY sg.id, sg.nome
+      ORDER BY quantidade DESC
+    `);
 
-    // Top produtos com maior estoque - Removido pois a tabela não possui colunas de estoque
-    const topEstoque = [];
+    // Produtos por classe
+    const produtosPorClasse = await executeQuery(`
+      SELECT 
+        c.nome as classe,
+        COUNT(p.id) as quantidade
+      FROM classes c
+      LEFT JOIN produtos p ON c.id = p.classe_id AND p.status = 1
+      WHERE c.status = 1
+      GROUP BY c.id, c.nome
+      ORDER BY quantidade DESC
+    `);
 
-    // Produtos mais caros - Removido pois a tabela não possui colunas de preço
-    const produtosMaisCaros = [];
+    // Produtos por marca
+    const produtosPorMarca = await executeQuery(`
+      SELECT 
+        m.marca as marca,
+        COUNT(p.id) as quantidade
+      FROM marcas m
+      LEFT JOIN produtos p ON m.id = p.marca_id AND p.status = 1
+      WHERE m.status = 1
+      GROUP BY m.id, m.marca
+      ORDER BY quantidade DESC
+    `);
+
+    // Produtos por tipo de registro
+    const produtosPorTipoRegistro = await executeQuery(`
+      SELECT 
+        tipo_registro,
+        COUNT(*) as quantidade
+      FROM produtos
+      WHERE status = 1 AND tipo_registro IS NOT NULL
+      GROUP BY tipo_registro
+      ORDER BY quantidade DESC
+    `);
 
     const estatisticas = {
       geral: {
         total: totalProdutos[0].total,
         ativos: produtosAtivos[0].total,
-        inativos: produtosInativos[0].total,
-        estoque_baixo: produtosEstoqueBaixo[0].total,
-        sem_estoque: produtosSemEstoque[0].total,
-        valor_total_estoque: valorEstoque[0].valor_total || 0
+        inativos: produtosInativos[0].total
       },
       por_grupo: produtosPorGrupo,
-      por_fornecedor: produtosPorFornecedor,
-      top_estoque: topEstoque,
-      produtos_mais_caros: produtosMaisCaros
+      por_subgrupo: produtosPorSubgrupo,
+      por_classe: produtosPorClasse,
+      por_marca: produtosPorMarca,
+      por_tipo_registro: produtosPorTipoRegistro
     };
 
     return successResponse(res, estatisticas, 'Estatísticas de produtos obtidas com sucesso', STATUS_CODES.OK);

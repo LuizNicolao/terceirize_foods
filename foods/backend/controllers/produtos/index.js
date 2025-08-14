@@ -21,9 +21,7 @@ module.exports = {
   // Métodos de Busca
   buscarProdutosAtivos: ProdutosSearchController.buscarProdutosAtivos,
   buscarProdutosPorGrupo: ProdutosSearchController.buscarProdutosPorGrupo,
-  buscarProdutosPorFornecedor: ProdutosSearchController.buscarProdutosPorFornecedor,
   buscarProdutosPorCodigoBarras: ProdutosSearchController.buscarProdutosPorCodigoBarras,
-  buscarProdutosEstoqueBaixo: ProdutosSearchController.buscarProdutosEstoqueBaixo,
   listarGrupos: ProdutosSearchController.listarGrupos,
   listarSubgrupos: ProdutosSearchController.listarSubgrupos,
   listarClasses: ProdutosSearchController.listarClasses,

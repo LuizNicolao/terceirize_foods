@@ -4,13 +4,11 @@ import { Button } from '../ui';
 
 const ProdutosTable = ({ 
   produtos, 
-  canView, 
-  canEdit, 
-  canDelete, 
   onView, 
   onEdit, 
   onDelete, 
-  getGrupoName 
+  getGrupoName,
+  getUnidadeName
 }) => {
   if (produtos.length === 0) {
     return (
@@ -32,13 +30,16 @@ const ProdutosTable = ({
                   ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nome
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Código
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nome
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Grupo
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Unidade
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
@@ -54,16 +55,24 @@ const ProdutosTable = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {produto.id}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {produto.codigo_produto || '-'}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {produto.nome}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {produto.codigo_barras}
+                    {produto.codigo_barras && (
+                      <div className="text-xs text-gray-500">
+                        Cód. Barras: {produto.codigo_barras}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {getGrupoName(produto.grupo_id)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {getUnidadeName(produto.unidade_id)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
@@ -76,7 +85,7 @@ const ProdutosTable = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex gap-2">
-                      {canView('produtos') && (
+                      {onView && (
                         <Button
                           variant="ghost"
                           size="xs"
@@ -86,7 +95,7 @@ const ProdutosTable = ({
                           <FaEye className="text-green-600 text-sm" />
                         </Button>
                       )}
-                      {canEdit('produtos') && (
+                      {onEdit && (
                         <Button
                           variant="ghost"
                           size="xs"
@@ -96,7 +105,7 @@ const ProdutosTable = ({
                           <FaEdit className="text-blue-600 text-sm" />
                         </Button>
                       )}
-                      {canDelete('produtos') && (
+                      {onDelete && (
                         <Button
                           variant="ghost"
                           size="xs"
@@ -122,10 +131,15 @@ const ProdutosTable = ({
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">{produto.nome}</h3>
-                <p className="text-gray-600 text-xs">ID: {produto.id} | Código: {produto.codigo_barras}</p>
+                <p className="text-gray-600 text-xs">
+                  ID: {produto.id} | Código: {produto.codigo_produto || '-'}
+                </p>
+                {produto.codigo_barras && (
+                  <p className="text-gray-500 text-xs">Cód. Barras: {produto.codigo_barras}</p>
+                )}
               </div>
               <div className="flex gap-2">
-                {canView('produtos') && (
+                {onView && (
                   <Button
                     variant="ghost"
                     size="xs"
@@ -136,7 +150,7 @@ const ProdutosTable = ({
                     <FaEye className="text-green-600 text-sm" />
                   </Button>
                 )}
-                {canEdit('produtos') && (
+                {onEdit && (
                   <Button
                     variant="ghost"
                     size="xs"
@@ -147,7 +161,7 @@ const ProdutosTable = ({
                     <FaEdit className="text-blue-600 text-sm" />
                   </Button>
                 )}
-                {canDelete('produtos') && (
+                {onDelete && (
                   <Button
                     variant="ghost"
                     size="xs"
@@ -165,6 +179,10 @@ const ProdutosTable = ({
               <div>
                 <span className="text-gray-500">Grupo:</span>
                 <p className="font-medium">{getGrupoName(produto.grupo_id)}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">Unidade:</span>
+                <p className="font-medium">{getUnidadeName(produto.unidade_id)}</p>
               </div>
               <div className="col-span-2">
                 <span className="text-gray-500">Status:</span>

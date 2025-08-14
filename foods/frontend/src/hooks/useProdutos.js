@@ -17,7 +17,7 @@ export const useProdutos = () => {
   const [classes, setClasses] = useState([]);
   const [unidades, setUnidades] = useState([]);
   const [marcas, setMarcas] = useState([]);
-  const [fornecedores, setFornecedores] = useState([]);
+  const [produtoGenerico, setProdutoGenerico] = useState([]);
 
   // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,14 +52,14 @@ export const useProdutos = () => {
         status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
       };
 
-      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes, fornecedoresRes] = await Promise.all([
+      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes, produtoGenericoRes] = await Promise.all([
         ProdutosService.listar(paginationParams),
         api.get('/grupos?limit=1000'),
         api.get('/subgrupos?limit=1000'),
         api.get('/classes?limit=1000'),
         api.get('/unidades?limit=1000'),
         api.get('/marcas?limit=1000'),
-        api.get('/fornecedores?limit=1000')
+        api.get('/produto-generico?limit=1000')
       ]);
 
       if (produtosRes.success) {
@@ -116,8 +116,9 @@ export const useProdutos = () => {
         setClasses(classesRes.data || []);
       }
 
-
-      if (unidadesRes.data?.data) {
+      if (unidadesRes.data?.data?.items) {
+        setUnidades(unidadesRes.data.data.items);
+      } else if (unidadesRes.data?.data) {
         setUnidades(unidadesRes.data.data);
       } else {
         setUnidades(unidadesRes.data || []);
@@ -131,13 +132,14 @@ export const useProdutos = () => {
         setMarcas(marcasRes.data || []);
       }
 
-      if (fornecedoresRes.data?.data?.items) {
-        setFornecedores(fornecedoresRes.data.data.items);
-      } else if (fornecedoresRes.data?.data) {
-        setFornecedores(fornecedoresRes.data.data);
+      if (produtoGenericoRes.data?.data?.items) {
+        setProdutoGenerico(produtoGenericoRes.data.data.items);
+      } else if (produtoGenericoRes.data?.data) {
+        setProdutoGenerico(produtoGenericoRes.data.data);
       } else {
-        setFornecedores(fornecedoresRes.data || []);
+        setProdutoGenerico(produtoGenericoRes.data || []);
       }
+
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar dados');
@@ -146,108 +148,60 @@ export const useProdutos = () => {
     }
   };
 
-  // Carregar dados quando dependências mudarem
+  // Carregar dados quando componentes montar ou filtros mudarem
   useEffect(() => {
     loadData();
   }, [currentPage, itemsPerPage, searchTerm, statusFilter]);
 
-  // Funções de CRUD
+  // Funções de manipulação de produtos
   const handleSubmitProduto = async (data) => {
     try {
+      let response;
       if (editingProduto) {
-        // Para edição, enviar apenas os campos que foram alterados
-        const updateData = {};
-        
-        if (data.nome !== editingProduto.nome) {
-          updateData.nome = data.nome;
-        }
-        
-        if (data.codigo_barras !== editingProduto.codigo_barras) {
-          updateData.codigo_barras = data.codigo_barras;
-        }
-        
-        if (data.fator_conversao !== editingProduto.fator_conversao) {
-          updateData.fator_conversao = data.fator_conversao;
-        }
-        
-        if (data.descricao !== editingProduto.descricao) {
-          updateData.descricao = data.descricao;
-        }
-        
-        if (data.grupo_id !== editingProduto.grupo_id) {
-          updateData.grupo_id = data.grupo_id;
-        }
-        
-        if (data.subgrupo_id !== editingProduto.subgrupo_id) {
-          updateData.subgrupo_id = data.subgrupo_id;
-        }
-        
-        if (data.classe_id !== editingProduto.classe_id) {
-          updateData.classe_id = data.classe_id;
-        }
-        
-        if (data.unidade_id !== editingProduto.unidade_id) {
-          updateData.unidade_id = data.unidade_id;
-        }
-        
-        if (data.status !== editingProduto.status) {
-          updateData.status = parseInt(data.status);
-        }
-        
-        // Se não há campos para atualizar, mostrar erro
-        if (Object.keys(updateData).length === 0) {
-          toast.error('Nenhum campo foi alterado');
+        response = await ProdutosService.atualizar(editingProduto.id, data);
+        if (response.success) {
+          toast.success('Produto atualizado com sucesso');
+        } else {
+          toast.error(response.error);
           return;
         }
-        
-        const result = await ProdutosService.atualizar(editingProduto.id, updateData);
-        if (result.success) {
-          toast.success(result.message);
-          handleCloseModal();
-          loadData();
-        } else {
-          toast.error(result.error);
-        }
       } else {
-        // Para criação, enviar todos os campos
-        const createData = { ...data };
-        if (createData.status) {
-          createData.status = parseInt(createData.status);
-        }
-        
-        const result = await ProdutosService.criar(createData);
-        if (result.success) {
-          toast.success(result.message);
-          handleCloseModal();
-          loadData();
+        response = await ProdutosService.criar(data);
+        if (response.success) {
+          toast.success('Produto criado com sucesso');
         } else {
-          toast.error(result.error);
+          toast.error(response.error);
+          return;
         }
       }
+      
+      handleCloseModal();
+      loadData();
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
       toast.error('Erro ao salvar produto');
     }
   };
 
-  const handleDeleteProduto = async (produtoId) => {
-    if (window.confirm('Tem certeza que deseja excluir este produto?')) {
-      try {
-        const result = await ProdutosService.excluir(produtoId);
-        if (result.success) {
-          toast.success(result.message);
-          loadData();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        console.error('Erro ao excluir produto:', error);
-        toast.error('Erro ao excluir produto');
+  const handleDeleteProduto = async (id) => {
+    if (!window.confirm('Tem certeza que deseja excluir este produto?')) {
+      return;
+    }
+
+    try {
+      const response = await ProdutosService.excluir(id);
+      if (response.success) {
+        toast.success('Produto excluído com sucesso');
+        loadData();
+      } else {
+        toast.error(response.error);
       }
+    } catch (error) {
+      console.error('Erro ao excluir produto:', error);
+      toast.error('Erro ao excluir produto');
     }
   };
 
-  // Funções de modal
   const handleAddProduto = () => {
     setEditingProduto(null);
     setViewMode(false);
@@ -268,46 +222,44 @@ export const useProdutos = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingProduto(null);
     setViewMode(false);
+    setEditingProduto(null);
   };
 
-  // Funções de paginação
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  // Funções de filtros
   const handleClearFilters = () => {
     setSearchTerm('');
     setStatusFilter('todos');
     setCurrentPage(1);
   };
 
-  // Funções utilitárias
+  // Funções auxiliares
   const getGrupoName = (grupoId) => {
     const grupo = grupos.find(g => g.id === grupoId);
-    return grupo ? grupo.nome : 'N/A';
+    return grupo ? grupo.nome : '-';
   };
 
   const getUnidadeName = (unidadeId) => {
     const unidade = unidades.find(u => u.id === unidadeId);
-    return unidade ? unidade.nome : 'N/A';
+    return unidade ? unidade.nome : '-';
   };
 
   return {
     // Estados
-    produtos: Array.isArray(produtos) ? produtos : [],
+    produtos,
     loading,
     showModal,
     viewMode,
     editingProduto,
-    grupos: Array.isArray(grupos) ? grupos : [],
-    subgrupos: Array.isArray(subgrupos) ? subgrupos : [],
-    classes: Array.isArray(classes) ? classes : [],
-    unidades: Array.isArray(unidades) ? unidades : [],
-    marcas: Array.isArray(marcas) ? marcas : [],
-    fornecedores: Array.isArray(fornecedores) ? fornecedores : [],
+    grupos,
+    subgrupos,
+    classes,
+    unidades,
+    marcas,
+    produtoGenerico,
     searchTerm,
     statusFilter,
     currentPage,
@@ -317,7 +269,6 @@ export const useProdutos = () => {
     estatisticas,
 
     // Funções
-    loadData,
     handleSubmitProduto,
     handleDeleteProduto,
     handleAddProduto,

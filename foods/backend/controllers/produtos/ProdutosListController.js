@@ -17,7 +17,7 @@ class ProdutosListController {
    * Listar produtos com paginação, busca e HATEOAS
    */
   static listarProdutos = asyncHandler(async (req, res) => {
-    const { search = '', grupo_id, fornecedor_id, status } = req.query;
+    const { search = '', grupo_id, status } = req.query;
     const pagination = req.pagination;
 
     // Query base com joins
@@ -26,22 +26,19 @@ class ProdutosListController {
         p.id,
         p.codigo_produto,
         p.nome,
-        p.descricao,
         p.codigo_barras,
-        p.referencia,
+        p.fator_conversao,
+        p.referencia_interna,
         p.referencia_externa,
         p.referencia_mercado,
         p.unidade_id,
-        p.quantidade,
         p.grupo_id,
         p.subgrupo_id,
         p.classe_id,
+        p.nome_generico_id,
         p.marca_id,
-        p.agrupamento_n3,
-        p.agrupamento_n4,
         p.peso_liquido,
         p.peso_bruto,
-        p.marca,
         p.fabricante,
         p.informacoes_adicionais,
         p.foto_produto,
@@ -70,12 +67,16 @@ class ProdutosListController {
         p.atualizado_em,
         p.usuario_criador_id,
         p.usuario_atualizador_id,
-        p.fator_conversao,
+        p.tipo_registro,
+        p.embalagem_secundaria_id,
+        p.fator_conversao_embalagem,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.marca as marca_nome
+        m.marca as marca_nome,
+        ng.nome as nome_generico_nome,
+        ue.nome as embalagem_secundaria_nome
       FROM produtos p
 
       LEFT JOIN grupos g ON p.grupo_id = g.id
@@ -83,6 +84,8 @@ class ProdutosListController {
       LEFT JOIN classes c ON p.classe_id = c.id
       LEFT JOIN unidades_medida u ON p.unidade_id = u.id
       LEFT JOIN marcas m ON p.marca_id = m.id
+      LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
+      LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
       WHERE 1=1
     `;
     
@@ -90,16 +93,14 @@ class ProdutosListController {
 
     // Aplicar filtros
     if (search) {
-      baseQuery += ' AND (p.nome LIKE ? OR p.descricao LIKE ? OR p.codigo_barras LIKE ?)';
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+      baseQuery += ' AND (p.nome LIKE ? OR p.codigo_produto LIKE ?)';
+      params.push(`%${search}%`, `%${search}%`);
     }
 
     if (grupo_id) {
       baseQuery += ' AND p.grupo_id = ?';
       params.push(grupo_id);
     }
-
-    // Filtro por fornecedor removido pois a tabela não possui fornecedor_id
 
     if (status !== undefined) {
       baseQuery += ' AND p.status = ?';
@@ -117,7 +118,7 @@ class ProdutosListController {
     const produtos = await executeQuery(query, params);
 
     // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM produtos p WHERE 1=1${search ? ' AND (p.nome LIKE ? OR p.descricao LIKE ? OR p.codigo_barras LIKE ?)' : ''}${grupo_id ? ' AND p.grupo_id = ?' : ''}${status ? ' AND p.status = ?' : ''}`;
+    const countQuery = `SELECT COUNT(*) as total FROM produtos p WHERE 1=1${search ? ' AND (p.nome LIKE ? OR p.codigo_produto LIKE ?)' : ''}${grupo_id ? ' AND p.grupo_id = ?' : ''}${status !== undefined ? ' AND p.status = ?' : ''}`;
     const countParams = [...params];
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
@@ -152,22 +153,19 @@ class ProdutosListController {
         p.id,
         p.codigo_produto,
         p.nome,
-        p.descricao,
         p.codigo_barras,
-        p.referencia,
+        p.fator_conversao,
+        p.referencia_interna,
         p.referencia_externa,
         p.referencia_mercado,
         p.unidade_id,
-        p.quantidade,
         p.grupo_id,
         p.subgrupo_id,
         p.classe_id,
+        p.nome_generico_id,
         p.marca_id,
-        p.agrupamento_n3,
-        p.agrupamento_n4,
         p.peso_liquido,
         p.peso_bruto,
-        p.marca,
         p.fabricante,
         p.informacoes_adicionais,
         p.foto_produto,
@@ -196,12 +194,16 @@ class ProdutosListController {
         p.atualizado_em,
         p.usuario_criador_id,
         p.usuario_atualizador_id,
-        p.fator_conversao,
+        p.tipo_registro,
+        p.embalagem_secundaria_id,
+        p.fator_conversao_embalagem,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         u.nome as unidade_nome,
-        m.nome as marca_nome
+        m.marca as marca_nome,
+        ng.nome as nome_generico_nome,
+        ue.nome as embalagem_secundaria_nome
        FROM produtos p
 
        LEFT JOIN grupos g ON p.grupo_id = g.id
@@ -209,6 +211,8 @@ class ProdutosListController {
        LEFT JOIN classes c ON p.classe_id = c.id
        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
        LEFT JOIN marcas m ON p.marca_id = m.id
+       LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
+       LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
        WHERE p.id = ?`,
       [id]
     );

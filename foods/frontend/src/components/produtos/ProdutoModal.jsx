@@ -14,7 +14,7 @@ const ProdutoModal = ({
   classes = [],
   unidades = [],
   marcas = [],
-  fornecedores = [],
+  produtoGenerico = [],
   onPrint
 }) => {
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
@@ -46,11 +46,9 @@ const ProdutoModal = ({
       reset();
       setValue('status', 1);
       setValue('fator_conversao', 1.000);
-      setValue('quantidade', 1.000);
+      setValue('fator_conversao_embalagem', 1);
     }
   }, [produto, isOpen, setValue, reset]);
-
-
 
   const handleFormSubmit = (data) => {
     onSubmit(data);
@@ -128,15 +126,6 @@ const ProdutoModal = ({
                 />
 
                 <Input
-                  label="Descrição"
-                  type="textarea"
-                  placeholder="Descrição detalhada do produto"
-                  disabled={isViewMode}
-                  error={errors.descricao?.message}
-                  {...register('descricao')}
-                />
-
-                <Input
                   label="Status"
                   type="select"
                   disabled={isViewMode}
@@ -163,6 +152,16 @@ const ProdutoModal = ({
                   disabled={isViewMode}
                   error={errors.ean?.message}
                   {...register('ean')}
+                />
+
+                <Input
+                  label="Fator de Conversão"
+                  type="number"
+                  step="0.001"
+                  placeholder="Ex: 1.000"
+                  disabled={isViewMode}
+                  error={errors.fator_conversao?.message}
+                  {...register('fator_conversao')}
                 />
               </div>
             </div>
@@ -219,6 +218,21 @@ const ProdutoModal = ({
                 </Input>
 
                 <Input
+                  label="Nome Genérico"
+                  type="select"
+                  disabled={isViewMode}
+                  error={errors.nome_generico_id?.message}
+                  {...register('nome_generico_id')}
+                >
+                  <option value="">Selecione um nome genérico...</option>
+                  {produtoGenerico.map(generico => (
+                    <option key={generico.id} value={generico.id}>
+                      {generico.nome}
+                    </option>
+                  ))}
+                </Input>
+
+                <Input
                   label="Marca"
                   type="select"
                   disabled={isViewMode}
@@ -234,21 +248,12 @@ const ProdutoModal = ({
                 </Input>
 
                 <Input
-                  label="Agrupamento N3"
+                  label="Fabricante"
                   type="text"
-                  placeholder="Ex: BOVINO"
+                  placeholder="Ex: KING"
                   disabled={isViewMode}
-                  error={errors.agrupamento_n3?.message}
-                  {...register('agrupamento_n3')}
-                />
-
-                <Input
-                  label="Agrupamento N4"
-                  type="text"
-                  placeholder="Ex: PATINHO BOVINO EM CUBOS 1KG"
-                  disabled={isViewMode}
-                  error={errors.agrupamento_n4?.message}
-                  {...register('agrupamento_n4')}
+                  error={errors.fabricante?.message}
+                  {...register('fabricante')}
                 />
               </div>
             </div>
@@ -274,27 +279,30 @@ const ProdutoModal = ({
                   ))}
                 </Input>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Quantidade"
-                    type="number"
-                    step="0.001"
-                    placeholder="Ex: 1.000"
-                    disabled={isViewMode}
-                    error={errors.quantidade?.message}
-                    {...register('quantidade')}
-                  />
+                <Input
+                  label="Embalagem Secundária"
+                  type="select"
+                  disabled={isViewMode}
+                  error={errors.embalagem_secundaria_id?.message}
+                  {...register('embalagem_secundaria_id')}
+                >
+                  <option value="">Selecione uma embalagem...</option>
+                  {unidades.map(unidade => (
+                    <option key={unidade.id} value={unidade.id}>
+                      {unidade.nome} ({unidade.sigla})
+                    </option>
+                  ))}
+                </Input>
 
-                  <Input
-                    label="Fator de Conversão"
-                    type="number"
-                    step="0.001"
-                    placeholder="Ex: 1.000"
-                    disabled={isViewMode}
-                    error={errors.fator_conversao?.message}
-                    {...register('fator_conversao')}
-                  />
-                </div>
+                <Input
+                  label="Fator Conversão Embalagem"
+                  type="number"
+                  step="1"
+                  placeholder="Ex: 12"
+                  disabled={isViewMode}
+                  error={errors.fator_conversao_embalagem?.message}
+                  {...register('fator_conversao_embalagem')}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
                   <Input
@@ -468,69 +476,12 @@ const ProdutoModal = ({
               </div>
             </div>
 
-            {/* Card 5: Comercial e Documentos */}
+            {/* Card 5: Validade e Documentos */}
             <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b-2 border-green-600">
-                Comercial e Documentos
+                Validade e Documentos
               </h3>
               <div className="space-y-4">
-                <Input
-                  label="Fornecedor"
-                  type="select"
-                  disabled={isViewMode}
-                  error={errors.fornecedor_id?.message}
-                  {...register('fornecedor_id')}
-                >
-                  <option value="">Selecione um fornecedor...</option>
-                  {fornecedores.map(fornecedor => (
-                    <option key={fornecedor.id} value={fornecedor.id}>
-                      {fornecedor.razao_social}
-                    </option>
-                  ))}
-                </Input>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Preço de Custo"
-                    type="number"
-                    step="0.01"
-                    placeholder="Ex: 15.50"
-                    disabled={isViewMode}
-                    error={errors.preco_custo?.message}
-                    {...register('preco_custo')}
-                  />
-
-                  <Input
-                    label="Preço de Venda"
-                    type="number"
-                    step="0.01"
-                    placeholder="Ex: 25.00"
-                    disabled={isViewMode}
-                    error={errors.preco_venda?.message}
-                    {...register('preco_venda')}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Estoque Atual"
-                    type="number"
-                    placeholder="Ex: 100"
-                    disabled={isViewMode}
-                    error={errors.estoque_atual?.message}
-                    {...register('estoque_atual')}
-                  />
-
-                  <Input
-                    label="Estoque Mínimo"
-                    type="number"
-                    placeholder="Ex: 10"
-                    disabled={isViewMode}
-                    error={errors.estoque_minimo?.message}
-                    {...register('estoque_minimo')}
-                  />
-                </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <Input
                     label="Prazo de Validade"
@@ -564,6 +515,46 @@ const ProdutoModal = ({
                   error={errors.regra_palet_un?.message}
                   {...register('regra_palet_un')}
                 />
+
+                <Input
+                  label="Ficha de Homologação"
+                  type="text"
+                  placeholder="Ex: 123456"
+                  disabled={isViewMode}
+                  error={errors.ficha_homologacao?.message}
+                  {...register('ficha_homologacao')}
+                />
+
+                <Input
+                  label="Registro Específico"
+                  type="text"
+                  placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
+                  disabled={isViewMode}
+                  error={errors.registro_especifico?.message}
+                  {...register('registro_especifico')}
+                />
+
+                <Input
+                  label="Tipo de Registro"
+                  type="select"
+                  disabled={isViewMode}
+                  error={errors.tipo_registro?.message}
+                  {...register('tipo_registro')}
+                >
+                  <option value="">Selecione...</option>
+                  <option value="ANVISA">ANVISA</option>
+                  <option value="MAPA">MAPA</option>
+                  <option value="OUTROS">OUTROS</option>
+                </Input>
+
+                <Input
+                  label="Foto do Produto"
+                  type="text"
+                  placeholder="Caminho da foto"
+                  disabled={isViewMode}
+                  error={errors.foto_produto?.message}
+                  {...register('foto_produto')}
+                />
               </div>
             </div>
           </div>
@@ -582,8 +573,8 @@ const ProdutoModal = ({
                     type="text"
                     placeholder="Referência interna"
                     disabled={isViewMode}
-                    error={errors.referencia?.message}
-                    {...register('referencia')}
+                    error={errors.referencia_interna?.message}
+                    {...register('referencia_interna')}
                   />
 
                   <Input
@@ -605,34 +596,14 @@ const ProdutoModal = ({
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Input
-                    label="Integração Senior"
-                    type="text"
-                    placeholder="Ex: 123654"
-                    disabled={isViewMode}
-                    error={errors.integracao_senior?.message}
-                    {...register('integracao_senior')}
-                  />
-
-                  <Input
-                    label="Ficha de Homologação"
-                    type="text"
-                    placeholder="Ex: 123456"
-                    disabled={isViewMode}
-                    error={errors.ficha_homologacao?.message}
-                    {...register('ficha_homologacao')}
-                  />
-
-                  <Input
-                    label="Registro Específico"
-                    type="text"
-                    placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
-                    disabled={isViewMode}
-                    error={errors.registro_especifico?.message}
-                    {...register('registro_especifico')}
-                  />
-                </div>
+                <Input
+                  label="Integração Senior"
+                  type="text"
+                  placeholder="Ex: 123654"
+                  disabled={isViewMode}
+                  error={errors.integracao_senior?.message}
+                  {...register('integracao_senior')}
+                />
 
                 <Input
                   label="Informações Adicionais"
