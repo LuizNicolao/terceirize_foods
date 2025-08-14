@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 import produtoGenericoService from '../services/produtoGenerico';
 import api from '../services/api';
 
