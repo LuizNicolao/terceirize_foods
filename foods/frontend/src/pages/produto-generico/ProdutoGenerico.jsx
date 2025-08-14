@@ -9,9 +9,9 @@ import ProdutoGenericoModal from '../../components/produto-generico/ProdutoGener
 import ProdutosGenericosTable from '../../components/produto-generico/ProdutosGenericosTable';
 import ProdutosGenericosStats from '../../components/produto-generico/ProdutosGenericosStats';
 import ProdutosGenericosActions from '../../components/produto-generico/ProdutosGenericosActions';
-import ProdutosGenericosFilters from '../../components/produto-generico/ProdutosGenericosFilters';
+import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
-import { FaPlus, FaSearch, FaFilter, FaDownload, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
 
 const ProdutoGenerico = () => {
   const {
@@ -42,7 +42,6 @@ const ProdutoGenerico = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('create'); // 'create' ou 'edit'
   const [selectedProdutoGenerico, setSelectedProdutoGenerico] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
 
   // Abrir modal de criação
   const handleCreate = () => {
@@ -54,7 +53,6 @@ const ProdutoGenerico = () => {
   // Abrir modal de edição
   const handleEdit = async (id) => {
     setModalMode('edit');
-    setLoading(true);
     
     try {
       const produtoGenerico = await buscarProdutoGenericoPorId(id);
@@ -64,8 +62,6 @@ const ProdutoGenerico = () => {
       }
     } catch (error) {
       console.error('Erro ao buscar produto genérico:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -96,26 +92,9 @@ const ProdutoGenerico = () => {
     }
   };
 
-  // Aplicar filtros
-  const handleApplyFilters = (newFilters) => {
-    atualizarFiltros(newFilters);
-    setShowFilters(false);
-  };
 
-  // Limpar filtros
-  const handleClearFilters = () => {
-    limparFiltros();
-    setShowFilters(false);
-  };
 
-  // Exportar dados
-  const handleExportXLSX = () => {
-    exportarXLSX();
-  };
 
-  const handleExportPDF = () => {
-    exportarPDF();
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -139,62 +118,88 @@ const ProdutoGenerico = () => {
                 Novo Produto Genérico
               </button>
               
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-              >
-                <FaFilter className="mr-2" />
-                Filtros
-              </button>
+
               
-              <div className="relative">
-                <button
-                  onClick={handleExportXLSX}
-                  className="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                >
-                  <FaFileExcel className="mr-2" />
-                  Exportar XLSX
-                </button>
-              </div>
-              
-              <div className="relative">
-                <button
-                  onClick={handleExportPDF}
-                  className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                >
-                  <FaFilePdf className="mr-2" />
-                  Exportar PDF
-                </button>
-              </div>
+
             </div>
           </div>
         </div>
 
         {/* Estatísticas */}
         {statistics && (
-          <ProdutosGenericosStats statistics={statistics} />
+          <ProdutosGenericosStats estatisticas={statistics} />
         )}
 
         {/* Filtros */}
-        {showFilters && (
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <ProdutosGenericosFilters
-              filters={filters}
-              grupos={grupos}
-              subgrupos={subgrupos}
-              classes={classes}
-              produtosOrigem={produtosOrigem}
-              onApply={handleApplyFilters}
-              onClear={handleClearFilters}
-            />
-          </div>
-        )}
+        <CadastroFilterBar
+          searchTerm={filters.search}
+          onSearchChange={(value) => atualizarFiltros({ ...filters, search: value })}
+          statusFilter={filters.status}
+          onStatusFilterChange={(value) => atualizarFiltros({ ...filters, status: value })}
+          onClear={limparFiltros}
+          placeholder="Buscar por nome..."
+          additionalFilters={[
+            {
+              label: 'Grupo',
+              value: filters.grupo_id,
+              onChange: (value) => atualizarFiltros({ ...filters, grupo_id: value }),
+              options: [
+                { value: '', label: 'Todos os Grupos' },
+                ...grupos.map(grupo => ({
+                  value: grupo.id.toString(),
+                  label: grupo.nome
+                }))
+              ]
+            },
+            {
+              label: 'Subgrupo',
+              value: filters.subgrupo_id,
+              onChange: (value) => atualizarFiltros({ ...filters, subgrupo_id: value }),
+              options: [
+                { value: '', label: 'Todos os Subgrupos' },
+                ...subgrupos.map(subgrupo => ({
+                  value: subgrupo.id.toString(),
+                  label: subgrupo.nome
+                }))
+              ]
+            },
+            {
+              label: 'Classe',
+              value: filters.classe_id,
+              onChange: (value) => atualizarFiltros({ ...filters, classe_id: value }),
+              options: [
+                { value: '', label: 'Todas as Classes' },
+                ...classes.map(classe => ({
+                  value: classe.id.toString(),
+                  label: classe.nome
+                }))
+              ]
+            },
+            {
+              label: 'Produto Origem',
+              value: filters.produto_origem_id,
+              onChange: (value) => atualizarFiltros({ ...filters, produto_origem_id: value }),
+              options: [
+                { value: '', label: 'Todos os Produtos Origem' },
+                ...produtosOrigem.map(produto => ({
+                  value: produto.id.toString(),
+                  label: produto.nome
+                }))
+              ]
+            }
+          ]}
+        />
+
+        {/* Ações */}
+        <ProdutosGenericosActions
+          onExportXLSX={exportarXLSX}
+          onExportPDF={exportarPDF}
+        />
 
         {/* Tabela */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <ProdutosGenericosTable
             produtosGenericos={produtosGenericos}
-            loading={loading}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
@@ -209,7 +214,7 @@ const ProdutoGenerico = () => {
               totalItems={pagination.total}
               itemsPerPage={pagination.limit}
               onPageChange={mudarPagina}
-              onLimitChange={mudarLimite}
+              onItemsPerPageChange={mudarLimite}
             />
           </div>
         )}
