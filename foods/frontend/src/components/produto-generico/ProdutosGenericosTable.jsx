@@ -114,19 +114,19 @@ const ProdutosGenericosTable = ({
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(produtoGenerico.status)}`}>
-                    {getStatusLabel(produtoGenerico.status)}
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor ? getStatusColor(produtoGenerico.status) : 'bg-gray-100 text-gray-800'}`}>
+                    {getStatusLabel ? getStatusLabel(produtoGenerico.status) : (produtoGenerico.status === 1 ? 'Ativo' : 'Inativo')}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {produtoGenerico.total_produtos || 0}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(produtoGenerico.criado_em)}
+                  {formatDate ? formatDate(produtoGenerico.criado_em) : new Date(produtoGenerico.criado_em).toLocaleDateString('pt-BR')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end gap-2">
-                    {canView('produto_generico') && (
+                    {canView && canView('produto_generico') && onView && (
                       <Button
                         onClick={() => onView(produtoGenerico)}
                         variant="ghost"
@@ -137,7 +137,7 @@ const ProdutosGenericosTable = ({
                       </Button>
                     )}
                     
-                    {canEdit('produto_generico') && (
+                    {canEdit && canEdit('produto_generico') && onEdit && (
                       <Button
                         onClick={() => onEdit(produtoGenerico)}
                         variant="ghost"
@@ -148,7 +148,7 @@ const ProdutosGenericosTable = ({
                       </Button>
                     )}
                     
-                    {canDelete('produto_generico') && (
+                    {canDelete && canDelete('produto_generico') && onDelete && (
                       <Button
                         onClick={() => onDelete(produtoGenerico.id)}
                         variant="ghost"

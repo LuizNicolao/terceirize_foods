@@ -4,6 +4,7 @@
  */
 
 import React, { useState } from 'react';
+import { usePermissions } from '../../contexts/PermissionsContext';
 import { useProdutoGenerico } from '../../hooks/useProdutoGenerico';
 import ProdutoGenericoModal from '../../components/produto-generico/ProdutoGenericoModal';
 import ProdutosGenericosTable from '../../components/produto-generico/ProdutosGenericosTable';
@@ -14,6 +15,8 @@ import Pagination from '../../components/Pagination';
 import { FaPlus } from 'react-icons/fa';
 
 const ProdutoGenerico = () => {
+  const { canCreate, canEdit, canDelete, canView } = usePermissions();
+  
   const {
     produtosGenericos,
     loading,
@@ -35,7 +38,8 @@ const ProdutoGenerico = () => {
     atualizarFiltros,
     limparFiltros,
     mudarPagina,
-    mudarLimite
+    mudarLimite,
+    handleView
   } = useProdutoGenerico();
 
   // Estados locais
@@ -110,13 +114,15 @@ const ProdutoGenerico = () => {
             </div>
             
             <div className="mt-4 sm:mt-0 flex flex-wrap gap-2">
-              <button
-                onClick={handleCreate}
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-              >
-                <FaPlus className="mr-2" />
-                Novo Produto Genérico
-              </button>
+              {canCreate('produto_generico') && (
+                <button
+                  onClick={handleCreate}
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <FaPlus className="mr-2" />
+                  Novo Produto Genérico
+                </button>
+              )}
               
 
               
@@ -200,8 +206,15 @@ const ProdutoGenerico = () => {
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           <ProdutosGenericosTable
             produtosGenericos={produtosGenericos}
+            canView={canView}
+            canEdit={canEdit}
+            canDelete={canDelete}
+            onView={handleView}
             onEdit={handleEdit}
             onDelete={handleDelete}
+            getStatusLabel={(status) => status === 1 ? 'Ativo' : 'Inativo'}
+            getStatusColor={(status) => status === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
+            formatDate={(date) => new Date(date).toLocaleDateString('pt-BR')}
           />
         </div>
 

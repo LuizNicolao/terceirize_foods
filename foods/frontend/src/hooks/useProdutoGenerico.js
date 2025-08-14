@@ -339,6 +339,12 @@ export const useProdutoGenerico = () => {
     setFilters(prev => ({ ...prev, limit: novoLimite, page: 1 }));
   }, []);
 
+  // Função para visualizar produto genérico
+  const handleView = useCallback((produtoGenerico) => {
+    // Implementar visualização se necessário
+    console.log('Visualizar produto genérico:', produtoGenerico);
+  }, []);
+
   // Carregar dados iniciais
   useEffect(() => {
     carregarDadosAuxiliares();
@@ -376,6 +382,7 @@ export const useProdutoGenerico = () => {
     atualizarFiltros,
     limparFiltros,
     mudarPagina,
-    mudarLimite
+    mudarLimite,
+    handleView
   };
 };
