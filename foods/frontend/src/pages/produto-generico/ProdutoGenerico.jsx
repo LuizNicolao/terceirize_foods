@@ -237,7 +237,7 @@ const ProdutoGenerico = () => {
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
-        onFiltersChange={setAuditFilters}
+        onSetFilters={setAuditFilters}
       />
     </div>
   );
