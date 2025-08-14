@@ -25,12 +25,16 @@ const ProdutoOrigemModal = ({
   // Filtrar subgrupos baseado no grupo selecionado
   const subgruposFiltrados = grupoId && grupoId !== '' 
     ? subgrupos.filter(sg => String(sg.grupo_id) === String(grupoId))
-    : [];
+    : produtoOrigem && produtoOrigem.grupo_id 
+      ? subgrupos.filter(sg => String(sg.grupo_id) === String(produtoOrigem.grupo_id))
+      : [];
 
   // Filtrar classes baseado no subgrupo selecionado
   const classesFiltradas = subgrupoId && subgrupoId !== '' 
     ? classes.filter(c => String(c.subgrupo_id) === String(subgrupoId))
-    : [];
+    : produtoOrigem && produtoOrigem.subgrupo_id 
+      ? classes.filter(c => String(c.subgrupo_id) === String(produtoOrigem.subgrupo_id))
+      : [];
 
   useEffect(() => {
     if (produtoOrigem && isOpen) {
