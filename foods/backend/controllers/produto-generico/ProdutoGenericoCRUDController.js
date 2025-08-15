@@ -40,23 +40,13 @@ class ProdutoGenericoCRUDController {
         [produtoGenericoId, produtoOrigemId]
       );
     }
-    // Se produto_padrao = "Não" ou não tem produto_origem_id
-    else {
-      // Se é uma atualização e o produto_padrao mudou de "Sim" para "Não"
-      if (isUpdate && oldProdutoPadrao === 'Sim' && produtoPadrao === 'Não') {
-        // Remover vínculo do produto origem (independentemente do produto_origem_id atual)
-        await executeQuery(
-          'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
-          [produtoGenericoId]
-        );
-      }
-      // Se não tem produto_origem_id, remover qualquer vínculo existente
-      else if (!produtoOrigemId) {
-        await executeQuery(
-          'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
-          [produtoGenericoId]
-        );
-      }
+    // Se produto_padrao = "Não"
+    else if (produtoPadrao === 'Não') {
+      // Sempre remover vínculo quando produto_padrao = "Não"
+      await executeQuery(
+        'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
+        [produtoGenericoId]
+      );
     }
   }
 
