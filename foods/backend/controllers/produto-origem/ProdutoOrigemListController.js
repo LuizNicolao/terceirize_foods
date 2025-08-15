@@ -28,6 +28,7 @@ class ProdutoOrigemListController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         pg.nome as produto_generico_padrao_nome,
+        pg.codigo as produto_generico_padrao_codigo,
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome
       FROM produto_origem po
@@ -126,6 +127,7 @@ class ProdutoOrigemListController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         pg.nome as produto_generico_padrao_nome,
+        pg.codigo as produto_generico_padrao_codigo,
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome
       FROM produto_origem po

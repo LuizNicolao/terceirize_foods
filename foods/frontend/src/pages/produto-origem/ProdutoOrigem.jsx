@@ -28,7 +28,6 @@ const ProdutoOrigem = () => {
     subgrupos,
     classes,
     unidadesMedida,
-    produtosGenericosPadrao,
     searchTerm,
     statusFilter,
     grupoFilter,
@@ -56,8 +55,7 @@ const ProdutoOrigem = () => {
     getGrupoName,
     getSubgrupoName,
     getClasseName,
-    getUnidadeMedidaName,
-    getProdutoGenericoPadraoName
+    getUnidadeMedidaName
   } = useProdutoOrigem();
 
   const {
@@ -168,7 +166,6 @@ const ProdutoOrigem = () => {
         getSubgrupoName={getSubgrupoName}
         getClasseName={getClasseName}
         getUnidadeMedidaName={getUnidadeMedidaName}
-        getProdutoGenericoPadraoName={getProdutoGenericoPadraoName}
       />
 
       {/* Paginação */}
@@ -192,7 +189,6 @@ const ProdutoOrigem = () => {
         subgrupos={subgrupos}
         classes={classes}
         unidadesMedida={unidadesMedida}
-        produtosGenericosPadrao={produtosGenericosPadrao}
         loading={loading}
       />
 

@@ -20,7 +20,6 @@ export const useProdutoOrigem = () => {
   const [subgrupos, setSubgrupos] = useState([]);
   const [classes, setClasses] = useState([]);
   const [unidadesMedida, setUnidadesMedida] = useState([]);
-  const [produtosGenericosPadrao, setProdutosGenericosPadrao] = useState([]);
   
   // Filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
@@ -86,24 +85,7 @@ export const useProdutoOrigem = () => {
         setUnidadesMedida(unidadesRes.data || []);
       }
 
-      // Carregar produtos genéricos padrão
-      try {
-        const produtosGenericosRes = await api.get('/produto-generico?status=1&limit=1000');
-        let produtosGenericos = [];
-        
-        if (produtosGenericosRes.data?.data?.items) {
-          produtosGenericos = produtosGenericosRes.data.data.items;
-        } else if (produtosGenericosRes.data?.data) {
-          produtosGenericos = produtosGenericosRes.data.data;
-        } else {
-          produtosGenericos = produtosGenericosRes.data || [];
-        }
-        
-        setProdutosGenericosPadrao(produtosGenericos);
-      } catch (error) {
-        console.error('Erro ao carregar produtos genéricos padrão:', error);
-        setProdutosGenericosPadrao([]);
-      }
+
     } catch (error) {
       console.error('Erro ao carregar dados auxiliares:', error);
       toast.error('Erro ao carregar dados auxiliares');
@@ -302,10 +284,7 @@ export const useProdutoOrigem = () => {
     return unidade ? unidade.nome : '-';
   };
 
-  const getProdutoGenericoPadraoName = (produtoId) => {
-    const produto = produtosGenericosPadrao.find(p => p.id === produtoId);
-    return produto ? produto.nome : '-';
-  };
+
 
   return {
     // Estado
@@ -318,7 +297,6 @@ export const useProdutoOrigem = () => {
     subgrupos,
     classes,
     unidadesMedida,
-    produtosGenericosPadrao,
     searchTerm,
     statusFilter,
     grupoFilter,
@@ -350,7 +328,6 @@ export const useProdutoOrigem = () => {
     getGrupoName,
     getSubgrupoName,
     getClasseName,
-    getUnidadeMedidaName,
-    getProdutoGenericoPadraoName
+    getUnidadeMedidaName
   };
 };

@@ -53,6 +53,9 @@ const ProdutoOrigemTable = ({
                   Classe
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Produto Genérico Padrão
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Fator Conversão
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -93,6 +96,12 @@ const ProdutoOrigemTable = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {getClasseName(produto.classe_id)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {produto.produto_generico_padrao_nome ? 
+                      `${produto.produto_generico_padrao_codigo} - ${produto.produto_generico_padrao_nome}` : 
+                      '-'
+                    }
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {produto.fator_conversao ? parseFloat(produto.fator_conversao).toFixed(3) : '1.000'}
@@ -218,6 +227,15 @@ const ProdutoOrigemTable = ({
               <div>
                 <span className="text-gray-500">Classe:</span>
                 <p className="font-medium">{getClasseName(produto.classe_id)}</p>
+              </div>
+              <div className="col-span-2">
+                <span className="text-gray-500">Produto Genérico Padrão:</span>
+                <p className="font-medium">
+                  {produto.produto_generico_padrao_nome ? 
+                    `${produto.produto_generico_padrao_codigo} - ${produto.produto_generico_padrao_nome}` : 
+                    '-'
+                  }
+                </p>
               </div>
               <div>
                 <span className="text-gray-500">Fator Conversão:</span>

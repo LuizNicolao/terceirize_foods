@@ -14,7 +14,6 @@ const ProdutoOrigemModal = ({
   subgrupos,
   classes,
   unidadesMedida,
-  produtosGenericosPadrao,
   loading
 }) => {
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
@@ -67,7 +66,6 @@ const ProdutoOrigemModal = ({
       subgrupo_id: data.subgrupo_id ? parseInt(data.subgrupo_id) : null,
       classe_id: data.classe_id ? parseInt(data.classe_id) : null,
       peso_liquido: data.peso_liquido ? parseFloat(data.peso_liquido) : null,
-      produto_generico_padrao_id: data.produto_generico_padrao_id && data.produto_generico_padrao_id !== '' ? parseInt(data.produto_generico_padrao_id) : null,
       referencia_mercado: data.referencia_mercado,
       status: parseInt(data.status) || 1
     };
@@ -229,18 +227,11 @@ const ProdutoOrigemModal = ({
             {/* Produto Genérico Padrão */}
             <Input
               label="Produto Genérico Padrão"
-              type="select"
-              {...register('produto_generico_padrao_id')}
-              error={errors.produto_generico_padrao_id?.message}
-              disabled={viewMode}
-            >
-              <option value="">Selecione um produto genérico</option>
-              {produtosGenericosPadrao.map(produto => (
-                <option key={produto.id} value={produto.id}>
-                  {produto.nome}
-                </option>
-              ))}
-            </Input>
+              type="text"
+              value={produtoOrigem?.produto_generico_padrao_nome ? `${produtoOrigem.produto_generico_padrao_codigo} - ${produtoOrigem.produto_generico_padrao_nome}` : 'Nenhum produto genérico vinculado'}
+              disabled={true}
+              className="bg-gray-50"
+            />
           </div>
 
           {/* Referência de Mercado */}
