@@ -40,29 +40,17 @@ class ProdutoGenericoCRUDController {
         [produtoGenericoId, produtoOrigemId]
       );
     }
-    // Se produto_padrao = "Não" ou não tem produto_origem_id
-    else {
+    // Se produto_padrao = "Não" - remover vínculo padrão, mas manter produto_origem_id
+    else if (produtoPadrao === 'Não') {
       // Se é uma atualização e o produto_padrao mudou de "Sim" para "Não"
-      if (isUpdate && oldProdutoPadrao === 'Sim' && produtoPadrao === 'Não') {
-        // Remover vínculo do produto origem (independente se tem produto_origem_id ou não)
-        await executeQuery(
-          'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
-          [produtoGenericoId]
-        );
-        
-        // Limpar o campo produto_origem_id na tabela produto_generico
-        await executeQuery(
-          'UPDATE produto_generico SET produto_origem_id = NULL WHERE id = ?',
-          [produtoGenericoId]
-        );
-      }
-      // Se não tem produto_origem_id, remover qualquer vínculo existente
-      else if (!produtoOrigemId) {
+      if (isUpdate && oldProdutoPadrao === 'Sim') {
+        // Remover apenas o vínculo padrão do produto origem
         await executeQuery(
           'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
           [produtoGenericoId]
         );
       }
+      // Se é uma criação com produto_padrao = "Não", não fazer nada (não criar vínculo)
     }
   }
 
@@ -316,9 +304,6 @@ class ProdutoGenericoCRUDController {
       return errorResponse(res, error.message, STATUS_CODES.CONFLICT);
     }
 
-    // Se produto_padrao = "Não", forçar produto_origem_id como null
-    const produtoOrigemIdFinal = produto_padrao === 'Não' ? null : produto_origem_id;
-
     // Atualizar produto genérico
     await executeQuery(
       `UPDATE produto_generico SET 
@@ -331,7 +316,7 @@ class ProdutoGenericoCRUDController {
         status = ?, usuario_atualizador_id = ?
       WHERE id = ?`,
       [
-        codigo, nome, produtoOrigemIdFinal, fator_conversao, grupo_id, subgrupo_id, classe_id,
+        codigo, nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
         unidade_medida_id, referencia_mercado, produto_padrao, peso_liquido, peso_bruto,
         regra_palet, informacoes_adicionais, referencia_interna, referencia_externa,
         registro_especifico, tipo_registro, prazo_validade_padrao, unidade_validade,

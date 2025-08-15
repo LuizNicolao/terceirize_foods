@@ -34,7 +34,6 @@ const ProdutoGenericoModal = ({
   const grupoId = watch('grupo_id');
   const subgrupoId = watch('subgrupo_id');
   const produtoOrigemId = watch('produto_origem_id');
-  const produtoPadrao = watch('produto_padrao');
 
   // Obter o produto origem selecionado
   const produtoOrigemSelecionado = produtoOrigemId 
@@ -68,17 +67,6 @@ const ProdutoGenericoModal = ({
       }
     }
   }, [produtoOrigemId, produtosOrigem, setValue]);
-
-  // Limpar produto origem quando produto padrão for alterado para "Não"
-  useEffect(() => {
-    if (produtoPadrao === 'Não' && produtoOrigemId) {
-      setValue('produto_origem_id', '');
-      setValue('grupo_id', '');
-      setValue('subgrupo_id', '');
-      setValue('classe_id', '');
-      setValue('referencia_mercado', '');
-    }
-  }, [produtoPadrao, produtoOrigemId, setValue]);
 
   // Carregar dados quando o modal abrir
   useEffect(() => {
