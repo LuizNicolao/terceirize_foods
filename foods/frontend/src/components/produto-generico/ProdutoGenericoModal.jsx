@@ -35,19 +35,40 @@ const ProdutoGenericoModal = ({
   const subgrupoId = watch('subgrupo_id');
   const produtoOrigemId = watch('produto_origem_id');
 
-  // Filtrar subgrupos baseado no grupo selecionado
-  const subgruposFiltrados = grupoId && grupoId !== '' 
-    ? subgrupos.filter(sg => String(sg.grupo_id) === String(grupoId))
+  // Obter o produto origem selecionado
+  const produtoOrigemSelecionado = produtoOrigemId && produtoOrigemId !== '' 
+    ? produtosOrigem?.find(po => po.id === parseInt(produtoOrigemId))
+    : null;
+
+  // Filtrar subgrupos baseado no grupo selecionado (incluindo produto origem)
+  const subgruposFiltrados = (grupoId && grupoId !== '') || (produtoOrigemSelecionado?.grupo_id)
+    ? subgrupos.filter(sg => String(sg.grupo_id) === String(grupoId || produtoOrigemSelecionado?.grupo_id))
     : produtoGenerico && produtoGenerico.grupo_id 
       ? subgrupos.filter(sg => String(sg.grupo_id) === String(produtoGenerico.grupo_id))
       : [];
 
-  // Filtrar classes baseado no subgrupo selecionado
-  const classesFiltradas = subgrupoId && subgrupoId !== '' 
-    ? classes.filter(c => String(c.subgrupo_id) === String(subgrupoId))
+  // Filtrar classes baseado no subgrupo selecionado (incluindo produto origem)
+  const classesFiltradas = (subgrupoId && subgrupoId !== '') || (produtoOrigemSelecionado?.subgrupo_id)
+    ? classes.filter(c => String(c.subgrupo_id) === String(subgrupoId || produtoOrigemSelecionado?.subgrupo_id))
     : produtoGenerico && produtoGenerico.subgrupo_id 
       ? classes.filter(c => String(c.subgrupo_id) === String(produtoGenerico.subgrupo_id))
       : [];
+
+  // Debug logs
+  console.log('Debug Filtros:', {
+    grupoId,
+    subgrupoId,
+    produtoOrigemId,
+    produtoOrigemSelecionado: produtoOrigemSelecionado ? {
+      grupo_id: produtoOrigemSelecionado.grupo_id,
+      subgrupo_id: produtoOrigemSelecionado.subgrupo_id,
+      classe_id: produtoOrigemSelecionado.classe_id
+    } : null,
+    subgruposFiltrados: subgruposFiltrados.length,
+    classesFiltradas: classesFiltradas.length,
+    totalSubgrupos: subgrupos.length,
+    totalClasses: classes.length
+  });
 
   // Preencher automaticamente campos quando selecionar produto origem
   useEffect(() => {
@@ -59,6 +80,14 @@ const ProdutoGenericoModal = ({
         setValue('subgrupo_id', produtoOrigemSelecionado.subgrupo_id);
         setValue('classe_id', produtoOrigemSelecionado.classe_id);
         setValue('referencia_mercado', produtoOrigemSelecionado.referencia_mercado || '');
+        
+        console.log('Produto Origem Selecionado:', produtoOrigemSelecionado);
+        console.log('Campos preenchidos:', {
+          grupo_id: produtoOrigemSelecionado.grupo_id,
+          subgrupo_id: produtoOrigemSelecionado.subgrupo_id,
+          classe_id: produtoOrigemSelecionado.classe_id,
+          referencia_mercado: produtoOrigemSelecionado.referencia_mercado
+        });
       }
     }
   }, [produtoOrigemId, produtosOrigem, setValue]);
@@ -237,7 +266,7 @@ const ProdutoGenericoModal = ({
               type="select"
               {...register('subgrupo_id')}
               error={errors.subgrupo_id?.message}
-              disabled={viewMode || !grupoId || (produtoOrigemId && produtoOrigemId !== '')}
+              disabled={viewMode || (produtoOrigemId && produtoOrigemId !== '')}
               className={produtoOrigemId && produtoOrigemId !== '' ? "bg-gray-50" : ""}
             >
               <option value="">Selecione um subgrupo</option>
@@ -254,7 +283,7 @@ const ProdutoGenericoModal = ({
               type="select"
               {...register('classe_id')}
               error={errors.classe_id?.message}
-              disabled={viewMode || !subgrupoId || (produtoOrigemId && produtoOrigemId !== '')}
+              disabled={viewMode || (produtoOrigemId && produtoOrigemId !== '')}
               className={produtoOrigemId && produtoOrigemId !== '' ? "bg-gray-50" : ""}
             >
               <option value="">Selecione uma classe</option>
