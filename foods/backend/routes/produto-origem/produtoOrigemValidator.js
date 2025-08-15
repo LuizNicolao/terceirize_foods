@@ -3,41 +3,53 @@
  * Implementa validações usando express-validator
  */
 
-const { body, query, param } = require('express-validator');
-const { handleValidationErrors } = require('../../middleware/validation');
+const { body, param, query, validationResult } = require('express-validator');
+const { validationResponse } = require('../../middleware/responseHandler');
 
-// Função para limpar campos vazios
+// Middleware para capturar erros de validação
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  
+  if (!errors.isEmpty()) {
+    return validationResponse(res, errors.array());
+  }
+  
+  next();
+};
+
+// Middleware para limpar campos vazios
 const cleanEmptyFields = (req, res, next) => {
+  // Converter campos vazios para null
   const fieldsToClean = ['grupo_id', 'subgrupo_id', 'classe_id', 'produto_generico_padrao_id', 'peso_liquido', 'referencia_mercado'];
   
   fieldsToClean.forEach(field => {
-    if (req.body[field] === '' || req.body[field] === 'null' || req.body[field] === null || req.body[field] === undefined) {
+    if (req.body[field] === '' || req.body[field] === undefined || req.body[field] === 'null') {
       req.body[field] = null;
     }
   });
 
-  // Converter campos numéricos específicos
-  if (req.body.unidade_medida_id && req.body.unidade_medida_id !== '' && req.body.unidade_medida_id !== 'null') {
+  // Converter campos numéricos
+  if (req.body.unidade_medida_id && req.body.unidade_medida_id !== '') {
     req.body.unidade_medida_id = parseInt(req.body.unidade_medida_id);
   }
-
-  if (req.body.fator_conversao && req.body.fator_conversao !== '' && req.body.fator_conversao !== 'null') {
+  
+  if (req.body.fator_conversao && req.body.fator_conversao !== '') {
     req.body.fator_conversao = parseFloat(req.body.fator_conversao);
   }
 
-  if (req.body.grupo_id && req.body.grupo_id !== '' && req.body.grupo_id !== 'null') {
+  if (req.body.grupo_id && req.body.grupo_id !== '') {
     req.body.grupo_id = parseInt(req.body.grupo_id);
   }
 
-  if (req.body.subgrupo_id && req.body.subgrupo_id !== '' && req.body.subgrupo_id !== 'null') {
+  if (req.body.subgrupo_id && req.body.subgrupo_id !== '') {
     req.body.subgrupo_id = parseInt(req.body.subgrupo_id);
   }
 
-  if (req.body.classe_id && req.body.classe_id !== '' && req.body.classe_id !== 'null') {
+  if (req.body.classe_id && req.body.classe_id !== '') {
     req.body.classe_id = parseInt(req.body.classe_id);
   }
 
-  if (req.body.peso_liquido && req.body.peso_liquido !== '' && req.body.peso_liquido !== 'null') {
+  if (req.body.peso_liquido && req.body.peso_liquido !== '') {
     req.body.peso_liquido = parseFloat(req.body.peso_liquido);
   }
 
@@ -47,21 +59,30 @@ const cleanEmptyFields = (req, res, next) => {
     req.body.produto_generico_padrao_id = null;
   }
 
-  if (req.body.status !== undefined && req.body.status !== '' && req.body.status !== 'null') {
-    req.body.status = parseInt(req.body.status);
-  }
-
   next();
 };
 
-// Validações comuns para paginação e filtros
+// Validações comuns
 const commonValidations = {
+  // Validação de ID numérico
+  id: param('id')
+    .isInt({ min: 1 })
+    .withMessage('ID deve ser um número inteiro positivo'),
+
+  // Validação de busca
+  search: query('search')
+    .optional()
+    .isString()
+    .trim()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Termo de busca deve ter entre 1 e 100 caracteres'),
+
+  // Validação de paginação
   pagination: [
     query('page')
       .optional()
       .isInt({ min: 1 })
-      .withMessage('Página deve ser um número maior que 0'),
-    
+      .withMessage('Página deve ser um número inteiro positivo'),
     query('limit')
       .optional()
       .isInt({ min: 1, max: 100 })
@@ -82,10 +103,21 @@ const produtoOrigemValidations = {
     
     body('nome')
       .isLength({ min: 3, max: 200 })
-      .withMessage('Nome deve ter entre 3 e 200 caracteres'),
+      .withMessage('Nome deve ter pelo menos 3 caracteres e no máximo 200 caracteres'),
     
     body('unidade_medida_id')
-      .isInt({ min: 1 })
+      .notEmpty()
+      .withMessage('Unidade de medida é obrigatória')
+      .custom((value) => {
+        if (!value || value === '' || value === null || value === undefined) {
+          throw new Error('Unidade de medida é obrigatória');
+        }
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          throw new Error('Unidade de medida deve ser um número válido');
+        }
+        return true;
+      })
       .withMessage('Unidade de medida deve ser selecionada'),
     
     body('fator_conversao')
@@ -118,7 +150,18 @@ const produtoOrigemValidations = {
       .isLength({ min: 1, max: 200 })
       .withMessage('Referência de mercado deve ter entre 1 e 200 caracteres'),
     
-    // Removida validação do produto_generico_padrao_id pois será preenchido automaticamente
+    body('produto_generico_padrao_id')
+      .optional()
+      .custom((value) => {
+        if (value && value !== '' && value !== null && value !== undefined) {
+          const numValue = parseInt(value);
+          if (isNaN(numValue) || numValue < 1) {
+            throw new Error('Produto genérico padrão deve ser um número válido');
+          }
+        }
+        return true;
+      })
+      .withMessage('Produto genérico padrão deve ser selecionado'),
     
     body('status')
       .optional()
@@ -178,94 +221,23 @@ const produtoOrigemValidations = {
       .isLength({ min: 1, max: 200 })
       .withMessage('Referência de mercado deve ter entre 1 e 200 caracteres'),
     
-    // Removida validação do produto_generico_padrao_id pois será preenchido automaticamente
+    body('produto_generico_padrao_id')
+      .optional()
+      .custom((value) => {
+        if (value && value !== '' && value !== null && value !== undefined) {
+          const numValue = parseInt(value);
+          if (isNaN(numValue) || numValue < 1) {
+            throw new Error('Produto genérico padrão deve ser um número válido');
+          }
+        }
+        return true;
+      })
+      .withMessage('Produto genérico padrão deve ser selecionado'),
     
     body('status')
       .optional()
       .isIn([0, 1, '0', '1'])
       .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
-    
-    handleValidationErrors
-  ],
-
-  getById: [
-    param('id')
-      .isInt({ min: 1 })
-      .withMessage('ID deve ser um número válido'),
-    
-    handleValidationErrors
-  ],
-
-  delete: [
-    param('id')
-      .isInt({ min: 1 })
-      .withMessage('ID deve ser um número válido'),
-    
-    handleValidationErrors
-  ],
-
-  search: [
-    query('nome')
-      .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Nome deve ter entre 1 e 200 caracteres'),
-    
-    query('codigo')
-      .optional()
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Código deve ter entre 1 e 20 caracteres'),
-    
-    query('grupo_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Grupo deve ser um número válido'),
-    
-    query('subgrupo_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Subgrupo deve ser um número válido'),
-    
-    query('classe_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Classe deve ser um número válido'),
-    
-    query('unidade_medida_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Unidade de medida deve ser um número válido'),
-    
-    query('status')
-      .optional()
-      .isIn(['0', '1', '0,1'])
-      .withMessage('Status deve ser 0, 1 ou 0,1'),
-    
-    query('produto_generico_padrao_id')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Produto genérico padrão deve ser um número válido'),
-    
-    query('fator_conversao_min')
-      .optional()
-      .isFloat({ min: 0 })
-      .withMessage('Fator de conversão mínimo deve ser um número válido'),
-    
-    query('fator_conversao_max')
-      .optional()
-      .isFloat({ min: 0 })
-      .withMessage('Fator de conversão máximo deve ser um número válido'),
-    
-    query('peso_liquido_min')
-      .optional()
-      .isFloat({ min: 0 })
-      .withMessage('Peso líquido mínimo deve ser um número válido'),
-    
-    query('peso_liquido_max')
-      .optional()
-      .isFloat({ min: 0 })
-      .withMessage('Peso líquido máximo deve ser um número válido'),
-    
-    ...commonValidations.pagination,
     
     handleValidationErrors
   ]

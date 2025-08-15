@@ -85,6 +85,18 @@ class ProdutoGenericoCRUDController {
       }
     }
 
+    // Verificar se unidade de medida existe (se fornecida)
+    if (unidade_medida_id) {
+      const unidade = await executeQuery(
+        'SELECT id FROM unidades_medida WHERE id = ?',
+        [unidade_medida_id]
+      );
+
+      if (unidade.length === 0) {
+        return errorResponse(res, 'Unidade de medida não encontrada', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
     // Inserir novo produto genérico
     const novoProdutoGenerico = await executeQuery(
       `INSERT INTO produto_generico (
@@ -153,7 +165,7 @@ class ProdutoGenericoCRUDController {
       return notFoundResponse(res, 'Produto genérico não encontrado');
     }
 
-    // Verificar se código já existe (exceto para o próprio registro)
+    // Verificar se código já existe (se foi alterado)
     if (codigo) {
       const codigoExistente = await executeQuery(
         'SELECT id FROM produto_generico WHERE codigo = ? AND id != ?',
@@ -213,23 +225,35 @@ class ProdutoGenericoCRUDController {
       }
     }
 
+    // Verificar se unidade de medida existe (se fornecida)
+    if (unidade_medida_id) {
+      const unidade = await executeQuery(
+        'SELECT id FROM unidades_medida WHERE id = ?',
+        [unidade_medida_id]
+      );
+
+      if (unidade.length === 0) {
+        return errorResponse(res, 'Unidade de medida não encontrada', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
     // Atualizar produto genérico
     await executeQuery(
       `UPDATE produto_generico SET 
         codigo = ?, nome = ?, produto_origem_id = ?, fator_conversao = ?, 
         grupo_id = ?, subgrupo_id = ?, classe_id = ?, unidade_medida_id = ?, 
-        referencia_mercado = ?, produto_padrao = ?, peso_liquido = ?, peso_bruto = ?, 
+        referencia_mercado = ?, produto_padrao = ?, peso_liquido = ?, peso_bruto = ?,
         regra_palet = ?, informacoes_adicionais = ?, referencia_interna = ?, 
-        referencia_externa = ?, registro_especifico = ?, tipo_registro = ?, 
+        referencia_externa = ?, registro_especifico = ?, tipo_registro = ?,
         prazo_validade_padrao = ?, unidade_validade = ?, integracao_senior = ?, 
         status = ?, usuario_atualizador_id = ?
       WHERE id = ?`,
       [
-        codigo, nome, produto_origem_id, fator_conversao || 1.000, grupo_id, subgrupo_id, classe_id,
-        unidade_medida_id, referencia_mercado, produto_padrao || 'Não', peso_liquido, peso_bruto,
+        codigo, nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
+        unidade_medida_id, referencia_mercado, produto_padrao, peso_liquido, peso_bruto,
         regra_palet, informacoes_adicionais, referencia_interna, referencia_externa,
         registro_especifico, tipo_registro, prazo_validade_padrao, unidade_validade,
-        integracao_senior, status !== undefined ? status : 1, req.user.id, id
+        integracao_senior, status, req.user.id, id
       ]
     );
 

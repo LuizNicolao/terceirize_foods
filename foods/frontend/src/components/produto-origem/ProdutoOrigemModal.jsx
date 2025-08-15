@@ -22,7 +22,6 @@ const ProdutoOrigemModal = ({
   // Observar mudanças nos campos para filtros dependentes
   const grupoId = watch('grupo_id');
   const subgrupoId = watch('subgrupo_id');
-  const classeId = watch('classe_id');
 
   // Filtrar subgrupos baseado no grupo selecionado
   const subgruposFiltrados = grupoId && grupoId !== '' 
@@ -37,34 +36,6 @@ const ProdutoOrigemModal = ({
     : produtoOrigem && produtoOrigem.subgrupo_id 
       ? classes.filter(c => String(c.subgrupo_id) === String(produtoOrigem.subgrupo_id))
       : [];
-
-  // Função para buscar produto genérico padrão baseado na classificação
-  const buscarProdutoGenericoPadrao = (grupoId, subgrupoId, classeId) => {
-    if (!grupoId || !subgrupoId || !classeId) return null;
-    
-    // Buscar produto genérico padrão com a mesma classificação
-    const produtoPadrao = produtosGenericosPadrao.find(pg => 
-      pg.produto_padrao === 'Sim' && 
-      pg.status === 1 &&
-      pg.grupo_id === parseInt(grupoId) &&
-      pg.subgrupo_id === parseInt(subgrupoId) &&
-      pg.classe_id === parseInt(classeId)
-    );
-    
-    return produtoPadrao || null;
-  };
-
-  // Efeito para vincular automaticamente produto genérico padrão quando classificação mudar
-  useEffect(() => {
-    if (grupoId && subgrupoId && classeId && !viewMode) {
-      const produtoPadrao = buscarProdutoGenericoPadrao(grupoId, subgrupoId, classeId);
-      if (produtoPadrao) {
-        setValue('produto_generico_padrao_id', produtoPadrao.id);
-      } else {
-        setValue('produto_generico_padrao_id', '');
-      }
-    }
-  }, [grupoId, subgrupoId, classeId, produtosGenericosPadrao, setValue, viewMode]);
 
   useEffect(() => {
     if (produtoOrigem && isOpen) {
@@ -104,37 +75,33 @@ const ProdutoOrigemModal = ({
     onSubmit(formData);
   };
 
-  // Buscar produto genérico padrão atual para exibição
-  const produtoGenericoPadraoAtual = watch('produto_generico_padrao_id');
-  const produtoPadraoInfo = produtosGenericosPadrao.find(pg => pg.id === parseInt(produtoGenericoPadraoAtual));
-
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="4xl">
-      <div className="bg-white rounded-lg shadow-xl">
+    <Modal isOpen={isOpen} onClose={onClose} size="full">
+      <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex justify-between items-center p-6 border-b border-gray-200 bg-gradient-to-r from-green-50 to-blue-50">
           <div className="flex items-center gap-3">
-            {viewMode ? (
-              <FaEye className="w-5 h-5 text-blue-500" />
-            ) : produtoOrigem ? (
-              <FaEdit className="w-5 h-5 text-green-500" />
-            ) : (
-              <FaSave className="w-5 h-5 text-blue-500" />
-            )}
-            <h2 className="text-xl font-semibold text-gray-800">
-              {viewMode ? 'Visualizar' : produtoOrigem ? 'Editar' : 'Criar'} Produto Origem
-            </h2>
+            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+              {viewMode ? <FaEye className="w-5 h-5 text-white" /> : produtoOrigem ? <FaEdit className="w-5 h-5 text-white" /> : <FaSave className="w-5 h-5 text-white" />}
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">
+                {viewMode ? 'Visualizar Produto Origem' : produtoOrigem ? 'Editar Produto Origem' : 'Novo Produto Origem'}
+              </h2>
+              <p className="text-sm text-gray-600">
+                {viewMode ? 'Visualizando informações do produto origem' : produtoOrigem ? 'Editando informações do produto origem' : 'Preencha as informações do novo produto origem'}
+              </p>
+            </div>
           </div>
           <Button
-            type="button"
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="p-2"
           >
-            <FaTimes className="w-4 h-4" />
+            <FaTimes className="w-5 h-5" />
           </Button>
         </div>
 
@@ -259,27 +226,21 @@ const ProdutoOrigemModal = ({
               disabled={viewMode}
             />
 
-            {/* Produto Genérico Padrão - Campo não editável */}
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">
-                Produto Genérico Padrão
-              </label>
-              <input
-                type="text"
-                value={produtoPadraoInfo ? produtoPadraoInfo.nome : ''}
-                placeholder="Preenchido automaticamente quando um produto genérico for marcado como padrão"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-gray-500 cursor-not-allowed"
-                disabled={true}
-                readOnly
-              />
-              <input
-                type="hidden"
-                {...register('produto_generico_padrao_id')}
-              />
-              <p className="text-xs text-gray-500">
-                Preenchido automaticamente quando um produto genérico for marcado como padrão
-              </p>
-            </div>
+            {/* Produto Genérico Padrão */}
+            <Input
+              label="Produto Genérico Padrão"
+              type="select"
+              {...register('produto_generico_padrao_id')}
+              error={errors.produto_generico_padrao_id?.message}
+              disabled={viewMode}
+            >
+              <option value="">Selecione um produto genérico</option>
+              {produtosGenericosPadrao.map(produto => (
+                <option key={produto.id} value={produto.id}>
+                  {produto.nome}
+                </option>
+              ))}
+            </Input>
           </div>
 
           {/* Referência de Mercado */}

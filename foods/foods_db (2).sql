@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql:3306
--- Tempo de geração: 14/08/2025 às 19:59
+-- Tempo de geração: 15/08/2025 às 01:20
 -- Versão do servidor: 8.0.43
 -- Versão do PHP: 8.2.27
 
@@ -545,7 +545,18 @@ INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`
 (539, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"PATINHO BOVINO CUBOS 1 KG\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-13 18:59:37\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 7, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"registro_especifico\": \"123\", \"prazo_validade_padrao\": 12, \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 1}}', '187.45.102.250', '2025-08-14 19:18:56'),
 (540, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"PATINHO BOVINO CUBOS 1 KG\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-14 19:18:56\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 7, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"ASDASDASD\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"ASDDASASD\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '187.45.102.250', '2025-08-14 19:19:07'),
 (541, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"PATINHO BOVINO CUBOS 1 KG\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Aves\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-14 19:19:07\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 7, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"ASDASDASD\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"ASDDASASD\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '187.45.102.250', '2025-08-14 19:27:30'),
-(542, 4, 'update', 'produto_origem', '{\"url\": \"/foods/api/produto-origem/7\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"7\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"ASDASDASD\", \"codigo\": \"ASDDASASD\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 37, \"referencia_mercado\": \"asdasd\", \"produto_generico_padrao_id\": 18}}', '187.45.102.250', '2025-08-14 19:28:07');
+(542, 4, 'update', 'produto_origem', '{\"url\": \"/foods/api/produto-origem/7\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"7\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"ASDASDASD\", \"codigo\": \"ASDDASASD\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 37, \"referencia_mercado\": \"asdasd\", \"produto_generico_padrao_id\": 18}}', '187.45.102.250', '2025-08-14 19:28:07'),
+(543, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\"}', '187.45.102.250', '2025-08-14 20:22:25'),
+(544, 4, 'create', 'marcas', '{\"url\": \"/foods/api/marcas\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"statusCode\": 201, \"requestBody\": {\"marca\": \"TESTE MARCA\", \"status\": 1, \"fabricante\": \"Fabricante Y\"}}', '170.84.58.231', '2025-08-14 22:14:05'),
+(545, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\"}', '170.84.58.231', '2025-08-15 00:03:47'),
+(546, 4, 'create', 'produto_origem', '{\"url\": \"/foods/api/produto-origem\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"TESTE\", \"codigo\": \"ORIG0001287230\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 29, \"referencia_mercado\": \"CORTE BOVINO\", \"produto_generico_padrao_id\": 18}}', '170.84.58.231', '2025-08-15 00:04:50'),
+(547, 4, 'delete', 'produto_origem', '{\"url\": \"/foods/api/produto-origem/7\", \"method\": \"DELETE\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"7\", \"statusCode\": 200}', '170.84.58.231', '2025-08-15 00:04:54'),
+(548, 4, 'delete', 'produto_origem', '{\"url\": \"/foods/api/produto-origem/7\", \"method\": \"DELETE\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"7\", \"statusCode\": 200}', '170.84.58.231', '2025-08-15 00:05:45'),
+(549, 4, 'update', 'produto_origem', '{\"url\": \"/foods/api/produto-origem/7\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"7\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"ASDASDASD\", \"codigo\": \"ASDDASASD\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 37, \"referencia_mercado\": \"asdasd\", \"produto_generico_padrao_id\": 18}}', '170.84.58.231', '2025-08-15 00:05:49'),
+(550, 4, 'create', 'produto_origem', '{\"url\": \"/foods/api/produto-origem\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"Terceirize Food\", \"codigo\": \"ORIG0001079558\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 33, \"referencia_mercado\": \"CORTE BOVINO\", \"produto_generico_padrao_id\": 19}}', '170.84.58.231', '2025-08-15 00:20:17'),
+(551, 4, 'create', 'produto_origem', '{\"url\": \"/foods/api/produto-origem\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"TESTE PRODUTO ORIGEM\", \"codigo\": \"ORIG0001460014\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 37, \"referencia_mercado\": \"CORTE BOVINO\", \"produto_generico_padrao_id\": null}}', '170.84.58.231', '2025-08-15 00:57:46'),
+(552, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"PATINHO BOVINO CUBOS 1 KG\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Aves\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-14 19:19:07\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 11, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"ASDASDASD\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"ASDDASASD\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 01:01:21'),
+(553, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"PATINHO BOVINO CUBOS 1 KG\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Aves\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 01:01:21\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 11, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"TESTE PRODUTO ORIGEM\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"ORIG0001460014\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 01:12:45');
 
 -- --------------------------------------------------------
 
@@ -974,6 +985,13 @@ CREATE TABLE `marcas` (
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Despejando dados para a tabela `marcas`
+--
+
+INSERT INTO `marcas` (`id`, `marca`, `fabricante`, `status`, `criado_em`, `atualizado_em`) VALUES
+(3, 'TESTE MARCA', 'Fabricante Y', 1, '2025-08-14 22:14:05', '2025-08-14 22:14:05');
+
 -- --------------------------------------------------------
 
 --
@@ -1146,6 +1164,15 @@ CREATE TABLE `produtos` (
   `fator_conversao_embalagem` int DEFAULT '1' COMMENT 'Fator de conversão da embalagem secundária (ex: 1 CX = 12 UN)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Despejando dados para a tabela `produtos`
+--
+
+INSERT INTO `produtos` (`id`, `codigo_produto`, `nome`, `codigo_barras`, `fator_conversao`, `referencia_interna`, `referencia_externa`, `referencia_mercado`, `unidade_id`, `grupo_id`, `subgrupo_id`, `classe_id`, `nome_generico_id`, `marca_id`, `peso_liquido`, `peso_bruto`, `fabricante`, `informacoes_adicionais`, `foto_produto`, `prazo_validade`, `unidade_validade`, `regra_palet_un`, `ficha_homologacao`, `registro_especifico`, `comprimento`, `largura`, `altura`, `volume`, `integracao_senior`, `ncm`, `cest`, `cfop`, `ean`, `cst_icms`, `csosn`, `aliquota_icms`, `aliquota_ipi`, `aliquota_pis`, `aliquota_cofins`, `status`, `criado_em`, `atualizado_em`, `usuario_criador_id`, `usuario_atualizador_id`, `tipo_registro`, `embalagem_secundaria_id`, `fator_conversao_embalagem`) VALUES
+(2, 'PROD001', 'PATINHO BOVINO EM CUBOS KING 1KG', '1234567891234', 1.000, 'REF001', 'EXT001', 'Corte Bovino / Patinho / Cubos', 35, 1, 1, 36, 18, NULL, 1.000, 1.000, 'KING', 'PRODUTO COM 5% DE GORDURA', NULL, 12, 'MESES', 1200, '123456', '1234456 CA, REGISTRO, MODELO, Nº SERIE', 20.00, 15.00, 10.00, 3000.00, '123654', '0201', '123456', '1102', '1234567891234', '000', NULL, 18.00, 0.00, 1.65, 7.60, 1, '2025-08-15 00:48:02', '2025-08-15 00:48:02', 1, NULL, 'ANVISA', NULL, 1),
+(3, 'PROD003', 'PATINHO BOVINO EM ISCAS KING 1KG', '5556667778889', 1.000, 'REF003', 'EXT003', 'Corte Bovino / Patinho / Iscas', 1, 1, 1, 22, 19, NULL, 1.000, 1.000, 'KING', 'PRODUTO EM ISCAS PARA CHURRASCO', NULL, 12, 'MESES', 1200, '789123', '789123 CA, REGISTRO, MODELO, Nº SERIE', 20.00, 15.00, 10.00, 3000.00, '789123', '0201', '789123', '1102', '5556667778889', '000', NULL, 18.00, 0.00, 1.65, 7.60, 1, '2025-08-15 00:48:13', '2025-08-15 00:48:13', 1, NULL, 'ANVISA', NULL, 1),
+(4, 'PROD002', 'PATINHO BOVINO EM CUBOS PREMIUM 1KG', '9876543210987', 1.000, 'REF002', 'EXT002', 'Corte Bovino / Patinho / Cubos Premium', 35, 1, 1, 36, 18, NULL, 1.000, 1.000, 'PREMIUM', 'PRODUTO PREMIUM COM 3% DE GORDURA', NULL, 12, 'MESES', 1200, '654321', '654321 CA, REGISTRO, MODELO, Nº SERIE', 20.00, 15.00, 10.00, 3000.00, '456321', '0201', '654321', '1102', '9876543210987', '000', NULL, 18.00, 0.00, 1.65, 7.60, 1, '2025-08-15 00:48:19', '2025-08-15 00:48:19', 1, NULL, 'ANVISA', NULL, 1);
+
 -- --------------------------------------------------------
 
 --
@@ -1187,7 +1214,7 @@ CREATE TABLE `produto_generico` (
 --
 
 INSERT INTO `produto_generico` (`id`, `codigo`, `nome`, `produto_origem_id`, `fator_conversao`, `grupo_id`, `subgrupo_id`, `classe_id`, `unidade_medida_id`, `referencia_mercado`, `produto_padrao`, `peso_liquido`, `peso_bruto`, `regra_palet`, `informacoes_adicionais`, `referencia_interna`, `referencia_externa`, `registro_especifico`, `tipo_registro`, `prazo_validade_padrao`, `unidade_validade`, `integracao_senior`, `status`, `criado_em`, `atualizado_em`, `usuario_criador_id`, `usuario_atualizador_id`) VALUES
-(18, 1, 'PATINHO BOVINO CUBOS 1 KG', 7, 1.000, 1, 1, 36, 35, 'CORTE BOVINO', 'Sim', 1.000, 1.000, 1200, 'TESTE', '1001001', '2001001', '123', 'TESTE', 12, 'Meses', '123456', 1, '2025-08-13 16:16:49', '2025-08-14 19:19:07', 1, 4),
+(18, 1, 'PATINHO BOVINO CUBOS 1 KG', 11, 1.000, 1, 1, 36, 35, 'CORTE BOVINO', 'Sim', 1.000, 1.000, 1200, 'TESTE', '1001001', '2001001', '123', 'TESTE', 12, 'Meses', '123456', 1, '2025-08-13 16:16:49', '2025-08-15 01:01:21', 1, 4),
 (19, 2, 'PATINHO BOVINO ISCAS 1 KG', 5, 1.000, 1, 1, 22, 1, 'CORTE BOVINO', 'Sim', 1.000, 1.000, 1200, NULL, NULL, NULL, NULL, NULL, 12, 'Meses', NULL, 1, '2025-08-13 18:59:14', '2025-08-13 18:59:14', 1, NULL),
 (20, 3, 'PATINHO BOVINO MOIDO 1 KG', 6, 1.000, 1, 1, 22, 1, 'CORTE BOVINO', 'Sim', 1.000, 1.000, 1200, NULL, NULL, NULL, NULL, NULL, 12, 'Meses', NULL, 1, '2025-08-13 19:01:06', '2025-08-13 19:01:06', 1, NULL);
 
@@ -1221,8 +1248,53 @@ CREATE TABLE `produto_origem` (
 --
 
 INSERT INTO `produto_origem` (`id`, `codigo`, `nome`, `unidade_medida_id`, `fator_conversao`, `grupo_id`, `subgrupo_id`, `classe_id`, `peso_liquido`, `referencia_mercado`, `produto_generico_padrao_id`, `status`, `criado_em`, `atualizado_em`, `usuario_criador_id`, `usuario_atualizador_id`) VALUES
-(7, 'ASDDASASD', 'ASDASDASD', 37, 1.000, 1, 1, 36, 1.000, 'asdasd', 18, 1, '2025-08-14 17:13:43', '2025-08-14 19:28:07', 4, 4),
-(8, 'TESTE', 'TESTE', 37, 1.000, 1, 1, 22, 1.000, 'TESTE', NULL, 1, '2025-08-14 17:40:35', '2025-08-14 17:40:35', 4, NULL);
+(7, 'ASDDASASD', 'ASDASDASD', 37, 1.000, 1, 1, 36, 1.000, 'asdasd', 18, 1, '2025-08-14 17:13:43', '2025-08-15 00:05:49', 4, 4),
+(8, 'TESTE', 'TESTE', 37, 1.000, 1, 1, 22, 1.000, 'TESTE', NULL, 1, '2025-08-14 17:40:35', '2025-08-14 17:40:35', 4, NULL),
+(9, 'ORIG0001287230', 'TESTE', 29, 1.000, 1, 1, 22, 1.000, 'CORTE BOVINO', 18, 1, '2025-08-15 00:04:50', '2025-08-15 00:04:50', 4, NULL),
+(10, 'ORIG0001079558', 'Terceirize Food', 33, 1.000, 1, 1, 22, 1.000, 'CORTE BOVINO', 19, 1, '2025-08-15 00:20:17', '2025-08-15 00:20:17', 4, NULL),
+(11, 'ORIG0001460014', 'TESTE PRODUTO ORIGEM', 37, 1.000, 1, 1, 22, 1.000, 'CORTE BOVINO', NULL, 1, '2025-08-15 00:57:46', '2025-08-15 00:57:46', 4, NULL);
+
+--
+-- Acionadores `produto_origem`
+--
+DELIMITER $$
+CREATE TRIGGER `tr_produto_origem_update_classificacao` AFTER UPDATE ON `produto_origem` FOR EACH ROW BEGIN
+    -- Se mudou a classificação (grupo, subgrupo ou classe)
+    IF (NEW.grupo_id != OLD.grupo_id OR 
+        NEW.subgrupo_id != OLD.subgrupo_id OR 
+        NEW.classe_id != OLD.classe_id) THEN
+        
+        -- Se tem classificação completa, buscar produto genérico padrão correspondente
+        IF NEW.grupo_id IS NOT NULL 
+           AND NEW.subgrupo_id IS NOT NULL 
+           AND NEW.classe_id IS NOT NULL THEN
+            
+            -- Buscar produto genérico padrão com a mesma classificação
+            SET @produto_padrao_id = (
+                SELECT id 
+                FROM produto_generico 
+                WHERE produto_padrao = 'Sim' 
+                  AND status = 1
+                  AND grupo_id = NEW.grupo_id 
+                  AND subgrupo_id = NEW.subgrupo_id 
+                  AND classe_id = NEW.classe_id
+                LIMIT 1
+            );
+            
+            -- Atualizar o produto origem com o produto genérico padrão encontrado
+            UPDATE produto_origem 
+            SET produto_generico_padrao_id = @produto_padrao_id
+            WHERE id = NEW.id;
+        ELSE
+            -- Se não tem classificação completa, remover vinculação
+            UPDATE produto_origem 
+            SET produto_generico_padrao_id = NULL
+            WHERE id = NEW.id;
+        END IF;
+    END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -1470,7 +1542,8 @@ INSERT INTO `unidades_medida` (`id`, `nome`, `sigla`, `status`, `criado_em`, `at
 (36, 'METRO CUBICO', 'M3', 1, '2025-07-20 12:49:13', '2025-07-20 12:49:13'),
 (37, 'DUZIA', 'DZ', 1, '2025-07-20 12:49:43', '2025-07-20 12:49:43'),
 (38, 'GRAMA', 'GR', 1, '2025-07-20 12:50:33', '2025-07-22 11:47:40'),
-(39, 'MILILITRO', 'ML', 1, '2025-07-20 12:51:05', '2025-07-20 12:51:05');
+(39, 'MILILITRO', 'ML', 1, '2025-07-20 12:51:05', '2025-07-20 12:51:05'),
+(40, 'Pacote', 'PCT', 1, '2025-08-14 20:24:35', '2025-08-14 20:24:35');
 
 -- --------------------------------------------------------
 
@@ -1812,7 +1885,7 @@ ALTER TABLE `almoxarifado_itens`
 -- AUTO_INCREMENT de tabela `auditoria_acoes`
 --
 ALTER TABLE `auditoria_acoes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=543;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=554;
 
 --
 -- AUTO_INCREMENT de tabela `classes`
@@ -1848,7 +1921,7 @@ ALTER TABLE `grupos`
 -- AUTO_INCREMENT de tabela `marcas`
 --
 ALTER TABLE `marcas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `permissoes_usuario`
@@ -1860,7 +1933,7 @@ ALTER TABLE `permissoes_usuario`
 -- AUTO_INCREMENT de tabela `produtos`
 --
 ALTER TABLE `produtos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de tabela `produto_generico`
@@ -1872,7 +1945,7 @@ ALTER TABLE `produto_generico`
 -- AUTO_INCREMENT de tabela `produto_origem`
 --
 ALTER TABLE `produto_origem`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT de tabela `rotas`
@@ -1896,7 +1969,7 @@ ALTER TABLE `unidades_escolares`
 -- AUTO_INCREMENT de tabela `unidades_medida`
 --
 ALTER TABLE `unidades_medida`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT de tabela `usuarios`
