@@ -48,9 +48,19 @@ class ProdutoGenericoCRUDController {
         return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
       }
 
-      // Verificar se o produto origem já está vinculado a outro produto genérico padrão
+      // Verificar se o produto origem já está vinculado a outro produto genérico padrão ativo
       const produtoOrigemVinculado = await executeQuery(
-        'SELECT po.id, po.nome, pg.codigo as produto_generico_codigo, pg.nome as produto_generico_nome FROM produto_origem po LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id WHERE po.id = ? AND po.produto_generico_padrao_id IS NOT NULL',
+        `SELECT 
+          po.id, 
+          po.nome, 
+          pg.codigo as produto_generico_codigo, 
+          pg.nome as produto_generico_nome 
+        FROM produto_origem po 
+        LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id 
+        WHERE po.id = ? 
+        AND po.produto_generico_padrao_id IS NOT NULL 
+        AND pg.produto_padrao = 'Sim' 
+        AND pg.status = 1`,
         [produto_origem_id]
       );
 
@@ -200,9 +210,20 @@ class ProdutoGenericoCRUDController {
         return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
       }
 
-      // Verificar se o produto origem já está vinculado a outro produto genérico padrão
+      // Verificar se o produto origem já está vinculado a outro produto genérico padrão ativo
       const produtoOrigemVinculado = await executeQuery(
-        'SELECT po.id, po.nome, pg.codigo as produto_generico_codigo, pg.nome as produto_generico_nome FROM produto_origem po LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id WHERE po.id = ? AND po.produto_generico_padrao_id IS NOT NULL AND po.produto_generico_padrao_id != ?',
+        `SELECT 
+          po.id, 
+          po.nome, 
+          pg.codigo as produto_generico_codigo, 
+          pg.nome as produto_generico_nome 
+        FROM produto_origem po 
+        LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id 
+        WHERE po.id = ? 
+        AND po.produto_generico_padrao_id IS NOT NULL 
+        AND pg.produto_padrao = 'Sim' 
+        AND pg.status = 1 
+        AND pg.id != ?`, // Exclui o produto genérico atual
         [produto_origem_id, id]
       );
 
