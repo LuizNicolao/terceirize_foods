@@ -105,6 +105,7 @@ const ProdutoGenericoModal = ({
       peso_bruto: data.peso_bruto ? parseFloat(data.peso_bruto) : null,
       regra_palet: data.regra_palet ? parseInt(data.regra_palet) : null,
       prazo_validade_padrao: data.prazo_validade_padrao ? parseInt(data.prazo_validade_padrao) : null,
+      produto_padrao: data.produto_padrao || 'Não', // Garantir que produto_padrao seja enviado
       status: parseInt(data.status) || 1
     };
 
