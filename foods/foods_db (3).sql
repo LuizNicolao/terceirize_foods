@@ -1138,7 +1138,7 @@ CREATE TABLE `produtos` (
   `grupo_id` int DEFAULT NULL COMMENT 'Agrupamento N1 - Exemplo: FRIOS',
   `subgrupo_id` int DEFAULT NULL COMMENT 'Agrupamento N2 - Exemplo: CONGELADO',
   `classe_id` int DEFAULT NULL,
-  `nome_generico_id` int DEFAULT NULL COMMENT 'ID do nome genérico do produto',
+  `nome_generico_id` int DEFAULT NULL COMMENT 'ID do produto genérico do produto',
   `marca_id` int DEFAULT NULL,
   `peso_liquido` decimal(10,3) DEFAULT NULL COMMENT 'Peso líquido em kg - Exemplo: 1',
   `peso_bruto` decimal(10,3) DEFAULT NULL COMMENT 'Peso bruto em kg - Exemplo: 1',

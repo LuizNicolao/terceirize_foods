@@ -236,13 +236,13 @@ const ProdutoModal = ({
                 </Input>
 
                 <Input
-                  label="Nome Genérico"
+                  label="Produto Genérico"
                   type="select"
                   disabled={isViewMode}
                   error={errors.nome_generico_id?.message}
                   {...register('nome_generico_id')}
                 >
-                  <option value="">Selecione um nome genérico...</option>
+                  <option value="">Selecione um produto genérico...</option>
                   {produtoGenerico.map(generico => (
                     <option key={generico.id} value={generico.id}>
                       {generico.nome}

@@ -95,7 +95,7 @@ const produtoValidations = {
     body('nome_generico_id')
       .optional()
       .isInt({ min: 1 })
-      .withMessage('Nome genérico deve ser selecionado'),
+      .withMessage('Produto genérico deve ser selecionado'),
     body('marca_id')
       .optional()
       .isInt({ min: 1 })
@@ -268,7 +268,7 @@ const produtoValidations = {
     body('nome_generico_id')
       .optional()
       .isInt({ min: 1 })
-      .withMessage('Nome genérico deve ser selecionado'),
+      .withMessage('Produto genérico deve ser selecionado'),
     body('marca_id')
       .optional()
       .isInt({ min: 1 })

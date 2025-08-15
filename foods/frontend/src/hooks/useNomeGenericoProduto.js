@@ -110,29 +110,29 @@ export const useNomeGenericoProduto = () => {
       }
       
       if (result.success) {
-        toast.success(editingNomeGenerico ? 'Nome genérico atualizado com sucesso!' : 'Nome genérico criado com sucesso!');
+        toast.success(editingNomeGenerico ? 'Produto genérico atualizado com sucesso!' : 'Produto genérico criado com sucesso!');
         handleCloseModal();
         loadNomesGenericos();
       } else {
         toast.error(result.error);
       }
     } catch (error) {
-      toast.error('Erro ao salvar nome genérico');
+      toast.error('Erro ao salvar produto genérico');
     }
   };
 
   const handleDeleteNomeGenerico = async (nomeGenericoId) => {
-    if (window.confirm('Tem certeza que deseja excluir este nome genérico?')) {
+    if (window.confirm('Tem certeza que deseja excluir este produto genérico?')) {
       try {
         const result = await NomeGenericoProdutoService.excluir(nomeGenericoId);
         if (result.success) {
-          toast.success('Nome genérico excluído com sucesso!');
+          toast.success('Produto genérico excluído com sucesso!');
           loadNomesGenericos();
         } else {
           toast.error(result.error);
         }
       } catch (error) {
-        toast.error('Erro ao excluir nome genérico');
+        toast.error('Erro ao excluir produto genérico');
       }
     }
   };

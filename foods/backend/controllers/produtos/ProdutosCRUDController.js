@@ -102,7 +102,7 @@ class ProdutosCRUDController {
       }
     }
 
-    // Verificar se nome genérico existe (se fornecido)
+    // Verificar se produto genérico existe (se fornecido)
     if (nome_generico_id) {
       const nomeGenerico = await executeQuery(
         'SELECT id FROM produto_generico WHERE id = ?',
@@ -110,7 +110,7 @@ class ProdutosCRUDController {
       );
 
       if (nomeGenerico.length === 0) {
-        return errorResponse(res, 'Nome genérico não encontrado', STATUS_CODES.BAD_REQUEST);
+        return errorResponse(res, 'Produto genérico não encontrado', STATUS_CODES.BAD_REQUEST);
       }
     }
 
@@ -320,7 +320,7 @@ class ProdutosCRUDController {
       }
     }
 
-    // Verificar se nome genérico existe (se fornecido)
+    // Verificar se produto genérico existe (se fornecido)
     if (updateData.nome_generico_id) {
       const nomeGenerico = await executeQuery(
         'SELECT id FROM produto_generico WHERE id = ?',
@@ -328,7 +328,7 @@ class ProdutosCRUDController {
       );
 
       if (nomeGenerico.length === 0) {
-        return errorResponse(res, 'Nome genérico não encontrado', STATUS_CODES.BAD_REQUEST);
+        return errorResponse(res, 'Produto genérico não encontrado', STATUS_CODES.BAD_REQUEST);
       }
     }
 
