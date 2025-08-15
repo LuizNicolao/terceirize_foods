@@ -13,5 +13,3 @@ export { useFiliais } from './useFiliais';
 export { useClientes } from './useClientes';
 export { useAuditoria } from './useAuditoria';
 export { useExport } from './useExport';
-export { useFormatters } from './useFormatters';
-export { useValidation } from './useValidation';

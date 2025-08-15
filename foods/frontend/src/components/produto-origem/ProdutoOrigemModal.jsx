@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit } from 'react-icons/fa';
-import { Button, Input, FormattedInput, Modal, ValidationSummary } from '../ui';
-import { useValidation } from '../../hooks/useValidation';
-import { produtoOrigemValidations } from '../../utils/validations';
+import { Button, Input, Modal } from '../ui';
 import { gerarCodigoProdutoOrigem } from '../../utils/codigoGenerator';
 
 const ProdutoOrigemModal = ({
@@ -20,13 +18,6 @@ const ProdutoOrigemModal = ({
   loading
 }) => {
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
-  const { 
-    errors: validationErrors, 
-    validateField, 
-    validateAll, 
-    clearAllErrors,
-    markAsTouched 
-  } = useValidation();
 
   // Observar mudanças nos campos para filtros dependentes
   const grupoId = watch('grupo_id');
@@ -63,25 +54,9 @@ const ProdutoOrigemModal = ({
       const codigoGerado = gerarCodigoProdutoOrigem();
       setValue('codigo', codigoGerado);
     }
-    
-    // Limpar erros de validação quando o modal é aberto
-    if (isOpen) {
-      clearAllErrors();
-    }
-  }, [produtoOrigem, isOpen, setValue, reset, clearAllErrors]);
+  }, [produtoOrigem, isOpen, setValue, reset]);
 
   const handleFormSubmit = (data) => {
-    // Validar todos os campos antes de enviar
-    const isValid = validateAll(data, produtoOrigemValidations);
-    
-    if (!isValid) {
-      // Marcar todos os campos como tocados para mostrar erros
-      Object.keys(produtoOrigemValidations).forEach(field => {
-        markAsTouched(field);
-      });
-      return;
-    }
-
     // Converter campos numéricos e enviar apenas os campos editáveis
     const formData = {
       codigo: data.codigo,
@@ -132,43 +107,40 @@ const ProdutoOrigemModal = ({
 
         {/* Form */}
         <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
-          {/* Resumo de validação */}
-          <ValidationSummary errors={validationErrors} />
-          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Código */}
-            <FormattedInput
-              label="Código"
-              formatType="codigo"
+            <Input
+              label="Código *"
               placeholder="Código gerado automaticamente"
-              {...register('codigo')}
-              error={validationErrors.codigo || errors.codigo?.message}
-              onValidate={(value) => validateField('codigo', value, produtoOrigemValidations.codigo)}
+              {...register('codigo', {
+                required: 'Código é obrigatório'
+              })}
+              error={errors.codigo?.message}
               disabled={true}
-              required
             />
 
             {/* Nome */}
-            <FormattedInput
-              label="Nome"
-              formatType="nome"
-              placeholder="Nome do produto origem"
-              {...register('nome')}
-              error={validationErrors.nome || errors.nome?.message}
-              onValidate={(value) => validateField('nome', value, produtoOrigemValidations.nome)}
+            <Input
+              label="Nome *"
+              {...register('nome', {
+                required: 'Nome é obrigatório',
+                minLength: { value: 3, message: 'Nome deve ter pelo menos 3 caracteres' },
+                maxLength: { value: 200, message: 'Nome deve ter no máximo 200 caracteres' }
+              })}
+              error={errors.nome?.message}
               disabled={viewMode}
-              required
             />
 
             {/* Unidade de Medida */}
-            <FormattedInput
-              label="Unidade de Medida"
+            <Input
+              label="Unidade de Medida *"
               type="select"
-              {...register('unidade_medida_id')}
-              error={validationErrors.unidade_medida_id || errors.unidade_medida_id?.message}
-              onValidate={(value) => validateField('unidade_medida_id', value, produtoOrigemValidations.unidade_medida_id)}
+              {...register('unidade_medida_id', {
+                required: 'Unidade de medida é obrigatória',
+                validate: value => value && value !== '' ? true : 'Unidade de medida é obrigatória'
+              })}
+              error={errors.unidade_medida_id?.message}
               disabled={viewMode}
-              required
             >
               <option value="">Selecione uma unidade</option>
               {unidadesMedida.map(unidade => (
@@ -176,29 +148,28 @@ const ProdutoOrigemModal = ({
                   {unidade.nome}
                 </option>
               ))}
-            </FormattedInput>
+            </Input>
 
             {/* Fator de Conversão */}
-            <FormattedInput
+            <Input
               label="Fator de Conversão"
               type="number"
-              formatType="decimal"
               step="0.001"
               min="0.001"
-              placeholder="1.000"
-              {...register('fator_conversao')}
-              error={validationErrors.fator_conversao || errors.fator_conversao?.message}
-              onValidate={(value) => validateField('fator_conversao', value, produtoOrigemValidations.fator_conversao)}
+              {...register('fator_conversao', {
+                min: { value: 0.001, message: 'Fator de conversão deve ser maior que 0' },
+                max: { value: 999999.999, message: 'Fator de conversão deve ser menor que 999999.999' }
+              })}
+              error={errors.fator_conversao?.message}
               disabled={viewMode}
             />
 
             {/* Grupo */}
-            <FormattedInput
+            <Input
               label="Grupo"
               type="select"
               {...register('grupo_id')}
-              error={validationErrors.grupo_id || errors.grupo_id?.message}
-              onValidate={(value) => validateField('grupo_id', value, produtoOrigemValidations.grupo_id)}
+              error={errors.grupo_id?.message}
               disabled={viewMode}
             >
               <option value="">Selecione um grupo</option>
@@ -207,15 +178,14 @@ const ProdutoOrigemModal = ({
                   {grupo.nome}
                 </option>
               ))}
-            </FormattedInput>
+            </Input>
 
             {/* Subgrupo */}
-            <FormattedInput
+            <Input
               label="Subgrupo"
               type="select"
               {...register('subgrupo_id')}
-              error={validationErrors.subgrupo_id || errors.subgrupo_id?.message}
-              onValidate={(value) => validateField('subgrupo_id', value, produtoOrigemValidations.subgrupo_id)}
+              error={errors.subgrupo_id?.message}
               disabled={viewMode || !grupoId}
             >
               <option value="">Selecione um subgrupo</option>
@@ -224,15 +194,14 @@ const ProdutoOrigemModal = ({
                   {subgrupo.nome}
                 </option>
               ))}
-            </FormattedInput>
+            </Input>
 
             {/* Classe */}
-            <FormattedInput
+            <Input
               label="Classe"
               type="select"
               {...register('classe_id')}
-              error={validationErrors.classe_id || errors.classe_id?.message}
-              onValidate={(value) => validateField('classe_id', value, produtoOrigemValidations.classe_id)}
+              error={errors.classe_id?.message}
               disabled={viewMode || !subgrupoId}
             >
               <option value="">Selecione uma classe</option>
@@ -241,29 +210,28 @@ const ProdutoOrigemModal = ({
                   {classe.nome}
                 </option>
               ))}
-            </FormattedInput>
+            </Input>
 
             {/* Peso Líquido */}
-            <FormattedInput
+            <Input
               label="Peso Líquido (kg)"
               type="number"
-              formatType="decimal"
               step="0.001"
               min="0.001"
-              placeholder="0.000"
-              {...register('peso_liquido')}
-              error={validationErrors.peso_liquido || errors.peso_liquido?.message}
-              onValidate={(value) => validateField('peso_liquido', value, produtoOrigemValidations.peso_liquido)}
+              {...register('peso_liquido', {
+                min: { value: 0.001, message: 'Peso líquido deve ser maior que 0' },
+                max: { value: 999999.999, message: 'Peso líquido deve ser menor que 999999.999' }
+              })}
+              error={errors.peso_liquido?.message}
               disabled={viewMode}
             />
 
             {/* Produto Genérico Padrão */}
-            <FormattedInput
+            <Input
               label="Produto Genérico Padrão"
               type="select"
               {...register('produto_generico_padrao_id')}
-              error={validationErrors.produto_generico_padrao_id || errors.produto_generico_padrao_id?.message}
-              onValidate={(value) => validateField('produto_generico_padrao_id', value, produtoOrigemValidations.produto_generico_padrao_id)}
+              error={errors.produto_generico_padrao_id?.message}
               disabled={viewMode}
             >
               <option value="">Selecione um produto genérico</option>
@@ -272,32 +240,30 @@ const ProdutoOrigemModal = ({
                   {produto.nome}
                 </option>
               ))}
-            </FormattedInput>
+            </Input>
           </div>
 
           {/* Referência de Mercado */}
-          <FormattedInput
+          <Input
             label="Referência de Mercado"
-            formatType="referencia"
-            placeholder="Referência de mercado do produto"
-            {...register('referencia_mercado')}
-            error={validationErrors.referencia_mercado || errors.referencia_mercado?.message}
-            onValidate={(value) => validateField('referencia_mercado', value, produtoOrigemValidations.referencia_mercado)}
+            {...register('referencia_mercado', {
+              maxLength: { value: 200, message: 'Referência de mercado deve ter no máximo 200 caracteres' }
+            })}
+            error={errors.referencia_mercado?.message}
             disabled={viewMode}
           />
 
           {/* Status */}
-          <FormattedInput
+          <Input
             label="Status"
             type="select"
             {...register('status')}
-            error={validationErrors.status || errors.status?.message}
-            onValidate={(value) => validateField('status', value, produtoOrigemValidations.status)}
+            error={errors.status?.message}
             disabled={viewMode}
           >
             <option value={1}>Ativo</option>
             <option value={0}>Inativo</option>
-          </FormattedInput>
+          </Input>
 
           {/* Footer */}
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">

@@ -6,9 +6,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit } from 'react-icons/fa';
-import { Button, Input, FormattedInput, Modal, ValidationSummary } from '../ui';
-import { useValidation } from '../../hooks/useValidation';
-import { produtoGenericoValidations } from '../../utils/validations';
+import { Button, Input, Modal } from '../ui';
 import { gerarCodigoProdutoGenerico } from '../../utils/codigoGenerator';
 
 const ProdutoGenericoModal = ({
@@ -31,14 +29,6 @@ const ProdutoGenericoModal = ({
     reset,
     formState: { errors }
   } = useForm();
-  
-  const { 
-    errors: validationErrors, 
-    validateField, 
-    validateAll, 
-    clearAllErrors,
-    markAsTouched 
-  } = useValidation();
 
   // Observar mudanças nos campos para filtros dependentes
   const grupoId = watch('grupo_id');
@@ -77,26 +67,10 @@ const ProdutoGenericoModal = ({
       const codigoGerado = gerarCodigoProdutoGenerico();
       setValue('codigo', codigoGerado);
     }
-    
-    // Limpar erros de validação quando o modal é aberto
-    if (isOpen) {
-      clearAllErrors();
-    }
-  }, [produtoGenerico, isOpen, setValue, reset, clearAllErrors]);
+  }, [produtoGenerico, isOpen, setValue, reset]);
 
   // Processar envio do formulário
   const handleFormSubmit = (data) => {
-    // Validar todos os campos antes de enviar
-    const isValid = validateAll(data, produtoGenericoValidations);
-    
-    if (!isValid) {
-      // Marcar todos os campos como tocados para mostrar erros
-      Object.keys(produtoGenericoValidations).forEach(field => {
-        markAsTouched(field);
-      });
-      return;
-    }
-
     // Converter campos numéricos
     const formData = {
       ...data,
@@ -150,44 +124,44 @@ const ProdutoGenericoModal = ({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-6">
-          {/* Resumo de validação */}
-          <ValidationSummary errors={validationErrors} />
-          
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Código */}
-            <FormattedInput
-              label="Código"
-              type="number"
-              placeholder="Código gerado automaticamente"
-              {...register('codigo')}
-              error={validationErrors.codigo || errors.codigo?.message}
-              onValidate={(value) => validateField('codigo', value, produtoGenericoValidations.codigo)}
-              disabled={true}
-              required
-            />
+            <div>
+              <Input
+                label="Código *"
+                type="text"
+                {...register('codigo', { 
+                  required: 'Código é obrigatório'
+                })}
+                error={errors.codigo?.message}
+                disabled={true}
+                placeholder="Código gerado automaticamente"
+              />
+            </div>
 
             {/* Nome */}
             <div className="md:col-span-2">
-              <FormattedInput
-                label="Nome"
-                formatType="nome"
-                placeholder="Digite o nome do produto genérico"
-                {...register('nome')}
-                error={validationErrors.nome || errors.nome?.message}
-                onValidate={(value) => validateField('nome', value, produtoGenericoValidations.nome)}
+              <Input
+                label="Nome *"
+                type="text"
+                {...register('nome', { 
+                  required: 'Nome é obrigatório',
+                  minLength: { value: 3, message: 'Nome deve ter pelo menos 3 caracteres' },
+                  maxLength: { value: 200, message: 'Nome deve ter no máximo 200 caracteres' }
+                })}
+                error={errors.nome?.message}
                 disabled={viewMode}
-                required
+                placeholder="Digite o nome do produto genérico"
               />
             </div>
 
             {/* Produto Origem */}
-            <FormattedInput
+            <Input
               label="Produto Origem"
               type="select"
               {...register('produto_origem_id')}
-              error={validationErrors.produto_origem_id || errors.produto_origem_id?.message}
-              onValidate={(value) => validateField('produto_origem_id', value, produtoGenericoValidations.produto_origem_id)}
+              error={errors.produto_origem_id?.message}
               disabled={viewMode}
             >
               <option value="">Selecione um produto origem</option>
@@ -196,42 +170,41 @@ const ProdutoGenericoModal = ({
                   {produto.codigo} - {produto.nome}
                 </option>
               ))}
-            </FormattedInput>
+            </Input>
 
             {/* Fator de Conversão */}
-            <FormattedInput
-              label="Fator de Conversão"
-              type="number"
-              formatType="decimal"
-              step="0.001"
-              min="0.001"
-              placeholder="1.000"
-              {...register('fator_conversao')}
-              error={validationErrors.fator_conversao || errors.fator_conversao?.message}
-              onValidate={(value) => validateField('fator_conversao', value, produtoGenericoValidations.fator_conversao)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Fator de Conversão"
+                type="number"
+                step="0.001"
+                {...register('fator_conversao', {
+                  min: { value: 0.001, message: 'Fator deve ser maior que 0' },
+                  max: { value: 999999.999, message: 'Fator deve ser menor que 999999.999' }
+                })}
+                error={errors.fator_conversao?.message}
+                disabled={viewMode}
+                placeholder="1.000"
+              />
+            </div>
 
             {/* Status */}
-            <FormattedInput
+            <Input
               label="Status"
               type="select"
               {...register('status')}
-              error={validationErrors.status || errors.status?.message}
-              onValidate={(value) => validateField('status', value, produtoGenericoValidations.status)}
               disabled={viewMode}
             >
               <option value={1}>Ativo</option>
               <option value={0}>Inativo</option>
-            </FormattedInput>
+            </Input>
 
             {/* Grupo */}
-            <FormattedInput
+            <Input
               label="Grupo"
               type="select"
               {...register('grupo_id')}
-              error={validationErrors.grupo_id || errors.grupo_id?.message}
-              onValidate={(value) => validateField('grupo_id', value, produtoGenericoValidations.grupo_id)}
+              error={errors.grupo_id?.message}
               disabled={viewMode}
             >
               <option value="">Selecione um grupo</option>
@@ -240,15 +213,14 @@ const ProdutoGenericoModal = ({
                   {grupo.nome}
                 </option>
               ))}
-            </FormattedInput>
+            </Input>
 
             {/* Subgrupo */}
-            <FormattedInput
+            <Input
               label="Subgrupo"
               type="select"
               {...register('subgrupo_id')}
-              error={validationErrors.subgrupo_id || errors.subgrupo_id?.message}
-              onValidate={(value) => validateField('subgrupo_id', value, produtoGenericoValidations.subgrupo_id)}
+              error={errors.subgrupo_id?.message}
               disabled={viewMode || !grupoId}
             >
               <option value="">Selecione um subgrupo</option>
@@ -257,15 +229,14 @@ const ProdutoGenericoModal = ({
                   {subgrupo.nome}
                 </option>
               ))}
-            </FormattedInput>
+            </Input>
 
             {/* Classe */}
-            <FormattedInput
+            <Input
               label="Classe"
               type="select"
               {...register('classe_id')}
-              error={validationErrors.classe_id || errors.classe_id?.message}
-              onValidate={(value) => validateField('classe_id', value, produtoGenericoValidations.classe_id)}
+              error={errors.classe_id?.message}
               disabled={viewMode || !subgrupoId}
             >
               <option value="">Selecione uma classe</option>
@@ -274,15 +245,14 @@ const ProdutoGenericoModal = ({
                   {classe.nome}
                 </option>
               ))}
-            </FormattedInput>
+            </Input>
 
             {/* Unidade de Medida */}
-            <FormattedInput
+            <Input
               label="Unidade de Medida"
               type="select"
               {...register('unidade_medida_id')}
-              error={validationErrors.unidade_medida_id || errors.unidade_medida_id?.message}
-              onValidate={(value) => validateField('unidade_medida_id', value, produtoGenericoValidations.unidade_medida_id)}
+              error={errors.unidade_medida_id?.message}
               disabled={viewMode}
             >
               <option value="">Selecione uma unidade</option>
@@ -291,162 +261,200 @@ const ProdutoGenericoModal = ({
                   {unidade.nome}
                 </option>
               ))}
-            </FormattedInput>
+            </Input>
 
             {/* Produto Padrão */}
-            <FormattedInput
+            <Input
               label="Produto Padrão"
               type="select"
               {...register('produto_padrao')}
-              error={validationErrors.produto_padrao || errors.produto_padrao?.message}
-              onValidate={(value) => validateField('produto_padrao', value, produtoGenericoValidations.produto_padrao)}
               disabled={viewMode}
             >
               <option value="Não">Não</option>
               <option value="Sim">Sim</option>
-            </FormattedInput>
+            </Input>
 
             {/* Referência de Mercado */}
-            <FormattedInput
-              label="Referência de Mercado"
-              formatType="referencia"
-              placeholder="Digite a referência de mercado"
-              {...register('referencia_mercado')}
-              error={validationErrors.referencia_mercado || errors.referencia_mercado?.message}
-              onValidate={(value) => validateField('referencia_mercado', value, produtoGenericoValidations.referencia_mercado)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Referência de Mercado"
+                type="text"
+                {...register('referencia_mercado', {
+                  maxLength: { value: 200, message: 'Referência deve ter no máximo 200 caracteres' }
+                })}
+                error={errors.referencia_mercado?.message}
+                disabled={viewMode}
+                placeholder="Digite a referência de mercado"
+              />
+            </div>
 
             {/* Peso Líquido */}
-            <FormattedInput
-              label="Peso Líquido (kg)"
-              type="number"
-              formatType="decimal"
-              step="0.001"
-              min="0.001"
-              placeholder="0.000"
-              {...register('peso_liquido')}
-              error={validationErrors.peso_liquido || errors.peso_liquido?.message}
-              onValidate={(value) => validateField('peso_liquido', value, produtoGenericoValidations.peso_liquido)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Peso Líquido"
+                type="number"
+                step="0.001"
+                {...register('peso_liquido', {
+                  min: { value: 0.001, message: 'Peso deve ser maior que 0' },
+                  max: { value: 999999.999, message: 'Peso deve ser menor que 999999.999' }
+                })}
+                error={errors.peso_liquido?.message}
+                disabled={viewMode}
+                placeholder="0.000"
+              />
+            </div>
 
             {/* Peso Bruto */}
-            <FormattedInput
-              label="Peso Bruto (kg)"
-              type="number"
-              formatType="decimal"
-              step="0.001"
-              min="0.001"
-              placeholder="0.000"
-              {...register('peso_bruto')}
-              error={validationErrors.peso_bruto || errors.peso_bruto?.message}
-              onValidate={(value) => validateField('peso_bruto', value, produtoGenericoValidations.peso_bruto)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Peso Bruto"
+                type="number"
+                step="0.001"
+                {...register('peso_bruto', {
+                  min: { value: 0.001, message: 'Peso deve ser maior que 0' },
+                  max: { value: 999999.999, message: 'Peso deve ser menor que 999999.999' }
+                })}
+                error={errors.peso_bruto?.message}
+                disabled={viewMode}
+                placeholder="0.000"
+              />
+            </div>
 
             {/* Regra Palet */}
-            <FormattedInput
-              label="Regra Palet"
-              type="number"
-              min="1"
-              placeholder="Digite a regra palet"
-              {...register('regra_palet')}
-              error={validationErrors.regra_palet || errors.regra_palet?.message}
-              onValidate={(value) => validateField('regra_palet', value, produtoGenericoValidations.regra_palet)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Regra Palet"
+                type="number"
+                {...register('regra_palet', {
+                  min: { value: 1, message: 'Regra deve ser maior que 0' }
+                })}
+                error={errors.regra_palet?.message}
+                disabled={viewMode}
+                placeholder="Digite a regra palet"
+              />
+            </div>
 
             {/* Referência Interna */}
-            <FormattedInput
-              label="Referência Interna"
-              placeholder="Digite a referência interna"
-              {...register('referencia_interna')}
-              error={validationErrors.referencia_interna || errors.referencia_interna?.message}
-              onValidate={(value) => validateField('referencia_interna', value, produtoGenericoValidations.referencia_interna)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Referência Interna"
+                type="text"
+                {...register('referencia_interna', {
+                  maxLength: { value: 200, message: 'Referência deve ter no máximo 200 caracteres' }
+                })}
+                error={errors.referencia_interna?.message}
+                disabled={viewMode}   
+                placeholder="Digite a referência interna"
+              />
+            </div>
 
             {/* Referência Externa */}
-            <FormattedInput
-              label="Referência Externa"
-              placeholder="Digite a referência externa"
-              {...register('referencia_externa')}
-              error={validationErrors.referencia_externa || errors.referencia_externa?.message}
-              onValidate={(value) => validateField('referencia_externa', value, produtoGenericoValidations.referencia_externa)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Referência Externa"
+                type="text"
+                {...register('referencia_externa', {
+                  maxLength: { value: 200, message: 'Referência deve ter no máximo 200 caracteres' }
+                })}
+                error={errors.referencia_externa?.message}
+                disabled={viewMode}
+                placeholder="Digite a referência externa"
+              />
+            </div>
 
             {/* Registro Específico */}
-            <FormattedInput
-              label="Registro Específico"
-              placeholder="Digite o registro específico"
-              {...register('registro_especifico')}
-              error={validationErrors.registro_especifico || errors.registro_especifico?.message}
-              onValidate={(value) => validateField('registro_especifico', value, produtoGenericoValidations.registro_especifico)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Registro Específico"
+                type="text"
+                {...register('registro_especifico', {
+                  maxLength: { value: 200, message: 'Registro deve ter no máximo 200 caracteres' }
+                })}
+                error={errors.registro_especifico?.message}
+                disabled={viewMode}
+                placeholder="Digite o registro específico"
+              />
+            </div>
 
             {/* Tipo de Registro */}
-            <FormattedInput
-              label="Tipo de Registro"
-              placeholder="Digite o tipo de registro"
-              {...register('tipo_registro')}
-              error={validationErrors.tipo_registro || errors.tipo_registro?.message}
-              onValidate={(value) => validateField('tipo_registro', value, produtoGenericoValidations.tipo_registro)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Tipo de Registro"
+                type="text"
+                {...register('tipo_registro', {
+                  maxLength: { value: 100, message: 'Tipo deve ter no máximo 100 caracteres' }
+                })}
+                error={errors.tipo_registro?.message}
+                disabled={viewMode}
+                placeholder="Digite o tipo de registro"
+              />
+            </div>
 
             {/* Prazo de Validade Padrão */}
-            <FormattedInput
-              label="Prazo de Validade Padrão"
-              type="number"
-              min="1"
-              placeholder="Digite o prazo de validade"
-              {...register('prazo_validade_padrao')}
-              error={validationErrors.prazo_validade_padrao || errors.prazo_validade_padrao?.message}
-              onValidate={(value) => validateField('prazo_validade_padrao', value, produtoGenericoValidations.prazo_validade_padrao)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Prazo de Validade Padrão"
+                type="number"
+                {...register('prazo_validade_padrao', {
+                  min: { value: 1, message: 'Prazo deve ser maior que 0' }
+                })}
+                error={errors.prazo_validade_padrao?.message}
+                disabled={viewMode}
+                placeholder="Digite o prazo de validade"
+              />
+            </div>
 
             {/* Unidade de Validade */}
-            <FormattedInput
-              label="Unidade de Validade"
-              type="select"
-              {...register('unidade_validade')}
-              error={validationErrors.unidade_validade || errors.unidade_validade?.message}
-              onValidate={(value) => validateField('unidade_validade', value, produtoGenericoValidations.unidade_validade)}
-              disabled={viewMode}
-            >
-              <option value="">Selecione</option>
-              <option value="Dias">Dias</option>
-              <option value="Semanas">Semanas</option>
-              <option value="Meses">Meses</option>
-              <option value="Anos">Anos</option>
-            </FormattedInput>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Unidade de Validade
+              </label>
+              <select
+                {...register('unidade_validade')}
+                disabled={viewMode}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Selecione</option>
+                <option value="Dias">Dias</option>
+                <option value="Semanas">Semanas</option>
+                <option value="Meses">Meses</option>
+                <option value="Anos">Anos</option>
+              </select>
+            </div>
 
             {/* Integração Senior */}
-            <FormattedInput
-              label="Integração Senior"
-              placeholder="Digite a integração Senior"
-              {...register('integracao_senior')}
-              error={validationErrors.integracao_senior || errors.integracao_senior?.message}
-              onValidate={(value) => validateField('integracao_senior', value, produtoGenericoValidations.integracao_senior)}
-              disabled={viewMode}
-            />
+            <div>
+              <Input
+                label="Integração Senior"
+                type="text"
+                {...register('integracao_senior', {
+                  maxLength: { value: 50, message: 'Integração deve ter no máximo 50 caracteres' }
+                })}
+                error={errors.integracao_senior?.message}
+                disabled={viewMode}
+                placeholder="Digite a integração Senior"
+              />
+            </div>
 
             {/* Informações Adicionais */}
             <div className="lg:col-span-3">
-              <FormattedInput
-                label="Informações Adicionais"
-                type="textarea"
-                rows={4}
-                placeholder="Digite informações adicionais"
-                {...register('informacoes_adicionais')}
-                error={validationErrors.informacoes_adicionais || errors.informacoes_adicionais?.message}
-                onValidate={(value) => validateField('informacoes_adicionais', value, produtoGenericoValidations.informacoes_adicionais)}
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Informações Adicionais
+              </label>
+              <textarea
+                {...register('informacoes_adicionais', {
+                  maxLength: { value: 65535, message: 'Informações devem ter no máximo 65535 caracteres' }
+                })}
                 disabled={viewMode}
+                rows={4}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
+                  errors.informacoes_adicionais ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
+                }`}
+                placeholder="Digite informações adicionais"
               />
+              {errors.informacoes_adicionais && (
+                <p className="mt-1 text-sm text-red-600">{errors.informacoes_adicionais.message}</p>
+              )}
             </div>
           </div>
 
