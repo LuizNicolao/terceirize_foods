@@ -21,7 +21,7 @@ class ProdutoOrigemCRUDController {
   static criarProdutoOrigem = asyncHandler(async (req, res) => {
     const {
       codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
-      classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id, status
+      classe_id, peso_liquido, referencia_mercado, status
     } = req.body;
 
     // Verificar se código já existe
@@ -80,28 +80,15 @@ class ProdutoOrigemCRUDController {
       }
     }
 
-    // Verificar se produto genérico padrão existe (se fornecido)
-    if (produto_generico_padrao_id) {
-      const produtoGenerico = await executeQuery(
-        'SELECT id FROM produto_generico WHERE id = ?',
-        [produto_generico_padrao_id]
-      );
-
-      if (produtoGenerico.length === 0) {
-        return errorResponse(res, 'Produto genérico padrão não encontrado', STATUS_CODES.BAD_REQUEST);
-      }
-    }
-
-    // Inserir produto origem
+    // Inserir produto origem (produto_generico_padrao_id será gerenciado automaticamente pelos triggers)
     const result = await executeQuery(
       `INSERT INTO produto_origem (
         codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
-        classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id, 
-        status, usuario_criador_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        classe_id, peso_liquido, referencia_mercado, status, usuario_criador_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         codigo, nome, unidade_medida_id, fator_conversao || 1.000, grupo_id, subgrupo_id,
-        classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id,
+        classe_id, peso_liquido, referencia_mercado,
         status !== undefined ? status : 1, req.user.id
       ]
     );
@@ -140,7 +127,7 @@ class ProdutoOrigemCRUDController {
     const { id } = req.params;
     const {
       codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
-      classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id, status
+      classe_id, peso_liquido, referencia_mercado, status
     } = req.body;
 
     // Verificar se produto origem existe
@@ -213,29 +200,16 @@ class ProdutoOrigemCRUDController {
       }
     }
 
-    // Verificar se produto genérico padrão existe (se fornecido)
-    if (produto_generico_padrao_id) {
-      const produtoGenerico = await executeQuery(
-        'SELECT id FROM produto_generico WHERE id = ?',
-        [produto_generico_padrao_id]
-      );
-
-      if (produtoGenerico.length === 0) {
-        return errorResponse(res, 'Produto genérico padrão não encontrado', STATUS_CODES.BAD_REQUEST);
-      }
-    }
-
-    // Atualizar produto origem
+    // Atualizar produto origem (produto_generico_padrao_id será gerenciado automaticamente pelos triggers)
     await executeQuery(
       `UPDATE produto_origem SET 
         codigo = ?, nome = ?, unidade_medida_id = ?, fator_conversao = ?, 
         grupo_id = ?, subgrupo_id = ?, classe_id = ?, peso_liquido = ?, 
-        referencia_mercado = ?, produto_generico_padrao_id = ?, status = ?, 
-        usuario_atualizador_id = ?
+        referencia_mercado = ?, status = ?, usuario_atualizador_id = ?
       WHERE id = ?`,
       [
         codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id,
-        classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id,
+        classe_id, peso_liquido, referencia_mercado,
         status, req.user.id, id
       ]
     );

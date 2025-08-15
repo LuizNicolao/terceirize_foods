@@ -47,6 +47,16 @@ class ProdutoGenericoCRUDController {
       if (produtoOrigem.length === 0) {
         return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
       }
+
+      // Verificar se o produto origem já está vinculado a outro produto genérico padrão
+      const produtoOrigemVinculado = await executeQuery(
+        'SELECT po.id, po.nome, pg.codigo as produto_generico_codigo, pg.nome as produto_generico_nome FROM produto_origem po LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id WHERE po.id = ? AND po.produto_generico_padrao_id IS NOT NULL',
+        [produto_origem_id]
+      );
+
+      if (produtoOrigemVinculado.length > 0 && produtoOrigemVinculado[0].produto_generico_padrao_id) {
+        return conflictResponse(res, `Produto origem já está vinculado ao produto genérico padrão: ${produtoOrigemVinculado[0].produto_generico_codigo} - ${produtoOrigemVinculado[0].produto_generico_nome}`);
+      }
     }
 
     // Verificar se grupo existe (se fornecido)
@@ -115,6 +125,14 @@ class ProdutoGenericoCRUDController {
       ]
     );
 
+    // Se o produto genérico foi marcado como padrão e tem produto_origem_id, atualizar o produto origem
+    if (produto_padrao === 'Sim' && produto_origem_id) {
+      await executeQuery(
+        'UPDATE produto_origem SET produto_generico_padrao_id = ? WHERE id = ?',
+        [novoProdutoGenerico.insertId, produto_origem_id]
+      );
+    }
+
     // Buscar produto genérico criado
     const produtoGenericoCriado = await executeQuery(
       `SELECT 
@@ -157,13 +175,15 @@ class ProdutoGenericoCRUDController {
 
     // Verificar se produto genérico existe
     const produtoGenerico = await executeQuery(
-      'SELECT id, nome FROM produto_generico WHERE id = ?',
+      'SELECT id, nome, produto_padrao, produto_origem_id FROM produto_generico WHERE id = ?',
       [id]
     );
 
     if (produtoGenerico.length === 0) {
       return notFoundResponse(res, 'Produto genérico não encontrado');
     }
+
+    const produtoGenericoAtual = produtoGenerico[0];
 
     // Verificar se código já existe (se foi alterado)
     if (codigo) {
@@ -186,6 +206,16 @@ class ProdutoGenericoCRUDController {
 
       if (produtoOrigem.length === 0) {
         return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
+      }
+
+      // Verificar se o produto origem já está vinculado a outro produto genérico padrão
+      const produtoOrigemVinculado = await executeQuery(
+        'SELECT po.id, po.nome, pg.codigo as produto_generico_codigo, pg.nome as produto_generico_nome FROM produto_origem po LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id WHERE po.id = ? AND po.produto_generico_padrao_id IS NOT NULL AND po.produto_generico_padrao_id != ?',
+        [produto_origem_id, id]
+      );
+
+      if (produtoOrigemVinculado.length > 0 && produtoOrigemVinculado[0].produto_generico_padrao_id) {
+        return conflictResponse(res, `Produto origem já está vinculado ao produto genérico padrão: ${produtoOrigemVinculado[0].produto_generico_codigo} - ${produtoOrigemVinculado[0].produto_generico_nome}`);
       }
     }
 
@@ -235,6 +265,23 @@ class ProdutoGenericoCRUDController {
       if (unidade.length === 0) {
         return errorResponse(res, 'Unidade de medida não encontrada', STATUS_CODES.BAD_REQUEST);
       }
+    }
+
+    // Gerenciar vínculos com produto origem baseado no campo produto_padrao
+    if (produto_padrao === 'Não' && produtoGenericoAtual.produto_padrao === 'Sim') {
+      // Se mudou de "Sim" para "Não", remover vínculo do produto origem
+      if (produtoGenericoAtual.produto_origem_id) {
+        await executeQuery(
+          'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE id = ?',
+          [produtoGenericoAtual.produto_origem_id]
+        );
+      }
+    } else if (produto_padrao === 'Sim' && produto_origem_id) {
+      // Se está marcado como padrão e tem produto_origem_id, criar vínculo
+      await executeQuery(
+        'UPDATE produto_origem SET produto_generico_padrao_id = ? WHERE id = ?',
+        [id, produto_origem_id]
+      );
     }
 
     // Atualizar produto genérico
