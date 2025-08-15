@@ -80,15 +80,30 @@ class ProdutoOrigemCRUDController {
       }
     }
 
-    // Verificar se produto genérico padrão existe (se fornecido)
+    // Verificar se produto genérico padrão existe e é válido (se fornecido)
     if (produto_generico_padrao_id) {
       const produtoGenerico = await executeQuery(
-        'SELECT id FROM produto_generico WHERE id = ?',
+        'SELECT id, nome, produto_padrao FROM produto_generico WHERE id = ?',
         [produto_generico_padrao_id]
       );
 
       if (produtoGenerico.length === 0) {
         return errorResponse(res, 'Produto genérico padrão não encontrado', STATUS_CODES.BAD_REQUEST);
+      }
+
+      // Verificar se o produto genérico é marcado como padrão
+      if (produtoGenerico[0].produto_padrao !== 'Sim') {
+        return errorResponse(res, 'Apenas produtos genéricos marcados como "Produto Padrão = Sim" podem ser vinculados', STATUS_CODES.BAD_REQUEST);
+      }
+
+      // Verificar se já existe outro produto origem vinculado ao mesmo produto genérico padrão
+      const produtoOrigemExistente = await executeQuery(
+        'SELECT id, nome FROM produto_origem WHERE produto_generico_padrao_id = ? AND status = 1',
+        [produto_generico_padrao_id]
+      );
+
+      if (produtoOrigemExistente.length > 0) {
+        return conflictResponse(res, `Já existe um Produto Origem vinculado a este Produto Genérico Padrão: ${produtoOrigemExistente[0].nome}`);
       }
     }
 
@@ -213,15 +228,30 @@ class ProdutoOrigemCRUDController {
       }
     }
 
-    // Verificar se produto genérico padrão existe (se fornecido)
+    // Verificar se produto genérico padrão existe e é válido (se fornecido)
     if (produto_generico_padrao_id) {
       const produtoGenerico = await executeQuery(
-        'SELECT id FROM produto_generico WHERE id = ?',
+        'SELECT id, nome, produto_padrao FROM produto_generico WHERE id = ?',
         [produto_generico_padrao_id]
       );
 
       if (produtoGenerico.length === 0) {
         return errorResponse(res, 'Produto genérico padrão não encontrado', STATUS_CODES.BAD_REQUEST);
+      }
+
+      // Verificar se o produto genérico é marcado como padrão
+      if (produtoGenerico[0].produto_padrao !== 'Sim') {
+        return errorResponse(res, 'Apenas produtos genéricos marcados como "Produto Padrão = Sim" podem ser vinculados', STATUS_CODES.BAD_REQUEST);
+      }
+
+      // Verificar se já existe outro produto origem vinculado ao mesmo produto genérico padrão
+      const produtoOrigemExistente = await executeQuery(
+        'SELECT id, nome FROM produto_origem WHERE produto_generico_padrao_id = ? AND id != ? AND status = 1',
+        [produto_generico_padrao_id, id]
+      );
+
+      if (produtoOrigemExistente.length > 0) {
+        return conflictResponse(res, `Já existe um Produto Origem vinculado a este Produto Genérico Padrão: ${produtoOrigemExistente[0].nome}`);
       }
     }
 
