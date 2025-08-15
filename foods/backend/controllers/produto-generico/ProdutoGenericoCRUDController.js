@@ -16,6 +16,51 @@ const { asyncHandler } = require('../../middleware/responseHandler');
 class ProdutoGenericoCRUDController {
   
   /**
+   * Gerenciar vínculo automático entre Produto Genérico e Produto Origem
+   */
+  static async gerenciarVinculoProdutoOrigem(produtoGenericoId, produtoOrigemId, produtoPadrao, isUpdate = false, oldProdutoPadrao = null) {
+    // Se produto_padrao = "Sim" e tem produto_origem_id
+    if (produtoPadrao === 'Sim' && produtoOrigemId) {
+      // Verificar se já existe outro produto genérico padrão vinculado a este produto origem
+      const vinculoExistente = await executeQuery(
+        `SELECT pg.id, pg.nome, pg.codigo 
+         FROM produto_generico pg 
+         WHERE pg.produto_origem_id = ? AND pg.produto_padrao = 'Sim' AND pg.id != ?`,
+        [produtoOrigemId, produtoGenericoId]
+      );
+
+      if (vinculoExistente.length > 0) {
+        const produtoExistente = vinculoExistente[0];
+        throw new Error(`Este Produto Origem já está vinculado ao Produto Genérico "${produtoExistente.nome}" (${produtoExistente.codigo}) como padrão. Um Produto Origem só pode ter um Produto Genérico padrão por vez.`);
+      }
+
+      // Atualizar produto_origem com o novo produto genérico padrão
+      await executeQuery(
+        'UPDATE produto_origem SET produto_generico_padrao_id = ? WHERE id = ?',
+        [produtoGenericoId, produtoOrigemId]
+      );
+    }
+    // Se produto_padrao = "Não" ou não tem produto_origem_id
+    else {
+      // Se é uma atualização e o produto_padrao mudou de "Sim" para "Não"
+      if (isUpdate && oldProdutoPadrao === 'Sim' && produtoPadrao === 'Não' && produtoOrigemId) {
+        // Remover vínculo do produto origem
+        await executeQuery(
+          'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
+          [produtoGenericoId]
+        );
+      }
+      // Se não tem produto_origem_id, remover qualquer vínculo existente
+      else if (!produtoOrigemId) {
+        await executeQuery(
+          'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
+          [produtoGenericoId]
+        );
+      }
+    }
+  }
+
+  /**
    * Criar novo produto genérico
    */
   static criarProdutoGenerico = asyncHandler(async (req, res) => {
@@ -115,6 +160,19 @@ class ProdutoGenericoCRUDController {
       ]
     );
 
+    // Gerenciar vínculo automático com produto origem
+    try {
+      await ProdutoGenericoCRUDController.gerenciarVinculoProdutoOrigem(
+        novoProdutoGenerico.insertId, 
+        produto_origem_id, 
+        produto_padrao || 'Não'
+      );
+    } catch (error) {
+      // Se houve erro no vínculo, excluir o produto genérico criado
+      await executeQuery('DELETE FROM produto_generico WHERE id = ?', [novoProdutoGenerico.insertId]);
+      return errorResponse(res, error.message, STATUS_CODES.CONFLICT);
+    }
+
     // Buscar produto genérico criado
     const produtoGenericoCriado = await executeQuery(
       `SELECT 
@@ -155,15 +213,17 @@ class ProdutoGenericoCRUDController {
       integracao_senior, status
     } = req.body;
 
-    // Verificar se produto genérico existe
+    // Verificar se produto genérico existe e buscar dados atuais
     const produtoGenerico = await executeQuery(
-      'SELECT id, nome FROM produto_generico WHERE id = ?',
+      'SELECT id, nome, produto_padrao, produto_origem_id FROM produto_generico WHERE id = ?',
       [id]
     );
 
     if (produtoGenerico.length === 0) {
       return notFoundResponse(res, 'Produto genérico não encontrado');
     }
+
+    const produtoAtual = produtoGenerico[0];
 
     // Verificar se código já existe (se foi alterado)
     if (codigo) {
@@ -237,6 +297,19 @@ class ProdutoGenericoCRUDController {
       }
     }
 
+    // Gerenciar vínculo automático com produto origem ANTES da atualização
+    try {
+      await ProdutoGenericoCRUDController.gerenciarVinculoProdutoOrigem(
+        id, 
+        produto_origem_id, 
+        produto_padrao, 
+        true, 
+        produtoAtual.produto_padrao
+      );
+    } catch (error) {
+      return errorResponse(res, error.message, STATUS_CODES.CONFLICT);
+    }
+
     // Atualizar produto genérico
     await executeQuery(
       `UPDATE produto_generico SET 
@@ -299,6 +372,12 @@ class ProdutoGenericoCRUDController {
     if (produtoGenerico.length === 0) {
       return notFoundResponse(res, 'Produto genérico não encontrado');
     }
+
+    // Remover vínculo do produto origem antes de excluir
+    await executeQuery(
+      'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
+      [id]
+    );
 
     // Soft delete - apenas desativar
     await executeQuery(
