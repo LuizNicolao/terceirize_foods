@@ -27,7 +27,7 @@ class ProdutoGenericoStatsController {
         COUNT(CASE WHEN classe_id IS NOT NULL THEN 1 END) as com_classe,
         COUNT(CASE WHEN produto_padrao = 'Sim' THEN 1 END) as produtos_padrao,
         COUNT(CASE WHEN produto_origem_id IS NOT NULL THEN 1 END) as com_produto_origem,
-        (SELECT COUNT(*) FROM produtos WHERE produto_generico_id IS NOT NULL AND status = 1) as total_produtos_vinculados
+        (SELECT COUNT(*) FROM produtos WHERE nome_generico_id IS NOT NULL AND status = 1) as total_produtos_vinculados
       FROM produto_generico
     `);
 
@@ -43,7 +43,7 @@ class ProdutoGenericoStatsController {
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
-      LEFT JOIN produtos p ON pg.id = p.produto_generico_id AND p.status = 1
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.status = 1
       GROUP BY pg.id, pg.nome, g.nome, sg.nome, c.nome
       ORDER BY produtos_count DESC
@@ -62,7 +62,7 @@ class ProdutoGenericoStatsController {
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
-      LEFT JOIN produtos p ON pg.id = p.produto_generico_id AND p.status = 1
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.status = 1 AND p.id IS NULL
       ORDER BY pg.nome ASC
     `);

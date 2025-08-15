@@ -32,13 +32,15 @@ class ProdutoGenericoSearchController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        um.nome as unidade_medida_nome
+        um.nome as unidade_medida_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.status = 1 
         AND (
           pg.codigo LIKE ? 
@@ -49,6 +51,7 @@ class ProdutoGenericoSearchController {
           OR pg.registro_especifico LIKE ?
           OR pg.integracao_senior LIKE ?
         )
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome
       ORDER BY 
         CASE 
           WHEN pg.codigo = ? THEN 1
@@ -85,14 +88,17 @@ class ProdutoGenericoSearchController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        um.nome as unidade_medida_nome
+        um.nome as unidade_medida_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.codigo LIKE ?
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome
       ORDER BY pg.nome ASC`,
       [searchTerm]
     );

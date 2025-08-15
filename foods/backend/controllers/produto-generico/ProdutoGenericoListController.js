@@ -30,7 +30,8 @@ class ProdutoGenericoListController {
         c.nome as classe_nome,
         um.nome as unidade_medida_nome,
         uc.nome as usuario_criador_nome,
-        ua.nome as usuario_atualizador_nome
+        ua.nome as usuario_atualizador_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
@@ -39,6 +40,7 @@ class ProdutoGenericoListController {
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
       LEFT JOIN usuarios uc ON pg.usuario_criador_id = uc.id
       LEFT JOIN usuarios ua ON pg.usuario_atualizador_id = ua.id
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE 1=1
     `;
     
@@ -80,7 +82,7 @@ class ProdutoGenericoListController {
       params.push(produto_padrao);
     }
 
-    baseQuery += ' ORDER BY pg.nome ASC';
+    baseQuery += ' GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome, uc.nome, ua.nome ORDER BY pg.nome ASC';
 
     // Aplicar paginação
     const limitNum = parseInt(limit);
@@ -92,7 +94,7 @@ class ProdutoGenericoListController {
 
     // Contar total de registros
     const countQuery = `
-      SELECT COUNT(*) as total 
+      SELECT COUNT(DISTINCT pg.id) as total 
       FROM produto_generico pg
       WHERE 1=1${search ? ' AND (pg.codigo LIKE ? OR pg.nome LIKE ? OR pg.referencia_mercado LIKE ? OR pg.referencia_interna LIKE ? OR pg.referencia_externa LIKE ?)' : ''}${status !== undefined && status !== '' ? ' AND pg.status = ?' : ''}${grupo_id ? ' AND pg.grupo_id = ?' : ''}${subgrupo_id ? ' AND pg.subgrupo_id = ?' : ''}${classe_id ? ' AND pg.classe_id = ?' : ''}${produto_origem_id ? ' AND pg.produto_origem_id = ?' : ''}${produto_padrao ? ' AND pg.produto_padrao = ?' : ''}
     `;
@@ -108,7 +110,7 @@ class ProdutoGenericoListController {
         SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) as inativos,
         SUM(CASE WHEN produto_padrao = 'Sim' THEN 1 ELSE 0 END) as produtos_padrao,
         SUM(CASE WHEN produto_origem_id IS NOT NULL AND produto_origem_id > 0 THEN 1 ELSE 0 END) as com_produto_origem,
-        0 as total_produtos_vinculados
+        (SELECT COUNT(*) FROM produtos WHERE nome_generico_id IS NOT NULL AND status = 1) as total_produtos_vinculados
       FROM produto_generico
     `;
     
@@ -149,7 +151,8 @@ class ProdutoGenericoListController {
         c.nome as classe_nome,
         um.nome as unidade_medida_nome,
         uc.nome as usuario_criador_nome,
-        ua.nome as usuario_atualizador_nome
+        ua.nome as usuario_atualizador_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
@@ -158,7 +161,9 @@ class ProdutoGenericoListController {
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
       LEFT JOIN usuarios uc ON pg.usuario_criador_id = uc.id
       LEFT JOIN usuarios ua ON pg.usuario_atualizador_id = ua.id
-      WHERE pg.id = ?`,
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
+      WHERE pg.id = ?
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome, uc.nome, ua.nome`,
       [id]
     );
 
@@ -182,14 +187,17 @@ class ProdutoGenericoListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        um.nome as unidade_medida_nome
+        um.nome as unidade_medida_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.grupo_id = ? AND pg.status = 1
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome
       ORDER BY pg.nome ASC`,
       [grupo_id]
     );
@@ -210,14 +218,17 @@ class ProdutoGenericoListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        um.nome as unidade_medida_nome
+        um.nome as unidade_medida_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.subgrupo_id = ? AND pg.status = 1
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome
       ORDER BY pg.nome ASC`,
       [subgrupo_id]
     );
@@ -238,14 +249,17 @@ class ProdutoGenericoListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        um.nome as unidade_medida_nome
+        um.nome as unidade_medida_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.classe_id = ? AND pg.status = 1
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome
       ORDER BY pg.nome ASC`,
       [classe_id]
     );
@@ -266,14 +280,17 @@ class ProdutoGenericoListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        um.nome as unidade_medida_nome
+        um.nome as unidade_medida_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.produto_origem_id = ? AND pg.status = 1
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome
       ORDER BY pg.nome ASC`,
       [produto_origem_id]
     );
@@ -292,14 +309,17 @@ class ProdutoGenericoListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        um.nome as unidade_medida_nome
+        um.nome as unidade_medida_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.status = 1
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome
       ORDER BY pg.nome ASC`
     );
 
@@ -317,14 +337,17 @@ class ProdutoGenericoListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        um.nome as unidade_medida_nome
+        um.nome as unidade_medida_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.produto_padrao = 'Sim' AND pg.status = 1
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome
       ORDER BY pg.nome ASC`
     );
 
@@ -344,14 +367,17 @@ class ProdutoGenericoListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        um.nome as unidade_medida_nome
+        um.nome as unidade_medida_nome,
+        COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
       LEFT JOIN grupos g ON pg.grupo_id = g.id
       LEFT JOIN subgrupos sg ON pg.subgrupo_id = sg.id
       LEFT JOIN classes c ON pg.classe_id = c.id
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
-      WHERE pg.codigo = ?`,
+      LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
+      WHERE pg.codigo = ?
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome`,
       [codigo]
     );
 
