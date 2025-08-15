@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql:3306
--- Tempo de geração: 15/08/2025 às 01:50
+-- Tempo de geração: 15/08/2025 às 13:24
 -- Versão do servidor: 8.0.43
 -- Versão do PHP: 8.2.27
 
@@ -567,7 +567,21 @@ INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`
 (561, 4, 'delete', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/20\", \"method\": \"DELETE\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"20\", \"statusCode\": 200}', '170.84.58.231', '2025-08-15 01:36:40'),
 (562, 4, 'update', 'produto_origem', '{\"url\": \"/foods/api/produto-origem/8\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"8\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"TESTE PRODUTO ORIGEM VINCULO\", \"codigo\": \"TESTE\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 37, \"referencia_mercado\": \"TESTE\", \"produto_generico_padrao_id\": null}}', '170.84.58.231', '2025-08-15 01:38:47'),
 (563, 5, 'create', 'produto_origem', '{\"url\": \"/foods/api/produto-origem\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"PATINHO BOVINO CUBOS - KG\", \"codigo\": \"ORIG0001082784\", \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"fator_conversao\": 1, \"unidade_medida_id\": 26, \"referencia_mercado\": \"CORTE BOVINO\", \"produto_generico_padrao_id\": null}}', '177.10.88.100', '2025-08-15 01:41:49'),
-(564, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Aves\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 01:36:03\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 12, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"TESTE PRODUTO ORIGEM VINCULO\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"TESTE\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 01:42:25');
+(564, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 36, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Aves\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 01:36:03\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 12, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"TESTE PRODUTO ORIGEM VINCULO\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"TESTE\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 01:42:25'),
+(565, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Aves\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 01:42:25\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Não\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 12, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"PATINHO BOVINO CUBOS - KG\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"ORIG0001082784\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 12:55:41'),
+(566, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 12:55:41\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Não\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 8, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"TESTE\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"PATINHO BOVINO CUBOS - KG\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"ORIG0001082784\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 13:00:46'),
+(567, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 13:00:46\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 8, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"TESTE\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"TESTE PRODUTO ORIGEM VINCULO\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"TESTE\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 13:00:58'),
+(568, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 13:00:58\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Não\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 8, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"TESTE\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"TESTE PRODUTO ORIGEM VINCULO\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"TESTE\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 13:01:07'),
+(569, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 13:01:07\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Não\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 12, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"TESTE PRODUTO ORIGEM VINCULO\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"TESTE\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 13:01:11'),
+(570, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 13:01:10\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Não\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": null, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"CORTE BOVINO\", \"usuario_criador_id\": 1, \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 13:04:29'),
+(571, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 13:04:29\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Não\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 8, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"TESTE\", \"usuario_criador_id\": 1, \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 13:05:45'),
+(572, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 13:05:45\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 8, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"TESTE\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"TESTE PRODUTO ORIGEM VINCULO\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"TESTE\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 13:09:02');
+INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`, `ip_address`, `timestamp`) VALUES
+(573, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 13:09:02\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Não\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 8, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"TESTE\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"TESTE PRODUTO ORIGEM VINCULO\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"TESTE\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 13:09:10'),
+(574, 4, 'update', 'produto_generico', '{\"url\": \"/foods/api/produto-generico/18\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"resourceId\": \"18\", \"statusCode\": 200, \"requestBody\": {\"id\": 18, \"nome\": \"TESTE PRODUTO GENERICO\", \"codigo\": 1, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"criado_em\": \"2025-08-13 16:16:49\", \"descricao\": null, \"grupo_nome\": \"Frios\", \"peso_bruto\": 1, \"classe_nome\": \"Bovinas\", \"regra_palet\": 1200, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"atualizado_em\": \"2025-08-15 13:09:10\", \"subgrupo_nome\": \"Congelado\", \"tipo_registro\": \"TESTE\", \"produto_padrao\": \"Sim\", \"total_produtos\": \"2\", \"fator_conversao\": 1, \"unidade_validade\": \"Meses\", \"integracao_senior\": \"123456\", \"produto_origem_id\": 8, \"unidade_medida_id\": 35, \"referencia_externa\": \"2001001\", \"referencia_interna\": \"1001001\", \"referencia_mercado\": \"TESTE\", \"usuario_criador_id\": 1, \"produto_origem_nome\": \"TESTE PRODUTO ORIGEM VINCULO\", \"registro_especifico\": \"123\", \"unidade_medida_nome\": \"METRO QUADRADO\", \"prazo_validade_padrao\": 12, \"produto_origem_codigo\": \"TESTE\", \"informacoes_adicionais\": \"TESTE\", \"usuario_atualizador_id\": 4, \"usuario_atualizador_nome\": \"Luiz Nicolao\"}}', '170.84.58.231', '2025-08-15 13:09:28'),
+(575, 4, 'create', 'produto_generico', '{\"url\": \"/foods/api/produto-generico\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"SADJHJKASLDH\", \"codigo\": 0, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"descricao\": null, \"peso_bruto\": 1, \"regra_palet\": 1, \"subgrupo_id\": 1, \"peso_liquido\": 1, \"tipo_registro\": \"1\", \"produto_padrao\": \"Sim\", \"fator_conversao\": 1, \"unidade_validade\": \"Dias\", \"integracao_senior\": \"1\", \"produto_origem_id\": 8, \"unidade_medida_id\": 31, \"referencia_externa\": \"asdasd\", \"referencia_interna\": \"1\", \"referencia_mercado\": \"TESTE\", \"registro_especifico\": \"1\", \"prazo_validade_padrao\": 1, \"informacoes_adicionais\": \"asdasd\"}}', '170.84.58.231', '2025-08-15 13:15:42'),
+(576, 4, 'create', 'produto_generico', '{\"url\": \"/foods/api/produto-generico\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"asdasdasdasd\", \"codigo\": 0, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"descricao\": null, \"peso_bruto\": 111, \"regra_palet\": 111, \"subgrupo_id\": 1, \"peso_liquido\": 111, \"tipo_registro\": \"123123\", \"produto_padrao\": \"Sim\", \"fator_conversao\": 1, \"unidade_validade\": \"Dias\", \"integracao_senior\": \"asdasd\", \"produto_origem_id\": 8, \"unidade_medida_id\": 37, \"referencia_externa\": \"asdasdas\", \"referencia_interna\": \"asdasd\", \"referencia_mercado\": \"TESTE\", \"registro_especifico\": \"sadasdasd\", \"prazo_validade_padrao\": 12312, \"informacoes_adicionais\": \"asdasd\"}}', '170.84.58.231', '2025-08-15 13:23:14'),
+(577, 4, 'create', 'produto_generico', '{\"url\": \"/foods/api/produto-generico\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36\", \"statusCode\": 200, \"requestBody\": {\"nome\": \"asdasd\", \"codigo\": 0, \"status\": 1, \"grupo_id\": 1, \"classe_id\": 22, \"descricao\": null, \"peso_bruto\": 123123, \"regra_palet\": 13231223, \"subgrupo_id\": 1, \"peso_liquido\": 122133, \"tipo_registro\": \"dasdasd\", \"produto_padrao\": \"Sim\", \"fator_conversao\": 1, \"unidade_validade\": \"Anos\", \"integracao_senior\": \"asdas\", \"produto_origem_id\": 8, \"unidade_medida_id\": 37, \"referencia_externa\": \"asdqwdasd\", \"referencia_interna\": \"saadsdsa\", \"referencia_mercado\": \"TESTE\", \"registro_especifico\": \"asdasd\", \"prazo_validade_padrao\": 12123123, \"informacoes_adicionais\": null}}', '170.84.58.231', '2025-08-15 13:23:47');
 
 -- --------------------------------------------------------
 
@@ -577,11 +591,11 @@ INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`
 
 CREATE TABLE `classes` (
   `id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome da classe (ex: BOVINO, SUÍNO, FRANGO)',
-  `codigo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código da classe (ex: BOVI, SUIN, FRAN)',
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome da classe (ex: BOVINO, SUÍNO, FRANGO)',
+  `codigo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código da classe (ex: BOVI, SUIN, FRAN)',
   `subgrupo_id` int NOT NULL COMMENT 'ID do subgrupo ao qual a classe pertence',
-  `descricao` text COLLATE utf8mb4_unicode_ci COMMENT 'Descrição detalhada da classe',
-  `status` enum('ativo','inativo') COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status da classe',
+  `descricao` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Descrição detalhada da classe',
+  `status` enum('ativo','inativo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status da classe',
   `data_cadastro` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de cadastro',
   `data_atualizacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela para armazenar classes de produtos';
@@ -966,10 +980,10 @@ INSERT INTO `fornecedores` (`id`, `cnpj`, `razao_social`, `nome_fantasia`, `logr
 
 CREATE TABLE `grupos` (
   `id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome do grupo (ex: Eletrônicos, Roupas, Alimentos)',
-  `codigo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código do grupo (ex: ELET, ROUP, ALIM)',
-  `descricao` text COLLATE utf8mb4_unicode_ci COMMENT 'Descrição detalhada do grupo',
-  `status` enum('ativo','inativo') COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status do grupo',
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome do grupo (ex: Eletrônicos, Roupas, Alimentos)',
+  `codigo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código do grupo (ex: ELET, ROUP, ALIM)',
+  `descricao` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Descrição detalhada do grupo',
+  `status` enum('ativo','inativo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status do grupo',
   `data_cadastro` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de cadastro',
   `data_atualizacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela para armazenar grupos de produtos';
@@ -1127,40 +1141,40 @@ INSERT INTO `permissoes_usuario` (`id`, `usuario_id`, `tela`, `pode_visualizar`,
 
 CREATE TABLE `produtos` (
   `id` int NOT NULL,
-  `codigo_produto` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nome` varchar(200) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Exemplo: PATINHO BOVINO EM CUBOS KING',
-  `codigo_barras` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 1234567891234',
+  `codigo_produto` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `nome` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Exemplo: PATINHO BOVINO EM CUBOS KING',
+  `codigo_barras` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 1234567891234',
   `fator_conversao` decimal(10,3) DEFAULT '1.000' COMMENT 'Fator de conversão do produto',
-  `referencia_interna` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência interna do produto',
-  `referencia_externa` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123654',
-  `referencia_mercado` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: Corte Bovino / Patinho / Cubos',
+  `referencia_interna` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência interna do produto',
+  `referencia_externa` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123654',
+  `referencia_mercado` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: Corte Bovino / Patinho / Cubos',
   `unidade_id` int DEFAULT NULL COMMENT 'ID da unidade de medida - Exemplo: PCT',
   `grupo_id` int DEFAULT NULL COMMENT 'Agrupamento N1 - Exemplo: FRIOS',
   `subgrupo_id` int DEFAULT NULL COMMENT 'Agrupamento N2 - Exemplo: CONGELADO',
   `classe_id` int DEFAULT NULL,
-  `nome_generico_id` int DEFAULT NULL COMMENT 'ID do nome genérico do produto',
+  `nome_generico_id` int DEFAULT NULL COMMENT 'ID do Produto genérico',
   `marca_id` int DEFAULT NULL,
   `peso_liquido` decimal(10,3) DEFAULT NULL COMMENT 'Peso líquido em kg - Exemplo: 1',
   `peso_bruto` decimal(10,3) DEFAULT NULL COMMENT 'Peso bruto em kg - Exemplo: 1',
-  `fabricante` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: KING',
-  `informacoes_adicionais` text COLLATE utf8mb4_general_ci COMMENT 'Exemplo: PRODUTO COM 5% DE GORDURA',
-  `foto_produto` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Caminho da foto - Exemplo: IMAGEM',
+  `fabricante` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: KING',
+  `informacoes_adicionais` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'Exemplo: PRODUTO COM 5% DE GORDURA',
+  `foto_produto` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Caminho da foto - Exemplo: IMAGEM',
   `prazo_validade` int DEFAULT NULL COMMENT 'Prazo de validade (número) - Exemplo: 12',
-  `unidade_validade` enum('DIAS','SEMANAS','MESES','ANOS') COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: DIAS',
+  `unidade_validade` enum('DIAS','SEMANAS','MESES','ANOS') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: DIAS',
   `regra_palet_un` int DEFAULT NULL COMMENT 'Regra palet (unidades) - Exemplo: 1200',
-  `ficha_homologacao` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123456',
-  `registro_especifico` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 1234456 CA, REGISTRO, MODELO, Nº SERIE',
+  `ficha_homologacao` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123456',
+  `registro_especifico` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 1234456 CA, REGISTRO, MODELO, Nº SERIE',
   `comprimento` decimal(10,2) DEFAULT NULL COMMENT 'Comprimento em cm - Exemplo: 20',
   `largura` decimal(10,2) DEFAULT NULL COMMENT 'Largura em cm - Exemplo: 15',
   `altura` decimal(10,2) DEFAULT NULL COMMENT 'Altura em cm - Exemplo: 10',
   `volume` decimal(10,2) DEFAULT NULL COMMENT 'Volume em cm³ - Exemplo: 3000',
-  `integracao_senior` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123654',
-  `ncm` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Classificação NCM',
-  `cest` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código CEST',
-  `cfop` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código CFOP',
-  `ean` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código EAN',
-  `cst_icms` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'CST ICMS',
-  `csosn` varchar(3) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'CSOSN',
+  `integracao_senior` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Exemplo: 123654',
+  `ncm` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Classificação NCM',
+  `cest` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código CEST',
+  `cfop` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código CFOP',
+  `ean` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código EAN',
+  `cst_icms` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'CST ICMS',
+  `csosn` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'CSOSN',
   `aliquota_icms` decimal(5,2) DEFAULT NULL COMMENT 'Alíquota ICMS (%)',
   `aliquota_ipi` decimal(5,2) DEFAULT NULL COMMENT 'Alíquota IPI (%)',
   `aliquota_pis` decimal(5,2) DEFAULT NULL COMMENT 'Alíquota PIS (%)',
@@ -1170,7 +1184,7 @@ CREATE TABLE `produtos` (
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `usuario_criador_id` int DEFAULT NULL COMMENT 'ID do usuário que criou o produto',
   `usuario_atualizador_id` int DEFAULT NULL COMMENT 'ID do usuário que atualizou o produto',
-  `tipo_registro` enum('ANVISA','MAPA','OUTROS') COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Tipo do registro específico',
+  `tipo_registro` enum('ANVISA','MAPA','OUTROS') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Tipo do registro específico',
   `embalagem_secundaria_id` int DEFAULT NULL COMMENT 'ID da unidade de medida da embalagem secundária (ex: CX, PCT, FD)',
   `fator_conversao_embalagem` int DEFAULT '1' COMMENT 'Fator de conversão da embalagem secundária (ex: 1 CX = 12 UN)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -1193,26 +1207,26 @@ INSERT INTO `produtos` (`id`, `codigo_produto`, `nome`, `codigo_barras`, `fator_
 CREATE TABLE `produto_generico` (
   `id` int NOT NULL,
   `codigo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Código do produto origem',
-  `nome` varchar(200) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Nome do produto genérico',
+  `nome` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Nome do produto genérico',
   `produto_origem_id` int DEFAULT NULL COMMENT 'ID do produto de origem',
   `fator_conversao` decimal(10,3) DEFAULT '1.000' COMMENT 'Fator de conversão (3 casas decimais)',
   `grupo_id` int DEFAULT NULL COMMENT 'ID do grupo',
   `subgrupo_id` int DEFAULT NULL COMMENT 'ID do subgrupo',
   `classe_id` int DEFAULT NULL COMMENT 'ID da classe',
   `unidade_medida_id` int DEFAULT NULL COMMENT 'ID da unidade de medida',
-  `referencia_mercado` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência de mercado',
-  `produto_padrao` enum('Sim','Não') COLLATE utf8mb4_general_ci DEFAULT 'Não' COMMENT 'Indica se é produto padrão',
+  `referencia_mercado` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência de mercado',
+  `produto_padrao` enum('Sim','Não') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'Não' COMMENT 'Indica se é produto padrão',
   `peso_liquido` decimal(10,3) DEFAULT NULL COMMENT 'Peso líquido em kg',
   `peso_bruto` decimal(10,3) DEFAULT NULL COMMENT 'Peso bruto em kg',
   `regra_palet` int DEFAULT NULL COMMENT 'Regra palet (número inteiro)',
-  `informacoes_adicionais` text COLLATE utf8mb4_general_ci COMMENT 'Informações adicionais do produto',
-  `referencia_interna` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência interna do produto',
-  `referencia_externa` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência externa do produto',
-  `registro_especifico` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Registro específico (número)',
-  `tipo_registro` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Tipo de registro',
+  `informacoes_adicionais` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci COMMENT 'Informações adicionais do produto',
+  `referencia_interna` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência interna do produto',
+  `referencia_externa` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência externa do produto',
+  `registro_especifico` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Registro específico (número)',
+  `tipo_registro` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Tipo de registro',
   `prazo_validade_padrao` int DEFAULT NULL COMMENT 'Prazo de validade padrão (número inteiro)',
-  `unidade_validade` enum('Dias','Semanas','Meses','Anos') COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Unidade de validade',
-  `integracao_senior` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código de integração com sistema Senior',
+  `unidade_validade` enum('Dias','Semanas','Meses','Anos') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Unidade de validade',
+  `integracao_senior` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Código de integração com sistema Senior',
   `status` tinyint(1) DEFAULT '1' COMMENT 'Status (1=ativo, 0=inativo)',
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -1225,7 +1239,196 @@ CREATE TABLE `produto_generico` (
 --
 
 INSERT INTO `produto_generico` (`id`, `codigo`, `nome`, `produto_origem_id`, `fator_conversao`, `grupo_id`, `subgrupo_id`, `classe_id`, `unidade_medida_id`, `referencia_mercado`, `produto_padrao`, `peso_liquido`, `peso_bruto`, `regra_palet`, `informacoes_adicionais`, `referencia_interna`, `referencia_externa`, `registro_especifico`, `tipo_registro`, `prazo_validade_padrao`, `unidade_validade`, `integracao_senior`, `status`, `criado_em`, `atualizado_em`, `usuario_criador_id`, `usuario_atualizador_id`) VALUES
-(18, '1', 'TESTE PRODUTO GENERICO', 12, 1.000, 1, 1, 36, 35, 'CORTE BOVINO', 'Sim', 1.000, 1.000, 1200, 'TESTE', '1001001', '2001001', '123', 'TESTE', 12, 'Meses', '123456', 1, '2025-08-13 16:16:49', '2025-08-15 01:42:25', 1, 4);
+(18, '1', 'TESTE PRODUTO GENERICO', 8, 1.000, 1, 1, 22, 35, 'TESTE', 'Sim', 1.000, 1.000, 1200, 'TESTE', '1001001', '2001001', '123', 'TESTE', 12, 'Meses', '123456', 1, '2025-08-13 16:16:49', '2025-08-15 13:09:28', 1, 4);
+
+--
+-- Acionadores `produto_generico`
+--
+DELIMITER $$
+CREATE TRIGGER `tr_produto_generico_delete_vinculo` AFTER UPDATE ON `produto_generico` FOR EACH ROW BEGIN
+    -- Se o status mudou para 0 (inativo) e o produto era padrão
+    IF OLD.status = 1 AND NEW.status = 0 AND OLD.produto_padrao = 'Sim' THEN
+        -- Remover vínculo do produto origem
+        UPDATE produto_origem 
+        SET produto_generico_padrao_id = NULL 
+        WHERE produto_generico_padrao_id = NEW.id;
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `tr_produto_generico_delete_vinculo_auto` AFTER UPDATE ON `produto_generico` FOR EACH ROW BEGIN
+    -- Se o status mudou para 0 (inativo) e o produto era padrão
+    IF OLD.status = 1 AND NEW.status = 0 AND OLD.produto_padrao = 'Sim' THEN
+        -- Remover vínculo do produto origem
+        UPDATE produto_origem 
+        SET produto_generico_padrao_id = NULL 
+        WHERE produto_generico_padrao_id = NEW.id;
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `tr_produto_generico_insert_vinculo` AFTER INSERT ON `produto_generico` FOR EACH ROW BEGIN
+    -- Se o produto genérico é padrão, ativo e tem produto_origem_id, criar vínculo
+    IF NEW.produto_padrao = 'Sim' AND NEW.status = 1 AND NEW.produto_origem_id IS NOT NULL THEN
+        -- Verificar se o produto origem já está vinculado a outro produto genérico padrão
+        SET @produto_origem_vinculado = (
+            SELECT produto_generico_padrao_id 
+            FROM produto_origem 
+            WHERE id = NEW.produto_origem_id 
+            AND produto_generico_padrao_id IS NOT NULL
+        );
+        
+        -- Se não está vinculado, criar o vínculo
+        IF @produto_origem_vinculado IS NULL THEN
+            UPDATE produto_origem 
+            SET produto_generico_padrao_id = NEW.id 
+            WHERE id = NEW.produto_origem_id;
+        END IF;
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `tr_produto_generico_insert_vinculo_auto` AFTER INSERT ON `produto_generico` FOR EACH ROW BEGIN
+    -- Se o produto genérico é padrão, ativo e tem produto_origem_id, criar vínculo
+    IF NEW.produto_padrao = 'Sim' AND NEW.status = 1 AND NEW.produto_origem_id IS NOT NULL THEN
+        UPDATE produto_origem 
+        SET produto_generico_padrao_id = NEW.id 
+        WHERE id = NEW.produto_origem_id;
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `tr_produto_generico_status_validacao` AFTER UPDATE ON `produto_generico` FOR EACH ROW BEGIN
+    -- Se o produto genérico foi desativado ou marcado como não padrão, remover vínculos
+    IF (OLD.status = 1 AND NEW.status = 0) OR 
+       (OLD.produto_padrao = 'Sim' AND NEW.produto_padrao = 'Não') THEN
+        
+        UPDATE produto_origem 
+        SET produto_generico_padrao_id = NULL 
+        WHERE produto_generico_padrao_id = NEW.id;
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `tr_produto_generico_update_vinculo` AFTER UPDATE ON `produto_generico` FOR EACH ROW BEGIN
+    -- Se mudou de "Sim" para "Não" no campo produto_padrao
+    IF OLD.produto_padrao = 'Sim' AND NEW.produto_padrao = 'Não' THEN
+        -- Remover vínculo do produto origem
+        UPDATE produto_origem 
+        SET produto_generico_padrao_id = NULL 
+        WHERE produto_generico_padrao_id = NEW.id;
+    END IF;
+    
+    -- Se mudou de "Não" para "Sim" e tem produto_origem_id
+    IF OLD.produto_padrao = 'Não' AND NEW.produto_padrao = 'Sim' AND NEW.produto_origem_id IS NOT NULL AND NEW.status = 1 THEN
+        -- Verificar se o produto origem já está vinculado a outro produto genérico padrão
+        SET @produto_origem_vinculado = (
+            SELECT produto_generico_padrao_id 
+            FROM produto_origem 
+            WHERE id = NEW.produto_origem_id 
+            AND produto_generico_padrao_id IS NOT NULL
+        );
+        
+        -- Se não está vinculado, criar o vínculo
+        IF @produto_origem_vinculado IS NULL THEN
+            UPDATE produto_origem 
+            SET produto_generico_padrao_id = NEW.id 
+            WHERE id = NEW.produto_origem_id;
+        END IF;
+    END IF;
+    
+    -- Se o produto_origem_id mudou e o produto é padrão
+    IF NEW.produto_padrao = 'Sim' AND NEW.status = 1 AND 
+       (OLD.produto_origem_id != NEW.produto_origem_id OR OLD.produto_origem_id IS NULL) THEN
+        
+        -- Remover vínculo anterior (se existia)
+        IF OLD.produto_origem_id IS NOT NULL THEN
+            UPDATE produto_origem 
+            SET produto_generico_padrao_id = NULL 
+            WHERE id = OLD.produto_origem_id;
+        END IF;
+        
+        -- Criar novo vínculo (se produto_origem_id foi fornecido)
+        IF NEW.produto_origem_id IS NOT NULL THEN
+            -- Verificar se o produto origem já está vinculado a outro produto genérico padrão
+            SET @produto_origem_vinculado = (
+                SELECT produto_generico_padrao_id 
+                FROM produto_origem 
+                WHERE id = NEW.produto_origem_id 
+                AND produto_generico_padrao_id IS NOT NULL
+            );
+            
+            -- Se não está vinculado, criar o vínculo
+            IF @produto_origem_vinculado IS NULL THEN
+                UPDATE produto_origem 
+                SET produto_generico_padrao_id = NEW.id 
+                WHERE id = NEW.produto_origem_id;
+            END IF;
+        END IF;
+    END IF;
+    
+    -- Se o produto foi desativado e era padrão
+    IF OLD.status = 1 AND NEW.status = 0 AND OLD.produto_padrao = 'Sim' THEN
+        -- Remover vínculo do produto origem
+        UPDATE produto_origem 
+        SET produto_generico_padrao_id = NULL 
+        WHERE produto_generico_padrao_id = NEW.id;
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `tr_produto_generico_update_vinculo_auto` AFTER UPDATE ON `produto_generico` FOR EACH ROW BEGIN
+    -- Se mudou de "Sim" para "Não" no campo produto_padrao
+    IF OLD.produto_padrao = 'Sim' AND NEW.produto_padrao = 'Não' THEN
+        -- Remover vínculo do produto origem
+        UPDATE produto_origem 
+        SET produto_generico_padrao_id = NULL 
+        WHERE produto_generico_padrao_id = NEW.id;
+    END IF;
+    
+    -- Se mudou de "Não" para "Sim" e tem produto_origem_id
+    IF OLD.produto_padrao = 'Não' AND NEW.produto_padrao = 'Sim' AND NEW.produto_origem_id IS NOT NULL AND NEW.status = 1 THEN
+        -- Criar vínculo (a validação já foi feita no controller)
+        UPDATE produto_origem 
+        SET produto_generico_padrao_id = NEW.id 
+        WHERE id = NEW.produto_origem_id;
+    END IF;
+    
+    -- Se o produto_origem_id mudou e o produto é padrão
+    IF NEW.produto_padrao = 'Sim' AND NEW.status = 1 AND 
+       (OLD.produto_origem_id != NEW.produto_origem_id OR OLD.produto_origem_id IS NULL) THEN
+        
+        -- Remover vínculo anterior (se existia)
+        IF OLD.produto_origem_id IS NOT NULL THEN
+            UPDATE produto_origem 
+            SET produto_generico_padrao_id = NULL 
+            WHERE id = OLD.produto_origem_id;
+        END IF;
+        
+        -- Criar novo vínculo (se produto_origem_id foi fornecido)
+        IF NEW.produto_origem_id IS NOT NULL THEN
+            UPDATE produto_origem 
+            SET produto_generico_padrao_id = NEW.id 
+            WHERE id = NEW.produto_origem_id;
+        END IF;
+    END IF;
+    
+    -- Se o produto foi desativado e era padrão
+    IF OLD.status = 1 AND NEW.status = 0 AND OLD.produto_padrao = 'Sim' THEN
+        -- Remover vínculo do produto origem
+        UPDATE produto_origem 
+        SET produto_generico_padrao_id = NULL 
+        WHERE produto_generico_padrao_id = NEW.id;
+    END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -1235,15 +1438,15 @@ INSERT INTO `produto_generico` (`id`, `codigo`, `nome`, `produto_origem_id`, `fa
 
 CREATE TABLE `produto_origem` (
   `id` int NOT NULL,
-  `codigo` varchar(20) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Código do produto origem',
-  `nome` varchar(200) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Nome do Produto Origem',
+  `codigo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Código do produto origem',
+  `nome` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Nome do Produto Origem',
   `unidade_medida_id` int NOT NULL COMMENT 'ID da unidade de medida',
   `fator_conversao` decimal(10,3) DEFAULT '1.000' COMMENT 'Fator de conversão',
   `grupo_id` int DEFAULT NULL COMMENT 'ID do grupo',
   `subgrupo_id` int DEFAULT NULL COMMENT 'ID do subgrupo',
   `classe_id` int DEFAULT NULL COMMENT 'ID da classe',
   `peso_liquido` decimal(10,3) DEFAULT NULL COMMENT 'Peso líquido em kg',
-  `referencia_mercado` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência de mercado',
+  `referencia_mercado` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Referência de mercado',
   `produto_generico_padrao_id` int DEFAULT NULL COMMENT 'ID do produto genérico padrão vinculado',
   `status` tinyint(1) DEFAULT '1' COMMENT 'Status (1=ativo, 0=inativo)',
   `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -1257,11 +1460,91 @@ CREATE TABLE `produto_origem` (
 --
 
 INSERT INTO `produto_origem` (`id`, `codigo`, `nome`, `unidade_medida_id`, `fator_conversao`, `grupo_id`, `subgrupo_id`, `classe_id`, `peso_liquido`, `referencia_mercado`, `produto_generico_padrao_id`, `status`, `criado_em`, `atualizado_em`, `usuario_criador_id`, `usuario_atualizador_id`) VALUES
-(8, 'TESTE', 'TESTE PRODUTO ORIGEM VINCULO', 37, 1.000, 1, 1, 22, 1.000, 'TESTE', NULL, 1, '2025-08-14 17:40:35', '2025-08-15 01:38:47', 4, 4),
-(12, 'ORIG0001082784', 'PATINHO BOVINO CUBOS - KG', 26, 1.000, 1, 1, 22, 1.000, 'CORTE BOVINO', NULL, 1, '2025-08-15 01:41:49', '2025-08-15 01:41:49', 5, NULL);
+(8, 'TESTE', 'TESTE PRODUTO ORIGEM VINCULO', 37, 1.000, 1, 1, 22, 1.000, 'TESTE', 23, 1, '2025-08-14 17:40:35', '2025-08-15 13:23:47', 4, 4);
 
 --
-
+-- Acionadores `produto_origem`
+--
+DELIMITER $$
+CREATE TRIGGER `tr_produto_origem_insert_validacao` BEFORE INSERT ON `produto_origem` FOR EACH ROW BEGIN
+    -- Se produto_generico_padrao_id foi fornecido, validar se é um produto padrão válido
+    IF NEW.produto_generico_padrao_id IS NOT NULL THEN
+        SET @produto_valido = (
+            SELECT COUNT(*) 
+            FROM produto_generico 
+            WHERE id = NEW.produto_generico_padrao_id 
+            AND produto_padrao = 'Sim' 
+            AND status = 1
+        );
+        
+        IF @produto_valido = 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Produto genérico deve ser marcado como padrão (Sim) e estar ativo para ser vinculado';
+        END IF;
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `tr_produto_origem_update_classificacao` AFTER UPDATE ON `produto_origem` FOR EACH ROW BEGIN
+    -- Se mudou a classificação (grupo, subgrupo ou classe)
+    IF (NEW.grupo_id != OLD.grupo_id OR 
+        NEW.subgrupo_id != OLD.subgrupo_id OR 
+        NEW.classe_id != OLD.classe_id) THEN
+        
+        -- Se tem classificação completa, buscar produto genérico padrão correspondente
+        IF NEW.grupo_id IS NOT NULL 
+           AND NEW.subgrupo_id IS NOT NULL 
+           AND NEW.classe_id IS NOT NULL THEN
+            
+            -- Buscar produto genérico padrão com a mesma classificação
+            SET @produto_padrao_id = (
+                SELECT id 
+                FROM produto_generico 
+                WHERE produto_padrao = 'Sim' 
+                  AND status = 1
+                  AND grupo_id = NEW.grupo_id 
+                  AND subgrupo_id = NEW.subgrupo_id 
+                  AND classe_id = NEW.classe_id
+                LIMIT 1
+            );
+            
+            -- Atualizar o produto origem com o produto genérico padrão encontrado
+            UPDATE produto_origem 
+            SET produto_generico_padrao_id = @produto_padrao_id
+            WHERE id = NEW.id;
+        ELSE
+            -- Se não tem classificação completa, remover vinculação
+            UPDATE produto_origem 
+            SET produto_generico_padrao_id = NULL
+            WHERE id = NEW.id;
+        END IF;
+    END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `tr_produto_origem_update_validacao` BEFORE UPDATE ON `produto_origem` FOR EACH ROW BEGIN
+    -- Se produto_generico_padrao_id foi alterado, validar se é um produto padrão válido
+    IF NEW.produto_generico_padrao_id IS NOT NULL AND 
+       (OLD.produto_generico_padrao_id IS NULL OR OLD.produto_generico_padrao_id != NEW.produto_generico_padrao_id) THEN
+        
+        SET @produto_valido = (
+            SELECT COUNT(*) 
+            FROM produto_generico 
+            WHERE id = NEW.produto_generico_padrao_id 
+            AND produto_padrao = 'Sim' 
+            AND status = 1
+        );
+        
+        IF @produto_valido = 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Produto genérico deve ser marcado como padrão (Sim) e estar ativo para ser vinculado';
+        END IF;
+    END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -1306,11 +1589,11 @@ INSERT INTO `rotas` (`id`, `filial_id`, `codigo`, `nome`, `distancia_km`, `statu
 
 CREATE TABLE `subgrupos` (
   `id` int NOT NULL,
-  `nome` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome do subgrupo (ex: Smartphones, Notebooks, Tablets)',
-  `codigo` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código do subgrupo (ex: SMAR, NOTE, TABL)',
-  `descricao` text COLLATE utf8mb4_unicode_ci COMMENT 'Descrição detalhada do subgrupo',
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Nome do subgrupo (ex: Smartphones, Notebooks, Tablets)',
+  `codigo` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Código do subgrupo (ex: SMAR, NOTE, TABL)',
+  `descricao` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Descrição detalhada do subgrupo',
   `grupo_id` int NOT NULL COMMENT 'ID do grupo pai',
-  `status` enum('ativo','inativo') COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status do subgrupo',
+  `status` enum('ativo','inativo') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'ativo' COMMENT 'Status do subgrupo',
   `data_cadastro` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Data de cadastro',
   `data_atualizacao` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Data da última atualização'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Tabela para armazenar subgrupos de produtos';
@@ -1852,7 +2135,7 @@ ALTER TABLE `almoxarifado_itens`
 -- AUTO_INCREMENT de tabela `auditoria_acoes`
 --
 ALTER TABLE `auditoria_acoes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=565;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=578;
 
 --
 -- AUTO_INCREMENT de tabela `classes`
@@ -1906,7 +2189,7 @@ ALTER TABLE `produtos`
 -- AUTO_INCREMENT de tabela `produto_generico`
 --
 ALTER TABLE `produto_generico`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT de tabela `produto_origem`
