@@ -19,8 +19,18 @@ class ProdutoGenericoCRUDController {
    * Gerenciar vínculo automático entre Produto Genérico e Produto Origem
    */
   static async gerenciarVinculoProdutoOrigem(produtoGenericoId, produtoOrigemId, produtoPadrao, isUpdate = false, oldProdutoPadrao = null) {
+    console.log('🔍 Debug - Gerenciando vínculo:', {
+      produtoGenericoId,
+      produtoOrigemId,
+      produtoPadrao,
+      isUpdate,
+      oldProdutoPadrao
+    });
+
     // Se produto_padrao = "Sim" e tem produto_origem_id
     if (produtoPadrao === 'Sim' && produtoOrigemId) {
+      console.log('✅ Criando vínculo - Produto Padrão = Sim');
+      
       // Verificar se já existe outro produto genérico padrão vinculado a este produto origem
       const vinculoExistente = await executeQuery(
         `SELECT pg.id, pg.nome, pg.codigo 
@@ -39,23 +49,46 @@ class ProdutoGenericoCRUDController {
         'UPDATE produto_origem SET produto_generico_padrao_id = ? WHERE id = ?',
         [produtoGenericoId, produtoOrigemId]
       );
+      
+      console.log('✅ Vínculo criado com sucesso');
     }
     // Se produto_padrao = "Não" ou não tem produto_origem_id
     else {
+      console.log('❌ Removendo vínculo - Produto Padrão = Não');
+      
       // Se é uma atualização e o produto_padrao mudou de "Sim" para "Não"
       if (isUpdate && oldProdutoPadrao === 'Sim' && produtoPadrao === 'Não') {
-        // Remover vínculo do produto origem (independente se tem produto_origem_id ou não)
-        await executeQuery(
+        console.log('🔄 Mudança detectada: Sim → Não, removendo vínculo');
+        
+        // Remover vínculo do produto origem
+        const result = await executeQuery(
           'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
           [produtoGenericoId]
         );
+        
+        console.log('✅ Vínculo removido. Linhas afetadas:', result.affectedRows);
       }
       // Se não tem produto_origem_id, remover qualquer vínculo existente
       else if (!produtoOrigemId) {
-        await executeQuery(
+        console.log('🔄 Sem produto origem, removendo vínculo existente');
+        
+        const result = await executeQuery(
           'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
           [produtoGenericoId]
         );
+        
+        console.log('✅ Vínculo removido. Linhas afetadas:', result.affectedRows);
+      }
+      // Se produto_padrao = "Não" mas tem produto_origem_id, também remover vínculo
+      else if (produtoPadrao === 'Não' && produtoOrigemId) {
+        console.log('🔄 Produto Padrão = Não com produto origem, removendo vínculo');
+        
+        const result = await executeQuery(
+          'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
+          [produtoGenericoId]
+        );
+        
+        console.log('✅ Vínculo removido. Linhas afetadas:', result.affectedRows);
       }
     }
   }
