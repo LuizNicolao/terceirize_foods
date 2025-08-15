@@ -96,6 +96,10 @@ const produtoValidations = {
       .optional()
       .isInt({ min: 1 })
       .withMessage('Produto genérico deve ser selecionado'),
+    body('produto_origem_id')
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage('Produto origem deve ser selecionado'),
     body('marca_id')
       .optional()
       .isInt({ min: 1 })
@@ -269,6 +273,10 @@ const produtoValidations = {
       .optional()
       .isInt({ min: 1 })
       .withMessage('Produto genérico deve ser selecionado'),
+    body('produto_origem_id')
+      .optional()
+      .isInt({ min: 1 })
+      .withMessage('Produto origem deve ser selecionado'),
     body('marca_id')
       .optional()
       .isInt({ min: 1 })

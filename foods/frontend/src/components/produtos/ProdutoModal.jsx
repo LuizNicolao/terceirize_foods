@@ -16,6 +16,7 @@ const ProdutoModal = ({
   unidades = [],
   marcas = [],
   produtoGenerico = [],
+  produtoOrigem = [],
   onPrint
 }) => {
   const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
@@ -24,6 +25,7 @@ const ProdutoModal = ({
   const grupoId = watch('grupo_id');
   const subgrupoId = watch('subgrupo_id');
   const marcaId = watch('marca_id');
+  const nomeGenericoId = watch('nome_generico_id');
 
   // Filtrar subgrupos baseado no grupo selecionado
   const subgruposFiltrados = grupoId && grupoId !== '' 
@@ -47,6 +49,26 @@ const ProdutoModal = ({
       setValue('fabricante', '');
     }
   }, [marcaId, marcas, setValue]);
+
+  // Preencher campos automaticamente quando produto genérico for selecionado
+  useEffect(() => {
+    if (nomeGenericoId && nomeGenericoId !== '') {
+      const produtoGenericoSelecionado = produtoGenerico.find(pg => pg.id === parseInt(nomeGenericoId));
+      if (produtoGenericoSelecionado) {
+        // Preencher grupo, subgrupo, classe e produto origem
+        setValue('grupo_id', produtoGenericoSelecionado.grupo_id);
+        setValue('subgrupo_id', produtoGenericoSelecionado.subgrupo_id);
+        setValue('classe_id', produtoGenericoSelecionado.classe_id);
+        setValue('produto_origem_id', produtoGenericoSelecionado.produto_origem_id);
+      }
+    } else {
+      // Limpar campos quando nenhum produto genérico estiver selecionado
+      setValue('grupo_id', '');
+      setValue('subgrupo_id', '');
+      setValue('classe_id', '');
+      setValue('produto_origem_id', '');
+    }
+  }, [nomeGenericoId, produtoGenerico, setValue]);
 
   useEffect(() => {
     if (produto && isOpen) {
@@ -193,11 +215,11 @@ const ProdutoModal = ({
                 <Input
                   label="Grupo"
                   type="select"
-                  disabled={isViewMode}
+                  disabled={true}
                   error={errors.grupo_id?.message}
                   {...register('grupo_id')}
                 >
-                  <option value="">Selecione um grupo...</option>
+                  <option value="">Preenchido automaticamente</option>
                   {grupos.map(grupo => (
                     <option key={grupo.id} value={grupo.id}>
                       {grupo.nome}
@@ -208,12 +230,12 @@ const ProdutoModal = ({
                 <Input
                   label="Subgrupo"
                   type="select"
-                  disabled={isViewMode || !grupoId}
+                  disabled={true}
                   error={errors.subgrupo_id?.message}
                   {...register('subgrupo_id')}
                 >
-                  <option value="">Selecione um subgrupo...</option>
-                  {subgruposFiltrados.map(subgrupo => (
+                  <option value="">Preenchido automaticamente</option>
+                  {subgrupos.map(subgrupo => (
                     <option key={subgrupo.id} value={subgrupo.id}>
                       {subgrupo.nome}
                     </option>
@@ -223,12 +245,12 @@ const ProdutoModal = ({
                 <Input
                   label="Classe"
                   type="select"
-                  disabled={isViewMode || !subgrupoId}
+                  disabled={true}
                   error={errors.classe_id?.message}
                   {...register('classe_id')}
                 >
-                  <option value="">Selecione uma classe...</option>
-                  {classesFiltradas.map(classe => (
+                  <option value="">Preenchido automaticamente</option>
+                  {classes.map(classe => (
                     <option key={classe.id} value={classe.id}>
                       {classe.nome}
                     </option>
@@ -246,6 +268,21 @@ const ProdutoModal = ({
                   {produtoGenerico.map(generico => (
                     <option key={generico.id} value={generico.id}>
                       {generico.nome}
+                    </option>
+                  ))}
+                </Input>
+
+                <Input
+                  label="Produto Origem"
+                  type="select"
+                  disabled={true}
+                  error={errors.produto_origem_id?.message}
+                  {...register('produto_origem_id')}
+                >
+                  <option value="">Preenchido automaticamente</option>
+                  {produtoOrigem.map(origem => (
+                    <option key={origem.id} value={origem.id}>
+                      {origem.codigo} - {origem.nome}
                     </option>
                   ))}
                 </Input>

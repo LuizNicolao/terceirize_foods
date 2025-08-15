@@ -18,6 +18,7 @@ export const useProdutos = () => {
   const [unidades, setUnidades] = useState([]);
   const [marcas, setMarcas] = useState([]);
   const [produtoGenerico, setProdutoGenerico] = useState([]);
+  const [produtoOrigem, setProdutoOrigem] = useState([]);
 
   // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,14 +53,15 @@ export const useProdutos = () => {
         status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
       };
 
-      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes, produtoGenericoRes] = await Promise.all([
+      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes, produtoGenericoRes, produtoOrigemRes] = await Promise.all([
         ProdutosService.listar(paginationParams),
         api.get('/grupos?limit=1000'),
         api.get('/subgrupos?limit=1000'),
         api.get('/classes?limit=1000'),
         api.get('/unidades?limit=1000'),
         api.get('/marcas?limit=1000'),
-        api.get('/produto-generico?limit=1000')
+        api.get('/produto-generico?limit=1000'),
+        api.get('/produto-origem?limit=1000')
       ]);
 
       if (produtosRes.success) {
@@ -138,6 +140,14 @@ export const useProdutos = () => {
         setProdutoGenerico(produtoGenericoRes.data.data);
       } else {
         setProdutoGenerico(produtoGenericoRes.data || []);
+      }
+
+      if (produtoOrigemRes.data?.data?.items) {
+        setProdutoOrigem(produtoOrigemRes.data.data.items);
+      } else if (produtoOrigemRes.data?.data) {
+        setProdutoOrigem(produtoOrigemRes.data.data);
+      } else {
+        setProdutoOrigem(produtoOrigemRes.data || []);
       }
 
     } catch (error) {
@@ -260,6 +270,7 @@ export const useProdutos = () => {
     unidades,
     marcas,
     produtoGenerico,
+    produtoOrigem,
     searchTerm,
     statusFilter,
     currentPage,

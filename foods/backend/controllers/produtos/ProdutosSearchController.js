@@ -36,6 +36,7 @@ class ProdutosSearchController {
         p.subgrupo_id,
         p.classe_id,
         p.nome_generico_id,
+        p.produto_origem_id,
         p.marca_id,
         p.peso_liquido,
         p.peso_bruto,
@@ -76,7 +77,8 @@ class ProdutosSearchController {
         u.nome as unidade_nome,
         m.marca as marca_nome,
         ng.nome as nome_generico_nome,
-        ue.nome as embalagem_secundaria_nome
+        ue.nome as embalagem_secundaria_nome,
+        po.nome as produto_origem_nome
       FROM produtos p
 
       LEFT JOIN grupos g ON p.grupo_id = g.id
@@ -86,6 +88,7 @@ class ProdutosSearchController {
       LEFT JOIN marcas m ON p.marca_id = m.id
       LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
       LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
+      LEFT JOIN produto_origem po ON p.produto_origem_id = po.id
       WHERE p.status = 1
     `;
     
@@ -150,6 +153,7 @@ class ProdutosSearchController {
         p.subgrupo_id,
         p.classe_id,
         p.nome_generico_id,
+        p.produto_origem_id,
         p.marca_id,
         p.peso_liquido,
         p.peso_bruto,
@@ -190,7 +194,8 @@ class ProdutosSearchController {
         u.nome as unidade_nome,
         m.marca as marca_nome,
         ng.nome as nome_generico_nome,
-        ue.nome as embalagem_secundaria_nome
+        ue.nome as embalagem_secundaria_nome,
+        po.nome as produto_origem_nome
       FROM produtos p
       LEFT JOIN grupos g ON p.grupo_id = g.id
       LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
@@ -199,6 +204,7 @@ class ProdutosSearchController {
       LEFT JOIN marcas m ON p.marca_id = m.id
       LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
       LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
+      LEFT JOIN produto_origem po ON p.produto_origem_id = po.id
       WHERE p.grupo_id = ? AND p.status = 1
     `;
     
@@ -251,6 +257,7 @@ class ProdutosSearchController {
         p.subgrupo_id,
         p.classe_id,
         p.nome_generico_id,
+        p.produto_origem_id,
         p.marca_id,
         p.peso_liquido,
         p.peso_bruto,
@@ -291,7 +298,8 @@ class ProdutosSearchController {
         u.nome as unidade_nome,
         m.marca as marca_nome,
         ng.nome as nome_generico_nome,
-        ue.nome as embalagem_secundaria_nome
+        ue.nome as embalagem_secundaria_nome,
+        po.nome as produto_origem_nome
        FROM produtos p
        LEFT JOIN grupos g ON p.grupo_id = g.id
        LEFT JOIN subgrupos sg ON p.subgrupo_id = sg.id
@@ -300,6 +308,7 @@ class ProdutosSearchController {
        LEFT JOIN marcas m ON p.marca_id = m.id
        LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
        LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
+       LEFT JOIN produto_origem po ON p.produto_origem_id = po.id
        WHERE p.codigo_barras = ?`,
       [codigo_barras]
     );

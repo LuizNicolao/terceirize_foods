@@ -22,7 +22,7 @@ class ProdutosCRUDController {
     const {
       codigo_produto, nome, codigo_barras, fator_conversao, referencia_interna, 
       referencia_externa, referencia_mercado, unidade_id, grupo_id, subgrupo_id, 
-      classe_id, nome_generico_id, marca_id, peso_liquido, peso_bruto, fabricante, 
+      classe_id, nome_generico_id, produto_origem_id, marca_id, peso_liquido, peso_bruto, fabricante, 
       informacoes_adicionais, foto_produto, prazo_validade, unidade_validade, 
       regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura, 
       altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn, 
@@ -114,6 +114,18 @@ class ProdutosCRUDController {
       }
     }
 
+    // Verificar se produto origem existe (se fornecido)
+    if (produto_origem_id) {
+      const produtoOrigem = await executeQuery(
+        'SELECT id FROM produto_origem WHERE id = ?',
+        [produto_origem_id]
+      );
+
+      if (produtoOrigem.length === 0) {
+        return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
     // Verificar se embalagem secundária existe (se fornecida)
     if (embalagem_secundaria_id) {
       const embalagemSecundaria = await executeQuery(
@@ -131,7 +143,7 @@ class ProdutosCRUDController {
       `INSERT INTO produtos (
         codigo_produto, nome, codigo_barras, fator_conversao, referencia_interna, 
         referencia_externa, referencia_mercado, unidade_id, grupo_id, subgrupo_id, 
-        classe_id, nome_generico_id, marca_id, peso_liquido, peso_bruto, fabricante, 
+        classe_id, nome_generico_id, produto_origem_id, marca_id, peso_liquido, peso_bruto, fabricante, 
         informacoes_adicionais, foto_produto, prazo_validade, unidade_validade, 
         regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura, 
         altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn, 
@@ -141,7 +153,7 @@ class ProdutosCRUDController {
       [
         codigo_produto, nome, codigo_barras, fator_conversao || 1.000, referencia_interna, 
         referencia_externa, referencia_mercado, unidade_id, grupo_id, subgrupo_id, 
-        classe_id, nome_generico_id, marca_id, peso_liquido, peso_bruto, fabricante, 
+        classe_id, nome_generico_id, produto_origem_id, marca_id, peso_liquido, peso_bruto, fabricante, 
         informacoes_adicionais, foto_produto, prazo_validade, unidade_validade, 
         regra_palet_un, ficha_homologacao, registro_especifico, comprimento, largura, 
         altura, volume, integracao_senior, ncm, cest, cfop, ean, cst_icms, csosn, 
@@ -168,6 +180,7 @@ class ProdutosCRUDController {
         p.subgrupo_id,
         p.classe_id,
         p.nome_generico_id,
+        p.produto_origem_id,
         p.marca_id,
         p.peso_liquido,
         p.peso_bruto,
@@ -208,6 +221,7 @@ class ProdutosCRUDController {
         u.nome as unidade_nome,
         m.marca as marca_nome,
         ng.nome as nome_generico_nome,
+        po.nome as produto_origem_nome,
         ue.nome as embalagem_secundaria_nome
        FROM produtos p
        LEFT JOIN grupos g ON p.grupo_id = g.id
@@ -216,6 +230,7 @@ class ProdutosCRUDController {
        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
        LEFT JOIN marcas m ON p.marca_id = m.id
        LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
+       LEFT JOIN produto_origem po ON p.produto_origem_id = po.id
        LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
        WHERE p.id = ?`,
       [produtoId]
@@ -332,6 +347,18 @@ class ProdutosCRUDController {
       }
     }
 
+    // Verificar se produto origem existe (se fornecido)
+    if (updateData.produto_origem_id) {
+      const produtoOrigem = await executeQuery(
+        'SELECT id FROM produto_origem WHERE id = ?',
+        [updateData.produto_origem_id]
+      );
+
+      if (produtoOrigem.length === 0) {
+        return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
     // Verificar se embalagem secundária existe (se fornecida)
     if (updateData.embalagem_secundaria_id) {
       const embalagemSecundaria = await executeQuery(
@@ -350,7 +377,7 @@ class ProdutosCRUDController {
     const camposValidos = [
       'codigo_produto', 'nome', 'codigo_barras', 'fator_conversao', 'referencia_interna', 
       'referencia_externa', 'referencia_mercado', 'unidade_id', 'grupo_id', 'subgrupo_id', 
-      'classe_id', 'nome_generico_id', 'marca_id', 'peso_liquido', 'peso_bruto', 'fabricante', 
+      'classe_id', 'nome_generico_id', 'produto_origem_id', 'marca_id', 'peso_liquido', 'peso_bruto', 'fabricante', 
       'informacoes_adicionais', 'foto_produto', 'prazo_validade', 'unidade_validade', 
       'regra_palet_un', 'ficha_homologacao', 'registro_especifico', 'comprimento', 
       'largura', 'altura', 'volume', 'integracao_senior', 'ncm', 'cest', 'cfop', 
@@ -408,6 +435,7 @@ class ProdutosCRUDController {
         p.subgrupo_id,
         p.classe_id,
         p.nome_generico_id,
+        p.produto_origem_id,
         p.marca_id,
         p.peso_liquido,
         p.peso_bruto,
@@ -448,6 +476,7 @@ class ProdutosCRUDController {
         u.nome as unidade_nome,
         m.marca as marca_nome,
         ng.nome as nome_generico_nome,
+        po.nome as produto_origem_nome,
         ue.nome as embalagem_secundaria_nome
        FROM produtos p
 
@@ -457,6 +486,7 @@ class ProdutosCRUDController {
        LEFT JOIN unidades_medida u ON p.unidade_id = u.id
        LEFT JOIN marcas m ON p.marca_id = m.id
        LEFT JOIN produto_generico ng ON p.nome_generico_id = ng.id
+       LEFT JOIN produto_origem po ON p.produto_origem_id = po.id
        LEFT JOIN unidades_medida ue ON p.embalagem_secundaria_id = ue.id
        WHERE p.id = ?`,
       [id]

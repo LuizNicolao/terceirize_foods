@@ -30,6 +30,7 @@ const Produtos = () => {
     unidades,
     marcas,
     produtoGenerico,
+    produtoOrigem,
     searchTerm,
     statusFilter,
     currentPage,
@@ -157,6 +158,7 @@ const Produtos = () => {
         unidades={unidades}
         marcas={marcas}
         produtoGenerico={produtoGenerico}
+        produtoOrigem={produtoOrigem}
         onPrint={() => handlePrintPDF(editingProduto)}
       />
 
