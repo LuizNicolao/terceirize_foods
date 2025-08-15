@@ -36,7 +36,7 @@ const ProdutoGenericoModal = ({
   const produtoOrigemId = watch('produto_origem_id');
 
   // Obter o produto origem selecionado
-  const produtoOrigemSelecionado = produtoOrigemId && produtoOrigemId !== '' 
+  const produtoOrigemSelecionado = produtoOrigemId 
     ? produtosOrigem?.find(po => po.id === parseInt(produtoOrigemId))
     : null;
 
@@ -54,25 +54,9 @@ const ProdutoGenericoModal = ({
       ? classes.filter(c => String(c.subgrupo_id) === String(produtoGenerico.subgrupo_id))
       : [];
 
-  // Debug logs
-  console.log('Debug Filtros:', {
-    grupoId,
-    subgrupoId,
-    produtoOrigemId,
-    produtoOrigemSelecionado: produtoOrigemSelecionado ? {
-      grupo_id: produtoOrigemSelecionado.grupo_id,
-      subgrupo_id: produtoOrigemSelecionado.subgrupo_id,
-      classe_id: produtoOrigemSelecionado.classe_id
-    } : null,
-    subgruposFiltrados: subgruposFiltrados.length,
-    classesFiltradas: classesFiltradas.length,
-    totalSubgrupos: subgrupos.length,
-    totalClasses: classes.length
-  });
-
   // Preencher automaticamente campos quando selecionar produto origem
   useEffect(() => {
-    if (produtoOrigemId && produtoOrigemId !== '') {
+    if (produtoOrigemId) {
       const produtoOrigemSelecionado = produtosOrigem?.find(po => po.id === parseInt(produtoOrigemId));
       if (produtoOrigemSelecionado) {
         // Preencher Grupo, Subgrupo, Classe e Referência de Mercado
@@ -80,14 +64,6 @@ const ProdutoGenericoModal = ({
         setValue('subgrupo_id', produtoOrigemSelecionado.subgrupo_id);
         setValue('classe_id', produtoOrigemSelecionado.classe_id);
         setValue('referencia_mercado', produtoOrigemSelecionado.referencia_mercado || '');
-        
-        console.log('Produto Origem Selecionado:', produtoOrigemSelecionado);
-        console.log('Campos preenchidos:', {
-          grupo_id: produtoOrigemSelecionado.grupo_id,
-          subgrupo_id: produtoOrigemSelecionado.subgrupo_id,
-          classe_id: produtoOrigemSelecionado.classe_id,
-          referencia_mercado: produtoOrigemSelecionado.referencia_mercado
-        });
       }
     }
   }, [produtoOrigemId, produtosOrigem, setValue]);
@@ -249,8 +225,8 @@ const ProdutoGenericoModal = ({
               type="select"
               {...register('grupo_id')}
               error={errors.grupo_id?.message}
-              disabled={viewMode || (produtoOrigemId && produtoOrigemId !== '')}
-              className={produtoOrigemId && produtoOrigemId !== '' ? "bg-gray-50" : ""}
+              disabled={viewMode || produtoOrigemId}
+              className={produtoOrigemId ? "bg-gray-50" : ""}
             >
               <option value="">Selecione um grupo</option>
               {grupos?.map(grupo => (
@@ -266,8 +242,8 @@ const ProdutoGenericoModal = ({
               type="select"
               {...register('subgrupo_id')}
               error={errors.subgrupo_id?.message}
-              disabled={viewMode || (produtoOrigemId && produtoOrigemId !== '')}
-              className={produtoOrigemId && produtoOrigemId !== '' ? "bg-gray-50" : ""}
+              disabled={viewMode || produtoOrigemId}
+              className={produtoOrigemId ? "bg-gray-50" : ""}
             >
               <option value="">Selecione um subgrupo</option>
               {subgruposFiltrados.map(subgrupo => (
@@ -283,8 +259,8 @@ const ProdutoGenericoModal = ({
               type="select"
               {...register('classe_id')}
               error={errors.classe_id?.message}
-              disabled={viewMode || (produtoOrigemId && produtoOrigemId !== '')}
-              className={produtoOrigemId && produtoOrigemId !== '' ? "bg-gray-50" : ""}
+              disabled={viewMode || produtoOrigemId}
+              className={produtoOrigemId ? "bg-gray-50" : ""}
             >
               <option value="">Selecione uma classe</option>
               {classesFiltradas.map(classe => (
@@ -330,9 +306,9 @@ const ProdutoGenericoModal = ({
                   maxLength: { value: 200, message: 'Referência deve ter no máximo 200 caracteres' }
                 })}
                 error={errors.referencia_mercado?.message}
-                disabled={viewMode || (produtoOrigemId && produtoOrigemId !== '')}
-                className={produtoOrigemId && produtoOrigemId !== '' ? "bg-gray-50" : ""}
-                placeholder={produtoOrigemId && produtoOrigemId !== '' ? "Preenchido automaticamente" : "Digite a referência de mercado"}
+                disabled={viewMode || produtoOrigemId}
+                className={produtoOrigemId ? "bg-gray-50" : ""}
+                placeholder={produtoOrigemId ? "Preenchido automaticamente" : "Digite a referência de mercado"}
               />
             </div>
 
