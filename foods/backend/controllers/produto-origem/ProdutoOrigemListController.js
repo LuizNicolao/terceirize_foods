@@ -27,8 +27,8 @@ class ProdutoOrigemListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        pg.nome as produto_generico_padrao_nome,
-        pg.codigo as produto_generico_padrao_codigo,
+        COALESCE(pg.nome, pg_vinculado.nome) as produto_generico_padrao_nome,
+        COALESCE(pg.codigo, pg_vinculado.codigo) as produto_generico_padrao_codigo,
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome
       FROM produto_origem po
@@ -37,6 +37,7 @@ class ProdutoOrigemListController {
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
       LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN produto_generico pg_vinculado ON po.id = pg_vinculado.produto_origem_id
       LEFT JOIN usuarios uc ON po.usuario_criador_id = uc.id
       LEFT JOIN usuarios ua ON po.usuario_atualizador_id = ua.id
       WHERE 1=1
@@ -126,8 +127,8 @@ class ProdutoOrigemListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        pg.nome as produto_generico_padrao_nome,
-        pg.codigo as produto_generico_padrao_codigo,
+        COALESCE(pg.nome, pg_vinculado.nome) as produto_generico_padrao_nome,
+        COALESCE(pg.codigo, pg_vinculado.codigo) as produto_generico_padrao_codigo,
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome
       FROM produto_origem po
@@ -136,6 +137,7 @@ class ProdutoOrigemListController {
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
       LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN produto_generico pg_vinculado ON po.id = pg_vinculado.produto_origem_id
       LEFT JOIN usuarios uc ON po.usuario_criador_id = uc.id
       LEFT JOIN usuarios ua ON po.usuario_atualizador_id = ua.id
       WHERE po.id = ?`,
@@ -162,13 +164,14 @@ class ProdutoOrigemListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        pg.nome as produto_generico_padrao_nome
+        COALESCE(pg.nome, pg_vinculado.nome) as produto_generico_padrao_nome
       FROM produto_origem po
       LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
       LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN produto_generico pg_vinculado ON po.id = pg_vinculado.produto_origem_id
       WHERE po.grupo_id = ? AND po.status = 1
       ORDER BY po.nome ASC`,
       [grupo_id]
@@ -190,13 +193,14 @@ class ProdutoOrigemListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        pg.nome as produto_generico_padrao_nome
+        COALESCE(pg.nome, pg_vinculado.nome) as produto_generico_padrao_nome
       FROM produto_origem po
       LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
       LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN produto_generico pg_vinculado ON po.id = pg_vinculado.produto_origem_id
       WHERE po.subgrupo_id = ? AND po.status = 1
       ORDER BY po.nome ASC`,
       [subgrupo_id]
@@ -218,13 +222,14 @@ class ProdutoOrigemListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        pg.nome as produto_generico_padrao_nome
+        COALESCE(pg.nome, pg_vinculado.nome) as produto_generico_padrao_nome
       FROM produto_origem po
       LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
       LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN produto_generico pg_vinculado ON po.id = pg_vinculado.produto_origem_id
       WHERE po.classe_id = ? AND po.status = 1
       ORDER BY po.nome ASC`,
       [classe_id]
@@ -244,13 +249,14 @@ class ProdutoOrigemListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        pg.nome as produto_generico_padrao_nome
+        COALESCE(pg.nome, pg_vinculado.nome) as produto_generico_padrao_nome
       FROM produto_origem po
       LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
       LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN produto_generico pg_vinculado ON po.id = pg_vinculado.produto_origem_id
       WHERE po.status = 1
       ORDER BY po.nome ASC`
     );
@@ -271,13 +277,14 @@ class ProdutoOrigemListController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        pg.nome as produto_generico_padrao_nome
+        COALESCE(pg.nome, pg_vinculado.nome) as produto_generico_padrao_nome
       FROM produto_origem po
       LEFT JOIN unidades_medida um ON po.unidade_medida_id = um.id
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
       LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN produto_generico pg_vinculado ON po.id = pg_vinculado.produto_origem_id
       WHERE po.codigo = ?`,
       [codigo]
     );
