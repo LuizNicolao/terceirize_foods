@@ -20,7 +20,7 @@ const handleValidationErrors = (req, res, next) => {
 // Middleware para limpar campos vazios
 const cleanEmptyFields = (req, res, next) => {
   // Converter campos vazios para null
-  const fieldsToClean = ['grupo_id', 'subgrupo_id', 'classe_id', 'peso_liquido', 'referencia_mercado'];
+  const fieldsToClean = ['grupo_id', 'subgrupo_id', 'classe_id', 'produto_generico_padrao_id', 'peso_liquido', 'referencia_mercado'];
   
   fieldsToClean.forEach(field => {
     if (req.body[field] === '' || req.body[field] === undefined || req.body[field] === 'null') {
@@ -53,7 +53,11 @@ const cleanEmptyFields = (req, res, next) => {
     req.body.peso_liquido = parseFloat(req.body.peso_liquido);
   }
 
-
+  if (req.body.produto_generico_padrao_id && req.body.produto_generico_padrao_id !== '' && req.body.produto_generico_padrao_id !== 'null') {
+    req.body.produto_generico_padrao_id = parseInt(req.body.produto_generico_padrao_id);
+  } else {
+    req.body.produto_generico_padrao_id = null;
+  }
 
   next();
 };
@@ -146,7 +150,18 @@ const produtoOrigemValidations = {
       .isLength({ min: 1, max: 200 })
       .withMessage('Referência de mercado deve ter entre 1 e 200 caracteres'),
     
-
+    body('produto_generico_padrao_id')
+      .optional()
+      .custom((value) => {
+        if (value && value !== '' && value !== null && value !== undefined) {
+          const numValue = parseInt(value);
+          if (isNaN(numValue) || numValue < 1) {
+            throw new Error('Produto genérico padrão deve ser um número válido');
+          }
+        }
+        return true;
+      })
+      .withMessage('Produto genérico padrão deve ser selecionado'),
     
     body('status')
       .optional()
@@ -206,7 +221,18 @@ const produtoOrigemValidations = {
       .isLength({ min: 1, max: 200 })
       .withMessage('Referência de mercado deve ter entre 1 e 200 caracteres'),
     
-
+    body('produto_generico_padrao_id')
+      .optional()
+      .custom((value) => {
+        if (value && value !== '' && value !== null && value !== undefined) {
+          const numValue = parseInt(value);
+          if (isNaN(numValue) || numValue < 1) {
+            throw new Error('Produto genérico padrão deve ser um número válido');
+          }
+        }
+        return true;
+      })
+      .withMessage('Produto genérico padrão deve ser selecionado'),
     
     body('status')
       .optional()
