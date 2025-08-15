@@ -225,8 +225,8 @@ const ProdutoGenericoModal = ({
               type="select"
               {...register('grupo_id')}
               error={errors.grupo_id?.message}
-              disabled={viewMode || produtoOrigemId}
-              className={produtoOrigemId ? "bg-gray-50" : ""}
+              disabled={true}
+              className="bg-gray-50"
             >
               <option value="">Selecione um grupo</option>
               {grupos?.map(grupo => (
@@ -242,8 +242,8 @@ const ProdutoGenericoModal = ({
               type="select"
               {...register('subgrupo_id')}
               error={errors.subgrupo_id?.message}
-              disabled={viewMode || produtoOrigemId}
-              className={produtoOrigemId ? "bg-gray-50" : ""}
+              disabled={true}
+              className="bg-gray-50"
             >
               <option value="">Selecione um subgrupo</option>
               {subgruposFiltrados.map(subgrupo => (
@@ -259,8 +259,8 @@ const ProdutoGenericoModal = ({
               type="select"
               {...register('classe_id')}
               error={errors.classe_id?.message}
-              disabled={viewMode || produtoOrigemId}
-              className={produtoOrigemId ? "bg-gray-50" : ""}
+              disabled={true}
+              className="bg-gray-50"
             >
               <option value="">Selecione uma classe</option>
               {classesFiltradas.map(classe => (
@@ -306,9 +306,9 @@ const ProdutoGenericoModal = ({
                   maxLength: { value: 200, message: 'Referência deve ter no máximo 200 caracteres' }
                 })}
                 error={errors.referencia_mercado?.message}
-                disabled={viewMode || produtoOrigemId}
-                className={produtoOrigemId ? "bg-gray-50" : ""}
-                placeholder={produtoOrigemId ? "Preenchido automaticamente" : "Digite a referência de mercado"}
+                disabled={true}
+                className="bg-gray-50"
+                placeholder="Preenchido automaticamente"
               />
             </div>
 
