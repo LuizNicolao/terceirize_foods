@@ -23,6 +23,7 @@ const ProdutoModal = ({
   // Observar mudanças nos campos para filtros dependentes
   const grupoId = watch('grupo_id');
   const subgrupoId = watch('subgrupo_id');
+  const marcaId = watch('marca_id');
 
   // Filtrar subgrupos baseado no grupo selecionado
   const subgruposFiltrados = grupoId && grupoId !== '' 
@@ -33,6 +34,19 @@ const ProdutoModal = ({
   const classesFiltradas = subgrupoId && subgrupoId !== '' 
     ? classes.filter(c => String(c.subgrupo_id) === String(subgrupoId))
     : classes;
+
+  // Preencher fabricante automaticamente quando marca for selecionada
+  useEffect(() => {
+    if (marcaId && marcaId !== '') {
+      const marcaSelecionada = marcas.find(marca => marca.id === parseInt(marcaId));
+      if (marcaSelecionada && marcaSelecionada.fabricante) {
+        setValue('fabricante', marcaSelecionada.fabricante);
+      }
+    } else {
+      // Limpar campo fabricante quando nenhuma marca estiver selecionada
+      setValue('fabricante', '');
+    }
+  }, [marcaId, marcas, setValue]);
 
   useEffect(() => {
     if (produto && isOpen) {
@@ -246,7 +260,7 @@ const ProdutoModal = ({
                   <option value="">Selecione uma marca...</option>
                   {marcas.map(marca => (
                     <option key={marca.id} value={marca.id}>
-                      {marca.marca}
+                      {marca.marca} - {marca.fabricante}
                     </option>
                   ))}
                 </Input>
