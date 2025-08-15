@@ -16,6 +16,45 @@ const { asyncHandler } = require('../../middleware/responseHandler');
 class ProdutoGenericoCRUDController {
   
   /**
+   * Função para vincular automaticamente produtos origem quando produto genérico for marcado como padrão
+   */
+  static vincularProdutosOrigem = async (produtoGenericoId, grupoId, subgrupoId, classeId) => {
+    try {
+      // Buscar produto genérico para verificar se é padrão
+      const produtoGenerico = await executeQuery(
+        'SELECT id, produto_padrao, status FROM produto_generico WHERE id = ?',
+        [produtoGenericoId]
+      );
+
+      if (produtoGenerico.length === 0) return;
+
+      const pg = produtoGenerico[0];
+
+      // Se o produto genérico for marcado como padrão e estiver ativo
+      if (pg.produto_padrao === 'Sim' && pg.status === 1) {
+        // Vincular todos os produtos origem com a mesma classificação
+        await executeQuery(
+          `UPDATE produto_origem 
+           SET produto_generico_padrao_id = ? 
+           WHERE grupo_id = ? AND subgrupo_id = ? AND classe_id = ? 
+           AND status = 1`,
+          [produtoGenericoId, grupoId, subgrupoId, classeId]
+        );
+      } else {
+        // Se não for padrão, remover vinculação dos produtos origem
+        await executeQuery(
+          `UPDATE produto_origem 
+           SET produto_generico_padrao_id = NULL 
+           WHERE produto_generico_padrao_id = ?`,
+          [produtoGenericoId]
+        );
+      }
+    } catch (error) {
+      console.error('Erro ao vincular produtos origem:', error);
+    }
+  };
+
+  /**
    * Criar novo produto genérico
    */
   static criarProdutoGenerico = asyncHandler(async (req, res) => {
@@ -85,18 +124,6 @@ class ProdutoGenericoCRUDController {
       }
     }
 
-    // Verificar se unidade de medida existe (se fornecida)
-    if (unidade_medida_id) {
-      const unidade = await executeQuery(
-        'SELECT id FROM unidades_medida WHERE id = ?',
-        [unidade_medida_id]
-      );
-
-      if (unidade.length === 0) {
-        return errorResponse(res, 'Unidade de medida não encontrada', STATUS_CODES.BAD_REQUEST);
-      }
-    }
-
     // Inserir novo produto genérico
     const novoProdutoGenerico = await executeQuery(
       `INSERT INTO produto_generico (
@@ -114,6 +141,16 @@ class ProdutoGenericoCRUDController {
         integracao_senior, status !== undefined ? status : 1, req.user.id
       ]
     );
+
+    // Vincular produtos origem se for produto padrão
+    if (produto_padrao === 'Sim' && grupo_id && subgrupo_id && classe_id) {
+      await ProdutoGenericoCRUDController.vincularProdutosOrigem(
+        novoProdutoGenerico.insertId, 
+        grupo_id, 
+        subgrupo_id, 
+        classe_id
+      );
+    }
 
     // Buscar produto genérico criado
     const produtoGenericoCriado = await executeQuery(
@@ -157,7 +194,7 @@ class ProdutoGenericoCRUDController {
 
     // Verificar se produto genérico existe
     const produtoGenerico = await executeQuery(
-      'SELECT id, nome FROM produto_generico WHERE id = ?',
+      'SELECT id, produto_padrao, grupo_id, subgrupo_id, classe_id FROM produto_generico WHERE id = ?',
       [id]
     );
 
@@ -165,7 +202,9 @@ class ProdutoGenericoCRUDController {
       return notFoundResponse(res, 'Produto genérico não encontrado');
     }
 
-    // Verificar se código já existe (se foi alterado)
+    const produtoAtual = produtoGenerico[0];
+
+    // Verificar se código já existe (exceto para o próprio registro)
     if (codigo) {
       const codigoExistente = await executeQuery(
         'SELECT id FROM produto_generico WHERE codigo = ? AND id != ?',
@@ -225,37 +264,41 @@ class ProdutoGenericoCRUDController {
       }
     }
 
-    // Verificar se unidade de medida existe (se fornecida)
-    if (unidade_medida_id) {
-      const unidade = await executeQuery(
-        'SELECT id FROM unidades_medida WHERE id = ?',
-        [unidade_medida_id]
-      );
-
-      if (unidade.length === 0) {
-        return errorResponse(res, 'Unidade de medida não encontrada', STATUS_CODES.BAD_REQUEST);
-      }
-    }
-
     // Atualizar produto genérico
     await executeQuery(
       `UPDATE produto_generico SET 
         codigo = ?, nome = ?, produto_origem_id = ?, fator_conversao = ?, 
         grupo_id = ?, subgrupo_id = ?, classe_id = ?, unidade_medida_id = ?, 
-        referencia_mercado = ?, produto_padrao = ?, peso_liquido = ?, peso_bruto = ?,
+        referencia_mercado = ?, produto_padrao = ?, peso_liquido = ?, peso_bruto = ?, 
         regra_palet = ?, informacoes_adicionais = ?, referencia_interna = ?, 
-        referencia_externa = ?, registro_especifico = ?, tipo_registro = ?,
+        referencia_externa = ?, registro_especifico = ?, tipo_registro = ?, 
         prazo_validade_padrao = ?, unidade_validade = ?, integracao_senior = ?, 
         status = ?, usuario_atualizador_id = ?
       WHERE id = ?`,
       [
-        codigo, nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
-        unidade_medida_id, referencia_mercado, produto_padrao, peso_liquido, peso_bruto,
+        codigo, nome, produto_origem_id, fator_conversao || 1.000, grupo_id, subgrupo_id, classe_id,
+        unidade_medida_id, referencia_mercado, produto_padrao || 'Não', peso_liquido, peso_bruto,
         regra_palet, informacoes_adicionais, referencia_interna, referencia_externa,
         registro_especifico, tipo_registro, prazo_validade_padrao, unidade_validade,
-        integracao_senior, status, req.user.id, id
+        integracao_senior, status !== undefined ? status : 1, req.user.id, id
       ]
     );
+
+    // Verificar se houve mudança no status de produto padrão ou classificação
+    const mudouPadrao = produto_padrao !== produtoAtual.produto_padrao;
+    const mudouClassificacao = grupo_id !== produtoAtual.grupo_id || 
+                               subgrupo_id !== produtoAtual.subgrupo_id || 
+                               classe_id !== produtoAtual.classe_id;
+
+    // Vincular produtos origem se necessário
+    if ((mudouPadrao || mudouClassificacao) && grupo_id && subgrupo_id && classe_id) {
+      await ProdutoGenericoCRUDController.vincularProdutosOrigem(
+        id, 
+        grupo_id, 
+        subgrupo_id, 
+        classe_id
+      );
+    }
 
     // Buscar produto genérico atualizado
     const produtoGenericoAtualizado = await executeQuery(
@@ -292,12 +335,20 @@ class ProdutoGenericoCRUDController {
 
     // Verificar se produto genérico existe
     const produtoGenerico = await executeQuery(
-      'SELECT id, nome FROM produto_generico WHERE id = ?',
+      'SELECT id, nome, produto_padrao FROM produto_generico WHERE id = ?',
       [id]
     );
 
     if (produtoGenerico.length === 0) {
       return notFoundResponse(res, 'Produto genérico não encontrado');
+    }
+
+    // Se for produto padrão, remover vinculação dos produtos origem
+    if (produtoGenerico[0].produto_padrao === 'Sim') {
+      await executeQuery(
+        'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
+        [id]
+      );
     }
 
     // Soft delete - apenas desativar
