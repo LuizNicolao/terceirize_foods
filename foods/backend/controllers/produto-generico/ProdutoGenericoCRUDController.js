@@ -12,7 +12,6 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
-const VinculoProdutoService = require('../../services/VinculoProdutoService');
 
 class ProdutoGenericoCRUDController {
   
@@ -47,18 +46,6 @@ class ProdutoGenericoCRUDController {
 
       if (produtoOrigem.length === 0) {
         return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
-      }
-
-      // Verificar vínculo único usando o serviço
-      try {
-        const vinculoExistente = await VinculoProdutoService.validarVinculoUnico(produto_origem_id);
-        if (vinculoExistente) {
-          return conflictResponse(res, 
-            `Produto origem "${vinculoExistente.produto_origem_codigo} - ${vinculoExistente.nome}" já está vinculado ao produto genérico padrão: "${vinculoExistente.produto_generico_codigo} - ${vinculoExistente.produto_generico_nome}". Um Produto Origem só pode estar vinculado a um Produto Genérico Padrão por vez.`
-          );
-        }
-      } catch (error) {
-        return errorResponse(res, error.message, STATUS_CODES.BAD_REQUEST);
       }
     }
 
@@ -128,16 +115,6 @@ class ProdutoGenericoCRUDController {
       ]
     );
 
-    // Gerenciar vínculo automaticamente se o produto é padrão
-    if (produto_padrao === 'Sim' && produto_origem_id) {
-      try {
-        await VinculoProdutoService.criarVinculo(produto_origem_id, novoProdutoGenerico.insertId);
-      } catch (error) {
-        // Se não conseguiu criar vínculo, não falhar a criação do produto
-        console.warn('Erro ao criar vínculo:', error.message);
-      }
-    }
-
     // Buscar produto genérico criado
     const produtoGenericoCriado = await executeQuery(
       `SELECT 
@@ -180,15 +157,13 @@ class ProdutoGenericoCRUDController {
 
     // Verificar se produto genérico existe
     const produtoGenerico = await executeQuery(
-      'SELECT id, nome, produto_padrao, produto_origem_id FROM produto_generico WHERE id = ?',
+      'SELECT id, nome FROM produto_generico WHERE id = ?',
       [id]
     );
 
     if (produtoGenerico.length === 0) {
       return notFoundResponse(res, 'Produto genérico não encontrado');
     }
-
-    const produtoGenericoAtual = produtoGenerico[0];
 
     // Verificar se código já existe (se foi alterado)
     if (codigo) {
@@ -211,18 +186,6 @@ class ProdutoGenericoCRUDController {
 
       if (produtoOrigem.length === 0) {
         return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
-      }
-
-      // Verificar vínculo único usando o serviço (excluindo o produto atual)
-      try {
-        const vinculoExistente = await VinculoProdutoService.validarVinculoUnico(produto_origem_id, parseInt(id));
-        if (vinculoExistente) {
-          return conflictResponse(res, 
-            `Produto origem "${vinculoExistente.produto_origem_codigo} - ${vinculoExistente.nome}" já está vinculado ao produto genérico padrão: "${vinculoExistente.produto_generico_codigo} - ${vinculoExistente.produto_generico_nome}". Um Produto Origem só pode estar vinculado a um Produto Genérico Padrão por vez.`
-          );
-        }
-      } catch (error) {
-        return errorResponse(res, error.message, STATUS_CODES.BAD_REQUEST);
       }
     }
 
@@ -294,20 +257,6 @@ class ProdutoGenericoCRUDController {
       ]
     );
 
-    // Gerenciar vínculo automaticamente
-    try {
-      await VinculoProdutoService.gerenciarVinculoAutomatico(
-        parseInt(id),
-        produto_padrao,
-        status !== undefined ? status : 1,
-        produto_origem_id,
-        produtoGenericoAtual.produto_origem_id
-      );
-    } catch (error) {
-      // Se não conseguiu gerenciar vínculo, não falhar a atualização do produto
-      console.warn('Erro ao gerenciar vínculo:', error.message);
-    }
-
     // Buscar produto genérico atualizado
     const produtoGenericoAtualizado = await executeQuery(
       `SELECT 
@@ -343,7 +292,7 @@ class ProdutoGenericoCRUDController {
 
     // Verificar se produto genérico existe
     const produtoGenerico = await executeQuery(
-      'SELECT id, nome, produto_padrao, produto_origem_id FROM produto_generico WHERE id = ?',
+      'SELECT id, nome FROM produto_generico WHERE id = ?',
       [id]
     );
 
@@ -351,39 +300,13 @@ class ProdutoGenericoCRUDController {
       return notFoundResponse(res, 'Produto genérico não encontrado');
     }
 
-    const produtoGenericoAtual = produtoGenerico[0];
-
     // Soft delete - apenas desativar
     await executeQuery(
       'UPDATE produto_generico SET status = 0, usuario_atualizador_id = ? WHERE id = ?',
       [req.user.id, id]
     );
 
-    // Remover vínculo se o produto era padrão
-    if (produtoGenericoAtual.produto_padrao === 'Sim' && produtoGenericoAtual.produto_origem_id) {
-      try {
-        await VinculoProdutoService.removerVinculo(produtoGenericoAtual.produto_origem_id);
-      } catch (error) {
-        console.warn('Erro ao remover vínculo:', error.message);
-      }
-    }
-
-    successResponse(res, { id, nome: produtoGenericoAtual.nome }, 'Produto genérico excluído com sucesso');
-  });
-
-  /**
-   * Limpar vínculos duplicados
-   */
-  static limparVinculosDuplicados = asyncHandler(async (req, res) => {
-    try {
-      const vinculosCorrigidos = await VinculoProdutoService.limparVinculosDuplicados();
-      
-      successResponse(res, { 
-        vinculos_corrigidos: vinculosCorrigidos 
-      }, `Limpeza concluída. ${vinculosCorrigidos} vínculo(s) duplicado(s) corrigido(s).`);
-    } catch (error) {
-      return errorResponse(res, `Erro ao limpar vínculos: ${error.message}`, STATUS_CODES.INTERNAL_SERVER_ERROR);
-    }
+    successResponse(res, { id, nome: produtoGenerico[0].nome }, 'Produto genérico excluído com sucesso');
   });
 }
 

@@ -59,13 +59,6 @@ router.delete('/:id',
   ProdutoGenericoController.excluirProdutoGenerico
 );
 
-// POST /api/produto-generico/limpar-vinculos - Limpar vínculos duplicados
-router.post('/limpar-vinculos', 
-  checkPermission('editar'),
-  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'produto_generico'),
-  ProdutoGenericoController.limparVinculosDuplicados
-);
-
 // GET /api/produto-generico/buscar/codigo/:codigo - Buscar por código
 router.get('/buscar/codigo/:codigo', 
   checkPermission('visualizar'),

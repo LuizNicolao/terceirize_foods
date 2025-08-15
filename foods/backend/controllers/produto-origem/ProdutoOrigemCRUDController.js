@@ -21,7 +21,7 @@ class ProdutoOrigemCRUDController {
   static criarProdutoOrigem = asyncHandler(async (req, res) => {
     const {
       codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
-      classe_id, peso_liquido, referencia_mercado, status
+      classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id, status
     } = req.body;
 
     // Verificar se código já existe
@@ -80,15 +80,28 @@ class ProdutoOrigemCRUDController {
       }
     }
 
-    // Inserir produto origem (produto_generico_padrao_id será gerenciado automaticamente pelos triggers)
+    // Verificar se produto genérico padrão existe (se fornecido)
+    if (produto_generico_padrao_id) {
+      const produtoGenerico = await executeQuery(
+        'SELECT id FROM produto_generico WHERE id = ?',
+        [produto_generico_padrao_id]
+      );
+
+      if (produtoGenerico.length === 0) {
+        return errorResponse(res, 'Produto genérico padrão não encontrado', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
+    // Inserir produto origem
     const result = await executeQuery(
       `INSERT INTO produto_origem (
         codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
-        classe_id, peso_liquido, referencia_mercado, status, usuario_criador_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id, 
+        status, usuario_criador_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         codigo, nome, unidade_medida_id, fator_conversao || 1.000, grupo_id, subgrupo_id,
-        classe_id, peso_liquido, referencia_mercado,
+        classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id,
         status !== undefined ? status : 1, req.user.id
       ]
     );
@@ -100,8 +113,8 @@ class ProdutoOrigemCRUDController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        pg.nome as produto_generico_padrao_nome,
-        pg.codigo as produto_generico_padrao_codigo,
+        COALESCE(pg.nome, pg_vinculado.nome) as produto_generico_padrao_nome,
+        COALESCE(pg.codigo, pg_vinculado.codigo) as produto_generico_padrao_codigo,
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome
       FROM produto_origem po
@@ -109,7 +122,8 @@ class ProdutoOrigemCRUDController {
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
-      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id AND pg.produto_padrao = 'Sim' AND pg.status = 1
+      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN produto_generico pg_vinculado ON po.id = pg_vinculado.produto_origem_id
       LEFT JOIN usuarios uc ON po.usuario_criador_id = uc.id
       LEFT JOIN usuarios ua ON po.usuario_atualizador_id = ua.id
       WHERE po.id = ?`,
@@ -126,7 +140,7 @@ class ProdutoOrigemCRUDController {
     const { id } = req.params;
     const {
       codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
-      classe_id, peso_liquido, referencia_mercado, status
+      classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id, status
     } = req.body;
 
     // Verificar se produto origem existe
@@ -199,16 +213,29 @@ class ProdutoOrigemCRUDController {
       }
     }
 
-    // Atualizar produto origem (produto_generico_padrao_id será gerenciado automaticamente pelos triggers)
+    // Verificar se produto genérico padrão existe (se fornecido)
+    if (produto_generico_padrao_id) {
+      const produtoGenerico = await executeQuery(
+        'SELECT id FROM produto_generico WHERE id = ?',
+        [produto_generico_padrao_id]
+      );
+
+      if (produtoGenerico.length === 0) {
+        return errorResponse(res, 'Produto genérico padrão não encontrado', STATUS_CODES.BAD_REQUEST);
+      }
+    }
+
+    // Atualizar produto origem
     await executeQuery(
       `UPDATE produto_origem SET 
         codigo = ?, nome = ?, unidade_medida_id = ?, fator_conversao = ?, 
         grupo_id = ?, subgrupo_id = ?, classe_id = ?, peso_liquido = ?, 
-        referencia_mercado = ?, status = ?, usuario_atualizador_id = ?
+        referencia_mercado = ?, produto_generico_padrao_id = ?, status = ?, 
+        usuario_atualizador_id = ?
       WHERE id = ?`,
       [
         codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id,
-        classe_id, peso_liquido, referencia_mercado,
+        classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id,
         status, req.user.id, id
       ]
     );
@@ -221,8 +248,8 @@ class ProdutoOrigemCRUDController {
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
-        pg.nome as produto_generico_padrao_nome,
-        pg.codigo as produto_generico_padrao_codigo,
+        COALESCE(pg.nome, pg_vinculado.nome) as produto_generico_padrao_nome,
+        COALESCE(pg.codigo, pg_vinculado.codigo) as produto_generico_padrao_codigo,
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome
       FROM produto_origem po
@@ -230,7 +257,8 @@ class ProdutoOrigemCRUDController {
       LEFT JOIN grupos g ON po.grupo_id = g.id
       LEFT JOIN subgrupos sg ON po.subgrupo_id = sg.id
       LEFT JOIN classes c ON po.classe_id = c.id
-      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id AND pg.produto_padrao = 'Sim' AND pg.status = 1
+      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id
+      LEFT JOIN produto_generico pg_vinculado ON po.id = pg_vinculado.produto_origem_id
       LEFT JOIN usuarios uc ON po.usuario_criador_id = uc.id
       LEFT JOIN usuarios ua ON po.usuario_atualizador_id = ua.id
       WHERE po.id = ?`,
