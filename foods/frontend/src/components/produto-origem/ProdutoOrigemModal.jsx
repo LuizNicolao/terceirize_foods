@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { Button, Input, FormattedInput, Modal, ValidationSummary } from '../ui';
 import { useValidation } from '../../hooks/useValidation';
-import { produtoOrigemValidations } from '../../utils/validationSchemas';
+import { produtoOrigemValidations } from '../../utils/validations';
 import { gerarCodigoProdutoOrigem } from '../../utils/codigoGenerator';
 
 const ProdutoOrigemModal = ({

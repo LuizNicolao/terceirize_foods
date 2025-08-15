@@ -16,7 +16,7 @@ const FormattedInput = forwardRef(({
 }, ref) => {
   const [localValue, setLocalValue] = useState(props.value || props.defaultValue || '');
   const [isFocused, setIsFocused] = useState(false);
-  const { formatCodigo, formatNome, formatDecimal, formatReferenciaMercado } = useFormatters();
+  const { formatByType } = useFormatters();
 
   // Atualiza valor local quando props.value muda
   useEffect(() => {
@@ -39,18 +39,11 @@ const FormattedInput = forwardRef(({
   const formatValue = (value, formatType) => {
     if (!value) return '';
     
-    switch (formatType) {
-      case 'codigo':
-        return formatCodigo(value);
-      case 'nome':
-        return formatNome(value);
-      case 'decimal':
-        return formatDecimal(value, 3);
-      case 'referencia':
-        return formatReferenciaMercado(value);
-      default:
-        return onFormat ? onFormat(value) : value;
+    if (formatType) {
+      return formatByType(value, formatType, { maxDecimals: 3 });
     }
+    
+    return onFormat ? onFormat(value) : value;
   };
 
   // Handler para mudança de valor
@@ -161,6 +154,13 @@ const FormattedInput = forwardRef(({
           {formatType === 'nome' && 'Apenas letras e espaços'}
           {formatType === 'decimal' && 'Número decimal com até 3 casas'}
           {formatType === 'referencia' && 'Texto com caracteres especiais limitados'}
+          {formatType === 'cpf' && 'Formato: 000.000.000-00'}
+          {formatType === 'cnpj' && 'Formato: 00.000.000/0000-00'}
+          {formatType === 'telefone' && 'Formato: (00) 00000-0000'}
+          {formatType === 'cep' && 'Formato: 00000-000'}
+          {formatType === 'placa' && 'Formato: ABC-1234 ou ABC1D23'}
+          {formatType === 'cnh' && 'Apenas números'}
+          {formatType === 'matricula' && 'Apenas números'}
         </p>
       )}
     </div>
