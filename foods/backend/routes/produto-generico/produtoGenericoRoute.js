@@ -107,4 +107,11 @@ router.get('/padrao',
   ProdutoGenericoController.buscarProdutosGenericosPadrao
 );
 
+// POST /api/produto-generico/limpar-vinculos - Limpar vínculos duplicados
+router.post('/limpar-vinculos', 
+  checkPermission('editar'),
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'produto_generico'),
+  ProdutoGenericoController.limparVinculosDuplicados
+);
+
 module.exports = router;

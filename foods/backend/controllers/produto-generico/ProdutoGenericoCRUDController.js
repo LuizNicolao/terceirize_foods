@@ -12,6 +12,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const VinculoProdutoService = require('../../services/VinculoProdutoService');
 
 class ProdutoGenericoCRUDController {
   
@@ -48,33 +49,16 @@ class ProdutoGenericoCRUDController {
         return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
       }
 
-      // Verificar vínculo duplo APENAS se o produto genérico está sendo marcado como padrão
-      if (produto_padrao === 'Sim') {
-        const produtoOrigemVinculado = await executeQuery(
-          `SELECT 
-            po.id, 
-            po.nome, 
-            po.codigo as produto_origem_codigo,
-            pg.id as produto_generico_id,
-            pg.codigo as produto_generico_codigo, 
-            pg.nome as produto_generico_nome,
-            pg.produto_padrao,
-            pg.status as produto_generico_status
-          FROM produto_origem po 
-          LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id 
-          WHERE po.id = ? 
-          AND po.produto_generico_padrao_id IS NOT NULL 
-          AND pg.produto_padrao = 'Sim' 
-          AND pg.status = 1`,
-          [produto_origem_id]
-        );
-
-        if (produtoOrigemVinculado.length > 0 && produtoOrigemVinculado[0].produto_generico_padrao_id) {
-          const vinculo = produtoOrigemVinculado[0];
+      // Verificar vínculo único usando o serviço
+      try {
+        const vinculoExistente = await VinculoProdutoService.verificarVinculoExistente(produto_origem_id);
+        if (vinculoExistente) {
           return conflictResponse(res, 
-            `Produto origem "${vinculo.produto_origem_codigo} - ${vinculo.nome}" já está vinculado ao produto genérico padrão: "${vinculo.produto_generico_codigo} - ${vinculo.produto_generico_nome}"`
+            `Produto origem "${vinculoExistente.produto_origem_codigo} - ${vinculoExistente.nome}" já está vinculado ao produto genérico padrão: "${vinculoExistente.produto_generico_codigo} - ${vinculoExistente.produto_generico_nome}". Um Produto Origem só pode estar vinculado a um Produto Genérico Padrão por vez.`
           );
         }
+      } catch (error) {
+        return errorResponse(res, error.message, STATUS_CODES.BAD_REQUEST);
       }
     }
 
@@ -143,6 +127,16 @@ class ProdutoGenericoCRUDController {
         integracao_senior, status !== undefined ? status : 1, req.user.id
       ]
     );
+
+    // Gerenciar vínculo automaticamente se o produto é padrão
+    if (produto_padrao === 'Sim' && produto_origem_id) {
+      try {
+        await VinculoProdutoService.criarVinculo(produto_origem_id, novoProdutoGenerico.insertId);
+      } catch (error) {
+        // Se não conseguiu criar vínculo, não falhar a criação do produto
+        console.warn('Erro ao criar vínculo:', error.message);
+      }
+    }
 
     // Buscar produto genérico criado
     const produtoGenericoCriado = await executeQuery(
@@ -219,34 +213,16 @@ class ProdutoGenericoCRUDController {
         return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
       }
 
-      // Verificar vínculo duplo APENAS se o produto genérico está sendo marcado como padrão
-      if (produto_padrao === 'Sim') {
-        const produtoOrigemVinculado = await executeQuery(
-          `SELECT 
-            po.id, 
-            po.nome, 
-            po.codigo as produto_origem_codigo,
-            pg.id as produto_generico_id,
-            pg.codigo as produto_generico_codigo, 
-            pg.nome as produto_generico_nome,
-            pg.produto_padrao,
-            pg.status as produto_generico_status
-          FROM produto_origem po 
-          LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id 
-          WHERE po.id = ? 
-          AND po.produto_generico_padrao_id IS NOT NULL 
-          AND pg.produto_padrao = 'Sim' 
-          AND pg.status = 1 
-          AND pg.id != ?`, // Exclui o produto genérico atual
-          [produto_origem_id, id]
-        );
-
-        if (produtoOrigemVinculado.length > 0 && produtoOrigemVinculado[0].produto_generico_padrao_id) {
-          const vinculo = produtoOrigemVinculado[0];
+      // Verificar vínculo único usando o serviço (excluindo o produto atual)
+      try {
+        const vinculoExistente = await VinculoProdutoService.verificarVinculoExistente(produto_origem_id);
+        if (vinculoExistente && vinculoExistente.produto_generico_id !== parseInt(id)) {
           return conflictResponse(res, 
-            `Produto origem "${vinculo.produto_origem_codigo} - ${vinculo.nome}" já está vinculado ao produto genérico padrão: "${vinculo.produto_generico_codigo} - ${vinculo.produto_generico_nome}"`
+            `Produto origem "${vinculoExistente.produto_origem_codigo} - ${vinculoExistente.nome}" já está vinculado ao produto genérico padrão: "${vinculoExistente.produto_generico_codigo} - ${vinculoExistente.produto_generico_nome}". Um Produto Origem só pode estar vinculado a um Produto Genérico Padrão por vez.`
           );
         }
+      } catch (error) {
+        return errorResponse(res, error.message, STATUS_CODES.BAD_REQUEST);
       }
     }
 
@@ -298,7 +274,7 @@ class ProdutoGenericoCRUDController {
       }
     }
 
-    // Atualizar produto genérico (os vínculos serão gerenciados automaticamente pelos triggers)
+    // Atualizar produto genérico
     await executeQuery(
       `UPDATE produto_generico SET 
         codigo = ?, nome = ?, produto_origem_id = ?, fator_conversao = ?, 
@@ -317,6 +293,20 @@ class ProdutoGenericoCRUDController {
         integracao_senior, status, req.user.id, id
       ]
     );
+
+    // Gerenciar vínculo automaticamente
+    try {
+      await VinculoProdutoService.gerenciarVinculoAutomatico(
+        parseInt(id),
+        produto_padrao,
+        status !== undefined ? status : 1,
+        produto_origem_id,
+        produtoGenericoAtual.produto_origem_id
+      );
+    } catch (error) {
+      // Se não conseguiu gerenciar vínculo, não falhar a atualização do produto
+      console.warn('Erro ao gerenciar vínculo:', error.message);
+    }
 
     // Buscar produto genérico atualizado
     const produtoGenericoAtualizado = await executeQuery(
@@ -353,7 +343,7 @@ class ProdutoGenericoCRUDController {
 
     // Verificar se produto genérico existe
     const produtoGenerico = await executeQuery(
-      'SELECT id, nome FROM produto_generico WHERE id = ?',
+      'SELECT id, nome, produto_padrao, produto_origem_id FROM produto_generico WHERE id = ?',
       [id]
     );
 
@@ -361,13 +351,39 @@ class ProdutoGenericoCRUDController {
       return notFoundResponse(res, 'Produto genérico não encontrado');
     }
 
+    const produtoGenericoAtual = produtoGenerico[0];
+
     // Soft delete - apenas desativar
     await executeQuery(
       'UPDATE produto_generico SET status = 0, usuario_atualizador_id = ? WHERE id = ?',
       [req.user.id, id]
     );
 
-    successResponse(res, { id, nome: produtoGenerico[0].nome }, 'Produto genérico excluído com sucesso');
+    // Remover vínculo se o produto era padrão
+    if (produtoGenericoAtual.produto_padrao === 'Sim' && produtoGenericoAtual.produto_origem_id) {
+      try {
+        await VinculoProdutoService.removerVinculo(produtoGenericoAtual.produto_origem_id);
+      } catch (error) {
+        console.warn('Erro ao remover vínculo:', error.message);
+      }
+    }
+
+    successResponse(res, { id, nome: produtoGenericoAtual.nome }, 'Produto genérico excluído com sucesso');
+  });
+
+  /**
+   * Limpar vínculos duplicados
+   */
+  static limparVinculosDuplicados = asyncHandler(async (req, res) => {
+    try {
+      const vinculosCorrigidos = await VinculoProdutoService.limparVinculosDuplicados();
+      
+      successResponse(res, { 
+        vinculos_corrigidos: vinculosCorrigidos 
+      }, `Limpeza concluída. ${vinculosCorrigidos} vínculo(s) duplicado(s) corrigido(s).`);
+    } catch (error) {
+      return errorResponse(res, `Erro ao limpar vínculos: ${error.message}`, STATUS_CODES.INTERNAL_SERVER_ERROR);
+    }
   });
 }
 
