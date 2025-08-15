@@ -19,13 +19,7 @@ class ProdutoGenericoCRUDController {
    * Gerenciar vínculo automático entre Produto Genérico e Produto Origem
    */
   static async gerenciarVinculoProdutoOrigem(produtoGenericoId, produtoOrigemId, produtoPadrao, isUpdate = false, oldProdutoPadrao = null) {
-    // Primeiro, sempre remover vínculos existentes deste produto genérico
-    await executeQuery(
-      'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
-      [produtoGenericoId]
-    );
-
-    // Se produto_padrao = "Sim" e tem produto_origem_id, criar novo vínculo
+    // Se produto_padrao = "Sim" e tem produto_origem_id
     if (produtoPadrao === 'Sim' && produtoOrigemId) {
       // Verificar se já existe outro produto genérico padrão vinculado a este produto origem
       const vinculoExistente = await executeQuery(
@@ -46,7 +40,24 @@ class ProdutoGenericoCRUDController {
         [produtoGenericoId, produtoOrigemId]
       );
     }
-    // Se produto_padrao = "Não", não fazer nada (vínculo já foi removido acima)
+    // Se produto_padrao = "Não" (independente se tem produto_origem_id ou não)
+    else if (produtoPadrao === 'Não') {
+      // Se é uma atualização e o produto_padrao mudou de "Sim" para "Não"
+      if (isUpdate && oldProdutoPadrao === 'Sim') {
+        // Remover vínculo do produto origem
+        await executeQuery(
+          'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
+          [produtoGenericoId]
+        );
+      }
+      // Se não tem produto_origem_id, remover qualquer vínculo existente
+      else if (!produtoOrigemId) {
+        await executeQuery(
+          'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE produto_generico_padrao_id = ?',
+          [produtoGenericoId]
+        );
+      }
+    }
   }
 
   /**
