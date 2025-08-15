@@ -1182,8 +1182,8 @@ CREATE TABLE `produtos` (
 
 INSERT INTO `produtos` (`id`, `codigo_produto`, `nome`, `codigo_barras`, `fator_conversao`, `referencia_interna`, `referencia_externa`, `referencia_mercado`, `unidade_id`, `grupo_id`, `subgrupo_id`, `classe_id`, `nome_generico_id`, `produto_origem_id`, `marca_id`, `peso_liquido`, `peso_bruto`, `fabricante`, `informacoes_adicionais`, `foto_produto`, `prazo_validade`, `unidade_validade`, `regra_palet_un`, `ficha_homologacao`, `registro_especifico`, `comprimento`, `largura`, `altura`, `volume`, `integracao_senior`, `ncm`, `cest`, `cfop`, `ean`, `cst_icms`, `csosn`, `aliquota_icms`, `aliquota_ipi`, `aliquota_pis`, `aliquota_cofins`, `status`, `criado_em`, `atualizado_em`, `usuario_criador_id`, `usuario_atualizador_id`, `tipo_registro`, `embalagem_secundaria_id`, `fator_conversao_embalagem`) VALUES
 (2, 'PROD001', 'PATINHO BOVINO EM CUBOS KING 1KG', '1234567891234', 1.000, 'REF001', 'EXT001', 'Corte Bovino / Patinho / Cubos', 35, 1, 1, 36, 18, 12, NULL, 1.000, 1.000, 'KING', 'PRODUTO COM 5% DE GORDURA', NULL, 12, 'MESES', 1200, '123456', '1234456 CA, REGISTRO, MODELO, Nº SERIE', 20.00, 15.00, 10.00, 3000.00, '123654', '0201', '123456', '1102', '1234567891234', '000', NULL, 18.00, 0.00, 1.65, 7.60, 1, '2025-08-15 00:48:02', '2025-08-15 00:48:02', 1, NULL, 'ANVISA', NULL, 1),
-(3, 'PROD003', 'PATINHO BOVINO EM ISCAS KING 1KG', '5556667778889', 1.000, 'REF003', 'EXT003', 'Corte Bovino / Patinho / Iscas', 1, 1, 1, 22, 19, NULL, 1.000, 1.000, 'KING', 'PRODUTO EM ISCAS PARA CHURRASCO', NULL, 12, 'MESES', 1200, '789123', '789123 CA, REGISTRO, MODELO, Nº SERIE', 20.00, 15.00, 10.00, 3000.00, '789123', '0201', '789123', '1102', '5556667778889', '000', NULL, 18.00, 0.00, 1.65, 7.60, 1, '2025-08-15 00:48:13', '2025-08-15 00:48:13', 1, NULL, 'ANVISA', NULL, 1),
-(4, 'PROD002', 'PATINHO BOVINO EM CUBOS PREMIUM 1KG', '9876543210987', 1.000, 'REF002', 'EXT002', 'Corte Bovino / Patinho / Cubos Premium', 35, 1, 1, 36, 18, NULL, 1.000, 1.000, 'PREMIUM', 'PRODUTO PREMIUM COM 3% DE GORDURA', NULL, 12, 'MESES', 1200, '654321', '654321 CA, REGISTRO, MODELO, Nº SERIE', 20.00, 15.00, 10.00, 3000.00, '456321', '0201', '654321', '1102', '9876543210987', '000', NULL, 18.00, 0.00, 1.65, 7.60, 1, '2025-08-15 00:48:19', '2025-08-15 00:48:19', 1, NULL, 'ANVISA', NULL, 1);
+(3, 'PROD003', 'PATINHO BOVINO EM ISCAS KING 1KG', '5556667778889', 1.000, 'REF003', 'EXT003', 'Corte Bovino / Patinho / Iscas', 1, 1, 1, 22, 19, 12, NULL, 1.000, 1.000, 'KING', 'PRODUTO EM ISCAS PARA CHURRASCO', NULL, 12, 'MESES', 1200, '789123', '789123 CA, REGISTRO, MODELO, Nº SERIE', 20.00, 15.00, 10.00, 3000.00, '789123', '0201', '789123', '1102', '5556667778889', '000', NULL, 18.00, 0.00, 1.65, 7.60, 1, '2025-08-15 00:48:13', '2025-08-15 00:48:13', 1, NULL, 'ANVISA', NULL, 1),
+(4, 'PROD002', 'PATINHO BOVINO EM CUBOS PREMIUM 1KG', '9876543210987', 1.000, 'REF002', 'EXT002', 'Corte Bovino / Patinho / Cubos Premium', 35, 1, 1, 36, 18, 12, NULL, 1.000, 1.000, 'PREMIUM', 'PRODUTO PREMIUM COM 3% DE GORDURA', NULL, 12, 'MESES', 1200, '654321', '654321 CA, REGISTRO, MODELO, Nº SERIE', 20.00, 15.00, 10.00, 3000.00, '456321', '0201', '654321', '1102', '9876543210987', '000', NULL, 18.00, 0.00, 1.65, 7.60, 1, '2025-08-15 00:48:19', '2025-08-15 00:48:19', 1, NULL, 'ANVISA', NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -1978,7 +1978,8 @@ ALTER TABLE `permissoes_usuario`
 -- Restrições para tabelas `produtos`
 --
 ALTER TABLE `produtos`
-  ADD CONSTRAINT `fk_produtos_unid_sec` FOREIGN KEY (`embalagem_secundaria_id`) REFERENCES `unidades_medida` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_produtos_unid_sec` FOREIGN KEY (`embalagem_secundaria_id`) REFERENCES `unidades_medida` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_produtos_produto_origem` FOREIGN KEY (`produto_origem_id`) REFERENCES `produto_origem` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 --
 -- Restrições para tabelas `subgrupos`
