@@ -125,14 +125,6 @@ class ProdutoGenericoCRUDController {
       ]
     );
 
-    // Se o produto genérico foi marcado como padrão e tem produto_origem_id, atualizar o produto origem
-    if (produto_padrao === 'Sim' && produto_origem_id) {
-      await executeQuery(
-        'UPDATE produto_origem SET produto_generico_padrao_id = ? WHERE id = ?',
-        [novoProdutoGenerico.insertId, produto_origem_id]
-      );
-    }
-
     // Buscar produto genérico criado
     const produtoGenericoCriado = await executeQuery(
       `SELECT 
@@ -267,24 +259,7 @@ class ProdutoGenericoCRUDController {
       }
     }
 
-    // Gerenciar vínculos com produto origem baseado no campo produto_padrao
-    if (produto_padrao === 'Não' && produtoGenericoAtual.produto_padrao === 'Sim') {
-      // Se mudou de "Sim" para "Não", remover vínculo do produto origem
-      if (produtoGenericoAtual.produto_origem_id) {
-        await executeQuery(
-          'UPDATE produto_origem SET produto_generico_padrao_id = NULL WHERE id = ?',
-          [produtoGenericoAtual.produto_origem_id]
-        );
-      }
-    } else if (produto_padrao === 'Sim' && produto_origem_id) {
-      // Se está marcado como padrão e tem produto_origem_id, criar vínculo
-      await executeQuery(
-        'UPDATE produto_origem SET produto_generico_padrao_id = ? WHERE id = ?',
-        [id, produto_origem_id]
-      );
-    }
-
-    // Atualizar produto genérico
+    // Atualizar produto genérico (os vínculos serão gerenciados automaticamente pelos triggers)
     await executeQuery(
       `UPDATE produto_generico SET 
         codigo = ?, nome = ?, produto_origem_id = ?, fator_conversao = ?, 
