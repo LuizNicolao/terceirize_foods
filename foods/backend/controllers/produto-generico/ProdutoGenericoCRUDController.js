@@ -51,7 +51,7 @@ class ProdutoGenericoCRUDController {
 
       // Verificar vínculo único usando o serviço
       try {
-        const vinculoExistente = await VinculoProdutoService.verificarVinculoExistente(produto_origem_id);
+        const vinculoExistente = await VinculoProdutoService.validarVinculoUnico(produto_origem_id);
         if (vinculoExistente) {
           return conflictResponse(res, 
             `Produto origem "${vinculoExistente.produto_origem_codigo} - ${vinculoExistente.nome}" já está vinculado ao produto genérico padrão: "${vinculoExistente.produto_generico_codigo} - ${vinculoExistente.produto_generico_nome}". Um Produto Origem só pode estar vinculado a um Produto Genérico Padrão por vez.`
@@ -215,8 +215,8 @@ class ProdutoGenericoCRUDController {
 
       // Verificar vínculo único usando o serviço (excluindo o produto atual)
       try {
-        const vinculoExistente = await VinculoProdutoService.verificarVinculoExistente(produto_origem_id);
-        if (vinculoExistente && vinculoExistente.produto_generico_id !== parseInt(id)) {
+        const vinculoExistente = await VinculoProdutoService.validarVinculoUnico(produto_origem_id, parseInt(id));
+        if (vinculoExistente) {
           return conflictResponse(res, 
             `Produto origem "${vinculoExistente.produto_origem_codigo} - ${vinculoExistente.nome}" já está vinculado ao produto genérico padrão: "${vinculoExistente.produto_generico_codigo} - ${vinculoExistente.produto_generico_nome}". Um Produto Origem só pode estar vinculado a um Produto Genérico Padrão por vez.`
           );

@@ -36,6 +36,36 @@ class VinculoProdutoService {
   }
 
   /**
+   * Validar vínculo único (para validação apenas, não cria vínculo)
+   * @param {number} produtoOrigemId - ID do produto origem
+   * @param {number} produtoGenericoId - ID do produto genérico (opcional, para excluir da validação)
+   * @returns {Object|null} - Dados do vínculo existente ou null
+   */
+  static async validarVinculoUnico(produtoOrigemId, produtoGenericoId = null) {
+    const vinculo = await executeQuery(
+      `SELECT 
+        po.id, 
+        po.nome, 
+        po.codigo as produto_origem_codigo,
+        pg.id as produto_generico_id,
+        pg.codigo as produto_generico_codigo, 
+        pg.nome as produto_generico_nome,
+        pg.produto_padrao,
+        pg.status as produto_generico_status
+      FROM produto_origem po 
+      LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id 
+      WHERE po.id = ? 
+      AND po.produto_generico_padrao_id IS NOT NULL 
+      AND pg.produto_padrao = 'Sim' 
+      AND pg.status = 1
+      ${produtoGenericoId ? 'AND pg.id != ?' : ''}`,
+      produtoGenericoId ? [produtoOrigemId, produtoGenericoId] : [produtoOrigemId]
+    );
+
+    return vinculo.length > 0 ? vinculo[0] : null;
+  }
+
+  /**
    * Criar vínculo entre produto origem e produto genérico padrão
    * @param {number} produtoOrigemId - ID do produto origem
    * @param {number} produtoGenericoId - ID do produto genérico padrão
@@ -59,9 +89,14 @@ class VinculoProdutoService {
     // Verificar se já existe vínculo
     const vinculoExistente = await this.verificarVinculoExistente(produtoOrigemId);
     if (vinculoExistente) {
-      throw new Error(
-        `Produto origem "${vinculoExistente.produto_origem_codigo} - ${vinculoExistente.nome}" já está vinculado ao produto genérico padrão: "${vinculoExistente.produto_generico_codigo} - ${vinculoExistente.produto_generico_nome}". Um Produto Origem só pode estar vinculado a um Produto Genérico Padrão por vez.`
-      );
+      // Se já existe vínculo, verificar se é com o mesmo produto genérico
+      if (vinculoExistente.produto_generico_id === produtoGenericoId) {
+        // Já está vinculado ao produto correto, não fazer nada
+        return true;
+      } else {
+        // Está vinculado a outro produto genérico, remover o vínculo anterior
+        await this.removerVinculo(produtoOrigemId);
+      }
     }
 
     // Criar o vínculo
@@ -163,15 +198,27 @@ class VinculoProdutoService {
       await this.removerVinculo(produtoOrigemIdAnterior);
     }
 
-    // Criar novo vínculo
-    try {
-      await this.criarVinculo(produtoOrigemId, produtoGenericoId);
-      return true;
-    } catch (error) {
-      // Se não conseguiu criar vínculo (já existe), apenas retornar true
-      // O erro será tratado no controller
-      return true;
+    // Verificar se já existe vínculo para este produto origem
+    const vinculoExistente = await this.verificarVinculoExistente(produtoOrigemId);
+    
+    if (vinculoExistente) {
+      // Se já existe vínculo, verificar se é com o mesmo produto genérico
+      if (vinculoExistente.produto_generico_id === produtoGenericoId) {
+        // Já está vinculado ao produto correto, não fazer nada
+        return true;
+      } else {
+        // Está vinculado a outro produto genérico, remover o vínculo anterior
+        await this.removerVinculo(produtoOrigemId);
+      }
     }
+
+    // Criar novo vínculo
+    await executeQuery(
+      'UPDATE produto_origem SET produto_generico_padrao_id = ? WHERE id = ?',
+      [produtoGenericoId, produtoOrigemId]
+    );
+
+    return true;
   }
 
   /**
