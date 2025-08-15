@@ -48,31 +48,33 @@ class ProdutoGenericoCRUDController {
         return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
       }
 
-      // Verificar se o produto origem já está vinculado a outro produto genérico padrão ativo
-      const produtoOrigemVinculado = await executeQuery(
-        `SELECT 
-          po.id, 
-          po.nome, 
-          po.codigo as produto_origem_codigo,
-          pg.id as produto_generico_id,
-          pg.codigo as produto_generico_codigo, 
-          pg.nome as produto_generico_nome,
-          pg.produto_padrao,
-          pg.status as produto_generico_status
-        FROM produto_origem po 
-        LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id 
-        WHERE po.id = ? 
-        AND po.produto_generico_padrao_id IS NOT NULL 
-        AND pg.produto_padrao = 'Sim' 
-        AND pg.status = 1`,
-        [produto_origem_id]
-      );
-
-      if (produtoOrigemVinculado.length > 0 && produtoOrigemVinculado[0].produto_generico_padrao_id) {
-        const vinculo = produtoOrigemVinculado[0];
-        return conflictResponse(res, 
-          `Produto origem "${vinculo.produto_origem_codigo} - ${vinculo.nome}" já está vinculado ao produto genérico padrão: "${vinculo.produto_generico_codigo} - ${vinculo.produto_generico_nome}"`
+      // Verificar vínculo duplo APENAS se o produto genérico está sendo marcado como padrão
+      if (produto_padrao === 'Sim') {
+        const produtoOrigemVinculado = await executeQuery(
+          `SELECT 
+            po.id, 
+            po.nome, 
+            po.codigo as produto_origem_codigo,
+            pg.id as produto_generico_id,
+            pg.codigo as produto_generico_codigo, 
+            pg.nome as produto_generico_nome,
+            pg.produto_padrao,
+            pg.status as produto_generico_status
+          FROM produto_origem po 
+          LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id 
+          WHERE po.id = ? 
+          AND po.produto_generico_padrao_id IS NOT NULL 
+          AND pg.produto_padrao = 'Sim' 
+          AND pg.status = 1`,
+          [produto_origem_id]
         );
+
+        if (produtoOrigemVinculado.length > 0 && produtoOrigemVinculado[0].produto_generico_padrao_id) {
+          const vinculo = produtoOrigemVinculado[0];
+          return conflictResponse(res, 
+            `Produto origem "${vinculo.produto_origem_codigo} - ${vinculo.nome}" já está vinculado ao produto genérico padrão: "${vinculo.produto_generico_codigo} - ${vinculo.produto_generico_nome}"`
+          );
+        }
       }
     }
 
@@ -217,32 +219,34 @@ class ProdutoGenericoCRUDController {
         return errorResponse(res, 'Produto origem não encontrado', STATUS_CODES.BAD_REQUEST);
       }
 
-      // Verificar se o produto origem já está vinculado a outro produto genérico padrão ativo
-      const produtoOrigemVinculado = await executeQuery(
-        `SELECT 
-          po.id, 
-          po.nome, 
-          po.codigo as produto_origem_codigo,
-          pg.id as produto_generico_id,
-          pg.codigo as produto_generico_codigo, 
-          pg.nome as produto_generico_nome,
-          pg.produto_padrao,
-          pg.status as produto_generico_status
-        FROM produto_origem po 
-        LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id 
-        WHERE po.id = ? 
-        AND po.produto_generico_padrao_id IS NOT NULL 
-        AND pg.produto_padrao = 'Sim' 
-        AND pg.status = 1 
-        AND pg.id != ?`, // Exclui o produto genérico atual
-        [produto_origem_id, id]
-      );
-
-      if (produtoOrigemVinculado.length > 0 && produtoOrigemVinculado[0].produto_generico_padrao_id) {
-        const vinculo = produtoOrigemVinculado[0];
-        return conflictResponse(res, 
-          `Produto origem "${vinculo.produto_origem_codigo} - ${vinculo.nome}" já está vinculado ao produto genérico padrão: "${vinculo.produto_generico_codigo} - ${vinculo.produto_generico_nome}"`
+      // Verificar vínculo duplo APENAS se o produto genérico está sendo marcado como padrão
+      if (produto_padrao === 'Sim') {
+        const produtoOrigemVinculado = await executeQuery(
+          `SELECT 
+            po.id, 
+            po.nome, 
+            po.codigo as produto_origem_codigo,
+            pg.id as produto_generico_id,
+            pg.codigo as produto_generico_codigo, 
+            pg.nome as produto_generico_nome,
+            pg.produto_padrao,
+            pg.status as produto_generico_status
+          FROM produto_origem po 
+          LEFT JOIN produto_generico pg ON po.produto_generico_padrao_id = pg.id 
+          WHERE po.id = ? 
+          AND po.produto_generico_padrao_id IS NOT NULL 
+          AND pg.produto_padrao = 'Sim' 
+          AND pg.status = 1 
+          AND pg.id != ?`, // Exclui o produto genérico atual
+          [produto_origem_id, id]
         );
+
+        if (produtoOrigemVinculado.length > 0 && produtoOrigemVinculado[0].produto_generico_padrao_id) {
+          const vinculo = produtoOrigemVinculado[0];
+          return conflictResponse(res, 
+            `Produto origem "${vinculo.produto_origem_codigo} - ${vinculo.nome}" já está vinculado ao produto genérico padrão: "${vinculo.produto_generico_codigo} - ${vinculo.produto_generico_nome}"`
+          );
+        }
       }
     }
 
