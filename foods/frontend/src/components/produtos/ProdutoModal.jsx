@@ -268,8 +268,8 @@ const ProdutoModal = ({
                 <Input
                   label="Fabricante"
                   type="text"
-                  placeholder="Ex: KING"
-                  disabled={isViewMode}
+                  placeholder="Preenchido automaticamente"
+                  disabled={true}
                   error={errors.fabricante?.message}
                   {...register('fabricante')}
                 />
