@@ -10,6 +10,10 @@ export const useProdutos = () => {
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [editingProduto, setEditingProduto] = useState(null);
+  
+  // Estados para validação de erros
+  const [validationErrors, setValidationErrors] = useState(null);
+  const [showValidationModal, setShowValidationModal] = useState(false);
 
   // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);
@@ -172,7 +176,16 @@ export const useProdutos = () => {
         if (response.success) {
           toast.success('Produto atualizado com sucesso');
         } else {
-          toast.error(response.error);
+          // Verificar se são erros de validação
+          if (response.validationErrors || response.errorCategories) {
+            setValidationErrors({
+              errors: response.validationErrors,
+              errorCategories: response.errorCategories
+            });
+            setShowValidationModal(true);
+          } else {
+            toast.error(response.error);
+          }
           return;
         }
       } else {
@@ -180,7 +193,16 @@ export const useProdutos = () => {
         if (response.success) {
           toast.success('Produto criado com sucesso');
         } else {
-          toast.error(response.error);
+          // Verificar se são erros de validação
+          if (response.validationErrors || response.errorCategories) {
+            setValidationErrors({
+              errors: response.validationErrors,
+              errorCategories: response.errorCategories
+            });
+            setShowValidationModal(true);
+          } else {
+            toast.error(response.error);
+          }
           return;
         }
       }
@@ -236,6 +258,11 @@ export const useProdutos = () => {
     setEditingProduto(null);
   };
 
+  const handleCloseValidationModal = () => {
+    setShowValidationModal(false);
+    setValidationErrors(null);
+  };
+
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
@@ -264,6 +291,8 @@ export const useProdutos = () => {
     showModal,
     viewMode,
     editingProduto,
+    showValidationModal,
+    validationErrors,
     grupos,
     subgrupos,
     classes,
@@ -286,6 +315,7 @@ export const useProdutos = () => {
     handleViewProduto,
     handleEditProduto,
     handleCloseModal,
+    handleCloseValidationModal,
     handlePageChange,
     handleClearFilters,
     setSearchTerm,

@@ -5,7 +5,7 @@ import { useProdutos } from '../../hooks/useProdutos';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import ProdutosService from '../../services/produtos';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { ProdutoModal } from '../../components/produtos';
@@ -24,6 +24,8 @@ const Produtos = () => {
     showModal,
     viewMode,
     editingProduto,
+    showValidationModal,
+    validationErrors,
     grupos,
     subgrupos,
     classes,
@@ -44,6 +46,7 @@ const Produtos = () => {
     handleViewProduto,
     handleEditProduto,
     handleCloseModal,
+    handleCloseValidationModal,
     handlePageChange,
     handleClearFilters,
     setSearchTerm,
@@ -173,6 +176,14 @@ const Produtos = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onSetFilters={setAuditFilters}
+      />
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
     </div>
   );
