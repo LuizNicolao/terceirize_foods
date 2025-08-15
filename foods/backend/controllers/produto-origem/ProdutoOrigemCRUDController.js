@@ -16,6 +16,32 @@ const { asyncHandler } = require('../../middleware/responseHandler');
 class ProdutoOrigemCRUDController {
   
   /**
+   * Função para vincular automaticamente produto genérico padrão
+   */
+  static vincularProdutoGenericoPadrao = async (grupoId, subgrupoId, classeId) => {
+    try {
+      if (!grupoId || !subgrupoId || !classeId) return null;
+      
+      // Buscar produto genérico padrão com a mesma classificação
+      const produtoGenerico = await executeQuery(
+        `SELECT id, nome FROM produto_generico 
+         WHERE produto_padrao = 'Sim' 
+           AND status = 1
+           AND grupo_id = ? 
+           AND subgrupo_id = ? 
+           AND classe_id = ?
+         LIMIT 1`,
+        [grupoId, subgrupoId, classeId]
+      );
+
+      return produtoGenerico.length > 0 ? produtoGenerico[0] : null;
+    } catch (error) {
+      console.error('Erro ao buscar produto genérico padrão:', error);
+      return null;
+    }
+  };
+
+  /**
    * Criar novo produto origem
    */
   static criarProdutoOrigem = asyncHandler(async (req, res) => {
@@ -80,15 +106,14 @@ class ProdutoOrigemCRUDController {
       }
     }
 
-    // Verificar se produto genérico padrão existe (se fornecido)
-    if (produto_generico_padrao_id) {
-      const produtoGenerico = await executeQuery(
-        'SELECT id FROM produto_generico WHERE id = ?',
-        [produto_generico_padrao_id]
+    // Buscar produto genérico padrão automaticamente
+    let produtoGenericoPadraoId = produto_generico_padrao_id;
+    if (grupo_id && subgrupo_id && classe_id) {
+      const produtoGenerico = await ProdutoOrigemCRUDController.vincularProdutoGenericoPadrao(
+        grupo_id, subgrupo_id, classe_id
       );
-
-      if (produtoGenerico.length === 0) {
-        return errorResponse(res, 'Produto genérico padrão não encontrado', STATUS_CODES.BAD_REQUEST);
+      if (produtoGenerico) {
+        produtoGenericoPadraoId = produtoGenerico.id;
       }
     }
 
@@ -101,7 +126,7 @@ class ProdutoOrigemCRUDController {
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         codigo, nome, unidade_medida_id, fator_conversao || 1.000, grupo_id, subgrupo_id,
-        classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id,
+        classe_id, peso_liquido, referencia_mercado, produtoGenericoPadraoId,
         status !== undefined ? status : 1, req.user.id
       ]
     );
@@ -211,15 +236,14 @@ class ProdutoOrigemCRUDController {
       }
     }
 
-    // Verificar se produto genérico padrão existe (se fornecido)
-    if (produto_generico_padrao_id) {
-      const produtoGenerico = await executeQuery(
-        'SELECT id FROM produto_generico WHERE id = ?',
-        [produto_generico_padrao_id]
+    // Buscar produto genérico padrão automaticamente
+    let produtoGenericoPadraoId = produto_generico_padrao_id;
+    if (grupo_id && subgrupo_id && classe_id) {
+      const produtoGenerico = await ProdutoOrigemCRUDController.vincularProdutoGenericoPadrao(
+        grupo_id, subgrupo_id, classe_id
       );
-
-      if (produtoGenerico.length === 0) {
-        return errorResponse(res, 'Produto genérico padrão não encontrado', STATUS_CODES.BAD_REQUEST);
+      if (produtoGenerico) {
+        produtoGenericoPadraoId = produtoGenerico.id;
       }
     }
 
@@ -233,7 +257,7 @@ class ProdutoOrigemCRUDController {
       WHERE id = ?`,
       [
         codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id,
-        classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id,
+        classe_id, peso_liquido, referencia_mercado, produtoGenericoPadraoId,
         status, req.user.id, id
       ]
     );
