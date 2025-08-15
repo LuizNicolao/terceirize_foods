@@ -117,8 +117,8 @@ const produtoGenericoValidations = {
     cleanEmptyFields,
     
     body('codigo')
-      .isInt({ min: 1 })
-      .withMessage('Código deve ser um número inteiro positivo'),
+      .isLength({ min: 1, max: 20 })
+      .withMessage('Código deve ter entre 1 e 20 caracteres'),
     
     body('nome')
       .isLength({ min: 3, max: 200 })
@@ -240,8 +240,8 @@ const produtoGenericoValidations = {
     
     body('codigo')
       .optional()
-      .isInt({ min: 1 })
-      .withMessage('Código deve ser um número inteiro positivo'),
+      .isLength({ min: 1, max: 20 })
+      .withMessage('Código deve ter entre 1 e 20 caracteres'),
     
     body('nome')
       .optional()

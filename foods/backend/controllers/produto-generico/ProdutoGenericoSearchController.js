@@ -29,6 +29,7 @@ class ProdutoGenericoSearchController {
       `SELECT 
         pg.*,
         po.nome as produto_origem_nome,
+        po.codigo as produto_origem_codigo,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
@@ -51,7 +52,7 @@ class ProdutoGenericoSearchController {
           OR pg.registro_especifico LIKE ?
           OR pg.integracao_senior LIKE ?
         )
-      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome
       ORDER BY 
         CASE 
           WHEN pg.codigo = ? THEN 1
@@ -85,6 +86,7 @@ class ProdutoGenericoSearchController {
       `SELECT 
         pg.*,
         po.nome as produto_origem_nome,
+        po.codigo as produto_origem_codigo,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
@@ -98,7 +100,7 @@ class ProdutoGenericoSearchController {
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
       LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.codigo LIKE ?
-      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, g.nome, sg.nome, c.nome, um.nome
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome
       ORDER BY pg.nome ASC`,
       [searchTerm]
     );

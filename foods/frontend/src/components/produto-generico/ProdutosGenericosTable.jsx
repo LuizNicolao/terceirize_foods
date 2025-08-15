@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash, FaStar, FaExchangeAlt } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrash, FaStar } from 'react-icons/fa';
 import { Button } from '../../components/ui';
 
 const ProdutosGenericosTable = ({
@@ -107,11 +107,11 @@ const ProdutosGenericosTable = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {produtoGenerico.produto_origem_id ? (
-                      <div className="flex items-center">
-                        <FaExchangeAlt className="w-3 h-3 text-blue-500 mr-1" />
-                        <span className="text-sm text-gray-900">
-                          {getProdutoOrigemName ? getProdutoOrigemName(produtoGenerico.produto_origem_id) : (produtoGenerico.produto_origem_nome || '-')}
-                        </span>
+                      <div className="text-sm text-gray-900">
+                        {produtoGenerico.produto_origem_codigo && produtoGenerico.produto_origem_nome ? 
+                          `${produtoGenerico.produto_origem_codigo} - ${produtoGenerico.produto_origem_nome}` : 
+                          (getProdutoOrigemName ? getProdutoOrigemName(produtoGenerico.produto_origem_id) : (produtoGenerico.produto_origem_nome || '-'))
+                        }
                       </div>
                     ) : (
                       <span className="text-gray-400">-</span>
@@ -242,12 +242,12 @@ const ProdutosGenericosTable = ({
               {produtoGenerico.produto_origem_id && (
                 <div className="col-span-2">
                   <span className="text-gray-500">Origem:</span>
-                  <div className="flex items-center mt-1">
-                    <FaExchangeAlt className="w-3 h-3 text-blue-500 mr-1" />
-                    <span className="text-sm font-medium">
-                      {getProdutoOrigemName ? getProdutoOrigemName(produtoGenerico.produto_origem_id) : (produtoGenerico.produto_origem_nome || '-')}
-                    </span>
-                  </div>
+                  <p className="font-medium">
+                    {produtoGenerico.produto_origem_codigo && produtoGenerico.produto_origem_nome ? 
+                      `${produtoGenerico.produto_origem_codigo} - ${produtoGenerico.produto_origem_nome}` : 
+                      (getProdutoOrigemName ? getProdutoOrigemName(produtoGenerico.produto_origem_id) : (produtoGenerico.produto_origem_nome || '-'))
+                    }
+                  </p>
                 </div>
               )}
               <div className="col-span-2">
