@@ -115,6 +115,23 @@ class ProdutoGenericoCRUDController {
       ]
     );
 
+    // Atualizar automaticamente o produto_generico_padrao_id no produto origem
+    if (produto_origem_id) {
+      // Verificar se este produto genérico é o primeiro a ser vinculado ao produto origem
+      const produtosGenericosVinculados = await executeQuery(
+        'SELECT COUNT(*) as total FROM produto_generico WHERE produto_origem_id = ? AND status = 1',
+        [produto_origem_id]
+      );
+
+      if (produtosGenericosVinculados[0].total === 1) {
+        // Se é o primeiro produto genérico vinculado, definir como padrão
+        await executeQuery(
+          'UPDATE produto_origem SET produto_generico_padrao_id = ?, usuario_atualizador_id = ? WHERE id = ?',
+          [novoProdutoGenerico.insertId, req.user.id, produto_origem_id]
+        );
+      }
+    }
+
     // Buscar produto genérico criado
     const produtoGenericoCriado = await executeQuery(
       `SELECT 
@@ -256,6 +273,23 @@ class ProdutoGenericoCRUDController {
         integracao_senior, status, req.user.id, id
       ]
     );
+
+    // Atualizar automaticamente o produto_generico_padrao_id no produto origem
+    if (produto_origem_id) {
+      // Verificar se este produto genérico é o primeiro a ser vinculado ao produto origem
+      const produtosGenericosVinculados = await executeQuery(
+        'SELECT COUNT(*) as total FROM produto_generico WHERE produto_origem_id = ? AND status = 1',
+        [produto_origem_id]
+      );
+
+      if (produtosGenericosVinculados[0].total === 1) {
+        // Se é o primeiro produto genérico vinculado, definir como padrão
+        await executeQuery(
+          'UPDATE produto_origem SET produto_generico_padrao_id = ?, usuario_atualizador_id = ? WHERE id = ?',
+          [id, req.user.id, produto_origem_id]
+        );
+      }
+    }
 
     // Buscar produto genérico atualizado
     const produtoGenericoAtualizado = await executeQuery(
