@@ -21,6 +21,14 @@
   --success-green: #4CAF50;
   --warning-orange: #FF9800;
   --warning-yellow: #ffcc00;
+  
+  /* Cores para Sidebar */
+  --text-color: #333333;
+  --text-secondary: #666666;
+  --hover-bg: #f8f9fa;
+  --active-bg: #e8f5e8;
+  --danger-color: #dc3545;
+  --danger-hover: #c82333;
 }
 
 * {
