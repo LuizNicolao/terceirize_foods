@@ -5,7 +5,7 @@ import { useRotas } from '../../hooks/useRotas';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import RotasService from '../../services/rotas';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { RotaModal, RotasTable, RotasStats } from '../../components/rotas';
@@ -35,6 +35,8 @@ const Rotas = () => {
     loadingUnidades,
     showUnidades,
     totalUnidades,
+    validationErrors,
+    showValidationModal,
     onSubmit,
     handleDeleteRota,
     handleAddRota,
@@ -49,7 +51,8 @@ const Rotas = () => {
     toggleUnidades,
     getFilialName,
     formatCurrency,
-    formatTipoRota
+    formatTipoRota,
+    handleCloseValidationModal
   } = useRotas();
 
   const {
@@ -104,7 +107,7 @@ const Rotas = () => {
       </div>
 
       {/* Estatísticas */}
-      <RotasStats estatisticas={estatisticas} formatCurrency={formatCurrency} />
+      <RotasStats estatisticas={estatisticas} />
 
       {/* Filtros */}
       <CadastroFilterBar
@@ -112,36 +115,28 @@ const Rotas = () => {
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        additionalFilters={[
-          {
-            label: 'Filial',
-            value: filialFilter,
-            onChange: setFilialFilter,
-            options: [
-              { value: 'todos', label: loadingFiliais ? 'Carregando...' : 'Todas as filiais' },
-              ...filiais.map(filial => ({
-                value: filial.id.toString(),
-                label: filial.filial
-              }))
-            ]
-          }
-        ]}
-        placeholder="Buscar por código, nome ou ID..."
+        placeholder="Buscar por nome ou código..."
       />
 
       {/* Tabela */}
       <RotasTable
         rotas={rotas}
-        canView={canView}
-        canEdit={canEdit}
-        canDelete={canDelete}
-        onView={handleViewRota}
-        onEdit={handleEditRota}
-        onDelete={handleDeleteRota}
+        onView={canView('rotas') ? handleViewRota : null}
+        onEdit={canEdit('rotas') ? handleEditRota : null}
+        onDelete={canDelete('rotas') ? handleDeleteRota : null}
         getFilialName={getFilialName}
         formatCurrency={formatCurrency}
         formatTipoRota={formatTipoRota}
-        loadingFiliais={loadingFiliais}
+      />
+
+      {/* Paginação */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={handlePageChange}
+        onItemsPerPageChange={handleItemsPerPageChange}
       />
 
       {/* Modal de Rota */}
@@ -153,38 +148,28 @@ const Rotas = () => {
         isViewMode={viewMode}
         filiais={filiais}
         loadingFiliais={loadingFiliais}
-        unidadesEscolares={unidadesEscolares}
-        loadingUnidades={loadingUnidades}
-        showUnidades={showUnidades}
-        totalUnidades={totalUnidades}
-        onToggleUnidades={toggleUnidades}
       />
 
       {/* Modal de Auditoria */}
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
-        title="Relatório de Auditoria - Rotas"
-        auditLogs={auditLogs}
-        auditLoading={auditLoading}
-        auditFilters={auditFilters}
+        logs={auditLogs}
+        loading={auditLoading}
+        filters={auditFilters}
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
-        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+        onSetFilters={setAuditFilters}
       />
 
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
-        />
-      )}
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
+      />
     </div>
   );
 };

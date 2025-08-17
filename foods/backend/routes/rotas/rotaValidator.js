@@ -3,17 +3,11 @@
  * Centraliza todas as validações relacionadas às rotas
  */
 
-const { body, param, query, validationResult } = require('express-validator');
-const { validationResponse } = require('../../middleware/responseHandler');
+const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
 
-// Middleware para capturar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return validationResponse(res, errors.array());
-  }
-  next();
-};
+// Criar handler de validação específico para rotas
+const handleValidationErrors = createEntityValidationHandler('rotas');
 
 // Validações comuns
 const commonValidations = {
@@ -108,6 +102,5 @@ const rotaValidations = {
 
 module.exports = {
   rotaValidations,
-  commonValidations,
-  handleValidationErrors
+  commonValidations
 };

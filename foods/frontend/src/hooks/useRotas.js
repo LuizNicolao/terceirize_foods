@@ -2,8 +2,18 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import RotasService from '../services/rotas';
 import api from '../services/api';
+import { useValidation } from './useValidation';
 
 export const useRotas = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [rotas, setRotas] = useState([]);
   const [filiais, setFiliais] = useState([]);
@@ -107,17 +117,6 @@ export const useRotas = () => {
       }
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
-      setEstatisticas({
-        total_rotas: 0,
-        rotas_ativas: 0,
-        rotas_inativas: 0,
-        rotas_semanais: 0,
-        rotas_quinzenais: 0,
-        rotas_mensais: 0,
-        rotas_transferencia: 0,
-        distancia_total: 0,
-        custo_total_diario: 0
-      });
     }
   };
 
@@ -140,13 +139,12 @@ export const useRotas = () => {
       setLoadingUnidades(true);
       const result = await RotasService.buscarUnidadesEscolares(rotaId);
       if (result.success) {
-        setUnidadesEscolares(result.data.unidades || []);
-        setTotalUnidades(result.data.total || 0);
+        setUnidadesEscolares(result.data || []);
+        setTotalUnidades(result.data?.length || 0);
       }
     } catch (error) {
       console.error('Erro ao carregar unidades escolares:', error);
       setUnidadesEscolares([]);
-      setTotalUnidades(0);
     } finally {
       setLoadingUnidades(false);
     }
@@ -172,24 +170,40 @@ export const useRotas = () => {
     return matchesSearch && matchesStatus && matchesFilial;
   });
 
-  // Funções de CRUD
+  // Função de submissão com validação universal
   const onSubmit = async (data) => {
     try {
-      let result;
+      let response;
       if (editingRota) {
-        result = await RotasService.atualizar(editingRota.id, data);
+        response = await RotasService.atualizar(editingRota.id, data);
+        if (response.success) {
+          toast.success('Rota atualizada com sucesso');
+        } else {
+          // Usar sistema universal de validação
+          if (handleApiResponse(response)) {
+            return; // Erros de validação tratados pelo hook
+          } else {
+            toast.error(response.error);
+          }
+          return;
+        }
       } else {
-        result = await RotasService.criar(data);
+        response = await RotasService.criar(data);
+        if (response.success) {
+          toast.success('Rota criada com sucesso');
+        } else {
+          // Usar sistema universal de validação
+          if (handleApiResponse(response)) {
+            return; // Erros de validação tratados pelo hook
+          } else {
+            toast.error(response.error);
+          }
+          return;
+        }
       }
       
-      if (result.success) {
-        toast.success(result.message);
-        handleCloseModal();
-        loadRotas();
-        loadEstatisticas();
-      } else {
-        toast.error(result.error);
-      }
+      handleCloseModal();
+      loadRotas();
     } catch (error) {
       console.error('Erro ao salvar rota:', error);
       toast.error('Erro ao salvar rota');
@@ -292,8 +306,8 @@ export const useRotas = () => {
   };
 
   return {
-    // Estados
-    rotas: filteredRotas,
+    // Estados principais
+    rotas,
     filiais,
     loading,
     loadingFiliais,
@@ -313,31 +327,28 @@ export const useRotas = () => {
     showUnidades,
     totalUnidades,
 
-    // Funções CRUD
+    // Estados de validação (do hook universal)
+    validationErrors,
+    showValidationModal,
+
+    // Funções
     onSubmit,
     handleDeleteRota,
-
-    // Funções de modal
     handleAddRota,
     handleViewRota,
     handleEditRota,
     handleCloseModal,
-
-    // Funções de paginação
     handlePageChange,
     handleItemsPerPageChange,
-
-    // Funções de filtros
     setSearchTerm,
     setStatusFilter,
     setFilialFilter,
-
-    // Funções de unidades escolares
     toggleUnidades,
-
-    // Funções utilitárias
     getFilialName,
     formatCurrency,
-    formatTipoRota
+    formatTipoRota,
+
+    // Funções de validação (do hook universal)
+    handleCloseValidationModal
   };
 };

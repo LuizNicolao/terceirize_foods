@@ -18,22 +18,25 @@ const ValidationErrorModal = ({ isOpen, onClose, errors, errorCategories }) => {
 
   if (!isOpen) return null;
 
-  const categoryNames = {
-    basicInfo: 'Informações Básicas',
-    classification: 'Classificação',
-    dimensions: 'Dimensões e Pesos',
-    taxation: 'Tributação',
-    documents: 'Documentos e Registros',
-    references: 'Referências'
-  };
+  // Mapeamento dinâmico de ícones baseado no nome da categoria
+  const getCategoryIcon = (categoryName) => {
+    const iconMap = {
+      'Informações Básicas': '📋',
+      'Classificação': '🏷️',
+      'Dimensões e Pesos': '📏',
+      'Tributação': '💰',
+      'Documentos e Registros': '📄',
+      'Referências': '🔗',
+      'Informações da Rota': '🛣️',
+      'Agendamento': '📅',
+      'Informações Pessoais': '👤',
+      'Informações de Acesso': '🔐',
+      'Informações de Contato': '📞',
+      'Endereço': '📍',
+      'Campos Gerais': '📝'
+    };
 
-  const categoryIcons = {
-    basicInfo: '📋',
-    classification: '🏷️',
-    dimensions: '📏',
-    taxation: '💰',
-    documents: '📄',
-    references: '🔗'
+    return iconMap[categoryName] || '⚠️';
   };
 
   const modalContent = (
@@ -68,9 +71,9 @@ const ValidationErrorModal = ({ isOpen, onClose, errors, errorCategories }) => {
                 return (
                   <div key={category} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <span className="text-2xl">{categoryIcons[category]}</span>
+                      <span className="text-2xl">{getCategoryIcon(category)}</span>
                       <h3 className="font-semibold text-gray-900">
-                        {categoryNames[category]}
+                        {category}
                       </h3>
                     </div>
                     <ul className="space-y-1">
