@@ -5,7 +5,7 @@ import { useUnidadesEscolares } from '../../hooks/useUnidadesEscolares';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import UnidadesEscolaresService from '../../services/unidadesEscolares';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { UnidadeEscolarModal, UnidadesEscolaresTable, UnidadesEscolaresStats } from '../../components/unidades-escolares';
@@ -31,12 +31,15 @@ const UnidadesEscolares = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    validationErrors,
+    showValidationModal,
     onSubmit,
     handleDeleteUnidade,
     handleAddUnidade,
     handleViewUnidade,
     handleEditUnidade,
     handleCloseModal,
+    handleCloseValidationModal,
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
@@ -172,6 +175,14 @@ const UnidadesEscolares = () => {
           onItemsPerPageChange={handleItemsPerPageChange}
         />
       )}
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
+      />
     </div>
   );
 };

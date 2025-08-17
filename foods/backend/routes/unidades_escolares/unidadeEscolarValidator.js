@@ -3,17 +3,11 @@
  * Centraliza todas as validações relacionadas às unidades escolares
  */
 
-const { body, param, query, validationResult } = require('express-validator');
-const { validationResponse } = require('../../middleware/responseHandler');
+const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
 
-// Middleware para capturar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return validationResponse(res, errors.array());
-  }
-  next();
-};
+// Criar handler de validação específico para unidades escolares
+const handleValidationErrors = createEntityValidationHandler('unidades_escolares');
 
 // Validações comuns
 const commonValidations = {
@@ -212,6 +206,5 @@ const unidadeEscolarValidations = {
 
 module.exports = {
   unidadeEscolarValidations,
-  commonValidations,
-  handleValidationErrors
+  commonValidations
 };

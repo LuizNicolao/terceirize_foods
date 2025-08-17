@@ -42,6 +42,16 @@ class UnidadesEscolaresService {
         data: response.data.data || response.data
       };
     } catch (error) {
+      // Capturar erros de validação do backend
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          error: error.response?.data?.message || 'Dados inválidos',
+          validationErrors: error.response?.data?.errors,
+          errorCategories: error.response?.data?.errorCategories
+        };
+      }
+      
       return {
         success: false,
         error: error.response?.data?.error || 'Erro ao criar unidade escolar'
@@ -57,6 +67,16 @@ class UnidadesEscolaresService {
         data: response.data.data || response.data
       };
     } catch (error) {
+      // Capturar erros de validação do backend
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          error: error.response?.data?.message || 'Dados inválidos',
+          validationErrors: error.response?.data?.errors,
+          errorCategories: error.response?.data?.errorCategories
+        };
+      }
+      
       return {
         success: false,
         error: error.response?.data?.error || 'Erro ao atualizar unidade escolar'

@@ -3,8 +3,18 @@ import toast from 'react-hot-toast';
 import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
 import api from '../services/api';
+import { useValidation } from './useValidation';
 
 export const useUnidadesEscolares = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [unidades, setUnidades] = useState([]);
   const [rotas, setRotas] = useState([]);
@@ -139,7 +149,12 @@ export const useUnidadesEscolares = () => {
         handleCloseModal();
         reloadData();
       } else {
-        toast.error(result.error);
+        // Usar sistema universal de validação
+        if (handleApiResponse(result)) {
+          return; // Erros de validação tratados pelo hook
+        } else {
+          toast.error(result.error);
+        }
       }
     } catch (error) {
       console.error('Erro ao salvar unidade escolar:', error);
@@ -237,6 +252,10 @@ export const useUnidadesEscolares = () => {
     itemsPerPage,
     estatisticas,
 
+    // Estados de validação (do hook universal)
+    validationErrors,
+    showValidationModal,
+
     // Funções CRUD
     onSubmit,
     handleDeleteUnidade,
@@ -247,6 +266,9 @@ export const useUnidadesEscolares = () => {
     handleViewUnidade,
     handleEditUnidade,
     handleCloseModal,
+
+    // Funções de validação (do hook universal)
+    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,

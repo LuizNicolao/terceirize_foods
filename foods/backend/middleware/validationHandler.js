@@ -158,6 +158,25 @@ const validationConfigs = {
     defaultCategory: 'basicInfo'
   },
 
+  // Configuração para Unidades Escolares
+  unidades_escolares: {
+    categories: {
+      basicInfo: ['codigo_teknisa', 'nome_escola', 'status'],
+      locationInfo: ['cidade', 'estado', 'pais', 'endereco', 'numero', 'bairro', 'cep'],
+      operationalInfo: ['centro_distribuicao', 'rota_id', 'regional', 'abastecimento', 'ordem_entrega'],
+      seniorInfo: ['cc_senior', 'codigo_senior', 'lot'],
+      additionalInfo: ['observacoes']
+    },
+    categoryNames: {
+      basicInfo: 'Informações Básicas',
+      locationInfo: 'Localização',
+      operationalInfo: 'Informações Operacionais',
+      seniorInfo: 'Informações Senior',
+      additionalInfo: 'Informações Adicionais'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração padrão para outras entidades
   default: {
     categories: {
