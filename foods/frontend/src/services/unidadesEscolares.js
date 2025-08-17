@@ -39,7 +39,8 @@ class UnidadesEscolaresService {
       const response = await api.post('/unidades-escolares', data);
       return {
         success: true,
-        data: response.data.data || response.data
+        data: response.data.data || response.data,
+        message: 'Unidade escolar criada com sucesso!'
       };
     } catch (error) {
       // Capturar erros de validação do backend
@@ -64,7 +65,8 @@ class UnidadesEscolaresService {
       const response = await api.put(`/unidades-escolares/${id}`, data);
       return {
         success: true,
-        data: response.data.data || response.data
+        data: response.data.data || response.data,
+        message: 'Unidade escolar atualizada com sucesso!'
       };
     } catch (error) {
       // Capturar erros de validação do backend
@@ -89,7 +91,8 @@ class UnidadesEscolaresService {
       const response = await api.delete(`/unidades-escolares/${id}`);
       return {
         success: true,
-        data: response.data
+        data: response.data,
+        message: 'Unidade escolar excluída com sucesso!'
       };
     } catch (error) {
       return {

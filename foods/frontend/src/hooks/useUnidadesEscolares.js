@@ -144,7 +144,10 @@ export const useUnidadesEscolares = () => {
         result = await UnidadesEscolaresService.criar(data);
       }
       
+      console.log('Resultado da operação:', result); // Debug
+      
       if (result.success) {
+        console.log('Mostrando toast de sucesso:', result.message); // Debug
         toast.success(result.message);
         handleCloseModal();
         reloadData();
@@ -166,7 +169,10 @@ export const useUnidadesEscolares = () => {
     if (window.confirm('Tem certeza que deseja excluir esta unidade escolar?')) {
       try {
         const result = await UnidadesEscolaresService.excluir(unidadeId);
+        console.log('Resultado da exclusão:', result); // Debug
+        
         if (result.success) {
+          console.log('Mostrando toast de exclusão:', result.message); // Debug
           toast.success(result.message);
           reloadData();
         } else {
