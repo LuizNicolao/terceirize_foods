@@ -109,12 +109,15 @@ const RotaModal = ({
             </h3>
             <div className="space-y-3">
               <Input
-                label="Distância (km)"
+                label="Distância (km) *"
                 type="number"
                 step="0.01"
+                min="0.1"
                 placeholder="0.00"
                 {...register('distancia_km', {
-                  min: { value: 0, message: 'Distância deve ser positiva' }
+                  required: 'Distância é obrigatória',
+                  min: { value: 0.1, message: 'Distância deve ser maior que 0' },
+                  valueAsNumber: true
                 })}
                 error={errors.distancia_km?.message}
                 disabled={isViewMode}
@@ -135,12 +138,15 @@ const RotaModal = ({
               </Input>
 
               <Input
-                label="Custo Diário (R$)"
+                label="Custo Diário (R$) *"
                 type="number"
                 step="0.01"
+                min="0"
                 placeholder="0.00"
                 {...register('custo_diario', {
-                  min: { value: 0, message: 'Custo deve ser positivo' }
+                  required: 'Custo diário é obrigatório',
+                  min: { value: 0, message: 'Custo deve ser positivo' },
+                  valueAsNumber: true
                 })}
                 error={errors.custo_diario?.message}
                 disabled={isViewMode}

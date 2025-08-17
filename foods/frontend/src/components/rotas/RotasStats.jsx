@@ -3,10 +3,6 @@ import { FaRoute, FaMapMarkedAlt, FaTruck, FaMoneyBillWave } from 'react-icons/f
 import { StatCard } from '../ui';
 
 const RotasStats = ({ estatisticas, formatCurrency }) => {
-  // Debug: verificar se os valores estão chegando
-  console.log('RotasStats - estatisticas:', estatisticas);
-  console.log('RotasStats - formatCurrency:', formatCurrency);
-
   // Garantir que formatCurrency seja uma função
   const safeFormatCurrency = (value) => {
     if (typeof formatCurrency === 'function') {

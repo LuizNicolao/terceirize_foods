@@ -101,12 +101,14 @@ const validationConfigs = {
     categories: {
       basicInfo: ['nome', 'codigo', 'status'],
       routeInfo: ['tipo_rota', 'filial_id', 'observacoes'],
-      schedule: ['frequencia', 'dia_semana', 'data_inicio', 'data_fim']
+      schedule: ['frequencia', 'dia_semana', 'data_inicio', 'data_fim'],
+      metrics: ['distancia_km', 'custo_diario']
     },
     categoryNames: {
       basicInfo: 'Informações Básicas',
       routeInfo: 'Informações da Rota',
-      schedule: 'Agendamento'
+      schedule: 'Agendamento',
+      metrics: 'Métricas da Rota'
     },
     defaultCategory: 'basicInfo'
   },

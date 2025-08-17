@@ -57,6 +57,14 @@ const rotaValidations = {
       .notEmpty().withMessage('Filial é obrigatória')
       .isInt({ min: 1 }).withMessage('ID da filial deve ser um número inteiro positivo'),
     
+    body('distancia_km')
+      .notEmpty().withMessage('Distância é obrigatória')
+      .isFloat({ min: 0.1, max: 999999.99 }).withMessage('Distância deve ser um número positivo entre 0.1 e 999999.99'),
+    
+    body('custo_diario')
+      .notEmpty().withMessage('Custo diário é obrigatório')
+      .isFloat({ min: 0, max: 999999.99 }).withMessage('Custo diário deve ser um número positivo entre 0 e 999999.99'),
+    
     body('status')
       .optional()
       .isIn(['ativo', 'inativo']).withMessage('Status deve ser ativo ou inativo'),
@@ -87,6 +95,14 @@ const rotaValidations = {
     body('filial_id')
       .optional()
       .isInt({ min: 1 }).withMessage('ID da filial deve ser um número inteiro positivo'),
+    
+    body('distancia_km')
+      .optional()
+      .isFloat({ min: 0.1, max: 999999.99 }).withMessage('Distância deve ser um número positivo entre 0.1 e 999999.99'),
+    
+    body('custo_diario')
+      .optional()
+      .isFloat({ min: 0, max: 999999.99 }).withMessage('Custo diário deve ser um número positivo entre 0 e 999999.99'),
     
     body('status')
       .optional()
