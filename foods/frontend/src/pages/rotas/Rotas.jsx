@@ -107,7 +107,7 @@ const Rotas = () => {
       </div>
 
       {/* Estatísticas */}
-      <RotasStats estatisticas={estatisticas} />
+      <RotasStats estatisticas={estatisticas} formatCurrency={formatCurrency} />
 
       {/* Filtros */}
       <CadastroFilterBar
@@ -121,12 +121,16 @@ const Rotas = () => {
       {/* Tabela */}
       <RotasTable
         rotas={rotas}
-        onView={canView('rotas') ? handleViewRota : null}
-        onEdit={canEdit('rotas') ? handleEditRota : null}
-        onDelete={canDelete('rotas') ? handleDeleteRota : null}
+        canView={canView}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        onView={handleViewRota}
+        onEdit={handleEditRota}
+        onDelete={handleDeleteRota}
         getFilialName={getFilialName}
         formatCurrency={formatCurrency}
         formatTipoRota={formatTipoRota}
+        loadingFiliais={loadingFiliais}
       />
 
       {/* Paginação */}

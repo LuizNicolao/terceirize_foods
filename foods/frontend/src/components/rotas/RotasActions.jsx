@@ -11,9 +11,14 @@ const RotasActions = ({
   onEdit, 
   onDelete 
 }) => {
+  // Verificar se as funções de permissão são válidas
+  const canViewRotas = typeof canView === 'function' ? canView('rotas') : false;
+  const canEditRotas = typeof canEdit === 'function' ? canEdit('rotas') : false;
+  const canDeleteRotas = typeof canDelete === 'function' ? canDelete('rotas') : false;
+
   return (
     <div className="flex items-center gap-1">
-      {canView('rotas') && (
+      {canViewRotas && onView && (
         <Button
           variant="ghost"
           size="sm"
@@ -25,7 +30,7 @@ const RotasActions = ({
         </Button>
       )}
       
-      {canEdit('rotas') && (
+      {canEditRotas && onEdit && (
         <Button
           variant="ghost"
           size="sm"
@@ -37,7 +42,7 @@ const RotasActions = ({
         </Button>
       )}
       
-      {canDelete('rotas') && (
+      {canDeleteRotas && onDelete && (
         <Button
           variant="ghost"
           size="sm"

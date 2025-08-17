@@ -120,19 +120,6 @@ export const useRotas = () => {
     }
   };
 
-  // Carregar total de unidades escolares
-  const loadTotalUnidades = async (rotaId) => {
-    try {
-      const result = await RotasService.buscarUnidadesEscolares(rotaId);
-      if (result.success) {
-        setTotalUnidades(result.data.total || 0);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar total de unidades escolares:', error);
-      setTotalUnidades(0);
-    }
-  };
-
   // Carregar unidades escolares
   const loadUnidadesEscolares = async (rotaId) => {
     try {
@@ -153,22 +140,13 @@ export const useRotas = () => {
   // Carregar dados quando dependências mudarem
   useEffect(() => {
     loadRotas();
-    loadFiliais();
-    loadEstatisticas();
   }, [currentPage, itemsPerPage]);
 
-  // Filtrar rotas
-  const filteredRotas = rotas.filter(rota => {
-    const matchesSearch = !searchTerm || 
-      (rota.codigo && rota.codigo.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (rota.nome && rota.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (rota.id && rota.id.toString().includes(searchTerm));
-    
-    const matchesStatus = statusFilter === 'todos' || rota.status === statusFilter;
-    const matchesFilial = filialFilter === 'todos' || rota.filial_id.toString() === filialFilter;
-    
-    return matchesSearch && matchesStatus && matchesFilial;
-  });
+  // Carregar filiais e estatísticas apenas uma vez
+  useEffect(() => {
+    loadFiliais();
+    loadEstatisticas();
+  }, []);
 
   // Função de submissão com validação universal
   const onSubmit = async (data) => {
@@ -245,7 +223,6 @@ export const useRotas = () => {
     setShowUnidades(false);
     setUnidadesEscolares([]);
     setTotalUnidades(0);
-    loadTotalUnidades(rota.id);
   };
 
   const handleEditRota = (rota) => {
