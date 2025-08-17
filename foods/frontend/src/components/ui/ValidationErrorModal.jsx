@@ -19,45 +19,21 @@ const ValidationErrorModal = ({ isOpen, onClose, errors, errorCategories }) => {
   if (!isOpen) return null;
 
   const categoryNames = {
-    // Categorias para Produtos
     basicInfo: 'Informações Básicas',
     classification: 'Classificação',
     dimensions: 'Dimensões e Pesos',
     taxation: 'Tributação',
     documents: 'Documentos e Registros',
-    references: 'Referências',
-    
-    // Categorias para Rotas
-    routeInfo: 'Informações da Rota',
-    details: 'Detalhes Adicionais',
-    
-    // Categorias para outras entidades
-    contact: 'Contato',
-    address: 'Endereço',
-    vehicle: 'Veículo',
-    driver: 'Motorista',
-    geral: 'Outros Campos'
+    references: 'Referências'
   };
 
   const categoryIcons = {
-    // Categorias para Produtos
     basicInfo: '📋',
     classification: '🏷️',
     dimensions: '📏',
     taxation: '💰',
     documents: '📄',
-    references: '🔗',
-    
-    // Categorias para Rotas
-    routeInfo: '🛣️',
-    details: '📝',
-    
-    // Categorias para outras entidades
-    contact: '📞',
-    address: '📍',
-    vehicle: '🚗',
-    driver: '👤',
-    geral: '⚠️'
+    references: '🔗'
   };
 
   const modalContent = (

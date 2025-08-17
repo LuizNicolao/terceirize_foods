@@ -3,39 +3,17 @@
  * Centraliza todas as validações relacionadas às rotas
  */
 
-const { body, param, query } = require('express-validator');
-const { createValidationHandler, defaultMappings, defaultCategoryNames, defaultCategoryIcons } = require('../../middleware/validationHandler');
+const { body, param, query, validationResult } = require('express-validator');
+const { validationResponse } = require('../../middleware/responseHandler');
 
-// Mapeamento específico para rotas
-const rotaCategoryMapping = {
-  basicInfo: ['nome', 'codigo', 'status'],
-  routeInfo: ['tipo_rota', 'filial_id'],
-  details: ['observacoes', 'distancia_total', 'custo_diario'],
-  geral: []
+// Middleware para capturar erros de validação
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return validationResponse(res, errors.array());
+  }
+  next();
 };
-
-// Nomes das categorias para rotas
-const rotaCategoryNames = {
-  basicInfo: 'Informações Básicas',
-  routeInfo: 'Informações da Rota',
-  details: 'Detalhes Adicionais',
-  geral: 'Outros Campos'
-};
-
-// Ícones das categorias para rotas
-const rotaCategoryIcons = {
-  basicInfo: '📋',
-  routeInfo: '🛣️',
-  details: '📝',
-  geral: '⚠️'
-};
-
-// Middleware para capturar erros de validação com categorização
-const handleValidationErrors = createValidationHandler(
-  rotaCategoryMapping,
-  rotaCategoryNames,
-  rotaCategoryIcons
-);
 
 // Validações comuns
 const commonValidations = {
