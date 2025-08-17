@@ -17,7 +17,7 @@ const RotaModal = ({
   totalUnidades = 0,
   onToggleUnidades
 }) => {
-  const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   React.useEffect(() => {
     if (rota && isOpen) {
@@ -60,8 +60,7 @@ const RotaModal = ({
               <Input
                 label="Filial *"
                 type="select"
-                {...register('filial_id', { required: 'Filial é obrigatória' })}
-                error={errors.filial_id?.message}
+                {...register('filial_id')}
                 disabled={isViewMode || loadingFiliais}
               >
                 <option value="">
@@ -78,12 +77,7 @@ const RotaModal = ({
                 label="Código *"
                 type="text"
                 placeholder="Código da rota"
-                {...register('codigo', { 
-                  required: 'Código é obrigatório',
-                  minLength: { value: 1, message: 'Código deve ter pelo menos 1 caractere' },
-                  maxLength: { value: 20, message: 'Código deve ter no máximo 20 caracteres' }
-                })}
-                error={errors.codigo?.message}
+                {...register('codigo')}
                 disabled={isViewMode}
               />
 
@@ -91,12 +85,7 @@ const RotaModal = ({
                 label="Nome *"
                 type="text"
                 placeholder="Nome da rota"
-                {...register('nome', { 
-                  required: 'Nome é obrigatório',
-                  minLength: { value: 2, message: 'Nome deve ter pelo menos 2 caracteres' },
-                  maxLength: { value: 100, message: 'Nome deve ter no máximo 100 caracteres' }
-                })}
-                error={errors.nome?.message}
+                {...register('nome')}
                 disabled={isViewMode}
               />
             </div>
@@ -114,20 +103,14 @@ const RotaModal = ({
                 step="0.01"
                 min="0.1"
                 placeholder="0.00"
-                {...register('distancia_km', {
-                  required: 'Distância é obrigatória',
-                  min: { value: 0.1, message: 'Distância deve ser maior que 0' },
-                  valueAsNumber: true
-                })}
-                error={errors.distancia_km?.message}
+                {...register('distancia_km', { valueAsNumber: true })}
                 disabled={isViewMode}
               />
 
               <Input
                 label="Tipo de Rota *"
                 type="select"
-                {...register('tipo_rota', { required: 'Tipo de rota é obrigatório' })}
-                error={errors.tipo_rota?.message}
+                {...register('tipo_rota')}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o tipo</option>
@@ -143,12 +126,7 @@ const RotaModal = ({
                 step="0.01"
                 min="0"
                 placeholder="0.00"
-                {...register('custo_diario', {
-                  required: 'Custo diário é obrigatório',
-                  min: { value: 0, message: 'Custo deve ser positivo' },
-                  valueAsNumber: true
-                })}
-                error={errors.custo_diario?.message}
+                {...register('custo_diario', { valueAsNumber: true })}
                 disabled={isViewMode}
               />
 
@@ -156,7 +134,6 @@ const RotaModal = ({
                 label="Status"
                 type="select"
                 {...register('status')}
-                error={errors.status?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o status</option>
@@ -179,10 +156,7 @@ const RotaModal = ({
                 label="Observações"
                 type="textarea"
                 placeholder="Observações sobre a rota"
-                {...register('observacoes', {
-                  maxLength: { value: 500, message: 'Observações devem ter no máximo 500 caracteres' }
-                })}
-                error={errors.observacoes?.message}
+                {...register('observacoes')}
                 disabled={isViewMode}
               />
             </div>
@@ -216,7 +190,7 @@ const RotaModal = ({
                 )}
               </Button>
             </div>
-
+            
             {showUnidades && (
               <div className="mt-4">
                 {loadingUnidades ? (
@@ -225,26 +199,24 @@ const RotaModal = ({
                     <p className="text-sm text-gray-600 mt-2">Carregando unidades...</p>
                   </div>
                 ) : unidadesEscolares.length > 0 ? (
-                  <div className="overflow-x-auto">
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                     <Table>
-                      <thead className="bg-gray-100">
+                      <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nome da Escola</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Cidade</th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nome</th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Endereço</th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="divide-y divide-gray-200">
                         {unidadesEscolares.map((unidade) => (
                           <tr key={unidade.id} className="hover:bg-gray-50">
-                            <td className="px-4 py-2 text-sm text-gray-900">{unidade.codigo_teknisa}</td>
-                            <td className="px-4 py-2 text-sm text-gray-900">{unidade.nome_escola}</td>
-                            <td className="px-4 py-2 text-sm text-gray-900">{unidade.cidade}</td>
-                            <td className="px-4 py-2 text-sm text-gray-900">{unidade.estado}</td>
+                            <td className="px-4 py-2 text-sm text-gray-900">{unidade.id}</td>
+                            <td className="px-4 py-2 text-sm text-gray-900 font-medium">{unidade.nome}</td>
+                            <td className="px-4 py-2 text-sm text-gray-900">{unidade.endereco}</td>
                             <td className="px-4 py-2 text-sm text-gray-900">
-                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                 unidade.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                               }`}>
                                 {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
@@ -265,21 +237,22 @@ const RotaModal = ({
           </div>
         )}
 
-        {/* Botões de Ação */}
-        {!isViewMode && (
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-            >
-              Cancelar
-            </Button>
+        {/* Botões */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isViewMode}
+          >
+            Cancelar
+          </Button>
+          {!isViewMode && (
             <Button type="submit">
               {rota ? 'Atualizar' : 'Criar'} Rota
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </form>
     </Modal>
   );

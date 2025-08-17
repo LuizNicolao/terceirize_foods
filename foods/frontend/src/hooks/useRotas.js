@@ -157,6 +157,9 @@ export const useRotas = () => {
         if (response.success) {
           toast.success('Rota atualizada com sucesso');
         } else {
+          // Debug: verificar se há erros de validação
+          console.log('Resposta de erro (atualizar):', response);
+          
           // Usar sistema universal de validação
           if (handleApiResponse(response)) {
             return; // Erros de validação tratados pelo hook
@@ -170,6 +173,9 @@ export const useRotas = () => {
         if (response.success) {
           toast.success('Rota criada com sucesso');
         } else {
+          // Debug: verificar se há erros de validação
+          console.log('Resposta de erro (criar):', response);
+          
           // Usar sistema universal de validação
           if (handleApiResponse(response)) {
             return; // Erros de validação tratados pelo hook
