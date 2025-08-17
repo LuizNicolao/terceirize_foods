@@ -80,29 +80,19 @@ class ProdutosService {
         message: 'Produto criado com sucesso!'
       };
     } catch (error) {
-      // Se tem erros de validação detalhados, retornar eles
-      if (error.response?.data?.detailedMessage) {
+      // Capturar erros de validação do backend
+      if (error.response?.status === 422) {
         return {
           success: false,
-          error: error.response.data.detailedMessage,
-          validationErrors: error.response.data.errors,
-          errorCategories: error.response.data.errorCategories
-        };
-      }
-      
-      // Se tem erros de validação simples
-      if (error.response?.data?.errors && error.response.data.errors.length > 0) {
-        const validationMessages = error.response.data.errors.map(err => err.msg).join('\n');
-        return {
-          success: false,
-          error: `Dados inválidos:\n${validationMessages}`,
-          validationErrors: error.response.data.errors
+          error: error.response?.data?.message || 'Dados inválidos',
+          validationErrors: error.response?.data?.errors,
+          errorCategories: error.response?.data?.errorCategories
         };
       }
       
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar produto'
+        error: error.response?.data?.error || 'Erro ao criar produto'
       };
     }
   }
@@ -126,9 +116,19 @@ class ProdutosService {
         message: 'Produto atualizado com sucesso!'
       };
     } catch (error) {
+      // Capturar erros de validação do backend
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          error: error.response?.data?.message || 'Dados inválidos',
+          validationErrors: error.response?.data?.errors,
+          errorCategories: error.response?.data?.errorCategories
+        };
+      }
+      
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao atualizar produto'
+        error: error.response?.data?.error || 'Erro ao atualizar produto'
       };
     }
   }

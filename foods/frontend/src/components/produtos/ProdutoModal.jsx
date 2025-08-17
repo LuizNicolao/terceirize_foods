@@ -19,7 +19,7 @@ const ProdutoModal = ({
   produtoOrigem = [],
   onPrint
 }) => {
-  const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm();
+  const { register, handleSubmit, reset, setValue, watch } = useForm();
 
   // Observar mudanças nos campos para filtros dependentes
   const grupoId = watch('grupo_id');
@@ -152,7 +152,6 @@ const ProdutoModal = ({
                   type="text"
                   placeholder="Código gerado automaticamente"
                   disabled={true}
-                  error={errors.codigo_produto?.message}
                   {...register('codigo_produto')}
                 />
 
@@ -161,15 +160,13 @@ const ProdutoModal = ({
                   type="text"
                   placeholder="Ex: PATINHO BOVINO EM CUBOS KING"
                   disabled={isViewMode}
-                  error={errors.nome?.message}
-                  {...register('nome', { required: 'Nome é obrigatório' })}
+                  {...register('nome')}
                 />
 
                 <Input
                   label="Status"
                   type="select"
                   disabled={isViewMode}
-                  error={errors.status?.message}
                   {...register('status')}
                 >
                   <option value={1}>Ativo</option>
@@ -181,7 +178,6 @@ const ProdutoModal = ({
                   type="text"
                   placeholder="Ex: 1234567891234"
                   disabled={isViewMode}
-                  error={errors.codigo_barras?.message}
                   {...register('codigo_barras')}
                 />
 
@@ -190,7 +186,6 @@ const ProdutoModal = ({
                   type="text"
                   placeholder="Código EAN"
                   disabled={isViewMode}
-                  error={errors.ean?.message}
                   {...register('ean')}
                 />
 
@@ -200,7 +195,6 @@ const ProdutoModal = ({
                   step="0.001"
                   placeholder="Ex: 1.000"
                   disabled={isViewMode}
-                  error={errors.fator_conversao?.message}
                   {...register('fator_conversao')}
                 />
               </div>
@@ -216,7 +210,6 @@ const ProdutoModal = ({
                   label="Grupo"
                   type="select"
                   disabled={true}
-                  error={errors.grupo_id?.message}
                   {...register('grupo_id')}
                 >
                   <option value="">Preenchido automaticamente</option>
@@ -231,7 +224,6 @@ const ProdutoModal = ({
                   label="Subgrupo"
                   type="select"
                   disabled={true}
-                  error={errors.subgrupo_id?.message}
                   {...register('subgrupo_id')}
                 >
                   <option value="">Preenchido automaticamente</option>
@@ -246,7 +238,6 @@ const ProdutoModal = ({
                   label="Classe"
                   type="select"
                   disabled={true}
-                  error={errors.classe_id?.message}
                   {...register('classe_id')}
                 >
                   <option value="">Preenchido automaticamente</option>
@@ -261,7 +252,6 @@ const ProdutoModal = ({
                   label="Produto Genérico"
                   type="select"
                   disabled={isViewMode}
-                  error={errors.nome_generico_id?.message}
                   {...register('nome_generico_id')}
                 >
                   <option value="">Selecione um produto genérico...</option>
@@ -276,7 +266,6 @@ const ProdutoModal = ({
                   label="Produto Origem"
                   type="select"
                   disabled={true}
-                  error={errors.produto_origem_id?.message}
                   {...register('produto_origem_id')}
                 >
                   <option value="">Preenchido automaticamente</option>
@@ -291,7 +280,6 @@ const ProdutoModal = ({
                   label="Marca"
                   type="select"
                   disabled={isViewMode}
-                  error={errors.marca_id?.message}
                   {...register('marca_id')}
                 >
                   <option value="">Selecione uma marca...</option>
@@ -307,7 +295,6 @@ const ProdutoModal = ({
                   type="text"
                   placeholder="Preenchido automaticamente"
                   disabled={true}
-                  error={errors.fabricante?.message}
                   {...register('fabricante')}
                 />
               </div>
@@ -323,7 +310,6 @@ const ProdutoModal = ({
                   label="Unidade de Medida"
                   type="select"
                   disabled={isViewMode}
-                  error={errors.unidade_id?.message}
                   {...register('unidade_id')}
                 >
                   <option value="">Selecione uma unidade...</option>
@@ -338,7 +324,6 @@ const ProdutoModal = ({
                   label="Embalagem Secundária"
                   type="select"
                   disabled={isViewMode}
-                  error={errors.embalagem_secundaria_id?.message}
                   {...register('embalagem_secundaria_id')}
                 >
                   <option value="">Selecione uma embalagem...</option>
@@ -355,7 +340,6 @@ const ProdutoModal = ({
                   step="1"
                   placeholder="Ex: 12"
                   disabled={isViewMode}
-                  error={errors.fator_conversao_embalagem?.message}
                   {...register('fator_conversao_embalagem')}
                 />
 
@@ -366,7 +350,6 @@ const ProdutoModal = ({
                     step="0.001"
                     placeholder="Ex: 1.000"
                     disabled={isViewMode}
-                    error={errors.peso_liquido?.message}
                     {...register('peso_liquido')}
                   />
 
@@ -376,7 +359,6 @@ const ProdutoModal = ({
                     step="0.001"
                     placeholder="Ex: 1.000"
                     disabled={isViewMode}
-                    error={errors.peso_bruto?.message}
                     {...register('peso_bruto')}
                   />
                 </div>
@@ -388,7 +370,6 @@ const ProdutoModal = ({
                     step="0.01"
                     placeholder="Ex: 20.00"
                     disabled={isViewMode}
-                    error={errors.comprimento?.message}
                     {...register('comprimento')}
                   />
 
@@ -398,7 +379,6 @@ const ProdutoModal = ({
                     step="0.01"
                     placeholder="Ex: 15.00"
                     disabled={isViewMode}
-                    error={errors.largura?.message}
                     {...register('largura')}
                   />
                 </div>
@@ -410,7 +390,6 @@ const ProdutoModal = ({
                     step="0.01"
                     placeholder="Ex: 10.00"
                     disabled={isViewMode}
-                    error={errors.altura?.message}
                     {...register('altura')}
                   />
 
@@ -419,10 +398,9 @@ const ProdutoModal = ({
                     type="number"
                     step="0.01"
                     placeholder="Ex: 3000.00"
-                    disabled={isViewMode}
-                    error={errors.volume?.message}
-                    {...register('volume')}
-                  />
+                                          disabled={isViewMode}
+                      {...register('volume')}
+                    />
                 </div>
               </div>
             </div>
@@ -442,7 +420,6 @@ const ProdutoModal = ({
                     type="text"
                     placeholder="Classificação NCM"
                     disabled={isViewMode}
-                    error={errors.ncm?.message}
                     {...register('ncm')}
                   />
 
@@ -451,7 +428,6 @@ const ProdutoModal = ({
                     type="text"
                     placeholder="Código CEST"
                     disabled={isViewMode}
-                    error={errors.cest?.message}
                     {...register('cest')}
                   />
                 </div>
@@ -462,7 +438,6 @@ const ProdutoModal = ({
                     type="text"
                     placeholder="Código CFOP"
                     disabled={isViewMode}
-                    error={errors.cfop?.message}
                     {...register('cfop')}
                   />
 
@@ -471,7 +446,6 @@ const ProdutoModal = ({
                     type="text"
                     placeholder="CST ICMS"
                     disabled={isViewMode}
-                    error={errors.cst_icms?.message}
                     {...register('cst_icms')}
                   />
                 </div>
@@ -481,7 +455,6 @@ const ProdutoModal = ({
                   type="text"
                   placeholder="CSOSN"
                   disabled={isViewMode}
-                  error={errors.csosn?.message}
                   {...register('csosn')}
                 />
 
@@ -492,7 +465,6 @@ const ProdutoModal = ({
                     step="0.01"
                     placeholder="Ex: 18.00"
                     disabled={isViewMode}
-                    error={errors.aliquota_icms?.message}
                     {...register('aliquota_icms')}
                   />
 
@@ -502,7 +474,6 @@ const ProdutoModal = ({
                     step="0.01"
                     placeholder="Ex: 5.00"
                     disabled={isViewMode}
-                    error={errors.aliquota_ipi?.message}
                     {...register('aliquota_ipi')}
                   />
                 </div>
@@ -514,7 +485,6 @@ const ProdutoModal = ({
                     step="0.01"
                     placeholder="Ex: 1.65"
                     disabled={isViewMode}
-                    error={errors.aliquota_pis?.message}
                     {...register('aliquota_pis')}
                   />
 
@@ -524,7 +494,6 @@ const ProdutoModal = ({
                     step="0.01"
                     placeholder="Ex: 7.60"
                     disabled={isViewMode}
-                    error={errors.aliquota_cofins?.message}
                     {...register('aliquota_cofins')}
                   />
                 </div>
@@ -543,7 +512,6 @@ const ProdutoModal = ({
                     type="number"
                     placeholder="Ex: 12"
                     disabled={isViewMode}
-                    error={errors.prazo_validade?.message}
                     {...register('prazo_validade')}
                   />
 
@@ -551,7 +519,6 @@ const ProdutoModal = ({
                     label="Unidade de Validade"
                     type="select"
                     disabled={isViewMode}
-                    error={errors.unidade_validade?.message}
                     {...register('unidade_validade')}
                   >
                     <option value="">Selecione...</option>
@@ -567,7 +534,6 @@ const ProdutoModal = ({
                   type="number"
                   placeholder="Ex: 1200"
                   disabled={isViewMode}
-                  error={errors.regra_palet_un?.message}
                   {...register('regra_palet_un')}
                 />
 
@@ -576,7 +542,6 @@ const ProdutoModal = ({
                   type="text"
                   placeholder="Ex: 123456"
                   disabled={isViewMode}
-                  error={errors.ficha_homologacao?.message}
                   {...register('ficha_homologacao')}
                 />
 
@@ -585,7 +550,6 @@ const ProdutoModal = ({
                   type="text"
                   placeholder="Ex: 1234456 CA, REGISTRO, MODELO, Nº SERIE"
                   disabled={isViewMode}
-                  error={errors.registro_especifico?.message}
                   {...register('registro_especifico')}
                 />
 
@@ -593,7 +557,6 @@ const ProdutoModal = ({
                   label="Tipo de Registro"
                   type="select"
                   disabled={isViewMode}
-                  error={errors.tipo_registro?.message}
                   {...register('tipo_registro')}
                 >
                   <option value="">Selecione...</option>
@@ -607,7 +570,6 @@ const ProdutoModal = ({
                   type="text"
                   placeholder="Caminho da foto"
                   disabled={isViewMode}
-                  error={errors.foto_produto?.message}
                   {...register('foto_produto')}
                 />
               </div>
@@ -628,7 +590,6 @@ const ProdutoModal = ({
                     type="text"
                     placeholder="Referência interna"
                     disabled={isViewMode}
-                    error={errors.referencia_interna?.message}
                     {...register('referencia_interna')}
                   />
 
@@ -637,7 +598,6 @@ const ProdutoModal = ({
                     type="text"
                     placeholder="Ex: 123654"
                     disabled={isViewMode}
-                    error={errors.referencia_externa?.message}
                     {...register('referencia_externa')}
                   />
 
@@ -646,7 +606,6 @@ const ProdutoModal = ({
                     type="text"
                     placeholder="Ex: Corte Bovino / Patinho / Cubos"
                     disabled={isViewMode}
-                    error={errors.referencia_mercado?.message}
                     {...register('referencia_mercado')}
                   />
                 </div>
@@ -656,7 +615,6 @@ const ProdutoModal = ({
                   type="text"
                   placeholder="Ex: 123654"
                   disabled={isViewMode}
-                  error={errors.integracao_senior?.message}
                   {...register('integracao_senior')}
                 />
 
@@ -665,7 +623,6 @@ const ProdutoModal = ({
                   type="textarea"
                   placeholder="Ex: PRODUTO COM 5% DE GORDURA"
                   disabled={isViewMode}
-                  error={errors.informacoes_adicionais?.message}
                   {...register('informacoes_adicionais')}
                 />
               </div>

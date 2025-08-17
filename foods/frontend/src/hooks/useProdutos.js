@@ -2,8 +2,18 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import ProdutosService from '../services/produtos';
 import api from '../services/api';
+import { useValidation } from './useValidation';
 
 export const useProdutos = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,10 +21,6 @@ export const useProdutos = () => {
   const [viewMode, setViewMode] = useState(false);
   const [editingProduto, setEditingProduto] = useState(null);
   
-  // Estados para validação de erros
-  const [validationErrors, setValidationErrors] = useState(null);
-  const [showValidationModal, setShowValidationModal] = useState(false);
-
   // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);
   const [subgrupos, setSubgrupos] = useState([]);
@@ -176,13 +182,9 @@ export const useProdutos = () => {
         if (response.success) {
           toast.success('Produto atualizado com sucesso');
         } else {
-          // Verificar se são erros de validação
-          if (response.validationErrors || response.errorCategories) {
-            setValidationErrors({
-              errors: response.validationErrors,
-              errorCategories: response.errorCategories
-            });
-            setShowValidationModal(true);
+          // Usar sistema universal de validação
+          if (handleApiResponse(response)) {
+            return; // Erros de validação tratados pelo hook
           } else {
             toast.error(response.error);
           }
@@ -193,13 +195,9 @@ export const useProdutos = () => {
         if (response.success) {
           toast.success('Produto criado com sucesso');
         } else {
-          // Verificar se são erros de validação
-          if (response.validationErrors || response.errorCategories) {
-            setValidationErrors({
-              errors: response.validationErrors,
-              errorCategories: response.errorCategories
-            });
-            setShowValidationModal(true);
+          // Usar sistema universal de validação
+          if (handleApiResponse(response)) {
+            return; // Erros de validação tratados pelo hook
           } else {
             toast.error(response.error);
           }
@@ -258,11 +256,6 @@ export const useProdutos = () => {
     setEditingProduto(null);
   };
 
-  const handleCloseValidationModal = () => {
-    setShowValidationModal(false);
-    setValidationErrors(null);
-  };
-
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
@@ -307,7 +300,7 @@ export const useProdutos = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
-
+    
     // Funções
     handleSubmitProduto,
     handleDeleteProduto,
