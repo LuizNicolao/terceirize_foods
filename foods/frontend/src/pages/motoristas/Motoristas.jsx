@@ -15,6 +15,7 @@ import {
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import AuditModal from '../../components/shared/AuditModal';
+import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Motoristas = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -35,6 +36,10 @@ const Motoristas = () => {
     estatisticas,
     setSearchTerm,
 
+    // Estados de validação
+    validationErrors,
+    showValidationModal,
+
     // Handlers
     handleAddMotorista,
     handleViewMotorista,
@@ -45,7 +50,8 @@ const Motoristas = () => {
     handlePageChange,
     handleItemsPerPageChange,
     handleExportXLSX,
-    handleExportPDF
+    handleExportPDF,
+    handleCloseValidationModal
   } = useMotoristas();
 
   const {
@@ -148,6 +154,14 @@ const Motoristas = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+      />
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Paginação */}

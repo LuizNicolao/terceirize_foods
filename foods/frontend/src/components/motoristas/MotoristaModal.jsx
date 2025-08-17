@@ -28,7 +28,7 @@ const MotoristaModal = ({
   filiais = [],
   loadingFiliais = false
 }) => {
-  const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   React.useEffect(() => {
     if (motorista && isOpen) {
@@ -92,12 +92,7 @@ const MotoristaModal = ({
                 label="Nome *"
                 type="text"
                 placeholder="Nome completo do motorista"
-                {...register('nome', { 
-                  required: 'Nome é obrigatório',
-                  minLength: { value: 2, message: 'Nome deve ter pelo menos 2 caracteres' },
-                  maxLength: { value: 100, message: 'Nome deve ter no máximo 100 caracteres' }
-                })}
-                error={errors.nome?.message}
+                {...register('nome')}
                 disabled={isViewMode}
               />
               
@@ -105,13 +100,7 @@ const MotoristaModal = ({
                 label="CPF"
                 type="text"
                 placeholder="000.000.000-00"
-                {...register('cpf', {
-                  pattern: {
-                    value: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
-                    message: 'CPF deve estar no formato 000.000.000-00'
-                  }
-                })}
-                error={errors.cpf?.message}
+                {...register('cpf')}
                 disabled={isViewMode}
               />
               
@@ -119,13 +108,7 @@ const MotoristaModal = ({
                 label="Telefone"
                 type="text"
                 placeholder="(00) 00000-0000"
-                {...register('telefone', {
-                  pattern: {
-                    value: /^\(\d{2}\) \d{4,5}-\d{4}$/,
-                    message: 'Telefone deve estar no formato (00) 00000-0000'
-                  }
-                })}
-                error={errors.telefone?.message}
+                {...register('telefone')}
                 disabled={isViewMode}
               />
               
@@ -133,13 +116,7 @@ const MotoristaModal = ({
                 label="Email"
                 type="email"
                 placeholder="email@exemplo.com"
-                {...register('email', {
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'Email deve ser válido'
-                  }
-                })}
-                error={errors.email?.message}
+                {...register('email')}
                 disabled={isViewMode}
               />
             </div>
@@ -155,10 +132,7 @@ const MotoristaModal = ({
                 label="CNH"
                 type="text"
                 placeholder="Número da CNH"
-                {...register('cnh', {
-                  maxLength: { value: 20, message: 'CNH deve ter no máximo 20 caracteres' }
-                })}
-                error={errors.cnh?.message}
+                {...register('cnh')}
                 disabled={isViewMode}
               />
               
@@ -166,7 +140,6 @@ const MotoristaModal = ({
                 label="Categoria CNH"
                 type="select"
                 {...register('categoria_cnh')}
-                error={errors.categoria_cnh?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione a categoria</option>
@@ -191,7 +164,6 @@ const MotoristaModal = ({
                 label="Validade CNH"
                 type="date"
                 {...register('cnh_validade')}
-                error={errors.cnh_validade?.message}
                 disabled={isViewMode}
               />
               
@@ -199,7 +171,6 @@ const MotoristaModal = ({
                 label="Data de Admissão"
                 type="date"
                 {...register('data_admissao')}
-                error={errors.data_admissao?.message}
                 disabled={isViewMode}
               />
             </div>
@@ -218,7 +189,6 @@ const MotoristaModal = ({
                 label="Filial"
                 type="select"
                 {...register('filial_id')}
-                error={errors.filial_id?.message}
                 disabled={isViewMode || loadingFiliais}
               >
                 <option value="">
@@ -235,7 +205,6 @@ const MotoristaModal = ({
                 label="Status"
                 type="select"
                 {...register('status')}
-                error={errors.status?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o status</option>
@@ -257,10 +226,7 @@ const MotoristaModal = ({
                 label="Endereço"
                 type="textarea"
                 placeholder="Endereço completo"
-                {...register('endereco', {
-                  maxLength: { value: 500, message: 'Endereço deve ter no máximo 500 caracteres' }
-                })}
-                error={errors.endereco?.message}
+                {...register('endereco')}
                 disabled={isViewMode}
               />
               
@@ -268,10 +234,7 @@ const MotoristaModal = ({
                 label="Observações"
                 type="textarea"
                 placeholder="Observações sobre o motorista"
-                {...register('observacoes', {
-                  maxLength: { value: 500, message: 'Observações devem ter no máximo 500 caracteres' }
-                })}
-                error={errors.observacoes?.message}
+                {...register('observacoes')}
                 disabled={isViewMode}
               />
             </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import MotoristasService from '../services/motoristas';
 import FiliaisService from '../services/filiais';
+import { useValidation } from './useValidation';
 
 export const useMotoristas = () => {
   const [motoristas, setMotoristas] = useState([]);
@@ -23,6 +24,15 @@ export const useMotoristas = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  // Hook de validação
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
 
   // Carregar filiais
   const loadFiliais = async () => {
@@ -104,12 +114,21 @@ export const useMotoristas = () => {
   // Handler de submit
   const handleSubmit = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       if (editingMotorista) {
         const result = await MotoristasService.atualizar(editingMotorista.id, data);
         if (result.success) {
           toast.success('Motorista atualizado com sucesso!');
           handleCloseModal();
           loadMotoristas();
+        } else {
+          // Verificar se há erros de validação
+          if (handleApiResponse(result)) {
+            return; // Erros de validação foram tratados
+          }
+          // Outros tipos de erro
+          toast.error(result.message || 'Erro ao atualizar motorista');
         }
       } else {
         const result = await MotoristasService.criar(data);
@@ -117,6 +136,13 @@ export const useMotoristas = () => {
           toast.success('Motorista criado com sucesso!');
           handleCloseModal();
           loadMotoristas();
+        } else {
+          // Verificar se há erros de validação
+          if (handleApiResponse(result)) {
+            return; // Erros de validação foram tratados
+          }
+          // Outros tipos de erro
+          toast.error(result.message || 'Erro ao criar motorista');
         }
       }
     } catch (error) {
@@ -193,6 +219,10 @@ export const useMotoristas = () => {
     totalItems,
     itemsPerPage,
 
+    // Estados de validação
+    validationErrors,
+    showValidationModal,
+
     // Setters
     setSearchTerm,
 
@@ -206,6 +236,7 @@ export const useMotoristas = () => {
     handlePageChange,
     handleItemsPerPageChange,
     handleExportXLSX,
-    handleExportPDF
+    handleExportPDF,
+    handleCloseValidationModal
   };
 };

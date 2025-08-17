@@ -200,6 +200,25 @@ const validationConfigs = {
     defaultCategory: 'basicInfo'
   },
 
+  // Configuração para Motoristas
+  motoristas: {
+    categories: {
+      personalInfo: ['nome', 'cpf', 'telefone', 'email'],
+      documentationInfo: ['cnh', 'categoria_cnh', 'cnh_validade', 'data_admissao'],
+      locationInfo: ['endereco', 'filial_id'],
+      statusInfo: ['status'],
+      additionalInfo: ['observacoes']
+    },
+    categoryNames: {
+      personalInfo: 'Informações Pessoais',
+      documentationInfo: 'Documentação',
+      locationInfo: 'Localização e Status',
+      statusInfo: 'Status',
+      additionalInfo: 'Observações'
+    },
+    defaultCategory: 'personalInfo'
+  },
+
   // Configuração padrão para outras entidades
   default: {
     categories: {
