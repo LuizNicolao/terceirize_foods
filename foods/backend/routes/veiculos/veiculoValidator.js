@@ -3,17 +3,11 @@
  * Centraliza todas as validações relacionadas aos veículos
  */
 
-const { body, param, query, validationResult } = require('express-validator');
-const { validationResponse } = require('../../middleware/responseHandler');
+const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
 
-// Middleware para capturar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return validationResponse(res, errors.array());
-  }
-  next();
-};
+// Criar handler de validação específico para veículos
+const handleValidationErrors = createEntityValidationHandler('veiculos');
 
 // Validações comuns
 const commonValidations = {
@@ -364,6 +358,5 @@ const veiculoValidations = {
 
 module.exports = {
   veiculoValidations,
-  commonValidations,
-  handleValidationErrors
+  commonValidations
 };

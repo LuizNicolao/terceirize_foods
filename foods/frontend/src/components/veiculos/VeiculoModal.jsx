@@ -28,7 +28,7 @@ const VeiculoModal = ({
   veiculo, 
   isViewMode = false
 }) => {
-  const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   React.useEffect(() => {
     if (veiculo && isOpen) {
@@ -101,42 +101,28 @@ const VeiculoModal = ({
                 label="Placa *"
                 type="text"
                 placeholder="ABC-1234"
-                {...register('placa', { 
-                  required: 'Placa é obrigatória',
-                  minLength: { value: 6, message: 'Placa deve ter pelo menos 6 caracteres' },
-                  maxLength: { value: 10, message: 'Placa deve ter no máximo 10 caracteres' }
-                })}
-                error={errors.placa?.message}
+                {...register('placa')}
                 disabled={isViewMode}
               />
               <Input
                 label="Marca"
                 type="text"
                 placeholder="Marca do veículo"
-                {...register('marca', {
-                  maxLength: { value: 50, message: 'Marca deve ter no máximo 50 caracteres' }
-                })}
-                error={errors.marca?.message}
+                {...register('marca')}
                 disabled={isViewMode}
               />
               <Input
                 label="Modelo"
                 type="text"
                 placeholder="Modelo do veículo"
-                {...register('modelo', {
-                  maxLength: { value: 100, message: 'Modelo deve ter no máximo 100 caracteres' }
-                })}
-                error={errors.modelo?.message}
+                {...register('modelo')}
                 disabled={isViewMode}
               />
               <Input
                 label="Fabricante"
                 type="text"
                 placeholder="Fabricante do veículo"
-                {...register('fabricante', {
-                  maxLength: { value: 100, message: 'Fabricante deve ter no máximo 100 caracteres' }
-                })}
-                error={errors.fabricante?.message}
+                {...register('fabricante')}
                 disabled={isViewMode}
               />
             </div>
@@ -152,33 +138,21 @@ const VeiculoModal = ({
                 label="Chassi"
                 type="text"
                 placeholder="Número do chassi"
-                {...register('chassi', {
-                  minLength: { value: 17, message: 'Chassi deve ter 17 caracteres' },
-                  maxLength: { value: 17, message: 'Chassi deve ter 17 caracteres' }
-                })}
-                error={errors.chassi?.message}
+                {...register('chassi')}
                 disabled={isViewMode}
               />
               <Input
                 label="Renavam"
                 type="text"
                 placeholder="Número do Renavam"
-                {...register('renavam', {
-                  minLength: { value: 9, message: 'Renavam deve ter pelo menos 9 caracteres' },
-                  maxLength: { value: 20, message: 'Renavam deve ter no máximo 20 caracteres' }
-                })}
-                error={errors.renavam?.message}
+                {...register('renavam')}
                 disabled={isViewMode}
               />
               <Input
                 label="Ano de Fabricação"
                 type="number"
                 placeholder="2020"
-                {...register('ano_fabricacao', {
-                  min: { value: 1900, message: 'Ano deve ser maior que 1900' },
-                  max: { value: new Date().getFullYear() + 1, message: 'Ano não pode ser futuro' }
-                })}
-                error={errors.ano_fabricacao?.message}
+                {...register('ano_fabricacao')}
                 disabled={isViewMode}
               />
             </div>
@@ -197,7 +171,6 @@ const VeiculoModal = ({
                 label="Tipo de Veículo"
                 type="select"
                 {...register('tipo_veiculo')}
-                error={errors.tipo_veiculo?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o tipo</option>
@@ -211,7 +184,6 @@ const VeiculoModal = ({
                 label="Carroceria"
                 type="select"
                 {...register('carroceria')}
-                error={errors.carroceria?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione a carroceria</option>
@@ -228,7 +200,6 @@ const VeiculoModal = ({
                 label="Combustível"
                 type="select"
                 {...register('combustivel')}
-                error={errors.combustivel?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o combustível</option>
@@ -243,7 +214,6 @@ const VeiculoModal = ({
                 label="Categoria"
                 type="select"
                 {...register('categoria')}
-                error={errors.categoria?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione a categoria</option>
@@ -266,10 +236,7 @@ const VeiculoModal = ({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                {...register('capacidade_carga', {
-                  min: { value: 0, message: 'Capacidade deve ser positiva' }
-                })}
-                error={errors.capacidade_carga?.message}
+                {...register('capacidade_carga')}
                 disabled={isViewMode}
               />
               <Input
@@ -277,20 +244,14 @@ const VeiculoModal = ({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                {...register('capacidade_volume', {
-                  min: { value: 0, message: 'Volume deve ser positivo' }
-                })}
-                error={errors.capacidade_volume?.message}
+                {...register('capacidade_volume')}
                 disabled={isViewMode}
               />
               <Input
                 label="Número de Eixos"
                 type="number"
                 placeholder="2"
-                {...register('numero_eixos', {
-                  min: { value: 1, message: 'Número de eixos deve ser pelo menos 1' }
-                })}
-                error={errors.numero_eixos?.message}
+                {...register('numero_eixos')}
                 disabled={isViewMode}
               />
               <Input
@@ -298,10 +259,7 @@ const VeiculoModal = ({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                {...register('tara', {
-                  min: { value: 0, message: 'Tara deve ser positiva' }
-                })}
-                error={errors.tara?.message}
+                {...register('tara')}
                 disabled={isViewMode}
               />
             </div>
@@ -321,10 +279,7 @@ const VeiculoModal = ({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                {...register('peso_bruto_total', {
-                  min: { value: 0, message: 'Peso deve ser positivo' }
-                })}
-                error={errors.peso_bruto_total?.message}
+                {...register('peso_bruto_total')}
                 disabled={isViewMode}
               />
               <Input
@@ -332,17 +287,13 @@ const VeiculoModal = ({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                {...register('potencia_motor', {
-                  min: { value: 0, message: 'Potência deve ser positiva' }
-                })}
-                error={errors.potencia_motor?.message}
+                {...register('potencia_motor')}
                 disabled={isViewMode}
               />
               <Input
                 label="Tipo de Tração"
                 type="select"
                 {...register('tipo_tracao')}
-                error={errors.tipo_tracao?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione a tração</option>
@@ -356,10 +307,7 @@ const VeiculoModal = ({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                {...register('quilometragem_atual', {
-                  min: { value: 0, message: 'Quilometragem deve ser positiva' }
-                })}
-                error={errors.quilometragem_atual?.message}
+                {...register('quilometragem_atual')}
                 disabled={isViewMode}
               />
             </div>
@@ -375,28 +323,24 @@ const VeiculoModal = ({
                 label="Data de Emplacamento"
                 type="date"
                 {...register('data_emplacamento')}
-                error={errors.data_emplacamento?.message}
                 disabled={isViewMode}
               />
               <Input
                 label="Vencimento Licenciamento"
                 type="date"
                 {...register('vencimento_licenciamento')}
-                error={errors.vencimento_licenciamento?.message}
                 disabled={isViewMode}
               />
               <Input
                 label="Vencimento IPVA"
                 type="date"
                 {...register('vencimento_ipva')}
-                error={errors.vencimento_ipva?.message}
                 disabled={isViewMode}
               />
               <Input
                 label="Vencimento DPVAT"
                 type="date"
                 {...register('vencimento_dpvat')}
-                error={errors.vencimento_dpvat?.message}
                 disabled={isViewMode}
               />
             </div>
@@ -415,17 +359,13 @@ const VeiculoModal = ({
                 label="Número da Apólice"
                 type="text"
                 placeholder="Número da apólice de seguro"
-                {...register('numero_apolice_seguro', {
-                  maxLength: { value: 50, message: 'Número da apólice deve ter no máximo 50 caracteres' }
-                })}
-                error={errors.numero_apolice_seguro?.message}
+                {...register('numero_apolice_seguro')}
                 disabled={isViewMode}
               />
               <Input
                 label="Situação Documental"
                 type="select"
                 {...register('situacao_documental')}
-                error={errors.situacao_documental?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione a situação</option>
@@ -437,7 +377,6 @@ const VeiculoModal = ({
                 label="Data Última Revisão"
                 type="date"
                 {...register('data_ultima_revisao')}
-                error={errors.data_ultima_revisao?.message}
                 disabled={isViewMode}
               />
               <Input
@@ -445,10 +384,7 @@ const VeiculoModal = ({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                {...register('quilometragem_proxima_revisao', {
-                  min: { value: 0, message: 'Quilometragem deve ser positiva' }
-                })}
-                error={errors.quilometragem_proxima_revisao?.message}
+                {...register('quilometragem_proxima_revisao')}
                 disabled={isViewMode}
               />
             </div>
@@ -464,7 +400,6 @@ const VeiculoModal = ({
                 label="Status"
                 type="select"
                 {...register('status')}
-                error={errors.status?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o status</option>
@@ -476,7 +411,6 @@ const VeiculoModal = ({
                 label="Status Detalhado"
                 type="select"
                 {...register('status_detalhado')}
-                error={errors.status_detalhado?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o status detalhado</option>
@@ -489,7 +423,6 @@ const VeiculoModal = ({
                 label="Data de Aquisição"
                 type="date"
                 {...register('data_aquisicao')}
-                error={errors.data_aquisicao?.message}
                 disabled={isViewMode}
               />
               <Input
@@ -497,10 +430,7 @@ const VeiculoModal = ({
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                {...register('valor_compra', {
-                  min: { value: 0, message: 'Valor deve ser positivo' }
-                })}
-                error={errors.valor_compra?.message}
+                {...register('valor_compra')}
                 disabled={isViewMode}
               />
             </div>
@@ -519,27 +449,20 @@ const VeiculoModal = ({
                 label="Fornecedor"
                 type="text"
                 placeholder="Nome do fornecedor"
-                {...register('fornecedor', {
-                  maxLength: { value: 200, message: 'Fornecedor deve ter no máximo 200 caracteres' }
-                })}
-                error={errors.fornecedor?.message}
+                {...register('fornecedor')}
                 disabled={isViewMode}
               />
               <Input
                 label="Número da Frota"
                 type="text"
                 placeholder="Número da frota"
-                {...register('numero_frota', {
-                  maxLength: { value: 20, message: 'Número da frota deve ter no máximo 20 caracteres' }
-                })}
-                error={errors.numero_frota?.message}
+                {...register('numero_frota')}
                 disabled={isViewMode}
               />
               <Input
                 label="Situação Financeira"
                 type="select"
                 {...register('situacao_financeira')}
-                error={errors.situacao_financeira?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione a situação</option>
@@ -551,21 +474,18 @@ const VeiculoModal = ({
                 label="Data Última Troca de Óleo"
                 type="date"
                 {...register('data_ultima_troca_oleo')}
-                error={errors.data_ultima_troca_oleo?.message}
                 disabled={isViewMode}
               />
               <Input
                 label="Vencimento Alinhamento/Balanceamento"
                 type="date"
                 {...register('vencimento_alinhamento_balanceamento')}
-                error={errors.vencimento_alinhamento_balanceamento?.message}
                 disabled={isViewMode}
               />
               <Input
                 label="Próxima Inspeção Veicular"
                 type="date"
                 {...register('proxima_inspecao_veicular')}
-                error={errors.proxima_inspecao_veicular?.message}
                 disabled={isViewMode}
               />
             </div>
@@ -574,10 +494,7 @@ const VeiculoModal = ({
                 label="Observações"
                 type="textarea"
                 placeholder="Observações sobre o veículo"
-                {...register('observacoes', {
-                  maxLength: { value: 500, message: 'Observações devem ter no máximo 500 caracteres' }
-                })}
-                error={errors.observacoes?.message}
+                {...register('observacoes')}
                 disabled={isViewMode}
               />
             </div>

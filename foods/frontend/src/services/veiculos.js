@@ -41,6 +41,16 @@ class VeiculosService {
         message: 'Veículo criado com sucesso!'
       };
     } catch (error) {
+      // Capturar erros de validação do backend
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          error: error.response?.data?.message || 'Dados inválidos',
+          validationErrors: error.response?.data?.errors,
+          errorCategories: error.response?.data?.errorCategories
+        };
+      }
+      
       return {
         success: false,
         error: error.response?.data?.message || 'Erro ao criar veículo'
@@ -57,6 +67,16 @@ class VeiculosService {
         message: 'Veículo atualizado com sucesso!'
       };
     } catch (error) {
+      // Capturar erros de validação do backend
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          error: error.response?.data?.message || 'Dados inválidos',
+          validationErrors: error.response?.data?.errors,
+          errorCategories: error.response?.data?.errorCategories
+        };
+      }
+      
       return {
         success: false,
         error: error.response?.data?.message || 'Erro ao atualizar veículo'

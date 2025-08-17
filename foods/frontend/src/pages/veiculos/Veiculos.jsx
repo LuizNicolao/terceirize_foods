@@ -5,7 +5,7 @@ import { useVeiculos } from '../../hooks/useVeiculos';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import VeiculosService from '../../services/veiculos';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { VeiculoModal, VeiculosTable, VeiculosStats } from '../../components/veiculos';
@@ -29,12 +29,15 @@ const Veiculos = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    validationErrors,
+    showValidationModal,
     onSubmit,
     handleDeleteVeiculo,
     handleAddVeiculo,
     handleViewVeiculo,
     handleEditVeiculo,
     handleCloseModal,
+    handleCloseValidationModal,
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
@@ -173,6 +176,14 @@ const Veiculos = () => {
           onItemsPerPageChange={handleItemsPerPageChange}
         />
       )}
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
+      />
     </div>
   );
 };

@@ -177,6 +177,29 @@ const validationConfigs = {
     defaultCategory: 'basicInfo'
   },
 
+  // Configuração para Veículos
+  veiculos: {
+    categories: {
+      basicInfo: ['placa', 'renavam', 'chassi', 'modelo', 'marca', 'fabricante', 'ano_fabricacao', 'status'],
+      technicalInfo: ['tipo_veiculo', 'carroceria', 'combustivel', 'categoria', 'tipo_tracao', 'numero_eixos'],
+      capacityInfo: ['capacidade_carga', 'capacidade_volume', 'tara', 'peso_bruto_total', 'potencia_motor'],
+      maintenanceInfo: ['quilometragem_atual', 'data_ultima_revisao', 'quilometragem_proxima_revisao', 'data_ultima_troca_oleo'],
+      documentationInfo: ['data_emplacamento', 'vencimento_licenciamento', 'vencimento_ipva', 'vencimento_dpvat', 'situacao_documental'],
+      financialInfo: ['data_aquisicao', 'valor_compra', 'fornecedor', 'numero_frota', 'situacao_financeira'],
+      additionalInfo: ['observacoes']
+    },
+    categoryNames: {
+      basicInfo: 'Informações Básicas',
+      technicalInfo: 'Informações Técnicas',
+      capacityInfo: 'Capacidades e Pesos',
+      maintenanceInfo: 'Manutenção',
+      documentationInfo: 'Documentação',
+      financialInfo: 'Informações Financeiras',
+      additionalInfo: 'Informações Adicionais'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração padrão para outras entidades
   default: {
     categories: {

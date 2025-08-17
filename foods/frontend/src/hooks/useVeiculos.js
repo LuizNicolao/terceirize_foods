@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import VeiculosService from '../services/veiculos';
+import { useValidation } from './useValidation';
 
 export const useVeiculos = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [veiculos, setVeiculos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -108,7 +118,12 @@ export const useVeiculos = () => {
         handleCloseModal();
         loadVeiculos();
       } else {
-        toast.error(result.error);
+        // Usar sistema universal de validação
+        if (handleApiResponse(result)) {
+          return; // Erros de validação tratados pelo hook
+        } else {
+          toast.error(result.error);
+        }
       }
     } catch (error) {
       console.error('Erro ao salvar veículo:', error);
@@ -222,6 +237,10 @@ export const useVeiculos = () => {
     itemsPerPage,
     estatisticas,
 
+    // Estados de validação (do hook universal)
+    validationErrors,
+    showValidationModal,
+
     // Funções CRUD
     onSubmit,
     handleDeleteVeiculo,
@@ -231,6 +250,9 @@ export const useVeiculos = () => {
     handleViewVeiculo,
     handleEditVeiculo,
     handleCloseModal,
+
+    // Funções de validação (do hook universal)
+    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,
