@@ -12,7 +12,7 @@ const UnidadeEscolarModal = ({
   rotas = [],
   loadingRotas = false
 }) => {
-  const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   React.useEffect(() => {
     if (unidade && isOpen) {
@@ -56,12 +56,7 @@ const UnidadeEscolarModal = ({
                 label="Código Teknisa *"
                 type="text"
                 placeholder="Código da unidade"
-                {...register('codigo_teknisa', { 
-                  required: 'Código Teknisa é obrigatório',
-                  minLength: { value: 1, message: 'Código deve ter pelo menos 1 caractere' },
-                  maxLength: { value: 50, message: 'Código deve ter no máximo 50 caracteres' }
-                })}
-                error={errors.codigo_teknisa?.message}
+                {...register('codigo_teknisa')}
                 disabled={isViewMode}
               />
 
@@ -69,12 +64,7 @@ const UnidadeEscolarModal = ({
                 label="Nome da Escola *"
                 type="text"
                 placeholder="Nome da escola"
-                {...register('nome_escola', { 
-                  required: 'Nome da escola é obrigatório',
-                  minLength: { value: 2, message: 'Nome deve ter pelo menos 2 caracteres' },
-                  maxLength: { value: 200, message: 'Nome deve ter no máximo 200 caracteres' }
-                })}
-                error={errors.nome_escola?.message}
+                {...register('nome_escola')}
                 disabled={isViewMode}
               />
 
@@ -82,12 +72,7 @@ const UnidadeEscolarModal = ({
                 label="Cidade *"
                 type="text"
                 placeholder="Cidade"
-                {...register('cidade', { 
-                  required: 'Cidade é obrigatória',
-                  minLength: { value: 2, message: 'Cidade deve ter pelo menos 2 caracteres' },
-                  maxLength: { value: 100, message: 'Cidade deve ter no máximo 100 caracteres' }
-                })}
-                error={errors.cidade?.message}
+                {...register('cidade')}
                 disabled={isViewMode}
               />
 
@@ -95,12 +80,7 @@ const UnidadeEscolarModal = ({
                 label="Estado *"
                 type="text"
                 placeholder="Estado"
-                {...register('estado', { 
-                  required: 'Estado é obrigatório',
-                  minLength: { value: 2, message: 'Estado deve ter 2 caracteres' },
-                  maxLength: { value: 2, message: 'Estado deve ter 2 caracteres' }
-                })}
-                error={errors.estado?.message}
+                {...register('estado')}
                 disabled={isViewMode}
               />
             </div>
@@ -116,10 +96,7 @@ const UnidadeEscolarModal = ({
                 label="País"
                 type="text"
                 placeholder="País"
-                {...register('pais', {
-                  maxLength: { value: 100, message: 'País deve ter no máximo 100 caracteres' }
-                })}
-                error={errors.pais?.message}
+                {...register('pais')}
                 disabled={isViewMode}
               />
 
@@ -127,13 +104,7 @@ const UnidadeEscolarModal = ({
                 label="CEP"
                 type="text"
                 placeholder="00000-000"
-                {...register('cep', {
-                  pattern: {
-                    value: /^\d{5}-?\d{3}$/,
-                    message: 'CEP deve estar no formato 00000-000'
-                  }
-                })}
-                error={errors.cep?.message}
+                {...register('cep')}
                 disabled={isViewMode}
               />
 
@@ -141,11 +112,7 @@ const UnidadeEscolarModal = ({
                 label="Endereço *"
                 type="text"
                 placeholder="Endereço completo"
-                {...register('endereco', { 
-                  required: 'Endereço é obrigatório',
-                  maxLength: { value: 300, message: 'Endereço deve ter no máximo 300 caracteres' }
-                })}
-                error={errors.endereco?.message}
+                {...register('endereco')}
                 disabled={isViewMode}
               />
 
@@ -153,10 +120,7 @@ const UnidadeEscolarModal = ({
                 label="Bairro"
                 type="text"
                 placeholder="Bairro"
-                {...register('bairro', {
-                  maxLength: { value: 100, message: 'Bairro deve ter no máximo 100 caracteres' }
-                })}
-                error={errors.bairro?.message}
+                {...register('bairro')}
                 disabled={isViewMode}
               />
             </div>
@@ -175,13 +139,7 @@ const UnidadeEscolarModal = ({
                 label="Telefone"
                 type="text"
                 placeholder="(00) 00000-0000"
-                {...register('telefone', {
-                  pattern: {
-                    value: /^\(\d{2}\) \d{4,5}-\d{4}$/,
-                    message: 'Telefone deve estar no formato (00) 00000-0000'
-                  }
-                })}
-                error={errors.telefone?.message}
+                {...register('telefone')}
                 disabled={isViewMode}
               />
 
@@ -189,13 +147,7 @@ const UnidadeEscolarModal = ({
                 label="Email"
                 type="email"
                 placeholder="email@escola.com"
-                {...register('email', {
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'Email deve ser válido'
-                  }
-                })}
-                error={errors.email?.message}
+                {...register('email')}
                 disabled={isViewMode}
               />
 
@@ -203,10 +155,7 @@ const UnidadeEscolarModal = ({
                 label="Diretor"
                 type="text"
                 placeholder="Nome do diretor"
-                {...register('diretor', {
-                  maxLength: { value: 100, message: 'Diretor deve ter no máximo 100 caracteres' }
-                })}
-                error={errors.diretor?.message}
+                {...register('diretor')}
                 disabled={isViewMode}
               />
             </div>
@@ -222,7 +171,6 @@ const UnidadeEscolarModal = ({
                 label="Rota"
                 type="select"
                 {...register('rota_id')}
-                error={errors.rota_id?.message}
                 disabled={isViewMode || loadingRotas}
               >
                 <option value="">
@@ -239,10 +187,7 @@ const UnidadeEscolarModal = ({
                 label="Centro de Distribuição"
                 type="text"
                 placeholder="Centro de distribuição"
-                {...register('centro_distribuicao', {
-                  maxLength: { value: 100, message: 'Centro de distribuição deve ter no máximo 100 caracteres' }
-                })}
-                error={errors.centro_distribuicao?.message}
+                {...register('centro_distribuicao')}
                 disabled={isViewMode}
               />
 
@@ -250,7 +195,6 @@ const UnidadeEscolarModal = ({
                 label="Status"
                 type="select"
                 {...register('status')}
-                error={errors.status?.message}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o status</option>
@@ -273,10 +217,7 @@ const UnidadeEscolarModal = ({
                 label="Observações"
                 type="textarea"
                 placeholder="Observações sobre a unidade escolar"
-                {...register('observacoes', {
-                  maxLength: { value: 500, message: 'Observações devem ter no máximo 500 caracteres' }
-                })}
-                error={errors.observacoes?.message}
+                {...register('observacoes')}
                 disabled={isViewMode}
               />
             </div>
