@@ -5,7 +5,7 @@ import { useUsuarios } from '../../hooks/useUsuarios';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import UsuariosService from '../../services/usuarios';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { UsuarioModal } from '../../components/usuarios';
@@ -30,8 +30,6 @@ const Usuarios = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
-    validationErrors,
-    showValidationModal,
     onSubmit,
     handleDeleteUser,
     handleAddUser,
@@ -39,7 +37,6 @@ const Usuarios = () => {
     handleEditUser,
     handleCloseModal,
     handlePageChange,
-    closeValidationModal,
     setSearchTerm,
     setItemsPerPage,
     formatDate,
@@ -106,6 +103,7 @@ const Usuarios = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onClear={() => setSearchTerm('')}
         placeholder="Buscar por nome ou email..."
       />
 
@@ -113,33 +111,24 @@ const Usuarios = () => {
       <UsuariosActions 
         onExportXLSX={handleExportXLSX}
         onExportPDF={handleExportPDF}
-        totalItems={totalItems}
-        selectedItems={[]}
       />
 
       {/* Tabela */}
       <UsuariosTable
         usuarios={usuarios}
-        onView={canView('usuarios') ? handleViewUser : null}
-        onEdit={canEdit('usuarios') ? handleEditUser : null}
-        onDelete={canDelete('usuarios') ? handleDeleteUser : null}
-        formatDate={formatDate}
-        getStatusLabel={getStatusLabel}
-        getNivelAcessoLabel={getNivelAcessoLabel}
+        canView={canView}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        onView={handleViewUser}
+        onEdit={handleEditUser}
+        onDelete={handleDeleteUser}
         getTipoAcessoLabel={getTipoAcessoLabel}
+        getNivelAcessoLabel={getNivelAcessoLabel}
+        getStatusLabel={getStatusLabel}
+        formatDate={formatDate}
       />
 
-      {/* Paginação */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-        onPageChange={handlePageChange}
-        onItemsPerPageChange={setItemsPerPage}
-      />
-
-      {/* Modal */}
+      {/* Modal de Usuário */}
       <UsuarioModal
         isOpen={showModal}
         onClose={handleCloseModal}
@@ -152,22 +141,26 @@ const Usuarios = () => {
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
-        logs={auditLogs}
-        loading={auditLoading}
-        filters={auditFilters}
+        title="Relatório de Auditoria - Usuários"
+        auditLogs={auditLogs}
+        auditLoading={auditLoading}
+        auditFilters={auditFilters}
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
-        onSetFilters={setAuditFilters}
+        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
       />
 
-      {/* Modal de Erros de Validação */}
-      <ValidationErrorModal
-        isOpen={showValidationModal}
-        onClose={closeValidationModal}
-        errors={validationErrors?.errors}
-        errorCategories={validationErrors?.errorCategories}
-      />
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+        />
+      )}
     </div>
   );
 };

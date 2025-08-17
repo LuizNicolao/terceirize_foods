@@ -2,8 +2,18 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import RotasService from '../services/rotas';
 import api from '../services/api';
+import { useValidation } from './useValidation';
 
 export const useRotas = () => {
+  // Hook de validação
+  const {
+    validationErrors,
+    showValidationModal,
+    handleValidationResponse,
+    closeValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [rotas, setRotas] = useState([]);
   const [filiais, setFiliais] = useState([]);
@@ -188,7 +198,11 @@ export const useRotas = () => {
         loadRotas();
         loadEstatisticas();
       } else {
-        toast.error(result.error);
+        // Usar o novo sistema de validação
+        const hasValidationErrors = handleValidationResponse(result);
+        if (!hasValidationErrors) {
+          toast.error(result.error);
+        }
       }
     } catch (error) {
       console.error('Erro ao salvar rota:', error);
@@ -313,6 +327,10 @@ export const useRotas = () => {
     showUnidades,
     totalUnidades,
 
+    // Estados de validação
+    validationErrors,
+    showValidationModal,
+
     // Funções CRUD
     onSubmit,
     handleDeleteRota,
@@ -322,6 +340,9 @@ export const useRotas = () => {
     handleViewRota,
     handleEditRota,
     handleCloseModal,
+
+    // Funções de validação
+    closeValidationModal,
 
     // Funções de paginação
     handlePageChange,

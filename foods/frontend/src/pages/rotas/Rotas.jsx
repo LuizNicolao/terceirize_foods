@@ -5,7 +5,7 @@ import { useRotas } from '../../hooks/useRotas';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import RotasService from '../../services/rotas';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { RotaModal, RotasTable, RotasStats } from '../../components/rotas';
@@ -35,12 +35,15 @@ const Rotas = () => {
     loadingUnidades,
     showUnidades,
     totalUnidades,
+    validationErrors,
+    showValidationModal,
     onSubmit,
     handleDeleteRota,
     handleAddRota,
     handleViewRota,
     handleEditRota,
     handleCloseModal,
+    closeValidationModal,
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
@@ -172,6 +175,14 @@ const Rotas = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+      />
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={closeValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Paginação */}

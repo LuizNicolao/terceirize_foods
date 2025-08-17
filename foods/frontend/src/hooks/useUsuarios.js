@@ -1,18 +1,8 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import UsuariosService from '../services/usuarios';
-import { useValidation } from './useValidation';
 
 export const useUsuarios = () => {
-  // Hook universal de validação
-  const {
-    validationErrors,
-    showValidationModal,
-    handleServerResponse,
-    closeValidationModal,
-    clearValidationErrors
-  } = useValidation();
-
   // Estados principais
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -108,119 +98,104 @@ export const useUsuarios = () => {
         senha: data.senha && data.senha.trim() !== '' ? data.senha.trim() : null
       };
 
-      let response;
+      let result;
       if (editingUsuario) {
-        response = await UsuariosService.atualizar(editingUsuario.id, cleanData);
-        const success = handleServerResponse(
-          response, 
-          'Usuário atualizado com sucesso',
-          () => {
-            handleCloseModal();
-            loadUsuarios();
-          }
-        );
-        if (!success) return;
+        result = await UsuariosService.atualizar(editingUsuario.id, cleanData);
       } else {
-        response = await UsuariosService.criar(cleanData);
-        const success = handleServerResponse(
-          response, 
-          'Usuário criado com sucesso',
-          () => {
-            handleCloseModal();
-            loadUsuarios();
-          }
-        );
-        if (!success) return;
+        result = await UsuariosService.criar(cleanData);
+      }
+      
+      if (result.success) {
+        toast.success(editingUsuario ? 'Usuário atualizado com sucesso!' : 'Usuário criado com sucesso!');
+        handleCloseModal();
+        loadUsuarios();
+      } else {
+        toast.error(result.error);
       }
     } catch (error) {
-      console.error('Erro ao salvar usuário:', error);
       toast.error('Erro ao salvar usuário');
     }
   };
 
-  const handleDeleteUser = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este usuário?')) {
-      return;
-    }
-
-    try {
-      const response = await UsuariosService.excluir(id);
-      const success = handleServerResponse(
-        response, 
-        'Usuário excluído com sucesso',
-        () => loadUsuarios()
-      );
-      if (!success) return;
-    } catch (error) {
-      console.error('Erro ao excluir usuário:', error);
-      toast.error('Erro ao excluir usuário');
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Tem certeza que deseja excluir este usuário?')) {
+      try {
+        const result = await UsuariosService.excluir(userId);
+        if (result.success) {
+          toast.success('Usuário excluído com sucesso!');
+          loadUsuarios();
+        } else {
+          toast.error(result.error);
+        }
+      } catch (error) {
+        toast.error('Erro ao excluir usuário');
+      }
     }
   };
 
+  // Funções de modal
   const handleAddUser = () => {
-    setEditingUsuario(null);
     setViewMode(false);
+    setEditingUsuario(null);
     setShowModal(true);
-    clearValidationErrors();
   };
 
   const handleViewUser = (usuario) => {
-    setEditingUsuario(usuario);
     setViewMode(true);
+    setEditingUsuario(usuario);
     setShowModal(true);
-    clearValidationErrors();
   };
 
   const handleEditUser = (usuario) => {
-    setEditingUsuario(usuario);
     setViewMode(false);
+    setEditingUsuario(usuario);
     setShowModal(true);
-    clearValidationErrors();
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setViewMode(false);
     setEditingUsuario(null);
-    clearValidationErrors();
   };
 
+  // Funções de paginação
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
 
-  // Funções auxiliares
+  // Funções utilitárias
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('pt-BR');
+    return new Date(dateString).toLocaleString('pt-BR');
   };
 
   const getStatusLabel = (status) => {
     const statusMap = {
-      'ativo': { label: 'Ativo', color: 'text-green-600' },
-      'inativo': { label: 'Inativo', color: 'text-red-600' }
+      ativo: 'Ativo',
+      inativo: 'Inativo',
+      bloqueado: 'Bloqueado'
     };
-    return statusMap[status] || { label: status, color: 'text-gray-600' };
+    return statusMap[status] || status;
   };
 
   const getNivelAcessoLabel = (nivel) => {
-    const nivelMap = {
-      'I': { label: 'Nível I', color: 'text-blue-600' },
-      'II': { label: 'Nível II', color: 'text-green-600' },
-      'III': { label: 'Nível III', color: 'text-purple-600' }
+    const niveis = {
+      'I': 'Nível I',
+      'II': 'Nível II',
+      'III': 'Nível III'
     };
-    return nivelMap[nivel] || { label: nivel, color: 'text-gray-600' };
+    return niveis[nivel] || nivel;
   };
 
   const getTipoAcessoLabel = (tipo) => {
-    const tipoMap = {
-      'administrador': { label: 'Administrador', color: 'text-red-600' },
-      'coordenador': { label: 'Coordenador', color: 'text-blue-600' },
-      'administrativo': { label: 'Administrativo', color: 'text-green-600' },
-      'gerente': { label: 'Gerente', color: 'text-purple-600' },
-      'supervisor': { label: 'Supervisor', color: 'text-orange-600' }
+    const tipos = {
+      'administrador': 'Administrador',
+      'coordenador': 'Coordenador',
+      'administrativo': 'Administrativo',
+      'gerente': 'Gerente',
+      'supervisor': 'Supervisor'
     };
-    return tipoMap[tipo] || { label: tipo, color: 'text-gray-600' };
+    return tipos[tipo] || tipo;
   };
 
   return {
@@ -236,24 +211,25 @@ export const useUsuarios = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
-    
-    // Estados de validação
-    validationErrors,
-    showValidationModal,
-    
-    // Funções
+
+    // Funções CRUD
     onSubmit,
     handleDeleteUser,
+
+    // Funções de modal
     handleAddUser,
     handleViewUser,
     handleEditUser,
     handleCloseModal,
+
+    // Funções de paginação
     handlePageChange,
-    closeValidationModal,
+
+    // Funções de filtros
     setSearchTerm,
     setItemsPerPage,
-    
-    // Funções auxiliares
+
+    // Funções utilitárias
     formatDate,
     getStatusLabel,
     getNivelAcessoLabel,
