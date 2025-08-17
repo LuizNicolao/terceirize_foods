@@ -1,18 +1,27 @@
 /**
  * Validações específicas para Usuários
- * Implementa validações usando express-validator
+ * Implementa validações usando express-validator com sistema universal
  */
 
-const { body, param, query, validationResult } = require('express-validator');
-const { validationResponse } = require('../../middleware/responseHandler');
+const { body, param, query } = require('express-validator');
+const { 
+  handleValidationErrors, 
+  defaultCategoryMappings, 
+  defaultCategoryNames, 
+  defaultCategoryIcons 
+} = require('../../middleware/validation');
 
-// Middleware para capturar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return validationResponse(res, errors.array());
-  }
-  next();
+// Configuração específica para usuários
+const userCategoryMapping = defaultCategoryMappings.usuarios;
+const userCategoryNames = {
+  ...defaultCategoryNames,
+  personalInfo: 'Informações Pessoais',
+  accessInfo: 'Informações de Acesso'
+};
+const userCategoryIcons = {
+  ...defaultCategoryIcons,
+  personalInfo: '👤',
+  accessInfo: '🔐'
 };
 
 // Validações comuns
@@ -70,7 +79,7 @@ const userValidations = {
     body('tipo_de_acesso')
       .isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'])
       .withMessage('Tipo de acesso inválido'),
-    handleValidationErrors
+    handleValidationErrors(userCategoryMapping, userCategoryNames, userCategoryIcons)
   ],
 
   update: [
@@ -100,12 +109,34 @@ const userValidations = {
       .optional()
       .isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'])
       .withMessage('Tipo de acesso inválido'),
-    handleValidationErrors
+    body('status')
+      .optional()
+      .isIn(['ativo', 'inativo'])
+      .withMessage('Status deve ser ativo ou inativo'),
+    handleValidationErrors(userCategoryMapping, userCategoryNames, userCategoryIcons)
+  ],
+
+  updatePassword: [
+    commonValidations.id,
+    body('senha_atual')
+      .isLength({ min: 6 })
+      .withMessage('Senha atual deve ter pelo menos 6 caracteres'),
+    body('nova_senha')
+      .isLength({ min: 6 })
+      .withMessage('Nova senha deve ter pelo menos 6 caracteres'),
+    body('confirmar_senha')
+      .custom((value, { req }) => {
+        if (value !== req.body.nova_senha) {
+          throw new Error('Confirmação de senha não confere');
+        }
+        return true;
+      })
+      .withMessage('Confirmação de senha não confere'),
+    handleValidationErrors(userCategoryMapping, userCategoryNames, userCategoryIcons)
   ]
 };
 
 module.exports = {
   userValidations,
-  commonValidations,
-  handleValidationErrors
+  commonValidations
 }; 
