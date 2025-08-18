@@ -3,17 +3,11 @@
  * Centraliza todas as validações relacionadas aos clientes
  */
 
-const { body, param, query, validationResult } = require('express-validator');
-const { validationResponse } = require('../../middleware/responseHandler');
+const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
 
-// Middleware para capturar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return validationResponse(res, errors.array());
-  }
-  next();
-};
+// Criar handler de validação específico para clientes
+const handleValidationErrors = createEntityValidationHandler('clientes');
 
 // Validações comuns
 const commonValidations = {
@@ -49,60 +43,180 @@ const clienteValidations = {
   create: [
     body('cnpj')
       .notEmpty().withMessage('CNPJ é obrigatório')
-      .isString().trim()
-      .matches(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/).withMessage('CNPJ deve estar no formato 00.000.000/0000-00'),
+      .custom((value) => {
+        if (typeof value === 'string') {
+          const cleanValue = value.replace(/\D/g, '');
+          return cleanValue.length >= 14 && cleanValue.length <= 18;
+        }
+        return false;
+      })
+      .withMessage('CNPJ deve ter entre 14 e 18 caracteres'),
     
     body('razao_social')
       .notEmpty().withMessage('Razão social é obrigatória')
-      .isString().trim().isLength({ min: 2, max: 200 }).withMessage('Razão social deve ter entre 2 e 200 caracteres'),
+      .custom((value) => {
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length >= 2 && trimmed.length <= 200;
+        }
+        return false;
+      })
+      .withMessage('Razão social deve ter entre 2 e 200 caracteres'),
     
     body('nome_fantasia')
       .optional()
-      .isString().trim().isLength({ max: 200 }).withMessage('Nome fantasia deve ter no máximo 200 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 200;
+        }
+        return false;
+      })
+      .withMessage('Nome fantasia deve ter no máximo 200 caracteres'),
     
     body('logradouro')
       .notEmpty().withMessage('Logradouro é obrigatório')
-      .isString().trim().isLength({ max: 300 }).withMessage('Logradouro deve ter no máximo 300 caracteres'),
+      .custom((value) => {
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 300;
+        }
+        return false;
+      })
+      .withMessage('Logradouro deve ter no máximo 300 caracteres'),
     
     body('numero')
       .optional()
-      .isString().trim().isLength({ max: 20 }).withMessage('Número deve ter no máximo 20 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 20;
+        }
+        return false;
+      })
+      .withMessage('Número deve ter no máximo 20 caracteres'),
     
     body('bairro')
       .optional()
-      .isString().trim().isLength({ max: 100 }).withMessage('Bairro deve ter no máximo 100 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 100;
+        }
+        return false;
+      })
+      .withMessage('Bairro deve ter no máximo 100 caracteres'),
     
     body('cep')
       .optional()
-      .isString().trim().matches(/^\d{5}-\d{3}$/).withMessage('CEP deve estar no formato 00000-000'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const cleanValue = value.replace(/\D/g, '');
+          return cleanValue.length >= 8 && cleanValue.length <= 15;
+        }
+        return false;
+      })
+      .withMessage('CEP deve ter entre 8 e 15 caracteres'),
     
     body('municipio')
       .notEmpty().withMessage('Município é obrigatório')
-      .isString().trim().isLength({ min: 2, max: 100 }).withMessage('Município deve ter entre 2 e 100 caracteres'),
+      .custom((value) => {
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length >= 2 && trimmed.length <= 100;
+        }
+        return false;
+      })
+      .withMessage('Município deve ter entre 2 e 100 caracteres'),
     
     body('uf')
       .notEmpty().withMessage('UF é obrigatória')
-      .isString().trim().isLength({ min: 2, max: 2 }).withMessage('UF deve ter exatamente 2 caracteres'),
+      .custom((value) => {
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length >= 2 && trimmed.length <= 2;
+        }
+        return false;
+      })
+      .withMessage('UF deve ter exatamente 2 caracteres'),
     
     body('pais')
       .optional()
-      .isString().trim().isLength({ max: 50 }).withMessage('País deve ter no máximo 50 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 50;
+        }
+        return false;
+      })
+      .withMessage('País deve ter no máximo 50 caracteres'),
     
     body('email')
       .optional()
-      .isEmail().withMessage('Email deve ser um email válido'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(value);
+        }
+        return false;
+      })
+      .withMessage('Email deve ser válido'),
     
     body('telefone')
       .optional()
-      .isString().trim().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const cleanValue = value.replace(/\D/g, '');
+          return cleanValue.length <= 20;
+        }
+        return false;
+      })
+      .withMessage('Telefone deve ter no máximo 20 caracteres'),
     
     body('status')
       .optional()
-      .isIn(['ativo', 'inativo', 'pendente']).withMessage('Status deve ser ativo, inativo ou pendente'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        return ['ativo', 'inativo', 'pendente'].includes(value);
+      })
+      .withMessage('Status deve ser ativo, inativo ou pendente'),
     
     body('observacoes')
       .optional()
-      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 500;
+        }
+        return false;
+      })
+      .withMessage('Observações devem ter no máximo 500 caracteres'),
     
     handleValidationErrors
   ],
@@ -113,60 +227,195 @@ const clienteValidations = {
     
     body('cnpj')
       .optional()
-      .isString().trim()
-      .matches(/^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/).withMessage('CNPJ deve estar no formato 00.000.000/0000-00'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const cleanValue = value.replace(/\D/g, '');
+          return cleanValue.length >= 14 && cleanValue.length <= 18;
+        }
+        return false;
+      })
+      .withMessage('CNPJ deve ter entre 14 e 18 caracteres'),
     
     body('razao_social')
       .optional()
-      .isString().trim().isLength({ min: 2, max: 200 }).withMessage('Razão social deve ter entre 2 e 200 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length >= 2 && trimmed.length <= 200;
+        }
+        return false;
+      })
+      .withMessage('Razão social deve ter entre 2 e 200 caracteres'),
     
     body('nome_fantasia')
       .optional()
-      .isString().trim().isLength({ max: 200 }).withMessage('Nome fantasia deve ter no máximo 200 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 200;
+        }
+        return false;
+      })
+      .withMessage('Nome fantasia deve ter no máximo 200 caracteres'),
     
     body('logradouro')
       .optional()
-      .isString().trim().isLength({ max: 300 }).withMessage('Logradouro deve ter no máximo 300 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 300;
+        }
+        return false;
+      })
+      .withMessage('Logradouro deve ter no máximo 300 caracteres'),
     
     body('numero')
       .optional()
-      .isString().trim().isLength({ max: 20 }).withMessage('Número deve ter no máximo 20 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 20;
+        }
+        return false;
+      })
+      .withMessage('Número deve ter no máximo 20 caracteres'),
     
     body('bairro')
       .optional()
-      .isString().trim().isLength({ max: 100 }).withMessage('Bairro deve ter no máximo 100 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 100;
+        }
+        return false;
+      })
+      .withMessage('Bairro deve ter no máximo 100 caracteres'),
     
     body('cep')
       .optional()
-      .isString().trim().matches(/^\d{5}-\d{3}$/).withMessage('CEP deve estar no formato 00000-000'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const cleanValue = value.replace(/\D/g, '');
+          return cleanValue.length >= 8 && cleanValue.length <= 15;
+        }
+        return false;
+      })
+      .withMessage('CEP deve ter entre 8 e 15 caracteres'),
     
     body('municipio')
       .optional()
-      .isString().trim().isLength({ min: 2, max: 100 }).withMessage('Município deve ter entre 2 e 100 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length >= 2 && trimmed.length <= 100;
+        }
+        return false;
+      })
+      .withMessage('Município deve ter entre 2 e 100 caracteres'),
     
     body('uf')
       .optional()
-      .isString().trim().isLength({ min: 2, max: 2 }).withMessage('UF deve ter exatamente 2 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length >= 2 && trimmed.length <= 2;
+        }
+        return false;
+      })
+      .withMessage('UF deve ter exatamente 2 caracteres'),
     
     body('pais')
       .optional()
-      .isString().trim().isLength({ max: 50 }).withMessage('País deve ter no máximo 50 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 50;
+        }
+        return false;
+      })
+      .withMessage('País deve ter no máximo 50 caracteres'),
     
     body('email')
       .optional()
-      .isEmail().withMessage('Email deve ser um email válido'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(value);
+        }
+        return false;
+      })
+      .withMessage('Email deve ser válido'),
     
     body('telefone')
       .optional()
-      .isString().trim().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const cleanValue = value.replace(/\D/g, '');
+          return cleanValue.length <= 20;
+        }
+        return false;
+      })
+      .withMessage('Telefone deve ter no máximo 20 caracteres'),
     
     body('status')
       .optional()
-      .isIn(['ativo', 'inativo', 'pendente']).withMessage('Status deve ser ativo, inativo ou pendente'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        return ['ativo', 'inativo', 'pendente'].includes(value);
+      })
+      .withMessage('Status deve ser ativo, inativo ou pendente'),
     
     body('observacoes')
       .optional()
-      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length <= 500;
+        }
+        return false;
+      })
+      .withMessage('Observações devem ter no máximo 500 caracteres'),
     
     handleValidationErrors
   ]
@@ -174,6 +423,5 @@ const clienteValidations = {
 
 module.exports = {
   clienteValidations,
-  commonValidations,
-  handleValidationErrors
+  commonValidations
 };

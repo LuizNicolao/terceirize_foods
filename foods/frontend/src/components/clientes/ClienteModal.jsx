@@ -6,7 +6,7 @@ import ClientesService from '../../services/clientes';
 import toast from 'react-hot-toast';
 
 const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setValue, watch } = useForm();
 
   const cnpj = watch('cnpj');
 
@@ -90,14 +90,7 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
                 </label>
                 <div className="flex gap-2">
                   <Input
-                    {...register('cnpj', { 
-                      required: 'CNPJ é obrigatório',
-                      pattern: {
-                        value: /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/,
-                        message: 'CNPJ deve estar no formato 00.000.000/0000-00'
-                      }
-                    })}
-                    error={errors.cnpj?.message}
+                    {...register('cnpj')}
                     disabled={isViewMode}
                     placeholder="00.000.000/0000-00"
                     className="flex-1"
@@ -119,24 +112,18 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
               
               <Input
                 label="Razão Social *"
-                {...register('razao_social', { 
-                  required: 'Razão social é obrigatória',
-                  minLength: { value: 2, message: 'Mínimo 2 caracteres' }
-                })}
-                error={errors.razao_social?.message}
+                {...register('razao_social')}
                 disabled={isViewMode}
               />
               <Input
                 label="Nome Fantasia"
                 {...register('nome_fantasia')}
-                error={errors.nome_fantasia?.message}
                 disabled={isViewMode}
               />
               <Input
                 label="Status *"
                 type="select"
-                {...register('status', { required: 'Status é obrigatório' })}
-                error={errors.status?.message}
+                {...register('status')}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o status</option>
@@ -156,19 +143,12 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
               <Input
                 label="Email"
                 type="email"
-                {...register('email', {
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'Email inválido'
-                  }
-                })}
-                error={errors.email?.message}
+                {...register('email')}
                 disabled={isViewMode}
               />
               <Input
                 label="Telefone"
                 {...register('telefone')}
-                error={errors.telefone?.message}
                 disabled={isViewMode}
               />
             </div>
@@ -185,52 +165,37 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input
                 label="Logradouro *"
-                {...register('logradouro', { required: 'Logradouro é obrigatório' })}
-                error={errors.logradouro?.message}
+                {...register('logradouro')}
                 disabled={isViewMode}
               />
               <Input
                 label="Número"
                 {...register('numero')}
-                error={errors.numero?.message}
                 disabled={isViewMode}
               />
               <Input
                 label="CEP"
-                {...register('cep', {
-                  pattern: {
-                    value: /^\d{5}-\d{3}$/,
-                    message: 'CEP deve estar no formato 00000-000'
-                  }
-                })}
-                error={errors.cep?.message}
+                {...register('cep')}
                 disabled={isViewMode}
               />
               <Input
                 label="Bairro"
                 {...register('bairro')}
-                error={errors.bairro?.message}
                 disabled={isViewMode}
               />
               <Input
                 label="Município *"
-                {...register('municipio', { required: 'Município é obrigatório' })}
-                error={errors.municipio?.message}
+                {...register('municipio')}
                 disabled={isViewMode}
               />
               <Input
                 label="UF *"
-                {...register('uf', { 
-                  required: 'UF é obrigatória',
-                  maxLength: { value: 2, message: 'Máximo 2 caracteres' }
-                })}
-                error={errors.uf?.message}
+                {...register('uf')}
                 disabled={isViewMode}
               />
               <Input
                 label="País"
                 {...register('pais')}
-                error={errors.pais?.message}
                 disabled={isViewMode}
               />
             </div>
@@ -252,14 +217,11 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
                 {...register('observacoes')}
                 disabled={isViewMode}
                 rows={3}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                  errors.observacoes ? 'border-red-300' : 'border-gray-300'
-                } ${isViewMode ? 'bg-gray-100' : 'bg-white'}`}
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 border-gray-300 ${
+                  isViewMode ? 'bg-gray-100' : 'bg-white'
+                }`}
                 placeholder="Observações adicionais..."
               />
-              {errors.observacoes && (
-                <p className="mt-1 text-sm text-red-600">{errors.observacoes.message}</p>
-              )}
             </div>
           </div>
         </div>

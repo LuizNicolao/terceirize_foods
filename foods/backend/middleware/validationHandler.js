@@ -148,16 +148,20 @@ const validationConfigs = {
   // Configuração para Clientes
   clientes: {
     categories: {
-      basicInfo: ['razao_social', 'nome_fantasia', 'cnpj', 'status'],
-      contactInfo: ['telefone', 'email', 'contato'],
-      addressInfo: ['logradouro', 'numero', 'bairro', 'municipio', 'uf', 'cep']
+      companyInfo: ['cnpj', 'razao_social', 'nome_fantasia'],
+      contactInfo: ['email', 'telefone'],
+      addressInfo: ['logradouro', 'numero', 'cep', 'bairro', 'municipio', 'uf', 'pais'],
+      statusInfo: ['status'],
+      additionalInfo: ['observacoes']
     },
     categoryNames: {
-      basicInfo: 'Informações Básicas',
+      companyInfo: 'Informações da Empresa',
       contactInfo: 'Informações de Contato',
-      addressInfo: 'Endereço'
+      addressInfo: 'Endereço',
+      statusInfo: 'Status',
+      additionalInfo: 'Observações'
     },
-    defaultCategory: 'basicInfo'
+    defaultCategory: 'companyInfo'
   },
 
   // Configuração para Unidades Escolares

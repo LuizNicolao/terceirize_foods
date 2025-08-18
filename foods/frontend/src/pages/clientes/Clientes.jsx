@@ -10,6 +10,7 @@ import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { ClienteModal, ClientesTable, ClientesStats } from '../../components/clientes';
 import AuditModal from '../../components/shared/AuditModal';
+import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Clientes = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -29,6 +30,9 @@ const Clientes = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    validationErrors,
+    showValidationModal,
+    handleCloseValidationModal,
     onSubmit,
     handleDeleteCliente,
     handleAddCliente,
@@ -176,6 +180,14 @@ const Clientes = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+      />
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Paginação */}

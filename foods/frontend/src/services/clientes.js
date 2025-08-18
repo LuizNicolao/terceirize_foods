@@ -80,9 +80,17 @@ class ClientesService {
         message: 'Cliente criado com sucesso!'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar cliente'
+        message: error.response?.data?.message || 'Erro ao criar cliente'
       };
     }
   }
@@ -106,9 +114,17 @@ class ClientesService {
         message: 'Cliente atualizado com sucesso!'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao atualizar cliente'
+        message: error.response?.data?.message || 'Erro ao atualizar cliente'
       };
     }
   }

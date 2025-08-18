@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import ClientesService from '../services/clientes';
+import { useValidation } from './useValidation';
 
 export const useClientes = () => {
   // Estados principais
@@ -26,6 +27,15 @@ export const useClientes = () => {
     com_email: 0,
     com_telefone: 0
   });
+
+  // Hook de validação
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
 
   // Carregar clientes
   const loadClientes = async (params = {}) => {
@@ -94,6 +104,8 @@ export const useClientes = () => {
   // Funções de CRUD
   const onSubmit = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
@@ -116,9 +128,13 @@ export const useClientes = () => {
         handleCloseModal();
         loadClientes();
       } else {
-        toast.error(result.error);
+        if (handleApiResponse(result)) {
+          return; // Erros de validação foram tratados
+        }
+        toast.error(result.message || 'Erro ao salvar cliente');
       }
     } catch (error) {
+      console.error('Erro ao salvar cliente:', error);
       toast.error('Erro ao salvar cliente');
     }
   };
@@ -195,6 +211,11 @@ export const useClientes = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+
+    // Estados de validação
+    validationErrors,
+    showValidationModal,
+    handleCloseValidationModal,
 
     // Funções CRUD
     onSubmit,
