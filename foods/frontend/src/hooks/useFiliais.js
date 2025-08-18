@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import FiliaisService from '../services/filiais';
-import { useValidation } from './useValidation';
 
 export const useFiliais = () => {
   // Estados principais
@@ -26,15 +25,6 @@ export const useFiliais = () => {
     filiais_inativas: 0,
     com_cnpj: 0
   });
-
-  // Hook de validação
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
 
   // Carregar filiais
   const loadFiliais = async (params = {}) => {
@@ -103,8 +93,6 @@ export const useFiliais = () => {
   // Funções de CRUD
   const onSubmit = async (data) => {
     try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
@@ -128,13 +116,9 @@ export const useFiliais = () => {
         handleCloseModal();
         loadFiliais();
       } else {
-        if (handleApiResponse(result)) {
-          return; // Erros de validação foram tratados
-        }
-        toast.error(result.message || 'Erro ao salvar filial');
+        toast.error(result.error);
       }
     } catch (error) {
-      console.error('Erro ao salvar filial:', error);
       toast.error('Erro ao salvar filial');
     }
   };
@@ -210,11 +194,6 @@ export const useFiliais = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
-
-    // Estados de validação
-    validationErrors,
-    showValidationModal,
-    handleCloseValidationModal,
 
     // Funções CRUD
     onSubmit,

@@ -10,7 +10,6 @@ import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { FilialModal, FiliaisTable, FiliaisStats } from '../../components/filiais';
 import AuditModal from '../../components/shared/AuditModal';
-import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Filiais = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -29,9 +28,6 @@ const Filiais = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
-    validationErrors,
-    showValidationModal,
-    handleCloseValidationModal,
     onSubmit,
     handleDeleteFilial,
     handleAddFilial,
@@ -141,14 +137,6 @@ const Filiais = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
-      />
-
-      {/* Modal de Erros de Validação */}
-      <ValidationErrorModal
-        isOpen={showValidationModal}
-        onClose={handleCloseValidationModal}
-        errors={validationErrors?.errors}
-        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Paginação */}
