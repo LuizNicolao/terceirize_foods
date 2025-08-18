@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FaExclamationTriangle, FaTimes } from 'react-icons/fa';
-import { Button } from './index';
+import Button from './Button';
 
 const ValidationErrorModal = ({ isOpen, onClose, errors, errorCategories }) => {
   useEffect(() => {
