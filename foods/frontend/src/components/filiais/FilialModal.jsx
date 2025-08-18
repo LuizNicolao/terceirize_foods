@@ -136,7 +136,6 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
                       error={errors.cnpj?.message}
                       disabled={isViewMode}
                       placeholder="00.000.000/0000-00"
-                      mask="cnpj"
                     />
                     {!isViewMode && (
                       <Button
@@ -214,7 +213,6 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
                   error={errors.cep?.message}
                   disabled={isViewMode}
                   placeholder="00000-000"
-                  mask="cep"
                 />
                 <Input
                   label="Cidade"

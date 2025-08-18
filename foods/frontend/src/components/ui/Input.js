@@ -1,5 +1,4 @@
 import React from 'react';
-import { applyMask } from '../../utils/masks';
 
 const Input = React.forwardRef(({ 
   label, 
@@ -8,7 +7,6 @@ const Input = React.forwardRef(({
   size = 'md',
   className = '',
   children,
-  mask,
   ...props 
 }, ref) => {
   const baseClasses = 'w-full border border-gray-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent';
@@ -20,26 +18,6 @@ const Input = React.forwardRef(({
   };
 
   const inputClasses = `${baseClasses} ${sizes[size]} ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`;
-
-  // Função para lidar com mudanças quando há máscara
-  const handleMaskedChange = (e) => {
-    if (mask) {
-      const inputValue = e.target.value;
-      const maskedValue = applyMask(inputValue, mask);
-      
-      // Atualiza o valor do input diretamente
-      e.target.value = maskedValue;
-      
-      // Chama o onChange original
-      if (props.onChange) {
-        props.onChange(e);
-      }
-    } else {
-      if (props.onChange) {
-        props.onChange(e);
-      }
-    }
-  };
 
   const renderInput = () => {
     switch (type) {
@@ -64,7 +42,6 @@ const Input = React.forwardRef(({
             ref={ref}
             type={type}
             className={inputClasses}
-            onChange={handleMaskedChange}
             {...props}
           />
         );

@@ -100,7 +100,6 @@ const FornecedorModal = ({
                     disabled={viewMode}
                     placeholder="00.000.000/0000-00"
                     className="flex-1"
-                    mask="cnpj"
                   />
                   {!viewMode && (
                     <Button
@@ -183,7 +182,6 @@ const FornecedorModal = ({
                 label="CEP"
                 {...register('cep')}
                 disabled={viewMode}
-                mask="cep"
               />
               <Input
                 label="Bairro"

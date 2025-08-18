@@ -94,7 +94,6 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
                     disabled={isViewMode}
                     placeholder="00.000.000/0000-00"
                     className="flex-1"
-                    mask="cnpj"
                   />
                   {!isViewMode && (
                     <Button
@@ -151,7 +150,6 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
                 label="Telefone"
                 {...register('telefone')}
                 disabled={isViewMode}
-                mask="telefone"
               />
             </div>
           </div>
@@ -179,7 +177,6 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
                 label="CEP"
                 {...register('cep')}
                 disabled={isViewMode}
-                mask="cep"
               />
               <Input
                 label="Bairro"

@@ -106,7 +106,6 @@ const UnidadeEscolarModal = ({
                 placeholder="00000-000"
                 {...register('cep')}
                 disabled={isViewMode}
-                mask="cep"
               />
 
               <Input
@@ -142,7 +141,6 @@ const UnidadeEscolarModal = ({
                 placeholder="(00) 00000-0000"
                 {...register('telefone')}
                 disabled={isViewMode}
-                mask="telefone"
               />
 
               <Input

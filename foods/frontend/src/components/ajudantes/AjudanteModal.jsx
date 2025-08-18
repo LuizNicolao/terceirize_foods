@@ -53,7 +53,6 @@ const AjudanteModal = ({
                 label="CPF"
                 {...register('cpf')}
                 disabled={isViewMode}
-                mask="cpf"
               />
               <Input
                 label="Email"
@@ -65,7 +64,6 @@ const AjudanteModal = ({
                 label="Telefone"
                 {...register('telefone')}
                 disabled={isViewMode}
-                mask="telefone"
               />
             </div>
           </div>
