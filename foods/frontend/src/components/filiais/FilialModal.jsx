@@ -166,6 +166,17 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
                   disabled={isViewMode}
                   placeholder="Razão social"
                 />
+                <Input
+                  label="Status *"
+                  type="select"
+                  {...register('status')}
+                  error={errors.status?.message}
+                  disabled={isViewMode}
+                >
+                  <option value="">Selecione o status</option>
+                  <option value="1">Ativo</option>
+                  <option value="0">Inativo</option>
+                </Input>
               </div>
             </div>
 
