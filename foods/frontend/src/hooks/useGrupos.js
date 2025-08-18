@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import GruposService from '../services/grupos';
+import { useValidation } from './useValidation';
 
 export const useGrupos = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [grupos, setGrupos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +77,7 @@ export const useGrupos = () => {
           subgrupos_total: subgrupos
         });
       } else {
-        toast.error(result.error);
+        toast.error(result.message || 'Erro ao carregar grupos');
       }
     } catch (error) {
       toast.error('Erro ao carregar grupos');
@@ -98,6 +108,8 @@ export const useGrupos = () => {
   // Funções de CRUD
   const onSubmit = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
@@ -119,7 +131,10 @@ export const useGrupos = () => {
         handleCloseModal();
         loadGrupos();
       } else {
-        toast.error(result.error);
+        if (handleApiResponse(result)) {
+          return; // Erros de validação foram tratados
+        }
+        toast.error(result.message || 'Erro ao salvar grupo');
       }
     } catch (error) {
       toast.error('Erro ao salvar grupo');
@@ -134,7 +149,7 @@ export const useGrupos = () => {
           toast.success('Grupo excluído com sucesso!');
           loadGrupos();
         } else {
-          toast.error(result.error);
+          toast.error(result.message || 'Erro ao excluir grupo');
         }
       } catch (error) {
         toast.error('Erro ao excluir grupo');
@@ -196,6 +211,8 @@ export const useGrupos = () => {
     showModal,
     viewMode,
     editingGrupo,
+    showValidationModal,
+    validationErrors,
     searchTerm,
     statusFilter,
     currentPage,
@@ -213,6 +230,7 @@ export const useGrupos = () => {
     handleViewGrupo,
     handleEditGrupo,
     handleCloseModal,
+    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,

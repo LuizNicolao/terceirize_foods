@@ -31,7 +31,7 @@ class GruposService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar grupos'
+        message: error.response?.data?.message || 'Erro ao carregar grupos'
       };
     }
   }
@@ -56,7 +56,7 @@ class GruposService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar grupo'
+        message: error.response?.data?.message || 'Erro ao buscar grupo'
       };
     }
   }
@@ -80,9 +80,17 @@ class GruposService {
         message: 'Grupo criado com sucesso!'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar grupo'
+        message: error.response?.data?.message || 'Erro ao criar grupo'
       };
     }
   }
@@ -106,9 +114,17 @@ class GruposService {
         message: 'Grupo atualizado com sucesso!'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao atualizar grupo'
+        message: error.response?.data?.message || 'Erro ao atualizar grupo'
       };
     }
   }
@@ -123,7 +139,7 @@ class GruposService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao excluir grupo'
+        message: error.response?.data?.message || 'Erro ao excluir grupo'
       };
     }
   }
@@ -155,7 +171,7 @@ class GruposService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar grupos ativos'
+        message: error.response?.data?.message || 'Erro ao carregar grupos ativos'
       };
     }
   }
@@ -172,7 +188,7 @@ class GruposService {
     } catch (error) {
       return {
         success: false,
-        error: 'Erro ao exportar XLSX'
+        message: 'Erro ao exportar XLSX'
       };
     }
   }
@@ -189,7 +205,7 @@ class GruposService {
     } catch (error) {
       return {
         success: false,
-        error: 'Erro ao exportar PDF'
+        message: 'Erro ao exportar PDF'
       };
     }
   }

@@ -259,6 +259,21 @@ const validationConfigs = {
     defaultCategory: 'companyInfo'
   },
 
+  // Configuração para Grupos
+  grupos: {
+    categories: {
+      basicInfo: ['nome', 'codigo'],
+      additionalInfo: ['descricao'],
+      statusInfo: ['status']
+    },
+    categoryNames: {
+      basicInfo: 'Informações Básicas',
+      additionalInfo: 'Informações Adicionais',
+      statusInfo: 'Status'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração padrão para outras entidades
   default: {
     categories: {
