@@ -10,7 +10,7 @@ import { useProdutoGenerico } from '../../hooks/useProdutoGenerico';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import produtoGenericoService from '../../services/produtoGenerico';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { ProdutoGenericoModal } from '../../components/produto-generico';
@@ -29,6 +29,8 @@ const ProdutoGenerico = () => {
     showModal,
     viewMode,
     editingProdutoGenerico,
+    showValidationModal,
+    validationErrors,
     grupos,
     subgrupos,
     classes,
@@ -51,6 +53,7 @@ const ProdutoGenerico = () => {
     handleViewProdutoGenerico,
     handleEditProdutoGenerico,
     handleCloseModal,
+    handleCloseValidationModal,
     handlePageChange,
     handleClearFilters,
     setSearchTerm,
@@ -239,6 +242,14 @@ const ProdutoGenerico = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onSetFilters={setAuditFilters}
+      />
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
     </div>
   );

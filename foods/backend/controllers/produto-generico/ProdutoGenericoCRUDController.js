@@ -12,6 +12,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const { gerarCodigoProdutoGenerico } = require('../../utils/codigoGenerator');
 
 class ProdutoGenericoCRUDController {
   
@@ -59,22 +60,15 @@ class ProdutoGenericoCRUDController {
    */
   static criarProdutoGenerico = asyncHandler(async (req, res) => {
     const {
-      codigo, nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
+      nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
       unidade_medida_id, referencia_mercado, produto_padrao, peso_liquido, peso_bruto,
       regra_palet, informacoes_adicionais, referencia_interna, referencia_externa,
       registro_especifico, tipo_registro, prazo_validade_padrao, unidade_validade,
       integracao_senior, status
     } = req.body;
 
-    // Verificar se código já existe
-    const codigoExistente = await executeQuery(
-      'SELECT id FROM produto_generico WHERE codigo = ?',
-      [codigo]
-    );
-
-    if (codigoExistente.length > 0) {
-      return conflictResponse(res, 'Código já existe');
-    }
+    // Gerar código único automaticamente
+    const codigo = gerarCodigoProdutoGenerico();
 
     // Verificar se produto origem existe (se fornecido)
     if (produto_origem_id) {
@@ -219,17 +213,7 @@ class ProdutoGenericoCRUDController {
 
     const produtoAtual = produtoGenerico[0];
 
-    // Verificar se código já existe (se foi alterado)
-    if (codigo) {
-      const codigoExistente = await executeQuery(
-        'SELECT id FROM produto_generico WHERE codigo = ? AND id != ?',
-        [codigo, id]
-      );
 
-      if (codigoExistente.length > 0) {
-        return conflictResponse(res, 'Código já existe');
-      }
-    }
 
     // Verificar se produto origem existe (se fornecido)
     if (produto_origem_id) {

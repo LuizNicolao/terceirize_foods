@@ -329,6 +329,37 @@ const validationConfigs = {
     defaultCategory: 'basicInfo'
   },
 
+  // Configuração para Produto Genérico
+  'produto-generico': {
+    categories: {
+      basicInfo: ['nome', 'codigo'],
+      referenceInfo: ['produto_origem_id'],
+      measurementInfo: ['fator_conversao', 'unidade_medida_id'],
+      classificationInfo: ['grupo_id', 'subgrupo_id', 'classe_id'],
+      technicalInfo: ['peso_liquido', 'peso_bruto', 'regra_palet'],
+      marketInfo: ['referencia_mercado', 'produto_padrao'],
+      additionalInfo: ['informacoes_adicionais'],
+      referenceDetails: ['referencia_interna', 'referencia_externa', 'registro_especifico', 'tipo_registro'],
+      validityInfo: ['prazo_validade_padrao', 'unidade_validade'],
+      integrationInfo: ['integracao_senior'],
+      statusInfo: ['status']
+    },
+    categoryNames: {
+      basicInfo: 'Informações Básicas',
+      referenceInfo: 'Referências',
+      measurementInfo: 'Medidas',
+      classificationInfo: 'Classificação',
+      technicalInfo: 'Informações Técnicas',
+      marketInfo: 'Informações de Mercado',
+      additionalInfo: 'Informações Adicionais',
+      referenceDetails: 'Detalhes de Referência',
+      validityInfo: 'Validade',
+      integrationInfo: 'Integração',
+      statusInfo: 'Status'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração padrão para outras entidades
   default: {
     categories: {

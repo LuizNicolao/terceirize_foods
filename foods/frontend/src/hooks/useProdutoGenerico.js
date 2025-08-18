@@ -7,8 +7,18 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import produtoGenericoService from '../services/produtoGenerico';
 import api from '../services/api';
+import { useValidation } from './useValidation';
 
 export const useProdutoGenerico = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [produtosGenericos, setProdutosGenericos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -162,7 +172,7 @@ export const useProdutoGenerico = () => {
           });
         }
       } else {
-        toast.error(result.error || 'Erro ao carregar produtos genéricos');
+        toast.error(result.message || 'Erro ao carregar produtos genéricos');
       }
     } catch (error) {
       toast.error('Erro ao carregar produtos genéricos');
@@ -188,6 +198,8 @@ export const useProdutoGenerico = () => {
   // Funções de CRUD
   const onSubmit = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
@@ -200,19 +212,26 @@ export const useProdutoGenerico = () => {
         result = await produtoGenericoService.atualizar(editingProdutoGenerico.id, cleanData);
         if (result.success) {
           toast.success('Produto genérico atualizado com sucesso!');
+          handleCloseModal();
+          loadProdutosGenericos();
+        } else {
+          if (handleApiResponse(result)) {
+            return; // Erros de validação foram tratados
+          }
+          toast.error(result.message || 'Erro ao atualizar produto genérico');
         }
       } else {
         result = await produtoGenericoService.criar(cleanData);
         if (result.success) {
           toast.success('Produto genérico criado com sucesso!');
+          handleCloseModal();
+          loadProdutosGenericos();
+        } else {
+          if (handleApiResponse(result)) {
+            return; // Erros de validação foram tratados
+          }
+          toast.error(result.message || 'Erro ao criar produto genérico');
         }
-      }
-
-      if (result.success) {
-        handleCloseModal();
-        loadProdutosGenericos();
-      } else {
-        toast.error(result.error || 'Erro ao salvar produto genérico');
       }
     } catch (error) {
       toast.error('Erro ao salvar produto genérico');
@@ -227,7 +246,7 @@ export const useProdutoGenerico = () => {
           toast.success('Produto genérico excluído com sucesso!');
           loadProdutosGenericos();
         } else {
-          toast.error(result.error || 'Erro ao excluir produto genérico');
+          toast.error(result.message || 'Erro ao excluir produto genérico');
         }
       } catch (error) {
         toast.error('Erro ao excluir produto genérico');
@@ -249,7 +268,7 @@ export const useProdutoGenerico = () => {
         setViewMode(true);
         setShowModal(true);
       } else {
-        toast.error(result.error || 'Erro ao carregar produto genérico');
+        toast.error(result.message || 'Erro ao carregar produto genérico');
       }
     } catch (error) {
       toast.error('Erro ao carregar produto genérico');
@@ -264,7 +283,7 @@ export const useProdutoGenerico = () => {
         setViewMode(false);
         setShowModal(true);
       } else {
-        toast.error(result.error || 'Erro ao carregar produto genérico');
+        toast.error(result.message || 'Erro ao carregar produto genérico');
       }
     } catch (error) {
       toast.error('Erro ao carregar produto genérico');
@@ -338,6 +357,8 @@ export const useProdutoGenerico = () => {
     showModal,
     viewMode,
     editingProdutoGenerico,
+    showValidationModal,
+    validationErrors,
     grupos,
     subgrupos,
     classes,
@@ -362,6 +383,7 @@ export const useProdutoGenerico = () => {
     handleViewProdutoGenerico,
     handleEditProdutoGenerico,
     handleCloseModal,
+    handleCloseValidationModal,
     handlePageChange,
     handleClearFilters,
     setSearchTerm,

@@ -47,7 +47,7 @@ class ProdutoGenericoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar produtos genéricos'
+        message: error.response?.data?.message || 'Erro ao carregar produtos genéricos'
       };
     }
   }
@@ -72,7 +72,7 @@ class ProdutoGenericoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar produto genérico'
+        message: error.response?.data?.message || 'Erro ao buscar produto genérico'
       };
     }
   }
@@ -96,20 +96,17 @@ class ProdutoGenericoService {
         message: 'Produto genérico criado com sucesso!'
       };
     } catch (error) {
-      // Se tem erros de validação, retornar eles
-      if (error.response?.data?.errors && error.response.data.errors.length > 0) {
-        const validationMessages = error.response.data.errors.map(err => err.msg).join(', ');
+      if (error.response?.status === 422) {
         return {
           success: false,
-          error: validationMessages,
-          validationErrors: error.response.data.errors
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
         };
       }
-      
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar produto genérico',
-        validationErrors: error.response?.data?.errors || []
+        message: error.response?.data?.message || 'Erro ao criar produto genérico'
       };
     }
   }
@@ -133,20 +130,18 @@ class ProdutoGenericoService {
         message: 'Produto genérico atualizado com sucesso!'
       };
     } catch (error) {
-      // Se tem erros de validação, retornar eles
-      if (error.response?.data?.errors && error.response.data.errors.length > 0) {
-        const validationMessages = error.response.data.errors.map(err => err.msg).join(', ');
+      if (error.response?.status === 422) {
         return {
           success: false,
-          error: validationMessages,
-          validationErrors: error.response.data.errors
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
         };
       }
       
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao atualizar produto genérico',
-        validationErrors: error.response?.data?.errors || []
+        message: error.response?.data?.message || 'Erro ao atualizar produto genérico'
       };
     }
   }
@@ -161,7 +156,7 @@ class ProdutoGenericoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao excluir produto genérico'
+        message: error.response?.data?.message || 'Erro ao excluir produto genérico'
       };
     }
   }
@@ -193,7 +188,7 @@ class ProdutoGenericoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar produtos genéricos ativos'
+        message: error.response?.data?.message || 'Erro ao carregar produtos genéricos ativos'
       };
     }
   }
@@ -225,7 +220,7 @@ class ProdutoGenericoService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar produtos genéricos padrão'
+        message: error.response?.data?.message || 'Erro ao carregar produtos genéricos padrão'
       };
     }
   }
