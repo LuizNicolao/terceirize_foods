@@ -2,7 +2,10 @@ import React from 'react';
 import { FaExclamationTriangle } from 'react-icons/fa';
 import { getAlertaColor } from '../../utils/dashboardUtils';
 
-const DashboardAlerts = ({ alertas }) => {
+const DashboardAlerts = ({ alertas = [] }) => {
+  // Garantir que alertas seja sempre um array
+  const alertasArray = Array.isArray(alertas) ? alertas : [];
+
   return (
     <div className="col-span-1 lg:col-span-2">
       <div className="bg-white rounded-lg shadow p-6">
@@ -12,17 +15,17 @@ const DashboardAlerts = ({ alertas }) => {
             Alertas
           </h3>
           <span className="text-sm text-gray-500">
-            {alertas.length} alerta{alertas.length !== 1 ? 's' : ''}
+            {alertasArray.length} alerta{alertasArray.length !== 1 ? 's' : ''}
           </span>
         </div>
         
         <div className="space-y-3">
-          {alertas.length === 0 ? (
+          {alertasArray.length === 0 ? (
             <p className="text-gray-500 text-center py-4">
               Nenhum alerta ativo
             </p>
           ) : (
-            alertas.map((alerta, index) => (
+            alertasArray.map((alerta, index) => (
               <div 
                 key={index} 
                 className={`p-3 rounded-lg border-l-4 ${getAlertaColor(alerta.nivel)}`}

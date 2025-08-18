@@ -16,60 +16,63 @@ import {
 } from 'react-icons/fa';
 import { StatCard } from '../ui';
 
-const DashboardStats = ({ statsData }) => {
+const DashboardStats = ({ statsData = {} }) => {
+  // Garantir que statsData seja sempre um objeto
+  const safeStatsData = statsData && typeof statsData === 'object' ? statsData : {};
+
   const statsCards = [
     {
       title: "Usuários",
-      value: statsData.totalUsuarios,
+      value: safeStatsData.totalUsuarios || 0,
       subtitle: "Total de usuários ativos",
       icon: FaUsers,
       color: "bg-blue-500"
     },
     {
       title: "Veículos",
-      value: statsData.totalVeiculos,
+      value: safeStatsData.totalVeiculos || 0,
       subtitle: "Total de veículos",
       icon: FaTruck,
       color: "bg-green-500"
     },
     {
       title: "Produtos",
-      value: statsData.totalProdutos,
+      value: safeStatsData.totalProdutos || 0,
       subtitle: "Total de produtos",
       icon: FaBox,
       color: "bg-purple-500"
     },
     {
       title: "Grupos",
-      value: statsData.totalGrupos,
+      value: safeStatsData.totalGrupos || 0,
       subtitle: "Total de grupos",
       icon: FaLayerGroup,
       color: "bg-orange-500"
     },
     {
       title: "Filiais",
-      value: statsData.totalFiliais,
+      value: safeStatsData.totalFiliais || 0,
       subtitle: "Total de filiais",
       icon: FaBuilding,
       color: "bg-teal-500"
     },
     {
       title: "Rotas",
-      value: statsData.totalRotas,
+      value: safeStatsData.totalRotas || 0,
       subtitle: "Total de rotas",
       icon: FaRoute,
       color: "bg-pink-500"
     },
     {
       title: "Motoristas",
-      value: statsData.totalMotoristas,
+      value: safeStatsData.totalMotoristas || 0,
       subtitle: "Total de motoristas",
       icon: FaUser,
       color: "bg-indigo-500"
     },
     {
       title: "Unidades Escolares",
-      value: statsData.totalUnidadesEscolares,
+      value: safeStatsData.totalUnidadesEscolares || 0,
       subtitle: "Total de unidades",
       icon: FaRuler,
       color: "bg-red-500"

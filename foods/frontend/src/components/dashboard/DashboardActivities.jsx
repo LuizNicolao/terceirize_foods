@@ -2,17 +2,20 @@ import React from 'react';
 import { ActivityCard } from '../ui';
 import { getActivityIcon, getActivityColor, formatDate } from '../../utils/dashboardUtils';
 
-const DashboardActivities = ({ atividades }) => {
+const DashboardActivities = ({ atividades = [] }) => {
+  // Garantir que atividades seja sempre um array
+  const atividadesArray = Array.isArray(atividades) ? atividades : [];
+
   return (
     <div className="col-span-1 lg:col-span-2">
       <ActivityCard title="Atividades Recentes">
         <div className="space-y-4">
-          {atividades.length === 0 ? (
+          {atividadesArray.length === 0 ? (
             <p className="text-gray-500 text-center py-4">
               Nenhuma atividade recente
             </p>
           ) : (
-            atividades.map((atividade, index) => {
+            atividadesArray.map((atividade, index) => {
               const Icon = getActivityIcon(atividade.tipo);
               const colorClass = getActivityColor(atividade.tipo);
               

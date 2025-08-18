@@ -17,32 +17,43 @@ export const useDashboard = () => {
       // Carregar dados principais (estatísticas)
       const result = await DashboardService.carregarEstatisticas();
       if (result.success) {
-        setDashboardData(result.data);
+        setDashboardData(result.data || {});
       } else {
-        toast.error(result.error);
+        toast.error(result.error || 'Erro ao carregar estatísticas');
       }
 
       // Carregar atividades recentes
       const atividadesResult = await DashboardService.carregarAtividadesRecentes(5);
       if (atividadesResult.success) {
-        setAtividades(atividadesResult.data);
+        setAtividades(Array.isArray(atividadesResult.data) ? atividadesResult.data : []);
+      } else {
+        setAtividades([]);
       }
 
       // Carregar dados recentes
       const recentesResult = await DashboardService.carregarDadosRecentes();
       if (recentesResult.success) {
-        setDadosRecentes(recentesResult.data);
+        setDadosRecentes(recentesResult.data || {});
+      } else {
+        setDadosRecentes({});
       }
 
       // Carregar alertas
       const alertasResult = await DashboardService.carregarAlertas();
       if (alertasResult.success) {
-        setAlertas(alertasResult.data);
+        setAlertas(Array.isArray(alertasResult.data) ? alertasResult.data : []);
+      } else {
+        setAlertas([]);
       }
 
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error);
       toast.error('Erro ao carregar dados do dashboard');
+      // Garantir que os estados sejam arrays vazios em caso de erro
+      setAtividades([]);
+      setAlertas([]);
+      setDashboardData({});
+      setDadosRecentes({});
     } finally {
       setLoading(false);
     }
