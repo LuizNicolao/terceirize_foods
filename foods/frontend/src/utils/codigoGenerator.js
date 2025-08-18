@@ -8,14 +8,20 @@
 const FAIXAS = {
   PRODUTO_ORIGEM: { min: 1, max: 9999, prefixo: 'ORIG' },
   PRODUTO_GENERICO: { min: 10001, max: 19999, prefixo: 'GEN' },
-  PRODUTO: { min: 20001, max: 29999, prefixo: 'PROD' }
+  PRODUTO: { min: 20001, max: 29999, prefixo: 'PROD' },
+  GRUPO: { min: 30001, max: 39999, prefixo: 'GRP' },
+  SUBGRUPO: { min: 40001, max: 49999, prefixo: 'SGRP' },
+  CLASSE: { min: 50001, max: 59999, prefixo: 'CLS' }
 };
 
 // Mapeamento reverso para identificar tipo pelo número
 const MAPEAMENTO_TIPO = {
   PRODUTO_ORIGEM: { min: 1, max: 9999 },
   PRODUTO_GENERICO: { min: 10001, max: 19999 },
-  PRODUTO: { min: 20001, max: 29999 }
+  PRODUTO: { min: 20001, max: 29999 },
+  GRUPO: { min: 30001, max: 39999 },
+  SUBGRUPO: { min: 40001, max: 49999 },
+  CLASSE: { min: 50001, max: 59999 }
 };
 
 /**
@@ -82,6 +88,33 @@ export const gerarCodigoProdutoOrigem = (ultimoCodigo = 0) => {
  */
 export const gerarCodigoProdutoGenerico = (ultimoCodigo = 0) => {
   return gerarCodigo('PRODUTO_GENERICO', ultimoCodigo);
+};
+
+/**
+ * Gera um código de grupo
+ * @param {number} ultimoCodigo - Último código de grupo
+ * @returns {string} Código de grupo único
+ */
+export const gerarCodigoGrupo = (ultimoCodigo = 0) => {
+  return gerarCodigo('GRUPO', ultimoCodigo);
+};
+
+/**
+ * Gera um código de subgrupo
+ * @param {number} ultimoCodigo - Último código de subgrupo
+ * @returns {string} Código de subgrupo único
+ */
+export const gerarCodigoSubgrupo = (ultimoCodigo = 0) => {
+  return gerarCodigo('SUBGRUPO', ultimoCodigo);
+};
+
+/**
+ * Gera um código de classe
+ * @param {number} ultimoCodigo - Último código de classe
+ * @returns {string} Código de classe único
+ */
+export const gerarCodigoClasse = (ultimoCodigo = 0) => {
+  return gerarCodigo('CLASSE', ultimoCodigo);
 };
 
 /**
@@ -158,11 +191,12 @@ export const buscarPorCodigo = (busca) => {
     // Remove espaços e converte para maiúsculo
     busca = busca.trim().toUpperCase();
     
-    // Se tem prefixo, é código completo
-    if (busca.startsWith('ORIG') || busca.startsWith('GEN') || busca.startsWith('PROD')) {
-      numero = extrairNumeroBase(busca);
-      tipo = identificarTipoPorCodigo(busca);
-    } else {
+         // Se tem prefixo, é código completo
+     if (busca.startsWith('ORIG') || busca.startsWith('GEN') || busca.startsWith('PROD') || 
+         busca.startsWith('GRP') || busca.startsWith('SGRP') || busca.startsWith('CLS')) {
+       numero = extrairNumeroBase(busca);
+       tipo = identificarTipoPorCodigo(busca);
+     } else {
       // É apenas número
       numero = parseInt(busca);
       tipo = identificarTipoPorNumero(numero);
@@ -202,6 +236,21 @@ export const obterInfoFaixas = () => {
       faixa: '20001-29999',
       prefixo: 'PROD',
       exemplo: 'PROD20001'
+    },
+    GRUPO: {
+      faixa: '30001-39999',
+      prefixo: 'GRP',
+      exemplo: 'GRP30001'
+    },
+    SUBGRUPO: {
+      faixa: '40001-49999',
+      prefixo: 'SGRP',
+      exemplo: 'SGRP40001'
+    },
+    CLASSE: {
+      faixa: '50001-59999',
+      prefixo: 'CLS',
+      exemplo: 'CLS50001'
     }
   };
 };
