@@ -262,7 +262,7 @@ const validationConfigs = {
   // Configuração para Grupos
   grupos: {
     categories: {
-      basicInfo: ['nome', 'codigo'],
+      basicInfo: ['nome'],
       additionalInfo: ['descricao'],
       statusInfo: ['status']
     },

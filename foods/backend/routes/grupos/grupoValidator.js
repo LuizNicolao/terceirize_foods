@@ -44,10 +44,6 @@ const grupoValidations = {
       .isLength({ min: 2, max: 100 })
       .withMessage('Nome deve ter entre 2 e 100 caracteres')
       .trim(),
-    body('codigo')
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Código deve ter entre 1 e 20 caracteres')
-      .trim(),
     body('descricao')
       .optional()
       .isLength({ max: 1000 })
@@ -66,11 +62,6 @@ const grupoValidations = {
       .optional()
       .isLength({ min: 2, max: 100 })
       .withMessage('Nome deve ter entre 2 e 100 caracteres')
-      .trim(),
-    body('codigo')
-      .optional()
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Código deve ter entre 1 e 20 caracteres')
       .trim(),
     body('descricao')
       .optional()
