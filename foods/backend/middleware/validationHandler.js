@@ -164,6 +164,25 @@ const validationConfigs = {
     defaultCategory: 'companyInfo'
   },
 
+  // Configuração para Filiais
+  filiais: {
+    categories: {
+      basicInfo: ['filial', 'razao_social', 'codigo_filial'],
+      companyInfo: ['cnpj'],
+      addressInfo: ['logradouro', 'numero', 'bairro', 'cidade', 'estado', 'cep'],
+      managementInfo: ['supervisao', 'coordenacao'],
+      statusInfo: ['status']
+    },
+    categoryNames: {
+      basicInfo: 'Informações Básicas',
+      companyInfo: 'Informações da Empresa',
+      addressInfo: 'Endereço',
+      managementInfo: 'Gestão',
+      statusInfo: 'Status'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração para Unidades Escolares
   unidades_escolares: {
     categories: {

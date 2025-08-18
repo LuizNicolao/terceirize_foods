@@ -40,9 +40,17 @@ class FiliaisService {
         data: response.data
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar filial'
+        message: error.response?.data?.message || 'Erro ao criar filial'
       };
     }
   }
@@ -55,9 +63,17 @@ class FiliaisService {
         data: response.data
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao atualizar filial'
+        message: error.response?.data?.message || 'Erro ao atualizar filial'
       };
     }
   }
