@@ -321,6 +321,19 @@ const validationConfigs = {
     defaultCategory: 'basicInfo'
   },
 
+  // Configuração para Marcas
+  marcas: {
+    categories: {
+      basicInfo: ['marca', 'fabricante'],
+      statusInfo: ['status']
+    },
+    categoryNames: {
+      basicInfo: 'Informações Básicas',
+      statusInfo: 'Status'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração para Produto Origem
   'produto-origem': {
     categories: {

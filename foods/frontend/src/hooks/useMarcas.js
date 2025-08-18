@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import MarcasService from '../services/marcas';
+import { useValidation } from './useValidation';
 
 export const useMarcas = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [marcas, setMarcas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -108,6 +118,11 @@ export const useMarcas = () => {
         result = await MarcasService.criar(cleanData);
       }
       
+      // Verificar se há erros de validação
+      if (handleApiResponse(result)) {
+        return; // Se há erros de validação, não continua
+      }
+      
       if (result.success) {
         toast.success(editingMarca ? 'Marca atualizada com sucesso!' : 'Marca criada com sucesso!');
         handleCloseModal();
@@ -191,6 +206,10 @@ export const useMarcas = () => {
     itemsPerPage,
     estatisticas,
 
+    // Estados de validação (do hook universal)
+    validationErrors,
+    showValidationModal,
+
     // Funções CRUD
     onSubmit,
     handleDeleteMarca,
@@ -200,6 +219,9 @@ export const useMarcas = () => {
     handleViewMarca,
     handleEditMarca,
     handleCloseModal,
+
+    // Funções de validação (do hook universal)
+    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,

@@ -5,7 +5,7 @@ import { useMarcas } from '../../hooks/useMarcas';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import MarcasService from '../../services/marcas';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { MarcaModal } from '../../components/marcas';
@@ -31,12 +31,15 @@ const Marcas = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    validationErrors,
+    showValidationModal,
     onSubmit,
     handleDeleteMarca,
     handleAddMarca,
     handleViewMarca,
     handleEditMarca,
     handleCloseModal,
+    handleCloseValidationModal,
     handlePageChange,
     setSearchTerm,
     setStatusFilter,
@@ -136,6 +139,14 @@ const Marcas = () => {
         onSubmit={onSubmit}
         marca={editingMarca}
         isViewMode={viewMode}
+      />
+
+      {/* Modal de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Modal de Auditoria */}
