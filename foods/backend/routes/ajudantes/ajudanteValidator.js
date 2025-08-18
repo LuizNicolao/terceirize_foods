@@ -47,19 +47,56 @@ const ajudanteValidations = {
     
     body('cpf')
       .optional()
-      .isString().trim().isLength({ max: 14 }).withMessage('CPF deve ter no máximo 14 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return value.length <= 14; // Verifica apenas o tamanho se for string
+        }
+        return false;
+      })
+      .withMessage('CPF deve ter no máximo 14 caracteres'),
     
     body('telefone')
       .optional()
-      .isString().trim().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return value.length <= 20; // Verifica apenas o tamanho se for string
+        }
+        return false;
+      })
+      .withMessage('Telefone deve ter no máximo 20 caracteres'),
     
     body('email')
       .optional()
-      .isEmail().withMessage('Email deve ser válido'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(value);
+        }
+        return false;
+      })
+      .withMessage('Email deve ser válido'),
     
     body('endereco')
       .optional()
-      .isString().trim().isLength({ max: 500 }).withMessage('Endereço deve ter no máximo 500 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return value.length <= 500; // Verifica apenas o tamanho se for string
+        }
+        return false;
+      })
+      .withMessage('Endereço deve ter no máximo 500 caracteres'),
     
     body('status')
       .notEmpty().withMessage('Status é obrigatório')
@@ -67,15 +104,43 @@ const ajudanteValidations = {
     
     body('data_admissao')
       .optional()
-      .isString().withMessage('Data de admissão deve ser uma string válida'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return true; // Aceita qualquer string
+        }
+        return false;
+      })
+      .withMessage('Data de admissão deve ser uma string válida'),
     
     body('observacoes')
       .optional()
-      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return value.length <= 500; // Verifica apenas o tamanho se for string
+        }
+        return false;
+      })
+      .withMessage('Observações devem ter no máximo 500 caracteres'),
     
     body('filial_id')
       .optional()
-      .isInt({ min: 1 }).withMessage('ID da filial deve ser um número inteiro positivo'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          return false;
+        }
+        return true;
+      })
+      .withMessage('ID da filial deve ser um número inteiro positivo'),
     
     handleValidationErrors
   ],
@@ -90,19 +155,56 @@ const ajudanteValidations = {
     
     body('cpf')
       .optional()
-      .isString().trim().isLength({ max: 14 }).withMessage('CPF deve ter no máximo 14 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return value.length <= 14; // Verifica apenas o tamanho se for string
+        }
+        return false;
+      })
+      .withMessage('CPF deve ter no máximo 14 caracteres'),
     
     body('telefone')
       .optional()
-      .isString().trim().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return value.length <= 20; // Verifica apenas o tamanho se for string
+        }
+        return false;
+      })
+      .withMessage('Telefone deve ter no máximo 20 caracteres'),
     
     body('email')
       .optional()
-      .isEmail().withMessage('Email deve ser válido'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(value);
+        }
+        return false;
+      })
+      .withMessage('Email deve ser válido'),
     
     body('endereco')
       .optional()
-      .isString().trim().isLength({ max: 500 }).withMessage('Endereço deve ter no máximo 500 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return value.length <= 500; // Verifica apenas o tamanho se for string
+        }
+        return false;
+      })
+      .withMessage('Endereço deve ter no máximo 500 caracteres'),
     
     body('status')
       .optional()
@@ -110,15 +212,43 @@ const ajudanteValidations = {
     
     body('data_admissao')
       .optional()
-      .isString().withMessage('Data de admissão deve ser uma string válida'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return true; // Aceita qualquer string
+        }
+        return false;
+      })
+      .withMessage('Data de admissão deve ser uma string válida'),
     
     body('observacoes')
       .optional()
-      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return value.length <= 500; // Verifica apenas o tamanho se for string
+        }
+        return false;
+      })
+      .withMessage('Observações devem ter no máximo 500 caracteres'),
     
     body('filial_id')
       .optional()
-      .isInt({ min: 1 }).withMessage('ID da filial deve ser um número inteiro positivo'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        const numValue = parseInt(value);
+        if (isNaN(numValue) || numValue < 1) {
+          return false;
+        }
+        return true;
+      })
+      .withMessage('ID da filial deve ser um número inteiro positivo'),
     
     handleValidationErrors
   ]
