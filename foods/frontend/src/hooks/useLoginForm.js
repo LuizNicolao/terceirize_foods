@@ -3,8 +3,6 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
 export const useLoginForm = (loginFunction, onSuccess) => {
-  console.log('useLoginForm called with:', { loginFunction, onSuccess });
-  
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -15,14 +13,11 @@ export const useLoginForm = (loginFunction, onSuccess) => {
     setError
   } = useForm();
 
-  console.log('useForm result:', { register, handleSubmit, errors });
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   const onSubmit = async (data) => {
-    console.log('onSubmit called with data:', data);
     setIsLoading(true);
     
     try {
@@ -54,7 +49,7 @@ export const useLoginForm = (loginFunction, onSuccess) => {
     }
   };
 
-  const result = {
+  return {
     register,
     handleSubmit: handleSubmit(onSubmit),
     isLoading,
@@ -62,7 +57,4 @@ export const useLoginForm = (loginFunction, onSuccess) => {
     showPassword,
     togglePasswordVisibility
   };
-
-  console.log('useLoginForm returning:', result);
-  return result;
 };

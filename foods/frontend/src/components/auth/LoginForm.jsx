@@ -10,8 +10,6 @@ export const LoginForm = ({
   showPassword,
   onTogglePassword
 }) => {
-  console.log('LoginForm rendering with props:', { onSubmit, register, isLoading, errors, showPassword });
-  
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="space-y-1">
