@@ -14,7 +14,7 @@ const SidebarMenu = ({
   isFavorite 
 }) => {
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto overflow-x-hidden sidebar-scrollbar">
       {groups.map((group) => {
         const filteredItems = filterItemsByPermissions(group.items, canView);
         if (filteredItems.length === 0) return null;
