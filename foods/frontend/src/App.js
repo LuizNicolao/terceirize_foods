@@ -4,7 +4,7 @@ import { useAuth } from './contexts/AuthContext';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
 import ProtectedRoute from './components/ProtectedRoute';
-import Login from './pages/Login';
+import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/usuarios/Usuarios';
 import Fornecedores from './pages/fornecedores/Fornecedores';
