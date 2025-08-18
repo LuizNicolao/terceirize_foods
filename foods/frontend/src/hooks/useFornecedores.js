@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import FornecedoresService from '../services/fornecedores';
+import { useValidation } from './useValidation';
 
 export const useFornecedores = () => {
   const [fornecedores, setFornecedores] = useState([]);
@@ -36,6 +37,15 @@ export const useFornecedores = () => {
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
+
+  // Hook de validação
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
 
   // Debounce para busca
   useEffect(() => {
@@ -163,6 +173,8 @@ export const useFornecedores = () => {
 
   const onSubmit = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       let result;
       
       if (editingFornecedor) {
@@ -176,6 +188,9 @@ export const useFornecedores = () => {
         handleCloseModal();
         reloadData();
       } else {
+        if (handleApiResponse(result)) {
+          return; // Erros de validação foram tratados
+        }
         toast.error(result.message || 'Erro ao salvar fornecedor');
       }
     } catch (error) {
@@ -277,6 +292,11 @@ export const useFornecedores = () => {
     totalItems,
     itemsPerPage,
     errors,
+
+    // Estados de validação
+    validationErrors,
+    showValidationModal,
+    handleCloseValidationModal,
 
     // Funções
     register,

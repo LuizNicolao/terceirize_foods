@@ -11,6 +11,7 @@ import {
   FornecedoresActions 
 } from '../../components/fornecedores';
 import { AuditModal } from '../../components/shared';
+import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 
@@ -35,6 +36,9 @@ const Fornecedores = () => {
     totalPages,
     totalItems,
     itemsPerPage,
+    validationErrors,
+    showValidationModal,
+    handleCloseValidationModal,
 
     // Funções
     loadFornecedores,
@@ -161,6 +165,14 @@ const Fornecedores = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         entityName="fornecedores"
+      />
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Paginação */}

@@ -12,7 +12,7 @@ const FornecedorModal = ({
   viewMode,
   editingFornecedor
 }) => {
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setValue, watch } = useForm();
 
   const cnpj = watch('cnpj');
 
@@ -96,8 +96,7 @@ const FornecedorModal = ({
                 </label>
                 <div className="flex gap-2">
                   <Input
-                    {...register('cnpj', { required: 'CNPJ é obrigatório' })}
-                    error={errors.cnpj?.message}
+                    {...register('cnpj')}
                     disabled={viewMode}
                     placeholder="00.000.000/0000-00"
                     className="flex-1"
@@ -119,21 +118,18 @@ const FornecedorModal = ({
               
               <Input
                 label="Razão Social *"
-                {...register('razao_social', { required: 'Razão social é obrigatória' })}
-                error={errors.razao_social?.message}
+                {...register('razao_social')}
                 disabled={viewMode}
               />
               <Input
                 label="Nome Fantasia"
                 {...register('nome_fantasia')}
-                error={errors.nome_fantasia?.message}
                 disabled={viewMode}
               />
               <Input
                 label="Status *"
                 type="select"
-                {...register('status', { required: 'Status é obrigatório' })}
-                error={errors.status?.message}
+                {...register('status')}
                 disabled={viewMode}
               >
                 <option value="">Selecione o status</option>
@@ -152,19 +148,12 @@ const FornecedorModal = ({
               <Input
                 label="Email"
                 type="email"
-                {...register('email', {
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'Email inválido'
-                  }
-                })}
-                error={errors.email?.message}
+                {...register('email')}
                 disabled={viewMode}
               />
               <Input
                 label="Telefone"
                 {...register('telefone')}
-                error={errors.telefone?.message}
                 disabled={viewMode}
               />
             </div>
@@ -182,37 +171,31 @@ const FornecedorModal = ({
               <Input
                 label="Logradouro"
                 {...register('logradouro')}
-                error={errors.logradouro?.message}
                 disabled={viewMode}
               />
               <Input
                 label="Número"
                 {...register('numero')}
-                error={errors.numero?.message}
                 disabled={viewMode}
               />
               <Input
                 label="CEP"
                 {...register('cep')}
-                error={errors.cep?.message}
                 disabled={viewMode}
               />
               <Input
                 label="Bairro"
                 {...register('bairro')}
-                error={errors.bairro?.message}
                 disabled={viewMode}
               />
               <Input
                 label="Município"
                 {...register('municipio')}
-                error={errors.municipio?.message}
                 disabled={viewMode}
               />
               <Input
                 label="UF"
                 {...register('uf')}
-                error={errors.uf?.message}
                 disabled={viewMode}
               />
             </div>
