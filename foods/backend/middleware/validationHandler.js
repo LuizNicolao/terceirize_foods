@@ -308,6 +308,27 @@ const validationConfigs = {
     defaultCategory: 'basicInfo'
   },
 
+  // Configuração para Produto Origem
+  'produto-origem': {
+    categories: {
+      basicInfo: ['nome', 'codigo'],
+      measurementInfo: ['unidade_medida_id', 'fator_conversao'],
+      classificationInfo: ['grupo_id', 'subgrupo_id', 'classe_id'],
+      technicalInfo: ['peso_liquido', 'referencia_mercado'],
+      referenceInfo: ['produto_generico_padrao_id'],
+      statusInfo: ['status']
+    },
+    categoryNames: {
+      basicInfo: 'Informações Básicas',
+      measurementInfo: 'Medidas',
+      classificationInfo: 'Classificação',
+      technicalInfo: 'Informações Técnicas',
+      referenceInfo: 'Referências',
+      statusInfo: 'Status'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração padrão para outras entidades
   default: {
     categories: {

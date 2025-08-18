@@ -7,8 +7,18 @@ import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import ProdutoOrigemService from '../services/produtoOrigem';
 import api from '../services/api';
+import { useValidation } from './useValidation';
 
 export const useProdutoOrigem = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   const [produtosOrigem, setProdutosOrigem] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -137,39 +147,36 @@ export const useProdutoOrigem = () => {
   // Funções de manipulação
   const handleSubmitProdutoOrigem = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
       setLoading(true);
       
       if (editingProdutoOrigem) {
         const response = await ProdutoOrigemService.atualizar(editingProdutoOrigem.id, data);
         if (response.success) {
           toast.success(response.message || 'Produto origem atualizado com sucesso!');
+          handleCloseModal();
+          carregarProdutosOrigem();
         } else {
-          throw new Error(response.error);
+          if (handleApiResponse(response)) {
+            return; // Erros de validação foram tratados
+          }
+          toast.error(response.message || 'Erro ao atualizar produto origem');
         }
       } else {
         const response = await ProdutoOrigemService.criar(data);
         if (response.success) {
           toast.success(response.message || 'Produto origem criado com sucesso!');
+          handleCloseModal();
+          carregarProdutosOrigem();
         } else {
-          throw new Error(response.error);
+          if (handleApiResponse(response)) {
+            return; // Erros de validação foram tratados
+          }
+          toast.error(response.message || 'Erro ao criar produto origem');
         }
       }
-      
-      handleCloseModal();
-      carregarProdutosOrigem();
     } catch (error) {
-      let message = 'Erro ao salvar produto origem';
-      
-      if (error.response?.data?.errors) {
-        const validationErrors = error.response.data.errors;
-        message = validationErrors.map(err => err.msg).join(', ');
-      } else if (error.response?.data?.message) {
-        message = error.response.data.message;
-      } else if (error.message) {
-        message = error.message;
-      }
-      
-      toast.error(message);
+      toast.error('Erro ao salvar produto origem');
     } finally {
       setLoading(false);
     }
@@ -186,7 +193,7 @@ export const useProdutoOrigem = () => {
       if (response.success) {
         toast.success(response.message || 'Produto origem excluído com sucesso!');
       } else {
-        throw new Error(response.error);
+        throw new Error(response.message || 'Erro ao excluir produto origem');
       }
       carregarProdutosOrigem();
     } catch (error) {
@@ -213,7 +220,7 @@ export const useProdutoOrigem = () => {
         setViewMode(true);
         setShowModal(true);
       } else {
-        throw new Error(response.error);
+        throw new Error(response.message || 'Erro ao buscar produto origem');
       }
     } catch (error) {
       console.error('Erro ao buscar produto origem:', error);
@@ -233,7 +240,7 @@ export const useProdutoOrigem = () => {
         setViewMode(false);
         setShowModal(true);
       } else {
-        throw new Error(response.error);
+        throw new Error(response.message || 'Erro ao buscar produto origem');
       }
     } catch (error) {
       console.error('Erro ao buscar produto origem:', error);
@@ -293,6 +300,8 @@ export const useProdutoOrigem = () => {
     showModal,
     viewMode,
     editingProdutoOrigem,
+    showValidationModal,
+    validationErrors,
     grupos,
     subgrupos,
     classes,
@@ -315,6 +324,7 @@ export const useProdutoOrigem = () => {
     handleViewProdutoOrigem,
     handleEditProdutoOrigem,
     handleCloseModal,
+    handleCloseValidationModal,
     handlePageChange,
     handleClearFilters,
     setSearchTerm,

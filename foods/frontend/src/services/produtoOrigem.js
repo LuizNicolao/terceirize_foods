@@ -39,7 +39,7 @@ class ProdutoOrigemService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar produtos origem'
+        message: error.response?.data?.message || 'Erro ao carregar produtos origem'
       };
     }
   }
@@ -64,7 +64,7 @@ class ProdutoOrigemService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar produto origem'
+        message: error.response?.data?.message || 'Erro ao buscar produto origem'
       };
     }
   }
@@ -88,20 +88,17 @@ class ProdutoOrigemService {
         message: 'Produto origem criado com sucesso!'
       };
     } catch (error) {
-      // Se tem erros de validação, retornar eles
-      if (error.response?.data?.errors && error.response.data.errors.length > 0) {
-        const validationMessages = error.response.data.errors.map(err => err.msg).join(', ');
+      if (error.response?.status === 422) {
         return {
           success: false,
-          error: validationMessages,
-          validationErrors: error.response.data.errors
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
         };
       }
-      
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar produto origem',
-        validationErrors: error.response?.data?.errors || []
+        message: error.response?.data?.message || 'Erro ao criar produto origem'
       };
     }
   }
@@ -125,9 +122,17 @@ class ProdutoOrigemService {
         message: 'Produto origem atualizado com sucesso!'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao atualizar produto origem'
+        message: error.response?.data?.message || 'Erro ao atualizar produto origem'
       };
     }
   }
@@ -142,7 +147,7 @@ class ProdutoOrigemService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao excluir produto origem'
+        message: error.response?.data?.message || 'Erro ao excluir produto origem'
       };
     }
   }
@@ -167,7 +172,7 @@ class ProdutoOrigemService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar produtos origem ativos'
+        message: error.response?.data?.message || 'Erro ao buscar produtos origem ativos'
       };
     }
   }
@@ -192,7 +197,7 @@ class ProdutoOrigemService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar produto origem por código'
+        message: error.response?.data?.message || 'Erro ao buscar produto origem por código'
       };
     }
   }
@@ -211,7 +216,7 @@ class ProdutoOrigemService {
     } catch (error) {
       return {
         success: false,
-        error: 'Erro ao exportar para XLSX'
+        message: 'Erro ao exportar para XLSX'
       };
     }
   }
@@ -229,7 +234,7 @@ class ProdutoOrigemService {
     } catch (error) {
       return {
         success: false,
-        error: 'Erro ao exportar para PDF'
+        message: 'Erro ao exportar para PDF'
       };
     }
   }

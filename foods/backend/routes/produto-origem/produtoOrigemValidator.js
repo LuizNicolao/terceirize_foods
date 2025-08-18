@@ -3,19 +3,11 @@
  * Implementa validações usando express-validator
  */
 
-const { body, param, query, validationResult } = require('express-validator');
-const { validationResponse } = require('../../middleware/responseHandler');
+const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
 
-// Middleware para capturar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  
-  if (!errors.isEmpty()) {
-    return validationResponse(res, errors.array());
-  }
-  
-  next();
-};
+// Criar handler de validação específico para produto origem
+const handleValidationErrors = createEntityValidationHandler('produto-origem');
 
 // Middleware para limpar campos vazios
 const cleanEmptyFields = (req, res, next) => {
@@ -95,12 +87,6 @@ const produtoOrigemValidations = {
   create: [
     cleanEmptyFields,
     
-    body('codigo')
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Código deve ter entre 1 e 20 caracteres')
-      .matches(/^[a-zA-Z0-9\-_]+$/)
-      .withMessage('Código deve conter apenas letras, números, hífens e underscores'),
-    
     body('nome')
       .isLength({ min: 3, max: 200 })
       .withMessage('Nome deve ter pelo menos 3 caracteres e no máximo 200 caracteres'),
@@ -173,13 +159,6 @@ const produtoOrigemValidations = {
 
   update: [
     cleanEmptyFields,
-    
-    body('codigo')
-      .optional()
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Código deve ter entre 1 e 20 caracteres')
-      .matches(/^[a-zA-Z0-9\-_]+$/)
-      .withMessage('Código deve conter apenas letras, números, hífens e underscores'),
     
     body('nome')
       .optional()

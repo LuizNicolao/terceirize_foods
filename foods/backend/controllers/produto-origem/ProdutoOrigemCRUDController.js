@@ -12,6 +12,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const { gerarCodigoProdutoOrigem } = require('../../utils/codigoGenerator');
 
 class ProdutoOrigemCRUDController {
   
@@ -20,19 +21,12 @@ class ProdutoOrigemCRUDController {
    */
   static criarProdutoOrigem = asyncHandler(async (req, res) => {
     const {
-      codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
+      nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
       classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id, status
     } = req.body;
 
-    // Verificar se código já existe
-    const existingProduto = await executeQuery(
-      'SELECT id FROM produto_origem WHERE codigo = ?',
-      [codigo]
-    );
-
-    if (existingProduto.length > 0) {
-      return conflictResponse(res, 'Código já cadastrado');
-    }
+    // Gerar código único automaticamente
+    const codigo = gerarCodigoProdutoOrigem();
 
     // Verificar se unidade de medida existe
     const unidade = await executeQuery(
@@ -152,17 +146,7 @@ class ProdutoOrigemCRUDController {
       return notFoundResponse(res, 'Produto origem não encontrado');
     }
 
-    // Verificar se código já existe (exceto para o próprio registro)
-    if (codigo) {
-      const existingProduto = await executeQuery(
-        'SELECT id FROM produto_origem WHERE codigo = ? AND id != ?',
-        [codigo, id]
-      );
 
-      if (existingProduto.length > 0) {
-        return conflictResponse(res, 'Código já cadastrado');
-      }
-    }
 
     // Verificar se unidade de medida existe
     if (unidade_medida_id) {
