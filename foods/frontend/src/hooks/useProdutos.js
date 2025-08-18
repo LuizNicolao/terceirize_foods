@@ -50,6 +50,11 @@ export const useProdutos = () => {
   const loadData = async () => {
     setLoading(true);
     try {
+      // Resetar página se os filtros mudaram
+      if (searchTerm !== '' || statusFilter !== 'todos') {
+        setCurrentPage(1);
+      }
+      
       // Carregar produtos com paginação
       const paginationParams = {
         page: currentPage,

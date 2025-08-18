@@ -28,6 +28,7 @@ export const useFornecedores = () => {
     com_telefone: 0
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   
   // Estados de paginação
   const [currentPage, setCurrentPage] = useState(1);
@@ -46,10 +47,32 @@ export const useFornecedores = () => {
     clearValidationErrors
   } = useValidation();
 
+  // Debounce para busca
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+      // Resetar para primeira página quando buscar
+      if (searchTerm !== debouncedSearchTerm) {
+        setCurrentPage(1);
+      }
+    }, 500); // 500ms de delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm, debouncedSearchTerm]);
+
+  // Mostrar loading quando buscar
+  useEffect(() => {
+    if (searchTerm && searchTerm !== debouncedSearchTerm) {
+      setSearching(true);
+    } else {
+      setSearching(false);
+    }
+  }, [searchTerm, debouncedSearchTerm]);
+
   useEffect(() => {
     loadFornecedores();
     loadEstatisticas();
-  }, [currentPage, itemsPerPage, searchTerm]);
+  }, [currentPage, itemsPerPage, debouncedSearchTerm]);
 
   const loadFornecedores = async (params = {}) => {
     setLoading(true);
@@ -58,7 +81,7 @@ export const useFornecedores = () => {
       const paginationParams = {
         page: currentPage,
         limit: itemsPerPage,
-        search: searchTerm, // Usar termo de busca diretamente
+        search: debouncedSearchTerm, // Usar termo de busca com debounce
         ...params
       };
 
@@ -114,12 +137,6 @@ export const useFornecedores = () => {
 
   const handleSearch = (term) => {
     setSearchTerm(term);
-    setCurrentPage(1); // Resetar para primeira página ao buscar
-  };
-
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setCurrentPage(1);
   };
 
   const handleOpenModal = (fornecedor = null, isView = false) => {
@@ -239,7 +256,7 @@ export const useFornecedores = () => {
   const handleExport = async (format) => {
     try {
       const params = {
-        search: searchTerm,
+        search: debouncedSearchTerm,
         page: currentPage,
         limit: itemsPerPage
       };
@@ -290,7 +307,6 @@ export const useFornecedores = () => {
     handlePageChange,
     handleItemsPerPageChange,
     handleSearch,
-    handleClearFilters,
     handleOpenModal,
     handleCloseModal,
     onSubmit,

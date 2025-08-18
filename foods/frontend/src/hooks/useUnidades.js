@@ -43,8 +43,6 @@ export const useUnidades = () => {
       const paginationParams = {
         page: currentPage,
         limit: itemsPerPage,
-        search: searchTerm,
-        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined,
         ...params
       };
 
@@ -88,7 +86,20 @@ export const useUnidades = () => {
   // Carregar dados quando dependências mudarem
   useEffect(() => {
     loadUnidades();
-  }, [currentPage, itemsPerPage, searchTerm, statusFilter]);
+  }, [currentPage, itemsPerPage]);
+
+  // Filtrar unidades (client-side)
+  const filteredUnidades = (Array.isArray(unidades) ? unidades : []).filter(unidade => {
+    const matchesSearch = !searchTerm || 
+      (unidade.nome && unidade.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (unidade.sigla && unidade.sigla.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesStatus = statusFilter === 'todos' || 
+      (statusFilter === 'ativo' && unidade.status === 1) ||
+      (statusFilter === 'inativo' && unidade.status === 0);
+    
+    return matchesSearch && matchesStatus;
+  });
 
   // Funções de CRUD
   const onSubmit = async (data) => {
@@ -170,13 +181,6 @@ export const useUnidades = () => {
     setCurrentPage(page);
   };
 
-  // Funções de filtros
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('todos');
-    setCurrentPage(1);
-  };
-
   // Funções utilitárias
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -189,7 +193,7 @@ export const useUnidades = () => {
 
   return {
     // Estados
-    unidades,
+    unidades: Array.isArray(filteredUnidades) ? filteredUnidades : [],
     loading,
     showModal,
     viewMode,
@@ -226,7 +230,6 @@ export const useUnidades = () => {
     setSearchTerm,
     setStatusFilter,
     setItemsPerPage,
-    handleClearFilters,
 
     // Funções utilitárias
     formatDate,

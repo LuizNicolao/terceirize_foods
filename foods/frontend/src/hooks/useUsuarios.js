@@ -43,7 +43,6 @@ export const useUsuarios = () => {
       const paginationParams = {
         page: currentPage,
         limit: itemsPerPage,
-        search: searchTerm,
         ...params
       };
 
@@ -87,7 +86,16 @@ export const useUsuarios = () => {
   // Carregar dados quando dependências mudarem
   useEffect(() => {
     loadUsuarios();
-  }, [currentPage, itemsPerPage, searchTerm]);
+  }, [currentPage, itemsPerPage]);
+
+  // Filtrar usuários (client-side)
+  const filteredUsuarios = (Array.isArray(usuarios) ? usuarios : []).filter(usuario => {
+    const matchesSearch = !searchTerm || 
+      (usuario.nome && usuario.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (usuario.email && usuario.email.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    return matchesSearch;
+  });
 
   // Funções de CRUD
   const onSubmit = async (data) => {
@@ -171,12 +179,6 @@ export const useUsuarios = () => {
     setCurrentPage(page);
   };
 
-  // Funções de filtros
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setCurrentPage(1);
-  };
-
   // Funções utilitárias
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -214,7 +216,7 @@ export const useUsuarios = () => {
 
   return {
     // Estados
-    usuarios,
+    usuarios: filteredUsuarios,
     loading,
     showModal,
     viewMode,
@@ -247,7 +249,6 @@ export const useUsuarios = () => {
     // Funções de filtros
     setSearchTerm,
     setItemsPerPage,
-    handleClearFilters,
 
     // Funções utilitárias
     formatDate,

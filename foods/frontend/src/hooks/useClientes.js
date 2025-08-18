@@ -44,9 +44,6 @@ export const useClientes = () => {
       const paginationParams = {
         page: currentPage,
         limit: itemsPerPage,
-        search: searchTerm,
-        status: statusFilter === 'ativo' ? 'ativo' : statusFilter === 'inativo' ? 'inativo' : undefined,
-        uf: ufFilter === 'todos' ? undefined : ufFilter,
         ...params
       };
 
@@ -89,7 +86,20 @@ export const useClientes = () => {
   // Carregar dados quando dependências mudarem
   useEffect(() => {
     loadClientes();
-  }, [currentPage, itemsPerPage, searchTerm, statusFilter, ufFilter]);
+  }, [currentPage, itemsPerPage]);
+
+  // Filtrar clientes (client-side)
+  const filteredClientes = clientes.filter(cliente => {
+    const matchesSearch = !searchTerm || 
+      (cliente.razao_social && cliente.razao_social.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (cliente.nome_fantasia && cliente.nome_fantasia.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (cliente.cnpj && cliente.cnpj.includes(searchTerm));
+    
+    const matchesStatus = statusFilter === 'todos' || cliente.status === statusFilter;
+    const matchesUf = ufFilter === 'todos' || cliente.uf === ufFilter;
+    
+    return matchesSearch && matchesStatus && matchesUf;
+  });
 
   // Funções de CRUD
   const onSubmit = async (data) => {
@@ -180,14 +190,6 @@ export const useClientes = () => {
     setCurrentPage(1);
   };
 
-  // Funções de filtros
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('todos');
-    setUfFilter('todos');
-    setCurrentPage(1);
-  };
-
   // Funções utilitárias
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -196,7 +198,7 @@ export const useClientes = () => {
 
   return {
     // Estados
-    clientes,
+    clientes: Array.isArray(filteredClientes) ? filteredClientes : [],
     loading,
     showModal,
     viewMode,
@@ -233,7 +235,6 @@ export const useClientes = () => {
     setSearchTerm,
     setStatusFilter,
     setUfFilter,
-    handleClearFilters,
 
     // Funções utilitárias
     formatDate

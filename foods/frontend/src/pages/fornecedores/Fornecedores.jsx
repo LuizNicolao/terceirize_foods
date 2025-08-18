@@ -53,8 +53,7 @@ const Fornecedores = () => {
     handleViewAudit,
     handleAuditFilterChange,
     handleCloseAuditModal,
-    handleExport,
-    handleClearFilters
+    handleExport
   } = useFornecedores();
 
   const {
@@ -122,7 +121,6 @@ const Fornecedores = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={handleSearch}
-        onClear={handleClearFilters}
         placeholder="Buscar por razão social, nome fantasia ou CNPJ..."
       />
 

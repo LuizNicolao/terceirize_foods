@@ -44,8 +44,7 @@ const Unidades = () => {
     setSearchTerm,
     setStatusFilter,
     setItemsPerPage,
-    getStatusLabel,
-    handleClearFilters
+    getStatusLabel
   } = useUnidades();
 
   const {
@@ -108,7 +107,10 @@ const Unidades = () => {
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        onClear={handleClearFilters}
+        onClear={() => {
+          setSearchTerm('');
+          setStatusFilter('todos');
+        }}
         placeholder="Buscar por nome ou sigla..."
       />
 

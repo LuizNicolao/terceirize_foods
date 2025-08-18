@@ -107,7 +107,7 @@ const Usuarios = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        onClear={handleClearFilters}
+        onClear={() => setSearchTerm('')}
         placeholder="Buscar por nome ou email..."
       />
 
