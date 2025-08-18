@@ -4,15 +4,6 @@ import FiliaisService from '../services/filiais';
 import { useValidation } from './useValidation';
 
 export const useFiliais = () => {
-  // Hook de validação universal
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
-
   // Estados principais
   const [filiais, setFiliais] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +26,15 @@ export const useFiliais = () => {
     filiais_inativas: 0,
     com_cnpj: 0
   });
+
+  // Hook de validação
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
 
   // Carregar filiais
   const loadFiliais = async (params = {}) => {
@@ -103,6 +103,8 @@ export const useFiliais = () => {
   // Funções de CRUD
   const onSubmit = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
@@ -117,34 +119,20 @@ export const useFiliais = () => {
       let result;
       if (editingFilial) {
         result = await FiliaisService.atualizar(editingFilial.id, cleanData);
-        if (result.success) {
-          toast.success('Filial atualizada com sucesso!');
-        } else {
-          // Usar sistema universal de validação
-          if (handleApiResponse(result)) {
-            return; // Erros de validação tratados pelo hook
-          } else {
-            toast.error(result.error);
-          }
-          return;
-        }
       } else {
         result = await FiliaisService.criar(cleanData);
-        if (result.success) {
-          toast.success('Filial criada com sucesso!');
-        } else {
-          // Usar sistema universal de validação
-          if (handleApiResponse(result)) {
-            return; // Erros de validação tratados pelo hook
-          } else {
-            toast.error(result.error);
-          }
-          return;
-        }
       }
       
-      handleCloseModal();
-      loadFiliais();
+      if (result.success) {
+        toast.success(editingFilial ? 'Filial atualizada com sucesso!' : 'Filial criada com sucesso!');
+        handleCloseModal();
+        loadFiliais();
+      } else {
+        if (handleApiResponse(result)) {
+          return; // Erros de validação foram tratados
+        }
+        toast.error(result.message || 'Erro ao salvar filial');
+      }
     } catch (error) {
       console.error('Erro ao salvar filial:', error);
       toast.error('Erro ao salvar filial');
@@ -226,6 +214,7 @@ export const useFiliais = () => {
     // Estados de validação
     validationErrors,
     showValidationModal,
+    handleCloseValidationModal,
 
     // Funções CRUD
     onSubmit,
@@ -236,9 +225,6 @@ export const useFiliais = () => {
     handleViewFilial,
     handleEditFilial,
     handleCloseModal,
-
-    // Funções de validação
-    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,

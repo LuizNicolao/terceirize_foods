@@ -245,18 +245,18 @@ const validationConfigs = {
   // Configuração para Filiais
   filiais: {
     categories: {
-      basicInfo: ['filial', 'razao_social', 'status'],
-      companyInfo: ['codigo_filial', 'cnpj'],
-      addressInfo: ['logradouro', 'numero', 'bairro', 'cidade', 'estado', 'cep'],
-      operationalInfo: ['supervisao', 'coordenacao']
+      companyInfo: ['codigo_filial', 'cnpj', 'filial', 'razao_social'],
+      addressInfo: ['logradouro', 'numero', 'bairro', 'cep', 'cidade', 'estado'],
+      operationalInfo: ['supervisao', 'coordenacao'],
+      statusInfo: ['status']
     },
     categoryNames: {
-      basicInfo: 'Informações Básicas',
       companyInfo: 'Informações da Empresa',
       addressInfo: 'Endereço',
-      operationalInfo: 'Informações Operacionais'
+      operationalInfo: 'Informações Operacionais',
+      statusInfo: 'Status'
     },
-    defaultCategory: 'basicInfo'
+    defaultCategory: 'companyInfo'
   },
 
   // Configuração padrão para outras entidades

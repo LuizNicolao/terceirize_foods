@@ -5,11 +5,12 @@ import { useFiliais } from '../../hooks/useFiliais';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import FiliaisService from '../../services/filiais';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { FilialModal, FiliaisTable, FiliaisStats } from '../../components/filiais';
 import AuditModal from '../../components/shared/AuditModal';
+import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Filiais = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -30,13 +31,13 @@ const Filiais = () => {
     estatisticas,
     validationErrors,
     showValidationModal,
+    handleCloseValidationModal,
     onSubmit,
     handleDeleteFilial,
     handleAddFilial,
     handleViewFilial,
     handleEditFilial,
     handleCloseModal,
-    handleCloseValidationModal,
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
@@ -142,7 +143,7 @@ const Filiais = () => {
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
       />
 
-      {/* Modal de Validação */}
+      {/* Modal de Erros de Validação */}
       <ValidationErrorModal
         isOpen={showValidationModal}
         onClose={handleCloseValidationModal}
