@@ -1,6 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button } from '../ui';
+import { ActionButtons } from '../ui';
 
 const ClientesTable = ({
   clientes,
@@ -109,37 +108,17 @@ const ClientesTable = ({
                   {formatDate(cliente.criado_em)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end space-x-2">
-                    {canView('clientes') && (
-                      <Button
-                        onClick={() => onView(cliente)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        <FaEye className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {canEdit('clientes') && (
-                      <Button
-                        onClick={() => onEdit(cliente)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-green-600 hover:text-green-900"
-                      >
-                        <FaEdit className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {canDelete('clientes') && (
-                      <Button
-                        onClick={() => onDelete(cliente.id)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <FaTrash className="h-4 w-4" />
-                      </Button>
-                    )}
+                  <div className="flex justify-end">
+                    <ActionButtons
+                      canView={canView('clientes')}
+                      canEdit={canEdit('clientes')}
+                      canDelete={canDelete('clientes')}
+                      onView={onView}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      item={cliente}
+                      size="sm"
+                    />
                   </div>
                 </td>
               </tr>

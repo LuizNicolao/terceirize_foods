@@ -1,6 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button } from '../ui';
+import { ActionButtons } from '../ui';
 
 const FiliaisTable = ({
   filiais,
@@ -81,37 +80,17 @@ const FiliaisTable = ({
                   {getStatusBadge(filial.status)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end space-x-2">
-                    {canView('filiais') && (
-                      <Button
-                        onClick={() => onView(filial)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-blue-600 hover:text-blue-900"
-                      >
-                        <FaEye className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {canEdit('filiais') && (
-                      <Button
-                        onClick={() => onEdit(filial)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-green-600 hover:text-green-900"
-                      >
-                        <FaEdit className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {canDelete('filiais') && (
-                      <Button
-                        onClick={() => onDelete(filial.id)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <FaTrash className="h-4 w-4" />
-                      </Button>
-                    )}
+                  <div className="flex justify-end">
+                    <ActionButtons
+                      canView={canView('filiais')}
+                      canEdit={canEdit('filiais')}
+                      canDelete={canDelete('filiais')}
+                      onView={onView}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      item={filial}
+                      size="sm"
+                    />
                   </div>
                 </td>
               </tr>

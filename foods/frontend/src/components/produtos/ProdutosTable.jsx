@@ -1,6 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button } from '../ui';
+import { ActionButtons } from '../ui';
 
 const ProdutosTable = ({ 
   produtos, 
@@ -78,38 +77,16 @@ const ProdutosTable = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      {onView && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onView(produto)}
-                          title="Visualizar"
-                        >
-                          <FaEye className="text-green-600 text-sm" />
-                        </Button>
-                      )}
-                      {onEdit && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onEdit(produto)}
-                          title="Editar"
-                        >
-                          <FaEdit className="text-blue-600 text-sm" />
-                        </Button>
-                      )}
-                      {onDelete && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onDelete(produto.id)}
-                          title="Excluir"
-                        >
-                          <FaTrash className="text-red-600 text-sm" />
-                        </Button>
-                      )}
-                    </div>
+                    <ActionButtons
+                      canView={!!onView}
+                      canEdit={!!onEdit}
+                      canDelete={!!onDelete}
+                      onView={onView}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      item={produto}
+                      size="xs"
+                    />
                   </td>
                 </tr>
               ))}
@@ -132,41 +109,17 @@ const ProdutosTable = ({
                   <p className="text-gray-500 text-xs">Cód. Barras: {produto.codigo_barras}</p>
                 )}
               </div>
-              <div className="flex gap-2">
-                {onView && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onView(produto)}
-                    title="Visualizar"
-                    className="p-2"
-                  >
-                    <FaEye className="text-green-600 text-sm" />
-                  </Button>
-                )}
-                {onEdit && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onEdit(produto)}
-                    title="Editar"
-                    className="p-2"
-                  >
-                    <FaEdit className="text-blue-600 text-sm" />
-                  </Button>
-                )}
-                {onDelete && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onDelete(produto.id)}
-                    title="Excluir"
-                    className="p-2"
-                  >
-                    <FaTrash className="text-red-600 text-sm" />
-                  </Button>
-                )}
-              </div>
+              <ActionButtons
+                canView={!!onView}
+                canEdit={!!onEdit}
+                canDelete={!!onDelete}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={produto}
+                size="xs"
+                className="p-2"
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-xs">

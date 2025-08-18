@@ -1,6 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button } from '../ui';
+import { ActionButtons } from '../ui';
 
 const UsuariosTable = ({ 
   usuarios, 
@@ -80,38 +79,16 @@ const UsuariosTable = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      {canView('usuarios') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onView(usuario)}
-                          title="Visualizar"
-                        >
-                          <FaEye className="text-green-600 text-sm" />
-                        </Button>
-                      )}
-                      {canEdit('usuarios') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onEdit(usuario)}
-                          title="Editar"
-                        >
-                          <FaEdit className="text-blue-600 text-sm" />
-                        </Button>
-                      )}
-                      {canDelete('usuarios') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onDelete(usuario.id)}
-                          title="Excluir"
-                        >
-                          <FaTrash className="text-red-600 text-sm" />
-                        </Button>
-                      )}
-                    </div>
+                    <ActionButtons
+                      canView={canView('usuarios')}
+                      canEdit={canEdit('usuarios')}
+                      canDelete={canDelete('usuarios')}
+                      onView={onView}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      item={usuario}
+                      size="xs"
+                    />
                   </td>
                 </tr>
               ))}
@@ -129,41 +106,17 @@ const UsuariosTable = ({
                 <h3 className="font-semibold text-gray-900 text-sm">{usuario.nome}</h3>
                 <p className="text-gray-600 text-xs">Email: {usuario.email}</p>
               </div>
-              <div className="flex gap-2">
-                {canView('usuarios') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onView(usuario)}
-                    title="Visualizar"
-                    className="p-2"
-                  >
-                    <FaEye className="text-green-600 text-sm" />
-                  </Button>
-                )}
-                {canEdit('usuarios') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onEdit(usuario)}
-                    title="Editar"
-                    className="p-2"
-                  >
-                    <FaEdit className="text-blue-600 text-sm" />
-                  </Button>
-                )}
-                {canDelete('usuarios') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onDelete(usuario.id)}
-                    title="Excluir"
-                    className="p-2"
-                  >
-                    <FaTrash className="text-red-600 text-sm" />
-                  </Button>
-                )}
-              </div>
+              <ActionButtons
+                canView={canView('usuarios')}
+                canEdit={canEdit('usuarios')}
+                canDelete={canDelete('usuarios')}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={usuario}
+                size="xs"
+                className="p-2"
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-xs">

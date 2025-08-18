@@ -1,6 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button } from '../ui';
+import { ActionButtons } from '../ui';
 import { usePermissions } from '../../contexts/PermissionsContext';
 
 const FornecedoresTable = ({ 
@@ -95,38 +94,16 @@ const FornecedoresTable = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      {canView && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onView(fornecedor)}
-                          title="Visualizar"
-                        >
-                          <FaEye className="text-green-600 text-sm" />
-                        </Button>
-                      )}
-                      {canEdit && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onEdit(fornecedor)}
-                          title="Editar"
-                        >
-                          <FaEdit className="text-blue-600 text-sm" />
-                        </Button>
-                      )}
-                      {canDelete && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onDelete(fornecedor.id)}
-                          title="Excluir"
-                        >
-                          <FaTrash className="text-red-600 text-sm" />
-                        </Button>
-                      )}
-                    </div>
+                    <ActionButtons
+                      canView={canView}
+                      canEdit={canEdit}
+                      canDelete={canDelete}
+                      onView={onView}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      item={fornecedor}
+                      size="xs"
+                    />
                   </td>
                 </tr>
               ))}
@@ -144,41 +121,17 @@ const FornecedoresTable = ({
                 <h3 className="font-semibold text-gray-900 text-sm">{fornecedor.razao_social}</h3>
                 <p className="text-gray-600 text-xs">CNPJ: {fornecedor.cnpj}</p>
               </div>
-              <div className="flex gap-2">
-                {canView && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onView(fornecedor)}
-                    title="Visualizar"
-                    className="p-2"
-                  >
-                    <FaEye className="text-green-600 text-sm" />
-                  </Button>
-                )}
-                {canEdit && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onEdit(fornecedor)}
-                    title="Editar"
-                    className="p-2"
-                  >
-                    <FaEdit className="text-blue-600 text-sm" />
-                  </Button>
-                )}
-                {canDelete && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onDelete(fornecedor.id)}
-                    title="Excluir"
-                    className="p-2"
-                  >
-                    <FaTrash className="text-red-600 text-sm" />
-                  </Button>
-                )}
-              </div>
+              <ActionButtons
+                canView={canView}
+                canEdit={canEdit}
+                canDelete={canDelete}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={fornecedor}
+                size="xs"
+                className="p-2"
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-xs">

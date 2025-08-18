@@ -1,6 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button } from '../ui';
+import { ActionButtons } from '../ui';
 
 const GruposTable = ({ 
   grupos, 
@@ -75,38 +74,16 @@ const GruposTable = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      {canView('grupos') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onView(grupo)}
-                          title="Visualizar"
-                        >
-                          <FaEye className="text-green-600 text-sm" />
-                        </Button>
-                      )}
-                      {canEdit('grupos') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onEdit(grupo)}
-                          title="Editar"
-                        >
-                          <FaEdit className="text-blue-600 text-sm" />
-                        </Button>
-                      )}
-                      {canDelete('grupos') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onDelete(grupo.id)}
-                          title="Excluir"
-                        >
-                          <FaTrash className="text-red-600 text-sm" />
-                        </Button>
-                      )}
-                    </div>
+                    <ActionButtons
+                      canView={canView('grupos')}
+                      canEdit={canEdit('grupos')}
+                      canDelete={canDelete('grupos')}
+                      onView={onView}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      item={grupo}
+                      size="xs"
+                    />
                   </td>
                 </tr>
               ))}
@@ -124,41 +101,17 @@ const GruposTable = ({
                 <h3 className="font-semibold text-gray-900 text-sm">{grupo.nome}</h3>
                 <p className="text-gray-600 text-xs">ID: {grupo.id}</p>
               </div>
-              <div className="flex gap-2">
-                {canView('grupos') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onView(grupo)}
-                    title="Visualizar"
-                    className="p-2"
-                  >
-                    <FaEye className="text-green-600 text-sm" />
-                  </Button>
-                )}
-                {canEdit('grupos') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onEdit(grupo)}
-                    title="Editar"
-                    className="p-2"
-                  >
-                    <FaEdit className="text-blue-600 text-sm" />
-                  </Button>
-                )}
-                {canDelete('grupos') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onDelete(grupo.id)}
-                    title="Excluir"
-                    className="p-2"
-                  >
-                    <FaTrash className="text-red-600 text-sm" />
-                  </Button>
-                )}
-              </div>
+              <ActionButtons
+                canView={canView('grupos')}
+                canEdit={canEdit('grupos')}
+                canDelete={canDelete('grupos')}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={grupo}
+                size="xs"
+                className="p-2"
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-xs">

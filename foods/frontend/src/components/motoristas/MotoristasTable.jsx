@@ -1,6 +1,6 @@
 import React from 'react';
-import { FaUser, FaIdCard, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCar, FaCalendarAlt, FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Table, Button } from '../ui';
+import { FaUser, FaIdCard, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCar, FaCalendarAlt } from 'react-icons/fa';
+import { Table, ActionButtons } from '../ui';
 
 // Componente interno para ações da tabela
 const TableActions = ({ 
@@ -13,43 +13,15 @@ const TableActions = ({
   onDelete 
 }) => {
   return (
-    <div className="flex items-center gap-1">
-      {canView('motoristas') && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onView(motorista)}
-          title="Visualizar"
-          className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
-        >
-          <FaEye className="w-3 h-3" />
-        </Button>
-      )}
-      
-      {canEdit('motoristas') && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onEdit(motorista)}
-          title="Editar"
-          className="text-green-600 hover:text-green-800 hover:bg-green-50"
-        >
-          <FaEdit className="w-3 h-3" />
-        </Button>
-      )}
-      
-      {canDelete('motoristas') && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onDelete(motorista.id)}
-          title="Excluir"
-          className="text-red-600 hover:text-red-800 hover:bg-red-50"
-        >
-          <FaTrash className="w-3 h-3" />
-        </Button>
-      )}
-    </div>
+    <ActionButtons
+      canView={canView('motoristas')}
+      canEdit={canEdit('motoristas')}
+      canDelete={canDelete('motoristas')}
+      onView={onView}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      item={motorista}
+    />
   );
 };
 

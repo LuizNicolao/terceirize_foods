@@ -1,6 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button, Table } from '../ui';
+import { ActionButtons, Table } from '../ui';
 
 const MarcasTable = ({ 
   marcas, 
@@ -48,38 +47,16 @@ const MarcasTable = ({
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div className="flex gap-2">
-                    {canView('marcas') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => onView(marca)}
-                        title="Visualizar"
-                      >
-                        <FaEye className="text-green-600 text-sm" />
-                      </Button>
-                    )}
-                    {canEdit('marcas') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => onEdit(marca)}
-                        title="Editar"
-                      >
-                        <FaEdit className="text-blue-600 text-sm" />
-                      </Button>
-                    )}
-                    {canDelete('marcas') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => onDelete(marca.id)}
-                        title="Excluir"
-                      >
-                        <FaTrash className="text-red-600 text-sm" />
-                      </Button>
-                    )}
-                  </div>
+                  <ActionButtons
+                    canView={canView('marcas')}
+                    canEdit={canEdit('marcas')}
+                    canDelete={canDelete('marcas')}
+                    onView={onView}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    item={marca}
+                    size="xs"
+                  />
                 </td>
               </tr>
             ))}
@@ -96,41 +73,17 @@ const MarcasTable = ({
                 <h3 className="font-semibold text-gray-900 text-sm">{marca.marca}</h3>
                 <p className="text-gray-600 text-xs">Fabricante: {marca.fabricante || '-'}</p>
               </div>
-              <div className="flex gap-2">
-                {canView('marcas') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onView(marca)}
-                    title="Visualizar"
-                    className="p-2"
-                  >
-                    <FaEye className="text-green-600 text-sm" />
-                  </Button>
-                )}
-                {canEdit('marcas') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onEdit(marca)}
-                    title="Editar"
-                    className="p-2"
-                  >
-                    <FaEdit className="text-blue-600 text-sm" />
-                  </Button>
-                )}
-                {canDelete('marcas') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onDelete(marca.id)}
-                    title="Excluir"
-                    className="p-2"
-                  >
-                    <FaTrash className="text-red-600 text-sm" />
-                  </Button>
-                )}
-              </div>
+              <ActionButtons
+                canView={canView('marcas')}
+                canEdit={canEdit('marcas')}
+                canDelete={canDelete('marcas')}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={marca}
+                size="xs"
+                className="p-2"
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-xs">

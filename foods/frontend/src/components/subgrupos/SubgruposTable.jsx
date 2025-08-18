@@ -1,6 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button } from '../ui';
+import { ActionButtons } from '../ui';
 
 const SubgruposTable = ({ 
   subgrupos, 
@@ -82,38 +81,16 @@ const SubgruposTable = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2">
-                      {canView('subgrupos') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onView(subgrupo)}
-                          title="Visualizar"
-                        >
-                          <FaEye className="text-green-600 text-sm" />
-                        </Button>
-                      )}
-                      {canEdit('subgrupos') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onEdit(subgrupo)}
-                          title="Editar"
-                        >
-                          <FaEdit className="text-blue-600 text-sm" />
-                        </Button>
-                      )}
-                      {canDelete('subgrupos') && (
-                        <Button
-                          variant="ghost"
-                          size="xs"
-                          onClick={() => onDelete(subgrupo.id)}
-                          title="Excluir"
-                        >
-                          <FaTrash className="text-red-600 text-sm" />
-                        </Button>
-                      )}
-                    </div>
+                    <ActionButtons
+                      canView={canView('subgrupos')}
+                      canEdit={canEdit('subgrupos')}
+                      canDelete={canDelete('subgrupos')}
+                      onView={onView}
+                      onEdit={onEdit}
+                      onDelete={onDelete}
+                      item={subgrupo}
+                      size="xs"
+                    />
                   </td>
                 </tr>
               ))}
@@ -133,41 +110,17 @@ const SubgruposTable = ({
                   <p className="text-gray-600 text-xs">Código: {subgrupo.codigo}</p>
                 )}
               </div>
-              <div className="flex gap-2">
-                {canView('subgrupos') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onView(subgrupo)}
-                    title="Visualizar"
-                    className="p-2"
-                  >
-                    <FaEye className="text-green-600 text-sm" />
-                  </Button>
-                )}
-                {canEdit('subgrupos') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onEdit(subgrupo)}
-                    title="Editar"
-                    className="p-2"
-                  >
-                    <FaEdit className="text-blue-600 text-sm" />
-                  </Button>
-                )}
-                {canDelete('subgrupos') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onDelete(subgrupo.id)}
-                    title="Excluir"
-                    className="p-2"
-                  >
-                    <FaTrash className="text-red-600 text-sm" />
-                  </Button>
-                )}
-              </div>
+              <ActionButtons
+                canView={canView('subgrupos')}
+                canEdit={canEdit('subgrupos')}
+                canDelete={canDelete('subgrupos')}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={subgrupo}
+                size="xs"
+                className="p-2"
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-xs">

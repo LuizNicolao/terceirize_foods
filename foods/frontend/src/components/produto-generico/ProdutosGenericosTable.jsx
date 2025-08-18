@@ -1,6 +1,6 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash, FaStar } from 'react-icons/fa';
-import { Button } from '../../components/ui';
+import { FaStar } from 'react-icons/fa';
+import { ActionButtons } from '../../components/ui';
 
 const ProdutosGenericosTable = ({
   produtosGenericos,
@@ -126,39 +126,17 @@ const ProdutosGenericosTable = ({
                     {produtoGenerico.total_produtos || 0}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-2">
-                      {canView && onView && (
-                        <Button
-                          onClick={() => onView(produtoGenerico.id)}
-                          variant="ghost"
-                          size="sm"
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <FaEye className="w-4 h-4" />
-                        </Button>
-                      )}
-                      
-                      {canEdit && onEdit && (
-                        <Button
-                          onClick={() => onEdit(produtoGenerico.id)}
-                          variant="ghost"
-                          size="sm"
-                          className="text-green-600 hover:text-green-900"
-                        >
-                          <FaEdit className="w-4 h-4" />
-                        </Button>
-                      )}
-                      
-                      {canDelete && onDelete && (
-                        <Button
-                          onClick={() => onDelete(produtoGenerico.id)}
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <FaTrash className="w-4 h-4" />
-                        </Button>
-                      )}
+                    <div className="flex justify-end">
+                      <ActionButtons
+                        canView={canView && onView}
+                        canEdit={canEdit && onEdit}
+                        canDelete={canDelete && onDelete}
+                        onView={onView}
+                        onEdit={onEdit}
+                        onDelete={onDelete}
+                        item={produtoGenerico.id}
+                        size="sm"
+                      />
                     </div>
                   </td>
                 </tr>
@@ -185,41 +163,17 @@ const ProdutosGenericosTable = ({
                   </div>
                 )}
               </div>
-              <div className="flex gap-2">
-                {canView && onView && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onView(produtoGenerico.id)}
-                    title="Visualizar"
-                    className="p-2"
-                  >
-                    <FaEye className="text-blue-600 text-sm" />
-                  </Button>
-                )}
-                {canEdit && onEdit && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onEdit(produtoGenerico.id)}
-                    title="Editar"
-                    className="p-2"
-                  >
-                    <FaEdit className="text-green-600 text-sm" />
-                  </Button>
-                )}
-                {canDelete && onDelete && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onDelete(produtoGenerico.id)}
-                    title="Excluir"
-                    className="p-2"
-                  >
-                    <FaTrash className="text-red-600 text-sm" />
-                  </Button>
-                )}
-              </div>
+              <ActionButtons
+                canView={canView && onView}
+                canEdit={canEdit && onEdit}
+                canDelete={canDelete && onDelete}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={produtoGenerico.id}
+                size="xs"
+                className="p-2"
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-xs">

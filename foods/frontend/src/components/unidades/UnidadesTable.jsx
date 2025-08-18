@@ -1,6 +1,5 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button, Table } from '../ui';
+import { ActionButtons, Table } from '../ui';
 
 const UnidadesTable = ({ 
   unidades, 
@@ -48,38 +47,16 @@ const UnidadesTable = ({
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div className="flex gap-2">
-                    {canView('unidades') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => onView(unidade)}
-                        title="Visualizar"
-                      >
-                        <FaEye className="text-green-600 text-sm" />
-                      </Button>
-                    )}
-                    {canEdit('unidades') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => onEdit(unidade)}
-                        title="Editar"
-                      >
-                        <FaEdit className="text-blue-600 text-sm" />
-                      </Button>
-                    )}
-                    {canDelete('unidades') && (
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => onDelete(unidade.id)}
-                        title="Excluir"
-                      >
-                        <FaTrash className="text-red-600 text-sm" />
-                      </Button>
-                    )}
-                  </div>
+                  <ActionButtons
+                    canView={canView('unidades')}
+                    canEdit={canEdit('unidades')}
+                    canDelete={canDelete('unidades')}
+                    onView={onView}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    item={unidade}
+                    size="xs"
+                  />
                 </td>
               </tr>
             ))}
@@ -96,41 +73,17 @@ const UnidadesTable = ({
                 <h3 className="font-semibold text-gray-900 text-sm">{unidade.nome}</h3>
                 <p className="text-gray-600 text-xs">Sigla: {unidade.sigla || '-'}</p>
               </div>
-              <div className="flex gap-2">
-                {canView('unidades') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onView(unidade)}
-                    title="Visualizar"
-                    className="p-2"
-                  >
-                    <FaEye className="text-green-600 text-sm" />
-                  </Button>
-                )}
-                {canEdit('unidades') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onEdit(unidade)}
-                    title="Editar"
-                    className="p-2"
-                  >
-                    <FaEdit className="text-blue-600 text-sm" />
-                  </Button>
-                )}
-                {canDelete('unidades') && (
-                  <Button
-                    variant="ghost"
-                    size="xs"
-                    onClick={() => onDelete(unidade.id)}
-                    title="Excluir"
-                    className="p-2"
-                  >
-                    <FaTrash className="text-red-600 text-sm" />
-                  </Button>
-                )}
-              </div>
+              <ActionButtons
+                canView={canView('unidades')}
+                canEdit={canEdit('unidades')}
+                canDelete={canDelete('unidades')}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={unidade}
+                size="xs"
+                className="p-2"
+              />
             </div>
             
             <div className="grid grid-cols-2 gap-3 text-xs">
