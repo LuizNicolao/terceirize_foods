@@ -4,7 +4,6 @@ export const FormInput = ({
   type = 'text',
   placeholder,
   icon,
-  register,
   error,
   className = '',
   ...props
@@ -21,7 +20,6 @@ export const FormInput = ({
         <input
           type={type}
           placeholder={placeholder}
-          {...register}
           {...props}
           className={`
             w-full px-3 py-3 ${icon ? 'pl-10' : 'pl-3'} pr-3
