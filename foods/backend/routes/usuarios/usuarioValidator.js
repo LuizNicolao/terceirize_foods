@@ -42,28 +42,59 @@ const userValidations = {
   create: [
     body('nome')
       .notEmpty().withMessage('Nome é obrigatório')
-      .isString().trim().isLength({ min: 3, max: 100 }).withMessage('Nome deve ter entre 3 e 100 caracteres'),
+      .custom((value) => {
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length >= 3 && trimmed.length <= 100;
+        }
+        return false;
+      })
+      .withMessage('Nome deve ter entre 3 e 100 caracteres'),
     
     body('email')
       .notEmpty().withMessage('Email é obrigatório')
-      .isEmail().withMessage('Email deve ser válido'),
+      .custom((value) => {
+        if (typeof value === 'string') {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(value);
+        }
+        return false;
+      })
+      .withMessage('Email deve ser válido'),
     
     body('senha')
       .notEmpty().withMessage('Senha é obrigatória')
-      .isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
+      .custom((value) => {
+        if (typeof value === 'string') {
+          return value.length >= 6;
+        }
+        return false;
+      })
+      .withMessage('Senha deve ter pelo menos 6 caracteres'),
     
     body('nivel_de_acesso')
       .notEmpty().withMessage('Nível de acesso é obrigatório')
-      .isIn(['I', 'II', 'III']).withMessage('Nível de acesso deve ser I, II ou III'),
+      .custom((value) => {
+        return ['I', 'II', 'III'].includes(value);
+      })
+      .withMessage('Nível de acesso deve ser I, II ou III'),
     
     body('tipo_de_acesso')
       .notEmpty().withMessage('Tipo de acesso é obrigatório')
-      .isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'])
+      .custom((value) => {
+        return ['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'].includes(value);
+      })
       .withMessage('Tipo de acesso inválido'),
     
     body('status')
       .optional()
-      .isIn(['ativo', 'inativo', 'bloqueado']).withMessage('Status deve ser ativo, inativo ou bloqueado'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        return ['ativo', 'inativo', 'bloqueado'].includes(value);
+      })
+      .withMessage('Status deve ser ativo, inativo ou bloqueado'),
     
     handleValidationErrors
   ],
@@ -73,28 +104,74 @@ const userValidations = {
     
     body('nome')
       .optional()
-      .isString().trim().isLength({ min: 3, max: 100 }).withMessage('Nome deve ter entre 3 e 100 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const trimmed = value.trim();
+          return trimmed.length >= 3 && trimmed.length <= 100;
+        }
+        return false;
+      })
+      .withMessage('Nome deve ter entre 3 e 100 caracteres'),
     
     body('email')
       .optional()
-      .isEmail().withMessage('Email deve ser válido'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(value);
+        }
+        return false;
+      })
+      .withMessage('Email deve ser válido'),
     
     body('senha')
       .optional()
-      .isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        if (typeof value === 'string') {
+          return value.length >= 6;
+        }
+        return false;
+      })
+      .withMessage('Senha deve ter pelo menos 6 caracteres'),
     
     body('nivel_de_acesso')
       .optional()
-      .isIn(['I', 'II', 'III']).withMessage('Nível de acesso deve ser I, II ou III'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        return ['I', 'II', 'III'].includes(value);
+      })
+      .withMessage('Nível de acesso deve ser I, II ou III'),
     
     body('tipo_de_acesso')
       .optional()
-      .isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'])
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        return ['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'].includes(value);
+      })
       .withMessage('Tipo de acesso inválido'),
     
     body('status')
       .optional()
-      .isIn(['ativo', 'inativo', 'bloqueado']).withMessage('Status deve ser ativo, inativo ou bloqueado'),
+      .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
+        return ['ativo', 'inativo', 'bloqueado'].includes(value);
+      })
+      .withMessage('Status deve ser ativo, inativo ou bloqueado'),
     
     handleValidationErrors
   ]
