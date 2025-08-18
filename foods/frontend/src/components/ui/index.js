@@ -5,5 +5,4 @@ export { default as Table } from './Table';
 export { default as StatCard } from './StatCard';
 export { default as ActivityCard } from './ActivityCard';
 export { default as ChartCard } from './ChartCard';
-export { default as ValidationErrorModal } from './ValidationErrorModal';
-export { default as FormattedInput } from './FormattedInput'; 
+export { default as ValidationErrorModal } from './ValidationErrorModal'; 
