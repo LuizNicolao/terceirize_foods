@@ -31,13 +31,10 @@ const SubgruposTable = ({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
+                  Código
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nome
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Código
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Grupo
@@ -56,8 +53,8 @@ const SubgruposTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {subgrupos.map((subgrupo) => (
                 <tr key={subgrupo.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {subgrupo.id}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                    {subgrupo.codigo || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
@@ -68,9 +65,6 @@ const SubgruposTable = ({
                         {subgrupo.descricao}
                       </div>
                     )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {subgrupo.codigo || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {getGrupoNome(subgrupo.grupo_id)}
@@ -135,7 +129,6 @@ const SubgruposTable = ({
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">{subgrupo.nome}</h3>
-                <p className="text-gray-600 text-xs">ID: {subgrupo.id}</p>
                 {subgrupo.codigo && (
                   <p className="text-gray-600 text-xs">Código: {subgrupo.codigo}</p>
                 )}

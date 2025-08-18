@@ -31,7 +31,6 @@ const VeiculosTable = ({
         <Table>
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Placa</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca/Modelo</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
@@ -43,7 +42,6 @@ const VeiculosTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {veiculos.map((veiculo) => (
               <tr key={veiculo.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{veiculo.id}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{veiculo.placa}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {veiculo.marca} {veiculo.modelo}
@@ -96,7 +94,7 @@ const VeiculosTable = ({
             <div className="flex justify-between items-start mb-3">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">{veiculo.placa}</h3>
-                <p className="text-xs text-gray-500">ID: {veiculo.id}</p>
+                <p className="text-xs text-gray-500">Placa: {veiculo.placa}</p>
               </div>
               <VeiculosActions
                 veiculo={veiculo}

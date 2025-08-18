@@ -29,7 +29,6 @@ const UnidadesEscolaresTable = ({
         <Table>
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome da Escola</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade</th>
@@ -43,7 +42,6 @@ const UnidadesEscolaresTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {unidades.map((unidade) => (
               <tr key={unidade.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.id}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{unidade.codigo_teknisa}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.cidade}</td>
@@ -83,7 +81,7 @@ const UnidadesEscolaresTable = ({
             <div className="flex justify-between items-start mb-3">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">{unidade.nome_escola}</h3>
-                <p className="text-xs text-gray-500">ID: {unidade.id} | Código: {unidade.codigo_teknisa}</p>
+                <p className="text-xs text-gray-500">Código: {unidade.codigo_teknisa}</p>
               </div>
               <UnidadesEscolaresActions
                 unidade={unidade}

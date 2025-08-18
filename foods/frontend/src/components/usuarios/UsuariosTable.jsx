@@ -32,9 +32,6 @@ const UsuariosTable = ({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nome
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -57,9 +54,6 @@ const UsuariosTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {usuarios.map((usuario) => (
                 <tr key={usuario.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {usuario.id}
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {usuario.nome}
@@ -133,7 +127,7 @@ const UsuariosTable = ({
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">{usuario.nome}</h3>
-                <p className="text-gray-600 text-xs">ID: {usuario.id}</p>
+                <p className="text-gray-600 text-xs">Email: {usuario.email}</p>
               </div>
               <div className="flex gap-2">
                 {canView('usuarios') && (

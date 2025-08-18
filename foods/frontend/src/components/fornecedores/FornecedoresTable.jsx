@@ -45,9 +45,6 @@ const FornecedoresTable = ({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   CNPJ
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -70,9 +67,6 @@ const FornecedoresTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {fornecedores.map((fornecedor) => (
                 <tr key={fornecedor.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {fornecedor.id}
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {fornecedor.cnpj}
@@ -148,7 +142,7 @@ const FornecedoresTable = ({
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">{fornecedor.razao_social}</h3>
-                <p className="text-gray-600 text-xs">ID: {fornecedor.id} | CNPJ: {fornecedor.cnpj}</p>
+                <p className="text-gray-600 text-xs">CNPJ: {fornecedor.cnpj}</p>
               </div>
               <div className="flex gap-2">
                 {canView && (

@@ -31,7 +31,6 @@ const RotasTable = ({
         <Table>
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
@@ -45,7 +44,6 @@ const RotasTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {rotas.map((rota) => (
               <tr key={rota.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.id}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{rota.codigo}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.nome}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -95,7 +93,7 @@ const RotasTable = ({
             <div className="flex justify-between items-start mb-3">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">{rota.nome}</h3>
-                <p className="text-xs text-gray-500">ID: {rota.id} | Código: {rota.codigo}</p>
+                <p className="text-xs text-gray-500">Código: {rota.codigo}</p>
               </div>
               <RotasActions
                 rota={rota}
