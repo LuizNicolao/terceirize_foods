@@ -12,6 +12,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const { gerarCodigoGrupo } = require('../../utils/codigoGenerator');
 
 class GruposCRUDController {
   
@@ -19,7 +20,7 @@ class GruposCRUDController {
    * Criar novo grupo
    */
   static criarGrupo = asyncHandler(async (req, res) => {
-    const { nome, codigo, descricao, status } = req.body;
+    const { nome, descricao, status } = req.body;
 
     // Verificar se nome já existe
     const existingGrupo = await executeQuery(
@@ -31,15 +32,8 @@ class GruposCRUDController {
       return conflictResponse(res, 'Nome do grupo já existe');
     }
 
-    // Verificar se código já existe
-    const existingCodigo = await executeQuery(
-      'SELECT id FROM grupos WHERE codigo = ?',
-      [codigo]
-    );
-
-    if (existingCodigo.length > 0) {
-      return conflictResponse(res, 'Código do grupo já existe');
-    }
+    // Gerar código único automaticamente
+    const codigo = gerarCodigoGrupo();
 
     // Inserir grupo
     const result = await executeQuery(
