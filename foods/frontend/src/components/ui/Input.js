@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMask } from '../../hooks';
+import { applyMask } from '../../utils/masks';
 
 const Input = React.forwardRef(({ 
   label, 
@@ -11,9 +11,6 @@ const Input = React.forwardRef(({
   mask,
   ...props 
 }, ref) => {
-  // Hook para máscara se especificado
-  const maskHook = mask ? useMask(mask, props.defaultValue || props.value || '') : null;
-  
   const baseClasses = 'w-full border border-gray-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent';
   
   const sizes = {
@@ -23,6 +20,20 @@ const Input = React.forwardRef(({
   };
 
   const inputClasses = `${baseClasses} ${sizes[size]} ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`;
+
+  // Função para lidar com mudanças quando há máscara
+  const handleMaskedChange = (e) => {
+    if (mask) {
+      const inputValue = e.target.value;
+      const maskedValue = applyMask(inputValue, mask);
+      e.target.value = maskedValue;
+    }
+    
+    // Chama o onChange original se existir
+    if (props.onChange) {
+      props.onChange(e);
+    }
+  };
 
   const renderInput = () => {
     switch (type) {
@@ -42,27 +53,12 @@ const Input = React.forwardRef(({
           />
         );
       default:
-        // Se há máscara, aplica o tratamento especial
-        if (mask && maskHook) {
-          const { maskedValue, handleChange } = maskHook;
-          
-          return (
-            <input 
-              ref={ref}
-              type={type}
-              className={inputClasses}
-              value={maskedValue}
-              onChange={(e) => handleChange(e, props.onChange)}
-              {...props}
-            />
-          );
-        }
-        
         return (
           <input 
             ref={ref}
             type={type}
             className={inputClasses}
+            onChange={handleMaskedChange}
             {...props}
           />
         );
