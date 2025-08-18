@@ -10,7 +10,7 @@ const UsuarioModal = ({
   usuario, 
   isViewMode = false
 }) => {
-  const { register, handleSubmit, reset, formState: { errors }, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   React.useEffect(() => {
     if (usuario && isOpen) {
@@ -53,21 +53,13 @@ const UsuarioModal = ({
             <div className="space-y-3">
               <Input
                 label="Nome Completo *"
-                {...register('nome', { required: 'Nome é obrigatório' })}
-                error={errors.nome?.message}
+                {...register('nome')}
                 disabled={isViewMode}
               />
               <Input
                 label="Email *"
                 type="email"
-                {...register('email', { 
-                  required: 'Email é obrigatório',
-                  pattern: {
-                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: 'Email inválido'
-                  }
-                })}
-                error={errors.email?.message}
+                {...register('email')}
                 disabled={isViewMode}
               />
             </div>
@@ -82,8 +74,7 @@ const UsuarioModal = ({
               <Input
                 label="Tipo de Acesso *"
                 type="select"
-                {...register('tipo_de_acesso', { required: 'Tipo de acesso é obrigatório' })}
-                error={errors.tipo_de_acesso?.message}
+                {...register('tipo_de_acesso')}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o tipo de acesso</option>
@@ -96,8 +87,7 @@ const UsuarioModal = ({
               <Input
                 label="Nível de Acesso *"
                 type="select"
-                {...register('nivel_de_acesso', { required: 'Nível de acesso é obrigatório' })}
-                error={errors.nivel_de_acesso?.message}
+                {...register('nivel_de_acesso')}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o nível de acesso</option>
@@ -108,8 +98,7 @@ const UsuarioModal = ({
               <Input
                 label="Status *"
                 type="select"
-                {...register('status', { required: 'Status é obrigatório' })}
-                error={errors.status?.message}
+                {...register('status')}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o status</option>
@@ -132,14 +121,7 @@ const UsuarioModal = ({
               <Input
                 label={usuario ? "Nova Senha (deixe em branco para manter a atual)" : "Senha *"}
                 type="password"
-                {...register('senha', { 
-                  required: !usuario ? 'Senha é obrigatória' : false,
-                  minLength: {
-                    value: 6,
-                    message: 'Senha deve ter pelo menos 6 caracteres'
-                  }
-                })}
-                error={errors.senha?.message}
+                {...register('senha')}
                 disabled={isViewMode}
               />
             </div>

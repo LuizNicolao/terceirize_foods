@@ -13,6 +13,7 @@ import UsuariosStats from '../../components/usuarios/UsuariosStats';
 import UsuariosActions from '../../components/usuarios/UsuariosActions';
 import UsuariosTable from '../../components/usuarios/UsuariosTable';
 import AuditModal from '../../components/shared/AuditModal';
+import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Usuarios = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -30,6 +31,9 @@ const Usuarios = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    validationErrors,
+    showValidationModal,
+    handleCloseValidationModal,
     onSubmit,
     handleDeleteUser,
     handleAddUser,
@@ -149,6 +153,14 @@ const Usuarios = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+      />
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Paginação */}

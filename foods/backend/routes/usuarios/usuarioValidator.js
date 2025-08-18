@@ -3,17 +3,11 @@
  * Implementa validações usando express-validator
  */
 
-const { body, param, query, validationResult } = require('express-validator');
-const { validationResponse } = require('../../middleware/responseHandler');
+const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
 
-// Middleware para capturar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return validationResponse(res, errors.array());
-  }
-  next();
-};
+// Criar handler de validação específico para usuários
+const handleValidationErrors = createEntityValidationHandler('usuarios');
 
 // Validações comuns
 const commonValidations = {
@@ -47,65 +41,66 @@ const commonValidations = {
 const userValidations = {
   create: [
     body('nome')
-      .isLength({ min: 3, max: 100 })
-      .withMessage('Nome deve ter entre 3 e 100 caracteres')
-      .trim(),
+      .notEmpty().withMessage('Nome é obrigatório')
+      .isString().trim().isLength({ min: 3, max: 100 }).withMessage('Nome deve ter entre 3 e 100 caracteres'),
+    
     body('email')
-      .custom((value) => {
-        if (value && value.trim() !== '') {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(value)) {
-            throw new Error('Email deve ser um email válido');
-          }
-        }
-        return true;
-      })
-      .withMessage('Email deve ser um email válido'),
+      .notEmpty().withMessage('Email é obrigatório')
+      .isEmail().withMessage('Email deve ser válido'),
+    
     body('senha')
-      .isLength({ min: 6 })
-      .withMessage('Senha deve ter pelo menos 6 caracteres'),
+      .notEmpty().withMessage('Senha é obrigatória')
+      .isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
+    
     body('nivel_de_acesso')
-      .isIn(['I', 'II', 'III'])
-      .withMessage('Nível de acesso deve ser I, II ou III'),
+      .notEmpty().withMessage('Nível de acesso é obrigatório')
+      .isIn(['I', 'II', 'III']).withMessage('Nível de acesso deve ser I, II ou III'),
+    
     body('tipo_de_acesso')
+      .notEmpty().withMessage('Tipo de acesso é obrigatório')
       .isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'])
       .withMessage('Tipo de acesso inválido'),
+    
+    body('status')
+      .optional()
+      .isIn(['ativo', 'inativo', 'bloqueado']).withMessage('Status deve ser ativo, inativo ou bloqueado'),
+    
     handleValidationErrors
   ],
 
   update: [
-    commonValidations.id,
+    param('id').isInt({ min: 1 }).withMessage('ID deve ser um número inteiro positivo'),
+    
     body('nome')
       .optional()
-      .isLength({ min: 3, max: 100 })
-      .withMessage('Nome deve ter entre 3 e 100 caracteres')
-      .trim(),
+      .isString().trim().isLength({ min: 3, max: 100 }).withMessage('Nome deve ter entre 3 e 100 caracteres'),
+    
     body('email')
       .optional()
-      .custom((value) => {
-        if (value && value.trim() !== '') {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(value)) {
-            throw new Error('Email deve ser um email válido');
-          }
-        }
-        return true;
-      })
-      .withMessage('Email deve ser um email válido'),
+      .isEmail().withMessage('Email deve ser válido'),
+    
+    body('senha')
+      .optional()
+      .isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
+    
     body('nivel_de_acesso')
       .optional()
-      .isIn(['I', 'II', 'III'])
-      .withMessage('Nível de acesso deve ser I, II ou III'),
+      .isIn(['I', 'II', 'III']).withMessage('Nível de acesso deve ser I, II ou III'),
+    
     body('tipo_de_acesso')
       .optional()
       .isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'])
       .withMessage('Tipo de acesso inválido'),
+    
+    body('status')
+      .optional()
+      .isIn(['ativo', 'inativo', 'bloqueado']).withMessage('Status deve ser ativo, inativo ou bloqueado'),
+    
     handleValidationErrors
   ]
 };
 
 module.exports = {
   userValidations,
-  commonValidations,
-  handleValidationErrors
+  commonValidations
 }; 

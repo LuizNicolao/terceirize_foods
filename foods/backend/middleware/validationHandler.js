@@ -118,12 +118,12 @@ const validationConfigs = {
     categories: {
       personalInfo: ['nome', 'email'],
       accessInfo: ['senha', 'nivel_de_acesso', 'tipo_de_acesso'],
-      contactInfo: ['telefone', 'endereco']
+      statusInfo: ['status']
     },
     categoryNames: {
       personalInfo: 'Informações Pessoais',
       accessInfo: 'Informações de Acesso',
-      contactInfo: 'Informações de Contato'
+      statusInfo: 'Status'
     },
     defaultCategory: 'personalInfo'
   },

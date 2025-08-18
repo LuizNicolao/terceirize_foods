@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import UsuariosService from '../services/usuarios';
+import { useValidation } from './useValidation';
 
 export const useUsuarios = () => {
   // Estados principais
@@ -24,6 +25,15 @@ export const useUsuarios = () => {
     administradores: 0,
     coordenadores: 0
   });
+
+  // Hook de validação
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
 
   // Carregar usuários
   const loadUsuarios = async (params = {}) => {
@@ -90,6 +100,8 @@ export const useUsuarios = () => {
   // Funções de CRUD
   const onSubmit = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
@@ -110,9 +122,13 @@ export const useUsuarios = () => {
         handleCloseModal();
         loadUsuarios();
       } else {
-        toast.error(result.error);
+        if (handleApiResponse(result)) {
+          return; // Erros de validação foram tratados
+        }
+        toast.error(result.message || 'Erro ao salvar usuário');
       }
     } catch (error) {
+      console.error('Erro ao salvar usuário:', error);
       toast.error('Erro ao salvar usuário');
     }
   };
@@ -211,6 +227,11 @@ export const useUsuarios = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+
+    // Estados de validação
+    validationErrors,
+    showValidationModal,
+    handleCloseValidationModal,
 
     // Funções CRUD
     onSubmit,
