@@ -291,6 +291,23 @@ const validationConfigs = {
     defaultCategory: 'basicInfo'
   },
 
+  // Configuração para Classes
+  classes: {
+    categories: {
+      basicInfo: ['nome'],
+      classificationInfo: ['subgrupo_id'],
+      additionalInfo: ['descricao'],
+      statusInfo: ['status']
+    },
+    categoryNames: {
+      basicInfo: 'Informações Básicas',
+      classificationInfo: 'Classificação',
+      additionalInfo: 'Informações Adicionais',
+      statusInfo: 'Status'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração padrão para outras entidades
   default: {
     categories: {

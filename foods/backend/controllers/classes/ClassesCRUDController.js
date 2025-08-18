@@ -12,6 +12,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const { gerarCodigoClasse } = require('../../utils/codigoGenerator');
 
 class ClassesCRUDController {
   
@@ -19,7 +20,7 @@ class ClassesCRUDController {
    * Criar nova classe
    */
   static criarClasse = asyncHandler(async (req, res) => {
-    const { nome, codigo, descricao, subgrupo_id, status } = req.body;
+    const { nome, descricao, subgrupo_id, status } = req.body;
 
     // Verificar se subgrupo existe
     const subgrupo = await executeQuery(
@@ -41,22 +42,13 @@ class ClassesCRUDController {
       return conflictResponse(res, 'Classe já cadastrada neste subgrupo');
     }
 
-    // Verificar se código já existe
-    if (codigo) {
-      const existingCodigo = await executeQuery(
-        'SELECT id FROM classes WHERE codigo = ?',
-        [codigo]
-      );
-
-      if (existingCodigo.length > 0) {
-        return conflictResponse(res, 'Código já cadastrado');
-      }
-    }
+    // Gerar código único automaticamente
+    const codigo = gerarCodigoClasse();
 
     // Inserir classe
     const result = await executeQuery(
       'INSERT INTO classes (nome, codigo, descricao, subgrupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
-      [nome && nome.trim() ? nome.trim() : null, codigo && codigo.trim() ? codigo.trim() : null, descricao && descricao.trim() ? descricao.trim() : null, subgrupo_id || null, status || 'ativo']
+      [nome && nome.trim() ? nome.trim() : null, codigo, descricao && descricao.trim() ? descricao.trim() : null, subgrupo_id || null, status || 'ativo']
     );
 
     const novaClasseId = result.insertId;
@@ -143,22 +135,10 @@ class ClassesCRUDController {
       }
     }
 
-    // Verificar se código já existe (se estiver sendo alterado)
-    if (updateData.codigo) {
-      const codigoCheck = await executeQuery(
-        'SELECT id FROM classes WHERE codigo = ? AND id != ?',
-        [updateData.codigo, id]
-      );
-
-      if (codigoCheck.length > 0) {
-        return conflictResponse(res, 'Código já cadastrado');
-      }
-    }
-
     // Construir query de atualização dinamicamente
     const updateFields = [];
     const updateParams = [];
-    const camposValidos = ['nome', 'codigo', 'descricao', 'subgrupo_id', 'status'];
+    const camposValidos = ['nome', 'descricao', 'subgrupo_id', 'status']; // Removido 'codigo' pois é gerado automaticamente
 
     Object.keys(updateData).forEach(key => {
       if (camposValidos.includes(key) && updateData[key] !== undefined) {

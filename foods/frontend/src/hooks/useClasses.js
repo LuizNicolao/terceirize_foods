@@ -2,8 +2,18 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import ClassesService from '../services/classes';
 import SubgruposService from '../services/subgrupos';
+import { useValidation } from './useValidation';
 
 export const useClasses = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [classes, setClasses] = useState([]);
   const [subgrupos, setSubgrupos] = useState([]);
@@ -72,7 +82,7 @@ export const useClasses = () => {
           produtos_total: produtos
         });
       } else {
-        toast.error(result.error);
+        toast.error(result.message || 'Erro ao carregar classes');
       }
     } catch (error) {
       toast.error('Erro ao carregar classes');
@@ -126,11 +136,12 @@ export const useClasses = () => {
   // Funções de CRUD
   const onSubmit = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
         nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
-        codigo: data.codigo && data.codigo.trim() !== '' ? data.codigo.trim() : null,
         descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null,
         subgrupo_id: data.subgrupo_id ? parseInt(data.subgrupo_id) : null,
         status: data.status === '1' ? 'ativo' : 'inativo'
@@ -148,7 +159,10 @@ export const useClasses = () => {
         handleCloseModal();
         loadClasses();
       } else {
-        toast.error(result.error);
+        if (handleApiResponse(result)) {
+          return; // Erros de validação foram tratados
+        }
+        toast.error(result.message || 'Erro ao salvar classe');
       }
     } catch (error) {
       toast.error('Erro ao salvar classe');
@@ -163,7 +177,7 @@ export const useClasses = () => {
           toast.success('Classe excluída com sucesso!');
           loadClasses();
         } else {
-          toast.error(result.error);
+          toast.error(result.message || 'Erro ao excluir classe');
         }
       } catch (error) {
         toast.error('Erro ao excluir classe');
@@ -233,6 +247,8 @@ export const useClasses = () => {
     showModal,
     viewMode,
     editingClasse,
+    showValidationModal,
+    validationErrors,
     searchTerm,
     statusFilter,
     subgrupoFilter,
@@ -251,6 +267,7 @@ export const useClasses = () => {
     handleViewClasse,
     handleEditClasse,
     handleCloseModal,
+    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,

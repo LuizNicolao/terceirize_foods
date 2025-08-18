@@ -1,5 +1,8 @@
-const { body } = require('express-validator');
-const { handleValidationErrors } = require('../../middleware/validation');
+const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
+
+// Criar handler de validação específico para classes
+const handleValidationErrors = createEntityValidationHandler('classes');
 
 const commonValidations = {
   id: [
@@ -23,10 +26,6 @@ const classeValidations = {
       .trim()
       .isLength({ min: 1, max: 100 })
       .withMessage('Nome da classe deve ter entre 1 e 100 caracteres'),
-    body('codigo')
-      .trim()
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Código da classe deve ter entre 1 e 20 caracteres'),
     body('descricao')
       .optional()
       .trim()
@@ -47,11 +46,6 @@ const classeValidations = {
       .trim()
       .isLength({ min: 1, max: 100 })
       .withMessage('Nome da classe deve ter entre 1 e 100 caracteres'),
-    body('codigo')
-      .optional()
-      .trim()
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Código da classe deve ter entre 1 e 20 caracteres'),
     body('descricao')
       .optional()
       .trim()

@@ -34,7 +34,7 @@ class ClassesService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar classes'
+        message: error.response?.data?.message || 'Erro ao carregar classes'
       };
     }
   }
@@ -62,7 +62,7 @@ class ClassesService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar classe'
+        message: error.response?.data?.message || 'Erro ao buscar classe'
       };
     }
   }
@@ -89,9 +89,17 @@ class ClassesService {
         message: 'Classe criada com sucesso!'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar classe'
+        message: error.response?.data?.message || 'Erro ao criar classe'
       };
     }
   }
@@ -118,9 +126,17 @@ class ClassesService {
         message: 'Classe atualizada com sucesso!'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao atualizar classe'
+        message: error.response?.data?.message || 'Erro ao atualizar classe'
       };
     }
   }
@@ -138,7 +154,7 @@ class ClassesService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao excluir classe'
+        message: error.response?.data?.message || 'Erro ao excluir classe'
       };
     }
   }
@@ -173,7 +189,7 @@ class ClassesService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar classes ativas'
+        message: error.response?.data?.message || 'Erro ao carregar classes ativas'
       };
     }
   }
@@ -208,7 +224,7 @@ class ClassesService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar classes por subgrupo'
+        message: error.response?.data?.message || 'Erro ao buscar classes por subgrupo'
       };
     }
   }
@@ -229,7 +245,7 @@ class ClassesService {
     } catch (error) {
       return {
         success: false,
-        error: 'Erro ao exportar XLSX'
+        message: 'Erro ao exportar XLSX'
       };
     }
   }
@@ -250,7 +266,7 @@ class ClassesService {
     } catch (error) {
       return {
         success: false,
-        error: 'Erro ao exportar PDF'
+        message: 'Erro ao exportar PDF'
       };
     }
   }
