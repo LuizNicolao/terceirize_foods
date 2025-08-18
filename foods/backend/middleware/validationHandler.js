@@ -308,6 +308,19 @@ const validationConfigs = {
     defaultCategory: 'basicInfo'
   },
 
+  // Configuração para Unidades
+  unidades: {
+    categories: {
+      basicInfo: ['nome', 'sigla'],
+      statusInfo: ['status']
+    },
+    categoryNames: {
+      basicInfo: 'Informações Básicas',
+      statusInfo: 'Status'
+    },
+    defaultCategory: 'basicInfo'
+  },
+
   // Configuração para Produto Origem
   'produto-origem': {
     categories: {

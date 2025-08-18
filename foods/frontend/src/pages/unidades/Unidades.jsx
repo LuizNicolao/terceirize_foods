@@ -5,7 +5,7 @@ import { useUnidades } from '../../hooks/useUnidades';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import UnidadesService from '../../services/unidades';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { UnidadeModal } from '../../components/unidades';
@@ -31,12 +31,15 @@ const Unidades = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    validationErrors,
+    showValidationModal,
     onSubmit,
     handleDeleteUnidade,
     handleAddUnidade,
     handleViewUnidade,
     handleEditUnidade,
     handleCloseModal,
+    handleCloseValidationModal,
     handlePageChange,
     setSearchTerm,
     setStatusFilter,
@@ -136,6 +139,14 @@ const Unidades = () => {
         onSubmit={onSubmit}
         unidade={editingUnidade}
         isViewMode={viewMode}
+      />
+
+      {/* Modal de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Modal de Auditoria */}

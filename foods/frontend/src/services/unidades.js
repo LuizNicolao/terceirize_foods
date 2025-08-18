@@ -89,6 +89,16 @@ class UnidadesService {
         message: 'Unidade criada com sucesso!'
       };
     } catch (error) {
+      // Verificar se há erros de validação
+      if (error.response?.data?.validationErrors || error.response?.data?.errorCategories) {
+        return {
+          success: false,
+          validationErrors: error.response.data.validationErrors,
+          errorCategories: error.response.data.errorCategories,
+          error: error.response.data.message || 'Erro de validação'
+        };
+      }
+      
       return {
         success: false,
         error: error.response?.data?.message || 'Erro ao criar unidade'
@@ -118,6 +128,16 @@ class UnidadesService {
         message: 'Unidade atualizada com sucesso!'
       };
     } catch (error) {
+      // Verificar se há erros de validação
+      if (error.response?.data?.validationErrors || error.response?.data?.errorCategories) {
+        return {
+          success: false,
+          validationErrors: error.response.data.validationErrors,
+          errorCategories: error.response.data.errorCategories,
+          error: error.response.data.message || 'Erro de validação'
+        };
+      }
+      
       return {
         success: false,
         error: error.response?.data?.message || 'Erro ao atualizar unidade'

@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import UnidadesService from '../services/unidades';
+import { useValidation } from './useValidation';
 
 export const useUnidades = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [unidades, setUnidades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -108,6 +118,11 @@ export const useUnidades = () => {
         result = await UnidadesService.criar(cleanData);
       }
       
+      // Verificar se há erros de validação
+      if (handleApiResponse(result)) {
+        return; // Se há erros de validação, não continua
+      }
+      
       if (result.success) {
         toast.success(editingUnidade ? 'Unidade atualizada com sucesso!' : 'Unidade criada com sucesso!');
         handleCloseModal();
@@ -191,6 +206,10 @@ export const useUnidades = () => {
     itemsPerPage,
     estatisticas,
 
+    // Estados de validação (do hook universal)
+    validationErrors,
+    showValidationModal,
+
     // Funções CRUD
     onSubmit,
     handleDeleteUnidade,
@@ -200,6 +219,9 @@ export const useUnidades = () => {
     handleViewUnidade,
     handleEditUnidade,
     handleCloseModal,
+
+    // Funções de validação (do hook universal)
+    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,
