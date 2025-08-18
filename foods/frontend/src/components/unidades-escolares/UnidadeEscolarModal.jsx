@@ -1,7 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave } from 'react-icons/fa';
-import { Button, Input, Modal } from '../ui';
+import { Button, Input, Modal, FormattedInput } from '../ui';
 
 const UnidadeEscolarModal = ({ 
   isOpen, 
@@ -135,8 +135,9 @@ const UnidadeEscolarModal = ({
               Contato
             </h3>
             <div className="space-y-3">
-              <Input
+              <FormattedInput
                 label="Telefone"
+                formatType="phone"
                 type="text"
                 placeholder="(00) 00000-0000"
                 {...register('telefone')}

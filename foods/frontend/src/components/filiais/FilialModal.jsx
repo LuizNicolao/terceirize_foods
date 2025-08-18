@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaSearch, FaWarehouse } from 'react-icons/fa';
-import { Modal, Input, Button } from '../ui';
+import { Modal, Input, Button, FormattedInput } from '../ui';
 import FiliaisService from '../../services/filiais';
 import AlmoxarifadoContent from '../AlmoxarifadoContent';
 import toast from 'react-hot-toast';
@@ -131,7 +131,8 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
                     CNPJ
                   </label>
                   <div className="flex gap-2">
-                    <Input
+                    <FormattedInput
+                      formatType="cnpj"
                       {...register('cnpj')}
                       error={errors.cnpj?.message}
                       disabled={isViewMode}
@@ -207,8 +208,9 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
                   disabled={isViewMode}
                   placeholder="Bairro"
                 />
-                <Input
+                <FormattedInput
                   label="CEP"
+                  formatType="cep"
                   {...register('cep')}
                   error={errors.cep?.message}
                   disabled={isViewMode}

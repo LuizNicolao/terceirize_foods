@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaSearch } from 'react-icons/fa';
-import { Modal, Input, Button } from '../ui';
+import { Modal, Input, Button, FormattedInput } from '../ui';
 import FornecedoresService from '../../services/fornecedores';
 import toast from 'react-hot-toast';
 
@@ -95,7 +95,8 @@ const FornecedorModal = ({
                   CNPJ *
                 </label>
                 <div className="flex gap-2">
-                  <Input
+                  <FormattedInput
+                    formatType="cnpj"
                     {...register('cnpj')}
                     disabled={viewMode}
                     placeholder="00.000.000/0000-00"
@@ -151,8 +152,9 @@ const FornecedorModal = ({
                 {...register('email')}
                 disabled={viewMode}
               />
-              <Input
+              <FormattedInput
                 label="Telefone"
+                formatType="phone"
                 {...register('telefone')}
                 disabled={viewMode}
               />
@@ -178,8 +180,9 @@ const FornecedorModal = ({
                 {...register('numero')}
                 disabled={viewMode}
               />
-              <Input
+              <FormattedInput
                 label="CEP"
+                formatType="cep"
                 {...register('cep')}
                 disabled={viewMode}
               />

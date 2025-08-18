@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaSearch } from 'react-icons/fa';
-import { Modal, Input, Button } from '../ui';
+import { Modal, Input, Button, FormattedInput } from '../ui';
 import ClientesService from '../../services/clientes';
 import toast from 'react-hot-toast';
 
@@ -89,7 +89,8 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
                   CNPJ *
                 </label>
                 <div className="flex gap-2">
-                  <Input
+                  <FormattedInput
+                    formatType="cnpj"
                     {...register('cnpj')}
                     disabled={isViewMode}
                     placeholder="00.000.000/0000-00"
@@ -146,8 +147,9 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
                 {...register('email')}
                 disabled={isViewMode}
               />
-              <Input
+              <FormattedInput
                 label="Telefone"
+                formatType="phone"
                 {...register('telefone')}
                 disabled={isViewMode}
               />
@@ -173,8 +175,9 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
                 {...register('numero')}
                 disabled={isViewMode}
               />
-              <Input
+              <FormattedInput
                 label="CEP"
+                formatType="cep"
                 {...register('cep')}
                 disabled={isViewMode}
               />
