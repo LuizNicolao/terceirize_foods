@@ -96,7 +96,7 @@ export const maskTelefone = (value) => {
  * @returns {string} - Valor formatado
  */
 export const applyMask = (value, maskType) => {
-  if (!value) return '';
+  if (!value || value === '') return '';
   
   switch (maskType) {
     case 'cep':

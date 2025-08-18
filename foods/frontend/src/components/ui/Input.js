@@ -26,12 +26,18 @@ const Input = React.forwardRef(({
     if (mask) {
       const inputValue = e.target.value;
       const maskedValue = applyMask(inputValue, mask);
+      
+      // Atualiza o valor do input diretamente
       e.target.value = maskedValue;
-    }
-    
-    // Chama o onChange original se existir
-    if (props.onChange) {
-      props.onChange(e);
+      
+      // Chama o onChange original
+      if (props.onChange) {
+        props.onChange(e);
+      }
+    } else {
+      if (props.onChange) {
+        props.onChange(e);
+      }
     }
   };
 
