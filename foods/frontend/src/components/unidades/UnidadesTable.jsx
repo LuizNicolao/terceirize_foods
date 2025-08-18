@@ -27,7 +27,6 @@ const UnidadesTable = ({
         <Table>
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sigla</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -37,8 +36,7 @@ const UnidadesTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {unidades.map((unidade) => (
               <tr key={unidade.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.nome}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{unidade.nome}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.sigla}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
@@ -96,7 +94,7 @@ const UnidadesTable = ({
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">{unidade.nome}</h3>
-                <p className="text-gray-600 text-xs">ID: {unidade.id}</p>
+                <p className="text-gray-600 text-xs">Sigla: {unidade.sigla || '-'}</p>
               </div>
               <div className="flex gap-2">
                 {canView('unidades') && (

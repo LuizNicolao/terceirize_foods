@@ -27,7 +27,6 @@ const MarcasTable = ({
         <Table>
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fabricante</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -37,8 +36,7 @@ const MarcasTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {marcas.map((marca) => (
               <tr key={marca.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.marca}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{marca.marca}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.fabricante}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
@@ -96,7 +94,7 @@ const MarcasTable = ({
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">{marca.marca}</h3>
-                <p className="text-gray-600 text-xs">ID: {marca.id}</p>
+                <p className="text-gray-600 text-xs">Fabricante: {marca.fabricante || '-'}</p>
               </div>
               <div className="flex gap-2">
                 {canView('marcas') && (
