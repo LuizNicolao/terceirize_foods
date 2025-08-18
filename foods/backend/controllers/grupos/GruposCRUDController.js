@@ -109,22 +109,10 @@ class GruposCRUDController {
       }
     }
 
-    // Verificar se código já existe (se estiver sendo alterado)
-    if (updateData.codigo) {
-      const codigoCheck = await executeQuery(
-        'SELECT id FROM grupos WHERE codigo = ? AND id != ?',
-        [updateData.codigo, id]
-      );
-
-      if (codigoCheck.length > 0) {
-        return conflictResponse(res, 'Código do grupo já existe');
-      }
-    }
-
     // Construir query de atualização dinamicamente
     const updateFields = [];
     const updateParams = [];
-    const camposValidos = ['nome', 'codigo', 'descricao', 'status'];
+    const camposValidos = ['nome', 'descricao', 'status']; // Removido 'codigo' pois é gerado automaticamente
 
     Object.keys(updateData).forEach(key => {
       if (camposValidos.includes(key) && updateData[key] !== undefined) {
