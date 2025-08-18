@@ -5,39 +5,38 @@ export const MaskedFormInput = ({
   maskType,
   register,
   fieldName,
-  icon,
+  label,
   error,
+  size = 'md',
   className = '',
   ...props
 }) => {
   const maskProps = useMaskedField(maskType, register, fieldName);
 
+  const baseClasses = 'w-full border border-gray-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent';
+  
+  const sizes = {
+    sm: 'px-3 py-1.5 text-sm',
+    md: 'px-4 py-2 text-sm',
+    lg: 'px-4 py-3 text-base'
+  };
+
+  const inputClasses = `${baseClasses} ${sizes[size]} ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`;
+
   return (
-    <div className="space-y-1">
-      <div className="relative">
-        {icon && (
-          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
-            {icon}
-          </div>
-        )}
-        
-        <input
-          {...maskProps}
-          {...props}
-          className={`
-            w-full px-3 py-3 ${icon ? 'pl-10' : 'pl-3'} pr-3
-            border-2 border-gray-200 rounded-lg
-            text-gray-900 placeholder-gray-500
-            focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none
-            transition-all duration-300
-            ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : ''}
-            ${className}
-          `}
-        />
-      </div>
-      
+    <div className="w-full">
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          {label}
+        </label>
+      )}
+      <input
+        {...maskProps}
+        {...props}
+        className={inputClasses}
+      />
       {error && (
-        <p className="text-sm text-red-600 mt-1">
+        <p className="mt-1 text-sm text-red-600">
           {error}
         </p>
       )}
