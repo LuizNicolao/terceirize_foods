@@ -1,4 +1,8 @@
 const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
+
+// Criar handler de validação específico para filiais
+const handleValidationErrors = createEntityValidationHandler('filiais');
 
 // Validações para criação de filial
 const filialValidations = [
@@ -68,7 +72,9 @@ const filialValidations = [
     .notEmpty()
     .withMessage('Status é obrigatório')
     .isIn(['0', '1'])
-    .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)')
+    .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
+  
+  handleValidationErrors
 ];
 
 // Validações para atualização de filial
@@ -136,7 +142,9 @@ const filialAtualizacaoValidations = [
   body('status')
     .optional()
     .isIn(['0', '1'])
-    .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)')
+    .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
+  
+  handleValidationErrors
 ];
 
 // Validações comuns
@@ -170,5 +178,6 @@ const commonValidations = {
 module.exports = {
   filialValidations,
   filialAtualizacaoValidations,
-  commonValidations
+  commonValidations,
+  handleValidationErrors
 };

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import FiliaisService from '../services/filiais';
-import { useValidation } from './useValidation';
 
 export const useFiliais = () => {
   // Estados principais
@@ -27,14 +26,9 @@ export const useFiliais = () => {
     com_cnpj: 0
   });
 
-  // Hook de validação
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
+  // Estados de validação
+  const [validationErrors, setValidationErrors] = useState(null);
+  const [showValidationModal, setShowValidationModal] = useState(false);
 
   // Carregar filiais
   const loadFiliais = async (params = {}) => {
@@ -103,8 +97,6 @@ export const useFiliais = () => {
   // Funções de CRUD
   const onSubmit = async (data) => {
     try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
@@ -128,14 +120,22 @@ export const useFiliais = () => {
         handleCloseModal();
         loadFiliais();
       } else {
-        if (handleApiResponse(result)) {
-          return; // Erros de validação foram tratados
+        // Verificar se é erro de validação
+        if (result.error && typeof result.error === 'object' && result.error.errorCategories) {
+          setValidationErrors(result.error);
+          setShowValidationModal(true);
+        } else {
+          toast.error(result.error);
         }
-        toast.error(result.message || 'Erro ao salvar filial');
       }
     } catch (error) {
-      console.error('Erro ao salvar filial:', error);
-      toast.error('Erro ao salvar filial');
+      // Verificar se é erro de validação no catch
+      if (error.response?.status === 422 && error.response?.data?.errorCategories) {
+        setValidationErrors(error.response.data);
+        setShowValidationModal(true);
+      } else {
+        toast.error('Erro ao salvar filial');
+      }
     }
   };
 
@@ -180,6 +180,11 @@ export const useFiliais = () => {
     setEditingFilial(null);
   };
 
+  const handleCloseValidationModal = () => {
+    setShowValidationModal(false);
+    setValidationErrors(null);
+  };
+
   // Funções de paginação
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -210,11 +215,8 @@ export const useFiliais = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
-
-    // Estados de validação
     validationErrors,
     showValidationModal,
-    handleCloseValidationModal,
 
     // Funções CRUD
     onSubmit,
@@ -225,6 +227,7 @@ export const useFiliais = () => {
     handleViewFilial,
     handleEditFilial,
     handleCloseModal,
+    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,

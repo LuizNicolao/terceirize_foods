@@ -43,6 +43,9 @@ const ValidationErrorModal = ({ isOpen, onClose, errors, errorCategories }) => {
       'Informações de Acesso': '🔐',
       'Informações de Contato': '📞',
       'Endereço': '📍',
+      'Informações da Empresa': '🏢',
+      'Informações Organizacionais': '🏗️',
+      'Status': '📊',
       'Campos Gerais': '📝'
     };
 
@@ -102,6 +105,9 @@ const ValidationErrorModal = ({ isOpen, onClose, errors, errorCategories }) => {
                   'accessInfo': 'Informações de Acesso',
                   'contactInfo': 'Informações de Contato',
                   'addressInfo': 'Endereço',
+                  'companyInfo': 'Informações da Empresa',
+                  'organizationalInfo': 'Informações Organizacionais',
+                  'statusInfo': 'Status',
                   'general': 'Campos Gerais'
                 };
                 
