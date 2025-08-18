@@ -3,7 +3,7 @@ const { authenticateToken } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const FiliaisController = require('../../controllers/filiais');
-const { filialValidations, filialAtualizacaoValidations, commonValidations } = require('./filialValidator');
+const { filialValidations, commonValidations } = require('./filialValidator');
 
 const router = express.Router();
 
@@ -29,14 +29,13 @@ router.get('/:id',
 
 // Criar filial
 router.post('/', 
-  filialValidations,
+  filialValidations.create,
   FiliaisController.criarFilial
 );
 
 // Atualizar filial
 router.put('/:id', 
-  commonValidations.id,
-  filialAtualizacaoValidations,
+  filialValidations.update,
   FiliaisController.atualizarFilial
 );
 

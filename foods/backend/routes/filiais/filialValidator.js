@@ -6,19 +6,18 @@ const handleValidationErrors = createEntityValidationHandler('filiais');
 
 // Validações comuns
 const commonValidations = {
-  id: [
-    param('id')
-      .isInt({ min: 1 })
-      .withMessage('ID deve ser um número inteiro positivo')
-  ],
+  // Validação de ID
+  id: param('id')
+    .isInt({ min: 1 })
+    .withMessage('ID deve ser um número inteiro positivo'),
   
-  search: [
-    query('search')
-      .optional()
-      .isLength({ min: 1, max: 100 })
-      .withMessage('Termo de busca deve ter entre 1 e 100 caracteres')
-  ],
+  // Validação de busca
+  search: query('search')
+    .optional()
+    .isLength({ min: 1, max: 100 })
+    .withMessage('Termo de busca deve ter entre 1 e 100 caracteres'),
   
+  // Validação de paginação
   pagination: [
     query('page')
       .optional()
