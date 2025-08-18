@@ -1,6 +1,6 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Button, Input, Modal } from '../ui';
+import { Button, Input, Modal, MaskedInput } from '../ui';
 
 const AjudanteModal = ({
   isOpen,
@@ -49,9 +49,10 @@ const AjudanteModal = ({
                 {...register('nome')}
                 disabled={isViewMode}
               />
-              <Input
+              <MaskedInput
                 label="CPF"
                 {...register('cpf')}
+                maskType="cpf"
                 disabled={isViewMode}
               />
               <Input
@@ -60,9 +61,10 @@ const AjudanteModal = ({
                 {...register('email')}
                 disabled={isViewMode}
               />
-              <Input
+              <MaskedInput
                 label="Telefone"
                 {...register('telefone')}
+                maskType="telefone"
                 disabled={isViewMode}
               />
             </div>

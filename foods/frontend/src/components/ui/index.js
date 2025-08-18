@@ -6,4 +6,5 @@ export { default as StatCard } from './StatCard';
 export { default as ActivityCard } from './ActivityCard';
 export { default as ChartCard } from './ChartCard';
 export { default as ValidationErrorModal } from './ValidationErrorModal';
-export { FormInput } from './FormInput'; 
+export { FormInput } from './FormInput';
+export { MaskedInput } from './MaskedInput'; 
