@@ -5,7 +5,7 @@ import { useFiliais } from '../../hooks/useFiliais';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import FiliaisService from '../../services/filiais';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { FilialModal, FiliaisTable, FiliaisStats } from '../../components/filiais';
@@ -28,12 +28,15 @@ const Filiais = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    validationErrors,
+    showValidationModal,
     onSubmit,
     handleDeleteFilial,
     handleAddFilial,
     handleViewFilial,
     handleEditFilial,
     handleCloseModal,
+    handleCloseValidationModal,
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
@@ -137,6 +140,14 @@ const Filiais = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+      />
+
+      {/* Modal de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Paginação */}

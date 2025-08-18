@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import FiliaisService from '../services/filiais';
+import { useValidation } from './useValidation';
 
 export const useFiliais = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [filiais, setFiliais] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -107,18 +117,36 @@ export const useFiliais = () => {
       let result;
       if (editingFilial) {
         result = await FiliaisService.atualizar(editingFilial.id, cleanData);
+        if (result.success) {
+          toast.success('Filial atualizada com sucesso!');
+        } else {
+          // Usar sistema universal de validação
+          if (handleApiResponse(result)) {
+            return; // Erros de validação tratados pelo hook
+          } else {
+            toast.error(result.error);
+          }
+          return;
+        }
       } else {
         result = await FiliaisService.criar(cleanData);
+        if (result.success) {
+          toast.success('Filial criada com sucesso!');
+        } else {
+          // Usar sistema universal de validação
+          if (handleApiResponse(result)) {
+            return; // Erros de validação tratados pelo hook
+          } else {
+            toast.error(result.error);
+          }
+          return;
+        }
       }
       
-      if (result.success) {
-        toast.success(editingFilial ? 'Filial atualizada com sucesso!' : 'Filial criada com sucesso!');
-        handleCloseModal();
-        loadFiliais();
-      } else {
-        toast.error(result.error);
-      }
+      handleCloseModal();
+      loadFiliais();
     } catch (error) {
+      console.error('Erro ao salvar filial:', error);
       toast.error('Erro ao salvar filial');
     }
   };
@@ -195,6 +223,10 @@ export const useFiliais = () => {
     itemsPerPage,
     estatisticas,
 
+    // Estados de validação
+    validationErrors,
+    showValidationModal,
+
     // Funções CRUD
     onSubmit,
     handleDeleteFilial,
@@ -204,6 +236,9 @@ export const useFiliais = () => {
     handleViewFilial,
     handleEditFilial,
     handleCloseModal,
+
+    // Funções de validação
+    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,

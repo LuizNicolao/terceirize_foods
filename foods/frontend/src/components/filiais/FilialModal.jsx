@@ -23,6 +23,7 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
       } else {
         // Limpar formulário para nova filial
         reset();
+        setValue('status', '1'); // Status padrão: Ativo
       }
       // Resetar para aba de informações
       setActiveTab('info');
@@ -153,14 +154,14 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
                 </div>
 
                 <Input
-                  label="Nome da Filial"
+                  label="Nome da Filial *"
                   {...register('filial')}
                   error={errors.filial?.message}
                   disabled={isViewMode}
                   placeholder="Nome da filial"
                 />
                 <Input
-                  label="Razão Social"
+                  label="Razão Social *"
                   {...register('razao_social')}
                   error={errors.razao_social?.message}
                   disabled={isViewMode}
