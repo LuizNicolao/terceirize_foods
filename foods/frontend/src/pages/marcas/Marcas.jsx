@@ -44,7 +44,8 @@ const Marcas = () => {
     setSearchTerm,
     setStatusFilter,
     setItemsPerPage,
-    getStatusLabel
+    getStatusLabel,
+    handleClearFilters
   } = useMarcas();
 
   const {
@@ -107,10 +108,7 @@ const Marcas = () => {
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        onClear={() => {
-          setSearchTerm('');
-          setStatusFilter('todos');
-        }}
+        onClear={handleClearFilters}
         placeholder="Buscar por marca ou fabricante..."
       />
 

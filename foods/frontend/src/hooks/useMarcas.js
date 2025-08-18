@@ -43,6 +43,8 @@ export const useMarcas = () => {
       const paginationParams = {
         page: currentPage,
         limit: itemsPerPage,
+        search: searchTerm,
+        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined,
         ...params
       };
 
@@ -86,20 +88,7 @@ export const useMarcas = () => {
   // Carregar dados quando dependências mudarem
   useEffect(() => {
     loadMarcas();
-  }, [currentPage, itemsPerPage]);
-
-  // Filtrar marcas (client-side)
-  const filteredMarcas = (Array.isArray(marcas) ? marcas : []).filter(marca => {
-    const matchesSearch = !searchTerm || 
-      (marca.marca && marca.marca.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (marca.fabricante && marca.fabricante.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesStatus = statusFilter === 'todos' || 
-      (statusFilter === 'ativo' && marca.status === 1) ||
-      (statusFilter === 'inativo' && marca.status === 0);
-    
-    return matchesSearch && matchesStatus;
-  });
+  }, [currentPage, itemsPerPage, searchTerm, statusFilter]);
 
   // Funções de CRUD
   const onSubmit = async (data) => {
@@ -181,6 +170,13 @@ export const useMarcas = () => {
     setCurrentPage(page);
   };
 
+  // Funções de filtros
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('todos');
+    setCurrentPage(1);
+  };
+
   // Funções utilitárias
   const formatDate = (dateString) => {
     if (!dateString) return '-';
@@ -193,7 +189,7 @@ export const useMarcas = () => {
 
   return {
     // Estados
-    marcas: Array.isArray(filteredMarcas) ? filteredMarcas : [],
+    marcas,
     loading,
     showModal,
     viewMode,
@@ -230,6 +226,7 @@ export const useMarcas = () => {
     setSearchTerm,
     setStatusFilter,
     setItemsPerPage,
+    handleClearFilters,
 
     // Funções utilitárias
     formatDate,

@@ -48,6 +48,9 @@ export const useUnidadesEscolares = () => {
       const paginationParams = {
         page: currentPage,
         limit: itemsPerPage,
+        search: searchTerm,
+        status: statusFilter === 'ativo' ? 'ativo' : statusFilter === 'inativo' ? 'inativo' : undefined,
+        rota_id: rotaFilter === 'todos' ? undefined : rotaFilter,
         ...params
       };
 
@@ -117,22 +120,7 @@ export const useUnidadesEscolares = () => {
     loadUnidades();
     loadRotas();
     loadEstatisticas();
-  }, [currentPage, itemsPerPage]);
-
-  // Filtrar unidades escolares
-  const filteredUnidades = unidades.filter(unidade => {
-    const matchesSearch = !searchTerm || 
-      (unidade.codigo_teknisa && unidade.codigo_teknisa.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (unidade.nome_escola && unidade.nome_escola.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (unidade.cidade && unidade.cidade.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (unidade.estado && unidade.estado.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (unidade.id && unidade.id.toString().includes(searchTerm));
-    
-    const matchesStatus = statusFilter === 'todos' || unidade.status === statusFilter;
-    const matchesRota = rotaFilter === 'todos' || unidade.rota_id?.toString() === rotaFilter;
-    
-    return matchesSearch && matchesStatus && matchesRota;
-  });
+  }, [currentPage, itemsPerPage, searchTerm, statusFilter, rotaFilter]);
 
   // Funções de CRUD
   const onSubmit = async (data) => {
@@ -221,6 +209,14 @@ export const useUnidadesEscolares = () => {
     setCurrentPage(1);
   };
 
+  // Funções de filtros
+  const handleClearFilters = () => {
+    setSearchTerm('');
+    setStatusFilter('todos');
+    setRotaFilter('todos');
+    setCurrentPage(1);
+  };
+
   // Funções utilitárias
   const getRotaName = (rotaId) => {
     if (!rotaId) return 'N/A';
@@ -237,7 +233,7 @@ export const useUnidadesEscolares = () => {
 
   return {
     // Estados
-    unidades: filteredUnidades,
+    unidades,
     rotas,
     loading,
     loadingRotas,
@@ -279,6 +275,7 @@ export const useUnidadesEscolares = () => {
     setSearchTerm,
     setStatusFilter,
     setRotaFilter,
+    handleClearFilters,
 
     // Funções utilitárias
     getRotaName,
