@@ -1,27 +1,21 @@
 /**
  * Validações específicas para Ajudantes
- * Implementa validações usando express-validator
+ * Centraliza todas as validações relacionadas aos ajudantes
  */
 
-const { body, param, query, validationResult } = require('express-validator');
-const { validationResponse } = require('../../middleware/responseHandler');
+const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
 
-// Middleware para capturar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return validationResponse(res, errors.array());
-  }
-  next();
-};
+// Criar handler de validação específico para ajudantes
+const handleValidationErrors = createEntityValidationHandler('ajudantes');
 
 // Validações comuns
 const commonValidations = {
-  // Validação de ID numérico
+  // Validação de ID
   id: param('id')
     .isInt({ min: 1 })
     .withMessage('ID deve ser um número inteiro positivo'),
-
+  
   // Validação de busca
   search: query('search')
     .optional()
@@ -29,7 +23,7 @@ const commonValidations = {
     .trim()
     .isLength({ min: 1, max: 100 })
     .withMessage('Termo de busca deve ter entre 1 e 100 caracteres'),
-
+  
   // Validação de paginação
   pagination: [
     query('page')
@@ -45,186 +39,86 @@ const commonValidations = {
 
 // Validações específicas para ajudantes
 const ajudanteValidations = {
+  // Validações para criação de ajudante
   create: [
     body('nome')
-      .notEmpty()
-      .withMessage('Nome é obrigatório')
-      .isLength({ min: 3, max: 100 })
-      .withMessage('Nome deve ter entre 3 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ\s]+$/)
-      .withMessage('Nome contém caracteres inválidos')
-      .trim(),
+      .notEmpty().withMessage('Nome é obrigatório')
+      .isString().trim().isLength({ min: 3, max: 100 }).withMessage('Nome deve ter entre 3 e 100 caracteres'),
     
     body('cpf')
       .optional()
-      .custom((value) => {
-        if (value && value.trim() !== '') {
-          const cpfLimpo = value.replace(/\D/g, '');
-          if (cpfLimpo.length < 9 || cpfLimpo.length > 14) {
-            throw new Error('CPF deve ter entre 9 e 14 dígitos');
-          }
-        }
-        return true;
-      })
-      .withMessage('CPF deve ter entre 9 e 14 dígitos'),
+      .isString().trim().isLength({ max: 14 }).withMessage('CPF deve ter no máximo 14 caracteres'),
     
     body('telefone')
       .optional()
-      .custom((value) => {
-        if (value && value.trim() !== '') {
-          const telefoneLimpo = value.replace(/\D/g, '');
-          if (telefoneLimpo.length < 8 || telefoneLimpo.length > 20) {
-            throw new Error('Telefone deve ter entre 8 e 20 dígitos');
-          }
-        }
-        return true;
-      })
-      .withMessage('Telefone deve ter entre 8 e 20 dígitos'),
+      .isString().trim().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres'),
     
     body('email')
       .optional()
-      .custom((value) => {
-        if (value && value.trim() !== '') {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(value)) {
-            throw new Error('Email deve ser um email válido');
-          }
-        }
-        return true;
-      })
-      .withMessage('Email deve ser um email válido'),
+      .isEmail().withMessage('Email deve ser válido'),
     
     body('endereco')
       .optional()
-      .trim(),
+      .isString().trim().isLength({ max: 500 }).withMessage('Endereço deve ter no máximo 500 caracteres'),
     
     body('status')
-      .notEmpty()
-      .withMessage('Status é obrigatório')
-      .isIn(['ativo', 'inativo', 'ferias', 'licenca'])
-      .withMessage('Status deve ser ativo, inativo, ferias ou licenca'),
+      .notEmpty().withMessage('Status é obrigatório')
+      .isIn(['ativo', 'inativo', 'ferias', 'licenca']).withMessage('Status deve ser ativo, inativo, ferias ou licenca'),
     
     body('data_admissao')
       .optional()
-      .custom((value) => {
-        if (value) {
-          const data = new Date(value);
-          if (isNaN(data.getTime())) {
-            throw new Error('Data de admissão deve ser uma data válida');
-          }
-        }
-        return true;
-      })
-      .withMessage('Data de admissão deve ser uma data válida'),
+      .isString().withMessage('Data de admissão deve ser uma string válida'),
     
     body('observacoes')
       .optional()
-      .trim(),
+      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
     
     body('filial_id')
       .optional()
-      .custom((value) => {
-        if (value !== null && value !== undefined && value !== '') {
-          const numValue = parseInt(value);
-          if (isNaN(numValue) || numValue < 1) {
-            throw new Error('ID da filial deve ser um número inteiro válido maior que 0');
-          }
-        }
-        return true;
-      })
-      .withMessage('ID da filial deve ser um número inteiro válido'),
+      .isInt({ min: 1 }).withMessage('ID da filial deve ser um número inteiro positivo'),
     
     handleValidationErrors
   ],
 
+  // Validações para atualização de ajudante
   update: [
-    commonValidations.id,
+    param('id').isInt({ min: 1 }).withMessage('ID deve ser um número inteiro positivo'),
     
     body('nome')
       .optional()
-      .isLength({ min: 3, max: 100 })
-      .withMessage('Nome deve ter entre 3 e 100 caracteres')
-      .matches(/^[a-zA-ZÀ-ÿ\s]+$/)
-      .withMessage('Nome contém caracteres inválidos')
-      .trim(),
+      .isString().trim().isLength({ min: 3, max: 100 }).withMessage('Nome deve ter entre 3 e 100 caracteres'),
     
     body('cpf')
       .optional()
-      .custom((value) => {
-        if (value && value.trim() !== '') {
-          const cpfLimpo = value.replace(/\D/g, '');
-          if (cpfLimpo.length < 9 || cpfLimpo.length > 14) {
-            throw new Error('CPF deve ter entre 9 e 14 dígitos');
-          }
-        }
-        return true;
-      })
-      .withMessage('CPF deve ter entre 9 e 14 dígitos'),
+      .isString().trim().isLength({ max: 14 }).withMessage('CPF deve ter no máximo 14 caracteres'),
     
     body('telefone')
       .optional()
-      .custom((value) => {
-        if (value && value.trim() !== '') {
-          const telefoneLimpo = value.replace(/\D/g, '');
-          if (telefoneLimpo.length < 8 || telefoneLimpo.length > 20) {
-            throw new Error('Telefone deve ter entre 8 e 20 dígitos');
-          }
-        }
-        return true;
-      })
-      .withMessage('Telefone deve ter entre 8 e 20 dígitos'),
+      .isString().trim().isLength({ max: 20 }).withMessage('Telefone deve ter no máximo 20 caracteres'),
     
     body('email')
       .optional()
-      .custom((value) => {
-        if (value && value.trim() !== '') {
-          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (!emailRegex.test(value)) {
-            throw new Error('Email deve ser um email válido');
-          }
-        }
-        return true;
-      })
-      .withMessage('Email deve ser um email válido'),
+      .isEmail().withMessage('Email deve ser válido'),
     
     body('endereco')
       .optional()
-      .trim(),
+      .isString().trim().isLength({ max: 500 }).withMessage('Endereço deve ter no máximo 500 caracteres'),
     
     body('status')
       .optional()
-      .isIn(['ativo', 'inativo', 'ferias', 'licenca'])
-      .withMessage('Status deve ser ativo, inativo, ferias ou licenca'),
+      .isIn(['ativo', 'inativo', 'ferias', 'licenca']).withMessage('Status deve ser ativo, inativo, ferias ou licenca'),
     
     body('data_admissao')
       .optional()
-      .custom((value) => {
-        if (value) {
-          const data = new Date(value);
-          if (isNaN(data.getTime())) {
-            throw new Error('Data de admissão deve ser uma data válida');
-          }
-        }
-        return true;
-      })
-      .withMessage('Data de admissão deve ser uma data válida'),
+      .isString().withMessage('Data de admissão deve ser uma string válida'),
     
     body('observacoes')
       .optional()
-      .trim(),
+      .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
     
     body('filial_id')
       .optional()
-      .custom((value) => {
-        if (value !== null && value !== undefined && value !== '') {
-          const numValue = parseInt(value);
-          if (isNaN(numValue) || numValue < 1) {
-            throw new Error('ID da filial deve ser um número inteiro válido maior que 0');
-          }
-        }
-        return true;
-      })
-      .withMessage('ID da filial deve ser um número inteiro válido'),
+      .isInt({ min: 1 }).withMessage('ID da filial deve ser um número inteiro positivo'),
     
     handleValidationErrors
   ]
@@ -232,6 +126,5 @@ const ajudanteValidations = {
 
 module.exports = {
   ajudanteValidations,
-  commonValidations,
-  handleValidationErrors
+  commonValidations
 };

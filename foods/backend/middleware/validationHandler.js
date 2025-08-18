@@ -219,6 +219,23 @@ const validationConfigs = {
     defaultCategory: 'personalInfo'
   },
 
+  // Configuração para Ajudantes
+  ajudantes: {
+    categories: {
+      personalInfo: ['nome', 'cpf', 'telefone', 'email'],
+      professionalInfo: ['data_admissao', 'status', 'filial_id'],
+      addressInfo: ['endereco'],
+      additionalInfo: ['observacoes']
+    },
+    categoryNames: {
+      personalInfo: 'Informações Pessoais',
+      professionalInfo: 'Informações Profissionais',
+      addressInfo: 'Endereço',
+      additionalInfo: 'Observações'
+    },
+    defaultCategory: 'personalInfo'
+  },
+
   // Configuração padrão para outras entidades
   default: {
     categories: {

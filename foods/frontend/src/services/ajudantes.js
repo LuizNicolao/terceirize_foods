@@ -41,9 +41,19 @@ class AjudantesService {
         message: 'Ajudante criado com sucesso!'
       };
     } catch (error) {
+      // Se for erro de validação (422), incluir os erros na resposta
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
+      
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar ajudante'
+        message: error.response?.data?.message || 'Erro ao criar ajudante'
       };
     }
   }
@@ -57,9 +67,19 @@ class AjudantesService {
         message: 'Ajudante atualizado com sucesso!'
       };
     } catch (error) {
+      // Se for erro de validação (422), incluir os erros na resposta
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
+      
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao atualizar ajudante'
+        message: error.response?.data?.message || 'Erro ao atualizar ajudante'
       };
     }
   }

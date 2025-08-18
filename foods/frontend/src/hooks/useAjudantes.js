@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import AjudantesService from '../services/ajudantes';
 import FiliaisService from '../services/filiais';
+import { useValidation } from './useValidation';
 
 export const useAjudantes = () => {
   // Estados principais
@@ -26,6 +27,15 @@ export const useAjudantes = () => {
     em_ferias: 0,
     em_licenca: 0
   });
+
+  // Hook de validação
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
 
   // Carregar filiais
   const loadFiliais = async () => {
@@ -112,6 +122,8 @@ export const useAjudantes = () => {
   // Funções de CRUD
   const onSubmit = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
@@ -135,9 +147,15 @@ export const useAjudantes = () => {
         handleCloseModal();
         reloadData();
       } else {
-        toast.error(result.error);
+        // Verificar se há erros de validação
+        if (handleApiResponse(result)) {
+          return; // Erros de validação foram tratados
+        }
+        // Outros tipos de erro
+        toast.error(result.message || 'Erro ao salvar ajudante');
       }
     } catch (error) {
+      console.error('Erro ao salvar ajudante:', error);
       toast.error('Erro ao salvar ajudante');
     }
   };
@@ -219,6 +237,10 @@ export const useAjudantes = () => {
     itemsPerPage,
     estatisticas,
 
+    // Estados de validação
+    validationErrors,
+    showValidationModal,
+
     // Funções
     onSubmit,
     handleDeleteAjudante,
@@ -230,6 +252,7 @@ export const useAjudantes = () => {
     setSearchTerm,
     setItemsPerPage,
     formatDate,
-    getStatusLabel
+    getStatusLabel,
+    handleCloseValidationModal
   };
 };

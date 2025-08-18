@@ -10,7 +10,7 @@ const AjudanteModal = ({
   isViewMode,
   filiais
 }) => {
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset } = useForm();
 
   // Reset form when ajudante changes
   React.useEffect(() => {
@@ -46,8 +46,7 @@ const AjudanteModal = ({
             <div className="space-y-3">
               <Input
                 label="Nome Completo *"
-                {...register('nome', { required: 'Nome é obrigatório' })}
-                error={errors.nome?.message}
+                {...register('nome')}
                 disabled={isViewMode}
               />
               <Input
@@ -82,8 +81,7 @@ const AjudanteModal = ({
               <Input
                 label="Status *"
                 type="select"
-                {...register('status', { required: 'Status é obrigatório' })}
-                error={errors.status?.message}
+                {...register('status')}
                 disabled={isViewMode}
               >
                 <option value="">Selecione o status</option>

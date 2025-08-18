@@ -13,6 +13,7 @@ import AjudantesStats from '../../components/ajudantes/AjudantesStats';
 import AjudantesActions from '../../components/ajudantes/AjudantesActions';
 import AjudantesTable from '../../components/ajudantes/AjudantesTable';
 import AuditModal from '../../components/shared/AuditModal';
+import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Ajudantes = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -41,7 +42,12 @@ const Ajudantes = () => {
     setSearchTerm,
     setItemsPerPage,
     formatDate,
-    getStatusLabel
+    getStatusLabel,
+
+    // Estados de validação
+    validationErrors,
+    showValidationModal,
+    handleCloseValidationModal
   } = useAjudantes();
 
   const {
@@ -147,6 +153,14 @@ const Ajudantes = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+      />
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Paginação */}
