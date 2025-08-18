@@ -1,6 +1,6 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Button, Input, Modal, MaskedInput } from '../ui';
+import { Button, Input, Modal, MaskedFormInput } from '../ui';
 
 // Função para converter data do formato YYYY-MM-DD para o formato do input date
 const formatDateForInput = (dateString) => {
@@ -96,17 +96,19 @@ const MotoristaModal = ({
                 disabled={isViewMode}
               />
               
-              <MaskedInput
+              <MaskedFormInput
                 label="CPF"
-                {...register('cpf')}
                 maskType="cpf"
+                register={register}
+                fieldName="cpf"
                 disabled={isViewMode}
               />
               
-              <MaskedInput
+              <MaskedFormInput
                 label="Telefone"
-                {...register('telefone')}
                 maskType="telefone"
+                register={register}
+                fieldName="telefone"
                 disabled={isViewMode}
               />
               

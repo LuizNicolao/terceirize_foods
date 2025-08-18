@@ -1,105 +1,79 @@
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 // Padrões de formatação
 const MASKS = {
   cep: {
-    pattern: '#####-###',
+    pattern: /^(\d{5})(\d{3})$/,
+    format: '$1-$2',
     maxLength: 9,
     placeholder: '00000-000'
   },
   cpf: {
-    pattern: '###.###.###-##',
+    pattern: /^(\d{3})(\d{3})(\d{3})(\d{2})$/,
+    format: '$1.$2.$3-$4',
     maxLength: 14,
     placeholder: '000.000.000-00'
   },
   cnpj: {
-    pattern: '##.###.###/####-##',
+    pattern: /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,
+    format: '$1.$2.$3/$4-$5',
     maxLength: 18,
     placeholder: '00.000.000/0000-00'
   },
   telefone: {
-    pattern: '## ####-####',
-    maxLength: 14,
+    pattern: /^(\d{2})(\d{4})(\d{4})$/,
+    format: '$1 $2-$3',
+    maxLength: 15,
     placeholder: '00 0000-0000'
   },
   celular: {
-    pattern: '## #####-####',
-    maxLength: 15,
+    pattern: /^(\d{2})(\d{5})(\d{4})$/,
+    format: '$1 $2-$3',
+    maxLength: 16,
     placeholder: '00 00000-0000'
   }
 };
 
-// Função para aplicar máscara
-const applyMask = (value, maskPattern) => {
-  if (!value) return '';
-  
-  // Remove tudo que não é número
-  const numbers = value.replace(/\D/g, '');
-  
-  let result = '';
-  let numberIndex = 0;
-  
-  for (let i = 0; i < maskPattern.length && numberIndex < numbers.length; i++) {
-    if (maskPattern[i] === '#') {
-      result += numbers[numberIndex];
-      numberIndex++;
-    } else {
-      result += maskPattern[i];
-    }
-  }
-  
-  return result;
-};
-
-// Função para detectar se é celular baseado no número de dígitos
-const detectPhoneType = (value) => {
-  const numbers = value.replace(/\D/g, '');
-  return numbers.length === 11 ? 'celular' : 'telefone';
-};
-
 export const useInputMask = (maskType) => {
+  const [value, setValue] = useState('');
   const mask = MASKS[maskType];
-  
-  if (!mask) {
-    console.warn(`Máscara "${maskType}" não encontrada`);
-    return {
-      onChange: () => {},
-      onKeyPress: () => {},
-      maxLength: undefined,
-      placeholder: undefined
-    };
-  }
+
+  const formatValue = useCallback((inputValue) => {
+    if (!mask) return inputValue;
+
+    // Remove tudo que não é número
+    const numbers = inputValue.replace(/\D/g, '');
+    
+    // Aplica a formatação baseada no tipo de máscara
+    if (maskType === 'telefone') {
+      // Detecta se é celular (11 dígitos) ou fixo (10 dígitos)
+      if (numbers.length === 11) {
+        const celularMask = MASKS.celular;
+        const match = numbers.match(celularMask.pattern);
+        return match ? numbers.replace(celularMask.pattern, celularMask.format) : numbers;
+      } else if (numbers.length === 10) {
+        const match = numbers.match(mask.pattern);
+        return match ? numbers.replace(mask.pattern, mask.format) : numbers;
+      }
+      return numbers;
+    }
+
+    // Para outros tipos de máscara
+    const match = numbers.match(mask.pattern);
+    return match ? numbers.replace(mask.pattern, mask.format) : numbers;
+  }, [maskType, mask]);
 
   const handleChange = useCallback((e) => {
-    const input = e.target;
-    let value = input.value;
+    const inputValue = e.target.value;
+    const formattedValue = formatValue(inputValue);
     
-    // Remove tudo que não é número
-    const numbers = value.replace(/\D/g, '');
-    
-    // Para telefone, detecta se é celular ou fixo
-    if (maskType === 'telefone') {
-      const phoneType = detectPhoneType(numbers);
-      const phoneMask = MASKS[phoneType];
-      
-      if (numbers.length <= phoneMask.maxLength) {
-        value = applyMask(numbers, phoneMask.pattern);
-        input.maxLength = phoneMask.maxLength;
-      }
-    } else {
-      // Para outros tipos de máscara
-      if (numbers.length <= mask.maxLength) {
-        value = applyMask(numbers, mask.pattern);
-      }
+    // Limita o tamanho baseado na máscara
+    if (mask && formattedValue.length > mask.maxLength) {
+      return;
     }
     
-    // Atualiza o valor do input
-    input.value = value;
-    
-    // Dispara evento de change para react-hook-form
-    const event = new Event('input', { bubbles: true });
-    input.dispatchEvent(event);
-  }, [maskType, mask]);
+    setValue(formattedValue);
+  }, [formatValue, mask]);
 
   const handleKeyPress = useCallback((e) => {
     // Permite apenas números e teclas de controle
@@ -109,16 +83,17 @@ export const useInputMask = (maskType) => {
       'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
       'Home', 'End'
     ].includes(e.key);
-    
+
     if (!isNumber && !isControlKey) {
       e.preventDefault();
     }
   }, []);
 
   return {
+    value,
     onChange: handleChange,
     onKeyPress: handleKeyPress,
-    maxLength: mask.maxLength,
-    placeholder: mask.placeholder
+    placeholder: mask?.placeholder || '',
+    maxLength: mask?.maxLength
   };
 };

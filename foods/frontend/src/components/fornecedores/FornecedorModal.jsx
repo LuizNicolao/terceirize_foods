@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaSearch } from 'react-icons/fa';
-import { Modal, Input, Button, MaskedInput } from '../ui';
+import { Modal, Input, Button, MaskedFormInput } from '../ui';
 import FornecedoresService from '../../services/fornecedores';
 import toast from 'react-hot-toast';
 
@@ -95,9 +95,10 @@ const FornecedorModal = ({
                   CNPJ *
                 </label>
                 <div className="flex gap-2">
-                  <MaskedInput
-                    {...register('cnpj')}
+                  <MaskedFormInput
                     maskType="cnpj"
+                    register={register}
+                    fieldName="cnpj"
                     disabled={viewMode}
                     className="flex-1"
                   />
@@ -151,10 +152,11 @@ const FornecedorModal = ({
                 {...register('email')}
                 disabled={viewMode}
               />
-              <MaskedInput
+              <MaskedFormInput
                 label="Telefone"
-                {...register('telefone')}
                 maskType="telefone"
+                register={register}
+                fieldName="telefone"
                 disabled={viewMode}
               />
             </div>
@@ -179,10 +181,11 @@ const FornecedorModal = ({
                 {...register('numero')}
                 disabled={viewMode}
               />
-              <MaskedInput
+              <MaskedFormInput
                 label="CEP"
-                {...register('cep')}
                 maskType="cep"
+                register={register}
+                fieldName="cep"
                 disabled={viewMode}
               />
               <Input

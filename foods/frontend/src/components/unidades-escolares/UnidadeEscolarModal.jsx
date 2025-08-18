@@ -1,7 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave } from 'react-icons/fa';
-import { Button, Input, Modal, MaskedInput } from '../ui';
+import { Button, Input, Modal, MaskedFormInput } from '../ui';
 
 const UnidadeEscolarModal = ({ 
   isOpen, 
@@ -100,10 +100,11 @@ const UnidadeEscolarModal = ({
                 disabled={isViewMode}
               />
 
-              <MaskedInput
+              <MaskedFormInput
                 label="CEP"
-                {...register('cep')}
                 maskType="cep"
+                register={register}
+                fieldName="cep"
                 disabled={isViewMode}
               />
 
@@ -134,10 +135,11 @@ const UnidadeEscolarModal = ({
               Contato
             </h3>
             <div className="space-y-3">
-              <MaskedInput
+              <MaskedFormInput
                 label="Telefone"
-                {...register('telefone')}
                 maskType="telefone"
+                register={register}
+                fieldName="telefone"
                 disabled={isViewMode}
               />
 

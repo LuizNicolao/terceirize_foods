@@ -1,32 +1,16 @@
 import React from 'react';
-import { useInputMask } from '../../hooks/useInputMask';
+import { useMaskedField } from '../../hooks/useMaskedField';
 
-export const MaskedInput = ({
+export const MaskedFormInput = ({
   maskType,
+  register,
+  fieldName,
   icon,
   error,
   className = '',
-  onValueChange,
-  initialValue = '',
   ...props
 }) => {
-  const maskProps = useInputMask(maskType);
-  
-  // Sincroniza o valor inicial
-  React.useEffect(() => {
-    if (initialValue && maskProps.value !== initialValue) {
-      // Simula uma mudança para formatar o valor inicial
-      const event = { target: { value: initialValue } };
-      maskProps.onChange(event);
-    }
-  }, [initialValue]);
-
-  // Notifica mudanças de valor para o componente pai
-  React.useEffect(() => {
-    if (onValueChange) {
-      onValueChange(maskProps.value);
-    }
-  }, [maskProps.value, onValueChange]);
+  const maskProps = useMaskedField(maskType, register, fieldName);
 
   return (
     <div className="space-y-1">

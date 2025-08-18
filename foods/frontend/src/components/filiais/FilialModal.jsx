@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaSearch, FaWarehouse } from 'react-icons/fa';
-import { Modal, Input, Button, MaskedInput } from '../ui';
+import { Modal, Input, Button, MaskedFormInput } from '../ui';
 import FiliaisService from '../../services/filiais';
 import AlmoxarifadoContent from '../AlmoxarifadoContent';
 import toast from 'react-hot-toast';
@@ -131,9 +131,10 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
                     CNPJ
                   </label>
                   <div className="flex gap-2">
-                    <MaskedInput
-                      {...register('cnpj')}
+                    <MaskedFormInput
                       maskType="cnpj"
+                      register={register}
+                      fieldName="cnpj"
                       error={errors.cnpj?.message}
                       disabled={isViewMode}
                       placeholder="00.000.000/0000-00"
@@ -208,10 +209,11 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
                   disabled={isViewMode}
                   placeholder="Bairro"
                 />
-                <MaskedInput
+                <MaskedFormInput
                   label="CEP"
-                  {...register('cep')}
                   maskType="cep"
+                  register={register}
+                  fieldName="cep"
                   error={errors.cep?.message}
                   disabled={isViewMode}
                   placeholder="00000-000"
