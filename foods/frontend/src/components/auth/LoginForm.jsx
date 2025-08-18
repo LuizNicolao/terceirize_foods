@@ -1,7 +1,6 @@
 import React from 'react';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { FormInput } from '../ui/FormInput';
-import { Button } from '../ui/Button';
+import { FormInput, Button } from '../ui';
 
 export const LoginForm = ({
   onSubmit,
