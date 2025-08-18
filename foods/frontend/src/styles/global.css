@@ -2,9 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Importar estilos da sidebar */
-@import './sidebar.css';
-
 :root {
   /* Cores Principais */
   --primary-green: #4CAF50;
