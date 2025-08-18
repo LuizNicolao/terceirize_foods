@@ -278,13 +278,13 @@ const validationConfigs = {
   subgrupos: {
     categories: {
       basicInfo: ['nome'],
-      classificationInfo: ['grupo_id'],
+      classification: ['grupo_id'],
       additionalInfo: ['descricao'],
       statusInfo: ['status']
     },
     categoryNames: {
       basicInfo: 'Informações Básicas',
-      classificationInfo: 'Classificação',
+      classification: 'Classificação',
       additionalInfo: 'Informações Adicionais',
       statusInfo: 'Status'
     },
@@ -295,13 +295,13 @@ const validationConfigs = {
   classes: {
     categories: {
       basicInfo: ['nome'],
-      classificationInfo: ['subgrupo_id'],
+      classification: ['subgrupo_id'],
       additionalInfo: ['descricao'],
       statusInfo: ['status']
     },
     categoryNames: {
       basicInfo: 'Informações Básicas',
-      classificationInfo: 'Classificação',
+      classification: 'Classificação',
       additionalInfo: 'Informações Adicionais',
       statusInfo: 'Status'
     },
@@ -313,17 +313,17 @@ const validationConfigs = {
     categories: {
       basicInfo: ['nome', 'codigo'],
       measurementInfo: ['unidade_medida_id', 'fator_conversao'],
-      classificationInfo: ['grupo_id', 'subgrupo_id', 'classe_id'],
+      classification: ['grupo_id', 'subgrupo_id', 'classe_id'],
       technicalInfo: ['peso_liquido', 'referencia_mercado'],
-      referenceInfo: ['produto_generico_padrao_id'],
+      references: ['produto_generico_padrao_id'],
       statusInfo: ['status']
     },
     categoryNames: {
       basicInfo: 'Informações Básicas',
       measurementInfo: 'Medidas',
-      classificationInfo: 'Classificação',
+      classification: 'Classificação',
       technicalInfo: 'Informações Técnicas',
-      referenceInfo: 'Referências',
+      references: 'Referências',
       statusInfo: 'Status'
     },
     defaultCategory: 'basicInfo'
@@ -333,9 +333,9 @@ const validationConfigs = {
   'produto-generico': {
     categories: {
       basicInfo: ['nome', 'codigo'],
-      referenceInfo: ['produto_origem_id'],
+      references: ['produto_origem_id'],
       measurementInfo: ['fator_conversao', 'unidade_medida_id'],
-      classificationInfo: ['grupo_id', 'subgrupo_id', 'classe_id'],
+      classification: ['grupo_id', 'subgrupo_id', 'classe_id'],
       technicalInfo: ['peso_liquido', 'peso_bruto', 'regra_palet'],
       marketInfo: ['referencia_mercado', 'produto_padrao'],
       additionalInfo: ['informacoes_adicionais'],
@@ -346,9 +346,9 @@ const validationConfigs = {
     },
     categoryNames: {
       basicInfo: 'Informações Básicas',
-      referenceInfo: 'Referências',
+      references: 'Referências',
       measurementInfo: 'Medidas',
-      classificationInfo: 'Classificação',
+      classification: 'Classificação',
       technicalInfo: 'Informações Técnicas',
       marketInfo: 'Informações de Mercado',
       additionalInfo: 'Informações Adicionais',

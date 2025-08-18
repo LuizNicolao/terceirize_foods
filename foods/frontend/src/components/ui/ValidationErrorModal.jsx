@@ -46,7 +46,12 @@ const ValidationErrorModal = ({ isOpen, onClose, errors, errorCategories }) => {
       'Informações da Empresa': '🏢',
       'Informações Organizacionais': '🏗️',
       'Status': '📊',
-      'Campos Gerais': '📝'
+      'Campos Gerais': '📝',
+      'Medidas': '📐',
+      'Informações de Mercado': '🏪',
+      'Detalhes de Referência': '🔍',
+      'Validade': '⏰',
+      'Integração': '🔌'
     };
 
     return iconMap[categoryName] || '⚠️';
@@ -108,6 +113,11 @@ const ValidationErrorModal = ({ isOpen, onClose, errors, errorCategories }) => {
                   'companyInfo': 'Informações da Empresa',
                   'organizationalInfo': 'Informações Organizacionais',
                   'statusInfo': 'Status',
+                  'measurementInfo': 'Medidas',
+                  'marketInfo': 'Informações de Mercado',
+                  'referenceDetails': 'Detalhes de Referência',
+                  'validityInfo': 'Validade',
+                  'integrationInfo': 'Integração',
                   'general': 'Campos Gerais'
                 };
                 
