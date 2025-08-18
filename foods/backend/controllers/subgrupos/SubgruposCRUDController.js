@@ -12,6 +12,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const { gerarCodigoSubgrupo } = require('../../utils/codigoGenerator');
 
 class SubgruposCRUDController {
   
@@ -41,12 +42,15 @@ class SubgruposCRUDController {
       return conflictResponse(res, 'Nome do subgrupo já existe neste grupo');
     }
 
+    // Gerar código único automaticamente
+    const codigo = gerarCodigoSubgrupo();
+
     // Inserir subgrupo
     const result = await executeQuery(
       'INSERT INTO subgrupos (nome, codigo, descricao, grupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
       [
         nome && nome.trim() ? nome.trim() : null, 
-        req.body.codigo && req.body.codigo.trim() ? req.body.codigo.trim() : null,
+        codigo,
         req.body.descricao && req.body.descricao.trim() ? req.body.descricao.trim() : null,
         grupo_id || null, 
         status === 1 ? 'ativo' : 'inativo'
@@ -135,7 +139,7 @@ class SubgruposCRUDController {
     // Construir query de atualização dinamicamente
     const updateFields = [];
     const updateParams = [];
-    const camposValidos = ['nome', 'codigo', 'descricao', 'grupo_id', 'status'];
+    const camposValidos = ['nome', 'descricao', 'grupo_id', 'status']; // Removido 'codigo' pois é gerado automaticamente
 
     Object.keys(updateData).forEach(key => {
       if (camposValidos.includes(key) && updateData[key] !== undefined) {

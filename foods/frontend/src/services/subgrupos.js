@@ -34,7 +34,7 @@ class SubgruposService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar subgrupos'
+        message: error.response?.data?.message || 'Erro ao carregar subgrupos'
       };
     }
   }
@@ -62,7 +62,7 @@ class SubgruposService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar subgrupo'
+        message: error.response?.data?.message || 'Erro ao buscar subgrupo'
       };
     }
   }
@@ -89,9 +89,17 @@ class SubgruposService {
         message: 'Subgrupo criado com sucesso!'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao criar subgrupo'
+        message: error.response?.data?.message || 'Erro ao criar subgrupo'
       };
     }
   }
@@ -118,9 +126,17 @@ class SubgruposService {
         message: 'Subgrupo atualizado com sucesso!'
       };
     } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao atualizar subgrupo'
+        message: error.response?.data?.message || 'Erro ao atualizar subgrupo'
       };
     }
   }
@@ -138,7 +154,7 @@ class SubgruposService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao excluir subgrupo'
+        message: error.response?.data?.message || 'Erro ao excluir subgrupo'
       };
     }
   }
@@ -176,7 +192,7 @@ class SubgruposService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar subgrupos ativos'
+        message: error.response?.data?.message || 'Erro ao carregar subgrupos ativos'
       };
     }
   }
@@ -211,7 +227,7 @@ class SubgruposService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar subgrupos por grupo'
+        message: error.response?.data?.message || 'Erro ao buscar subgrupos por grupo'
       };
     }
   }
@@ -232,7 +248,7 @@ class SubgruposService {
     } catch (error) {
       return {
         success: false,
-        error: 'Erro ao exportar XLSX'
+        message: 'Erro ao exportar XLSX'
       };
     }
   }
@@ -253,7 +269,7 @@ class SubgruposService {
     } catch (error) {
       return {
         success: false,
-        error: 'Erro ao exportar PDF'
+        message: 'Erro ao exportar PDF'
       };
     }
   }

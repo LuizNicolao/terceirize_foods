@@ -2,8 +2,18 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import SubgruposService from '../services/subgrupos';
 import GruposService from '../services/grupos';
+import { useValidation } from './useValidation';
 
 export const useSubgrupos = () => {
+  // Hook de validação universal
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
+
   // Estados principais
   const [subgrupos, setSubgrupos] = useState([]);
   const [grupos, setGrupos] = useState([]);
@@ -72,7 +82,7 @@ export const useSubgrupos = () => {
           produtos_total: produtos
         });
       } else {
-        toast.error(result.error);
+        toast.error(result.message || 'Erro ao carregar subgrupos');
       }
     } catch (error) {
       toast.error('Erro ao carregar subgrupos');
@@ -124,11 +134,12 @@ export const useSubgrupos = () => {
   // Funções de CRUD
   const onSubmit = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       // Limpar campos vazios para evitar problemas de validação
       const cleanData = {
         ...data,
         nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
-        codigo: data.codigo && data.codigo.trim() !== '' ? data.codigo.trim() : null,
         descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null,
         grupo_id: data.grupo_id ? parseInt(data.grupo_id) : null,
         status: data.status === '1' ? 'ativo' : 'inativo'
@@ -146,7 +157,10 @@ export const useSubgrupos = () => {
         handleCloseModal();
         loadSubgrupos();
       } else {
-        toast.error(result.error);
+        if (handleApiResponse(result)) {
+          return; // Erros de validação foram tratados
+        }
+        toast.error(result.message || 'Erro ao salvar subgrupo');
       }
     } catch (error) {
       toast.error('Erro ao salvar subgrupo');
@@ -161,7 +175,7 @@ export const useSubgrupos = () => {
           toast.success('Subgrupo excluído com sucesso!');
           loadSubgrupos();
         } else {
-          toast.error(result.error);
+          toast.error(result.message || 'Erro ao excluir subgrupo');
         }
       } catch (error) {
         toast.error('Erro ao excluir subgrupo');
@@ -231,6 +245,8 @@ export const useSubgrupos = () => {
     showModal,
     viewMode,
     editingSubgrupo,
+    showValidationModal,
+    validationErrors,
     searchTerm,
     statusFilter,
     grupoFilter,
@@ -249,6 +265,7 @@ export const useSubgrupos = () => {
     handleViewSubgrupo,
     handleEditSubgrupo,
     handleCloseModal,
+    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,

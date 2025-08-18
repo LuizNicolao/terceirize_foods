@@ -5,7 +5,7 @@ import { useSubgrupos } from '../../hooks/useSubgrupos';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import SubgruposService from '../../services/subgrupos';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
 import Pagination from '../../components/Pagination';
 import { SubgrupoModal } from '../../components/subgrupos';
@@ -25,6 +25,8 @@ const Subgrupos = () => {
     showModal,
     viewMode,
     editingSubgrupo,
+    showValidationModal,
+    validationErrors,
     searchTerm,
     statusFilter,
     grupoFilter,
@@ -43,6 +45,7 @@ const Subgrupos = () => {
     handleViewSubgrupo,
     handleEditSubgrupo,
     handleCloseModal,
+    handleCloseValidationModal,
 
     // Funções de paginação
     handlePageChange,
@@ -179,6 +182,14 @@ const Subgrupos = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+      />
+
+      {/* Modal de Erros de Validação */}
+      <ValidationErrorModal
+        isOpen={showValidationModal}
+        onClose={handleCloseValidationModal}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
 
       {/* Paginação */}

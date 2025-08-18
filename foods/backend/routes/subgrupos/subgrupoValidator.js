@@ -1,14 +1,8 @@
-const { body, param, query, validationResult } = require('express-validator');
-const { validationResponse } = require('../../middleware/responseHandler');
+const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
 
-// Middleware para capturar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return validationResponse(res, errors.array());
-  }
-  next();
-};
+// Criar handler de validação específico para subgrupos
+const handleValidationErrors = createEntityValidationHandler('subgrupos');
 
 // Validações comuns
 const commonValidations = {
@@ -45,10 +39,6 @@ const subgrupoValidations = {
       .trim()
       .isLength({ min: 1, max: 100 })
       .withMessage('Nome do subgrupo deve ter entre 1 e 100 caracteres'),
-    body('codigo')
-      .trim()
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Código do subgrupo deve ter entre 1 e 20 caracteres'),
     body('descricao')
       .optional()
       .trim()
@@ -71,11 +61,6 @@ const subgrupoValidations = {
       .trim()
       .isLength({ min: 1, max: 100 })
       .withMessage('Nome do subgrupo deve ter entre 1 e 100 caracteres'),
-    body('codigo')
-      .optional()
-      .trim()
-      .isLength({ min: 1, max: 20 })
-      .withMessage('Código do subgrupo deve ter entre 1 e 20 caracteres'),
     body('descricao')
       .optional()
       .trim()
