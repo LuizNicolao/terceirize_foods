@@ -3,7 +3,8 @@
  * Combina todos os módulos de validação
  */
 
-const { param, query, validationResult } = require('express-validator');
+const { param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../../middleware/validationHandler');
 const { basicInfoValidations } = require('./basicInfoValidator');
 const { classificationValidations } = require('./classificationValidator');
 const { dimensionsValidations } = require('./dimensionsValidator');
@@ -11,69 +12,8 @@ const { taxationValidations } = require('./taxationValidator');
 const { documentsValidations } = require('./documentsValidator');
 const { referencesValidations } = require('./referencesValidator');
 
-// Middleware para tratar erros de validação com mensagens detalhadas
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    // Organizar erros por categoria para melhor apresentação
-    const errorCategories = {
-      basicInfo: [],
-      classification: [],
-      dimensions: [],
-      taxation: [],
-      documents: [],
-      references: []
-    };
-
-    errors.array().forEach(error => {
-      const field = error.path;
-      
-      // Categorizar erros baseado no campo
-      if (['nome', 'codigo_produto', 'codigo_barras', 'fator_conversao', 'status'].includes(field)) {
-        errorCategories.basicInfo.push(error);
-      } else if (['unidade_id', 'grupo_id', 'subgrupo_id', 'classe_id', 'nome_generico_id', 'produto_origem_id', 'marca_id'].includes(field)) {
-        errorCategories.classification.push(error);
-      } else if (['peso_liquido', 'peso_bruto', 'comprimento', 'largura', 'altura', 'volume', 'regra_palet_un'].includes(field)) {
-        errorCategories.dimensions.push(error);
-      } else if (['ncm', 'cest', 'cfop', 'ean', 'cst_icms', 'csosn', 'aliquota_icms', 'aliquota_ipi', 'aliquota_pis', 'aliquota_cofins'].includes(field)) {
-        errorCategories.taxation.push(error);
-      } else if (['ficha_homologacao', 'registro_especifico', 'tipo_registro', 'prazo_validade', 'unidade_validade'].includes(field)) {
-        errorCategories.documents.push(error);
-      } else {
-        errorCategories.references.push(error);
-      }
-    });
-
-    // Criar mensagem detalhada
-    let detailedMessage = 'Dados inválidos:\n';
-    Object.entries(errorCategories).forEach(([category, categoryErrors]) => {
-      if (categoryErrors.length > 0) {
-        const categoryName = {
-          basicInfo: 'Informações Básicas',
-          classification: 'Classificação',
-          dimensions: 'Dimensões e Pesos',
-          taxation: 'Tributação',
-          documents: 'Documentos e Registros',
-          references: 'Referências'
-        }[category];
-        
-        detailedMessage += `\n${categoryName}:\n`;
-        categoryErrors.forEach(error => {
-          detailedMessage += `• ${error.msg}\n`;
-        });
-      }
-    });
-
-    return res.status(422).json({
-      success: false,
-      message: 'Dados inválidos',
-      detailedMessage: detailedMessage.trim(),
-      errors: errors.array(),
-      errorCategories
-    });
-  }
-  next();
-};
+// Criar handler de validação específico para produtos
+const handleValidationErrors = createEntityValidationHandler('produtos');
 
 // Validações comuns
 const commonValidations = {

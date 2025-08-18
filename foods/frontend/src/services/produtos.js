@@ -80,19 +80,17 @@ class ProdutosService {
         message: 'Produto criado com sucesso!'
       };
     } catch (error) {
-      // Capturar erros de validação do backend
       if (error.response?.status === 422) {
         return {
           success: false,
-          error: error.response?.data?.message || 'Dados inválidos',
-          validationErrors: error.response?.data?.errors,
-          errorCategories: error.response?.data?.errorCategories
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
         };
       }
-      
       return {
         success: false,
-        error: error.response?.data?.error || 'Erro ao criar produto'
+        message: error.response?.data?.message || 'Erro ao criar produto'
       };
     }
   }
@@ -116,19 +114,17 @@ class ProdutosService {
         message: 'Produto atualizado com sucesso!'
       };
     } catch (error) {
-      // Capturar erros de validação do backend
       if (error.response?.status === 422) {
         return {
           success: false,
-          error: error.response?.data?.message || 'Dados inválidos',
-          validationErrors: error.response?.data?.errors,
-          errorCategories: error.response?.data?.errorCategories
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
         };
       }
-      
       return {
         success: false,
-        error: error.response?.data?.error || 'Erro ao atualizar produto'
+        message: error.response?.data?.message || 'Erro ao atualizar produto'
       };
     }
   }

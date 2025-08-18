@@ -176,37 +176,25 @@ export const useProdutos = () => {
   // Funções de manipulação de produtos
   const handleSubmitProduto = async (data) => {
     try {
+      clearValidationErrors(); // Limpar erros anteriores
+      
       let response;
       if (editingProduto) {
         response = await ProdutosService.atualizar(editingProduto.id, data);
-        if (response.success) {
-          toast.success('Produto atualizado com sucesso');
-        } else {
-          // Usar sistema universal de validação
-          if (handleApiResponse(response)) {
-            return; // Erros de validação tratados pelo hook
-          } else {
-            toast.error(response.error);
-          }
-          return;
-        }
       } else {
         response = await ProdutosService.criar(data);
-        if (response.success) {
-          toast.success('Produto criado com sucesso');
-        } else {
-          // Usar sistema universal de validação
-          if (handleApiResponse(response)) {
-            return; // Erros de validação tratados pelo hook
-          } else {
-            toast.error(response.error);
-          }
-          return;
-        }
       }
       
-      handleCloseModal();
-      loadData();
+      if (response.success) {
+        toast.success(editingProduto ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!');
+        handleCloseModal();
+        loadData();
+      } else {
+        if (handleApiResponse(response)) {
+          return; // Erros de validação foram tratados
+        }
+        toast.error(response.message || 'Erro ao salvar produto');
+      }
     } catch (error) {
       console.error('Erro ao salvar produto:', error);
       toast.error('Erro ao salvar produto');
