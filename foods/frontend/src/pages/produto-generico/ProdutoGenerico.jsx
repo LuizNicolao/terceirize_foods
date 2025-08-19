@@ -12,7 +12,7 @@ import { useExport } from '../../hooks/useExport';
 import produtoGenericoService from '../../services/produtoGenerico';
 import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { Pagination } from '../../components/ui';
 import { ProdutoGenericoModal } from '../../components/produto-generico';
 import ProdutosGenericosStats from '../../components/produto-generico/ProdutosGenericosStats';
 import ProdutosGenericosActions from '../../components/produto-generico/ProdutosGenericosActions';

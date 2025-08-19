@@ -1,9 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
-import Layout from './components/Layout';
-import LoadingSpinner from './components/LoadingSpinner';
-import ProtectedRoute from './components/ProtectedRoute';
+import { Layout, LoadingSpinner, ProtectedRoute } from './components/layout';
 import Login from './pages/auth/Login';
 import Dashboard from './pages/Dashboard';
 import Usuarios from './pages/usuarios/Usuarios';

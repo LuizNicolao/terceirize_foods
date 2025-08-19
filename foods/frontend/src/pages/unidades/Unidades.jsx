@@ -7,7 +7,7 @@ import { useExport } from '../../hooks/useExport';
 import UnidadesService from '../../services/unidades';
 import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { Pagination } from '../../components/ui';
 import { UnidadeModal } from '../../components/unidades';
 import UnidadesStats from '../../components/unidades/UnidadesStats';
 import UnidadesActions from '../../components/unidades/UnidadesActions';

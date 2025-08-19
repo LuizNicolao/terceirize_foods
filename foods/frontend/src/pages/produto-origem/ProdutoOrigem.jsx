@@ -7,7 +7,7 @@ import { useExport } from '../../hooks/useExport';
 import ProdutoOrigemService from '../../services/produtoOrigem';
 import { Button, ValidationErrorModal } from '../../components/ui';
 import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { Pagination } from '../../components/ui';
 import { ProdutoOrigemModal } from '../../components/produto-origem';
 import ProdutoOrigemStats from '../../components/produto-origem/ProdutoOrigemStats';
 import ProdutoOrigemActions from '../../components/produto-origem/ProdutoOrigemActions';
