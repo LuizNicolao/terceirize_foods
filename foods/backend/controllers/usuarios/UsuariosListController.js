@@ -10,6 +10,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const { paginatedResponse } = require('../../middleware/pagination');
 
 class UsuariosListController {
   
@@ -17,8 +18,7 @@ class UsuariosListController {
    * Listar usuários com paginação, busca e HATEOAS
    */
   static listarUsuarios = asyncHandler(async (req, res) => {
-    const { search = '', page = 1 } = req.query;
-    const pagination = req.pagination;
+    const { search = '' } = req.query;
 
     // Query base
     let baseQuery = `
@@ -45,36 +45,18 @@ class UsuariosListController {
 
     baseQuery += ' ORDER BY nome ASC';
 
-    // Aplicar paginação manualmente
-    const limit = pagination.limit;
-    const offset = pagination.offset;
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    // Usar a função padronizada de paginação
+    const result = await paginatedResponse(req, res, baseQuery, params, '/api/usuarios');
     
-    // Executar query paginada
-    const usuarios = await executeQuery(query, params);
-
-    // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM usuarios WHERE 1=1${search ? ' AND (nome LIKE ? OR email LIKE ?)' : ''}`;
-    const countParams = search ? [`%${search}%`, `%${search}%`] : [];
-    const totalResult = await executeQuery(countQuery, countParams);
-    const totalItems = totalResult[0].total;
-
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, '/api/usuarios', queryParams);
-
     // Adicionar links HATEOAS
-    const data = res.addListLinks(usuarios, meta.pagination, queryParams);
+    const data = res.addListLinks(result.data, result.meta.pagination, req.query);
 
     // Gerar links de ações baseado nas permissões do usuário
     const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
     const actions = res.generateActionLinks(userPermissions);
 
     return successResponse(res, data, 'Usuários listados com sucesso', STATUS_CODES.OK, {
-      ...meta,
+      ...result.meta,
       actions
     });
   });

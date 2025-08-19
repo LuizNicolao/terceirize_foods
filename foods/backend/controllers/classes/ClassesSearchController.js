@@ -10,6 +10,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const { paginatedResponse } = require('../../middleware/pagination');
 
 class ClassesSearchController {
   
@@ -17,8 +18,6 @@ class ClassesSearchController {
    * Buscar classes ativas
    */
   static buscarClassesAtivas = asyncHandler(async (req, res) => {
-    const pagination = req.pagination;
-
     // Query base
     let baseQuery = `
       SELECT 
@@ -44,31 +43,13 @@ class ClassesSearchController {
     let params = [];
     baseQuery += ' ORDER BY c.nome ASC';
 
-    // Aplicar paginação manualmente
-    const limit = pagination.limit;
-    const offset = pagination.offset;
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    // Usar a função padronizada de paginação
+    const result = await paginatedResponse(req, res, baseQuery, params, '/api/classes/ativas');
     
-    // Executar query paginada
-    const classes = await executeQuery(query, params);
+    // Adicionar links HATEOAS
+    const data = res.addListLinks(result.data, result.meta.pagination, req.query);
 
-    // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM classes WHERE status = 'ativo'`;
-    const totalResult = await executeQuery(countQuery, []);
-    const totalItems = totalResult[0].total;
-
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, '/api/classes/ativas', queryParams);
-
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, classes, 'Classes ativas listadas com sucesso', STATUS_CODES.OK, {
-      ...meta,
-      _links: res.addListLinks(classes, meta.pagination, queryParams)._links
-    });
+    return successResponse(res, data, 'Classes ativas listadas com sucesso', STATUS_CODES.OK, result.meta);
   });
 
   /**

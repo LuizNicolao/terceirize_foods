@@ -169,13 +169,14 @@ const Produtos = () => {
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
-        logs={auditLogs}
-        loading={auditLoading}
-        filters={auditFilters}
+        title="Relatório de Auditoria - Produtos"
+        auditLogs={auditLogs || []}
+        auditLoading={auditLoading || false}
+        auditFilters={auditFilters || {}}
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
-        onSetFilters={setAuditFilters}
+        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
       />
 
       {/* Modal de Erros de Validação */}

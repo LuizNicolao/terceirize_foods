@@ -7,15 +7,27 @@ const AuditModal = ({
   isOpen,
   onClose,
   title,
-  auditLogs,
-  auditLoading,
-  auditFilters,
+  auditLogs = [],
+  auditLoading = false,
+  auditFilters = {},
   onApplyFilters,
   onExportXLSX,
   onExportPDF,
   onFilterChange
 }) => {
   const [expandedDetails, setExpandedDetails] = useState({});
+
+  // Valores padrão para auditFilters
+  const defaultFilters = {
+    dataInicio: '',
+    dataFim: '',
+    acao: '',
+    usuario_id: '',
+    periodo: ''
+  };
+
+  // Usar valores padrão se auditFilters for undefined
+  const filters = auditFilters || defaultFilters;
 
   const toggleDetails = (index) => {
     setExpandedDetails(prev => ({
@@ -61,7 +73,7 @@ const AuditModal = ({
               </label>
               <Input
                 type="date"
-                value={auditFilters.dataInicio}
+                value={filters.dataInicio || ''}
                 onChange={(e) => onFilterChange('dataInicio', e.target.value)}
               />
             </div>
@@ -71,7 +83,7 @@ const AuditModal = ({
               </label>
               <Input
                 type="date"
-                value={auditFilters.dataFim}
+                value={filters.dataFim || ''}
                 onChange={(e) => onFilterChange('dataFim', e.target.value)}
               />
             </div>
@@ -81,7 +93,7 @@ const AuditModal = ({
               </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={auditFilters.acao}
+                value={filters.acao || ''}
                 onChange={(e) => onFilterChange('acao', e.target.value)}
               >
                 <option value="">Todas</option>

@@ -10,6 +10,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const { paginatedResponse } = require('../../middleware/pagination');
 
 class UnidadesListController {
   
@@ -18,7 +19,6 @@ class UnidadesListController {
    */
   static listarUnidades = asyncHandler(async (req, res) => {
     const { search = '', status } = req.query;
-    const pagination = req.pagination;
 
     // Query base
     let baseQuery = `
@@ -45,38 +45,19 @@ class UnidadesListController {
 
     baseQuery += ' ORDER BY nome ASC';
 
-    // Aplicar paginação manualmente
-    const limit = pagination.limit;
-    const offset = pagination.offset;
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    // Usar a função padronizada de paginação
+    const result = await paginatedResponse(req, res, baseQuery, params, '/api/unidades');
     
-    // Executar query paginada
-    const unidades = await executeQuery(query, params);
-
-    // Contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM unidades_medida WHERE 1=1${search ? ' AND (nome LIKE ? OR sigla LIKE ?)' : ''}${status !== undefined && status !== '' ? ' AND status = ?' : ''}`;
-    const countParams = [];
-    if (search) countParams.push(`%${search}%`, `%${search}%`);
-    if (status !== undefined && status !== '') countParams.push(status);
-    const totalResult = await executeQuery(countQuery, countParams);
-    const totalItems = totalResult[0].total;
-
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, '/api/unidades', queryParams);
+    // Adicionar links HATEOAS
+    const data = res.addListLinks(result.data, result.meta.pagination, req.query);
 
     // Gerar links de ações baseado nas permissões do usuário
     const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
     const actions = res.generateActionLinks(userPermissions);
 
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, unidades, 'Unidades listadas com sucesso', STATUS_CODES.OK, {
-      ...meta,
-      actions,
-      _links: res.addListLinks(unidades, meta.pagination, queryParams)._links
+    return successResponse(res, data, 'Unidades listadas com sucesso', STATUS_CODES.OK, {
+      ...result.meta,
+      actions
     });
   });
 

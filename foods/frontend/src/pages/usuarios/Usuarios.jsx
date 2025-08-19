@@ -146,9 +146,9 @@ const Usuarios = () => {
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
         title="Relatório de Auditoria - Usuários"
-        auditLogs={auditLogs}
-        auditLoading={auditLoading}
-        auditFilters={auditFilters}
+        auditLogs={auditLogs || []}
+        auditLoading={auditLoading || false}
+        auditFilters={auditFilters || {}}
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}

@@ -10,6 +10,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const { paginatedResponse } = require('../../middleware/pagination');
 
 class MarcasListController {
   
@@ -18,7 +19,6 @@ class MarcasListController {
    */
   static listarMarcas = asyncHandler(async (req, res) => {
     const { search = '', status } = req.query;
-    const pagination = req.pagination;
 
     // Query base com contagem de produtos
     let baseQuery = `
@@ -50,36 +50,19 @@ class MarcasListController {
 
     baseQuery += ' GROUP BY m.id, m.marca, m.fabricante, m.status, m.criado_em, m.atualizado_em ORDER BY m.marca ASC';
 
-    // Aplicar paginação manualmente
-    const limit = pagination.limit;
-    const offset = pagination.offset;
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    // Usar a função padronizada de paginação
+    const result = await paginatedResponse(req, res, baseQuery, params, '/api/marcas');
     
-    // Executar query paginada
-    const marcas = await executeQuery(query, params);
-
-    // Contar total de registros
-    const countQuery = `SELECT COUNT(DISTINCT m.id) as total FROM marcas m WHERE 1=1${search ? ' AND (m.marca LIKE ? OR m.fabricante LIKE ?)' : ''}${status !== undefined ? ' AND m.status = ?' : ''}`;
-    const countParams = [...params];
-    const totalResult = await executeQuery(countQuery, countParams);
-    const totalItems = totalResult[0].total;
-
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, '/api/marcas', queryParams);
+    // Adicionar links HATEOAS
+    const data = res.addListLinks(result.data, result.meta.pagination, req.query);
 
     // Gerar links de ações baseado nas permissões do usuário
     const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
     const actions = res.generateActionLinks(userPermissions);
 
-    // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, marcas, 'Marcas listadas com sucesso', STATUS_CODES.OK, {
-      ...meta,
-      actions,
-      _links: res.addListLinks(marcas, meta.pagination, queryParams)._links
+    return successResponse(res, data, 'Marcas listadas com sucesso', STATUS_CODES.OK, {
+      ...result.meta,
+      actions
     });
   });
 

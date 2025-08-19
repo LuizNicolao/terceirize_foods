@@ -15,6 +15,19 @@ export const useAuditoria = (recurso) => {
     periodo: ''
   });
 
+  // Função para garantir que auditFilters nunca seja undefined
+  const safeSetAuditFilters = (newFilters) => {
+    setAuditFilters(prev => ({
+      dataInicio: '',
+      dataFim: '',
+      acao: '',
+      usuario_id: '',
+      periodo: '',
+      ...prev,
+      ...newFilters
+    }));
+  };
+
   // Carregar logs de auditoria
   const loadAuditLogs = async () => {
     try {
@@ -235,9 +248,15 @@ export const useAuditoria = (recurso) => {
   return {
     // Estados
     showAuditModal,
-    auditLogs,
-    auditLoading,
-    auditFilters,
+    auditLogs: auditLogs || [],
+    auditLoading: auditLoading || false,
+    auditFilters: auditFilters || {
+      dataInicio: '',
+      dataFim: '',
+      acao: '',
+      usuario_id: '',
+      periodo: ''
+    },
 
     // Funções
     loadAuditLogs,
@@ -246,6 +265,6 @@ export const useAuditoria = (recurso) => {
     handleApplyAuditFilters,
     handleExportAuditXLSX,
     handleExportAuditPDF,
-    setAuditFilters
+    setAuditFilters: safeSetAuditFilters
   };
 };

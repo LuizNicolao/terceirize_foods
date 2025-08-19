@@ -5,116 +5,94 @@
 
 const { executeQuery } = require('../../config/database');
 const { getAuditLogs } = require('../../utils/audit');
+const { 
+  successResponse, 
+  errorResponse, 
+  STATUS_CODES 
+} = require('../../middleware/responseHandler');
+const { asyncHandler } = require('../../middleware/responseHandler');
+const { paginatedResponse } = require('../../middleware/pagination');
 
 class AuditoriaListController {
   // Listar logs de auditoria com filtros
-  static async listarLogs(req, res) {
-    try {
-      console.log('=== INÍCIO DA REQUISIÇÃO DE AUDITORIA ===');
-      console.log('Usuário atual:', {
-        id: req.user.id,
-        nome: req.user.nome,
-        tipo_de_acesso: req.user.tipo_de_acesso,
-        nivel_de_acesso: req.user.nivel_de_acesso
-      });
+  static listarLogs = asyncHandler(async (req, res) => {
+    console.log('=== INÍCIO DA REQUISIÇÃO DE AUDITORIA ===');
+    console.log('Usuário atual:', {
+      id: req.user.id,
+      nome: req.user.nome,
+      tipo_de_acesso: req.user.tipo_de_acesso,
+      nivel_de_acesso: req.user.nivel_de_acesso
+    });
 
-      // Verificar se usuário tem permissão para visualizar auditoria
-      if (req.user.tipo_de_acesso !== 'administrador' && 
-          !(req.user.tipo_de_acesso === 'coordenador' && req.user.nivel_de_acesso === 'III')) {
-        return res.status(403).json({ 
-          success: false,
-          error: 'Acesso negado', 
-          message: 'Apenas administradores e coordenadores nível III podem visualizar logs de auditoria.' 
-        });
-      }
-
-      console.log('Usuário tem permissão, buscando logs...');
-
-      // Buscar logs com todos os filtros disponíveis
-      const { 
-        page = 1,
-        limit = 100, 
-        offset = 0,
-        data_inicio,
-        data_fim,
-        acao,
-        recurso,
-        usuario_id
-      } = req.query;
-
-      const actualOffset = offset || (page - 1) * limit;
-      
-      const filters = {
-        limit: parseInt(limit),
-        offset: parseInt(actualOffset)
-      };
-
-      // Adicionar filtros opcionais
-      if (data_inicio) filters.data_inicio = data_inicio;
-      if (data_fim) filters.data_fim = data_fim;
-      if (acao) filters.acao = acao;
-      if (recurso) filters.recurso = recurso;
-      if (usuario_id) filters.usuario_id = parseInt(usuario_id);
-
-      console.log('Buscando logs de auditoria com filtros:', filters);
-      const logs = await getAuditLogs(filters);
-      console.log('Logs encontrados:', logs.length);
-
-      // Buscar total de registros para paginação
-      let totalCount = 0;
-      try {
-        const countQuery = `
-          SELECT COUNT(*) as total
-          FROM auditoria_acoes aa
-          LEFT JOIN usuarios u ON aa.usuario_id = u.id
-          WHERE 1=1
-          ${data_inicio ? 'AND aa.timestamp >= ?' : ''}
-          ${data_fim ? 'AND aa.timestamp <= ?' : ''}
-          ${acao ? 'AND aa.acao = ?' : ''}
-          ${recurso ? 'AND aa.recurso = ?' : ''}
-          ${usuario_id ? 'AND aa.usuario_id = ?' : ''}
-        `;
-        
-        const countParams = [];
-        if (data_inicio) countParams.push(data_inicio);
-        if (data_fim) countParams.push(data_fim);
-        if (acao) countParams.push(acao);
-        if (recurso) countParams.push(recurso);
-        if (usuario_id) countParams.push(parseInt(usuario_id));
-
-        const countResult = await executeQuery(countQuery, countParams);
-        totalCount = countResult[0].total;
-      } catch (error) {
-        console.error('Erro ao contar total de logs:', error);
-      }
-
-      // Calcular metadados de paginação
-      const totalPages = Math.ceil(totalCount / limit);
-      const hasNextPage = page < totalPages;
-      const hasPrevPage = page > 1;
-
-      res.json({
-        success: true,
-        data: logs,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total: totalCount,
-          totalPages,
-          hasNextPage,
-          hasPrevPage
-        }
-      });
-
-    } catch (error) {
-      console.error('Erro ao listar logs de auditoria:', error);
-      res.status(500).json({ 
-        success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível carregar os logs de auditoria'
-      });
+    // Verificar se usuário tem permissão para visualizar auditoria
+    if (req.user.tipo_de_acesso !== 'administrador' && 
+        !(req.user.tipo_de_acesso === 'coordenador' && req.user.nivel_de_acesso === 'III')) {
+      return errorResponse(res, 'Acesso negado', 'Apenas administradores e coordenadores nível III podem visualizar logs de auditoria.', STATUS_CODES.FORBIDDEN);
     }
-  }
+
+    console.log('Usuário tem permissão, buscando logs...');
+
+    // Extrair parâmetros de filtro
+    const { 
+      data_inicio,
+      data_fim,
+      acao,
+      recurso,
+      usuario_id
+    } = req.query;
+
+    // Construir query base
+    let baseQuery = `
+      SELECT 
+        aa.id,
+        aa.usuario_id,
+        aa.acao,
+        aa.recurso,
+        aa.detalhes,
+        aa.timestamp,
+        aa.ip_address,
+        u.nome as usuario_nome,
+        u.email as usuario_email
+      FROM auditoria_acoes aa
+      LEFT JOIN usuarios u ON aa.usuario_id = u.id
+      WHERE 1=1
+    `;
+    
+    let params = [];
+
+    // Adicionar filtros
+    if (data_inicio) {
+      baseQuery += ' AND aa.timestamp >= ?';
+      params.push(data_inicio);
+    }
+    
+    if (data_fim) {
+      baseQuery += ' AND aa.timestamp <= ?';
+      params.push(data_fim);
+    }
+    
+    if (acao) {
+      baseQuery += ' AND aa.acao = ?';
+      params.push(acao);
+    }
+    
+    if (recurso) {
+      baseQuery += ' AND aa.recurso = ?';
+      params.push(recurso);
+    }
+    
+    if (usuario_id) {
+      baseQuery += ' AND aa.usuario_id = ?';
+      params.push(parseInt(usuario_id));
+    }
+
+    baseQuery += ' ORDER BY aa.timestamp DESC';
+
+    // Usar a função padronizada de paginação
+    const result = await paginatedResponse(req, res, baseQuery, params, '/api/auditoria');
+    
+    return successResponse(res, result.data, 'Logs de auditoria listados com sucesso', STATUS_CODES.OK, result.meta);
+  });
 
   // Buscar estatísticas de auditoria
   static async buscarEstatisticas(req, res) {
