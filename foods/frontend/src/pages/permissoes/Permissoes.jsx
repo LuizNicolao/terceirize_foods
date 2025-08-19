@@ -6,13 +6,13 @@ import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import PermissoesService from '../../services/permissoes';
 import { Button } from '../../components/ui';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
+import { CadastroFilterBar } from '../../components/ui';
 import { PermissoesStats } from '../../components/permissoes';
 import PermissoesActions from '../../components/permissoes/PermissoesActions';
 import PermissoesTable from '../../components/permissoes/PermissoesTable';
 import PermissoesForm from '../../components/permissoes/PermissoesForm';
 import UserSelector from '../../components/permissoes/UserSelector';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
 
 const Permissoes = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();

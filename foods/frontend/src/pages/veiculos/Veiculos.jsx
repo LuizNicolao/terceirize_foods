@@ -6,10 +6,10 @@ import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import VeiculosService from '../../services/veiculos';
 import { Button, ValidationErrorModal } from '../../components/ui';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
 import { VeiculoModal, VeiculosTable, VeiculosStats } from '../../components/veiculos';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
 
 const Veiculos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();

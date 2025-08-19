@@ -6,13 +6,13 @@ import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import UsuariosService from '../../services/usuarios';
 import { Button } from '../../components/ui';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
 import { UsuarioModal } from '../../components/usuarios';
 import UsuariosStats from '../../components/usuarios/UsuariosStats';
 import UsuariosActions from '../../components/usuarios/UsuariosActions';
 import UsuariosTable from '../../components/usuarios/UsuariosTable';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Usuarios = () => {

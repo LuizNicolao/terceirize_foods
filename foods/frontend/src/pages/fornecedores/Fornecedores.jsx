@@ -12,8 +12,8 @@ import {
 } from '../../components/fornecedores';
 import { AuditModal } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
 
 const Fornecedores = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();

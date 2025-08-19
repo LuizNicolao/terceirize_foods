@@ -6,10 +6,10 @@ import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import UnidadesEscolaresService from '../../services/unidadesEscolares';
 import { Button, ValidationErrorModal } from '../../components/ui';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
 import { UnidadeEscolarModal, UnidadesEscolaresTable, UnidadesEscolaresStats } from '../../components/unidades-escolares';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
 
 const UnidadesEscolares = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();

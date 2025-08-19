@@ -6,13 +6,13 @@ import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import SubgruposService from '../../services/subgrupos';
 import { Button, ValidationErrorModal } from '../../components/ui';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
 import { SubgrupoModal } from '../../components/subgrupos';
 import SubgruposStats from '../../components/subgrupos/SubgruposStats';
 import SubgruposActions from '../../components/subgrupos/SubgruposActions';
 import SubgruposTable from '../../components/subgrupos/SubgruposTable';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
 
 const Subgrupos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();

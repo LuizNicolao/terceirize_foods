@@ -12,9 +12,9 @@ import {
   MotoristasStats,
   MotoristasActions
 } from '../../components/motoristas';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
-import AuditModal from '../../components/shared/AuditModal';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
+import { AuditModal } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Motoristas = () => {

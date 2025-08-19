@@ -6,7 +6,7 @@ import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import ProdutoOrigemService from '../../services/produtoOrigem';
 import { Button, ValidationErrorModal } from '../../components/ui';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
+import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ProdutoOrigemModal } from '../../components/produto-origem';
 import ProdutoOrigemStats from '../../components/produto-origem/ProdutoOrigemStats';

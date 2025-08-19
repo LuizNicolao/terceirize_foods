@@ -6,13 +6,13 @@ import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import MarcasService from '../../services/marcas';
 import { Button, ValidationErrorModal } from '../../components/ui';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
 import { MarcaModal } from '../../components/marcas';
 import MarcasStats from '../../components/marcas/MarcasStats';
 import MarcasActions from '../../components/marcas/MarcasActions';
 import MarcasTable from '../../components/marcas/MarcasTable';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
 
 const Marcas = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();

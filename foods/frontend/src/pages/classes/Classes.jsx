@@ -6,13 +6,13 @@ import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import ClassesService from '../../services/classes';
 import { Button, ValidationErrorModal } from '../../components/ui';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
 import { ClasseModal } from '../../components/classes';
 import ClassesStats from '../../components/classes/ClassesStats';
 import ClassesActions from '../../components/classes/ClassesActions';
 import ClassesTable from '../../components/classes/ClassesTable';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
 
 const Classes = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();

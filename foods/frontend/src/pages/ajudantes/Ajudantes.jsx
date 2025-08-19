@@ -6,13 +6,13 @@ import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import AjudantesService from '../../services/ajudantes';
 import { Button } from '../../components/ui';
-import CadastroFilterBar from '../../components/CadastroFilterBar';
-import Pagination from '../../components/Pagination';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
 import { AjudanteModal } from '../../components/ajudantes';
 import AjudantesStats from '../../components/ajudantes/AjudantesStats';
 import AjudantesActions from '../../components/ajudantes/AjudantesActions';
 import AjudantesTable from '../../components/ajudantes/AjudantesTable';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Ajudantes = () => {
