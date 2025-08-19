@@ -85,15 +85,19 @@ class PaginationHelper {
     const limit = parseInt(this.limit) || 20;
     const offset = parseInt(this.offset) || 0;
     
-    const paginatedParams = [...params, limit, offset];
+    // Garantir que params seja um array
+    const safeParams = Array.isArray(params) ? params : [];
+    
+    const paginatedParams = [...safeParams, limit, offset];
     
     // Log para debug
     console.log('Pagination Debug:', {
-      originalParams: params,
+      originalParams: safeParams,
       limit: limit,
       offset: offset,
       paginatedParams: paginatedParams,
-      query: `${query} LIMIT ? OFFSET ?`
+      query: `${query} LIMIT ? OFFSET ?`,
+      paramsTypes: paginatedParams.map(p => typeof p)
     });
     
     return {
@@ -233,55 +237,62 @@ const paginatedResponse = async (req, res, baseQuery, params = [], baseUrl) => {
       baseQuery: baseQuery.substring(0, 100) + '...',
       params: params,
       baseUrl: baseUrl,
-      hasGroupBy: baseQuery.toUpperCase().includes('GROUP BY')
+      hasGroupBy: baseQuery.toUpperCase().includes('GROUP BY'),
+      hasSubquery: baseQuery.includes('(SELECT')
     });
     
-    const countQuery = createCountQuery(baseQuery);
-    console.log('Count Query:', countQuery);
+    // Para todas as queries, usar uma abordagem mais simples e robusta
+    const pagination = req.pagination;
     
-    // Verificar se é uma query complexa (com GROUP BY)
-    if (baseQuery.toUpperCase().includes('GROUP BY')) {
-      console.log('Query complexa detectada, usando abordagem alternativa');
-      
-      // Para queries com GROUP BY, usar uma abordagem mais simples
-      const pagination = req.pagination;
-      
-      // Executar query principal com paginação
-      const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
-      const items = await executeQuery(query, paginatedParams);
-      
-      // Para queries com GROUP BY, estimar o total baseado no número de itens retornados
-      // Se temos menos itens que o limite, sabemos que é a última página
-      const estimatedTotal = items.length < pagination.limit ? 
+    // Executar query principal com paginação
+    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    console.log('Executing query:', query);
+    console.log('With params:', paginatedParams);
+    
+    const items = await executeQuery(query, paginatedParams);
+    console.log('Query executed successfully, items count:', items.length);
+    
+    // Para queries complexas (GROUP BY ou subqueries), estimar o total
+    // Para queries simples, tentar contar
+    let totalItems;
+    if (baseQuery.toUpperCase().includes('GROUP BY') || baseQuery.includes('(SELECT')) {
+      // Estimativa para queries complexas
+      totalItems = items.length < pagination.limit ? 
         (pagination.page - 1) * pagination.limit + items.length : 
-        pagination.page * pagination.limit + 100; // Estimativa conservadora
-      
-      // Gerar metadados de paginação
-      const queryParams = { ...req.query };
-      delete queryParams.page;
-      delete queryParams.limit;
-      
-      const meta = pagination.generateMeta(estimatedTotal, baseUrl, queryParams);
-      
-      return {
-        success: true,
-        data: items,
-        meta
-      };
+        pagination.page * pagination.limit + 100;
+      console.log('Using estimated total for complex query:', totalItems);
     } else {
-      // Para queries simples, usar a abordagem normal
-      const { items, meta } = await applyPagination(req, res, baseQuery, countQuery, params, baseUrl);
-      
-      return {
-        success: true,
-        data: items,
-        meta
-      };
+      // Contagem real para queries simples
+      try {
+        const countQuery = createCountQuery(baseQuery);
+        console.log('Count query:', countQuery);
+        totalItems = await pagination.getTotalCount(countQuery, params);
+        console.log('Real total count:', totalItems);
+      } catch (countError) {
+        console.log('Count query failed, using estimation:', countError.message);
+        totalItems = items.length < pagination.limit ? 
+          (pagination.page - 1) * pagination.limit + items.length : 
+          pagination.page * pagination.limit + 100;
+      }
     }
+    
+    // Gerar metadados de paginação
+    const queryParams = { ...req.query };
+    delete queryParams.page;
+    delete queryParams.limit;
+    
+    const meta = pagination.generateMeta(totalItems, baseUrl, queryParams);
+    
+    return {
+      success: true,
+      data: items,
+      meta
+    };
   } catch (error) {
     console.error('Erro na resposta paginada:', error);
     console.error('Query que causou erro:', baseQuery);
     console.error('Parâmetros:', params);
+    console.error('Stack trace:', error.stack);
     throw error;
   }
 };
