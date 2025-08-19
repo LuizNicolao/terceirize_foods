@@ -259,6 +259,47 @@ class FornecedoresService {
       };
     }
   }
+
+  async buscarAuditoria(fornecedorId = null, filters = {}) {
+    try {
+      const params = new URLSearchParams();
+      
+      // Adicionar filtros
+      if (filters.dataInicio) {
+        params.append('data_inicio', filters.dataInicio);
+      }
+      if (filters.dataFim) {
+        params.append('data_fim', filters.dataFim);
+      }
+      if (filters.acao) {
+        params.append('acao', filters.acao);
+      }
+      if (filters.usuario_id) {
+        params.append('usuario_id', filters.usuario_id);
+      }
+      
+      // Filtro específico para fornecedores
+      params.append('recurso', 'fornecedores');
+      
+      // Se fornecedorId específico, adicionar aos detalhes
+      if (fornecedorId) {
+        params.append('fornecedor_id', fornecedorId);
+      }
+      
+      const response = await api.get(`/auditoria?${params.toString()}`);
+      
+      return {
+        success: true,
+        data: response.data.data || response.data.logs || []
+      };
+    } catch (error) {
+      console.error('Erro ao buscar auditoria:', error);
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar auditoria'
+      };
+    }
+  }
 }
 
 export default new FornecedoresService(); 

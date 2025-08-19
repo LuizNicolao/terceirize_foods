@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons } from '../ui';
+import { ActionButtons, EmptyState } from '../ui';
 
 const FiliaisTable = ({
   filiais,
@@ -100,9 +100,11 @@ const FiliaisTable = ({
       </div>
       
       {filiais.length === 0 && (
-        <div className="text-center py-8">
-          <div className="text-gray-500 text-sm">Nenhuma filial encontrada</div>
-        </div>
+        <EmptyState
+          title="Nenhuma filial encontrada"
+          description="Tente ajustar os filtros de busca ou adicionar uma nova filial"
+          icon="filiais"
+        />
       )}
     </div>
   );

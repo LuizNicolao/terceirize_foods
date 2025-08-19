@@ -219,38 +219,18 @@ export const useFornecedores = () => {
   };
 
   const handleViewAudit = async (fornecedorId) => {
-    setShowAuditModal(true);
-    setAuditLoading(true);
-    
-    try {
-      const result = await FornecedoresService.buscarAuditoria(fornecedorId, auditFilters);
-      if (result.success) {
-        setAuditLogs(result.data || []);
-      } else {
-        toast.error(result.message || 'Erro ao carregar auditoria');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar auditoria:', error);
-      toast.error('Erro ao carregar auditoria');
-    } finally {
-      setAuditLoading(false);
-    }
+    // Esta função será substituída pelo hook useAuditoria
+    console.log('handleViewAudit chamado com fornecedorId:', fornecedorId);
   };
 
   const handleAuditFilterChange = (newFilters) => {
-    setAuditFilters(newFilters);
+    // Esta função será substituída pelo hook useAuditoria
+    console.log('handleAuditFilterChange chamado com:', newFilters);
   };
 
   const handleCloseAuditModal = () => {
-    setShowAuditModal(false);
-    setAuditLogs([]);
-    setAuditFilters({
-      dataInicio: '',
-      dataFim: '',
-      acao: '',
-      usuario_id: '',
-      periodo: ''
-    });
+    // Esta função será substituída pelo hook useAuditoria
+    console.log('handleCloseAuditModal chamado');
   };
 
   const handleExport = async (format) => {

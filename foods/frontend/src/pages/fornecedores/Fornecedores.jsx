@@ -25,10 +25,6 @@ const Fornecedores = () => {
     showModal,
     viewMode,
     editingFornecedor,
-    showAuditModal,
-    auditLogs,
-    auditLoading,
-    auditFilters,
     searching,
     estatisticas,
     searchTerm,
@@ -52,15 +48,21 @@ const Fornecedores = () => {
     handleDeleteFornecedor,
     handleViewAudit,
     handleAuditFilterChange,
-    handleCloseAuditModal,
     handleExport
   } = useFornecedores();
 
   const {
+    showAuditModal,
+    auditLogs,
+    auditLoading,
+    auditFilters,
+    handleOpenAuditModal,
+    handleCloseAuditModal,
     handleApplyAuditFilters,
     handleExportAuditXLSX,
-    handleExportAuditPDF
-  } = useAuditoria();
+    handleExportAuditPDF,
+    setAuditFilters
+  } = useAuditoria('fornecedores');
 
   const handleAddNew = () => {
     handleOpenModal(null, false);
@@ -72,10 +74,6 @@ const Fornecedores = () => {
 
   const handleEdit = (fornecedor) => {
     handleOpenModal(fornecedor, false);
-  };
-
-  const handleOpenAuditModal = () => {
-    handleViewAudit(null);
   };
 
   if (loading) {
@@ -127,8 +125,6 @@ const Fornecedores = () => {
       {/* Ações */}
       <FornecedoresActions 
         onExport={handleExport}
-        canCreate={canCreate('fornecedores')}
-        onAddNew={handleAddNew}
       />
 
       {/* Tabela */}

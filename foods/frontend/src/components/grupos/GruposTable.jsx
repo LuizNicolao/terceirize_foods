@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons } from '../ui';
+import { ActionButtons, EmptyState } from '../ui';
 
 const GruposTable = ({ 
   grupos, 
@@ -14,9 +14,11 @@ const GruposTable = ({
 }) => {
   if (grupos.length === 0) {
     return (
-      <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-        Nenhum grupo encontrado
-      </div>
+      <EmptyState
+        title="Nenhum grupo encontrado"
+        description="Tente ajustar os filtros de busca ou adicionar um novo grupo"
+        icon="grupos"
+      />
     );
   }
 

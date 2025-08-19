@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [rememberMe, setRememberMe] = useState(localStorage.getItem('rememberMe') === 'true');
 
   useEffect(() => {
     const verifyToken = async () => {
@@ -34,12 +35,22 @@ export const AuthProvider = ({ children }) => {
     verifyToken();
   }, [token]);
 
-  const login = async (email, senha) => {
+  const login = async (email, senha, rememberMeOption = false) => {
     try {
-      const response = await api.post('/auth/login', { email, senha });
+      const response = await api.post('/auth/login', { 
+        email, 
+        senha,
+        rememberMe: rememberMeOption 
+      });
       const { token: newToken, user: userData } = response.data;
       
+      // Salvar token no localStorage
       localStorage.setItem('token', newToken);
+      
+      // Salvar preferência "Mantenha-me conectado"
+      localStorage.setItem('rememberMe', rememberMeOption.toString());
+      setRememberMe(rememberMeOption);
+      
       api.defaults.headers.authorization = `Bearer ${newToken}`;
       
       setToken(newToken);
@@ -65,9 +76,11 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('rememberMe');
     delete api.defaults.headers.authorization;
     setToken(null);
     setUser(null);
+    setRememberMe(false);
   };
 
   const changePassword = async (senhaAtual, novaSenha) => {
@@ -86,6 +99,7 @@ export const AuthProvider = ({ children }) => {
     user,
     token,
     loading,
+    rememberMe,
     login,
     logout,
     changePassword,

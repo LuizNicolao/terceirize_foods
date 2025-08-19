@@ -60,14 +60,28 @@ const SidebarHeader = styled.div`
   flex-shrink: 0;
 `;
 
-const Logo = styled.h2`
-  color: var(--primary-green);
-  font-size: ${props => props.$collapsed ? '16px' : '24px'};
-  font-weight: 700;
+const Logo = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  
+  img {
+    height: ${props => props.$collapsed ? '32px' : '40px'};
+    width: auto;
+    object-fit: contain;
+  }
+  
+  .logo-text {
+    color: var(--primary-green);
+    font-size: ${props => props.$collapsed ? '16px' : '24px'};
+    font-weight: 700;
+    margin-left: ${props => props.$collapsed ? '0' : '8px'};
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: ${props => props.$collapsed ? 'none' : 'block'};
+  }
 `;
 
 const ToggleButton = styled.button`
@@ -489,7 +503,21 @@ const Sidebar = ({ collapsed, onToggle }) => {
       <SidebarContainer $collapsed={collapsed}>
         <SidebarHeader>
           <Logo $collapsed={collapsed}>
-            {collapsed ? 'F' : 'Foods'}
+            <img 
+              src="./logo-small.png" 
+              alt="Foods Logo" 
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+            <div 
+              className={`${collapsed ? 'w-8 h-8' : 'w-10 h-10'} bg-green-600 rounded-full flex items-center justify-center text-white font-bold hidden`}
+              style={{ display: 'none' }}
+            >
+              F
+            </div>
+            <span className="logo-text">Foods</span>
           </Logo>
           <ToggleButton onClick={onToggle}>
             {collapsed ? <FaChevronRight /> : <FaChevronLeft />}

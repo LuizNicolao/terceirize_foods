@@ -112,7 +112,7 @@ const Header = ({ onToggleSidebar }) => {
   return (
     <HeaderContainer>
       <LeftSection>
-        <Title>CILS - Gestão de Supply Chain</Title>
+        <Title>Foods - Gestão de Supply Chain</Title>
       </LeftSection>
 
       <RightSection>

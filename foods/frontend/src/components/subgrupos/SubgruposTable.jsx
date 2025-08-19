@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons } from '../ui';
+import { ActionButtons, EmptyState } from '../ui';
 
 const SubgruposTable = ({ 
   subgrupos, 
@@ -15,9 +15,11 @@ const SubgruposTable = ({
 }) => {
   if (subgrupos.length === 0) {
     return (
-      <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-        Nenhum subgrupo encontrado
-      </div>
+      <EmptyState
+        title="Nenhum subgrupo encontrado"
+        description="Tente ajustar os filtros de busca ou adicionar um novo subgrupo"
+        icon="subgrupos"
+      />
     );
   }
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons } from '../ui';
+import { ActionButtons, EmptyState } from '../ui';
 
 const ProdutosTable = ({ 
   produtos, 
@@ -11,9 +11,11 @@ const ProdutosTable = ({
 }) => {
   if (produtos.length === 0) {
     return (
-      <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-        Nenhum produto encontrado
-      </div>
+      <EmptyState
+        title="Nenhum produto encontrado"
+        description="Tente ajustar os filtros de busca ou adicionar um novo produto"
+        icon="produtos"
+      />
     );
   }
 

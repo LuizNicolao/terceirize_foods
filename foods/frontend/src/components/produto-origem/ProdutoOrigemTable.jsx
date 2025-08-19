@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaBox } from 'react-icons/fa';
-import { ActionButtons } from '../ui';
+import { ActionButtons, EmptyState } from '../ui';
 
 const ProdutoOrigemTable = ({
   produtosOrigem,
@@ -18,11 +18,11 @@ const ProdutoOrigemTable = ({
 }) => {
   if (!produtosOrigem || produtosOrigem.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <FaBox className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum produto origem encontrado</h3>
-        <p className="text-gray-500">Não há produtos origem cadastrados ou os filtros aplicados não retornaram resultados.</p>
-      </div>
+      <EmptyState
+        title="Nenhum produto origem encontrado"
+        description="Não há produtos origem cadastrados ou os filtros aplicados não retornaram resultados"
+        icon="produto-origem"
+      />
     );
   }
 

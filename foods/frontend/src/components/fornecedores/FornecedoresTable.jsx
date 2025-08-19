@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons } from '../ui';
+import { ActionButtons, EmptyState } from '../ui';
 import { usePermissions } from '../../contexts/PermissionsContext';
 
 const FornecedoresTable = ({ 
@@ -29,9 +29,11 @@ const FornecedoresTable = ({
 
   if (fornecedores.length === 0) {
     return (
-      <div className="text-center py-8 text-gray-500">
-        Nenhum fornecedor encontrado
-      </div>
+      <EmptyState
+        title="Nenhum fornecedor encontrado"
+        description="Tente ajustar os filtros de busca ou adicionar um novo fornecedor"
+        icon="fornecedores"
+      />
     );
   }
 

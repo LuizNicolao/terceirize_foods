@@ -27,7 +27,7 @@ router.post('/login', [
       });
     }
 
-    const { email, senha } = req.body;
+    const { email, senha, rememberMe = false } = req.body;
     const now = Date.now();
 
     // Inicializar tentativas
@@ -85,8 +85,9 @@ router.post('/login', [
     // Login bem-sucedido: resetar tentativas
     loginAttempts[email] = { count: 0, lastAttempt: now, blockedUntil: null };
 
-    // Gerar token
-    const token = generateToken(user.id);
+    // Gerar token com duração baseada na opção "Mantenha-me conectado"
+    const tokenExpiration = rememberMe ? '30d' : '24h'; // 30 dias se "lembrar", 24h se não
+    const token = generateToken(user.id, tokenExpiration);
 
     // Remover senha do objeto de resposta
     const { senha: _, ...userWithoutPassword } = user;
@@ -96,14 +97,21 @@ router.post('/login', [
       user.id,
       AUDIT_ACTIONS.LOGIN,
       'auth',
-      { email: user.email, userAgent: req.get('User-Agent') },
+      { 
+        email: user.email, 
+        userAgent: req.get('User-Agent'),
+        rememberMe: rememberMe,
+        tokenExpiration: tokenExpiration
+      },
       req.ip
     );
 
     res.json({
       message: 'Login realizado com sucesso',
       user: userWithoutPassword,
-      token
+      token,
+      rememberMe: rememberMe,
+      tokenExpiration: tokenExpiration
     });
 
   } catch (error) {

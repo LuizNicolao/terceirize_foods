@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons } from '../ui';
+import { ActionButtons, EmptyState } from '../ui';
 
 const UsuariosTable = ({ 
   usuarios, 
@@ -16,9 +16,11 @@ const UsuariosTable = ({
 }) => {
   if (usuarios.length === 0) {
     return (
-      <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-        Nenhum usuário encontrado
-      </div>
+      <EmptyState
+        title="Nenhum usuário encontrado"
+        description="Tente ajustar os filtros de busca ou adicionar um novo usuário"
+        icon="usuarios"
+      />
     );
   }
 

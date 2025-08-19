@@ -300,6 +300,12 @@ const getAuditLogs = async (filters = {}) => {
       console.log('Filtro data_fim adicionado:', filters.data_fim);
     }
     
+    // Filtro por usuário
+    if (filters.usuario_id) {
+      whereConditions.push(`a.usuario_id = ${parseInt(filters.usuario_id)}`);
+      console.log('Filtro usuario_id adicionado:', filters.usuario_id);
+    }
+    
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
     
     const query = `

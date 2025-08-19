@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons } from '../ui';
+import { ActionButtons, EmptyState } from '../ui';
 
 const ClassesTable = ({
   classes,
@@ -15,9 +15,11 @@ const ClassesTable = ({
 }) => {
   if (classes.length === 0) {
     return (
-      <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-        Nenhuma classe encontrada
-      </div>
+      <EmptyState
+        title="Nenhuma classe encontrada"
+        description="Tente ajustar os filtros de busca ou adicionar uma nova classe"
+        icon="classes"
+      />
     );
   }
 

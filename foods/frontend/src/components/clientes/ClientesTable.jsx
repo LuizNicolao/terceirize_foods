@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons } from '../ui';
+import { ActionButtons, EmptyState } from '../ui';
 
 const ClientesTable = ({
   clientes,
@@ -128,9 +128,11 @@ const ClientesTable = ({
       </div>
       
       {clientes.length === 0 && (
-        <div className="text-center py-8">
-          <div className="text-gray-500 text-sm">Nenhum cliente encontrado</div>
-        </div>
+        <EmptyState
+          title="Nenhum cliente encontrado"
+          description="Tente ajustar os filtros de busca ou adicionar um novo cliente"
+          icon="clientes"
+        />
       )}
     </div>
   );

@@ -1,21 +1,12 @@
 import React from 'react';
 import { FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { Button } from '../ui';
-import { usePermissions } from '../../contexts/PermissionsContext';
 
-const FornecedoresActions = ({ onExport, canCreate, onAddNew }) => {
+const FornecedoresActions = ({ onExport }) => {
   return (
     <div className="flex flex-col sm:flex-row gap-3 mb-6">
       <div className="flex-1">
-        {canCreate && (
-          <Button
-            onClick={onAddNew}
-            className="w-full sm:w-auto"
-            variant="primary"
-          >
-            Novo Fornecedor
-          </Button>
-        )}
+        {/* Botão removido - já existe no header */}
       </div>
       
       <div className="flex gap-2">

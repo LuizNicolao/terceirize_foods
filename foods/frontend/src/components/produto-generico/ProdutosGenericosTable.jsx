@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaStar } from 'react-icons/fa';
-import { ActionButtons } from '../../components/ui';
+import { ActionButtons, EmptyState } from '../../components/ui';
 
 const ProdutosGenericosTable = ({
   produtosGenericos,
@@ -21,12 +21,11 @@ const ProdutosGenericosTable = ({
 }) => {
   if (!Array.isArray(produtosGenericos) || produtosGenericos.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <p className="text-gray-500 text-lg">Nenhum produto genérico encontrado</p>
-        <p className="text-gray-400 text-sm mt-2">
-          Tente ajustar os filtros de busca ou adicionar um novo produto genérico
-        </p>
-      </div>
+      <EmptyState
+        title="Nenhum produto genérico encontrado"
+        description="Tente ajustar os filtros de busca ou adicionar um novo produto genérico"
+        icon="produto-generico"
+      />
     );
   }
 

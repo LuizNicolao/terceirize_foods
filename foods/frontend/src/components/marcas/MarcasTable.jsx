@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons, Table } from '../ui';
+import { ActionButtons, Table, EmptyState } from '../ui';
 
 const MarcasTable = ({ 
   marcas, 
@@ -13,9 +13,11 @@ const MarcasTable = ({
 }) => {
   if (marcas.length === 0) {
     return (
-      <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-        Nenhuma marca encontrada
-      </div>
+      <EmptyState
+        title="Nenhuma marca encontrada"
+        description="Tente ajustar os filtros de busca ou adicionar uma nova marca"
+        icon="marcas"
+      />
     );
   }
 

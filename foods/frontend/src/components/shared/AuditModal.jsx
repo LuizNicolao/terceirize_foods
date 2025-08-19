@@ -131,13 +131,13 @@ const AuditModal = ({
                       Ação
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Campo
+                      Recurso
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Valor Anterior
+                      Detalhes
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Novo Valor
+                      IP
                     </th>
                   </tr>
                 </thead>
@@ -145,32 +145,34 @@ const AuditModal = ({
                   {auditLogs.map((log, index) => (
                     <tr key={index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(log.created_at).toLocaleString('pt-BR')}
+                        {new Date(log.timestamp).toLocaleString('pt-BR')}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {log.usuario_nome || 'Sistema'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          log.action === 'create' ? 'bg-green-100 text-green-800' :
-                          log.action === 'update' ? 'bg-blue-100 text-blue-800' :
-                          log.action === 'delete' ? 'bg-red-100 text-red-800' :
+                          log.acao === 'create' ? 'bg-green-100 text-green-800' :
+                          log.acao === 'update' ? 'bg-blue-100 text-blue-800' :
+                          log.acao === 'delete' ? 'bg-red-100 text-red-800' :
+                          log.acao === 'login' ? 'bg-purple-100 text-purple-800' :
                           'bg-gray-100 text-gray-800'
                         }`}>
-                          {log.action === 'create' ? 'Criar' :
-                           log.action === 'update' ? 'Editar' :
-                           log.action === 'delete' ? 'Excluir' :
-                           log.action === 'view' ? 'Visualizar' : log.action}
+                          {log.acao === 'create' ? 'Criar' :
+                           log.acao === 'update' ? 'Editar' :
+                           log.acao === 'delete' ? 'Excluir' :
+                           log.acao === 'login' ? 'Login' :
+                           log.acao === 'view' ? 'Visualizar' : log.acao}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {log.field_name || '-'}
+                        {log.recurso || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {log.old_value || '-'}
+                        {log.detalhes ? 'Ver detalhes' : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {log.new_value || '-'}
+                        {log.ip_address || '-'}
                       </td>
                     </tr>
                   ))}

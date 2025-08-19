@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button, Table } from '../ui';
+import { Button, Table, EmptyState } from '../ui';
 import RotasActions from './RotasActions';
 
 const RotasTable = ({ 
@@ -18,9 +18,11 @@ const RotasTable = ({
 }) => {
   if (rotas.length === 0) {
     return (
-      <div className="text-center py-8 sm:py-12 text-gray-500 text-sm sm:text-base">
-        Nenhuma rota encontrada
-      </div>
+      <EmptyState
+        title="Nenhuma rota encontrada"
+        description="Tente ajustar os filtros de busca ou adicionar uma nova rota"
+        icon="rotas"
+      />
     );
   }
 

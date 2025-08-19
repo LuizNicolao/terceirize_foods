@@ -65,7 +65,7 @@ export const useAuditoria = (recurso) => {
       params.append('recurso', recurso);
       
       const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.logs || []);
+      setAuditLogs(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
