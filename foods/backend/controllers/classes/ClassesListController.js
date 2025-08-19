@@ -10,7 +10,6 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
-const { paginatedResponse } = require('../../middleware/pagination');
 
 class ClassesListController {
   
@@ -19,6 +18,7 @@ class ClassesListController {
    */
   static listarClasses = asyncHandler(async (req, res) => {
     const { search = '', status, subgrupo_id } = req.query;
+    const pagination = req.pagination;
 
     // Query base com informações do subgrupo e grupo
     let baseQuery = `
@@ -61,19 +61,39 @@ class ClassesListController {
 
     baseQuery += ' GROUP BY c.id, c.nome, c.codigo, c.descricao, c.subgrupo_id, c.status, c.data_cadastro, c.data_atualizacao, s.nome, g.nome ORDER BY c.nome ASC';
 
-    // Usar a função padronizada de paginação
-    const result = await paginatedResponse(req, res, baseQuery, params, '/api/classes');
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
+    // Executar query paginada
+    const classes = await executeQuery(query, params);
+
+    // Contar total de registros
+    const countQuery = `SELECT COUNT(DISTINCT c.id) as total FROM classes c WHERE 1=1${search ? ' AND c.nome LIKE ?' : ''}${status !== undefined ? ' AND c.status = ?' : ''}${subgrupo_id ? ' AND c.subgrupo_id = ?' : ''}`;
+    const countParams = [...params];
+    const totalResult = await executeQuery(countQuery, countParams);
+    const totalItems = totalResult[0].total;
+
+    // Gerar metadados de paginação
+    const queryParams = { ...req.query };
+    delete queryParams.page;
+    delete queryParams.limit;
+    
+    const meta = pagination.generateMeta(totalItems, '/api/classes', queryParams);
+
     // Adicionar links HATEOAS
-    const data = res.addListLinks(result.data, result.meta.pagination, req.query);
+    const data = res.addListLinks(classes, meta.pagination, queryParams);
 
     // Gerar links de ações baseado nas permissões do usuário
     const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
     const actions = res.generateActionLinks(userPermissions);
 
-    return successResponse(res, data, 'Classes listadas com sucesso', STATUS_CODES.OK, {
-      ...result.meta,
-      actions
+    // Retornar resposta no formato esperado pelo frontend
+    return successResponse(res, classes, 'Classes listadas com sucesso', STATUS_CODES.OK, {
+      ...meta,
+      actions,
+      _links: res.addListLinks(classes, meta.pagination, queryParams)._links
     });
   });
 

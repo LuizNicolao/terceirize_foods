@@ -145,14 +145,13 @@ const Usuarios = () => {
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
-        title="Relatório de Auditoria - Usuários"
-        auditLogs={auditLogs || []}
-        auditLoading={auditLoading || false}
-        auditFilters={auditFilters || {}}
+        logs={auditLogs}
+        loading={auditLoading}
+        filters={auditFilters}
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
-        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
+        onSetFilters={setAuditFilters}
       />
 
       {/* Modal de Erros de Validação */}

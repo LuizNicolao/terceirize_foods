@@ -13,8 +13,7 @@ class RotasSearchController {
         SELECT 
           r.id, r.codigo, r.nome, r.distancia_km, r.tipo_rota, 
           r.custo_diario, r.filial_id,
-          f.filial as filial_nome,
-          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id AND ue.status = 'ativo') as total_unidades
+          f.filial as filial_nome
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
         WHERE r.status = 'ativo'
@@ -23,9 +22,33 @@ class RotasSearchController {
 
       const rotas = await executeQuery(query);
 
+      // Buscar total de unidades para cada rota
+      const rotasComUnidades = await Promise.all(
+        rotas.map(async (rota) => {
+          try {
+            const unidadesQuery = `
+              SELECT COUNT(*) as total_unidades 
+              FROM unidades_escolares 
+              WHERE rota_id = ? AND status = 'ativo'
+            `;
+            const unidadesResult = await executeQuery(unidadesQuery, [rota.id]);
+            return {
+              ...rota,
+              total_unidades: unidadesResult[0]?.total_unidades || 0
+            };
+          } catch (error) {
+            console.error(`Erro ao buscar unidades para rota ${rota.id}:`, error);
+            return {
+              ...rota,
+              total_unidades: 0
+            };
+          }
+        })
+      );
+
       res.json({
         success: true,
-        data: rotas
+        data: rotasComUnidades
       });
 
     } catch (error) {
@@ -47,8 +70,7 @@ class RotasSearchController {
         SELECT 
           r.id, r.codigo, r.nome, r.distancia_km, r.tipo_rota, 
           r.custo_diario, r.filial_id,
-          f.filial as filial_nome,
-          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id AND ue.status = 'ativo') as total_unidades
+          f.filial as filial_nome
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
         WHERE r.filial_id = ? AND r.status = 'ativo'
@@ -57,9 +79,33 @@ class RotasSearchController {
 
       const rotas = await executeQuery(query, [filialId]);
 
+      // Buscar total de unidades para cada rota
+      const rotasComUnidades = await Promise.all(
+        rotas.map(async (rota) => {
+          try {
+            const unidadesQuery = `
+              SELECT COUNT(*) as total_unidades 
+              FROM unidades_escolares 
+              WHERE rota_id = ? AND status = 'ativo'
+            `;
+            const unidadesResult = await executeQuery(unidadesQuery, [rota.id]);
+            return {
+              ...rota,
+              total_unidades: unidadesResult[0]?.total_unidades || 0
+            };
+          } catch (error) {
+            console.error(`Erro ao buscar unidades para rota ${rota.id}:`, error);
+            return {
+              ...rota,
+              total_unidades: 0
+            };
+          }
+        })
+      );
+
       res.json({
         success: true,
-        data: rotas
+        data: rotasComUnidades
       });
 
     } catch (error) {
@@ -81,8 +127,7 @@ class RotasSearchController {
         SELECT 
           r.id, r.codigo, r.nome, r.distancia_km, r.tipo_rota, 
           r.custo_diario, r.filial_id,
-          f.filial as filial_nome,
-          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id AND ue.status = 'ativo') as total_unidades
+          f.filial as filial_nome
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
         WHERE r.tipo_rota = ? AND r.status = 'ativo'
@@ -91,9 +136,33 @@ class RotasSearchController {
 
       const rotas = await executeQuery(query, [tipo]);
 
+      // Buscar total de unidades para cada rota
+      const rotasComUnidades = await Promise.all(
+        rotas.map(async (rota) => {
+          try {
+            const unidadesQuery = `
+              SELECT COUNT(*) as total_unidades 
+              FROM unidades_escolares 
+              WHERE rota_id = ? AND status = 'ativo'
+            `;
+            const unidadesResult = await executeQuery(unidadesQuery, [rota.id]);
+            return {
+              ...rota,
+              total_unidades: unidadesResult[0]?.total_unidades || 0
+            };
+          } catch (error) {
+            console.error(`Erro ao buscar unidades para rota ${rota.id}:`, error);
+            return {
+              ...rota,
+              total_unidades: 0
+            };
+          }
+        })
+      );
+
       res.json({
         success: true,
-        data: rotas
+        data: rotasComUnidades
       });
 
     } catch (error) {

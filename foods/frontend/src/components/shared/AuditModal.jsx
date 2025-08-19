@@ -6,28 +6,15 @@ import ExportButtons from './ExportButtons';
 const AuditModal = ({
   isOpen,
   onClose,
-  title,
-  auditLogs = [],
-  auditLoading = false,
-  auditFilters = {},
+  logs,
+  loading,
+  filters,
   onApplyFilters,
   onExportXLSX,
   onExportPDF,
-  onFilterChange
+  onSetFilters
 }) => {
   const [expandedDetails, setExpandedDetails] = useState({});
-
-  // Valores padrão para auditFilters
-  const defaultFilters = {
-    dataInicio: '',
-    dataFim: '',
-    acao: '',
-    usuario_id: '',
-    periodo: ''
-  };
-
-  // Usar valores padrão se auditFilters for undefined
-  const filters = auditFilters || defaultFilters;
 
   const toggleDetails = (index) => {
     setExpandedDetails(prev => ({
@@ -44,7 +31,7 @@ const AuditModal = ({
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900">
-            {title}
+            Relatório de Auditoria
           </h2>
           <div className="flex items-center gap-2">
             <ExportButtons
@@ -73,8 +60,8 @@ const AuditModal = ({
               </label>
               <Input
                 type="date"
-                value={filters.dataInicio || ''}
-                onChange={(e) => onFilterChange('dataInicio', e.target.value)}
+                value={filters?.dataInicio || ''}
+                onChange={(e) => onSetFilters({ ...filters, dataInicio: e.target.value })}
               />
             </div>
             <div>
@@ -83,8 +70,8 @@ const AuditModal = ({
               </label>
               <Input
                 type="date"
-                value={filters.dataFim || ''}
-                onChange={(e) => onFilterChange('dataFim', e.target.value)}
+                value={filters?.dataFim || ''}
+                onChange={(e) => onSetFilters({ ...filters, dataFim: e.target.value })}
               />
             </div>
             <div>
@@ -93,8 +80,8 @@ const AuditModal = ({
               </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={filters.acao || ''}
-                onChange={(e) => onFilterChange('acao', e.target.value)}
+                value={filters?.acao || ''}
+                onChange={(e) => onSetFilters({ ...filters, acao: e.target.value })}
               >
                 <option value="">Todas</option>
                 <option value="create">Criar</option>
@@ -118,12 +105,12 @@ const AuditModal = ({
 
         {/* Conteúdo */}
         <div className="p-6">
-          {auditLoading ? (
+          {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
               <p className="mt-2 text-gray-600">Carregando logs de auditoria...</p>
             </div>
-          ) : auditLogs.length === 0 ? (
+          ) : logs.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               Nenhum log de auditoria encontrado
             </div>
@@ -147,7 +134,7 @@ const AuditModal = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {auditLogs.map((log, index) => (
+                  {logs.map((log, index) => (
                     <React.Fragment key={index}>
                       <tr className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

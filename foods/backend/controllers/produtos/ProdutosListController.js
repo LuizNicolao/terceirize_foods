@@ -10,7 +10,6 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
-const { paginatedResponse } = require('../../middleware/pagination');
 
 class ProdutosListController {
   
@@ -19,6 +18,7 @@ class ProdutosListController {
    */
   static listarProdutos = asyncHandler(async (req, res) => {
     const { search = '', grupo_id, status } = req.query;
+    const pagination = req.pagination;
 
     // Query base com joins
     let baseQuery = `
@@ -112,18 +112,36 @@ class ProdutosListController {
 
     baseQuery += ' ORDER BY p.nome ASC';
 
-    // Usar a função padronizada de paginação
-    const result = await paginatedResponse(req, res, baseQuery, params, '/api/produtos');
+    // Aplicar paginação manualmente
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
     
+    // Executar query paginada
+    const produtos = await executeQuery(query, params);
+
+    // Contar total de registros
+    const countQuery = `SELECT COUNT(*) as total FROM produtos p WHERE 1=1${search ? ' AND (p.nome LIKE ? OR p.codigo_produto LIKE ?)' : ''}${grupo_id ? ' AND p.grupo_id = ?' : ''}${status !== undefined ? ' AND p.status = ?' : ''}`;
+    const countParams = [...params];
+    const totalResult = await executeQuery(countQuery, countParams);
+    const totalItems = totalResult[0].total;
+
+    // Gerar metadados de paginação
+    const queryParams = { ...req.query };
+    delete queryParams.page;
+    delete queryParams.limit;
+    
+    const meta = pagination.generateMeta(totalItems, '/api/produtos', queryParams);
+
     // Gerar links de ações baseado nas permissões do usuário
     const userPermissions = req.user ? this.getUserPermissions(req.user) : [];
     const actions = res.generateActionLinks(userPermissions);
 
     // Retornar resposta no formato esperado pelo frontend
-    return successResponse(res, result.data, 'Produtos listados com sucesso', STATUS_CODES.OK, {
-      ...result.meta,
+    return successResponse(res, produtos, 'Produtos listados com sucesso', STATUS_CODES.OK, {
+      ...meta,
       actions,
-      _links: res.addListLinks(result.data, result.meta.pagination, req.query)._links
+      _links: res.addListLinks(produtos, meta.pagination, queryParams)._links
     });
   });
 

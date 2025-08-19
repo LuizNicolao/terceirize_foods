@@ -1,7 +1,6 @@
 const express = require('express');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
 const { hateoasMiddleware } = require('../middleware/hateoas');
-const { paginationMiddleware } = require('../middleware/pagination');
 const AuditoriaController = require('../controllers/auditoria');
 
 const router = express.Router();
@@ -19,9 +18,6 @@ router.get('/public-test', (req, res) => {
 
 // Aplicar autenticação em todas as outras rotas
 router.use(authenticateToken);
-
-// Aplicar middleware de paginação
-router.use(paginationMiddleware);
 
 // ===== ROTAS DE TESTE (COM AUTENTICAÇÃO) =====
 
