@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaTimes, FaFileExcel, FaFilePdf } from 'react-icons/fa';
-import { Button, Modal } from './ui';
+import { Button, Modal } from '../ui';
 
 const AuditModal = ({ 
   isOpen, 
