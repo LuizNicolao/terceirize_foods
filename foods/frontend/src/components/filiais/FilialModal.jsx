@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { FaSearch, FaWarehouse } from 'react-icons/fa';
 import { Modal, Input, Button, MaskedFormInput } from '../ui';
 import FiliaisService from '../../services/filiais';
-import AlmoxarifadoContent from '../AlmoxarifadoContent';
+import AlmoxarifadoContent from '../shared/AlmoxarifadoContent';
 import toast from 'react-hot-toast';
 
 const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
