@@ -139,7 +139,9 @@ const applyPagination = async (req, res, baseQuery, countQuery, params = [], bas
     
     console.log('applyPagination Debug:', {
       countQuery: countQuery,
-      countParams: params
+      countParams: params,
+      paramsType: typeof params,
+      paramsLength: params.length
     });
     
     // Contar total de registros
@@ -151,6 +153,7 @@ const applyPagination = async (req, res, baseQuery, countQuery, params = [], bas
     
     console.log('Final query:', query);
     console.log('Final params:', paginatedParams);
+    console.log('Final params types:', paginatedParams.map(p => typeof p));
     
     // Executar query paginada
     const items = await executeQuery(query, paginatedParams);
@@ -171,6 +174,7 @@ const applyPagination = async (req, res, baseQuery, countQuery, params = [], bas
     console.error('Query base:', baseQuery);
     console.error('Query de contagem:', countQuery);
     console.error('Parâmetros:', params);
+    console.error('Parâmetros tipo:', typeof params);
     throw error;
   }
 };
@@ -182,8 +186,26 @@ const createCountQuery = (baseQuery) => {
   
   // Verificar se a query tem GROUP BY
   if (queryWithoutOrder.toUpperCase().includes('GROUP BY')) {
-    // Para queries com GROUP BY, sempre usar subquery
-    return `SELECT COUNT(*) as total FROM (${queryWithoutOrder}) as count_table`;
+    // Para queries com GROUP BY, criar uma query de contagem mais simples
+    // Extrair a tabela principal e condições WHERE
+    const fromMatch = queryWithoutOrder.match(/FROM\s+([^\s]+(?:\s+[^\s]+)*)/i);
+    const whereMatch = queryWithoutOrder.match(/WHERE\s+(.*?)(?:\s+GROUP\s+BY|\s+ORDER\s+BY|$)/i);
+    
+    if (fromMatch) {
+      const fromClause = fromMatch[1];
+      const whereClause = whereMatch ? whereMatch[1] : '';
+      
+      // Criar query de contagem simples baseada na tabela principal
+      let countQuery = `SELECT COUNT(*) as total FROM ${fromClause}`;
+      if (whereClause) {
+        countQuery += ` WHERE ${whereClause}`;
+      }
+      
+      return countQuery;
+    } else {
+      // Fallback: usar subquery
+      return `SELECT COUNT(*) as total FROM (${queryWithoutOrder}) as count_table`;
+    }
   } else {
     // Para queries simples, tentar extrair a tabela principal
     const fromMatch = queryWithoutOrder.match(/FROM\s+([^\s]+(?:\s+[^\s]+)*)/i);
@@ -210,19 +232,52 @@ const paginatedResponse = async (req, res, baseQuery, params = [], baseUrl) => {
     console.log('paginatedResponse Debug:', {
       baseQuery: baseQuery.substring(0, 100) + '...',
       params: params,
-      baseUrl: baseUrl
+      baseUrl: baseUrl,
+      hasGroupBy: baseQuery.toUpperCase().includes('GROUP BY')
     });
     
     const countQuery = createCountQuery(baseQuery);
     console.log('Count Query:', countQuery);
     
-    const { items, meta } = await applyPagination(req, res, baseQuery, countQuery, params, baseUrl);
-    
-    return {
-      success: true,
-      data: items,
-      meta
-    };
+    // Verificar se é uma query complexa (com GROUP BY)
+    if (baseQuery.toUpperCase().includes('GROUP BY')) {
+      console.log('Query complexa detectada, usando abordagem alternativa');
+      
+      // Para queries com GROUP BY, usar uma abordagem mais simples
+      const pagination = req.pagination;
+      
+      // Executar query principal com paginação
+      const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+      const items = await executeQuery(query, paginatedParams);
+      
+      // Para queries com GROUP BY, estimar o total baseado no número de itens retornados
+      // Se temos menos itens que o limite, sabemos que é a última página
+      const estimatedTotal = items.length < pagination.limit ? 
+        (pagination.page - 1) * pagination.limit + items.length : 
+        pagination.page * pagination.limit + 100; // Estimativa conservadora
+      
+      // Gerar metadados de paginação
+      const queryParams = { ...req.query };
+      delete queryParams.page;
+      delete queryParams.limit;
+      
+      const meta = pagination.generateMeta(estimatedTotal, baseUrl, queryParams);
+      
+      return {
+        success: true,
+        data: items,
+        meta
+      };
+    } else {
+      // Para queries simples, usar a abordagem normal
+      const { items, meta } = await applyPagination(req, res, baseQuery, countQuery, params, baseUrl);
+      
+      return {
+        success: true,
+        data: items,
+        meta
+      };
+    }
   } catch (error) {
     console.error('Erro na resposta paginada:', error);
     console.error('Query que causou erro:', baseQuery);
