@@ -12,7 +12,7 @@ import { ProdutoModal } from '../../components/produtos';
 import ProdutosStats from '../../components/produtos/ProdutosStats';
 import ProdutosActions from '../../components/produtos/ProdutosActions';
 import ProdutosTable from '../../components/produtos/ProdutosTable';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
   
 const Produtos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();

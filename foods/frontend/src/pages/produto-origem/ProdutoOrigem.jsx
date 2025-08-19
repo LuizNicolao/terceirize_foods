@@ -12,7 +12,7 @@ import { ProdutoOrigemModal } from '../../components/produto-origem';
 import ProdutoOrigemStats from '../../components/produto-origem/ProdutoOrigemStats';
 import ProdutoOrigemActions from '../../components/produto-origem/ProdutoOrigemActions';
 import ProdutoOrigemTable from '../../components/produto-origem/ProdutoOrigemTable';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
 
 const ProdutoOrigem = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
