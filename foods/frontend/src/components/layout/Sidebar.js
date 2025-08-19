@@ -30,8 +30,8 @@ import {
   FaCar,
   FaUserTie
 } from 'react-icons/fa';
-import { useAuth } from '../contexts/AuthContext';
-import { usePermissions } from '../contexts/PermissionsContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { usePermissions } from '../../contexts/PermissionsContext';
 
 const SidebarContainer = styled.div`
   position: fixed;

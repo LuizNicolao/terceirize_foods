@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { FaUser, FaBell } from 'react-icons/fa';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 const HeaderContainer = styled.header`
   background: var(--white);

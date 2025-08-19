@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { usePermissions } from '../contexts/PermissionsContext';
-import LoadingSpinner from './LoadingSpinner';
+import { usePermissions } from '../../contexts/PermissionsContext';
+import { LoadingSpinner } from '../ui';
 
 const ProtectedRoute = ({ children, screen, requiredPermission = 'visualizar' }) => {
   const { canView, loading } = usePermissions();
