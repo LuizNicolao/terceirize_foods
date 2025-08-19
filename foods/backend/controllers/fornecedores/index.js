@@ -7,6 +7,7 @@ const FornecedoresListController = require('./FornecedoresListController');
 const FornecedoresCRUDController = require('./FornecedoresCRUDController');
 const FornecedoresSearchController = require('./FornecedoresSearchController');
 const FornecedoresStatsController = require('./FornecedoresStatsController');
+const FornecedoresExportController = require('./FornecedoresExportController');
 
 module.exports = {
   // Métodos de Listagem
@@ -24,5 +25,9 @@ module.exports = {
   buscarAtivos: FornecedoresSearchController.buscarAtivos,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: FornecedoresStatsController.buscarEstatisticas
+  buscarEstatisticas: FornecedoresStatsController.buscarEstatisticas,
+  
+  // Métodos de Exportação
+  exportarXLSX: FornecedoresExportController.exportarXLSX,
+  exportarPDF: FornecedoresExportController.exportarPDF
 };

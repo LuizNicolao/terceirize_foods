@@ -1,125 +1,45 @@
 import React from 'react';
-import styled from 'styled-components';
 import { FaExclamationTriangle, FaTimes } from 'react-icons/fa';
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-`;
-
-const ModalContent = styled.div`
-  background: var(--white);
-  border-radius: 12px;
-  padding: 24px;
-  max-width: 500px;
-  width: 90%;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-`;
-
-const ModalHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e0e0e0;
-`;
-
-const ModalTitle = styled.h3`
-  color: var(--error-red);
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--gray);
-  font-size: 18px;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: var(--light-gray);
-    color: var(--dark-gray);
-  }
-`;
-
-const ModalBody = styled.div`
-  color: var(--dark-gray);
-  font-size: 14px;
-  line-height: 1.6;
-  white-space: pre-line;
-`;
-
-const ModalFooter = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #e0e0e0;
-`;
-
-const OkButton = styled.button`
-  background: var(--primary-blue);
-  color: var(--white);
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: var(--dark-blue);
-    transform: translateY(-1px);
-  }
-`;
 
 const ErrorModal = ({ isOpen, message, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
-        <ModalHeader>
-          <ModalTitle>
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-xl p-6 max-w-lg w-11/12 max-h-[80vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-200">
+          <h3 className="text-red-500 text-lg font-semibold m-0 flex items-center gap-2">
             <FaExclamationTriangle />
             Erro de Exclusão
-          </ModalTitle>
-          <CloseButton onClick={onClose}>
+          </h3>
+          <button 
+            className="bg-transparent border-none cursor-pointer text-gray-500 text-lg p-1 rounded transition-all duration-300 hover:bg-gray-100 hover:text-gray-700"
+            onClick={onClose}
+          >
             <FaTimes />
-          </CloseButton>
-        </ModalHeader>
+          </button>
+        </div>
         
-        <ModalBody>
+        <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-line">
           {message}
-        </ModalBody>
+        </div>
         
-        <ModalFooter>
-          <OkButton onClick={onClose}>
+        <div className="flex justify-end mt-5 pt-4 border-t border-gray-200">
+          <button 
+            className="bg-blue-500 text-white px-5 py-2.5 rounded-md text-sm font-semibold border-none cursor-pointer transition-all duration-300 hover:bg-blue-600 hover:transform hover:-translate-y-0.5"
+            onClick={onClose}
+          >
             Entendi
-          </OkButton>
-        </ModalFooter>
-      </ModalContent>
-    </ModalOverlay>
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

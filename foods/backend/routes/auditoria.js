@@ -1,7 +1,7 @@
 const express = require('express');
 const { authenticateToken, checkPermission } = require('../middleware/auth');
 const { hateoasMiddleware } = require('../middleware/hateoas');
-const auditoriaController = require('../controllers/auditoriaController');
+const AuditoriaController = require('../controllers/auditoria');
 
 const router = express.Router();
 
@@ -34,45 +34,24 @@ router.get('/ping', (req, res) => {
 });
 
 // Teste de conectividade da auditoria
-router.get('/test', auditoriaController.testarConectividade);
+router.get('/test', AuditoriaController.testarConectividade);
 
 // Teste da função getAuditLogs
-router.get('/test-function', auditoriaController.testarFuncao);
+router.get('/test-function', AuditoriaController.testarGetAuditLogs);
 
 // ===== ROTAS PRINCIPAIS DE AUDITORIA =====
 
 // Listar logs de auditoria com filtros
 router.get('/', 
   checkPermission('visualizar'),
-  auditoriaController.listarLogs,
-  hateoasMiddleware
-);
-
-// Buscar logs de auditoria por usuário específico
-router.get('/usuario/:usuarioId', 
-  checkPermission('visualizar'),
-  auditoriaController.buscarLogsPorUsuario,
-  hateoasMiddleware
-);
-
-// Buscar logs de auditoria por recurso específico
-router.get('/recurso/:recurso', 
-  checkPermission('visualizar'),
-  auditoriaController.buscarLogsPorRecurso,
-  hateoasMiddleware
-);
-
-// Buscar logs de auditoria por ação específica
-router.get('/acao/:acao', 
-  checkPermission('visualizar'),
-  auditoriaController.buscarLogsPorAcao,
+  AuditoriaController.listarLogs,
   hateoasMiddleware
 );
 
 // Estatísticas de auditoria (apenas administradores)
 router.get('/estatisticas', 
   checkPermission('visualizar'),
-  auditoriaController.obterEstatisticas,
+  AuditoriaController.buscarEstatisticas,
   hateoasMiddleware
 );
 
@@ -81,13 +60,13 @@ router.get('/estatisticas',
 // Exportar logs de auditoria para XLSX
 router.get('/export/xlsx', 
   checkPermission('visualizar'),
-  auditoriaController.exportarXLSX
+  AuditoriaController.exportarXLSX
 );
 
 // Exportar logs de auditoria para PDF
 router.get('/export/pdf', 
   checkPermission('visualizar'),
-  auditoriaController.exportarPDF
+  AuditoriaController.exportarPDF
 );
 
 module.exports = router; 

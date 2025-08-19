@@ -1,93 +1,6 @@
 import React from 'react';
-import styled from 'styled-components';
 import { FaUser, FaBell } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
-
-const HeaderContainer = styled.header`
-  background: var(--white);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const LeftSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`;
-
-const Title = styled.h1`
-  color: var(--primary-green);
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-`;
-
-const RightSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`;
-
-const IconButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 18px;
-  color: var(--dark-gray);
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-  position: relative;
-
-  &:hover {
-    background-color: var(--light-gray);
-    color: var(--primary-green);
-  }
-`;
-
-const NotificationBadge = styled.span`
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background: var(--error-red);
-  color: white;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  font-size: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  background-color: var(--light-gray);
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background-color: var(--light-green);
-  }
-`;
-
-const UserName = styled.span`
-  font-weight: 600;
-  color: var(--dark-gray);
-  font-size: 14px;
-`;
-
-const UserRole = styled.span`
-  color: var(--gray);
-  font-size: 12px;
-`;
 
 const Header = ({ onToggleSidebar }) => {
   const { user } = useAuth();
@@ -110,26 +23,34 @@ const Header = ({ onToggleSidebar }) => {
   };
 
   return (
-    <HeaderContainer>
-      <LeftSection>
-        <Title>Foods - Gestão de Supply Chain</Title>
-      </LeftSection>
+    <header className="bg-white shadow-md px-6 py-4 flex justify-between items-center">
+      <div className="flex items-center gap-4">
+        <h1 className="text-green-500 text-2xl font-bold m-0">
+          Foods - Gestão de Supply Chain
+        </h1>
+      </div>
 
-      <RightSection>
-        <IconButton>
+      <div className="flex items-center gap-4">
+        <button className="bg-transparent border-none text-lg text-gray-700 cursor-pointer p-2 rounded transition-all duration-300 hover:bg-gray-100 hover:text-green-500 relative">
           <FaBell />
-          <NotificationBadge>3</NotificationBadge>
-        </IconButton>
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+            3
+          </span>
+        </button>
         
-        <UserInfo>
+        <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-gray-100 cursor-pointer transition-all duration-300 hover:bg-green-100">
           <FaUser />
           <div>
-            <UserName>{getUserDisplayName()}</UserName>
-            <UserRole>{getUserRole()}</UserRole>
+            <div className="font-semibold text-gray-700 text-sm">
+              {getUserDisplayName()}
+            </div>
+            <div className="text-gray-500 text-xs">
+              {getUserRole()}
+            </div>
           </div>
-        </UserInfo>
-      </RightSection>
-    </HeaderContainer>
+        </div>
+      </div>
+    </header>
   );
 };
 

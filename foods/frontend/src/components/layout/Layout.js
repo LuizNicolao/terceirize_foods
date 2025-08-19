@@ -1,29 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
 import Sidebar from './Sidebar';
 import Header from './Header';
-
-const LayoutContainer = styled.div`
-  display: flex;
-  min-height: 100vh;
-`;
-
-const MainContent = styled.main`
-  flex: 1;
-  margin-left: ${props => props.$sidebarCollapsed ? '60px' : '250px'};
-  transition: margin-left 0.3s ease;
-  background-color: var(--light-gray);
-  min-height: 100vh;
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: hidden;
-
-  @media (max-width: 768px) {
-    margin-left: 0;
-    width: 100vw;
-    max-width: 100vw;
-  }
-`;
 
 const Layout = ({ children }) => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
@@ -48,6 +25,8 @@ const Layout = ({ children }) => {
         if (saved === null) {
           setSidebarCollapsed(false);
           localStorage.setItem('sidebarCollapsed', 'false');
+        } else {
+          setSidebarCollapsed(JSON.parse(saved));
         }
       }
     };
@@ -67,15 +46,19 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <LayoutContainer>
+    <div className="flex min-h-screen">
       <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
-      <MainContent $sidebarCollapsed={sidebarCollapsed}>
+      <main 
+        className={`flex-1 bg-gray-50 min-h-screen w-full max-w-full overflow-x-hidden transition-all duration-300 ease-in-out ${
+          sidebarCollapsed ? 'ml-0 md:ml-16' : 'ml-0 md:ml-64'
+        }`}
+      >
         <Header onToggleSidebar={toggleSidebar} />
-        <div style={{ padding: '0' }}>
+        <div className="p-0">
           {children}
         </div>
-      </MainContent>
-    </LayoutContainer>
+      </main>
+    </div>
   );
 };
 

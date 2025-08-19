@@ -81,4 +81,16 @@ router.delete('/:id',
   FornecedoresController.excluirFornecedor
 );
 
+// GET /api/fornecedores/export/xlsx - Exportar fornecedores para XLSX
+router.get('/export/xlsx',
+  checkPermission('visualizar'),
+  FornecedoresController.exportarXLSX
+);
+
+// GET /api/fornecedores/export/pdf - Exportar fornecedores para PDF
+router.get('/export/pdf',
+  checkPermission('visualizar'),
+  FornecedoresController.exportarPDF
+);
+
 module.exports = router;

@@ -132,8 +132,8 @@ const checkAccessType = (allowedTypes) => {
 };
 
 // Gerar token JWT
-const generateToken = (userId) => {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '24h' });
+const generateToken = (userId, expiresIn = '24h') => {
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn });
 };
 
 module.exports = {

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import styled from 'styled-components';
 import { 
   FaHome, 
   FaUsers, 
@@ -32,340 +31,6 @@ import {
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
-
-const SidebarContainer = styled.div`
-  position: fixed;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  background: var(--white);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  z-index: 1000;
-  width: ${props => props.$collapsed ? '60px' : '250px'};
-  display: flex;
-  flex-direction: column;
-
-  @media (max-width: 768px) {
-    width: ${props => props.$collapsed ? '0' : '250px'};
-    transform: ${props => props.$collapsed ? 'translateX(-100%)' : 'translateX(0)'};
-  }
-`;
-
-const SidebarHeader = styled.div`
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
-  text-align: center;
-  position: relative;
-  flex-shrink: 0;
-`;
-
-const Logo = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0;
-  
-  img {
-    height: ${props => props.$collapsed ? '32px' : '40px'};
-    width: auto;
-    object-fit: contain;
-  }
-  
-  .logo-text {
-    color: var(--primary-green);
-    font-size: ${props => props.$collapsed ? '16px' : '24px'};
-    font-weight: 700;
-    margin-left: ${props => props.$collapsed ? '0' : '8px'};
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: ${props => props.$collapsed ? 'none' : 'block'};
-  }
-`;
-
-const ToggleButton = styled.button`
-  position: absolute;
-  right: -12px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--primary-green);
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 1001;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
-  &:hover {
-    background: var(--dark-green);
-    transform: translateY(-50%) scale(1.1);
-  }
-
-  @media (max-width: 768px) {
-    right: -15px;
-    width: 30px;
-    height: 30px;
-  }
-`;
-
-const SearchContainer = styled.div`
-  padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
-  flex-shrink: 0;
-`;
-
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  background: #f8f9fa;
-  transition: all 0.3s ease;
-
-  &:focus {
-    outline: none;
-    border-color: var(--primary-green);
-    background: white;
-    box-shadow: 0 0 0 2px rgba(0, 114, 62, 0.1);
-  }
-
-  &::placeholder {
-    color: #6c757d;
-  }
-`;
-
-const FavoritesSection = styled.div`
-  padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
-  flex-shrink: 0;
-`;
-
-const FavoritesTitle = styled.div`
-  font-size: 12px;
-  font-weight: 600;
-  color: #6c757d;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
-
-const FavoritesList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const FavoriteItem = styled(Link)`
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  text-decoration: none;
-  color: var(--dark-gray);
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  font-size: 13px;
-
-  &:hover {
-    background: #f8f9fa;
-    color: var(--primary-green);
-  }
-
-  &.active {
-    background: var(--primary-green);
-    color: white;
-  }
-`;
-
-const FavoriteIcon = styled.div`
-  margin-right: 8px;
-  font-size: 12px;
-  color: ${props => props.$active ? 'white' : '#ffc107'};
-`;
-
-const FavoriteText = styled.span`
-  flex: 1;
-`;
-
-const Nav = styled.nav`
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 0;
-  
-  /* Estilização da scrollbar */
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: #c0c0c0;
-    border-radius: 2px;
-  }
-  
-  &::-webkit-scrollbar-thumb:hover {
-    background: #a0a0a0;
-  }
-`;
-
-const MenuGroup = styled.div`
-  margin: 8px 0;
-`;
-
-const GroupHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-bottom: 1px solid #f0f0f0;
-  margin-bottom: 4px;
-
-  &:hover {
-    background-color: var(--light-gray);
-  }
-
-  display: ${props => props.$collapsed ? 'none' : 'flex'};
-`;
-
-const GroupTitle = styled.div`
-  font-size: 11px;
-  font-weight: 600;
-  color: #666;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const GroupToggle = styled.div`
-  font-size: 10px;
-  color: #999;
-  transition: all 0.3s ease;
-`;
-
-const GroupContent = styled.div`
-  overflow: hidden;
-  transition: all 0.3s ease;
-  max-height: ${props => props.$expanded ? '1000px' : '0'};
-  opacity: ${props => props.$expanded ? '1' : '0'};
-`;
-
-const NavItem = styled(Link)`
-  display: flex;
-  align-items: center;
-  padding: 10px 20px;
-  color: var(--dark-gray);
-  text-decoration: none;
-  transition: all 0.3s ease;
-  border-left: 3px solid transparent;
-  font-size: 13px;
-
-  &:hover {
-    background-color: var(--light-gray);
-    color: var(--primary-green);
-    border-left-color: var(--primary-green);
-  }
-
-  &.active {
-    background-color: var(--light-green);
-    color: var(--primary-green);
-    border-left-color: var(--primary-green);
-    font-weight: 600;
-  }
-`;
-
-const NavIcon = styled.div`
-  margin-right: ${props => props.$collapsed ? '0' : '12px'};
-  font-size: 16px;
-  min-width: 20px;
-  text-align: center;
-  color: ${props => props.$active ? 'var(--primary-green)' : 'inherit'};
-`;
-
-const NavText = styled.span`
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: ${props => props.$collapsed ? 'none' : 'block'};
-  flex: 1;
-`;
-
-const FavoriteButton = styled.button`
-  background: none;
-  border: none;
-  color: #ffc107;
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  opacity: ${props => props.$collapsed ? '0' : '1'};
-  margin-left: 8px;
-  display: ${props => props.$collapsed ? 'none' : 'block'};
-
-  &:hover {
-    background: rgba(255, 193, 7, 0.1);
-    transform: scale(1.1);
-  }
-
-  &.favorited {
-    color: #ffc107;
-  }
-
-  &.not-favorited {
-    color: #e0e0e0;
-  }
-`;
-
-const LogoutButton = styled.button`
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 12px 20px;
-  background: none;
-  border: none;
-  color: var(--error-red);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-left: 3px solid transparent;
-  border-top: 1px solid #f0f0f0;
-  flex-shrink: 0;
-
-  &:hover {
-    background-color: #ffebee;
-    border-left-color: var(--error-red);
-  }
-`;
-
-const Overlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
-  display: ${props => props.$visible ? 'block' : 'none'};
-
-  @media (min-width: 769px) {
-    display: none;
-  }
-`;
 
 // Agrupamento dos itens do menu
 const menuGroups = [
@@ -499,13 +164,28 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   return (
     <>
-      <Overlay $visible={!collapsed} onClick={onToggle} />
-      <SidebarContainer $collapsed={collapsed}>
-        <SidebarHeader>
-          <Logo $collapsed={collapsed}>
+      {/* Overlay para mobile */}
+      <div 
+        className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden ${
+          collapsed ? 'hidden' : 'block'
+        }`}
+        onClick={onToggle}
+      />
+      
+      {/* Sidebar */}
+      <div className={`
+        fixed left-0 top-0 h-screen bg-white shadow-lg transition-all duration-300 ease-in-out z-50 flex flex-col
+        ${collapsed ? 'w-16' : 'w-64'}
+        ${collapsed ? '-translate-x-full' : 'translate-x-0'}
+        md:${collapsed ? 'translate-x-0' : 'translate-x-0'}
+      `}>
+        {/* Header */}
+        <div className="p-5 border-b border-gray-200 text-center relative flex-shrink-0">
+          <div className="flex items-center justify-center m-0">
             <img 
               src="./logo-small.png" 
               alt="Foods Logo" 
+              className={`object-contain ${collapsed ? 'h-8' : 'h-10'}`}
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextSibling.style.display = 'flex';
@@ -517,45 +197,62 @@ const Sidebar = ({ collapsed, onToggle }) => {
             >
               F
             </div>
-            <span className="logo-text">Foods</span>
-          </Logo>
-          <ToggleButton onClick={onToggle}>
+            <span className={`
+              text-green-500 font-bold ${collapsed ? 'text-base' : 'text-2xl'} ml-2
+              ${collapsed ? 'hidden' : 'block'}
+              whitespace-nowrap overflow-hidden text-ellipsis
+            `}>
+              Foods
+            </span>
+          </div>
+          <button 
+            className="absolute -right-3 top-1/2 transform -translate-y-1/2 bg-green-500 border-none rounded-full w-6 h-6 flex items-center justify-center text-white cursor-pointer transition-all duration-300 hover:bg-green-600 hover:scale-110 z-50 shadow-md md:-right-4 md:w-8 md:h-8"
+            onClick={onToggle}
+          >
             {collapsed ? <FaChevronRight /> : <FaChevronLeft />}
-          </ToggleButton>
-        </SidebarHeader>
+          </button>
+        </div>
 
         {/* Campo de busca */}
         {!collapsed && (
-          <SearchContainer>
-            <SearchInput
+          <div className="p-4 border-b border-gray-200 flex-shrink-0">
+            <input
               type="text"
               placeholder="Buscar páginas..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-md text-sm bg-gray-50 transition-all duration-300 focus:outline-none focus:border-green-500 focus:bg-white focus:shadow-md placeholder-gray-500"
             />
-          </SearchContainer>
+          </div>
         )}
 
         {/* Seção de Favoritos */}
         {!collapsed && getFavoriteItems().length > 0 && (
-          <FavoritesSection>
-            <FavoritesTitle style={{ cursor: 'pointer' }} onClick={() => setFavoritesExpanded(exp => !exp)}>
-              <FaStar style={{ color: '#ffc107' }} />
+          <div className="p-4 border-b border-gray-200 flex-shrink-0">
+            <div 
+              className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5 cursor-pointer"
+              onClick={() => setFavoritesExpanded(exp => !exp)}
+            >
+              <FaStar className="text-yellow-400" />
               Favoritos
-              <span style={{ marginLeft: 'auto' }}>
+              <span className="ml-auto">
                 {favoritesExpanded ? <FaChevronUp /> : <FaChevronDown />}
               </span>
-            </FavoritesTitle>
+            </div>
             {favoritesExpanded && (
-              <FavoritesList>
+              <div className="flex flex-col gap-1">
                 {getFavoriteItems().map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
                   return (
-                    <FavoriteItem 
+                    <Link 
                       key={item.path} 
                       to={item.path}
-                      className={isActive ? 'active' : ''}
+                      className={`
+                        flex items-center px-3 py-2 text-decoration-none text-gray-700 rounded-md transition-all duration-200 text-sm
+                        hover:bg-gray-50 hover:text-green-500
+                        ${isActive ? 'bg-green-500 text-white' : ''}
+                      `}
                       onClick={(e) => {
                         if (item.path === '/cotacao') {
                           e.preventDefault();
@@ -572,35 +269,45 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         }
                       }}
                     >
-                      <FavoriteIcon $active={isActive}>
+                      <div className={`mr-2 text-xs ${isActive ? 'text-white' : 'text-yellow-400'}`}>
                         <Icon />
-                      </FavoriteIcon>
-                      <FavoriteText>{item.label}</FavoriteText>
-                    </FavoriteItem>
+                      </div>
+                      <span className="flex-1">{item.label}</span>
+                    </Link>
                   );
                 })}
-              </FavoritesList>
+              </div>
             )}
-          </FavoritesSection>
+          </div>
         )}
         
-        <Nav>
+        {/* Navegação */}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-0">
           {getFilteredGroups().map((group, groupIndex) => (
-            <MenuGroup key={groupIndex}>
-              <GroupHeader 
-                $collapsed={collapsed}
+            <div key={groupIndex} className="my-2">
+              <div 
+                className={`
+                  flex items-center justify-between px-5 py-2 cursor-pointer transition-all duration-300 border-b border-gray-100 mb-1
+                  hover:bg-gray-50
+                  ${collapsed ? 'hidden' : 'flex'}
+                `}
                 onClick={() => !collapsed && toggleGroup(group.title)}
               >
-                <GroupTitle>
+                <div className="text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   {group.title}
-                </GroupTitle>
+                </div>
                 {!collapsed && (
-                  <GroupToggle>
+                  <div className="text-xs text-gray-400 transition-all duration-300">
                     {expandedGroups[group.title] ? <FaChevronUp /> : <FaChevronDown />}
-                  </GroupToggle>
+                  </div>
                 )}
-              </GroupHeader>
-              <GroupContent $expanded={expandedGroups[group.title]}>
+              </div>
+              <div 
+                className={`
+                  overflow-hidden transition-all duration-300
+                  ${expandedGroups[group.title] ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'}
+                `}
+              >
                 {group.items.map((item) => {
                   const Icon = item.icon;
                   const isActive = location.pathname === item.path;
@@ -613,10 +320,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
                   }
                   
                   return (
-                    <NavItem 
+                    <Link 
                       key={item.path} 
                       to={item.path}
-                      className={isActive ? 'active' : ''}
+                      className={`
+                        flex items-center px-5 py-2.5 text-gray-700 text-decoration-none transition-all duration-300 border-l-3 border-transparent text-sm
+                        hover:bg-gray-50 hover:text-green-500 hover:border-l-green-500
+                        ${isActive ? 'bg-green-100 text-green-500 border-l-green-500 font-semibold' : ''}
+                      `}
                       onClick={(e) => {
                         // Se for o item de cotação, abrir em nova aba com SSO
                         if (item.path === '/cotacao') {
@@ -641,15 +352,22 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         }
                       }}
                     >
-                      <NavIcon $collapsed={collapsed} $active={isActive}>
+                      <div className={`${collapsed ? 'mr-0' : 'mr-3'} text-base min-w-5 text-center ${isActive ? 'text-green-500' : 'inherit'}`}>
                         <Icon />
-                      </NavIcon>
-                      <NavText $collapsed={collapsed}>
+                      </div>
+                      <span className={`
+                        text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1
+                        ${collapsed ? 'hidden' : 'block'}
+                      `}>
                         {item.label}
-                      </NavText>
-                      <FavoriteButton
-                        $collapsed={collapsed}
-                        className={isFavorite(item) ? 'favorited' : 'not-favorited'}
+                      </span>
+                      <button
+                        className={`
+                          bg-transparent border-none cursor-pointer p-1 rounded transition-all duration-200 ml-2
+                          ${collapsed ? 'hidden' : 'block'}
+                          ${isFavorite(item) ? 'text-yellow-400' : 'text-gray-300'}
+                          hover:bg-yellow-50 hover:scale-110
+                        `}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -658,24 +376,31 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         title={isFavorite(item) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                       >
                         {isFavorite(item) ? <FaStar /> : <FaRegStar />}
-                      </FavoriteButton>
-                    </NavItem>
+                      </button>
+                    </Link>
                   );
                 })}
-              </GroupContent>
-            </MenuGroup>
+              </div>
+            </div>
           ))}
-        </Nav>
+        </nav>
 
-        <LogoutButton onClick={handleLogout}>
-          <NavIcon $collapsed={collapsed}>
+        {/* Botão de Logout */}
+        <button 
+          className="flex items-center w-full px-5 py-3 bg-transparent border-none text-red-500 cursor-pointer transition-all duration-300 border-l-3 border-transparent border-t border-gray-100 flex-shrink-0 hover:bg-red-50 hover:border-l-red-500"
+          onClick={handleLogout}
+        >
+          <div className={`${collapsed ? 'mr-0' : 'mr-3'} text-base min-w-5 text-center`}>
             <FaSignOutAlt />
-          </NavIcon>
-          <NavText $collapsed={collapsed}>
+          </div>
+          <span className={`
+            text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis flex-1
+            ${collapsed ? 'hidden' : 'block'}
+          `}>
             Sair
-          </NavText>
-        </LogoutButton>
-      </SidebarContainer>
+          </span>
+        </button>
+      </div>
     </>
   );
 };

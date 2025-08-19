@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import FornecedoresService from '../services/fornecedores';
 import { useValidation } from './useValidation';
+import { useExport } from './useExport';
 
 export const useFornecedores = () => {
   const [fornecedores, setFornecedores] = useState([]);
@@ -233,24 +234,24 @@ export const useFornecedores = () => {
     console.log('handleCloseAuditModal chamado');
   };
 
-  const handleExport = async (format) => {
-    try {
-      const params = {
-        search: debouncedSearchTerm,
-        page: currentPage,
-        limit: itemsPerPage
-      };
+  const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(FornecedoresService);
 
-      const result = await FornecedoresService.exportar(format, params);
-      if (result.success) {
-        toast.success(`Exportação ${format.toUpperCase()} realizada com sucesso!`);
-      } else {
-        toast.error(result.message || `Erro ao exportar ${format.toUpperCase()}`);
-      }
-    } catch (error) {
-      console.error(`Erro ao exportar ${format}:`, error);
-      toast.error(`Erro ao exportar ${format.toUpperCase()}`);
-    }
+  const handleExportXLSX = async () => {
+    const params = {
+      search: debouncedSearchTerm,
+      page: currentPage,
+      limit: itemsPerPage
+    };
+    await exportXLSX(params);
+  };
+
+  const handleExportPDF = async () => {
+    const params = {
+      search: debouncedSearchTerm,
+      page: currentPage,
+      limit: itemsPerPage
+    };
+    await exportPDF(params);
   };
 
   return {
@@ -294,6 +295,7 @@ export const useFornecedores = () => {
     handleViewAudit,
     handleAuditFilterChange,
     handleCloseAuditModal,
-    handleExport
+    handleExportXLSX,
+    handleExportPDF
   };
 };

@@ -1,7 +1,7 @@
 const express = require('express');
 const { authenticateToken, checkScreenPermission } = require('../middleware/auth');
 const { hateoasMiddleware } = require('../middleware/hateoas');
-const dashboardController = require('../controllers/dashboardController');
+const DashboardController = require('../controllers/dashboard');
 
 const router = express.Router();
 
@@ -13,21 +13,21 @@ router.use(authenticateToken);
 // Obter estatísticas gerais da dashboard
 router.get('/stats', 
   checkScreenPermission('dashboard', 'visualizar'),
-  dashboardController.obterEstatisticas,
+  DashboardController.obterEstatisticas,
   hateoasMiddleware
 );
 
-// Obter estatísticas por filial
-router.get('/filial/:filialId/stats', 
+// Obter dados recentes da dashboard
+router.get('/recentes', 
   checkScreenPermission('dashboard', 'visualizar'),
-  dashboardController.obterEstatisticasPorFilial,
+  DashboardController.obterDadosRecentes,
   hateoasMiddleware
 );
 
-// Obter alertas do sistema
+// Obter alertas da dashboard
 router.get('/alertas', 
   checkScreenPermission('dashboard', 'visualizar'),
-  dashboardController.obterAlertas,
+  DashboardController.obterAlertas,
   hateoasMiddleware
 );
 

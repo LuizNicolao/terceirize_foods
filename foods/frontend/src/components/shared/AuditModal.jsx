@@ -1,6 +1,7 @@
-import React from 'react';
-import { FaTimes, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
+import ExportButtons from './ExportButtons';
 
 const AuditModal = ({
   isOpen,
@@ -14,6 +15,15 @@ const AuditModal = ({
   onExportPDF,
   onFilterChange
 }) => {
+  const [expandedDetails, setExpandedDetails] = useState({});
+
+  const toggleDetails = (index) => {
+    setExpandedDetails(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -25,24 +35,13 @@ const AuditModal = ({
             {title}
           </h2>
           <div className="flex items-center gap-2">
-            <Button 
+            <ExportButtons
+              onExportXLSX={onExportXLSX}
+              onExportPDF={onExportPDF}
               variant="outline"
               size="sm"
-              onClick={onExportXLSX}
-              className="flex items-center gap-2"
-            >
-              <FaFileExcel className="w-4 h-4" />
-              Exportar XLSX
-            </Button>
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={onExportPDF}
-              className="flex items-center gap-2"
-            >
-              <FaFilePdf className="w-4 h-4" />
-              Exportar PDF
-            </Button>
+              showLabels={true}
+            />
             <Button
               variant="ghost"
               size="sm"
@@ -131,50 +130,143 @@ const AuditModal = ({
                       Ação
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Recurso
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Detalhes
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      IP
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {auditLogs.map((log, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(log.timestamp).toLocaleString('pt-BR')}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {log.usuario_nome || 'Sistema'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          log.acao === 'create' ? 'bg-green-100 text-green-800' :
-                          log.acao === 'update' ? 'bg-blue-100 text-blue-800' :
-                          log.acao === 'delete' ? 'bg-red-100 text-red-800' :
-                          log.acao === 'login' ? 'bg-purple-100 text-purple-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {log.acao === 'create' ? 'Criar' :
-                           log.acao === 'update' ? 'Editar' :
-                           log.acao === 'delete' ? 'Excluir' :
-                           log.acao === 'login' ? 'Login' :
-                           log.acao === 'view' ? 'Visualizar' : log.acao}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {log.recurso || '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {log.detalhes ? 'Ver detalhes' : '-'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {log.ip_address || '-'}
-                      </td>
-                    </tr>
+                    <React.Fragment key={index}>
+                      <tr className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(log.timestamp).toLocaleString('pt-BR')}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {log.usuario_nome || 'Sistema'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            log.acao === 'create' ? 'bg-green-100 text-green-800' :
+                            log.acao === 'update' ? 'bg-blue-100 text-blue-800' :
+                            log.acao === 'delete' ? 'bg-red-100 text-red-800' :
+                            log.acao === 'login' ? 'bg-purple-100 text-purple-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {log.acao === 'create' ? 'Criar' :
+                             log.acao === 'update' ? 'Editar' :
+                             log.acao === 'delete' ? 'Excluir' :
+                             log.acao === 'login' ? 'Login' :
+                             log.acao === 'view' ? 'Visualizar' : log.acao}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          {log.detalhes ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleDetails(index)}
+                              className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                            >
+                              {expandedDetails[index] ? (
+                                <FaChevronDown className="w-3 h-3" />
+                              ) : (
+                                <FaChevronRight className="w-3 h-3" />
+                              )}
+                              Ver detalhes
+                            </Button>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                      </tr>
+                      {expandedDetails[index] && log.detalhes && (
+                        <tr>
+                          <td colSpan="4" className="px-6 py-4 bg-gray-50">
+                            <div className="max-w-full">
+                              {typeof log.detalhes === 'object' ? (
+                                <div className="space-y-3">
+                                  {log.detalhes.changes && (
+                                    <div>
+                                      <h4 className="font-medium text-gray-700 mb-2">Mudanças Realizadas:</h4>
+                                      <div className="bg-white p-3 rounded border">
+                                        <div className="space-y-3">
+                                          {Object.entries(log.detalhes.changes).map(([field, change], idx) => {
+                                            // Traduzir nomes de campos comuns
+                                            const fieldTranslations = {
+                                              'razao_social': 'Razão Social',
+                                              'nome_fantasia': 'Nome Fantasia',
+                                              'cnpj': 'CNPJ',
+                                              'inscricao_estadual': 'Inscrição Estadual',
+                                              'endereco': 'Endereço',
+                                              'cidade': 'Cidade',
+                                              'uf': 'UF',
+                                              'cep': 'CEP',
+                                              'telefone': 'Telefone',
+                                              'email': 'Email',
+                                              'contato': 'Contato',
+                                              'status': 'Status',
+                                              'nome': 'Nome',
+                                              'descricao': 'Descrição',
+                                              'codigo': 'Código',
+                                              'preco': 'Preço',
+                                              'estoque': 'Estoque'
+                                            };
+                                            
+                                            const displayField = fieldTranslations[field] || field;
+                                            const fromValue = change.from || 'vazio';
+                                            const toValue = change.to || 'vazio';
+                                            
+                                            return (
+                                              <div key={idx} className="border-l-4 border-blue-200 pl-3">
+                                                <div className="flex flex-col">
+                                                  <span className="text-sm font-medium text-gray-700 mb-1">
+                                                    {displayField}
+                                                  </span>
+                                                  <div className="flex items-center space-x-2 text-sm">
+                                                    <span className="text-red-600 bg-red-50 px-2 py-1 rounded">
+                                                      {fromValue}
+                                                    </span>
+                                                    <span className="text-gray-400">→</span>
+                                                    <span className="text-green-600 bg-green-50 px-2 py-1 rounded">
+                                                      {toValue}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {log.detalhes.recurso && (
+                                    <div>
+                                      <h4 className="font-medium text-gray-700 mb-1">Recurso:</h4>
+                                      <div className="bg-white p-2 rounded border text-sm text-gray-600">
+                                        {log.detalhes.recurso}
+                                      </div>
+                                    </div>
+                                  )}
+                                  {log.detalhes.ip_address && (
+                                    <div>
+                                      <h4 className="font-medium text-gray-700 mb-1">Endereço IP:</h4>
+                                      <div className="bg-white p-2 rounded border text-sm text-gray-600">
+                                        {log.detalhes.ip_address}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                </div>
+                              ) : (
+                                <div className="bg-white p-3 rounded border">
+                                  <span className="text-sm text-gray-600">{String(log.detalhes)}</span>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>

@@ -226,9 +226,10 @@ class FornecedoresService {
     }
   }
 
-  async exportarXLSX() {
+  async exportarXLSX(params = {}) {
     try {
       const response = await api.get('/fornecedores/export/xlsx', {
+        params,
         responseType: 'blob'
       });
       return {
@@ -238,14 +239,15 @@ class FornecedoresService {
     } catch (error) {
       return {
         success: false,
-        error: 'Erro ao exportar XLSX'
+        error: error.response?.data?.message || 'Erro ao exportar XLSX'
       };
     }
   }
 
-  async exportarPDF() {
+  async exportarPDF(params = {}) {
     try {
       const response = await api.get('/fornecedores/export/pdf', {
+        params,
         responseType: 'blob'
       });
       return {
@@ -255,7 +257,7 @@ class FornecedoresService {
     } catch (error) {
       return {
         success: false,
-        error: 'Erro ao exportar PDF'
+        error: error.response?.data?.message || 'Erro ao exportar PDF'
       };
     }
   }

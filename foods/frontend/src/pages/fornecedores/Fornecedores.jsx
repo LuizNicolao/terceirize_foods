@@ -48,7 +48,8 @@ const Fornecedores = () => {
     handleDeleteFornecedor,
     handleViewAudit,
     handleAuditFilterChange,
-    handleExport
+    handleExportXLSX,
+    handleExportPDF
   } = useFornecedores();
 
   const {
@@ -124,7 +125,8 @@ const Fornecedores = () => {
 
       {/* Ações */}
       <FornecedoresActions 
-        onExport={handleExport}
+        onExportXLSX={handleExportXLSX}
+        onExportPDF={handleExportPDF}
       />
 
       {/* Tabela */}
