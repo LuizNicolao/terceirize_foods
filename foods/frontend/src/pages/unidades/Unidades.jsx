@@ -12,7 +12,7 @@ import { UnidadeModal } from '../../components/unidades';
 import UnidadesStats from '../../components/unidades/UnidadesStats';
 import UnidadesActions from '../../components/unidades/UnidadesActions';
 import UnidadesTable from '../../components/unidades/UnidadesTable';
-import AuditModal from '../../components/shared/AuditModal';
+import { AuditModal } from '../../components/shared';
 
 const Unidades = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
