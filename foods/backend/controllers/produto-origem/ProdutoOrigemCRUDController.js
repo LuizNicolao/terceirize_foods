@@ -25,9 +25,6 @@ class ProdutoOrigemCRUDController {
       classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id, status
     } = req.body;
 
-    // Gerar código único automaticamente
-    const codigo = gerarCodigoProdutoOrigem();
-
     // Verificar se unidade de medida existe
     const unidade = await executeQuery(
       'SELECT id FROM unidades_medida WHERE id = ?',
@@ -86,18 +83,27 @@ class ProdutoOrigemCRUDController {
       }
     }
 
-    // Inserir produto origem
+    // Inserir produto origem (sem código inicialmente)
     const result = await executeQuery(
       `INSERT INTO produto_origem (
-        codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
+        nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
         classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id, 
         status, usuario_criador_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        codigo, nome, unidade_medida_id, fator_conversao || 1.000, grupo_id, subgrupo_id,
+        nome, unidade_medida_id, fator_conversao || 1.000, grupo_id, subgrupo_id,
         classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id,
         status !== undefined ? status : 1, req.user.id
       ]
+    );
+
+    // Gerar código de vitrine baseado no ID inserido
+    const codigoVitrine = gerarCodigoProdutoOrigem(result.insertId);
+
+    // Atualizar o registro com o código de vitrine
+    await executeQuery(
+      'UPDATE produto_origem SET codigo = ? WHERE id = ?',
+      [codigoVitrine, result.insertId]
     );
 
     const novoProdutoOrigem = await executeQuery(

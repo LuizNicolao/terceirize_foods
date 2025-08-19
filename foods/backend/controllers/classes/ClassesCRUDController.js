@@ -42,13 +42,19 @@ class ClassesCRUDController {
       return conflictResponse(res, 'Classe já cadastrada neste subgrupo');
     }
 
-    // Gerar código único automaticamente
-    const codigo = gerarCodigoClasse();
-
-    // Inserir classe
+    // Inserir classe (sem código inicialmente)
     const result = await executeQuery(
-      'INSERT INTO classes (nome, codigo, descricao, subgrupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
-      [nome && nome.trim() ? nome.trim() : null, codigo, descricao && descricao.trim() ? descricao.trim() : null, subgrupo_id || null, status || 'ativo']
+      'INSERT INTO classes (nome, descricao, subgrupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, NOW())',
+      [nome && nome.trim() ? nome.trim() : null, descricao && descricao.trim() ? descricao.trim() : null, subgrupo_id || null, status || 'ativo']
+    );
+
+    // Gerar código de vitrine baseado no ID inserido
+    const codigoVitrine = gerarCodigoClasse(result.insertId);
+
+    // Atualizar o registro com o código de vitrine
+    await executeQuery(
+      'UPDATE classes SET codigo = ? WHERE id = ?',
+      [codigoVitrine, result.insertId]
     );
 
     const novaClasseId = result.insertId;

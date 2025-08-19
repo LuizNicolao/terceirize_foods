@@ -42,19 +42,24 @@ class SubgruposCRUDController {
       return conflictResponse(res, 'Nome do subgrupo já existe neste grupo');
     }
 
-    // Gerar código único automaticamente
-    const codigo = gerarCodigoSubgrupo();
-
-    // Inserir subgrupo
+    // Inserir subgrupo (sem código inicialmente)
     const result = await executeQuery(
-      'INSERT INTO subgrupos (nome, codigo, descricao, grupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
+      'INSERT INTO subgrupos (nome, descricao, grupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, NOW())',
       [
         nome && nome.trim() ? nome.trim() : null, 
-        codigo,
         req.body.descricao && req.body.descricao.trim() ? req.body.descricao.trim() : null,
         grupo_id || null, 
         status === 1 ? 'ativo' : 'inativo'
       ]
+    );
+
+    // Gerar código de vitrine baseado no ID inserido
+    const codigoVitrine = gerarCodigoSubgrupo(result.insertId);
+
+    // Atualizar o registro com o código de vitrine
+    await executeQuery(
+      'UPDATE subgrupos SET codigo = ? WHERE id = ?',
+      [codigoVitrine, result.insertId]
     );
 
     const novoSubgrupoId = result.insertId;

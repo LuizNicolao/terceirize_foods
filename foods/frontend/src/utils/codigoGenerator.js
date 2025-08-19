@@ -1,256 +1,259 @@
 /**
- * Utilitário para geração automática de códigos
- * Gera códigos únicos para diferentes entidades do sistema
- * Sistema de faixas numéricas globais
+ * Utilitário para geração de códigos de vitrine
+ * Sistema baseado em ID numérico global (auto_increment) + código de vitrine para UI
  */
 
-// Faixas numéricas por tipo de entidade
-const FAIXAS = {
-  PRODUTO_ORIGEM: { min: 1, max: 9999, prefixo: 'ORIG' },
-  PRODUTO_GENERICO: { min: 10001, max: 19999, prefixo: 'GEN' },
-  PRODUTO: { min: 20001, max: 29999, prefixo: 'PROD' },
-  GRUPO: { min: 30001, max: 39999, prefixo: 'GRP' },
-  SUBGRUPO: { min: 40001, max: 49999, prefixo: 'SGRP' },
-  CLASSE: { min: 50001, max: 59999, prefixo: 'CLS' }
-};
-
-// Mapeamento reverso para identificar tipo pelo número
-const MAPEAMENTO_TIPO = {
-  PRODUTO_ORIGEM: { min: 1, max: 9999 },
-  PRODUTO_GENERICO: { min: 10001, max: 19999 },
-  PRODUTO: { min: 20001, max: 29999 },
-  GRUPO: { min: 30001, max: 39999 },
-  SUBGRUPO: { min: 40001, max: 49999 },
-  CLASSE: { min: 50001, max: 59999 }
+// Prefixos para códigos de vitrine por tipo de entidade
+const PREFIXOS_VITRINE = {
+  PRODUTO_ORIGEM: 'ORIG',
+  PRODUTO_GENERICO: 'GEN',
+  PRODUTO: 'PROD',
+  GRUPO: 'GRP',
+  SUBGRUPO: 'SGRP',
+  CLASSE: 'CLS'
 };
 
 /**
- * Identifica o tipo de entidade baseado no número
- * @param {number} numero - Número para identificar o tipo
+ * Gera um código de vitrine baseado no ID numérico
+ * @param {string} tipo - Tipo da entidade
+ * @param {number} id - ID numérico da entidade
+ * @returns {string} Código de vitrine (ex: ORIG-0576)
+ */
+export const gerarCodigoVitrine = (tipo, id) => {
+  const prefixo = PREFIXOS_VITRINE[tipo];
+  if (!prefixo) {
+    throw new Error(`Tipo de entidade não suportado: ${tipo}`);
+  }
+
+  if (!id || id <= 0) {
+    throw new Error('ID deve ser um número positivo');
+  }
+
+  // Formato: prefixo-id (ex: ORIG-0576, GEN-1234)
+  return `${prefixo}-${id.toString().padStart(4, '0')}`;
+};
+
+/**
+ * Extrai o ID numérico de um código de vitrine
+ * @param {string} codigoVitrine - Código de vitrine (ex: ORIG-0576)
+ * @returns {number} ID numérico extraído
+ */
+export const extrairIdDoCodigoVitrine = (codigoVitrine) => {
+  if (!codigoVitrine || typeof codigoVitrine !== 'string') return null;
+  
+  // Remove espaços e converte para maiúsculo
+  codigoVitrine = codigoVitrine.trim().toUpperCase();
+  
+  // Verifica se tem o formato correto: prefixo-id
+  const match = codigoVitrine.match(/^([A-Z]+)-(\d+)$/);
+  if (!match) return null;
+  
+  const [, prefixo, idStr] = match;
+  const id = parseInt(idStr);
+  
+  // Verifica se o prefixo é válido
+  const prefixosValidos = Object.values(PREFIXOS_VITRINE);
+  if (!prefixosValidos.includes(prefixo)) return null;
+  
+  return id;
+};
+
+/**
+ * Identifica o tipo de entidade baseado no código de vitrine
+ * @param {string} codigoVitrine - Código de vitrine
  * @returns {string|null} Tipo da entidade ou null se não encontrado
  */
-export const identificarTipoPorNumero = (numero) => {
-  for (const [tipo, faixa] of Object.entries(MAPEAMENTO_TIPO)) {
-    if (numero >= faixa.min && numero <= faixa.max) {
+export const identificarTipoPorCodigoVitrine = (codigoVitrine) => {
+  if (!codigoVitrine || typeof codigoVitrine !== 'string') return null;
+  
+  // Remove espaços e converte para maiúsculo
+  codigoVitrine = codigoVitrine.trim().toUpperCase();
+  
+  // Verifica se tem o formato correto: prefixo-id
+  const match = codigoVitrine.match(/^([A-Z]+)-(\d+)$/);
+  if (!match) return null;
+  
+  const [, prefixo] = match;
+  
+  // Encontra o tipo pelo prefixo
+  for (const [tipo, prefixoTipo] of Object.entries(PREFIXOS_VITRINE)) {
+    if (prefixoTipo === prefixo) {
       return tipo;
     }
   }
+  
   return null;
 };
 
 /**
- * Gera um código único baseado no tipo de entidade e próximo número disponível
- * @param {string} tipo - Tipo da entidade (PRODUTO, PRODUTO_ORIGEM, PRODUTO_GENERICO)
- * @param {number} ultimoCodigo - Último código numérico da entidade (opcional)
- * @returns {string} Código único gerado
- */
-export const gerarCodigo = (tipo, ultimoCodigo = 0) => {
-  const faixa = FAIXAS[tipo];
-  if (!faixa) {
-    throw new Error(`Tipo de entidade não suportado: ${tipo}`);
-  }
-
-  // Encontra o próximo número disponível na faixa
-  let proximoNumero = Math.max(ultimoCodigo + 1, faixa.min);
-  
-  // Verifica se não excedeu o limite da faixa
-  if (proximoNumero > faixa.max) {
-    throw new Error(`Faixa de códigos esgotada para ${tipo}. Limite: ${faixa.max}`);
-  }
-  
-  // Formato: prefixo + número (ex: ORIG0001, GEN10001, PROD20001)
-  const numeroFormatado = proximoNumero.toString().padStart(5, '0');
-  return `${faixa.prefixo}${numeroFormatado}`;
-};
-
-/**
- * Gera um código de produto específico
- * @param {number} ultimoCodigo - Último código de produto
- * @returns {string} Código de produto único
- */
-export const gerarCodigoProduto = (ultimoCodigo = 0) => {
-  return gerarCodigo('PRODUTO', ultimoCodigo);
-};
-
-/**
- * Gera um código de produto origem
- * @param {number} ultimoCodigo - Último código de produto origem
- * @returns {string} Código de produto origem único
- */
-export const gerarCodigoProdutoOrigem = (ultimoCodigo = 0) => {
-  return gerarCodigo('PRODUTO_ORIGEM', ultimoCodigo);
-};
-
-/**
- * Gera um código de produto genérico
- * @param {number} ultimoCodigo - Último código de produto genérico
- * @returns {string} Código de produto genérico único
- */
-export const gerarCodigoProdutoGenerico = (ultimoCodigo = 0) => {
-  return gerarCodigo('PRODUTO_GENERICO', ultimoCodigo);
-};
-
-/**
- * Gera um código de grupo
- * @param {number} ultimoCodigo - Último código de grupo
- * @returns {string} Código de grupo único
- */
-export const gerarCodigoGrupo = (ultimoCodigo = 0) => {
-  return gerarCodigo('GRUPO', ultimoCodigo);
-};
-
-/**
- * Gera um código de subgrupo
- * @param {number} ultimoCodigo - Último código de subgrupo
- * @returns {string} Código de subgrupo único
- */
-export const gerarCodigoSubgrupo = (ultimoCodigo = 0) => {
-  return gerarCodigo('SUBGRUPO', ultimoCodigo);
-};
-
-/**
- * Gera um código de classe
- * @param {number} ultimoCodigo - Último código de classe
- * @returns {string} Código de classe único
- */
-export const gerarCodigoClasse = (ultimoCodigo = 0) => {
-  return gerarCodigo('CLASSE', ultimoCodigo);
-};
-
-/**
- * Extrai o número base de um código gerado
- * @param {string} codigo - Código gerado
- * @returns {number} Número base extraído
- */
-export const extrairNumeroBase = (codigo) => {
-  if (!codigo || typeof codigo !== 'string') return 0;
-  
-  // Remove o prefixo e converte para número
-  const numeroBase = codigo.slice(4);
-  return parseInt(numeroBase) || 0;
-};
-
-/**
- * Identifica o tipo de entidade baseado no código completo
- * @param {string} codigo - Código completo
- * @returns {string|null} Tipo da entidade ou null se não encontrado
- */
-export const identificarTipoPorCodigo = (codigo) => {
-  if (!codigo || typeof codigo !== 'string') return null;
-  
-  const numero = extrairNumeroBase(codigo);
-  return identificarTipoPorNumero(numero);
-};
-
-/**
- * Valida se um código segue o padrão correto
- * @param {string} codigo - Código a ser validado
- * @param {string} tipo - Tipo da entidade (opcional, se não informado tenta identificar)
+ * Valida se um código de vitrine segue o padrão correto
+ * @param {string} codigoVitrine - Código de vitrine a ser validado
  * @returns {boolean} True se o código é válido
  */
-export const validarCodigo = (codigo, tipo = null) => {
-  if (!codigo || typeof codigo !== 'string') return false;
+export const validarCodigoVitrine = (codigoVitrine) => {
+  if (!codigoVitrine || typeof codigoVitrine !== 'string') return false;
   
-  // Se o tipo não foi informado, tenta identificar
-  if (!tipo) {
-    tipo = identificarTipoPorCodigo(codigo);
-    if (!tipo) return false;
-  }
+  const tipo = identificarTipoPorCodigoVitrine(codigoVitrine);
+  if (!tipo) return false;
   
-  const faixa = FAIXAS[tipo];
-  if (!faixa) return false;
-  
-  // Verifica se começa com o prefixo correto
-  if (!codigo.startsWith(faixa.prefixo)) return false;
-  
-  // Verifica se tem o formato correto: prefixo + 5 dígitos (total: 9 caracteres)
-  if (codigo.length !== 9) return false;
-  
-  // Verifica se os caracteres após o prefixo são números
-  const parteNumerica = codigo.slice(4);
-  if (!/^\d{5}$/.test(parteNumerica)) return false;
-  
-  // Verifica se o número está na faixa correta
-  const numero = parseInt(parteNumerica);
-  return numero >= faixa.min && numero <= faixa.max;
+  const id = extrairIdDoCodigoVitrine(codigoVitrine);
+  return id !== null && id > 0;
 };
 
 /**
- * Busca por código - aceita número ou código completo
- * @param {string|number} busca - Número ou código para buscar
- * @returns {object} Objeto com tipo identificado e número
+ * Busca por código - aceita ID numérico ou código de vitrine
+ * @param {string|number} busca - ID numérico ou código de vitrine para buscar
+ * @returns {object} Objeto com tipo identificado e ID
  */
 export const buscarPorCodigo = (busca) => {
   if (!busca) return null;
   
-  let numero;
+  let id;
   let tipo;
   
-  // Se é string, pode ser código completo ou apenas número
+  // Se é string, pode ser código de vitrine ou apenas número
   if (typeof busca === 'string') {
-    // Remove espaços e converte para maiúsculo
-    busca = busca.trim().toUpperCase();
+    // Remove espaços
+    busca = busca.trim();
     
-         // Se tem prefixo, é código completo
-     if (busca.startsWith('ORIG') || busca.startsWith('GEN') || busca.startsWith('PROD') || 
-         busca.startsWith('GRP') || busca.startsWith('SGRP') || busca.startsWith('CLS')) {
-       numero = extrairNumeroBase(busca);
-       tipo = identificarTipoPorCodigo(busca);
-     } else {
-      // É apenas número
-      numero = parseInt(busca);
-      tipo = identificarTipoPorNumero(numero);
+    // Se tem hífen, é código de vitrine
+    if (busca.includes('-')) {
+      id = extrairIdDoCodigoVitrine(busca);
+      tipo = identificarTipoPorCodigoVitrine(busca);
+    } else {
+      // É apenas número (ID)
+      id = parseInt(busca);
+      // Não conseguimos identificar o tipo apenas pelo ID numérico
+      tipo = null;
     }
   } else {
-    // É número
-    numero = parseInt(busca);
-    tipo = identificarTipoPorNumero(numero);
+    // É número (ID)
+    id = parseInt(busca);
+    // Não conseguimos identificar o tipo apenas pelo ID numérico
+    tipo = null;
   }
   
-  if (!tipo || !numero) return null;
+  if (!id || id <= 0) return null;
   
   return {
     tipo,
-    numero,
-    codigoCompleto: `${FAIXAS[tipo].prefixo}${numero.toString().padStart(5, '0')}`
+    id,
+    codigoVitrine: tipo ? gerarCodigoVitrine(tipo, id) : null
   };
 };
 
 /**
- * Obtém informações sobre as faixas disponíveis
- * @returns {object} Informações sobre as faixas
+ * Funções específicas para cada tipo de entidade
+ * Estas funções são mantidas para compatibilidade com o código existente
+ * mas agora geram códigos de vitrine baseados no ID fornecido
  */
-export const obterInfoFaixas = () => {
+
+/**
+ * Gera um código de vitrine para produto origem
+ * @param {number} id - ID do produto origem
+ * @returns {string} Código de vitrine
+ */
+export const gerarCodigoProdutoOrigem = (id) => {
+  return gerarCodigoVitrine('PRODUTO_ORIGEM', id);
+};
+
+/**
+ * Gera um código de vitrine para produto genérico
+ * @param {number} id - ID do produto genérico
+ * @returns {string} Código de vitrine
+ */
+export const gerarCodigoProdutoGenerico = (id) => {
+  return gerarCodigoVitrine('PRODUTO_GENERICO', id);
+};
+
+/**
+ * Gera um código de vitrine para produto
+ * @param {number} id - ID do produto
+ * @returns {string} Código de vitrine
+ */
+export const gerarCodigoProduto = (id) => {
+  return gerarCodigoVitrine('PRODUTO', id);
+};
+
+/**
+ * Gera um código de vitrine para grupo
+ * @param {number} id - ID do grupo
+ * @returns {string} Código de vitrine
+ */
+export const gerarCodigoGrupo = (id) => {
+  return gerarCodigoVitrine('GRUPO', id);
+};
+
+/**
+ * Gera um código de vitrine para subgrupo
+ * @param {number} id - ID do subgrupo
+ * @returns {string} Código de vitrine
+ */
+export const gerarCodigoSubgrupo = (id) => {
+  return gerarCodigoVitrine('SUBGRUPO', id);
+};
+
+/**
+ * Gera um código de vitrine para classe
+ * @param {number} id - ID da classe
+ * @returns {string} Código de vitrine
+ */
+export const gerarCodigoClasse = (id) => {
+  return gerarCodigoVitrine('CLASSE', id);
+};
+
+/**
+ * Obtém informações sobre os prefixos disponíveis
+ * @returns {object} Informações sobre os prefixos
+ */
+export const obterInfoPrefixos = () => {
   return {
     PRODUTO_ORIGEM: {
-      faixa: '1-9999',
       prefixo: 'ORIG',
-      exemplo: 'ORIG00001'
+      exemplo: 'ORIG-0001'
     },
     PRODUTO_GENERICO: {
-      faixa: '10001-19999',
       prefixo: 'GEN',
-      exemplo: 'GEN10001'
+      exemplo: 'GEN-0001'
     },
     PRODUTO: {
-      faixa: '20001-29999',
       prefixo: 'PROD',
-      exemplo: 'PROD20001'
+      exemplo: 'PROD-0001'
     },
     GRUPO: {
-      faixa: '30001-39999',
       prefixo: 'GRP',
-      exemplo: 'GRP30001'
+      exemplo: 'GRP-0001'
     },
     SUBGRUPO: {
-      faixa: '40001-49999',
       prefixo: 'SGRP',
-      exemplo: 'SGRP40001'
+      exemplo: 'SGRP-0001'
     },
     CLASSE: {
-      faixa: '50001-59999',
       prefixo: 'CLS',
-      exemplo: 'CLS50001'
+      exemplo: 'CLS-0001'
     }
   };
+};
+
+/**
+ * Função de compatibilidade - mantém a interface antiga mas agora requer ID
+ * @param {string} tipo - Tipo da entidade
+ * @param {number} id - ID da entidade
+ * @returns {string} Código de vitrine
+ */
+export const gerarCodigo = (tipo, id) => {
+  return gerarCodigoVitrine(tipo, id);
+};
+
+/**
+ * Gera um código de vitrine temporário para preview
+ * Usa um ID estimado baseado no timestamp para mostrar um código mais realista
+ * @param {string} tipo - Tipo da entidade
+ * @returns {string} Código de vitrine temporário
+ */
+export const gerarCodigoTemporario = (tipo) => {
+  // Usar timestamp para gerar um ID mais realista
+  const timestamp = Date.now();
+  const idEstimado = Math.floor(timestamp / 1000) % 10000; // ID entre 1-9999
+  return gerarCodigoVitrine(tipo, idEstimado);
 };

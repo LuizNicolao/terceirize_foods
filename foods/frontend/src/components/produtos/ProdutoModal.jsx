@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaPrint, FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
-import { gerarCodigoProduto } from '../../utils/codigoGenerator';
+import { gerarCodigoProduto, gerarCodigoTemporario } from '../../utils/codigoGenerator';
 
 const ProdutoModal = ({ 
   isOpen, 
@@ -84,8 +84,8 @@ const ProdutoModal = ({
       setValue('status', 1);
       setValue('fator_conversao', 1.000);
       setValue('fator_conversao_embalagem', 1);
-      // Gerar código automático para novo produto
-      const codigoGerado = gerarCodigoProduto();
+      // Gerar código de vitrine temporário para mostrar ao usuário
+      const codigoGerado = gerarCodigoTemporario('PRODUTO');
       setValue('codigo_produto', codigoGerado);
     }
   }, [produto, isOpen, setValue, reset]);

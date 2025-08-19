@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
-import { gerarCodigoClasse } from '../../utils/codigoGenerator';
+import { gerarCodigoClasse, gerarCodigoTemporario } from '../../utils/codigoGenerator';
 
 const ClasseModal = ({ 
   isOpen, 
@@ -14,8 +14,8 @@ const ClasseModal = ({
 
   useEffect(() => {
     if (!classe && isOpen) {
-      // Gerar código automático para nova classe
-      const codigo = gerarCodigoClasse();
+      // Gerar código de vitrine temporário para mostrar ao usuário
+      const codigo = gerarCodigoTemporario('CLASSE');
       setCodigoGerado(codigo);
     } else if (classe) {
       setCodigoGerado(classe.codigo || '');

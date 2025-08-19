@@ -67,9 +67,6 @@ class ProdutoGenericoCRUDController {
       integracao_senior, status
     } = req.body;
 
-    // Gerar código único automaticamente
-    const codigo = gerarCodigoProdutoGenerico();
-
     // Verificar se produto origem existe (se fornecido)
     if (produto_origem_id) {
       const produtoOrigem = await executeQuery(
@@ -130,22 +127,31 @@ class ProdutoGenericoCRUDController {
       }
     }
 
-    // Inserir novo produto genérico
-    const novoProdutoGenerico = await executeQuery(
+    // Inserir novo produto genérico (sem código inicialmente)
+    const result = await executeQuery(
       `INSERT INTO produto_generico (
-        codigo, nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
+        nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
         unidade_medida_id, referencia_mercado, produto_padrao, peso_liquido, peso_bruto,
         regra_palet, informacoes_adicionais, referencia_interna, referencia_externa,
         registro_especifico, tipo_registro, prazo_validade_padrao, unidade_validade,
         integracao_senior, status, usuario_criador_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        codigo, nome, produto_origem_id, fator_conversao || 1.000, grupo_id, subgrupo_id, classe_id,
+        nome, produto_origem_id, fator_conversao || 1.000, grupo_id, subgrupo_id, classe_id,
         unidade_medida_id, referencia_mercado, produto_padrao || 'Não', peso_liquido, peso_bruto,
         regra_palet, informacoes_adicionais, referencia_interna, referencia_externa,
         registro_especifico, tipo_registro, prazo_validade_padrao, unidade_validade,
         integracao_senior, status !== undefined ? status : 1, req.user.id
       ]
+    );
+
+    // Gerar código de vitrine baseado no ID inserido
+    const codigoVitrine = gerarCodigoProdutoGenerico(result.insertId);
+
+    // Atualizar o registro com o código de vitrine
+    await executeQuery(
+      'UPDATE produto_generico SET codigo = ? WHERE id = ?',
+      [codigoVitrine, result.insertId]
     );
 
     // Gerenciar vínculo automático com produto origem

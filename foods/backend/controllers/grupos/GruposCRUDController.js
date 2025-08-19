@@ -32,18 +32,23 @@ class GruposCRUDController {
       return conflictResponse(res, 'Nome do grupo já existe');
     }
 
-    // Gerar código único automaticamente
-    const codigo = gerarCodigoGrupo();
-
-    // Inserir grupo
+    // Inserir grupo (sem código inicialmente)
     const result = await executeQuery(
-      'INSERT INTO grupos (nome, codigo, descricao, status, data_cadastro) VALUES (?, ?, ?, ?, NOW())',
+      'INSERT INTO grupos (nome, descricao, status, data_cadastro) VALUES (?, ?, ?, NOW())',
       [
         nome && nome.trim() ? nome.trim() : null, 
-        codigo && codigo.trim() ? codigo.trim() : null,
         descricao && descricao.trim() ? descricao.trim() : null,
         status === 1 ? 'ativo' : 'inativo'
       ]
+    );
+
+    // Gerar código de vitrine baseado no ID inserido
+    const codigoVitrine = gerarCodigoGrupo(result.insertId);
+
+    // Atualizar o registro com o código de vitrine
+    await executeQuery(
+      'UPDATE grupos SET codigo = ? WHERE id = ?',
+      [codigoVitrine, result.insertId]
     );
 
     const novoGrupoId = result.insertId;

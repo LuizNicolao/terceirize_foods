@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
-import { gerarCodigoGrupo } from '../../utils/codigoGenerator';
+import { gerarCodigoGrupo, gerarCodigoTemporario } from '../../utils/codigoGenerator';
 
 const GrupoModal = ({ 
   isOpen, 
@@ -13,8 +13,8 @@ const GrupoModal = ({
 
   useEffect(() => {
     if (!grupo && isOpen) {
-      // Gerar código automático para novo grupo
-      const codigo = gerarCodigoGrupo();
+      // Gerar código de vitrine temporário para mostrar ao usuário
+      const codigo = gerarCodigoTemporario('GRUPO');
       setCodigoGerado(codigo);
     } else if (grupo) {
       setCodigoGerado(grupo.codigo || '');
