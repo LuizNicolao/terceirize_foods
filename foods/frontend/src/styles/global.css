@@ -92,6 +92,27 @@ body {
   width: 60px;
 }
 
+/* Garantir que a sidebar funcione corretamente em todos os dispositivos */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+@media (min-width: 769px) {
+  .sidebar {
+    transform: translateX(0);
+  }
+  
+  .sidebar.collapsed {
+    width: 64px;
+  }
+}
+
 /* Header */
 .layout-header {
   background: var(--white);

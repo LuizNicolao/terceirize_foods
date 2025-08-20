@@ -166,8 +166,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
     <>
       {/* Overlay para mobile */}
       <div 
-        className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden ${
-          collapsed ? 'hidden' : 'block'
+        className={`fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden transition-opacity duration-300 ${
+          collapsed ? 'opacity-0 pointer-events-none' : 'opacity-100'
         }`}
         onClick={onToggle}
       />
@@ -176,8 +176,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
       <div className={`
         fixed left-0 top-0 h-screen bg-white shadow-lg transition-all duration-300 ease-in-out z-50 flex flex-col
         ${collapsed ? 'w-16' : 'w-64'}
-        ${collapsed ? '-translate-x-full' : 'translate-x-0'}
-        md:${collapsed ? 'translate-x-0' : 'translate-x-0'}
+        ${collapsed ? 'md:translate-x-0 -translate-x-full' : 'translate-x-0'}
+        ${collapsed ? 'sidebar collapsed' : 'sidebar'}
       `}>
         {/* Header */}
         <div className="p-5 border-b border-gray-200 text-center relative flex-shrink-0">
