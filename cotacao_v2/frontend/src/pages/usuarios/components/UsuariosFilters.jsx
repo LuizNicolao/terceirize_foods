@@ -8,18 +8,50 @@ const UsuariosFilters = ({
   setStatusFilter 
 }) => {
   return (
-    <div className="flex gap-4 mb-6 items-center">
+    <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', alignItems: 'center' }}>
       <input
         type="text"
         placeholder="Buscar por nome ou email..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg text-base transition-all duration-300 focus:border-green-600 focus:outline-none focus:ring-2 focus:ring-green-200"
+        style={{
+          flex: 1,
+          padding: '8px 16px',
+          border: '2px solid #d1d5db',
+          borderRadius: '8px',
+          fontSize: '16px',
+          transition: 'all 0.3s ease'
+        }}
+        onFocus={(e) => {
+          e.target.style.borderColor = '#10b981';
+          e.target.style.outline = 'none';
+          e.target.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+        }}
+        onBlur={(e) => {
+          e.target.style.borderColor = '#d1d5db';
+          e.target.style.boxShadow = 'none';
+        }}
       />
       <select
         value={statusFilter}
         onChange={(e) => setStatusFilter(e.target.value)}
-        className="px-4 py-2 border-2 border-gray-300 rounded-lg text-base bg-white cursor-pointer transition-all duration-300 focus:border-green-600 focus:outline-none min-w-[200px]"
+        style={{
+          padding: '8px 16px',
+          border: '2px solid #d1d5db',
+          borderRadius: '8px',
+          fontSize: '16px',
+          backgroundColor: 'white',
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          minWidth: '200px'
+        }}
+        onFocus={(e) => {
+          e.target.style.borderColor = '#10b981';
+          e.target.style.outline = 'none';
+        }}
+        onBlur={(e) => {
+          e.target.style.borderColor = '#d1d5db';
+        }}
       >
         <option value="todos">Todos os status</option>
         <option value="ativo">Ativo</option>

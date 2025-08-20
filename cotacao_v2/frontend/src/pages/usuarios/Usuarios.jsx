@@ -40,10 +40,18 @@ const Usuarios = () => {
   if (loading) {
     return (
       <Layout>
-        <div className="flex justify-center items-center h-screen bg-gray-50">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Carregando usuários...</p>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f9fafb' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ 
+              width: '48px', 
+              height: '48px', 
+              border: '2px solid #e5e7eb', 
+              borderTop: '2px solid #10b981', 
+              borderRadius: '50%', 
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px'
+            }}></div>
+            <p style={{ color: '#6b7280' }}>Carregando usuários...</p>
           </div>
         </div>
       </Layout>
@@ -53,12 +61,22 @@ const Usuarios = () => {
   if (error) {
     return (
       <Layout>
-        <div className="flex justify-center items-center h-screen bg-gray-50">
-          <div className="text-center">
-            <p className="text-red-600 mb-4">Erro ao carregar usuários: {error}</p>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f9fafb' }}>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ color: '#dc2626', marginBottom: '16px' }}>Erro ao carregar usuários: {error}</p>
             <button 
               onClick={fetchUsuarios}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
+              style={{
+                backgroundColor: '#10b981',
+                color: 'white',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background-color 0.3s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#059669'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#10b981'}
             >
               Tentar Novamente
             </button>
@@ -70,25 +88,59 @@ const Usuarios = () => {
 
   return (
     <Layout>
-      <div className="p-3 sm:p-6">
+      <div style={{ padding: '12px 24px' }}>
         {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Usuários</h1>
-          <div className="flex gap-2 sm:gap-3">
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start',
+          marginBottom: '24px',
+          gap: '16px'
+        }}>
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1f2937', margin: 0 }}>Usuários</h1>
+          <div style={{ display: 'flex', gap: '12px' }}>
             <button
               onClick={handleAudit}
-              className="bg-blue-600 text-white px-3 py-2 rounded text-xs hover:bg-blue-700 transition-colors flex items-center gap-2"
+              style={{
+                backgroundColor: '#2563eb',
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'background-color 0.3s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#2563eb'}
             >
               <FaQuestionCircle />
-              <span className="hidden sm:inline">Auditoria</span>
+              <span>Auditoria</span>
             </button>
             <button
               onClick={handleCreate}
-              className="bg-green-600 text-white px-3 py-2 rounded text-xs hover:bg-green-700 transition-colors flex items-center gap-2"
+              style={{
+                backgroundColor: '#10b981',
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'background-color 0.3s'
+              }}
+              onMouseOver={(e) => e.target.style.backgroundColor = '#059669'}
+              onMouseOut={(e) => e.target.style.backgroundColor = '#10b981'}
             >
               <FaPlus />
-              <span className="hidden sm:inline">Adicionar</span>
-              <span className="sm:hidden">Adicionar</span>
+              <span>Adicionar</span>
             </button>
           </div>
         </div>
