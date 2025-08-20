@@ -6,7 +6,7 @@ import './utils/axiosConfig'; // Importar configuração do axios
 import './design-system'; // Importar design system
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-import Usuarios from './pages/usuarios';
+import Usuarios from './components/Usuarios';
 import Cotacoes from './components/Cotacoes';
 import NovaCotacao from './components/NovaCotacao';
 import VisualizarCotacao from './components/VisualizarCotacao';
