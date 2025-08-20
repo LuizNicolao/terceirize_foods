@@ -4,7 +4,6 @@ import Layout from '../../components/Layout';
 import { useUsuarios } from '../../hooks/useUsuarios';
 import UsuariosFilters from './components/UsuariosFilters';
 import UsuariosTable from './components/UsuariosTable';
-import UsuariosActions from './components/UsuariosActions';
 
 const Usuarios = () => {
   const {
