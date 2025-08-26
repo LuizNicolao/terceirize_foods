@@ -9,7 +9,7 @@ echo "=============================================="
 # 1. Parar Sistema Cotação (PRIMEIRO)
 echo ""
 echo "📊 1. Parando Sistema de Cotações..."
-cd cotacao_v2
+cd cotacao
 docker compose down
 echo "✅ Sistema de Cotações parado!"
 

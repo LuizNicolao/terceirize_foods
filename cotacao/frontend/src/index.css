@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Estilos customizados */
+@layer base {
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    outline: none;
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+/* Responsividade global */
+@media (max-width: 480px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+/* Telas grandes (ultrawide) */
+@media (min-width: 1920px) {
+  body {
+    font-size: 18px;
+  }
+}
+
+/* Telas médias (notebooks) */
+@media (max-width: 1366px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+/* Efeito de destaque para produtos */
+@keyframes produto-destaque {
+  0%, 100% {
+    background-color: rgb(254 243 199); /* bg-yellow-100 */
+    border-left-color: rgb(234 179 8); /* border-yellow-500 */
+  }
+  50% {
+    background-color: rgb(254 249 195); /* bg-yellow-50 */
+    border-left-color: rgb(202 138 4); /* border-yellow-600 */
+  }
+}
+
+.produto-destacado {
+  animation: produto-destaque 1s ease-in-out infinite;
+}
+
+/* Efeito de destaque para fornecedores */
+@keyframes fornecedor-destaque {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(234, 179, 8, 0.5);
+  }
+}
+
+.fornecedor-destacado {
+  animation: fornecedor-destaque 1s ease-in-out infinite;
+} 

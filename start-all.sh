@@ -75,14 +75,14 @@ fi
 # 3. Iniciar Sistema Cotação
 echo ""
 echo "📊 3. Iniciando Sistema de Cotações..."
-cd ../cotacao_v2
+cd ../cotacao
 docker compose up -d --build
 
 if [ $? -eq 0 ]; then
     echo "✅ Sistema de Cotações iniciado com sucesso!"
     
     # Aguardar backend ficar pronto
-    check_container "cotacao_v2-backend-1"
+    check_container "cotacao_backend"
     if [ $? -ne 0 ]; then
         echo "⚠️  Aviso: Backend do Cotação pode não estar totalmente pronto"
     fi

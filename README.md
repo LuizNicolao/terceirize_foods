@@ -19,7 +19,7 @@ Sistema completo de cadastro e gestão de informações da empresa.
 - **docker-compose.yml** - Configuração Docker (sem banco)
 - **README.md** - Documentação do sistema
 
-### 📊 **cotacao_v2/** - Sistema de Cotações
+### 📊 **cotacao/** - Sistema de Cotações
 Sistema para gestão de cotações e fornecedores.
 
 - **backend/** - API Node.js/Express
@@ -47,9 +47,9 @@ cd foods
 docker-compose up -d
 ```
 
-### 3. Sistema de Cotações (cotacao_v2)
+### 3. Sistema de Cotações (cotacao)
 ```bash
-cd cotacao_v2
+cd cotacao
 docker-compose up -d
 ```
 
@@ -71,7 +71,7 @@ flutter run
 - **Frontend:** http://localhost:3000
 - **Backend API:** http://localhost:3001/api
 
-### Sistema de Cotações (cotacao_v2)
+### Sistema de Cotações (cotacao)
 - **Frontend:** http://localhost:3002
 - **Backend API:** http://localhost:5000/api
 
@@ -98,8 +98,8 @@ flutter run
 # Parar foods
 cd foods && docker-compose down
 
-# Parar cotacao_v2
-cd cotacao_v2 && docker-compose down
+# Parar cotacao
+cd cotacao && docker-compose down
 
 # Parar banco (ÚLTIMO)
 cd database && docker-compose down
