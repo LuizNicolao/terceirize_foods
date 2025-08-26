@@ -10,8 +10,8 @@ import { useSupervisor } from '../../hooks/useSupervisor';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { Button, CadastroFilterBar, LoadingSpinner } from '../../components/ui';
-import SupervisorStats from './components/SupervisorStats.js';
-import SupervisorTable from './components/SupervisorTable.js';
+import SupervisorStats from './components/SupervisorStats.jsx';
+import SupervisorTable from './components/SupervisorTable.jsx';
 
 const Supervisor = () => {
   const navigate = useNavigate();
