@@ -53,25 +53,32 @@ export const SSOProvider = ({ children }) => {
   // Função para obter dados do usuário atual
   const getCurrentUser = async () => {
     try {
+      console.log('🔍 getCurrentUser - Iniciando...');
       const ssoToken = localStorage.getItem('sso_token');
+      console.log('🔍 getCurrentUser - Token:', ssoToken ? 'Encontrado' : 'Não encontrado');
+      
       if (!ssoToken) {
         throw new Error('Token SSO não encontrado');
       }
 
+      console.log('🔍 getCurrentUser - Fazendo requisição...');
       const response = await api.get('/sso/user', {
         params: { sso_token: ssoToken }
       });
+
+      console.log('🔍 getCurrentUser - Resposta:', response.data);
 
       if (response.data.success) {
         const userData = response.data.data;
         setUser(userData);
         setPermissions(userData.permissions || {});
+        console.log('🔍 getCurrentUser - Usuário definido:', userData);
         return userData;
       } else {
         throw new Error(response.data.message || 'Falha ao obter dados do usuário');
       }
     } catch (error) {
-      console.error('Erro ao obter dados do usuário:', error);
+      console.error('❌ getCurrentUser - Erro:', error);
       setError(error.response?.data?.message || 'Erro ao obter dados do usuário');
       return null;
     }
@@ -106,6 +113,7 @@ export const SSOProvider = ({ children }) => {
   // Inicializar SSO na entrada do módulo
   useEffect(() => {
     const initializeSSO = async () => {
+      console.log('🚀 Iniciando SSO...');
       try {
         setLoading(true);
         
@@ -132,16 +140,23 @@ export const SSOProvider = ({ children }) => {
           const newUrl = window.location.pathname;
           window.history.replaceState({}, document.title, newUrl);
         } else {
+          console.log('🔍 Verificando token salvo no localStorage...');
           // Verificar se há token salvo no localStorage
           const savedToken = localStorage.getItem('sso_token');
+          console.log('🔍 Token salvo:', savedToken ? 'Sim' : 'Não');
+          
           if (savedToken) {
+            console.log('🔍 Tentando obter dados do usuário...');
             const userData = await getCurrentUser();
+            console.log('🔍 Dados do usuário:', userData);
             if (!userData) {
+              console.log('❌ Falha ao obter dados do usuário, redirecionando...');
               // Se falhar, redirecionar para o sistema principal
               window.location.href = 'https://foods.terceirizemais.com.br/foods';
               return;
             }
           } else {
+            console.log('❌ Nenhum token encontrado, redirecionando...');
             // Sem token, redirecionar para o sistema principal
             window.location.href = 'https://foods.terceirizemais.com.br/foods';
             return;

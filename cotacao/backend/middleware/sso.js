@@ -21,7 +21,9 @@ const validateSSO = async (req, res, next) => {
     }
 
     // Verificar se o token é válido (usando a mesma chave JWT do Foods)
+    console.log('🔍 Verificando token JWT...');
     const decoded = jwt.verify(ssoToken, process.env.JWT_SECRET);
+    console.log('🔍 Token decodificado:', decoded);
     
     // Buscar dados do usuário no banco
     const users = await executeQuery(`
