@@ -7,17 +7,17 @@ const { filialValidations, filialAtualizacaoValidations, commonValidations } = r
 
 const router = express.Router();
 
+// Aplicar middlewares globais
+router.use(authenticateToken);
+router.use(paginationMiddleware);
+router.use(hateoasMiddleware('filiais'));
+
 // ===== ROTA PÚBLICA PARA BUSCA DE FILIAIS =====
 // Rota pública para busca de filiais (usada pelo sistema de cotação)
 router.get('/public', 
   commonValidations.search,
   FiliaisController.buscarFiliaisPublic
 );
-
-// Aplicar middlewares globais
-router.use(authenticateToken);
-router.use(paginationMiddleware);
-router.use(hateoasMiddleware('filiais'));
 
 // ===== ROTAS PRINCIPAIS DE FILIAIS =====
 
