@@ -12,133 +12,49 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('token'));
-  const [rememberMe, setRememberMe] = useState(localStorage.getItem('rememberMe') === 'true');
-  const [permissions, setPermissions] = useState({});
+  // DESABILITADO - Autenticação centralizada no Foods
+  // Agora o sistema funciona sem autenticação própria
+  const [user, setUser] = useState({ id: 1, name: 'Sistema', role: 'administrador' });
+  const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState(null);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [permissions, setPermissions] = useState({
+    dashboard: { can_view: true, can_create: true, can_edit: true, can_delete: true },
+    usuarios: { can_view: true, can_create: true, can_edit: true, can_delete: true },
+    cotacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true },
+    saving: { can_view: true, can_create: true, can_edit: true, can_delete: true },
+    supervisor: { can_view: true, can_create: true, can_edit: true, can_delete: true },
+    aprovacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true }
+  });
 
-  useEffect(() => {
-    const verifyToken = async () => {
-      if (token) {
-        try {
-          api.defaults.headers.authorization = `Bearer ${token}`;
-          const response = await api.get('/auth/verify');
-          setUser(response.data.data.data.user);
-          
-          // Buscar permissões do usuário
-          if (response.data.data.data.user) {
-            try {
-              const permissionsResponse = await api.get(`/auth/users/${response.data.data.data.user.id}/permissions`);
-              setPermissions(permissionsResponse.data.data.data.permissions || {});
-            } catch (error) {
-              console.error('Erro ao buscar permissões:', error);
-              // Definir permissões padrão para administrador
-              setPermissions({
-                dashboard: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-                usuarios: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-                cotacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-                saving: { can_view: true, can_create: true, can_edit: true, can_delete: true }
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Token inválido:', error);
-          logout();
-        }
-      }
-      setLoading(false);
-    };
+  // DESABILITADO - Verificação de token
+  // useEffect(() => {
+  //   const verifyToken = async () => {
+  //     // Código comentado
+  //   };
+  //   verifyToken();
+  // }, [token]);
 
-    verifyToken();
-  }, [token]);
-
+  // DESABILITADO - Login centralizado no Foods
   const login = async (email, senha, rememberMeOption = false) => {
-    try {
-      const response = await api.post('/auth/login', { 
-        email, 
-        senha,
-        rememberMe: rememberMeOption 
-      });
-      
-      const { token: newToken, user: userData } = response.data.data.data;
-      
-      // Verificar se userData existe e tem id
-      if (!userData || !userData.id) {
-        console.error('userData ou userData.id não encontrado:', userData);
-        return { 
-          success: false, 
-          error: 'Dados do usuário inválidos' 
-        };
-      }
-      
-      // Salvar token no localStorage
-      localStorage.setItem('token', newToken);
-      
-      // Salvar preferência "Mantenha-me conectado"
-      localStorage.setItem('rememberMe', rememberMeOption.toString());
-      setRememberMe(rememberMeOption);
-      
-      api.defaults.headers.authorization = `Bearer ${newToken}`;
-      
-      setToken(newToken);
-      setUser(userData);
-      
-      // Buscar permissões do usuário
-      try {
-        const permissionsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
-        setPermissions(permissionsResponse.data.data.data.permissions || {});
-      } catch (error) {
-        console.error('Erro ao buscar permissões:', error);
-        // Definir permissões padrão para administrador
-        setPermissions({
-          dashboard: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-          usuarios: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-          cotacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-          saving: { can_view: true, can_create: true, can_edit: true, can_delete: true }
-        });
-      }
-      
-      return { success: true };
-    } catch (error) {
-      // Tratamento específico para erro 429 (Too Many Requests)
-      if (error.response?.status === 429) {
-        return { 
-          success: false, 
-          error: 'Muitas tentativas de login. Aguarde 15 minutos ou reinicie o servidor.',
-          isRateLimited: true
-        };
-      }
-      
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Erro ao fazer login' 
-      };
-    }
+    return { success: true };
   };
 
+  // DESABILITADO - Logout centralizado no Foods
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('rememberMe');
-    delete api.defaults.headers.authorization;
-    setToken(null);
-    setUser(null);
-    setRememberMe(false);
-    setPermissions({});
+    // Não faz nada - logout controlado pelo Foods
   };
 
+  // DESABILITADO - Permissões centralizadas no Foods
+  // Agora todas as permissões são liberadas por padrão
   const hasPermission = (screen, action) => {
-    if (!permissions[screen]) {
-      return false;
-    }
-    
-    return permissions[screen][action] || false;
+    return true;
   };
 
-  const canView = (screen) => hasPermission(screen, 'can_view');
-  const canCreate = (screen) => hasPermission(screen, 'can_create');
-  const canEdit = (screen) => hasPermission(screen, 'can_edit');
-  const canDelete = (screen) => hasPermission(screen, 'can_delete');
+  const canView = (screen) => true;
+  const canCreate = (screen) => true;
+  const canEdit = (screen) => true;
+  const canDelete = (screen) => true;
 
   const value = {
     user,
