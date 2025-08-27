@@ -258,10 +258,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           e.preventDefault();
                           const token = localStorage.getItem('token');
                           if (token) {
-                            const ssoUrl = `https://cotacao.terceirizemais.com.br?sso_token=${token}`;
+                            const ssoUrl = `https://foods.terceirizemais.com.br/cotacao?sso_token=${token}`;
                             window.open(ssoUrl, '_blank');
                           } else {
-                            window.open('https://cotacao.terceirizemais.com.br', '_blank');
+                            window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
                           }
                         }
                         if (window.innerWidth <= 768) {
@@ -333,16 +333,13 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         if (item.path === '/cotacao') {
                           e.preventDefault();
                           const token = localStorage.getItem('token');
-                          console.log('🔍 Token encontrado no sistema principal:', token ? 'Sim' : 'Não');
                           
                           if (token) {
                             // Passar o token como parâmetro na URL
-                            const ssoUrl = `https://cotacao.terceirizemais.com.br?sso_token=${token}`;
-                            console.log('🔍 Abrindo URL SSO:', ssoUrl);
+                            const ssoUrl = `https://foods.terceirizemais.com.br/cotacao?sso_token=${token}`;
                             window.open(ssoUrl, '_blank');
                           } else {
-                            console.log('🔍 Nenhum token encontrado, abrindo sem SSO');
-                            window.open('https://cotacao.terceirizemais.com.br', '_blank');
+                            window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
                           }
                         }
                         

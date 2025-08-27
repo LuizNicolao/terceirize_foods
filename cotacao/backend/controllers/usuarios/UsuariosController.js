@@ -33,7 +33,6 @@ class UsuariosController {
   // GET /api/users/:id - Buscar usuário específico
   static getUsuario = asyncHandler(async (req, res) => {
     try {
-      console.log('🔍 Buscando usuário específico, ID:', req.params.id);
       const { id } = req.params;
 
       const usuarios = await executeQuery(`
@@ -41,15 +40,11 @@ class UsuariosController {
         FROM users WHERE id = ?
       `, [id]);
 
-      console.log('📊 Usuários encontrados:', usuarios.length);
-
       if (usuarios.length === 0) {
-        console.log('❌ Usuário não encontrado');
         return notFoundResponse(res, 'Usuário não encontrado');
       }
 
       const usuario = usuarios[0];
-      console.log('✅ Usuário encontrado:', usuario.name);
 
       // Buscar permissões do usuário
       const permissions = await executeQuery(`
