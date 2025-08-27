@@ -1,25 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
-import { buttonStyles, colors } from '../index';
-
-const StyledButton = styled.button.withConfig({
-  shouldForwardProp: (prop) => !['fullWidth', 'variant', 'size'].includes(prop)
-})`
-  ${buttonStyles.base}
-  ${props => buttonStyles.variants[props.variant] || buttonStyles.variants.primary}
-  ${props => buttonStyles.sizes[props.size] || buttonStyles.sizes.md}
-  
-  ${props => props.disabled && `
-    background: ${colors.neutral.gray} !important;
-    cursor: not-allowed !important;
-    transform: none !important;
-    box-shadow: none !important;
-  `}
-  
-  ${props => props.fullWidth && `
-    width: 100%;
-  `}
-`;
 
 const Button = ({ 
   children, 
@@ -27,18 +6,38 @@ const Button = ({
   size = 'md', 
   disabled = false,
   fullWidth = false,
+  className = '',
   ...props 
 }) => {
+  const baseClasses = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  
+  const variants = {
+    primary: 'bg-green-600 hover:bg-green-700 text-white focus:ring-green-500',
+    secondary: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500',
+    outline: 'bg-transparent border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 focus:ring-gray-500',
+    danger: 'bg-red-600 hover:bg-red-700 text-white focus:ring-red-500',
+    ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-500'
+  };
+  
+  const sizes = {
+    sm: 'px-3 py-2 text-sm rounded-md',
+    md: 'px-4 py-2 text-sm rounded-lg',
+    lg: 'px-6 py-3 text-base rounded-lg'
+  };
+  
+  const disabledClasses = disabled ? 'opacity-50 cursor-not-allowed transform-none' : 'hover:-translate-y-0.5';
+  const fullWidthClasses = fullWidth ? 'w-full' : '';
+  
+  const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${disabledClasses} ${fullWidthClasses} ${className}`;
+  
   return (
-    <StyledButton
-      variant={variant}
-      size={size}
+    <button
+      className={classes}
       disabled={disabled}
-      fullWidth={fullWidth}
       {...props}
     >
       {children}
-    </StyledButton>
+    </button>
   );
 };
 

@@ -1,50 +1,35 @@
 import React from 'react';
-import styled from 'styled-components';
-import { inputStyles, colors } from '../index';
-
-const StyledInput = styled.input.withConfig({
-  shouldForwardProp: (prop) => !['withIcon', 'error'].includes(prop)
-})`
-  ${inputStyles.base}
-  ${props => props.withIcon && inputStyles.withIcon}
-  ${props => props.error && inputStyles.error}
-`;
-
-const InputWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-`;
-
-const Label = styled.label`
-  color: ${colors.neutral.darkGray};
-  font-weight: 600;
-  font-size: 14px;
-`;
-
-const ErrorMessage = styled.span`
-  color: ${colors.status.error};
-  font-size: 14px;
-  margin: 0;
-`;
 
 const Input = ({ 
   label, 
   error, 
   withIcon = false,
+  className = '',
   ...props 
 }) => {
+  const baseClasses = 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors';
+  const errorClasses = error ? 'border-red-500 focus:ring-red-500 focus:border-red-500' : '';
+  const iconClasses = withIcon ? 'pl-10' : '';
+  
+  const inputClasses = `${baseClasses} ${errorClasses} ${iconClasses} ${className}`;
+  
   return (
-    <InputWrapper>
-      {label && <Label>{label}</Label>}
-      <StyledInput
-        withIcon={withIcon}
-        error={error}
+    <div className="flex flex-col gap-2 mb-4">
+      {label && (
+        <label className="text-sm font-semibold text-gray-700">
+          {label}
+        </label>
+      )}
+      <input
+        className={inputClasses}
         {...props}
       />
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-    </InputWrapper>
+      {error && (
+        <span className="text-sm text-red-600">
+          {error}
+        </span>
+      )}
+    </div>
   );
 };
 

@@ -1,34 +1,25 @@
 import React from 'react';
-import styled from 'styled-components';
-import { cardStyles } from '../index';
-
-const StyledCard = styled.div.withConfig({
-  shouldForwardProp: (prop) => !['hover', 'variant'].includes(prop)
-})`
-  ${cardStyles.base}
-  ${props => props.variant === 'dashboard' && cardStyles.dashboard}
-  
-  ${props => props.hover && `
-    &:hover {
-      ${cardStyles.hover}
-    }
-  `}
-`;
 
 const Card = ({ 
   children, 
   variant = 'base',
   hover = false,
+  className = '',
   ...props 
 }) => {
+  const baseClasses = 'bg-white rounded-lg shadow-sm border border-gray-200 p-6';
+  const variantClasses = variant === 'dashboard' ? 'bg-gradient-to-r from-blue-50 to-indigo-50' : '';
+  const hoverClasses = hover ? 'hover:shadow-md hover:-translate-y-0.5 transition-all duration-300' : '';
+  
+  const classes = `${baseClasses} ${variantClasses} ${hoverClasses} ${className}`;
+  
   return (
-    <StyledCard
-      variant={variant}
-      hover={hover}
+    <div
+      className={classes}
       {...props}
     >
       {children}
-    </StyledCard>
+    </div>
   );
 };
 
