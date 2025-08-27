@@ -124,6 +124,13 @@ export const SSOProvider = ({ children }) => {
         console.log('🔍 URL atual:', window.location.href);
         console.log('🔍 Token SSO na URL:', ssoToken ? 'Sim' : 'Não');
         
+        // TEMPORÁRIO: Não redirecionar automaticamente para permitir testes
+        if (window.location.pathname === '/cotacao/test') {
+          console.log('🔍 Página de teste detectada, pulando validação SSO');
+          setLoading(false);
+          return;
+        }
+        
         if (ssoToken) {
           console.log('🔍 Validando token SSO...');
           // Validar token SSO
