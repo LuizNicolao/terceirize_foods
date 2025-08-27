@@ -25,13 +25,19 @@ export const PermissionsProvider = ({ children }) => {
   }, [authPermissions]);
 
   const canView = (screen) => {
+    console.log(`🔍 Verificando permissão para ${screen}:`, permissions);
+    
     // Usar permissões do usuário encontrado no sistema de cotação
     if (Array.isArray(permissions)) {
       const permission = permissions.find(p => p.screen === screen);
-      return permission ? Boolean(permission.can_view) : true; // Padrão: permitir se não encontrado
+      const hasPermission = permission ? Boolean(permission.can_view) : false; // Padrão: negar se não encontrado
+      console.log(`🔍 Permissão ${screen} (array):`, hasPermission);
+      return hasPermission;
     }
-    if (!permissions[screen]) return true; // Padrão: permitir se não encontrado
-    return permissions[screen].can_view || true;
+    if (!permissions[screen]) return false; // Padrão: negar se não encontrado
+    const hasPermission = Boolean(permissions[screen].can_view);
+    console.log(`🔍 Permissão ${screen} (object):`, hasPermission);
+    return hasPermission;
   };
 
   const canCreate = (screen) => {
