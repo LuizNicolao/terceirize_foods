@@ -10,7 +10,7 @@ import './design-system'; // Importar design system
 // import Login from './pages/auth'; // DESABILITADO - Autenticação centralizada no Foods
 import Dashboard from './pages/dashboard';
 import Usuarios from './pages/usuarios';
-import { EditarUsuario, VisualizarUsuario } from './components/usuarios';
+// import { EditarUsuario, VisualizarUsuario } from './components/usuarios'; // Removido - componentes não mais utilizados
 import Cotacoes from './pages/cotacoes';
 // import { AnalisarCotacao } from './components/cotacoes'; // Removido - componente não mais utilizado
 import { Supervisor, AnalisarCotacaoSupervisor } from './pages/supervisor';
@@ -138,6 +138,7 @@ function AppRoutes() {
         } 
       />
 
+      {/* Rotas removidas - componentes não mais utilizados
       <Route 
         path="/editar-usuario/:id" 
         element={
@@ -159,6 +160,7 @@ function AppRoutes() {
           </AuthenticatedRoute>
         } 
       />
+      */}
 
       <Route 
         path="/supervisor" 
