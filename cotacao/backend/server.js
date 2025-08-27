@@ -49,6 +49,17 @@ app.get('/cotacao/api/health', (req, res) => {
   });
 });
 
+// Rota de teste SSO
+app.get('/cotacao/api/sso/test', (req, res) => {
+  console.log('🔍 Teste SSO - Query params:', req.query);
+  res.json({ 
+    success: true,
+    message: 'Teste SSO funcionando!',
+    query: req.query,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Middleware de tratamento de erros global
 app.use(errorHandler);
 
