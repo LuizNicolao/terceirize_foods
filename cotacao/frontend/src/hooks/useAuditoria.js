@@ -29,6 +29,16 @@ export const useAuditoria = (entityName) => {
       setLoading(true);
       setError(null);
       
+      // Primeiro testar o endpoint simples
+      console.log('Testando endpoint simples...');
+      const simpleTest = await auditoriaService.testSimple();
+      console.log('Teste simples:', simpleTest);
+      
+      // Depois testar o banco
+      console.log('Testando banco...');
+      const dbTest = await auditoriaService.testDB();
+      console.log('Teste banco:', dbTest);
+      
       const filtersToUse = customFilters || filters;
       const response = await auditoriaService.getLogs(filtersToUse);
       

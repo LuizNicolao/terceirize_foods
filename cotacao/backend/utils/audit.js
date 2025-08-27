@@ -198,6 +198,22 @@ const getAuditLogs = async (filters = {}) => {
     console.log('=== INÍCIO DA FUNÇÃO getAuditLogs ===');
     console.log('Filtros recebidos:', filters);
     
+    // Verificar se a tabela existe
+    const tableCheckQuery = `
+      SELECT COUNT(*) as count 
+      FROM information_schema.tables 
+      WHERE table_schema = DATABASE() 
+      AND table_name = 'auditoria_acoes'
+    `;
+    
+    const tableCheck = await executeQuery(tableCheckQuery);
+    console.log('Tabela auditoria_acoes existe:', tableCheck[0].count > 0);
+    
+    if (tableCheck[0].count === 0) {
+      console.log('Tabela auditoria_acoes não existe!');
+      return [];
+    }
+    
     // Query com filtros e JOIN com usuários
     const limit = parseInt(filters.limit) || 100;
     const offset = parseInt(filters.offset) || 0;
@@ -233,12 +249,13 @@ const getAuditLogs = async (filters = {}) => {
     
     const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
     
+    // Query simplificada para teste
     const query = `
       SELECT 
         a.id,
         a.usuario_id,
-        u.nome as usuario_nome,
-        u.email as usuario_email,
+        COALESCE(u.nome, 'Usuário ' + a.usuario_id) as usuario_nome,
+        COALESCE(u.email, 'N/A') as usuario_email,
         a.acao,
         a.recurso,
         a.detalhes,
@@ -254,8 +271,16 @@ const getAuditLogs = async (filters = {}) => {
     console.log('Query final:', query);
     console.log('Where conditions:', whereConditions);
     
+    console.log('Executando query:', query);
+    console.log('Parâmetros:', whereConditions);
+    
     const logs = await executeQuery(query);
     console.log('Logs brutos encontrados:', logs.length);
+    
+    if (!Array.isArray(logs)) {
+      console.error('Erro: executeQuery não retornou um array:', typeof logs);
+      return [];
+    }
     
     if (logs.length > 0) {
       console.log('Primeiro log:', {

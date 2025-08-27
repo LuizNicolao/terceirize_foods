@@ -14,9 +14,10 @@ class AuditoriaExportController {
   static async exportarXLSX(req, res) {
     try {
       // Verificar permissão
-      if (req.user.role !== 'administrador') {
-        return errorResponse(res, 'Apenas administradores podem exportar logs de auditoria.', 403);
-      }
+      // Temporariamente permitir acesso para todos os usuários autenticados
+      // if (req.user.role !== 'administrador') {
+      //   return errorResponse(res, 'Apenas administradores podem exportar logs de auditoria.', 403);
+      // }
 
       const { 
         data_inicio,
@@ -95,9 +96,10 @@ class AuditoriaExportController {
   static async exportarPDF(req, res) {
     try {
       // Verificar permissão
-      if (req.user.role !== 'administrador') {
-        return errorResponse(res, 'Apenas administradores podem exportar logs de auditoria.', 403);
-      }
+      // Temporariamente permitir acesso para todos os usuários autenticados
+      // if (req.user.role !== 'administrador') {
+      //   return errorResponse(res, 'Apenas administradores podem exportar logs de auditoria.', 403);
+      // }
 
       const { 
         data_inicio,

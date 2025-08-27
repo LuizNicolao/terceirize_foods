@@ -1,6 +1,18 @@
 import api from './api';
 
 export const auditoriaService = {
+  // Teste simples
+  async testSimple() {
+    const response = await api.get('/auditoria/simple');
+    return response.data.data || response.data;
+  },
+
+  // Teste do banco
+  async testDB() {
+    const response = await api.get('/auditoria/test-db');
+    return response.data;
+  },
+
   // Buscar logs de auditoria
   async getLogs(filters = {}) {
     const response = await api.get('/auditoria', { params: filters });
