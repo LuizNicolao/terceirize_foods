@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
-import { Button, Input, Table } from '../ui';
+import { Button, Input, Table, ConfirmModal } from '../ui';
 import { LoadingSpinner } from '../ui';
 import filiaisService from '../../services/filiais';
 import api from '../../services/api';
@@ -22,6 +22,10 @@ const AlmoxarifadoContent = ({
   const [produtos, setProdutos] = useState([]);
   const [selectedProduto, setSelectedProduto] = useState(null);
   const [quantidadeProduto, setQuantidadeProduto] = useState('');
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
+  const [showConfirmRemoveModal, setShowConfirmRemoveModal] = useState(false);
+  const [almoxarifadoToDelete, setAlmoxarifadoToDelete] = useState(null);
+  const [itemToRemove, setItemToRemove] = useState(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
@@ -114,10 +118,15 @@ const AlmoxarifadoContent = ({
 
   // Excluir almoxarifado
   const handleDelete = async (almoxarifado) => {
-    if (!window.confirm('Deseja excluir este almoxarifado?')) return;
+    setAlmoxarifadoToDelete(almoxarifado);
+    setShowConfirmDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!almoxarifadoToDelete) return;
 
     try {
-      const response = await filiaisService.excluirAlmoxarifado(almoxarifado.id);
+      const response = await filiaisService.excluirAlmoxarifado(almoxarifadoToDelete.id);
       if (response.success) {
         toast.success('Almoxarifado excluído!');
         loadAlmoxarifados();
@@ -168,10 +177,15 @@ const AlmoxarifadoContent = ({
 
   // Remover produto do almoxarifado
   const handleRemoveProduto = async (itemId) => {
-    if (!window.confirm('Deseja remover este produto do almoxarifado?')) return;
+    setItemToRemove(itemId);
+    setShowConfirmRemoveModal(true);
+  };
+
+  const handleConfirmRemoveProduto = async () => {
+    if (!itemToRemove) return;
 
     try {
-      const response = await filiaisService.removerItemAlmoxarifado(selectedAlmoxarifado.id, itemId);
+      const response = await filiaisService.removerItemAlmoxarifado(selectedAlmoxarifado.id, itemToRemove);
       if (response.success) {
         toast.success('Produto removido do almoxarifado!');
         loadItensAlmoxarifado(selectedAlmoxarifado.id);
@@ -448,6 +462,30 @@ const AlmoxarifadoContent = ({
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmação para Excluir Almoxarifado */}
+      <ConfirmModal
+        isOpen={showConfirmDeleteModal}
+        onClose={() => setShowConfirmDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Almoxarifado"
+        message="Deseja excluir este almoxarifado?"
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
+
+      {/* Modal de Confirmação para Remover Produto */}
+      <ConfirmModal
+        isOpen={showConfirmRemoveModal}
+        onClose={() => setShowConfirmRemoveModal(false)}
+        onConfirm={handleConfirmRemoveProduto}
+        title="Remover Produto"
+        message="Deseja remover este produto do almoxarifado?"
+        confirmText="Remover"
+        cancelText="Cancelar"
+        type="warning"
+      />
     </div>
   );
 };

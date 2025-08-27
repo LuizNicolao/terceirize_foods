@@ -3,6 +3,7 @@ const CotacoesAnaliseController = require('./CotacoesAnaliseController');
 const CotacoesExportController = require('./CotacoesExportController');
 const CotacoesStatsController = require('./CotacoesStatsController');
 const { AnexosController } = require('./AnexosController');
+const { successResponse, errorResponse, notFoundResponse } = require('../../middleware/responseHandler');
 
 class CotacoesController {
   // GET /api/cotacoes - Listar cotações
@@ -66,13 +67,20 @@ class CotacoesController {
 
       const [{ total }] = await executeQuery(countQuery, params);
 
-      res.json(cotacoes);
+      // Criar resposta com paginação
+      const meta = {
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          totalPages: Math.ceil(total / limit)
+        }
+      };
+
+      return successResponse(res, cotacoes, 'Cotações carregadas com sucesso', 200, meta);
     } catch (error) {
       console.error('Erro ao buscar cotações:', error);
-      res.status(500).json({ 
-        message: 'Erro interno do servidor',
-        error: error.message 
-      });
+      return errorResponse(res, 'Erro interno do servidor', 500);
     }
   }
 
@@ -129,7 +137,7 @@ class CotacoesController {
           return await this.getCotacaoAprovada(req, res, savingCotacao);
         }
         
-        return res.status(404).json({ message: 'Cotação não encontrada' });
+        return notFoundResponse(res, 'Cotação não encontrada');
       }
 
       // Buscar produtos únicos da cotação (baseado nos produtos dos fornecedores)
@@ -198,10 +206,10 @@ class CotacoesController {
         fornecedores
       };
 
-      res.json(response);
+      return successResponse(res, response, 'Cotação carregada com sucesso');
     } catch (error) {
       console.error('Erro ao buscar cotação:', error);
-      res.status(500).json({ message: 'Erro interno do servidor' });
+      return errorResponse(res, 'Erro interno do servidor', 500);
     }
   }
 
@@ -268,10 +276,10 @@ class CotacoesController {
         fornecedores: Object.values(fornecedores)
       };
 
-      res.json(response);
+      return successResponse(res, response, 'Cotação aprovada carregada com sucesso');
     } catch (error) {
       console.error('Erro ao buscar cotação aprovada:', error);
-      res.status(500).json({ message: 'Erro interno do servidor' });
+      return errorResponse(res, 'Erro interno do servidor', 500);
     }
   }
 
@@ -358,13 +366,10 @@ class CotacoesController {
         }
       }
 
-      res.status(201).json({
-        message: 'Cotação criada com sucesso',
-        data: { id: cotacaoId }
-      });
+      return successResponse(res, { id: cotacaoId }, 'Cotação criada com sucesso', 201);
     } catch (error) {
       console.error('Erro ao criar cotação:', error);
-      res.status(500).json({ message: 'Erro interno do servidor' });
+      return errorResponse(res, 'Erro interno do servidor', 500);
     }
   }
 
@@ -398,7 +403,7 @@ class CotacoesController {
       const [cotacao] = await executeQuery(cotacaoQuery, queryParams);
 
       if (!cotacao) {
-        return res.status(404).json({ message: 'Cotação não encontrada' });
+        return notFoundResponse(res, 'Cotação não encontrada');
       }
 
       // Atualizar dados básicos da cotação
@@ -422,7 +427,7 @@ class CotacoesController {
       ]);
 
       if (cotacaoResult.affectedRows === 0) {
-        return res.status(404).json({ message: 'Cotação não encontrada' });
+        return notFoundResponse(res, 'Cotação não encontrada');
       }
 
       // Processar fornecedores se fornecidos

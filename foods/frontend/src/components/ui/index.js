@@ -13,6 +13,7 @@ export { default as ErrorModal } from './ErrorModal';
 export { default as CadastroFilterBar } from './CadastroFilterBar';
 export { default as Logo } from './Logo';
 export { default as EmptyState } from './EmptyState';
+export { default as ConfirmModal } from './ConfirmModal';
 export { FormInput } from './FormInput';
 export { MaskedInput } from './MaskedInput';
 export { MaskedFormInput } from './MaskedFormInput'; 

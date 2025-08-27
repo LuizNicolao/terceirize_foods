@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import toast from 'react-hot-toast';
 import { 
   FaEye, 
   FaSearch, 
@@ -50,6 +51,7 @@ import {
 } from 'react-icons/fa';
 import { Button, Card } from '../../design-system/components';
 import ModalRenegociacao from '../../components/cotacoes/ModalRenegociacao';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import HeaderSupervisor from '../../components/supervisor/HeaderSupervisor';
 import InformacoesSupervisor from '../../components/supervisor/InformacoesSupervisor';
 import ResumoSupervisor from '../../components/supervisor/ResumoSupervisor';
@@ -78,6 +80,7 @@ const AnalisarCotacaoSupervisor = () => {
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('padrao');
   const [showModalRenegociacao, setShowModalRenegociacao] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [produtoDestacado, setProdutoDestacado] = useState(null);
 
@@ -268,24 +271,26 @@ const AnalisarCotacaoSupervisor = () => {
   };
 
   const handleEnviarGestor = async () => {
-    if (window.confirm('Tem certeza que deseja enviar esta cotação para análise da gerência?')) {
-      setSaving(true);
+    setSaving(true);
+    
+    try {
+      const data = await supervisorService.enviarParaGestor(id, {
+        id: cotacao.id,
+        status: 'aguardando_aprovacao'
+      });
       
-      try {
-        const data = await supervisorService.enviarParaGestor(id, {
-          id: cotacao.id,
-          status: 'aguardando_aprovacao'
-        });
-        
-        alert(data.message || 'Cotação enviada para gerência com sucesso!');
-        navigate('/aprovacoes');
-      } catch (error) {
-        console.error('Erro ao enviar para gerência:', error);
-        alert(error.message || 'Erro ao conectar com o servidor');
-      } finally {
-        setSaving(false);
-      }
+      toast.success(data.message || 'Cotação enviada para gerência com sucesso!');
+      navigate('/aprovacoes');
+    } catch (error) {
+      console.error('Erro ao enviar para gerência:', error);
+      toast.error(error.message || 'Erro ao conectar com o servidor');
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const handleShowConfirmModal = () => {
+    setShowConfirmModal(true);
   };
 
   const handleSolicitarRenegociacao = () => {
@@ -398,7 +403,7 @@ const AnalisarCotacaoSupervisor = () => {
       />
 
       <BotoesAcaoSupervisor 
-        onEnviarGestor={handleEnviarGestor}
+        onEnviarGestor={handleShowConfirmModal}
         onSolicitarRenegociacao={handleSolicitarRenegociacao}
         saving={saving}
         cotacao={cotacao}
@@ -412,6 +417,18 @@ const AnalisarCotacaoSupervisor = () => {
           onConfirm={handleRenegociacaoConfirmada}
         />
       )}
+
+      {/* Modal de Confirmação para Enviar para Gestor */}
+      <ConfirmModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleEnviarGestor}
+        title="Enviar para Gerência"
+        message="Tem certeza que deseja enviar esta cotação para análise da gerência?"
+        confirmText="Enviar"
+        cancelText="Cancelar"
+        type="warning"
+      />
     </div>
   );
 };
