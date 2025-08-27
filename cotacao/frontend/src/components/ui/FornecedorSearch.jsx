@@ -69,7 +69,8 @@ const FornecedorSearch = ({
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const responseData = await response.json();
+        const data = responseData.data || responseData;
         setFornecedores(data);
         setShowDropdown(data.length > 0);
       } else {
