@@ -49,6 +49,7 @@ export const AuthProvider = ({ children }) => {
           if (response.data.data) {
             // Usuário encontrado no sistema de cotação
             console.log('✅ Usuário encontrado no sistema de cotação:', response.data.data);
+            console.log('🔍 Estrutura completa do usuário:', JSON.stringify(response.data.data, null, 2));
             setUser(response.data.data);
             
             // Buscar permissões do usuário
