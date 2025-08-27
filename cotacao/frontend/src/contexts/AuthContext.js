@@ -26,24 +26,19 @@ export const AuthProvider = ({ children }) => {
     aprovacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true }
   });
 
-  // Buscar usuário do sistema de cotação baseado no email do Foods
+    // Buscar usuário do sistema de cotação baseado no email do Foods
   useEffect(() => {
-    // Pequeno delay para garantir que os parâmetros sejam capturados
-    const timeoutId = setTimeout(async () => {
-      const findUserByEmail = async () => {
+    const findUserByEmail = async () => {
       try {
-        console.log('🔍 URL completa:', window.location.href);
-        console.log('🔍 Search params:', window.location.search);
+        console.log('🔍 Verificando localStorage do cotação...');
         
-        // Capturar parâmetros da URL antes de qualquer redirecionamento
-        const urlParams = new URLSearchParams(window.location.search);
-        const userParam = urlParams.get('user');
+        // Tentar ler dados do localStorage primeiro
+        const foodsUserData = localStorage.getItem('foodsUser');
+        console.log('🔍 Dados do localStorage:', foodsUserData);
         
-        console.log('🔍 Parâmetro user na URL:', userParam);
-        
-        if (userParam) {
-          const foodsUser = JSON.parse(decodeURIComponent(userParam));
-          console.log('🔍 Usuário do Foods:', foodsUser);
+        if (foodsUserData) {
+          const foodsUser = JSON.parse(foodsUserData);
+          console.log('🔍 Usuário do Foods (localStorage):', foodsUser);
           
           // Buscar usuário no sistema de cotação por email
           console.log('🔍 Buscando usuário por email:', foodsUser.email);
@@ -66,25 +61,21 @@ export const AuthProvider = ({ children }) => {
             console.warn('Usuário não encontrado no sistema de cotação:', foodsUser.email);
           }
           
-          // Limpar parâmetro user da URL
-          urlParams.delete('user');
-          const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
-          window.history.replaceState({}, '', newUrl);
+          // Limpar dados do localStorage
+          localStorage.removeItem('foodsUser');
+          console.log('✅ Dados removidos do localStorage');
         } else {
-          console.log('⚠️ Nenhum parâmetro user encontrado na URL');
+          console.log('⚠️ Nenhum usuário encontrado no localStorage');
           setLoading(false);
         }
-              } catch (error) {
-          console.error('❌ Erro ao buscar usuário:', error);
-          // Em caso de erro, manter usuário padrão
-          setLoading(false);
-        }
-      };
+      } catch (error) {
+        console.error('❌ Erro ao buscar usuário:', error);
+        // Em caso de erro, manter usuário padrão
+        setLoading(false);
+      }
+    };
 
-      findUserByEmail();
-    }, 100);
-
-    return () => clearTimeout(timeoutId);
+    findUserByEmail();
   }, []);
 
   // DESABILITADO - Login centralizado no Foods

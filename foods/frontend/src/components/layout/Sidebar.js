@@ -337,19 +337,27 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           const user = JSON.parse(localStorage.getItem('user') || '{}');
                           console.log('🔍 Usuário do localStorage:', user);
                           
-                          const userData = encodeURIComponent(JSON.stringify({
+                          const userData = {
                             id: user.id,
                             name: user.nome,
                             email: user.email,
                             role: user.tipo_de_acesso
-                          }));
+                          };
                           
-                          console.log('🔍 Dados do usuário codificados:', userData);
+                          console.log('🔍 Dados do usuário:', userData);
                           
-                          const cotacaoUrl = `https://foods.terceirizemais.com.br/cotacao?user=${userData}`;
-                          console.log('🔍 URL do sistema de cotação:', cotacaoUrl);
+                          // Salvar dados no localStorage do cotação
+                          const cotacaoWindow = window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
                           
-                          window.open(cotacaoUrl, '_blank');
+                          // Aguardar a janela abrir e salvar os dados
+                          setTimeout(() => {
+                            try {
+                              cotacaoWindow.localStorage.setItem('foodsUser', JSON.stringify(userData));
+                              console.log('✅ Dados salvos no localStorage do cotação');
+                            } catch (error) {
+                              console.error('❌ Erro ao salvar dados:', error);
+                            }
+                          }, 500);
                         }
                         
                         // Fechar sidebar no mobile quando clicar em um item
