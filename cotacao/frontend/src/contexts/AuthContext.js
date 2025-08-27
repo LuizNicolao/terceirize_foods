@@ -20,6 +20,47 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const verifyToken = async () => {
+      // Verificar se há token SSO na URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const ssoToken = urlParams.get('sso_token');
+      
+      if (ssoToken && !token) {
+        // Tentar login SSO
+        try {
+          const response = await api.post('/auth/sso', { token: ssoToken });
+          const { token: newToken, user: userData } = response.data.data.data;
+          
+          if (userData && userData.id) {
+            localStorage.setItem('token', newToken);
+            api.defaults.headers.authorization = `Bearer ${newToken}`;
+            setToken(newToken);
+            setUser(userData);
+            
+            // Buscar permissões do usuário
+            try {
+              const permissionsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
+              setPermissions(permissionsResponse.data.data.data.permissions || {});
+            } catch (error) {
+              console.error('Erro ao buscar permissões:', error);
+              setPermissions({
+                dashboard: { can_view: true, can_create: true, can_edit: true, can_delete: true },
+                usuarios: { can_view: true, can_create: true, can_edit: true, can_delete: true },
+                cotacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true },
+                saving: { can_view: true, can_create: true, can_edit: true, can_delete: true }
+              });
+            }
+            
+            // Limpar o token SSO da URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error('Erro no login SSO:', error);
+          // Se falhar, continuar com o fluxo normal
+        }
+      }
+      
       if (token) {
         try {
           api.defaults.headers.authorization = `Bearer ${token}`;
@@ -53,68 +94,13 @@ export const AuthProvider = ({ children }) => {
     verifyToken();
   }, [token]);
 
+  // Função de login desabilitada - SSO apenas
   const login = async (email, senha, rememberMeOption = false) => {
-    try {
-      const response = await api.post('/auth/login', { 
-        email, 
-        senha,
-        rememberMe: rememberMeOption 
-      });
-      
-      const { token: newToken, user: userData } = response.data.data.data;
-      
-      // Verificar se userData existe e tem id
-      if (!userData || !userData.id) {
-        console.error('userData ou userData.id não encontrado:', userData);
-        return { 
-          success: false, 
-          error: 'Dados do usuário inválidos' 
-        };
-      }
-      
-      // Salvar token no localStorage
-      localStorage.setItem('token', newToken);
-      
-      // Salvar preferência "Mantenha-me conectado"
-      localStorage.setItem('rememberMe', rememberMeOption.toString());
-      setRememberMe(rememberMeOption);
-      
-      api.defaults.headers.authorization = `Bearer ${newToken}`;
-      
-      setToken(newToken);
-      setUser(userData);
-      
-      // Buscar permissões do usuário
-      try {
-        const permissionsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
-        setPermissions(permissionsResponse.data.data.data.permissions || {});
-      } catch (error) {
-        console.error('Erro ao buscar permissões:', error);
-        // Definir permissões padrão para administrador
-        setPermissions({
-          dashboard: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-          usuarios: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-          cotacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-          saving: { can_view: true, can_create: true, can_edit: true, can_delete: true }
-        });
-      }
-      
-      return { success: true };
-    } catch (error) {
-      // Tratamento específico para erro 429 (Too Many Requests)
-      if (error.response?.status === 429) {
-        return { 
-          success: false, 
-          error: 'Muitas tentativas de login. Aguarde 15 minutos ou reinicie o servidor.',
-          isRateLimited: true
-        };
-      }
-      
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Erro ao fazer login' 
-      };
-    }
+    // Login desabilitado - usar SSO
+    return { 
+      success: false, 
+      error: 'Login direto desabilitado. Use o sistema Foods para acessar.' 
+    };
   };
 
   const logout = () => {
@@ -125,6 +111,9 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setRememberMe(false);
     setPermissions({});
+    
+    // Redirecionar para o sistema foods após logout
+    window.location.href = 'https://foods.terceirizemais.com.br/foods';
   };
 
   const hasPermission = (screen, action) => {

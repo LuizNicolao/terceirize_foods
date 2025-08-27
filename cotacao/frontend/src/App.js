@@ -47,21 +47,23 @@ const PublicRoute = ({ children }) => {
     return <Navigate to="/dashboard" replace />;
   }
 
-  return children;
+  // Se não autenticado, redirecionar para o sistema foods
+  window.location.href = 'https://foods.terceirizemais.com.br/foods';
+  return <LoadingSpinner />;
 };
 
 function AppRoutes() {
   return (
     <Routes>
-      {/* Rota pública */}
-      <Route 
+      {/* Rota pública - DESABILITADA (SSO apenas) */}
+      {/* <Route 
         path="/login" 
         element={
           <PublicRoute>
             <Login />
           </PublicRoute>
         } 
-      />
+      /> */}
 
       {/* Rotas protegidas */}
       <Route 
@@ -222,7 +224,7 @@ function AppRoutes() {
 
       <Route 
         path="/" 
-        element={<Navigate to="/login" />} 
+        element={<Navigate to="/dashboard" />} 
       />
     </Routes>
   );
