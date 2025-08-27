@@ -1,118 +1,235 @@
-import React, { useState } from 'react';
-import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import { Button, Input, Modal } from '../ui';
-import ExportButtons from './ExportButtons';
+import React, { useState, useEffect } from 'react';
+import { FaTimes, FaDownload, FaFileExcel, FaFilePdf, FaFilter, FaSearch } from 'react-icons/fa';
+import { useAuditoria } from '../../hooks/useAuditoria';
+import { Button, Modal } from '../ui';
+import toast from 'react-hot-toast';
 
-const AuditModal = ({
-  isOpen,
-  onClose,
-  logs,
-  loading,
-  filters,
-  onApplyFilters,
-  onExportXLSX,
-  onExportPDF,
-  onSetFilters
-}) => {
-  const [expandedDetails, setExpandedDetails] = useState({});
+const AuditModal = ({ isOpen, onClose, entityName = 'cotacoes' }) => {
+  const {
+    logs,
+    loading,
+    error,
+    filters,
+    pagination,
+    fetchLogs,
+    fetchStats,
+    exportXLSX,
+    exportPDF,
+    updateFilters,
+    goToPage,
+    nextPage,
+    prevPage
+  } = useAuditoria(entityName);
 
-  const toggleDetails = (index) => {
-    setExpandedDetails(prev => ({
-      ...prev,
-      [index]: !prev[index]
-    }));
+  const [stats, setStats] = useState({});
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Carregar estatísticas quando o modal abrir
+  useEffect(() => {
+    if (isOpen) {
+      loadStats();
+    }
+  }, [isOpen]);
+
+  const loadStats = async () => {
+    const statsData = await fetchStats();
+    setStats(statsData);
   };
 
-  if (!isOpen) return null;
+  const handleExportXLSX = async () => {
+    await exportXLSX();
+  };
+
+  const handleExportPDF = async () => {
+    await exportPDF();
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
+
+  const getActionLabel = (action) => {
+    const actionLabels = {
+      'create': 'Criar',
+      'update': 'Atualizar',
+      'delete': 'Excluir',
+      'view': 'Visualizar',
+      'approve': 'Aprovar',
+      'reject': 'Rejeitar',
+      'send_to_supervisor': 'Enviar para Supervisor',
+      'send_to_gestor': 'Enviar para Gestor',
+      'renegotiate': 'Renegociar',
+      'upload_file': 'Upload de Arquivo',
+      'import_products': 'Importar Produtos',
+      'export_data': 'Exportar Dados'
+    };
+    return actionLabels[action] || action;
+  };
+
+  const getResourceLabel = (resource) => {
+    const resourceLabels = {
+      'cotacoes': 'Cotações',
+      'usuarios': 'Usuários',
+      'fornecedores': 'Fornecedores',
+      'aprovacoes': 'Aprovações',
+      'saving': 'Saving'
+    };
+    return resourceLabels[resource] || resource;
+  };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="full" title="">
-      <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto -m-6">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">
-            Relatório de Auditoria
-          </h2>
-          <div className="flex items-center gap-2">
-            <ExportButtons
-              onExportXLSX={onExportXLSX}
-              onExportPDF={onExportPDF}
-              variant="ghost"
-              size="sm"
-              showLabels={true}
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-            >
-              <FaTimes className="w-4 h-4" />
-            </Button>
+    <Modal isOpen={isOpen} onClose={onClose} size="xl" title="Auditoria">
+      <div className="space-y-4">
+        {/* Cabeçalho com estatísticas */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600">{stats.total || 0}</div>
+            <div className="text-sm text-blue-800">Total de Logs</div>
+          </div>
+          <div className="bg-green-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-green-600">{stats.acoes?.length || 0}</div>
+            <div className="text-sm text-green-800">Tipos de Ação</div>
+          </div>
+          <div className="bg-purple-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-purple-600">{stats.recursos?.length || 0}</div>
+            <div className="text-sm text-purple-800">Recursos Acessados</div>
+          </div>
+          <div className="bg-orange-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-orange-600">{stats.logsPorDia?.length || 0}</div>
+            <div className="text-sm text-orange-800">Dias com Atividade</div>
           </div>
         </div>
 
         {/* Filtros */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data Início
-              </label>
-              <Input
-                type="date"
-                value={filters?.dataInicio || ''}
-                onChange={(e) => onSetFilters({ ...filters, dataInicio: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Data Fim
-              </label>
-              <Input
-                type="date"
-                value={filters?.dataFim || ''}
-                onChange={(e) => onSetFilters({ ...filters, dataFim: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ação
-              </label>
-              <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500"
-                value={filters?.acao || ''}
-                onChange={(e) => onSetFilters({ ...filters, acao: e.target.value })}
-              >
-                <option value="">Todas</option>
-                <option value="create">Criar</option>
-                <option value="update">Editar</option>
-                <option value="delete">Excluir</option>
-                <option value="view">Visualizar</option>
-              </select>
-            </div>
-            <div className="flex items-end">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onApplyFilters}
-                className="w-full"
-              >
-                Aplicar Filtros
-              </Button>
-            </div>
+        <div className="flex justify-between items-center mb-4">
+          <Button
+            onClick={() => setShowFilters(!showFilters)}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <FaFilter />
+            Filtros
+          </Button>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={handleExportXLSX}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <FaFileExcel />
+              Excel
+            </Button>
+            <Button
+              onClick={handleExportPDF}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              <FaFilePdf />
+              PDF
+            </Button>
           </div>
         </div>
 
-        {/* Conteúdo */}
-        <div className="p-6">
+        {/* Painel de filtros */}
+        {showFilters && (
+          <div className="bg-gray-50 p-4 rounded-lg space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Data Início
+                </label>
+                <input
+                  type="date"
+                  value={filters.data_inicio}
+                  onChange={(e) => updateFilters({ data_inicio: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Data Fim
+                </label>
+                <input
+                  type="date"
+                  value={filters.data_fim}
+                  onChange={(e) => updateFilters({ data_fim: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ação
+                </label>
+                <select
+                  value={filters.acao}
+                  onChange={(e) => updateFilters({ acao: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="todas">Todas as ações</option>
+                  <option value="create">Criar</option>
+                  <option value="update">Atualizar</option>
+                  <option value="delete">Excluir</option>
+                  <option value="view">Visualizar</option>
+                  <option value="approve">Aprovar</option>
+                  <option value="reject">Rejeitar</option>
+                  <option value="send_to_supervisor">Enviar para Supervisor</option>
+                  <option value="send_to_gestor">Enviar para Gestor</option>
+                  <option value="renegotiate">Renegociar</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Recurso
+                </label>
+                <select
+                  value={filters.recurso}
+                  onChange={(e) => updateFilters({ recurso: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="todos">Todos os recursos</option>
+                  <option value="cotacoes">Cotações</option>
+                  <option value="usuarios">Usuários</option>
+                  <option value="fornecedores">Fornecedores</option>
+                  <option value="aprovacoes">Aprovações</option>
+                  <option value="saving">Saving</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Usuário ID
+                </label>
+                <input
+                  type="number"
+                  value={filters.usuario_id}
+                  onChange={(e) => updateFilters({ usuario_id: e.target.value })}
+                  placeholder="Digite o ID do usuário"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Lista de logs */}
+        <div className="bg-white rounded-lg border">
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-600 mx-auto"></div>
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               <p className="mt-2 text-gray-600">Carregando logs de auditoria...</p>
             </div>
+          ) : error ? (
+            <div className="p-8 text-center">
+              <p className="text-red-600">{error}</p>
+            </div>
           ) : logs.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              Nenhum log de auditoria encontrado
+            <div className="p-8 text-center">
+              <p className="text-gray-600">Nenhum log de auditoria encontrado</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -120,158 +237,88 @@ const AuditModal = ({
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Data/Hora
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Usuário
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Ação
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Detalhes
+                      Recurso
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      IP
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Data/Hora
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {logs.map((log, index) => (
-                    <React.Fragment key={index}>
-                      <tr className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {new Date(log.timestamp).toLocaleString('pt-BR')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {log.usuario_nome || 'Sistema'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            log.acao === 'create' ? 'bg-green-100 text-green-800' :
-                            log.acao === 'update' ? 'bg-blue-100 text-blue-800' :
-                            log.acao === 'delete' ? 'bg-red-100 text-red-800' :
-                            log.acao === 'login' ? 'bg-purple-100 text-purple-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {log.acao === 'create' ? 'Criar' :
-                             log.acao === 'update' ? 'Editar' :
-                             log.acao === 'delete' ? 'Excluir' :
-                             log.acao === 'login' ? 'Login' :
-                             log.acao === 'view' ? 'Visualizar' : log.acao}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {log.detalhes ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleDetails(index)}
-                              className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
-                            >
-                              {expandedDetails[index] ? (
-                                <FaChevronDown className="w-3 h-3" />
-                              ) : (
-                                <FaChevronRight className="w-3 h-3" />
-                              )}
-                              Ver detalhes
-                            </Button>
-                          ) : (
-                            <span className="text-gray-400">-</span>
-                          )}
-                        </td>
-                      </tr>
-                      {expandedDetails[index] && log.detalhes && (
-                        <tr>
-                          <td colSpan="4" className="px-6 py-4 bg-gray-50">
-                            <div className="max-w-full">
-                              {typeof log.detalhes === 'object' ? (
-                                <div className="space-y-3">
-                                  {log.detalhes.changes && (
-                                    <div>
-                                      <h4 className="font-medium text-gray-700 mb-2">Mudanças Realizadas:</h4>
-                                      <div className="bg-white p-3 rounded border">
-                                        <div className="space-y-3">
-                                          {Object.entries(log.detalhes.changes).map(([field, change], idx) => {
-                                            // Traduzir nomes de campos comuns
-                                            const fieldTranslations = {
-                                              'razao_social': 'Razão Social',
-                                              'nome_fantasia': 'Nome Fantasia',
-                                              'cnpj': 'CNPJ',
-                                              'inscricao_estadual': 'Inscrição Estadual',
-                                              'endereco': 'Endereço',
-                                              'cidade': 'Cidade',
-                                              'uf': 'UF',
-                                              'cep': 'CEP',
-                                              'telefone': 'Telefone',
-                                              'email': 'Email',
-                                              'contato': 'Contato',
-                                              'status': 'Status',
-                                              'nome': 'Nome',
-                                              'descricao': 'Descrição',
-                                              'codigo': 'Código',
-                                              'preco': 'Preço',
-                                              'estoque': 'Estoque'
-                                            };
-                                            
-                                            const displayField = fieldTranslations[field] || field;
-                                            const fromValue = change.from || 'vazio';
-                                            const toValue = change.to || 'vazio';
-                                            
-                                            return (
-                                              <div key={idx} className="border-l-4 border-blue-200 pl-3">
-                                                <div className="flex flex-col">
-                                                  <span className="text-sm font-medium text-gray-700 mb-1">
-                                                    {displayField}
-                                                  </span>
-                                                  <div className="flex items-center space-x-2 text-sm">
-                                                    <span className="text-red-600 bg-red-50 px-2 py-1 rounded">
-                                                      {fromValue}
-                                                    </span>
-                                                    <span className="text-gray-400">→</span>
-                                                    <span className="text-green-600 bg-green-50 px-2 py-1 rounded">
-                                                      {toValue}
-                                                    </span>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-                                  {log.detalhes.recurso && (
-                                    <div>
-                                      <h4 className="font-medium text-gray-700 mb-1">Recurso:</h4>
-                                      <div className="bg-white p-2 rounded border text-sm text-gray-600">
-                                        {log.detalhes.recurso}
-                                      </div>
-                                    </div>
-                                  )}
-                                  {log.detalhes.ip_address && (
-                                    <div>
-                                      <h4 className="font-medium text-gray-700 mb-1">Endereço IP:</h4>
-                                      <div className="bg-white p-2 rounded border text-sm text-gray-600">
-                                        {log.detalhes.ip_address}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                </div>
-                              ) : (
-                                <div className="bg-white p-3 rounded border">
-                                  <span className="text-sm text-gray-600">{String(log.detalhes)}</span>
-                                </div>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
+                  {logs.map((log) => (
+                    <tr key={log.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {log.usuario_nome || 'N/A'}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {log.usuario_email || 'N/A'}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {getActionLabel(log.acao)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {getResourceLabel(log.recurso)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {log.ip_address || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(log.timestamp)}
+                      </td>
+                    </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
         </div>
+
+        {/* Paginação */}
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-700">
+              Mostrando {((pagination.page - 1) * pagination.limit) + 1} a{' '}
+              {Math.min(pagination.page * pagination.limit, pagination.total)} de{' '}
+              {pagination.total} resultados
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={prevPage}
+                disabled={!pagination.hasPrevPage}
+                variant="outline"
+                size="sm"
+              >
+                Anterior
+              </Button>
+              <span className="px-3 py-2 text-sm text-gray-700">
+                Página {pagination.page} de {pagination.totalPages}
+              </span>
+              <Button
+                onClick={nextPage}
+                disabled={!pagination.hasNextPage}
+                variant="outline"
+                size="sm"
+              >
+                Próxima
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </Modal>
   );

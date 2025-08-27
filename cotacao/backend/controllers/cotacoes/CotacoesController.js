@@ -4,6 +4,7 @@ const CotacoesExportController = require('./CotacoesExportController');
 const CotacoesStatsController = require('./CotacoesStatsController');
 const { AnexosController } = require('./AnexosController');
 const { successResponse, errorResponse, notFoundResponse } = require('../../middleware/responseHandler');
+const { logAction, AUDIT_ACTIONS } = require('../../utils/audit');
 
 class CotacoesController {
   // GET /api/cotacoes - Listar cotações
@@ -366,6 +367,22 @@ class CotacoesController {
         }
       }
 
+      // Registrar auditoria
+      await logAction(
+        req.user?.id,
+        AUDIT_ACTIONS.CREATE,
+        'cotacoes',
+        {
+          cotacaoId,
+          comprador,
+          local_entrega,
+          tipo_compra,
+          fornecedoresCount: fornecedores?.length || 0,
+          produtosCount: produtos?.length || 0
+        },
+        req.ip
+      );
+
       return successResponse(res, { id: cotacaoId }, 'Cotação criada com sucesso', 201);
     } catch (error) {
       console.error('Erro ao criar cotação:', error);
@@ -582,10 +599,26 @@ class CotacoesController {
         }
       }
 
-      res.json({ message: 'Cotação atualizada com sucesso' });
+      // Registrar auditoria
+      await logAction(
+        req.user?.id,
+        AUDIT_ACTIONS.UPDATE,
+        'cotacoes',
+        {
+          cotacaoId: id,
+          comprador,
+          localEntrega,
+          tipoCompra,
+          status,
+          fornecedoresCount: fornecedores?.length || 0
+        },
+        req.ip
+      );
+
+      return successResponse(res, null, 'Cotação atualizada com sucesso');
     } catch (error) {
       console.error('Erro ao atualizar cotação:', error);
-      res.status(500).json({ message: 'Erro interno do servidor' });
+      return errorResponse(res, 'Erro interno do servidor', 500);
     }
   }
 
@@ -616,13 +649,25 @@ class CotacoesController {
       const result = await executeQuery(query, [id]);
 
       if (result.affectedRows === 0) {
-        return res.status(404).json({ message: 'Cotação não encontrada' });
+        return notFoundResponse(res, 'Cotação não encontrada');
       }
 
-      res.json({ message: 'Cotação excluída com sucesso' });
+      // Registrar auditoria
+      await logAction(
+        req.user?.id,
+        AUDIT_ACTIONS.DELETE,
+        'cotacoes',
+        {
+          cotacaoId: id,
+          comprador: cotacao.comprador
+        },
+        req.ip
+      );
+
+      return successResponse(res, null, 'Cotação excluída com sucesso');
     } catch (error) {
       console.error('Erro ao excluir cotação:', error);
-      res.status(500).json({ message: 'Erro interno do servidor' });
+      return errorResponse(res, 'Erro interno do servidor', 500);
     }
   }
 
@@ -676,10 +721,24 @@ class CotacoesController {
       const result = await executeQuery(query, [id]);
 
       if (result.affectedRows === 0) {
-        return res.status(404).json({ message: 'Cotação não encontrada' });
+        return notFoundResponse(res, 'Cotação não encontrada');
       }
 
-      res.json({ message: 'Cotação enviada para análise do supervisor' });
+      // Registrar auditoria
+      await logAction(
+        req.user?.id,
+        AUDIT_ACTIONS.SEND_TO_SUPERVISOR,
+        'cotacoes',
+        {
+          cotacaoId: id,
+          comprador: cotacao.comprador,
+          statusAnterior: 'pendente',
+          statusNovo: 'em_analise'
+        },
+        req.ip
+      );
+
+      return successResponse(res, null, 'Cotação enviada para análise do supervisor');
     } catch (error) {
       console.error('Erro ao enviar para supervisor:', error);
       res.status(500).json({ message: 'Erro interno do servidor' });

@@ -1,251 +1,153 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { auditoriaService } from '../services/auditoria';
 import toast from 'react-hot-toast';
-import api from '../services/api';
 
-export const useAuditoria = (recurso) => {
-  // Estados de auditoria
-  const [showAuditModal, setShowAuditModal] = useState(false);
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [auditLoading, setAuditLoading] = useState(false);
-  const [auditFilters, setAuditFilters] = useState({
-    dataInicio: '',
-    dataFim: '',
-    acao: '',
-    usuario_id: '',
-    periodo: ''
+export const useAuditoria = (entityName) => {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [filters, setFilters] = useState({
+    page: 1,
+    limit: 100,
+    data_inicio: '',
+    data_fim: '',
+    acao: 'todas',
+    recurso: 'todos',
+    usuario_id: ''
+  });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 100,
+    total: 0,
+    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false
   });
 
-  // Carregar logs de auditoria
-  const loadAuditLogs = async () => {
+  const fetchLogs = async (customFilters = null) => {
     try {
-      setAuditLoading(true);
+      setLoading(true);
+      setError(null);
       
-      const params = new URLSearchParams();
+      const filtersToUse = customFilters || filters;
+      const response = await auditoriaService.getLogs(filtersToUse);
       
-      // Aplicar filtro de período se selecionado
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        // Usar filtros manuais se período não estiver selecionado
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para o recurso
-      params.append('recurso', recurso);
-      
-      const response = await api.get(`/auditoria?${params.toString()}`);
-      setAuditLogs(response.data.data.data || []);
+      setLogs(response.data || []);
+      setPagination(response.meta?.pagination || {
+        page: 1,
+        limit: 100,
+        total: 0,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false
+      });
     } catch (error) {
-      console.error('Erro ao carregar logs de auditoria:', error);
+      console.error('Erro ao buscar logs de auditoria:', error);
+      setError(error.message || 'Erro ao carregar logs de auditoria');
       toast.error('Erro ao carregar logs de auditoria');
+      setLogs([]);
     } finally {
-      setAuditLoading(false);
+      setLoading(false);
     }
   };
 
-  // Abrir modal de auditoria
-  const handleOpenAuditModal = () => {
-    setShowAuditModal(true);
-    loadAuditLogs();
-  };
-
-  // Fechar modal de auditoria
-  const handleCloseAuditModal = () => {
-    setShowAuditModal(false);
-    setAuditLogs([]);
-    setAuditFilters({
-      dataInicio: '',
-      dataFim: '',
-      acao: '',
-      usuario_id: '',
-      periodo: ''
-    });
-  };
-
-  // Aplicar filtros de auditoria
-  const handleApplyAuditFilters = () => {
-    loadAuditLogs();
-  };
-
-  // Exportar auditoria para XLSX
-  const handleExportAuditXLSX = async () => {
+  const fetchStats = async (customFilters = null) => {
     try {
-      const params = new URLSearchParams();
+      const filtersToUse = customFilters || filters;
+      const response = await auditoriaService.getStats(filtersToUse);
+      return response.data || {};
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas de auditoria:', error);
+      toast.error('Erro ao carregar estatísticas de auditoria');
+      return {};
+    }
+  };
+
+  const exportXLSX = async (customFilters = null) => {
+    try {
+      const filtersToUse = customFilters || filters;
+      const response = await auditoriaService.exportXLSX(filtersToUse);
       
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para o recurso
-      params.append('recurso', recurso);
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/xlsx?${params.toString()}`, {
-        responseType: 'blob'
+      // Criar blob e download
+      const blob = new Blob([response], { 
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
       });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `auditoria_${recurso}_${new Date().toISOString().split('T')[0]}.xlsx`);
+      link.download = `auditoria_${entityName}_${new Date().toISOString().split('T')[0]}.xlsx`;
       document.body.appendChild(link);
       link.click();
-      link.remove();
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      toast.success('Relatório exportado com sucesso!');
+      toast.success('Exportação em Excel realizada com sucesso!');
     } catch (error) {
-      console.error('Erro ao exportar XLSX:', error);
-      toast.error('Erro ao exportar relatório');
+      console.error('Erro ao exportar auditoria em Excel:', error);
+      toast.error('Erro ao exportar dados de auditoria');
     }
   };
 
-  // Exportar auditoria para PDF
-  const handleExportAuditPDF = async () => {
+  const exportPDF = async (customFilters = null) => {
     try {
-      const params = new URLSearchParams();
+      const filtersToUse = customFilters || filters;
+      const response = await auditoriaService.exportPDF(filtersToUse);
       
-      // Aplicar filtros atuais
-      if (auditFilters.periodo) {
-        const hoje = new Date();
-        let dataInicio = new Date();
-        
-        switch (auditFilters.periodo) {
-          case '7dias':
-            dataInicio.setDate(hoje.getDate() - 7);
-            break;
-          case '30dias':
-            dataInicio.setDate(hoje.getDate() - 30);
-            break;
-          case '90dias':
-            dataInicio.setDate(hoje.getDate() - 90);
-            break;
-          default:
-            break;
-        }
-        
-        if (auditFilters.periodo !== 'todos') {
-          params.append('data_inicio', dataInicio.toISOString().split('T')[0]);
-        }
-      } else {
-        if (auditFilters.dataInicio) {
-          params.append('data_inicio', auditFilters.dataInicio);
-        }
-        if (auditFilters.dataFim) {
-          params.append('data_fim', auditFilters.dataFim);
-        }
-      }
-      
-      if (auditFilters.acao) {
-        params.append('acao', auditFilters.acao);
-      }
-      if (auditFilters.usuario_id) {
-        params.append('usuario_id', auditFilters.usuario_id);
-      }
-      
-      // Adicionar filtro específico para o recurso
-      params.append('recurso', recurso);
-      
-      // Fazer download do arquivo
-      const response = await api.get(`/auditoria/export/pdf?${params.toString()}`, {
-        responseType: 'blob'
-      });
-      
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      // Criar blob e download
+      const blob = new Blob([response], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `auditoria_${recurso}_${new Date().toISOString().split('T')[0]}.pdf`);
+      link.download = `auditoria_${entityName}_${new Date().toISOString().split('T')[0]}.pdf`;
       document.body.appendChild(link);
       link.click();
-      link.remove();
+      document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      toast.success('Relatório exportado com sucesso!');
+      toast.success('Exportação em PDF realizada com sucesso!');
     } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      toast.error('Erro ao exportar relatório');
+      console.error('Erro ao exportar auditoria em PDF:', error);
+      toast.error('Erro ao exportar dados de auditoria');
     }
   };
+
+  const updateFilters = (newFilters) => {
+    setFilters(prev => ({ ...prev, ...newFilters, page: 1 }));
+  };
+
+  const goToPage = (page) => {
+    setFilters(prev => ({ ...prev, page }));
+  };
+
+  const nextPage = () => {
+    if (pagination.hasNextPage) {
+      goToPage(pagination.page + 1);
+    }
+  };
+
+  const prevPage = () => {
+    if (pagination.hasPrevPage) {
+      goToPage(pagination.page - 1);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, [filters]);
 
   return {
-    // Estados
-    showAuditModal,
-    auditLogs,
-    auditLoading,
-    auditFilters,
-
-    // Funções
-    loadAuditLogs,
-    handleOpenAuditModal,
-    handleCloseAuditModal,
-    handleApplyAuditFilters,
-    handleExportAuditXLSX,
-    handleExportAuditPDF,
-    setAuditFilters
+    logs,
+    loading,
+    error,
+    filters,
+    pagination,
+    fetchLogs,
+    fetchStats,
+    exportXLSX,
+    exportPDF,
+    updateFilters,
+    goToPage,
+    nextPage,
+    prevPage
   };
 };
