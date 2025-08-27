@@ -52,18 +52,29 @@ export const AuthProvider = ({ children }) => {
             setUser(response.data.data);
             
             // Buscar permissões do usuário
-            const permissionsResponse = await api.get(`/users/${response.data.data.id}/permissions`);
-            setPermissions(permissionsResponse.data.data || {});
+            try {
+              const permissionsResponse = await api.get(`/users/${response.data.data.id}/permissions`);
+              setPermissions(permissionsResponse.data.data || {});
+              console.log('✅ Permissões carregadas:', permissionsResponse.data.data);
+            } catch (permissionsError) {
+              console.warn('⚠️ Erro ao buscar permissões, usando permissões padrão:', permissionsError);
+              setPermissions({});
+            }
           } else {
             // Usuário não encontrado, usar dados do Foods
             console.log('⚠️ Usuário não encontrado no sistema de cotação, usando dados do Foods');
             setUser(foodsUser);
+            setPermissions({});
             console.warn('Usuário não encontrado no sistema de cotação:', foodsUser.email);
           }
           
           // Limpar dados do sessionStorage
           sessionStorage.removeItem('foodsUser');
           console.log('✅ Dados removidos do sessionStorage');
+          
+          // Definir loading como false após processar
+          setLoading(false);
+          console.log('✅ Loading definido como false');
         } else {
           console.log('⚠️ Nenhum usuário encontrado no sessionStorage');
           setLoading(false);
