@@ -65,6 +65,7 @@ const NovaCotacao = () => {
           formData={formData}
           errors={errors}
           handleInputChange={handleInputChange}
+          locaisEntrega={locaisEntrega}
           motivosEmergenciais={motivosEmergenciais}
         />
 

@@ -24,7 +24,13 @@ export const useNovaCotacao = () => {
   const [planilhaCarregada, setPlanilhaCarregada] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Removido: locaisEntrega agora é buscado dinamicamente via FilialSearch
+  const locaisEntrega = [
+    'CD CHAPECO',
+    'CD CURITIBANOS',
+    'COZINHA TOLEDO',
+    'MANUTENCAO CHAPECO',
+    'MANUTENCAO CURITIBANOS'
+  ];
 
   const tiposFrete = [
     'CIF', 'FOB', 'FAS', 'EXW', 'CPT', 'CIP', 'DAP', 'DPU', 'DDP'
@@ -361,6 +367,7 @@ export const useNovaCotacao = () => {
     saving,
     
     // Constantes
+    locaisEntrega,
     tiposFrete,
     motivosEmergenciais,
     

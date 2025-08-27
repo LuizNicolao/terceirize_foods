@@ -1,11 +1,11 @@
 import React from 'react';
 import { FaUser, FaMapMarkerAlt, FaShoppingCart, FaExclamationTriangle } from 'react-icons/fa';
-import { FilialSearch } from '../../../../components/ui';
 
 const InformacoesBasicas = ({ 
   formData, 
   errors, 
   handleInputChange, 
+  locaisEntrega, 
   motivosEmergenciais 
 }) => {
   const getPlaceholderText = () => {
@@ -63,16 +63,20 @@ const InformacoesBasicas = ({
               <FaMapMarkerAlt className="text-gray-400" />
               Local de Entrega *
             </label>
-            <FilialSearch
+            <select
               value={formData.localEntrega}
-              placeholder="Buscar filial no sistema..."
-              onSelect={(filialSelecionada) => {
-                if (filialSelecionada) {
-                  const nomeCompleto = filialSelecionada.nome || filialSelecionada.razao_social;
-                  handleInputChange('localEntrega', nomeCompleto);
-                }
-              }}
-            />
+              onChange={(e) => handleInputChange('localEntrega', e.target.value)}
+              className={`px-3 py-2 border-2 rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm ${
+                errors.localEntrega ? 'border-red-500' : 'border-gray-200 focus:border-green-500'
+              }`}
+            >
+              <option value="">Selecione o local de entrega</option>
+              {locaisEntrega.map((local) => (
+                <option key={local} value={local}>
+                  {local}
+                </option>
+              ))}
+            </select>
             {errors.localEntrega && (
               <span className="text-red-500 text-sm">{errors.localEntrega}</span>
             )}

@@ -366,44 +366,6 @@ class FiliaisSearchController {
       return notFoundResponse(res, 'CNPJ não encontrado ou dados indisponíveis');
     }
   });
-
-  /**
-   * Buscar filiais públicas (para uso do sistema de cotação)
-   */
-  static buscarFiliaisPublic = asyncHandler(async (req, res) => {
-    const { search = '' } = req.query;
-
-    // Query base para buscar filiais ativas
-    let baseQuery = `
-      SELECT 
-        id, 
-        codigo_filial, 
-        cnpj, 
-        filial as nome, 
-        razao_social, 
-        CONCAT(logradouro, ', ', numero, ' - ', bairro, ', ', cidade, ' - ', estado) as endereco,
-        cidade as municipio, 
-        estado as uf
-      FROM filiais 
-      WHERE status = 1
-    `;
-    
-    let params = [];
-
-    // Aplicar busca se fornecida
-    if (search && search.trim().length >= 2) {
-      baseQuery += ' AND (filial LIKE ? OR razao_social LIKE ? OR cidade LIKE ? OR estado LIKE ? OR codigo_filial LIKE ?)';
-      const searchParam = `%${search.trim()}%`;
-      params.push(searchParam, searchParam, searchParam, searchParam, searchParam);
-    }
-
-    baseQuery += ' ORDER BY filial ASC LIMIT 20';
-
-    // Executar query
-    const filiais = await executeQuery(baseQuery, params);
-
-    return successResponse(res, filiais, 'Filiais encontradas com sucesso', STATUS_CODES.OK);
-  });
 }
 
 module.exports = FiliaisSearchController;

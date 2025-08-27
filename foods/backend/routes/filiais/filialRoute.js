@@ -12,13 +12,6 @@ router.use(authenticateToken);
 router.use(paginationMiddleware);
 router.use(hateoasMiddleware('filiais'));
 
-// ===== ROTA PÚBLICA PARA BUSCA DE FILIAIS =====
-// Rota pública para busca de filiais (usada pelo sistema de cotação)
-router.get('/public', 
-  commonValidations.search,
-  FiliaisController.buscarFiliaisPublic
-);
-
 // ===== ROTAS PRINCIPAIS DE FILIAIS =====
 
 // Listar filiais com paginação, busca e filtros
