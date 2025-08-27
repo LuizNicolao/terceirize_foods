@@ -50,11 +50,11 @@ export const AuthProvider = ({ children }) => {
             // Usuário encontrado no sistema de cotação
             console.log('✅ Usuário encontrado no sistema de cotação:', response.data.data);
             console.log('🔍 Estrutura completa do usuário:', JSON.stringify(response.data.data, null, 2));
-            setUser(response.data.data);
+            setUser(response.data.data.data);
             
             // Buscar permissões do usuário
             try {
-              const permissionsResponse = await api.get(`/users/${response.data.data.id}/permissions`);
+              const permissionsResponse = await api.get(`/users/${response.data.data.data.id}/permissions`);
               setPermissions(permissionsResponse.data.data || {});
               console.log('✅ Permissões carregadas:', permissionsResponse.data.data);
             } catch (permissionsError) {
