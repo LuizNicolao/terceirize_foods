@@ -24,7 +24,7 @@ const routes = require('./routes');
 
 // Aplicar rate limiting
 app.use('/cotacao/api/', limiter);
-// app.use('/cotacao/api/auth', loginLimiter); // DESABILITADO - Autenticação centralizada no Foods
+app.use('/cotacao/api/auth', loginLimiter);
 
 // Aplicar todas as rotas com prefixos automaticamente
 applyRoutePrefixes(app, routes);
@@ -46,17 +46,6 @@ app.get('/cotacao/api/health', (req, res) => {
       version: '1.0.0',
       environment: process.env.NODE_ENV || 'development'
     }
-  });
-});
-
-// Rota de teste SSO
-app.get('/cotacao/api/sso/test', (req, res) => {
-  console.log('🔍 Teste SSO - Query params:', req.query);
-  res.json({ 
-    success: true,
-    message: 'Teste SSO funcionando!',
-    query: req.query,
-    timestamp: new Date().toISOString()
   });
 });
 

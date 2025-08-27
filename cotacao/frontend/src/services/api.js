@@ -15,16 +15,12 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Interceptor para adicionar token SSO nas requisições
+// Interceptor para adicionar token de autenticação
 api.interceptors.request.use(
   async (config) => {
-    const ssoToken = localStorage.getItem('sso_token');
-    if (ssoToken) {
-      // Adicionar token SSO como parâmetro de query
-      config.params = {
-        ...config.params,
-        sso_token: ssoToken
-      };
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -41,8 +37,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      // window.location.href = '/cotacao/login'; // DESABILITADO - Autenticação centralizada no Foods
-      window.location.href = '/cotacao/dashboard'; // Redirecionar para dashboard por enquanto
+      window.location.href = '/cotacao/login';
     }
     return Promise.reject(error);
   }

@@ -1,7 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { SSOProvider, useSSO } from './contexts/SSOContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { PermissionsProvider } from './contexts/PermissionsContext';
 import { Layout, ProtectedRoute } from './components/layout';
 import { LoadingSpinner } from './components/ui';
 import './utils/axiosConfig'; // Importar configuração do axios
@@ -18,28 +19,25 @@ import VisualizarCotacao from './pages/cotacoes/VisualizarCotacao';
 import EditarCotacao from './pages/cotacoes/EditarCotacao';
 import Saving from './pages/saving/Saving';
 import { Aprovacoes, VisualizarAprovacao } from './pages/aprovacoes';
-import TestPage from './pages/TestPage';
 
-// Componente para rotas protegidas com autenticação SSO
-const AuthenticatedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useSSO();
+// Componente para rotas protegidas com autenticação
+// const AuthenticatedRoute = ({ children }) => {
+//   const { isAuthenticated, loading } = useAuth();
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+//   if (loading) {
+//     return <LoadingSpinner />;
+//   }
 
-  if (!isAuthenticated) {
-    // Redirecionar para o sistema principal se não autenticado
-    window.location.href = 'https://foods.terceirizemais.com.br/foods';
-    return null;
-  }
+//   if (!isAuthenticated) {
+//     return <Navigate to="/login" replace />;
+//   }
 
-  return <Layout>{children}</Layout>;
-};
+//   return <Layout>{children}</Layout>;
+// };
 
-// Componente para rotas públicas - DESABILITADO com SSO
+// Componente para rotas públicas
 // const PublicRoute = ({ children }) => {
-//   const { isAuthenticated, loading } = useSSO();
+//   const { isAuthenticated, loading } = useAuth();
 
 //   if (loading) {
 //     return <LoadingSpinner />;
@@ -52,18 +50,26 @@ const AuthenticatedRoute = ({ children }) => {
 //   return children;
 // };
 
+// DESABILITADO - Autenticação centralizada no Foods
+// Agora todas as rotas são acessíveis diretamente
+const AuthenticatedRoute = ({ children }) => {
+  return <Layout>{children}</Layout>;
+};
+
 function AppRoutes() {
   return (
     <Routes>
-      {/* Rota pública - DESABILITADA - Autenticação centralizada no Foods */}
-      {/* <Route 
+      {/* Rota pública */}
+      {/* DESABILITADO - Autenticação centralizada no Foods
+      <Route 
         path="/login" 
         element={
           <PublicRoute>
             <Login />
           </PublicRoute>
         } 
-      /> */}
+      />
+      */}
 
       {/* Rotas protegidas */}
       <Route 
@@ -222,12 +228,9 @@ function AppRoutes() {
 
 
 
-      {/* Rota de teste - sem autenticação */}
-      <Route path="/test" element={<TestPage />} />
-      
       <Route 
         path="/" 
-        element={<Navigate to="/dashboard" />} // DESABILITADO - Autenticação centralizada no Foods
+        element={<Navigate to="/dashboard" />} 
       />
     </Routes>
   );
@@ -236,33 +239,35 @@ function AppRoutes() {
 function App() {
   return (
     <Router basename="/cotacao">
-      <SSOProvider>
-        <AppRoutes />
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: '#363636',
-              color: '#fff',
-            },
-            success: {
-              duration: 3000,
-              iconTheme: {
-                primary: '#10B981',
-                secondary: '#fff',
+      <AuthProvider>
+        <PermissionsProvider>
+          <AppRoutes />
+          <Toaster 
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
               },
-            },
-            error: {
-              duration: 5000,
-              iconTheme: {
-                primary: '#EF4444',
-                secondary: '#fff',
+              success: {
+                duration: 3000,
+                iconTheme: {
+                  primary: '#10B981',
+                  secondary: '#fff',
+                },
               },
-            },
-          }}
-        />
-      </SSOProvider>
+              error: {
+                duration: 5000,
+                iconTheme: {
+                  primary: '#EF4444',
+                  secondary: '#fff',
+                },
+              },
+            }}
+          />
+        </PermissionsProvider>
+      </AuthProvider>
     </Router>
   );
 }

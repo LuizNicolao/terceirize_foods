@@ -25,8 +25,7 @@ api.interceptors.response.use(
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('rememberMe');
-      // window.location.href = '/login'; // DESABILITADO - Autenticação centralizada no Foods
-      window.location.href = '/cotacao/dashboard'; // Redirecionar para dashboard por enquanto
+      window.location.href = '/login';
     }
     return Promise.reject(error);
   }

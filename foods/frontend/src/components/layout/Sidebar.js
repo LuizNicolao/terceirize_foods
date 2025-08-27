@@ -256,13 +256,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                       onClick={(e) => {
                         if (item.path === '/cotacao') {
                           e.preventDefault();
-                          const token = localStorage.getItem('token');
-                          if (token) {
-                            const ssoUrl = `https://foods.terceirizemais.com.br/cotacao?sso_token=${token}`;
-                            window.open(ssoUrl, '_blank');
-                          } else {
-                            window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
-                          }
+                          window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
                         }
                         if (window.innerWidth <= 768) {
                           onToggle();
@@ -329,18 +323,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         ${isActive ? 'bg-green-100 text-green-500 border-l-green-500 font-semibold' : ''}
                       `}
                       onClick={(e) => {
-                        // Se for o item de cotação, abrir em nova aba com SSO
+                        // Se for o item de cotação, abrir em nova aba
                         if (item.path === '/cotacao') {
                           e.preventDefault();
-                          const token = localStorage.getItem('token');
-                          
-                          if (token) {
-                            // Passar o token como parâmetro na URL
-                            const ssoUrl = `https://foods.terceirizemais.com.br/cotacao?sso_token=${token}`;
-                            window.open(ssoUrl, '_blank');
-                          } else {
-                            window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
-                          }
+                          window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
                         }
                         
                         // Fechar sidebar no mobile quando clicar em um item
