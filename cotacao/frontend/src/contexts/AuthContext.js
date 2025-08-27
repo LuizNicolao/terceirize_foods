@@ -75,6 +75,7 @@ export const AuthProvider = ({ children }) => {
           // Definir loading como false após processar
           setLoading(false);
           console.log('✅ Loading definido como false');
+          console.log('✅ Estado final do usuário:', response.data.data);
         } else {
           console.log('⚠️ Nenhum usuário encontrado no sessionStorage');
           setLoading(false);
