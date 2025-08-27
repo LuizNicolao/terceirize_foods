@@ -4,10 +4,16 @@ const { executeQuery } = require('../config/database');
 // Middleware para validação SSO
 const validateSSO = async (req, res, next) => {
   try {
+    console.log('🔍 Validando SSO - URL:', req.url);
+    console.log('🔍 Query params:', req.query);
+    
     // Verificar se há token SSO na query string
     const ssoToken = req.query.sso_token;
     
+    console.log('🔍 Token SSO encontrado:', ssoToken ? 'Sim' : 'Não');
+    
     if (!ssoToken) {
+      console.log('❌ Token SSO não encontrado');
       return res.status(401).json({ 
         success: false, 
         message: 'Token SSO necessário' 

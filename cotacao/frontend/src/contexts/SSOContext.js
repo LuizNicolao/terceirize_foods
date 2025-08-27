@@ -113,10 +113,16 @@ export const SSOProvider = ({ children }) => {
         const urlParams = new URLSearchParams(window.location.search);
         const ssoToken = urlParams.get('sso_token');
         
+        console.log('🔍 URL atual:', window.location.href);
+        console.log('🔍 Token SSO na URL:', ssoToken ? 'Sim' : 'Não');
+        
         if (ssoToken) {
+          console.log('🔍 Validando token SSO...');
           // Validar token SSO
           const result = await validateSSOToken(ssoToken);
+          console.log('🔍 Resultado da validação:', result);
           if (!result.success) {
+            console.log('❌ Validação SSO falhou, redirecionando...');
             // Se falhar, redirecionar para o sistema principal
             window.location.href = 'https://foods.terceirizemais.com.br/foods';
             return;
