@@ -30,6 +30,9 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const findUserByEmail = async () => {
       try {
+        console.log('🔍 URL completa:', window.location.href);
+        console.log('🔍 Search params:', window.location.search);
+        
         const urlParams = new URLSearchParams(window.location.search);
         const userParam = urlParams.get('user');
         
