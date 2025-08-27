@@ -12,7 +12,7 @@ import Dashboard from './pages/dashboard';
 import Usuarios from './pages/usuarios';
 import { EditarUsuario, VisualizarUsuario } from './components/usuarios';
 import Cotacoes from './pages/cotacoes';
-import { AnalisarCotacao } from './components/cotacoes';
+// import { AnalisarCotacao } from './components/cotacoes'; // Removido - componente não mais utilizado
 import { Supervisor, AnalisarCotacaoSupervisor } from './pages/supervisor';
 import NovaCotacao from './pages/cotacoes/NovaCotacao';
 import VisualizarCotacao from './pages/cotacoes/VisualizarCotacao';
@@ -204,6 +204,7 @@ function AppRoutes() {
         } 
       />
 
+      {/* Rota removida - componente AnalisarCotacao não mais utilizado
       <Route 
         path="/analisar-cotacao/:id" 
         element={
@@ -214,6 +215,7 @@ function AppRoutes() {
           </AuthenticatedRoute>
         } 
       />
+      */}
 
       <Route 
         path="/saving" 

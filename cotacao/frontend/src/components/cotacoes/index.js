@@ -1,1 +1,1 @@
-export { default as AnalisarCotacao } from './AnalisarCotacao';
+// Arquivo removido - componente não mais utilizado
