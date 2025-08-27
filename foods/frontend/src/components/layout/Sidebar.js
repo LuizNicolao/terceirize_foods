@@ -339,9 +339,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           
                           const userData = encodeURIComponent(JSON.stringify({
                             id: user.id,
-                            name: user.name,
+                            name: user.nome,
                             email: user.email,
-                            role: user.role
+                            role: user.tipo_de_acesso
                           }));
                           
                           console.log('🔍 Dados do usuário codificados:', userData);
