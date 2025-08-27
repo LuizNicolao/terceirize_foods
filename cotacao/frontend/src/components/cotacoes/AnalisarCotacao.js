@@ -493,7 +493,8 @@ const AnalisarCotacao = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const responseData = await response.json();
+        const data = responseData.data;
         setCotacao(data);
       } else {
         const errorData = await response.json();
@@ -748,8 +749,9 @@ const AnalisarCotacao = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        alert(data.message || 'Ação realizada com sucesso!');
+        const responseData = await response.json();
+        const data = responseData.data;
+        alert(responseData.message || 'Ação realizada com sucesso!');
         navigate('/aprovacoes');
       } else {
         const errorData = await response.json();

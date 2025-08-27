@@ -229,7 +229,8 @@ const Usuarios = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const responseData = await response.json();
+        const data = responseData.data;
         setUsuarios(data);
       } else {
         const errorData = await response.json();

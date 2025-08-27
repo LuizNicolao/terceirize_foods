@@ -200,8 +200,9 @@ const ModalRenegociacao = ({ cotacao, onClose, onConfirm }) => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        toast.success(data.message || 'Renegociação solicitada com sucesso!');
+        const responseData = await response.json();
+        const data = responseData.data;
+        toast.success(responseData.message || 'Renegociação solicitada com sucesso!');
         onConfirm();
       } else {
         const errorData = await response.json();

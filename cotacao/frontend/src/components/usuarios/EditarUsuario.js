@@ -309,7 +309,8 @@ const EditarUsuario = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const responseData = await response.json();
+        const data = responseData.data;
         
         setFormData({
           name: data.name || '',
