@@ -4,7 +4,7 @@ import axios from 'axios';
 const getBaseURL = () => {
   if (process.env.NODE_ENV === 'production') {
     // Em produção, usar o path /cotacao/api com HTTPS
-    return process.env.REACT_APP_API_URL || 'https://cotacao.terceirizemais.com.br/cotacao/api';
+    return process.env.REACT_APP_API_URL || 'https://foods.terceirizemais.com.br/cotacao/api';
   }
   // Em desenvolvimento, usar a URL padrão com prefixo /api
   return process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
@@ -37,7 +37,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      window.location.href = '/cotacao/login';
     }
     return Promise.reject(error);
   }
