@@ -47,11 +47,21 @@ const FilialSearch = ({
 
     setLoading(true);
     try {
+      // Usar o token do sistema de cotação
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        console.error('Token não encontrado');
+        setFiliais([]);
+        setShowDropdown(false);
+        return;
+      }
 
       // Buscar filiais usando rota pública
       const response = await fetch(`${API_URL}/filiais/public?search=${encodeURIComponent(term)}`, {
         method: 'GET',
         headers: {
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
