@@ -14,8 +14,8 @@ const router = express.Router();
 // Aplicar middleware HATEOAS
 router.use(hateoasMiddleware('auth'));
 
-// POST /api/auth/login - Login (DESABILITADO - SSO apenas)
-// router.post('/login', loginValidation, AuthController.login);
+// POST /api/auth/login - Login
+router.post('/login', loginValidation, AuthController.login);
 
 // POST /api/auth/sso - SSO Login
 router.post('/sso', ssoValidation, AuthController.ssoLogin);

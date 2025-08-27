@@ -1,9 +1,9 @@
 import React from 'react';
-import { usePermissions } from '../../contexts/PermissionsContext';
+import { useSSO } from '../../contexts/SSOContext';
 import { LoadingSpinner } from '../ui';
 
 const ProtectedRoute = ({ children, screen }) => {
-  const { canView, loading } = usePermissions();
+  const { canView, loading } = useSSO();
 
   if (loading) {
     return <LoadingSpinner />;

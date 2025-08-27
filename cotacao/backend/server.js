@@ -24,7 +24,7 @@ const routes = require('./routes');
 
 // Aplicar rate limiting
 app.use('/cotacao/api/', limiter);
-app.use('/cotacao/api/auth', loginLimiter);
+// app.use('/cotacao/api/auth', loginLimiter); // DESABILITADO - Autenticação centralizada no Foods
 
 // Aplicar todas as rotas com prefixos automaticamente
 applyRoutePrefixes(app, routes);

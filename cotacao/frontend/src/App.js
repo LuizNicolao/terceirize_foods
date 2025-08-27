@@ -1,13 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { PermissionsProvider } from './contexts/PermissionsContext';
+import { SSOProvider, useSSO } from './contexts/SSOContext';
 import { Layout, ProtectedRoute } from './components/layout';
 import { LoadingSpinner } from './components/ui';
 import './utils/axiosConfig'; // Importar configuração do axios
 import './design-system'; // Importar design system
-import Login from './pages/auth';
+// import Login from './pages/auth'; // DESABILITADO - Autenticação centralizada no Foods
 import Dashboard from './pages/dashboard';
 import Usuarios from './pages/usuarios';
 import { EditarUsuario, VisualizarUsuario } from './components/usuarios';
@@ -20,62 +19,42 @@ import EditarCotacao from './pages/cotacoes/EditarCotacao';
 import Saving from './pages/saving/Saving';
 import { Aprovacoes, VisualizarAprovacao } from './pages/aprovacoes';
 
-// Componente para rotas protegidas com autenticação
+// Componente para rotas protegidas com autenticação SSO
 const AuthenticatedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading } = useSSO();
 
   if (loading) {
     return <LoadingSpinner />;
   }
 
   if (!isAuthenticated) {
-    // Verificar se há token SSO na URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const ssoToken = urlParams.get('sso_token');
-    
-    if (ssoToken) {
-      // Se há token SSO, mostrar loading enquanto processa
-      return <LoadingSpinner />;
-    }
-    
-    // Se não há token SSO, redirecionar para foods
+    // Redirecionar para o sistema principal se não autenticado
     window.location.href = 'https://foods.terceirizemais.com.br/foods';
-    return <LoadingSpinner />;
+    return null;
   }
 
   return <Layout>{children}</Layout>;
 };
 
-// Componente para rotas públicas
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+// Componente para rotas públicas - DESABILITADO com SSO
+// const PublicRoute = ({ children }) => {
+//   const { isAuthenticated, loading } = useSSO();
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+//   if (loading) {
+//     return <LoadingSpinner />;
+//   }
 
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+//   if (isAuthenticated) {
+//     return <Navigate to="/dashboard" replace />;
+//   }
 
-  // Se não autenticado, redirecionar para o sistema foods
-  // Mas apenas se não houver token SSO na URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const ssoToken = urlParams.get('sso_token');
-  
-  if (!ssoToken) {
-    window.location.href = 'https://foods.terceirizemais.com.br/foods';
-    return <LoadingSpinner />;
-  }
-
-  // Se há token SSO, mostrar loading enquanto processa
-  return <LoadingSpinner />;
-};
+//   return children;
+// };
 
 function AppRoutes() {
   return (
     <Routes>
-      {/* Rota pública - DESABILITADA (SSO apenas) */}
+      {/* Rota pública - DESABILITADA - Autenticação centralizada no Foods */}
       {/* <Route 
         path="/login" 
         element={
@@ -244,7 +223,7 @@ function AppRoutes() {
 
       <Route 
         path="/" 
-        element={<Navigate to="/dashboard" />} 
+        element={<Navigate to="/dashboard" />} // DESABILITADO - Autenticação centralizada no Foods
       />
     </Routes>
   );
@@ -253,35 +232,33 @@ function AppRoutes() {
 function App() {
   return (
     <Router basename="/cotacao">
-      <AuthProvider>
-        <PermissionsProvider>
-          <AppRoutes />
-          <Toaster 
-            position="top-right"
-            toastOptions={{
-              duration: 4000,
-              style: {
-                background: '#363636',
-                color: '#fff',
+      <SSOProvider>
+        <AppRoutes />
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#363636',
+              color: '#fff',
+            },
+            success: {
+              duration: 3000,
+              iconTheme: {
+                primary: '#10B981',
+                secondary: '#fff',
               },
-              success: {
-                duration: 3000,
-                iconTheme: {
-                  primary: '#10B981',
-                  secondary: '#fff',
-                },
+            },
+            error: {
+              duration: 5000,
+              iconTheme: {
+                primary: '#EF4444',
+                secondary: '#fff',
               },
-              error: {
-                duration: 5000,
-                iconTheme: {
-                  primary: '#EF4444',
-                  secondary: '#fff',
-                },
-              },
-            }}
-          />
-        </PermissionsProvider>
-      </AuthProvider>
+            },
+          }}
+        />
+      </SSOProvider>
     </Router>
   );
 }

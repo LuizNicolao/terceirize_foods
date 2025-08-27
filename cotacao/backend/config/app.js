@@ -18,8 +18,8 @@ app.use(helmet({
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        'https://foods.terceirizemais.com.br',
-        'http://foods.terceirizemais.com.br',
+        'https://cotacao.terceirizemais.com.br',
+        'http://cotacao.terceirizemais.com.br',
         'http://82.29.57.43:3000', 
         'http://82.29.57.43:3002',
         'http://localhost:3000',
