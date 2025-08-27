@@ -12,9 +12,22 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  // DESABILITADO - Autenticação centralizada no Foods
-  // Agora o sistema funciona sem autenticação própria
-  const [user, setUser] = useState({ id: 1, name: 'Sistema', role: 'administrador' });
+  // Capturar dados do usuário da URL (SSO do Foods)
+  const [user, setUser] = useState(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const userParam = urlParams.get('user');
+      if (userParam) {
+        const userData = JSON.parse(decodeURIComponent(userParam));
+        return userData;
+      }
+    } catch (error) {
+      console.error('Erro ao capturar dados do usuário:', error);
+    }
+    // Fallback para usuário padrão
+    return { id: 1, name: 'Sistema', role: 'administrador' };
+  });
+  
   const [loading, setLoading] = useState(false);
   const [token, setToken] = useState(null);
   const [rememberMe, setRememberMe] = useState(false);
@@ -27,13 +40,16 @@ export const AuthProvider = ({ children }) => {
     aprovacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true }
   });
 
-  // DESABILITADO - Verificação de token
-  // useEffect(() => {
-  //   const verifyToken = async () => {
-  //     // Código comentado
-  //   };
-  //   verifyToken();
-  // }, [token]);
+  // Limpar parâmetros da URL após capturar dados do usuário
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('user')) {
+      // Remover parâmetro user da URL
+      urlParams.delete('user');
+      const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
 
   // DESABILITADO - Login centralizado no Foods
   const login = async (email, senha, rememberMeOption = false) => {
