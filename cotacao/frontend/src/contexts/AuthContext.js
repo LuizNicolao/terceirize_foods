@@ -33,14 +33,21 @@ export const AuthProvider = ({ children }) => {
         const urlParams = new URLSearchParams(window.location.search);
         const userParam = urlParams.get('user');
         
+        console.log('🔍 Parâmetro user na URL:', userParam);
+        
         if (userParam) {
           const foodsUser = JSON.parse(decodeURIComponent(userParam));
+          console.log('🔍 Usuário do Foods:', foodsUser);
           
           // Buscar usuário no sistema de cotação por email
+          console.log('🔍 Buscando usuário por email:', foodsUser.email);
           const response = await api.get(`/users/by-email/${encodeURIComponent(foodsUser.email)}`);
+          
+          console.log('🔍 Resposta da API:', response.data);
           
           if (response.data.data) {
             // Usuário encontrado no sistema de cotação
+            console.log('✅ Usuário encontrado no sistema de cotação:', response.data.data);
             setUser(response.data.data);
             
             // Buscar permissões do usuário
@@ -48,6 +55,7 @@ export const AuthProvider = ({ children }) => {
             setPermissions(permissionsResponse.data.data || {});
           } else {
             // Usuário não encontrado, usar dados do Foods
+            console.log('⚠️ Usuário não encontrado no sistema de cotação, usando dados do Foods');
             setUser(foodsUser);
             console.warn('Usuário não encontrado no sistema de cotação:', foodsUser.email);
           }
@@ -56,11 +64,13 @@ export const AuthProvider = ({ children }) => {
           urlParams.delete('user');
           const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
           window.history.replaceState({}, '', newUrl);
+        } else {
+          console.log('⚠️ Nenhum parâmetro user encontrado na URL');
+          setLoading(false);
         }
       } catch (error) {
-        console.error('Erro ao buscar usuário:', error);
+        console.error('❌ Erro ao buscar usuário:', error);
         // Em caso de erro, manter usuário padrão
-      } finally {
         setLoading(false);
       }
     };
