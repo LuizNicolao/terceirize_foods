@@ -335,13 +335,20 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         if (item.path === '/cotacao') {
                           e.preventDefault();
                           const user = JSON.parse(localStorage.getItem('user') || '{}');
+                          console.log('🔍 Usuário do localStorage:', user);
+                          
                           const userData = encodeURIComponent(JSON.stringify({
                             id: user.id,
                             name: user.name,
                             email: user.email,
                             role: user.role
                           }));
+                          
+                          console.log('🔍 Dados do usuário codificados:', userData);
+                          
                           const cotacaoUrl = `https://foods.terceirizemais.com.br/cotacao?user=${userData}`;
+                          console.log('🔍 URL do sistema de cotação:', cotacaoUrl);
+                          
                           window.open(cotacaoUrl, '_blank');
                         }
                         

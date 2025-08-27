@@ -12,7 +12,10 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [rememberMe, setRememberMe] = useState(localStorage.getItem('rememberMe') === 'true');
@@ -47,6 +50,9 @@ export const AuthProvider = ({ children }) => {
       // Salvar token no localStorage
       localStorage.setItem('token', newToken);
       
+      // Salvar usuário no localStorage
+      localStorage.setItem('user', JSON.stringify(userData));
+      
       // Salvar preferência "Mantenha-me conectado"
       localStorage.setItem('rememberMe', rememberMeOption.toString());
       setRememberMe(rememberMeOption);
@@ -76,6 +82,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
     localStorage.removeItem('rememberMe');
     delete api.defaults.headers.authorization;
     setToken(null);
