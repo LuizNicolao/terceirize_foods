@@ -302,7 +302,7 @@ const EditarUsuario = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000'}/api/users/${id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'https://foods.terceirizemais.com.br/cotacao/api'}/users/${id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -411,8 +411,8 @@ const EditarUsuario = () => {
 
       try {
         const url = id === 'new' 
-                  ? `${process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000'}/api/users`
-        : `${process.env.REACT_APP_API_URL || 'http://82.29.57.43:5000'}/api/users/${id}`;
+                  ? `${process.env.REACT_APP_API_URL || 'https://foods.terceirizemais.com.br/cotacao/api'}/users`
+        : `${process.env.REACT_APP_API_URL || 'https://foods.terceirizemais.com.br/cotacao/api'}/users/${id}`;
         
         const method = id === 'new' ? 'POST' : 'PUT';
         

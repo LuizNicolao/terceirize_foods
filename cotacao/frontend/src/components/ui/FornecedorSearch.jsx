@@ -16,7 +16,7 @@ const FornecedorSearch = ({
   const dropdownRef = useRef(null);
 
   // URL da API do sistema principal
-  const API_URL = process.env.REACT_APP_MAIN_API_URL || 'http://82.29.57.43:3001/api';
+  const API_URL = process.env.REACT_APP_MAIN_API_URL || 'https://foods.terceirizemais.com.br/foods/api';
 
   useEffect(() => {
     // Se há um valor inicial, buscar os dados do fornecedor
