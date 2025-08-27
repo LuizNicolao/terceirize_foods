@@ -7,7 +7,7 @@ export const supervisorExportService = {
       params: { viewMode },
       responseType: 'blob'
     });
-    return response.data;
+    return response.data.data || response.data; // Extrair dados da estrutura padronizada
   },
 
   // Exportar análise em Excel
@@ -16,6 +16,6 @@ export const supervisorExportService = {
       params: { viewMode },
       responseType: 'blob'
     });
-    return response.data;
+    return response.data.data || response.data; // Extrair dados da estrutura padronizada
   }
 };

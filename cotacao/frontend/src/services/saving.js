@@ -7,7 +7,7 @@ class SavingService {
     static async listarSaving(params = {}) {
         try {
             const response = await api.get('/saving', { params });
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao listar saving:', error);
             throw error;
@@ -20,7 +20,7 @@ class SavingService {
     static async obterSaving(id) {
         try {
             const response = await api.get(`/saving/${id}`);
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao obter saving:', error);
             throw error;
@@ -33,7 +33,7 @@ class SavingService {
     static async obterSavingItens(savingId) {
         try {
             const response = await api.get(`/saving/${savingId}/itens`);
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao obter itens do saving:', error);
             throw error;
@@ -46,7 +46,7 @@ class SavingService {
     static async criarSaving(data) {
         try {
             const response = await api.post('/saving', data);
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao criar saving:', error);
             throw error;
@@ -59,7 +59,7 @@ class SavingService {
     static async atualizarSaving(id, data) {
         try {
             const response = await api.put(`/saving/${id}`, data);
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao atualizar saving:', error);
             throw error;
@@ -72,7 +72,7 @@ class SavingService {
     static async excluirSaving(id) {
         try {
             const response = await api.delete(`/saving/${id}`);
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao excluir saving:', error);
             throw error;
@@ -85,7 +85,7 @@ class SavingService {
     static async obterResumoSaving(id) {
         try {
             const response = await api.get(`/saving/${id}/resumo`);
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao obter resumo do saving:', error);
             throw error;
@@ -98,7 +98,7 @@ class SavingService {
     static async aprovarSaving(id, data) {
         try {
             const response = await api.post(`/saving/${id}/aprovar`, data);
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao aprovar saving:', error);
             throw error;
@@ -111,7 +111,7 @@ class SavingService {
     static async rejeitarSaving(id, data) {
         try {
             const response = await api.post(`/saving/${id}/rejeitar`, data);
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao rejeitar saving:', error);
             throw error;
@@ -127,7 +127,7 @@ class SavingService {
                 params: filtros,
                 responseType: 'blob'
             });
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao exportar saving:', error);
             throw error;
@@ -140,7 +140,7 @@ class SavingService {
     static async obterEstatisticas(filtros = {}) {
         try {
             const response = await api.get('/saving/estatisticas', { params: filtros });
-            return response.data;
+            return response.data.data || response.data; // Extrair dados da estrutura padronizada
         } catch (error) {
             console.error('Erro ao obter estatísticas:', error);
             throw error;
