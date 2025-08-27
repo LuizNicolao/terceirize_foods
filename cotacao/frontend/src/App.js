@@ -29,7 +29,18 @@ const AuthenticatedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    // Verificar se há token SSO na URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const ssoToken = urlParams.get('sso_token');
+    
+    if (ssoToken) {
+      // Se há token SSO, mostrar loading enquanto processa
+      return <LoadingSpinner />;
+    }
+    
+    // Se não há token SSO, redirecionar para foods
+    window.location.href = 'https://foods.terceirizemais.com.br/foods';
+    return <LoadingSpinner />;
   }
 
   return <Layout>{children}</Layout>;
@@ -48,7 +59,16 @@ const PublicRoute = ({ children }) => {
   }
 
   // Se não autenticado, redirecionar para o sistema foods
-  window.location.href = 'https://foods.terceirizemais.com.br/foods';
+  // Mas apenas se não houver token SSO na URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const ssoToken = urlParams.get('sso_token');
+  
+  if (!ssoToken) {
+    window.location.href = 'https://foods.terceirizemais.com.br/foods';
+    return <LoadingSpinner />;
+  }
+
+  // Se há token SSO, mostrar loading enquanto processa
   return <LoadingSpinner />;
 };
 

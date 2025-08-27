@@ -24,10 +24,14 @@ export const AuthProvider = ({ children }) => {
       const urlParams = new URLSearchParams(window.location.search);
       const ssoToken = urlParams.get('sso_token');
       
+      console.log('🔍 Verificando SSO:', { ssoToken: !!ssoToken, hasToken: !!token });
+      
       if (ssoToken && !token) {
+        console.log('🔍 Iniciando login SSO...');
         // Tentar login SSO
         try {
           const response = await api.post('/auth/sso', { token: ssoToken });
+          console.log('🔍 Resposta SSO:', response.data);
           const { token: newToken, user: userData } = response.data.data.data;
           
           if (userData && userData.id) {
