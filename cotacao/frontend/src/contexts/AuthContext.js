@@ -52,13 +52,22 @@ export const AuthProvider = ({ children }) => {
             console.log('🔍 Estrutura completa do usuário:', JSON.stringify(response.data.data, null, 2));
             setUser(response.data.data.data);
             
-            // Buscar permissões do usuário
-            try {
-              const permissionsResponse = await api.get(`/users/${response.data.data.data.id}/permissions`);
-              setPermissions(permissionsResponse.data.data || {});
-              console.log('✅ Permissões carregadas:', permissionsResponse.data.data);
-            } catch (permissionsError) {
-              console.warn('⚠️ Erro ao buscar permissões, usando permissões padrão:', permissionsError);
+            // Usar permissões que já vêm na resposta do usuário
+            if (response.data.data.data.permissions) {
+              // Converter array de permissões para objeto
+              const permissionsObj = {};
+              response.data.data.data.permissions.forEach(perm => {
+                permissionsObj[perm.screen] = {
+                  can_view: perm.can_view === 1,
+                  can_create: perm.can_create === 1,
+                  can_edit: perm.can_edit === 1,
+                  can_delete: perm.can_delete === 1
+                };
+              });
+              setPermissions(permissionsObj);
+              console.log('✅ Permissões carregadas da resposta:', permissionsObj);
+            } else {
+              console.warn('⚠️ Nenhuma permissão encontrada na resposta');
               setPermissions({});
             }
           } else {
