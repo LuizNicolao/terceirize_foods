@@ -8,5 +8,6 @@ export { default as ActionButtons } from './ActionButtons';
 export { default as CadastroFilterBar } from './CadastroFilterBar';
 export { default as Pagination } from './Pagination';
 export { default as FornecedorSearch } from './FornecedorSearch';
+export { default as FilialSearch } from './FilialSearch';
 export { default as ProdutoSearch } from './ProdutoSearch';
 export { default as ConfirmModal } from './ConfirmModal';

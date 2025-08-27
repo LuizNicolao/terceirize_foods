@@ -23,6 +23,7 @@ module.exports = {
   buscarFiliaisPorEstado: FiliaisSearchController.buscarFiliaisPorEstado,
   buscarFiliaisPorSupervisao: FiliaisSearchController.buscarFiliaisPorSupervisao,
   buscarFiliaisPorCoordenacao: FiliaisSearchController.buscarFiliaisPorCoordenacao,
+  buscarFiliaisPublic: FiliaisSearchController.buscarFiliaisPublic,
   listarEstados: FiliaisSearchController.listarEstados,
   listarSupervisoes: FiliaisSearchController.listarSupervisoes,
   listarCoordenacoes: FiliaisSearchController.listarCoordenacoes,
