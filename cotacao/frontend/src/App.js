@@ -18,6 +18,7 @@ import VisualizarCotacao from './pages/cotacoes/VisualizarCotacao';
 import EditarCotacao from './pages/cotacoes/EditarCotacao';
 import Saving from './pages/saving/Saving';
 import { Aprovacoes, VisualizarAprovacao } from './pages/aprovacoes';
+import TestPage from './pages/TestPage';
 
 // Componente para rotas protegidas com autenticação SSO
 const AuthenticatedRoute = ({ children }) => {
@@ -221,6 +222,9 @@ function AppRoutes() {
 
 
 
+      {/* Rota de teste - sem autenticação */}
+      <Route path="/test" element={<TestPage />} />
+      
       <Route 
         path="/" 
         element={<Navigate to="/dashboard" />} // DESABILITADO - Autenticação centralizada no Foods
