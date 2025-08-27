@@ -28,11 +28,14 @@ export const AuthProvider = ({ children }) => {
 
   // Buscar usuário do sistema de cotação baseado no email do Foods
   useEffect(() => {
-    const findUserByEmail = async () => {
+    // Pequeno delay para garantir que os parâmetros sejam capturados
+    const timeoutId = setTimeout(async () => {
+      const findUserByEmail = async () => {
       try {
         console.log('🔍 URL completa:', window.location.href);
         console.log('🔍 Search params:', window.location.search);
         
+        // Capturar parâmetros da URL antes de qualquer redirecionamento
         const urlParams = new URLSearchParams(window.location.search);
         const userParam = urlParams.get('user');
         
@@ -71,14 +74,17 @@ export const AuthProvider = ({ children }) => {
           console.log('⚠️ Nenhum parâmetro user encontrado na URL');
           setLoading(false);
         }
-      } catch (error) {
-        console.error('❌ Erro ao buscar usuário:', error);
-        // Em caso de erro, manter usuário padrão
-        setLoading(false);
-      }
-    };
+              } catch (error) {
+          console.error('❌ Erro ao buscar usuário:', error);
+          // Em caso de erro, manter usuário padrão
+          setLoading(false);
+        }
+      };
 
-    findUserByEmail();
+      findUserByEmail();
+    }, 100);
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // DESABILITADO - Login centralizado no Foods
