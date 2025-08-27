@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaUser, FaMapMarkerAlt, FaShoppingCart, FaExclamationTriangle } from 'react-icons/fa';
-import { FilialSearch } from '../../../ui';
+import { FilialSearch } from '../../../../components/ui';
 
 const InformacoesBasicas = ({ 
   formData, 
