@@ -12,7 +12,6 @@ const { savingRoute } = require('./saving');
 const permissoesRoutes = require('./permissoes');
 const { supervisorRoute } = require('./supervisor');
 const { aprovacoesRoute } = require('./aprovacoes');
-const auditoriaRoutes = require('./auditoria');
 
 // Debug: verificar se as rotas foram importadas (comentado para limpeza)
 // console.log('📦 Rotas importadas:');
@@ -34,8 +33,7 @@ const routes = [
   { path: '/saving', router: savingRoute },
   { path: '/permissoes', router: permissoesRoutes },
   { path: '/supervisor', router: supervisorRoute },
-  { path: '/aprovacoes', router: aprovacoesRoute },
-  { path: '/auditoria', router: auditoriaRoutes }
+  { path: '/aprovacoes', router: aprovacoesRoute }
 ];
 
 module.exports = routes;
