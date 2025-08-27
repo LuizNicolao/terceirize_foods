@@ -346,18 +346,12 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           
                           console.log('🔍 Dados do usuário:', userData);
                           
-                          // Salvar dados no localStorage do cotação
-                          const cotacaoWindow = window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
+                          // Salvar dados no sessionStorage (compartilhado entre abas do mesmo domínio)
+                          sessionStorage.setItem('foodsUser', JSON.stringify(userData));
+                          console.log('✅ Dados salvos no sessionStorage');
                           
-                          // Aguardar a janela abrir e salvar os dados
-                          setTimeout(() => {
-                            try {
-                              cotacaoWindow.localStorage.setItem('foodsUser', JSON.stringify(userData));
-                              console.log('✅ Dados salvos no localStorage do cotação');
-                            } catch (error) {
-                              console.error('❌ Erro ao salvar dados:', error);
-                            }
-                          }, 500);
+                          // Abrir cotação em nova aba
+                          window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
                         }
                         
                         // Fechar sidebar no mobile quando clicar em um item

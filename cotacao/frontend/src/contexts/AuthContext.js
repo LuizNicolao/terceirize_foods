@@ -32,9 +32,9 @@ export const AuthProvider = ({ children }) => {
       try {
         console.log('🔍 Verificando localStorage do cotação...');
         
-        // Tentar ler dados do localStorage primeiro
-        const foodsUserData = localStorage.getItem('foodsUser');
-        console.log('🔍 Dados do localStorage:', foodsUserData);
+        // Tentar ler dados do sessionStorage primeiro
+        const foodsUserData = sessionStorage.getItem('foodsUser');
+        console.log('🔍 Dados do sessionStorage:', foodsUserData);
         
         if (foodsUserData) {
           const foodsUser = JSON.parse(foodsUserData);
@@ -61,11 +61,11 @@ export const AuthProvider = ({ children }) => {
             console.warn('Usuário não encontrado no sistema de cotação:', foodsUser.email);
           }
           
-          // Limpar dados do localStorage
-          localStorage.removeItem('foodsUser');
-          console.log('✅ Dados removidos do localStorage');
+          // Limpar dados do sessionStorage
+          sessionStorage.removeItem('foodsUser');
+          console.log('✅ Dados removidos do sessionStorage');
         } else {
-          console.log('⚠️ Nenhum usuário encontrado no localStorage');
+          console.log('⚠️ Nenhum usuário encontrado no sessionStorage');
           setLoading(false);
         }
       } catch (error) {
