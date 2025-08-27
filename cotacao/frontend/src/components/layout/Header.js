@@ -6,13 +6,10 @@ const Header = ({ onToggleSidebar }) => {
   const { user } = useAuth();
 
   const getUserDisplayName = () => {
-    console.log('🔍 Header - Dados do usuário:', user);
-    
     if (!user) return 'Usuário';
     
     // Tentar diferentes campos possíveis para o nome
     const name = user.nome || user.name || user.username || user.email || 'Usuário';
-    console.log('🔍 Header - Nome extraído:', name);
     
     // Se for um email, pegar apenas a parte antes do @
     if (name.includes('@')) {

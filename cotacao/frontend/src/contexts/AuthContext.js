@@ -30,26 +30,17 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const findUserByEmail = async () => {
       try {
-        console.log('🔍 Verificando localStorage do cotação...');
-        
         // Tentar ler dados do sessionStorage primeiro
         const foodsUserData = sessionStorage.getItem('foodsUser');
-        console.log('🔍 Dados do sessionStorage:', foodsUserData);
         
         if (foodsUserData) {
           const foodsUser = JSON.parse(foodsUserData);
-          console.log('🔍 Usuário do Foods (localStorage):', foodsUser);
           
           // Buscar usuário no sistema de cotação por email
-          console.log('🔍 Buscando usuário por email:', foodsUser.email);
           const response = await api.get(`/users/by-email/${encodeURIComponent(foodsUser.email)}`);
-          
-          console.log('🔍 Resposta da API:', response.data);
           
           if (response.data.data) {
             // Usuário encontrado no sistema de cotação
-            console.log('✅ Usuário encontrado no sistema de cotação:', response.data.data);
-            console.log('🔍 Estrutura completa do usuário:', JSON.stringify(response.data.data, null, 2));
             setUser(response.data.data.data);
             
             // Usar permissões que já vêm na resposta do usuário
@@ -65,33 +56,25 @@ export const AuthProvider = ({ children }) => {
                 };
               });
               setPermissions(permissionsObj);
-              console.log('✅ Permissões carregadas da resposta:', permissionsObj);
             } else {
-              console.warn('⚠️ Nenhuma permissão encontrada na resposta');
               setPermissions({});
             }
           } else {
             // Usuário não encontrado, usar dados do Foods
-            console.log('⚠️ Usuário não encontrado no sistema de cotação, usando dados do Foods');
             setUser(foodsUser);
             setPermissions({});
-            console.warn('Usuário não encontrado no sistema de cotação:', foodsUser.email);
           }
           
           // Definir loading como false após processar
           setLoading(false);
-          console.log('✅ Loading definido como false');
-          console.log('✅ Estado final do usuário:', response.data.data.data);
           
           // Limpar dados do sessionStorage APÓS definir o usuário
           sessionStorage.removeItem('foodsUser');
-          console.log('✅ Dados removidos do sessionStorage');
         } else {
-          console.log('⚠️ Nenhum usuário encontrado no sessionStorage');
           setLoading(false);
         }
       } catch (error) {
-        console.error('❌ Erro ao buscar usuário:', error);
+        console.error('Erro ao buscar usuário:', error);
         // Em caso de erro, manter usuário padrão
         setLoading(false);
       }

@@ -335,7 +335,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         if (item.path === '/cotacao') {
                           e.preventDefault();
                           const user = JSON.parse(localStorage.getItem('user') || '{}');
-                          console.log('🔍 Usuário do localStorage:', user);
                           
                           const userData = {
                             id: user.id,
@@ -344,11 +343,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
                             role: user.tipo_de_acesso
                           };
                           
-                          console.log('🔍 Dados do usuário:', userData);
-                          
                           // Salvar dados no sessionStorage (compartilhado entre abas do mesmo domínio)
                           sessionStorage.setItem('foodsUser', JSON.stringify(userData));
-                          console.log('✅ Dados salvos no sessionStorage');
                           
                           // Abrir cotação em nova aba
                           window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
