@@ -78,14 +78,14 @@ export const AuthProvider = ({ children }) => {
             console.warn('Usuário não encontrado no sistema de cotação:', foodsUser.email);
           }
           
-          // Limpar dados do sessionStorage
-          sessionStorage.removeItem('foodsUser');
-          console.log('✅ Dados removidos do sessionStorage');
-          
           // Definir loading como false após processar
           setLoading(false);
           console.log('✅ Loading definido como false');
-          console.log('✅ Estado final do usuário:', response.data.data);
+          console.log('✅ Estado final do usuário:', response.data.data.data);
+          
+          // Limpar dados do sessionStorage APÓS definir o usuário
+          sessionStorage.removeItem('foodsUser');
+          console.log('✅ Dados removidos do sessionStorage');
         } else {
           console.log('⚠️ Nenhum usuário encontrado no sessionStorage');
           setLoading(false);
