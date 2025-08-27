@@ -67,6 +67,43 @@ class UsuariosController {
     }
   });
 
+  // GET /api/users/by-email/:email - Buscar usuário por email
+  static getUsuarioByEmail = asyncHandler(async (req, res) => {
+    try {
+      const { email } = req.params;
+
+      const usuarios = await executeQuery(`
+        SELECT id, name, email, role, status, created_at, updated_at
+        FROM users WHERE email = ?
+      `, [email]);
+
+      if (usuarios.length === 0) {
+        return notFoundResponse(res, 'Usuário não encontrado');
+      }
+
+      const usuario = usuarios[0];
+
+      // Buscar permissões do usuário
+      const permissions = await executeQuery(`
+        SELECT screen, can_view, can_create, can_edit, can_delete
+        FROM user_permissions WHERE user_id = ?
+      `, [usuario.id]);
+
+      const usuarioCompleto = {
+        ...usuario,
+        permissions
+      };
+
+      // Adicionar links HATEOAS
+      const responseData = res.addHateoasLinks(usuarioCompleto);
+
+      return successResponse(res, responseData, 'Usuário carregado com sucesso');
+    } catch (error) {
+      console.error('Erro ao buscar usuário por email:', error);
+      return errorResponse(res, 'Erro interno do servidor', 500);
+    }
+  });
+
   // POST /api/users - Criar novo usuário
   static createUsuario = asyncHandler(async (req, res) => {
     try {

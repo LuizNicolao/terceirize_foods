@@ -12,23 +12,9 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  // Capturar dados do usuário da URL (SSO do Foods)
-  const [user, setUser] = useState(() => {
-    try {
-      const urlParams = new URLSearchParams(window.location.search);
-      const userParam = urlParams.get('user');
-      if (userParam) {
-        const userData = JSON.parse(decodeURIComponent(userParam));
-        return userData;
-      }
-    } catch (error) {
-      console.error('Erro ao capturar dados do usuário:', error);
-    }
-    // Fallback para usuário padrão
-    return { id: 1, name: 'Sistema', role: 'administrador' };
-  });
-  
-  const [loading, setLoading] = useState(false);
+  // Capturar dados do usuário da URL (SSO do Foods) e buscar no sistema de cotação
+  const [user, setUser] = useState({ id: 1, name: 'Sistema', role: 'administrador' });
+  const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null);
   const [rememberMe, setRememberMe] = useState(false);
   const [permissions, setPermissions] = useState({
@@ -40,15 +26,46 @@ export const AuthProvider = ({ children }) => {
     aprovacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true }
   });
 
-  // Limpar parâmetros da URL após capturar dados do usuário
+  // Buscar usuário do sistema de cotação baseado no email do Foods
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('user')) {
-      // Remover parâmetro user da URL
-      urlParams.delete('user');
-      const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
-      window.history.replaceState({}, '', newUrl);
-    }
+    const findUserByEmail = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const userParam = urlParams.get('user');
+        
+        if (userParam) {
+          const foodsUser = JSON.parse(decodeURIComponent(userParam));
+          
+          // Buscar usuário no sistema de cotação por email
+          const response = await api.get(`/users/by-email/${encodeURIComponent(foodsUser.email)}`);
+          
+          if (response.data.data) {
+            // Usuário encontrado no sistema de cotação
+            setUser(response.data.data);
+            
+            // Buscar permissões do usuário
+            const permissionsResponse = await api.get(`/users/${response.data.data.id}/permissions`);
+            setPermissions(permissionsResponse.data.data || {});
+          } else {
+            // Usuário não encontrado, usar dados do Foods
+            setUser(foodsUser);
+            console.warn('Usuário não encontrado no sistema de cotação:', foodsUser.email);
+          }
+          
+          // Limpar parâmetro user da URL
+          urlParams.delete('user');
+          const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
+          window.history.replaceState({}, '', newUrl);
+        }
+      } catch (error) {
+        console.error('Erro ao buscar usuário:', error);
+        // Em caso de erro, manter usuário padrão
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    findUserByEmail();
   }, []);
 
   // DESABILITADO - Login centralizado no Foods

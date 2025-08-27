@@ -30,6 +30,11 @@ router.get('/',
   UsuariosController.getUsuarios
 );
 
+// GET /api/users/by-email/:email - Buscar usuário por email
+router.get('/by-email/:email', 
+  UsuariosController.getUsuarioByEmail
+);
+
 // GET /api/users/:id - Buscar usuário por ID
 router.get('/:id', 
   checkPermission('visualizar'),
