@@ -301,7 +301,7 @@ const VisualizarUsuario = () => {
       if (response.ok) {
         const responseData = await response.json();
         console.log('📥 Resposta completa:', responseData);
-        const data = responseData.data;
+        const data = responseData.data.data;
         console.log('📊 Dados do usuário:', data);
         setUsuario(data);
       } else {
