@@ -1,5 +1,4 @@
 const { executeQuery } = require('../../config/database');
-const { buildPaginationQuery, buildSearchQuery } = require('../../utils/queryBuilder');
 
 class IntoleranciasListController {
   static async listarIntolerancias(req, res) {
