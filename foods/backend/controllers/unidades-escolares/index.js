@@ -7,6 +7,7 @@ const UnidadesEscolaresListController = require('./UnidadesEscolaresListControll
 const UnidadesEscolaresCRUDController = require('./UnidadesEscolaresCRUDController');
 const UnidadesEscolaresSearchController = require('./UnidadesEscolaresSearchController');
 const UnidadesEscolaresStatsController = require('./UnidadesEscolaresStatsController');
+const UnidadesEscolaresAlmoxarifadoController = require('./UnidadesEscolaresAlmoxarifadoController');
 
 module.exports = {
   // Métodos de Listagem
@@ -26,5 +27,15 @@ module.exports = {
   listarCentrosDistribuicao: UnidadesEscolaresSearchController.listarCentrosDistribuicao,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: UnidadesEscolaresStatsController.buscarEstatisticas
+  buscarEstatisticas: UnidadesEscolaresStatsController.buscarEstatisticas,
+  
+  // Métodos de Almoxarifados
+  listarAlmoxarifados: UnidadesEscolaresAlmoxarifadoController.listarAlmoxarifados,
+  criarAlmoxarifado: UnidadesEscolaresAlmoxarifadoController.criarAlmoxarifado,
+  atualizarAlmoxarifado: UnidadesEscolaresAlmoxarifadoController.atualizarAlmoxarifado,
+  excluirAlmoxarifado: UnidadesEscolaresAlmoxarifadoController.excluirAlmoxarifado,
+  listarItensAlmoxarifado: UnidadesEscolaresAlmoxarifadoController.listarItensAlmoxarifado,
+  adicionarItemAlmoxarifado: UnidadesEscolaresAlmoxarifadoController.adicionarItemAlmoxarifado,
+  removerItemAlmoxarifado: UnidadesEscolaresAlmoxarifadoController.removerItemAlmoxarifado,
+  buscarAlmoxarifadoUnidadeEscolar: UnidadesEscolaresAlmoxarifadoController.buscarAlmoxarifadoUnidadeEscolar
 };
