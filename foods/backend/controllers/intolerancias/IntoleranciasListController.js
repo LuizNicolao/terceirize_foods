@@ -47,9 +47,13 @@ class IntoleranciasListController {
       ORDER BY nome ASC
     `;
 
-    // Aplicar paginação usando o middleware
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
-    const intolerancias = await executeQuery(query, paginatedParams);
+    // Aplicar paginação manualmente (como outros controllers)
+    const limit = pagination.limit;
+    const offset = pagination.offset;
+    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+    
+    // Executar query paginada
+    const intolerancias = await executeQuery(query, params);
 
     // Gerar metadados de paginação
     const queryParams = { ...req.query };
