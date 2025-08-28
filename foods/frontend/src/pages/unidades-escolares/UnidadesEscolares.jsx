@@ -8,11 +8,15 @@ import UnidadesEscolaresService from '../../services/unidadesEscolares';
 import { Button, ValidationErrorModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { UnidadeEscolarModal, UnidadesEscolaresTable, UnidadesEscolaresStats } from '../../components/unidades-escolares';
+import { UnidadeEscolarModal, UnidadesEscolaresTable, UnidadesEscolaresStats, AlmoxarifadoUnidadeEscolarModal } from '../../components/unidades-escolares';
 import { AuditModal } from '../../components/shared';
 
 const UnidadesEscolares = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
+  
+  // Estado para modal de almoxarifados
+  const [showAlmoxarifadosModal, setShowAlmoxarifadosModal] = React.useState(false);
+  const [selectedUnidadeEscolar, setSelectedUnidadeEscolar] = React.useState(null);
   
   // Hooks customizados
   const {
@@ -63,6 +67,17 @@ const UnidadesEscolares = () => {
   } = useAuditoria('unidades_escolares');
 
   const { handleExportXLSX, handleExportPDF } = useExport(UnidadesEscolaresService);
+
+  // Funções para gerenciar modal de almoxarifados
+  const handleOpenAlmoxarifados = (unidade) => {
+    setSelectedUnidadeEscolar(unidade);
+    setShowAlmoxarifadosModal(true);
+  };
+
+  const handleCloseAlmoxarifados = () => {
+    setShowAlmoxarifadosModal(false);
+    setSelectedUnidadeEscolar(null);
+  };
 
   if (loading) {
     return (
@@ -135,6 +150,7 @@ const UnidadesEscolares = () => {
         onView={handleViewUnidade}
         onEdit={handleEditUnidade}
         onDelete={handleDeleteUnidade}
+        onAlmoxarifados={handleOpenAlmoxarifados}
         getRotaName={getRotaName}
         loadingRotas={loadingRotas}
       />
@@ -148,6 +164,14 @@ const UnidadesEscolares = () => {
         isViewMode={viewMode}
         rotas={rotas}
         loadingRotas={loadingRotas}
+      />
+
+      {/* Modal de Almoxarifados */}
+      <AlmoxarifadoUnidadeEscolarModal
+        isOpen={showAlmoxarifadosModal}
+        onClose={handleCloseAlmoxarifados}
+        unidadeEscolarId={selectedUnidadeEscolar?.id}
+        viewMode={false}
       />
 
       {/* Modal de Auditoria */}

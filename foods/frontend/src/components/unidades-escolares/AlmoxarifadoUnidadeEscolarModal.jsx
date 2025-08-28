@@ -8,8 +8,8 @@ import unidadesEscolaresService from '../../services/unidadesEscolares';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
-const AlmoxarifadoModal = ({ 
-  filialId, 
+const AlmoxarifadoUnidadeEscolarModal = ({ 
+  unidadeEscolarId, 
   isOpen, 
   onClose, 
   viewMode = false 
@@ -25,19 +25,21 @@ const AlmoxarifadoModal = ({
   const [produtos, setProdutos] = useState([]);
   const [selectedProduto, setSelectedProduto] = useState(null);
   const [quantidadeProduto, setQuantidadeProduto] = useState('');
-  const [unidadesEscolares, setUnidadesEscolares] = useState([]);
+  const [filiais, setFiliais] = useState([]);
+  const [unidadeEscolar, setUnidadeEscolar] = useState(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  // Carregar almoxarifados
+  // Carregar almoxarifados da unidade escolar
   const loadAlmoxarifados = async () => {
-    if (!filialId) return;
+    if (!unidadeEscolarId) return;
     
     setLoading(true);
     try {
-      const response = await filiaisService.listarAlmoxarifados(filialId);
+      const response = await unidadesEscolaresService.listarAlmoxarifados(unidadeEscolarId);
       if (response.success) {
         setAlmoxarifados(response.data || []);
+        setUnidadeEscolar(response.unidade_escolar);
       } else {
         toast.error(response.error);
       }
@@ -48,6 +50,16 @@ const AlmoxarifadoModal = ({
     }
   };
 
+  // Carregar filiais
+  const loadFiliais = async () => {
+    try {
+      const response = await api.get('/filiais');
+      setFiliais(response.data.data || []);
+    } catch (error) {
+      console.error('Erro ao carregar filiais:', error);
+    }
+  };
+
   // Carregar produtos
   const loadProdutos = async () => {
     try {
@@ -55,18 +67,6 @@ const AlmoxarifadoModal = ({
       setProdutos(response.data.data || []);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
-    }
-  };
-
-  // Carregar unidades escolares
-  const loadUnidadesEscolares = async () => {
-    try {
-      const response = await unidadesEscolaresService.buscarAtivas();
-      if (response.success) {
-        setUnidadesEscolares(response.data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar unidades escolares:', error);
     }
   };
 
@@ -93,7 +93,7 @@ const AlmoxarifadoModal = ({
       const payload = {
         ...data,
         status: parseInt(data.status),
-        unidade_escolar_id: data.unidade_escolar_id || null
+        unidade_escolar_id: unidadeEscolarId
       };
 
       if (editingAlmoxarifado) {
@@ -104,7 +104,7 @@ const AlmoxarifadoModal = ({
           toast.error(response.error);
         }
       } else {
-        const response = await filiaisService.criarAlmoxarifado(filialId, payload);
+        const response = await filiaisService.criarAlmoxarifado(data.filial_id, payload);
         if (response.success) {
           toast.success('Almoxarifado criado!');
         } else {
@@ -207,11 +207,11 @@ const AlmoxarifadoModal = ({
   };
 
   useEffect(() => {
-    if (isOpen && filialId) {
+    if (isOpen && unidadeEscolarId) {
       loadAlmoxarifados();
-      loadUnidadesEscolares();
+      loadFiliais();
     }
-  }, [isOpen, filialId]);
+  }, [isOpen, unidadeEscolarId]);
 
   if (!isOpen) return null;
 
@@ -220,16 +220,25 @@ const AlmoxarifadoModal = ({
       <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Almoxarifados da Filial</h2>
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900">
+              Almoxarifados da Unidade Escolar
+            </h2>
+            {unidadeEscolar && (
+              <p className="text-sm text-gray-600 mt-1">
+                {unidadeEscolar.nome_escola}
+              </p>
+            )}
+          </div>
           <div className="flex gap-2">
-            {!viewMode && (
+            {!viewMode && almoxarifados.length === 0 && (
               <Button
                 variant="primary"
                 size="sm"
                 onClick={handleNew}
               >
                 <FaPlus className="mr-1" />
-                Novo Almoxarifado
+                Criar Almoxarifado
               </Button>
             )}
             <Button
@@ -264,35 +273,35 @@ const AlmoxarifadoModal = ({
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Status
+                      Filial *
                     </label>
                     <select
-                      {...register('status', { required: 'Status é obrigatório' })}
+                      {...register('filial_id', { required: 'Filial é obrigatória' })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                     >
-                      <option value="1">Ativo</option>
-                      <option value="0">Inativo</option>
+                      <option value="">Selecione uma filial</option>
+                      {filiais.map(filial => (
+                        <option key={filial.id} value={filial.id}>
+                          {filial.filial}
+                        </option>
+                      ))}
                     </select>
+                    {errors.filial_id && (
+                      <p className="text-red-500 text-sm mt-1">{errors.filial_id.message}</p>
+                    )}
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Unidade Escolar (Opcional)
+                    Status
                   </label>
                   <select
-                    {...register('unidade_escolar_id')}
+                    {...register('status', { required: 'Status é obrigatório' })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   >
-                    <option value="">Selecione uma unidade escolar</option>
-                    {unidadesEscolares.map(unidade => (
-                      <option key={unidade.id} value={unidade.id}>
-                        {unidade.nome_escola}
-                      </option>
-                    ))}
+                    <option value="1">Ativo</option>
+                    <option value="0">Inativo</option>
                   </select>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Se selecionado, apenas um almoxarifado será permitido por unidade escolar
-                  </p>
                 </div>
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                   <Button
@@ -318,13 +327,24 @@ const AlmoxarifadoModal = ({
                 <LoadingSpinner inline={true} text="Carregando almoxarifados..." />
               ) : almoxarifados.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  Nenhum almoxarifado cadastrado para esta filial
+                  <p>Nenhum almoxarifado cadastrado para esta unidade escolar</p>
+                  {!viewMode && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleNew}
+                      className="mt-4"
+                    >
+                      <FaPlus className="mr-1" />
+                      Criar Primeiro Almoxarifado
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <Table>
                   <Table.Header>
                     <Table.HeaderCell>Nome</Table.HeaderCell>
-                    <Table.HeaderCell>Unidade Escolar</Table.HeaderCell>
+                    <Table.HeaderCell>Filial</Table.HeaderCell>
                     <Table.HeaderCell>Status</Table.HeaderCell>
                     <Table.HeaderCell>Ações</Table.HeaderCell>
                   </Table.Header>
@@ -332,9 +352,7 @@ const AlmoxarifadoModal = ({
                     {almoxarifados.map(almox => (
                       <Table.Row key={almox.id}>
                         <Table.Cell>{almox.nome}</Table.Cell>
-                        <Table.Cell>
-                          {almox.unidade_escolar_nome || '-'}
-                        </Table.Cell>
+                        <Table.Cell>{almox.filial_nome}</Table.Cell>
                         <Table.Cell>
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             almox.status === 1 
@@ -402,78 +420,80 @@ const AlmoxarifadoModal = ({
                 Fechar
               </Button>
             </div>
-            
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-              {/* Adicionar Produto */}
-              <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                <h4 className="text-md font-medium mb-3">Adicionar Produto</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Produto
-                    </label>
-                    <select
-                      value={selectedProduto?.id || ''}
-                      onChange={(e) => {
-                        const produto = produtos.find(p => p.id === parseInt(e.target.value));
-                        setSelectedProduto(produto);
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                    >
-                      <option value="">Selecione um produto...</option>
-                      {produtos.map(produto => (
-                        <option key={produto.id} value={produto.id}>
-                          {produto.nome}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Quantidade
-                    </label>
-                    <Input
-                      type="number"
-                      step="0.001"
-                      placeholder="0.000"
-                      value={quantidadeProduto}
-                      onChange={(e) => setQuantidadeProduto(e.target.value)}
-                    />
-                  </div>
-                  <div className="flex items-end">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={handleAddProduto}
-                      disabled={!selectedProduto || !quantidadeProduto}
-                    >
-                      Adicionar
-                    </Button>
+              {!viewMode && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium mb-3">Adicionar Produto</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Produto
+                      </label>
+                      <select
+                        value={selectedProduto?.id || ''}
+                        onChange={(e) => {
+                          const produto = produtos.find(p => p.id === parseInt(e.target.value));
+                          setSelectedProduto(produto);
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      >
+                        <option value="">Selecione um produto</option>
+                        {produtos.map(produto => (
+                          <option key={produto.id} value={produto.id}>
+                            {produto.nome}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Quantidade
+                      </label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={quantidadeProduto}
+                        onChange={(e) => setQuantidadeProduto(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex items-end">
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleAddProduto}
+                        disabled={!selectedProduto || !quantidadeProduto}
+                      >
+                        Adicionar
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Lista de Itens */}
-              <div>
-                <h4 className="text-md font-medium mb-3">Produtos no Almoxarifado</h4>
-                {loadingItens ? (
-                  <LoadingSpinner inline={true} text="Carregando itens..." />
-                ) : itensAlmoxarifado.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    Nenhum produto cadastrado neste almoxarifado
-                  </div>
-                ) : (
-                  <Table>
-                    <Table.Header>
-                      <Table.HeaderCell>Produto</Table.HeaderCell>
-                      <Table.HeaderCell>Quantidade</Table.HeaderCell>
-                      <Table.HeaderCell>Ações</Table.HeaderCell>
-                    </Table.Header>
-                    <Table.Body>
-                      {itensAlmoxarifado.map(item => (
-                        <Table.Row key={item.id}>
-                          <Table.Cell>{item.produto_nome}</Table.Cell>
-                          <Table.Cell>{item.quantidade}</Table.Cell>
+              {loadingItens ? (
+                <LoadingSpinner inline={true} text="Carregando itens..." />
+              ) : itensAlmoxarifado.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  Nenhum item cadastrado neste almoxarifado
+                </div>
+              ) : (
+                <Table>
+                  <Table.Header>
+                    <Table.HeaderCell>Produto</Table.HeaderCell>
+                    <Table.HeaderCell>Código</Table.HeaderCell>
+                    <Table.HeaderCell>Quantidade</Table.HeaderCell>
+                    <Table.HeaderCell>Unidade</Table.HeaderCell>
+                    {!viewMode && <Table.HeaderCell>Ações</Table.HeaderCell>}
+                  </Table.Header>
+                  <Table.Body>
+                    {itensAlmoxarifado.map(item => (
+                      <Table.Row key={item.id}>
+                        <Table.Cell>{item.produto_nome}</Table.Cell>
+                        <Table.Cell>{item.produto_codigo}</Table.Cell>
+                        <Table.Cell>{item.quantidade}</Table.Cell>
+                        <Table.Cell>{item.unidade_nome || '-'}</Table.Cell>
+                        {!viewMode && (
                           <Table.Cell>
                             <Button
                               variant="ghost"
@@ -484,12 +504,12 @@ const AlmoxarifadoModal = ({
                               <FaTrash />
                             </Button>
                           </Table.Cell>
-                        </Table.Row>
-                      ))}
-                    </Table.Body>
-                  </Table>
-                )}
-              </div>
+                        )}
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
+              )}
             </div>
           </div>
         </div>
@@ -498,4 +518,4 @@ const AlmoxarifadoModal = ({
   );
 };
 
-export default AlmoxarifadoModal; 
+export default AlmoxarifadoUnidadeEscolarModal;

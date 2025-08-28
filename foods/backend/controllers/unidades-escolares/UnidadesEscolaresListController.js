@@ -169,6 +169,55 @@ class UnidadesEscolaresListController {
       });
     }
   }
+
+  // Listar almoxarifados de uma unidade escolar
+  static async listarAlmoxarifadosUnidadeEscolar(req, res) {
+    try {
+      const { unidadeEscolarId } = req.params;
+
+      // Verificar se a unidade escolar existe
+      const unidadeEscolar = await executeQuery(
+        'SELECT id, nome_escola FROM unidades_escolares WHERE id = ?',
+        [unidadeEscolarId]
+      );
+
+      if (unidadeEscolar.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Unidade escolar não encontrada',
+          message: 'A unidade escolar especificada não foi encontrada no sistema'
+        });
+      }
+
+      // Buscar almoxarifados da unidade escolar
+      const query = `
+        SELECT 
+          a.id, a.filial_id, a.nome, a.status, 
+          a.criado_em, a.atualizado_em,
+          f.filial as filial_nome
+        FROM almoxarifados a
+        LEFT JOIN filiais f ON a.filial_id = f.id
+        WHERE a.unidade_escolar_id = ?
+        ORDER BY a.nome ASC
+      `;
+
+      const almoxarifados = await executeQuery(query, [unidadeEscolarId]);
+
+      res.json({
+        success: true,
+        data: almoxarifados,
+        unidade_escolar: unidadeEscolar[0]
+      });
+
+    } catch (error) {
+      console.error('Erro ao listar almoxarifados da unidade escolar:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível listar os almoxarifados da unidade escolar'
+      });
+    }
+  }
 }
 
 module.exports = UnidadesEscolaresListController;

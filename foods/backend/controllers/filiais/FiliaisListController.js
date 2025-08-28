@@ -126,10 +126,14 @@ class FiliaisListController {
 
     // Buscar almoxarifados da filial
     const almoxarifadosQuery = `
-      SELECT id, nome, status, criado_em, atualizado_em
-      FROM almoxarifados 
-      WHERE filial_id = ?
-      ORDER BY nome ASC
+      SELECT 
+        a.id, a.nome, a.status, a.unidade_escolar_id,
+        a.criado_em, a.atualizado_em,
+        ue.nome as unidade_escolar_nome
+      FROM almoxarifados a
+      LEFT JOIN unidades_escolares ue ON a.unidade_escolar_id = ue.id
+      WHERE a.filial_id = ?
+      ORDER BY a.nome ASC
     `;
     const almoxarifados = await executeQuery(almoxarifadosQuery, [id]);
 
@@ -165,10 +169,13 @@ class FiliaisListController {
 
     const query = `
       SELECT 
-        id, filial_id, nome, status, criado_em, atualizado_em
-      FROM almoxarifados 
-      WHERE filial_id = ?
-      ORDER BY nome ASC
+        a.id, a.filial_id, a.unidade_escolar_id, a.nome, a.status, 
+        a.criado_em, a.atualizado_em,
+        ue.nome as unidade_escolar_nome
+      FROM almoxarifados a
+      LEFT JOIN unidades_escolares ue ON a.unidade_escolar_id = ue.id
+      WHERE a.filial_id = ?
+      ORDER BY a.nome ASC
     `;
 
     const almoxarifados = await executeQuery(query, [filialId]);

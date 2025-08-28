@@ -1,5 +1,6 @@
 import React from 'react';
-import { ActionButtons } from '../ui';
+import { FaWarehouse } from 'react-icons/fa';
+import { ActionButtons, Button } from '../ui';
 
 const UnidadesEscolaresActions = ({ 
   unidade, 
@@ -8,18 +9,31 @@ const UnidadesEscolaresActions = ({
   canDelete, 
   onView, 
   onEdit, 
-  onDelete 
+  onDelete,
+  onAlmoxarifados
 }) => {
   return (
-    <ActionButtons
-      canView={canView('unidades_escolares')}
-      canEdit={canEdit('unidades_escolares')}
-      canDelete={canDelete('unidades_escolares')}
-      onView={onView}
-      onEdit={onEdit}
-      onDelete={onDelete}
-      item={unidade}
-    />
+    <div className="flex gap-1">
+      <ActionButtons
+        canView={canView('unidades_escolares')}
+        canEdit={canEdit('unidades_escolares')}
+        canDelete={canDelete('unidades_escolares')}
+        onView={onView}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        item={unidade}
+      />
+      {onAlmoxarifados && (
+        <Button
+          variant="ghost"
+          size="xs"
+          onClick={() => onAlmoxarifados(unidade)}
+          title="Almoxarifados"
+        >
+          <FaWarehouse />
+        </Button>
+      )}
+    </div>
   );
 };
 
