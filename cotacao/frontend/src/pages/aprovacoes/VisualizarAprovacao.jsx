@@ -59,6 +59,7 @@ import ResumoAprovacao from '../../components/aprovacoes/ResumoAprovacao';
 import BotoesVisualizacaoAprovacao from '../../components/aprovacoes/BotoesVisualizacaoAprovacao';
 import BotoesExportacaoAprovacao from '../../components/aprovacoes/BotoesExportacaoAprovacao';
 import { aprovacoesService } from '../../services/aprovacoes';
+import { cotacoesService } from '../../services/cotacoes';
 import { useAprovacaoExport } from '../../hooks/useAprovacaoExport';
 import { useItensMelhoresCriterios } from '../../hooks/useItensMelhoresCriterios';
 import {
@@ -98,7 +99,7 @@ const VisualizarAprovacao = () => {
       setLoading(true);
       setError(null);
       
-      const response = await aprovacoesService.fetchCotacao(id);
+      const response = await cotacoesService.getCotacao(id);
       
       // Verificar se a resposta tem a estrutura esperada
       const cotacaoData = response.data || response;
