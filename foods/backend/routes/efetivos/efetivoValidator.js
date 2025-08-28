@@ -16,6 +16,10 @@ const commonValidations = {
 
 // Validações para criação de efetivo
 const efetivoValidations = [
+  body('unidade_escolar_id')
+    .isInt({ min: 1 })
+    .withMessage('ID da unidade escolar deve ser um número inteiro positivo'),
+  
   body('tipo_efetivo')
     .isIn(['PADRAO', 'NAE'])
     .withMessage('Tipo de efetivo deve ser PADRAO ou NAE'),
@@ -32,13 +36,15 @@ const efetivoValidations = [
 
 // Validações para atualização de efetivo
 const efetivoAtualizacaoValidations = [
+  body('unidade_escolar_id')
+    .isInt({ min: 1 })
+    .withMessage('ID da unidade escolar deve ser um número inteiro positivo'),
+  
   body('tipo_efetivo')
-    .optional()
     .isIn(['PADRAO', 'NAE'])
     .withMessage('Tipo de efetivo deve ser PADRAO ou NAE'),
   
   body('quantidade')
-    .optional()
     .isInt({ min: 1 })
     .withMessage('Quantidade deve ser um número inteiro maior que zero'),
   

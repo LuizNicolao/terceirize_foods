@@ -2,6 +2,122 @@ const { executeQuery } = require('../../config/database');
 const { auditChange } = require('../../utils/audit');
 
 class EfetivosCRUDController {
+  static async criarEfetivoGeral(req, res) {
+    try {
+      const { unidade_escolar_id, tipo_efetivo, quantidade, intolerancia_id } = req.body;
+
+      // Validações
+      if (!unidade_escolar_id || !tipo_efetivo || !quantidade) {
+        return res.status(400).json({
+          success: false,
+          message: 'Unidade escolar, tipo de efetivo e quantidade são obrigatórios'
+        });
+      }
+
+      if (tipo_efetivo === 'NAE' && !intolerancia_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Intolerância é obrigatória para efetivos NAE'
+        });
+      }
+
+      if (tipo_efetivo === 'PADRAO' && intolerancia_id) {
+        return res.status(400).json({
+          success: false,
+          message: 'Efetivos padrão não devem ter intolerância associada'
+        });
+      }
+
+      if (quantidade <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Quantidade deve ser maior que zero'
+        });
+      }
+
+      // Verificar se a unidade escolar existe
+      const [unidade] = await executeQuery(
+        'SELECT id FROM unidades_escolares WHERE id = ?',
+        [unidade_escolar_id]
+      );
+
+      if (!unidade) {
+        return res.status(404).json({
+          success: false,
+          message: 'Unidade escolar não encontrada'
+        });
+      }
+
+      // Verificar se a intolerância existe (se for NAE)
+      if (tipo_efetivo === 'NAE' && intolerancia_id) {
+        const [intolerancia] = await executeQuery(
+          'SELECT id FROM intolerancias WHERE id = ?',
+          [intolerancia_id]
+        );
+
+        if (!intolerancia) {
+          return res.status(404).json({
+            success: false,
+            message: 'Intolerância não encontrada'
+          });
+        }
+      }
+
+      // Inserir efetivo
+      const insertQuery = `
+        INSERT INTO efetivos (unidade_escolar_id, tipo_efetivo, quantidade, intolerancia_id)
+        VALUES (?, ?, ?, ?)
+      `;
+
+      const result = await executeQuery(insertQuery, [
+        unidade_escolar_id,
+        tipo_efetivo,
+        quantidade,
+        intolerancia_id || null
+      ]);
+
+      const efetivoId = result.insertId;
+
+      // Buscar efetivo criado
+      const [efetivo] = await executeQuery(
+        `SELECT 
+          e.id,
+          e.unidade_escolar_id,
+          e.tipo_efetivo,
+          e.quantidade,
+          e.intolerancia_id,
+          e.criado_em,
+          e.atualizado_em,
+          i.nome as intolerancia_nome,
+          ue.nome as unidade_escolar_nome
+        FROM efetivos e
+        LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
+        LEFT JOIN unidades_escolares ue ON e.unidade_escolar_id = ue.id
+        WHERE e.id = ?`,
+        [efetivoId]
+      );
+
+      // Registrar auditoria
+      await auditChange('efetivos', 'criar', efetivoId, req.user?.id, {
+        unidade_escolar_id,
+        tipo_efetivo,
+        quantidade,
+        intolerancia_id
+      });
+
+      res.status(201).json({
+        success: true,
+        data: efetivo
+      });
+    } catch (error) {
+      console.error('Erro ao criar efetivo:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
   static async criarEfetivo(req, res) {
     try {
       const { unidade_escolar_id } = req.params;
@@ -89,9 +205,11 @@ class EfetivosCRUDController {
           e.intolerancia_id,
           e.criado_em,
           e.atualizado_em,
-          i.nome as intolerancia_nome
+          i.nome as intolerancia_nome,
+          ue.nome as unidade_escolar_nome
         FROM efetivos e
         LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
+        LEFT JOIN unidades_escolares ue ON e.unidade_escolar_id = ue.id
         WHERE e.id = ?`,
         [efetivoId]
       );
@@ -121,13 +239,13 @@ class EfetivosCRUDController {
   static async atualizarEfetivo(req, res) {
     try {
       const { id } = req.params;
-      const { tipo_efetivo, quantidade, intolerancia_id } = req.body;
+      const { unidade_escolar_id, tipo_efetivo, quantidade, intolerancia_id } = req.body;
 
       // Validações
-      if (!tipo_efetivo || !quantidade) {
+      if (!unidade_escolar_id || !tipo_efetivo || !quantidade) {
         return res.status(400).json({
           success: false,
-          message: 'Tipo de efetivo e quantidade são obrigatórios'
+          message: 'Unidade escolar, tipo de efetivo e quantidade são obrigatórios'
         });
       }
 
@@ -165,6 +283,19 @@ class EfetivosCRUDController {
         });
       }
 
+      // Verificar se a unidade escolar existe
+      const [unidade] = await executeQuery(
+        'SELECT id FROM unidades_escolares WHERE id = ?',
+        [unidade_escolar_id]
+      );
+
+      if (!unidade) {
+        return res.status(404).json({
+          success: false,
+          message: 'Unidade escolar não encontrada'
+        });
+      }
+
       // Verificar se a intolerância existe (se for NAE)
       if (tipo_efetivo === 'NAE' && intolerancia_id) {
         const [intolerancia] = await executeQuery(
@@ -183,11 +314,12 @@ class EfetivosCRUDController {
       // Atualizar efetivo
       const updateQuery = `
         UPDATE efetivos 
-        SET tipo_efetivo = ?, quantidade = ?, intolerancia_id = ?
+        SET unidade_escolar_id = ?, tipo_efetivo = ?, quantidade = ?, intolerancia_id = ?
         WHERE id = ?
       `;
 
       await executeQuery(updateQuery, [
+        unidade_escolar_id,
         tipo_efetivo,
         quantidade,
         intolerancia_id || null,
@@ -204,15 +336,18 @@ class EfetivosCRUDController {
           e.intolerancia_id,
           e.criado_em,
           e.atualizado_em,
-          i.nome as intolerancia_nome
+          i.nome as intolerancia_nome,
+          ue.nome as unidade_escolar_nome
         FROM efetivos e
         LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
+        LEFT JOIN unidades_escolares ue ON e.unidade_escolar_id = ue.id
         WHERE e.id = ?`,
         [id]
       );
 
       // Registrar auditoria
       await auditChange('efetivos', 'atualizar', id, req.user?.id, {
+        unidade_escolar_id,
         tipo_efetivo,
         quantidade,
         intolerancia_id

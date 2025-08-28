@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Modal, Button, Input } from '../ui';
 import IntoleranciasService from '../../services/intolerancias';
+import UnidadesEscolaresService from '../../services/unidades-escolares';
 
 const EfetivoModal = ({ 
   isOpen, 
@@ -13,15 +14,34 @@ const EfetivoModal = ({
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
   const [intolerancias, setIntolerancias] = useState([]);
   const [loadingIntolerancias, setLoadingIntolerancias] = useState(false);
+  const [unidadesEscolares, setUnidadesEscolares] = useState([]);
+  const [loadingUnidades, setLoadingUnidades] = useState(false);
   
   const tipoEfetivo = watch('tipo_efetivo');
 
-  // Carregar intolerâncias quando o modal abrir
+  // Carregar dados quando o modal abrir
   useEffect(() => {
-    if (isOpen && tipoEfetivo === 'NAE') {
-      loadIntolerancias();
+    if (isOpen) {
+      loadUnidadesEscolares();
+      if (tipoEfetivo === 'NAE') {
+        loadIntolerancias();
+      }
     }
   }, [isOpen, tipoEfetivo]);
+
+  const loadUnidadesEscolares = async () => {
+    setLoadingUnidades(true);
+    try {
+      const result = await UnidadesEscolaresService.listar();
+      if (result.success) {
+        setUnidadesEscolares(result.data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar unidades escolares:', error);
+    } finally {
+      setLoadingUnidades(false);
+    }
+  };
 
   const loadIntolerancias = async () => {
     setLoadingIntolerancias(true);
@@ -75,6 +95,25 @@ const EfetivoModal = ({
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
+            label="Unidade Escolar *"
+            type="select"
+            {...register('unidade_escolar_id', {
+              required: 'Unidade escolar é obrigatória'
+            })}
+            error={errors.unidade_escolar_id?.message}
+            disabled={isViewMode || loadingUnidades}
+          >
+            <option value="">
+              {loadingUnidades ? 'Carregando unidades...' : 'Selecione a unidade escolar'}
+            </option>
+            {unidadesEscolares.map(unidade => (
+              <option key={unidade.id} value={unidade.id}>
+                {unidade.nome}
+              </option>
+            ))}
+          </Input>
+
+          <Input
             label="Tipo de Efetivo *"
             type="select"
             {...register('tipo_efetivo', {
@@ -87,7 +126,9 @@ const EfetivoModal = ({
             <option value="PADRAO">Padrão</option>
             <option value="NAE">NAE</option>
           </Input>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
             label="Quantidade *"
             type="number"
