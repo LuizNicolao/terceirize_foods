@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Button, Input, Select } from '../ui';
+import { Modal, Button, Input } from '../ui';
 import { useForm } from 'react-hook-form';
 
 const IntoleranciaModal = ({ 
@@ -98,18 +98,18 @@ const IntoleranciaModal = ({
           <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
             Status
           </label>
-          <Select
+          <select
             id="status"
             {...register('status')}
             disabled={isViewMode}
-            className="w-full"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </Select>
+          </select>
         </div>
 
         {/* Informações de Auditoria (apenas visualização) */}
