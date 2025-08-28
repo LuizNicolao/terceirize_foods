@@ -36,10 +36,10 @@ class IntoleranciasListController {
       // Aplicar paginação manualmente
       const limit = pagination.limit;
       const offset = pagination.offset;
-      const query = `${baseQuery} LIMIT ? OFFSET ?`;
+      const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
       
       // Executar query paginada
-      const intolerancias = await executeQuery(query, [...params, limit, offset]);
+      const intolerancias = await executeQuery(query, params);
 
       // Contar total de registros
       let countQuery = 'SELECT COUNT(*) as total FROM intolerancias WHERE 1=1';
