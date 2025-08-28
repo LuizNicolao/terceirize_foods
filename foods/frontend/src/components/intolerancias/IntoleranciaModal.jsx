@@ -59,8 +59,8 @@ const IntoleranciaModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={isViewMode ? 'Visualizar Intolerância' : intolerancia ? 'Editar Intolerância' : 'Nova Intolerância'}
-      size="md"
+      title={isViewMode ? 'Visualizar Intolerância' : intolerancia ? 'Editar Intolerância' : 'Adicionar Intolerância'}
+      size="full"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -103,7 +103,7 @@ const IntoleranciaModal = ({
 
         {/* Informações de Auditoria (apenas visualização) */}
         {isViewMode && intolerancia && (
-          <div className="space-y-4 pt-4 border-t border-gray-200">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 ID
@@ -130,25 +130,24 @@ const IntoleranciaModal = ({
         )}
 
         {/* Botões */}
-        <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleClose}
-            disabled={isSubmitting}
-          >
-            {isViewMode ? 'Fechar' : 'Cancelar'}
-          </Button>
-          {!isViewMode && (
+        {!isViewMode && (
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={onClose}
+            >
+              Cancelar
+            </Button>
             <Button
               type="submit"
-              disabled={isSubmitting}
-              loading={isSubmitting}
+              size="sm"
             >
-              {intolerancia ? 'Atualizar' : 'Criar'}
+              {intolerancia ? 'Atualizar' : 'Cadastrar'}
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </form>
     </Modal>
   );
