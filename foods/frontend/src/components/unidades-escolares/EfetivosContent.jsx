@@ -58,9 +58,13 @@ const EfetivosContent = ({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Efetivos da Unidade Escolar</h3>
-        {!viewMode && canCreate('efetivos') && (
-          <Button onClick={handleAddEfetivo} size="sm">
+        <h3 className="text-lg font-semibold text-gray-900">Efetivos da Unidade Escolar</h3>
+        {!viewMode && (
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleAddEfetivo}
+          >
             <FaPlus className="mr-1" />
             Adicionar Efetivo
           </Button>
