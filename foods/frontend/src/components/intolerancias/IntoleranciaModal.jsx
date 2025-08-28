@@ -63,13 +63,9 @@ const IntoleranciaModal = ({
       size="md"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
-        {/* Nome */}
-        <div>
-          <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-2">
-            Nome *
-          </label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Input
-            id="nome"
+            label="Nome *"
             type="text"
             placeholder="Digite o nome da intolerância"
             {...register('nome', {
@@ -89,27 +85,20 @@ const IntoleranciaModal = ({
             })}
             error={errors.nome?.message}
             disabled={isViewMode}
-            className="w-full"
           />
-        </div>
-
-        {/* Status */}
-        <div>
-          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
-            Status
-          </label>
-          <select
-            id="status"
+          <Input
+            label="Status"
+            type="select"
             {...register('status')}
+            error={errors.status?.message}
             disabled={isViewMode}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
-          </select>
+          </Input>
         </div>
 
         {/* Informações de Auditoria (apenas visualização) */}
