@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaTimes, FaSave } from 'react-icons/fa';
+import { FaUsers } from 'react-icons/fa';
 import { Button, Input, Modal, MaskedFormInput } from '../ui';
+import EfetivosContent from './EfetivosContent';
 
 const UnidadeEscolarModal = ({ 
   isOpen, 
@@ -13,20 +14,25 @@ const UnidadeEscolarModal = ({
   loadingRotas = false
 }) => {
   const { register, handleSubmit, reset, setValue } = useForm();
+  const [activeTab, setActiveTab] = useState('info'); // 'info' ou 'efetivos'
 
   React.useEffect(() => {
-    if (unidade && isOpen) {
-      // Preencher formulário com dados da unidade escolar
-      Object.keys(unidade).forEach(key => {
-        if (unidade[key] !== null && unidade[key] !== undefined) {
-          setValue(key, unidade[key]);
-        }
-      });
-    } else if (!unidade && isOpen) {
-      // Resetar formulário para nova unidade escolar
-      reset();
-      setValue('status', 'ativo');
-      setValue('pais', 'Brasil');
+    if (isOpen) {
+      if (unidade) {
+        // Preencher formulário com dados da unidade escolar
+        Object.keys(unidade).forEach(key => {
+          if (unidade[key] !== null && unidade[key] !== undefined) {
+            setValue(key, unidade[key]);
+          }
+        });
+      } else {
+        // Resetar formulário para nova unidade escolar
+        reset();
+        setValue('status', 'ativo');
+        setValue('pais', 'Brasil');
+      }
+      // Resetar para aba de informações
+      setActiveTab('info');
     }
   }, [unidade, isOpen, setValue, reset]);
 
@@ -34,16 +40,53 @@ const UnidadeEscolarModal = ({
     onSubmit(data);
   };
 
+  const handleClose = () => {
+    reset();
+    setActiveTab('info');
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title={isViewMode ? 'Visualizar Unidade Escolar' : unidade ? 'Editar Unidade Escolar' : 'Adicionar Unidade Escolar'}
       size="full"
     >
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
+      {/* Abas */}
+      <div className="border-b border-gray-200 mb-4">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('info')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'info'
+                ? 'border-green-500 text-green-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Informações
+          </button>
+          {unidade && (
+            <button
+              onClick={() => setActiveTab('efetivos')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                activeTab === 'efetivos'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <FaUsers className="text-sm" />
+              Efetivos
+            </button>
+          )}
+        </nav>
+      </div>
+
+      {/* Conteúdo das Abas */}
+      {activeTab === 'info' && (
+        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
         {/* Primeira Linha - 2 Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Card 1: Informações Básicas */}
@@ -230,7 +273,7 @@ const UnidadeEscolarModal = ({
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
             >
               Cancelar
             </Button>
@@ -240,6 +283,17 @@ const UnidadeEscolarModal = ({
           </div>
         )}
       </form>
+      )}
+
+      {/* Aba de Efetivos */}
+      {activeTab === 'efetivos' && unidade && (
+        <div className="max-h-[75vh] overflow-y-auto">
+          <EfetivosContent
+            unidadeEscolarId={unidade.id}
+            viewMode={isViewMode}
+          />
+        </div>
+      )}
     </Modal>
   );
 };

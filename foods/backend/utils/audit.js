@@ -136,6 +136,9 @@ const auditChangesMiddleware = (action, resource) => {
           case 'intolerancias':
             tableName = 'intolerancias';
             break;
+          case 'efetivos':
+            tableName = 'efetivos';
+            break;
           case 'permissoes':
             tableName = 'permissoes_usuario';
             break;

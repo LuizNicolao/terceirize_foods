@@ -1,26 +1,26 @@
 import React from 'react';
 import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { useIntolerancias } from '../../hooks/useIntolerancias';
+import { useEfetivosPage } from '../../hooks/useEfetivosPage';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
-import IntoleranciasService from '../../services/intolerancias';
+import EfetivosService from '../../services/efetivos';
 import { Button, ValidationErrorModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { IntoleranciaModal, IntoleranciasTable, IntoleranciasStats, IntoleranciasActions } from '../../components/intolerancias';
+import { EfetivoModal, EfetivosTable, EfetivosStats, EfetivosActions } from '../../components/efetivos';
 import { AuditModal } from '../../components/shared';
 
-const Intolerancias = () => {
+const Efetivos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
   // Hooks customizados
   const {
-    intolerancias,
+    efetivos,
     loading,
     showModal,
     viewMode,
-    editingIntolerancia,
+    editingEfetivo,
     searchTerm,
     statusFilter,
     currentPage,
@@ -32,17 +32,17 @@ const Intolerancias = () => {
     showValidationModal,
     handleCloseValidationModal,
     onSubmit,
-    handleDeleteIntolerancia,
-    handleAddIntolerancia,
-    handleViewIntolerancia,
-    handleEditIntolerancia,
+    handleDeleteEfetivo,
+    handleAddEfetivo,
+    handleViewEfetivo,
+    handleEditEfetivo,
     handleCloseModal,
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
     setStatusFilter,
     formatDate
-  } = useIntolerancias();
+  } = useEfetivosPage();
 
   const {
     showAuditModal,
@@ -55,16 +55,16 @@ const Intolerancias = () => {
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
-  } = useAuditoria('intolerancias');
+  } = useAuditoria('efetivos');
 
-  const { handleExportXLSX, handleExportPDF } = useExport(IntoleranciasService);
+  const { handleExportXLSX, handleExportPDF } = useExport(EfetivosService);
 
   if (loading) {
     return (
       <div className="p-6">
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-          <span className="ml-3 text-gray-600">Carregando intolerâncias...</span>
+          <span className="ml-3 text-gray-600">Carregando efetivos...</span>
         </div>
       </div>
     );
@@ -74,7 +74,7 @@ const Intolerancias = () => {
     <div className="p-4 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Intolerâncias</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Efetivos</h1>
         
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
           <Button onClick={handleOpenAuditModal} variant="ghost" size="sm">
@@ -83,10 +83,10 @@ const Intolerancias = () => {
             <span className="sm:hidden">Auditoria</span>
           </Button>
           
-          {canCreate('intolerancias') && (
-            <Button onClick={handleAddIntolerancia} variant="primary" size="sm">
+          {canCreate('efetivos') && (
+            <Button onClick={handleAddEfetivo} variant="primary" size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar Intolerância</span>
+              <span className="hidden sm:inline">Adicionar Efetivo</span>
               <span className="sm:hidden">Adicionar</span>
             </Button>
           )}
@@ -94,7 +94,7 @@ const Intolerancias = () => {
       </div>
 
       {/* Estatísticas */}
-      <IntoleranciasStats estatisticas={estatisticas} />
+      <EfetivosStats estatisticas={estatisticas} />
 
       {/* Filtros */}
       <CadastroFilterBar
@@ -102,30 +102,45 @@ const Intolerancias = () => {
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        placeholder="Buscar por nome..."
+        placeholder="Buscar por tipo ou intolerância..."
+        statusOptions={[
+          { value: 'todos', label: 'Todos' },
+          { value: 'PADRAO', label: 'Padrão' },
+          { value: 'NAE', label: 'NAE' }
+        ]}
       />
 
       {/* Ações */}
-      <IntoleranciasActions 
+      <EfetivosActions 
         onExportXLSX={handleExportXLSX}
         onExportPDF={handleExportPDF}
         totalItems={totalItems}
       />
 
       {/* Tabela */}
-      <IntoleranciasTable
-        intolerancias={intolerancias}
-        onView={canView('intolerancias') ? handleViewIntolerancia : null}
-        onEdit={canEdit('intolerancias') ? handleEditIntolerancia : null}
-        onDelete={canDelete('intolerancias') ? handleDeleteIntolerancia : null}
+      <EfetivosTable
+        efetivos={efetivos}
+        onView={canView('efetivos') ? handleViewEfetivo : null}
+        onEdit={canEdit('efetivos') ? handleEditEfetivo : null}
+        onDelete={canDelete('efetivos') ? handleDeleteEfetivo : null}
       />
 
-      {/* Modal de Intolerância */}
-      <IntoleranciaModal
+      {/* Paginação */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onPageChange={handlePageChange}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
+
+      {/* Modal */}
+      <EfetivoModal
         isOpen={showModal}
         onClose={handleCloseModal}
         onSubmit={onSubmit}
-        intolerancia={editingIntolerancia}
+        efetivo={editingEfetivo}
         isViewMode={viewMode}
       />
 
@@ -149,18 +164,8 @@ const Intolerancias = () => {
         errors={validationErrors?.errors}
         errorCategories={validationErrors?.errorCategories}
       />
-
-      {/* Paginação */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        itemsPerPage={itemsPerPage}
-        onPageChange={handlePageChange}
-        onItemsPerPageChange={handleItemsPerPageChange}
-      />
     </div>
   );
 };
 
-export default Intolerancias;
+export default Efetivos;

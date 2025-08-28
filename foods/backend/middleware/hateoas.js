@@ -143,7 +143,8 @@ class HateoasHelper {
       auditoria: `${this.baseUrl}/auditoria`,
       permissoes: `${this.baseUrl}/permissoes`,
       produto_generico: `${this.baseUrl}/produto-generico`,
-      intolerancias: `${this.baseUrl}/intolerancias`
+      intolerancias: `${this.baseUrl}/intolerancias`,
+      efetivos: `${this.baseUrl}/efetivos`
     };
   }
 

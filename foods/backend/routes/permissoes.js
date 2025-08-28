@@ -494,6 +494,7 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
       'cotacao',
       'produto_generico',
       'intolerancias',
+      'efetivos',
       'permissoes'
     ];
 
@@ -690,6 +691,7 @@ router.get('/telas', checkPermission('visualizar'), (req, res) => {
     { nome: 'produto_origem', descricao: 'Gerenciamento de Produtos Origem' },
     { nome: 'produto_generico', descricao: 'Gerenciamento de Produtos Genéricos' },
     { nome: 'intolerancias', descricao: 'Gerenciamento de Intolerâncias' },
+    { nome: 'efetivos', descricao: 'Gerenciamento de Efetivos' },
     { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
   ];
 
