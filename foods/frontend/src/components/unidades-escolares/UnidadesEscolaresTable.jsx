@@ -11,7 +11,6 @@ const UnidadesEscolaresTable = ({
   onView, 
   onEdit, 
   onDelete, 
-  onAlmoxarifados,
   getRotaName,
   loadingRotas
 }) => {
@@ -69,7 +68,6 @@ const UnidadesEscolaresTable = ({
                     onView={onView}
                     onEdit={onEdit}
                     onDelete={onDelete}
-                    onAlmoxarifados={onAlmoxarifados}
                   />
                 </td>
               </tr>
@@ -95,7 +93,6 @@ const UnidadesEscolaresTable = ({
                 onView={onView}
                 onEdit={onEdit}
                 onDelete={onDelete}
-                onAlmoxarifados={onAlmoxarifados}
               />
             </div>
             
