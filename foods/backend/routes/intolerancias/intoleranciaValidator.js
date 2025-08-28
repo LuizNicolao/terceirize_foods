@@ -1,20 +1,23 @@
 const { body, param, query } = require('express-validator');
-const { validateRequest } = require('../../middleware/validation');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
+
+// Criar handler de validação específico para intolerâncias
+const handleValidationErrors = createEntityValidationHandler('intolerancias');
 
 // Validações comuns
 const commonValidations = {
   id: [
     param('id').isInt({ min: 1 }).withMessage('ID deve ser um número inteiro positivo'),
-    validateRequest
+    handleValidationErrors
   ],
   search: [
     query('search').optional().isString().trim().isLength({ max: 100 }).withMessage('Termo de busca deve ter no máximo 100 caracteres'),
-    validateRequest
+    handleValidationErrors
   ],
   pagination: [
     query('page').optional().isInt({ min: 1 }).withMessage('Página deve ser um número inteiro positivo'),
     query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limite deve ser um número entre 1 e 100'),
-    validateRequest
+    handleValidationErrors
   ]
 };
 
@@ -30,7 +33,7 @@ const intoleranciaValidations = [
     .optional()
     .isIn(['ativo', 'inativo']).withMessage('Status deve ser "ativo" ou "inativo"'),
   
-  validateRequest
+  handleValidationErrors
 ];
 
 // Validações para atualização de intolerância
@@ -46,7 +49,7 @@ const intoleranciaAtualizacaoValidations = [
     .optional()
     .isIn(['ativo', 'inativo']).withMessage('Status deve ser "ativo" ou "inativo"'),
   
-  validateRequest
+  handleValidationErrors
 ];
 
 module.exports = {
