@@ -115,7 +115,7 @@ class EfetivosListController {
           e.criado_em,
           e.atualizado_em,
           i.nome as intolerancia_nome,
-          ue.nome as unidade_escolar_nome
+          ue.nome_escola as unidade_escolar_nome
         FROM efetivos e
         LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
         LEFT JOIN unidades_escolares ue ON e.unidade_escolar_id = ue.id

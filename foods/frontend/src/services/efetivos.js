@@ -37,7 +37,6 @@ class EfetivosService {
 
 
   async criarPorUnidade(unidadeEscolarId, data) {
-    console.log('criarPorUnidade chamado:', { unidadeEscolarId, data });
     try {
       const response = await api.post(`/efetivos/unidade-escolar/${unidadeEscolarId}`, data);
       return {

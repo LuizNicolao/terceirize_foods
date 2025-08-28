@@ -81,7 +81,6 @@ export const useEfetivos = (unidadeEscolarId) => {
 
   // Funções de CRUD
   const onSubmit = async (data) => {
-    console.log('onSubmit chamado com dados:', data);
     try {
       clearValidationErrors(); // Limpar erros anteriores
       

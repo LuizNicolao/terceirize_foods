@@ -78,7 +78,6 @@ const EfetivoModal = ({
   }, [efetivo, isOpen, setValue, reset]);
 
   const handleFormSubmit = (data) => {
-    console.log('Dados do formulário:', data);
     onSubmit(data);
   };
 
@@ -97,100 +96,109 @@ const EfetivoModal = ({
       title={isViewMode ? 'Visualizar Efetivo' : efetivo ? 'Editar Efetivo' : 'Adicionar Efetivo'}
       size="full"
     >
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {!unidadeEscolarId && (
-            <Input
-              label="Unidade Escolar *"
-              type="select"
-              {...register('unidade_escolar_id', {
-                required: 'Unidade escolar é obrigatória'
-              })}
-              error={errors.unidade_escolar_id?.message}
-              disabled={isViewMode || loadingUnidades}
-            >
-              <option value="">
-                {loadingUnidades ? 'Carregando unidades...' : 'Selecione a unidade escolar'}
-              </option>
-              {unidadesEscolares.map(unidade => (
-                <option key={unidade.id} value={unidade.id}>
-                  {unidade.nome}
-                </option>
-              ))}
-            </Input>
-          )}
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 max-h-[75vh] overflow-y-auto">
+        {/* Primeira Linha - 2 Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Card 1: Informações Básicas */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Informações Básicas
+            </h3>
+            <div className="space-y-3">
+              {!unidadeEscolarId && (
+                <Input
+                  label="Unidade Escolar *"
+                  type="select"
+                  {...register('unidade_escolar_id', {
+                    required: 'Unidade escolar é obrigatória'
+                  })}
+                  error={errors.unidade_escolar_id?.message}
+                  disabled={isViewMode || loadingUnidades}
+                >
+                  <option value="">
+                    {loadingUnidades ? 'Carregando unidades...' : 'Selecione a unidade escolar'}
+                  </option>
+                  {unidadesEscolares.map(unidade => (
+                    <option key={unidade.id} value={unidade.id}>
+                      {unidade.nome_escola}
+                    </option>
+                  ))}
+                </Input>
+              )}
 
-          <Input
-            label="Tipo de Efetivo *"
-            type="select"
-            {...register('tipo_efetivo', {
-              required: 'Tipo de efetivo é obrigatório'
-            })}
-            error={errors.tipo_efetivo?.message}
-            disabled={isViewMode}
-          >
-            <option value="">Selecione o tipo</option>
-            <option value="PADRAO">Padrão</option>
-            <option value="NAE">NAE</option>
-          </Input>
-        </div>
+              <Input
+                label="Tipo de Efetivo *"
+                type="select"
+                {...register('tipo_efetivo', {
+                  required: 'Tipo de efetivo é obrigatório'
+                })}
+                error={errors.tipo_efetivo?.message}
+                disabled={isViewMode}
+              >
+                <option value="">Selecione o tipo</option>
+                <option value="PADRAO">Padrão</option>
+                <option value="NAE">NAE</option>
+              </Input>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Quantidade *"
-            type="number"
-            placeholder="Digite a quantidade"
-            {...register('quantidade', {
-              required: 'Quantidade é obrigatória',
-              min: {
-                value: 1,
-                message: 'Quantidade deve ser maior que zero'
-              }
-            })}
-            error={errors.quantidade?.message}
-            disabled={isViewMode}
-          />
-        </div>
-
-        {tipoEfetivo === 'NAE' && (
-          <div className="grid grid-cols-1 gap-4">
-            <Input
-              label="Intolerância *"
-              type="select"
-              {...register('intolerancia_id', {
-                required: tipoEfetivo === 'NAE' ? 'Intolerância é obrigatória para NAE' : false
-              })}
-              error={errors.intolerancia_id?.message}
-              disabled={isViewMode || loadingIntolerancias}
-            >
-              <option value="">
-                {loadingIntolerancias ? 'Carregando intolerâncias...' : 'Selecione a intolerância'}
-              </option>
-              {intolerancias.map(intolerancia => (
-                <option key={intolerancia.id} value={intolerancia.id}>
-                  {intolerancia.nome}
-                </option>
-              ))}
-            </Input>
+              <Input
+                label="Quantidade *"
+                type="number"
+                placeholder="Digite a quantidade"
+                {...register('quantidade', {
+                  required: 'Quantidade é obrigatória',
+                  min: {
+                    value: 1,
+                    message: 'Quantidade deve ser maior que zero'
+                  }
+                })}
+                error={errors.quantidade?.message}
+                disabled={isViewMode}
+              />
+            </div>
           </div>
-        )}
 
-        {/* Botões */}
+          {/* Card 2: Intolerância (se NAE) */}
+          {tipoEfetivo === 'NAE' && (
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+                Intolerância
+              </h3>
+              <div className="space-y-3">
+                <Input
+                  label="Intolerância *"
+                  type="select"
+                  {...register('intolerancia_id', {
+                    required: tipoEfetivo === 'NAE' ? 'Intolerância é obrigatória para NAE' : false
+                  })}
+                  error={errors.intolerancia_id?.message}
+                  disabled={isViewMode || loadingIntolerancias}
+                >
+                  <option value="">
+                    {loadingIntolerancias ? 'Carregando intolerâncias...' : 'Selecione a intolerância'}
+                  </option>
+                  {intolerancias.map(intolerancia => (
+                    <option key={intolerancia.id} value={intolerancia.id}>
+                      {intolerancia.nome}
+                    </option>
+                  ))}
+                </Input>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Botões de Ação */}
         {!isViewMode && (
-          <div className="flex justify-end gap-3 pt-4 border-t">
+          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
             <Button
               type="button"
-              variant="secondary"
-              size="sm"
+              variant="outline"
               onClick={handleClose}
             >
               Cancelar
             </Button>
-            <Button
-              type="submit"
-              size="sm"
-            >
-              {efetivo ? 'Atualizar' : 'Cadastrar'}
+            <Button type="submit">
+              {efetivo ? 'Atualizar' : 'Criar'} Efetivo
             </Button>
           </div>
         )}
