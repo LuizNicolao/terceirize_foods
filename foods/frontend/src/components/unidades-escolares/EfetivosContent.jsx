@@ -97,6 +97,7 @@ const EfetivosContent = ({
         onSubmit={onSubmit}
         efetivo={editingEfetivo}
         isViewMode={efetivoViewMode}
+        unidadeEscolarId={unidadeEscolarId}
       />
 
       {/* Modal de Erros de Validação */}

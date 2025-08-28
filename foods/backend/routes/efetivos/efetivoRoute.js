@@ -3,7 +3,6 @@ const { authenticateToken } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const EfetivosController = require('../../controllers/efetivos');
-const EfetivosExportController = require('../../controllers/efetivos/EfetivosExportController');
 const { efetivoValidations, efetivoAtualizacaoValidations, commonValidations } = require('./efetivoValidator');
 
 const router = express.Router();
@@ -28,34 +27,7 @@ router.post('/unidade-escolar/:unidade_escolar_id',
   EfetivosController.criarEfetivo
 );
 
-// ===== ROTAS PRINCIPAIS DE EFETIVOS =====
 
-// Listar todos os efetivos
-router.get('/', 
-  commonValidations.search,
-  ...commonValidations.pagination,
-  EfetivosController.listarTodosEfetivos
-);
-
-// Buscar estatísticas
-router.get('/stats/geral', 
-  EfetivosController.buscarEstatisticas
-);
-
-// Criar efetivo (geral)
-router.post('/', 
-  efetivoValidations,
-  EfetivosController.criarEfetivoGeral
-);
-
-// Exportação
-router.get('/export/xlsx', 
-  EfetivosExportController.exportXLSX
-);
-
-router.get('/export/pdf', 
-  EfetivosExportController.exportPDF
-);
 
 // Buscar efetivo por ID
 router.get('/:id', 

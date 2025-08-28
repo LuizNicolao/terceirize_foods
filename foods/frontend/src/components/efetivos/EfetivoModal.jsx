@@ -9,7 +9,8 @@ const EfetivoModal = ({
   onClose, 
   onSubmit, 
   efetivo, 
-  isViewMode = false 
+  isViewMode = false,
+  unidadeEscolarId = null
 }) => {
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
   const [intolerancias, setIntolerancias] = useState([]);
@@ -22,12 +23,14 @@ const EfetivoModal = ({
   // Carregar dados quando o modal abrir
   useEffect(() => {
     if (isOpen) {
-      loadUnidadesEscolares();
+      if (!unidadeEscolarId) {
+        loadUnidadesEscolares();
+      }
       if (tipoEfetivo === 'NAE') {
         loadIntolerancias();
       }
     }
-  }, [isOpen, tipoEfetivo]);
+  }, [isOpen, tipoEfetivo, unidadeEscolarId]);
 
   const loadUnidadesEscolares = async () => {
     setLoadingUnidades(true);
@@ -70,6 +73,9 @@ const EfetivoModal = ({
       reset();
       setValue('tipo_efetivo', 'PADRAO');
       setValue('quantidade', 1);
+      if (unidadeEscolarId) {
+        setValue('unidade_escolar_id', unidadeEscolarId);
+      }
     }
   }, [efetivo, isOpen, setValue, reset]);
 
@@ -94,24 +100,26 @@ const EfetivoModal = ({
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="Unidade Escolar *"
-            type="select"
-            {...register('unidade_escolar_id', {
-              required: 'Unidade escolar é obrigatória'
-            })}
-            error={errors.unidade_escolar_id?.message}
-            disabled={isViewMode || loadingUnidades}
-          >
-            <option value="">
-              {loadingUnidades ? 'Carregando unidades...' : 'Selecione a unidade escolar'}
-            </option>
-            {unidadesEscolares.map(unidade => (
-              <option key={unidade.id} value={unidade.id}>
-                {unidade.nome}
+          {!unidadeEscolarId && (
+            <Input
+              label="Unidade Escolar *"
+              type="select"
+              {...register('unidade_escolar_id', {
+                required: 'Unidade escolar é obrigatória'
+              })}
+              error={errors.unidade_escolar_id?.message}
+              disabled={isViewMode || loadingUnidades}
+            >
+              <option value="">
+                {loadingUnidades ? 'Carregando unidades...' : 'Selecione a unidade escolar'}
               </option>
-            ))}
-          </Input>
+              {unidadesEscolares.map(unidade => (
+                <option key={unidade.id} value={unidade.id}>
+                  {unidade.nome}
+                </option>
+              ))}
+            </Input>
+          )}
 
           <Input
             label="Tipo de Efetivo *"

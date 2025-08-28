@@ -17,6 +17,7 @@ const commonValidations = {
 // Validações para criação de efetivo
 const efetivoValidations = [
   body('unidade_escolar_id')
+    .optional()
     .isInt({ min: 1 })
     .withMessage('ID da unidade escolar deve ser um número inteiro positivo'),
   
@@ -37,6 +38,7 @@ const efetivoValidations = [
 // Validações para atualização de efetivo
 const efetivoAtualizacaoValidations = [
   body('unidade_escolar_id')
+    .optional()
     .isInt({ min: 1 })
     .withMessage('ID da unidade escolar deve ser um número inteiro positivo'),
   
