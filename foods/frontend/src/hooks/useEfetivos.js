@@ -114,7 +114,8 @@ export const useEfetivos = (unidadeEscolarId) => {
     }
   };
 
-  const handleDeleteEfetivo = async (efetivoId) => {
+  const handleDeleteEfetivo = async (efetivo) => {
+    const efetivoId = typeof efetivo === 'object' ? efetivo.id : efetivo;
     if (window.confirm('Tem certeza que deseja excluir este efetivo?')) {
       try {
         const result = await EfetivosService.excluir(efetivoId);

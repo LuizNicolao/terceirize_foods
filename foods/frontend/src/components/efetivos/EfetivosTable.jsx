@@ -39,9 +39,6 @@ const EfetivosTable = ({
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Unidade Escolar
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Tipo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -58,11 +55,6 @@ const EfetivosTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {efetivos.map((efetivo) => (
                 <tr key={efetivo.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {efetivo.unidade_escolar_nome || '-'}
-                    </div>
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getTipoEfetivoBadge(efetivo.tipo_efetivo)}
                   </td>
@@ -102,10 +94,10 @@ const EfetivosTable = ({
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">
-                  {efetivo.unidade_escolar_nome || '-'}
+                  {getTipoEfetivoBadge(efetivo.tipo_efetivo)}
                 </h3>
                 <p className="text-xs text-gray-500">
-                  {getTipoEfetivoBadge(efetivo.tipo_efetivo)}
+                  Quantidade: {efetivo.quantidade}
                 </p>
               </div>
               <ActionButtons
@@ -121,11 +113,7 @@ const EfetivosTable = ({
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <span className="text-gray-500">Quantidade:</span>
-                <p className="font-medium">{efetivo.quantidade}</p>
-              </div>
+            <div className="text-xs">
               <div>
                 <span className="text-gray-500">Intolerância:</span>
                 <p className="font-medium">{efetivo.intolerancia_nome || '-'}</p>

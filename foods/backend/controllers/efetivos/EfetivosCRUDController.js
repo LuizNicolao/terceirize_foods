@@ -1,5 +1,5 @@
 const { executeQuery } = require('../../config/database');
-const { auditChange } = require('../../utils/audit');
+const { logAction } = require('../../utils/audit');
 
 class EfetivosCRUDController {
 
@@ -100,13 +100,14 @@ class EfetivosCRUDController {
         [efetivoId]
       );
 
-      // Registrar auditoria
-      await auditChange('efetivos', 'criar', efetivoId, req.user?.id, {
-        unidade_escolar_id,
-        tipo_efetivo,
-        quantidade,
-        intolerancia_id
-      });
+              // Registrar auditoria
+        await logAction(req.user?.id, 'create', 'efetivos', {
+          efetivo_id: efetivoId,
+          unidade_escolar_id,
+          tipo_efetivo,
+          quantidade,
+          intolerancia_id
+        });
 
       res.status(201).json({
         success: true,
@@ -231,13 +232,14 @@ class EfetivosCRUDController {
         [id]
       );
 
-      // Registrar auditoria
-      await auditChange('efetivos', 'atualizar', id, req.user?.id, {
-        unidade_escolar_id,
-        tipo_efetivo,
-        quantidade,
-        intolerancia_id
-      });
+              // Registrar auditoria
+        await logAction(req.user?.id, 'update', 'efetivos', {
+          efetivo_id: id,
+          unidade_escolar_id,
+          tipo_efetivo,
+          quantidade,
+          intolerancia_id
+        });
 
       res.json({
         success: true,
@@ -273,8 +275,11 @@ class EfetivosCRUDController {
       // Excluir efetivo
       await executeQuery('DELETE FROM efetivos WHERE id = ?', [id]);
 
-      // Registrar auditoria
-      await auditChange('efetivos', 'excluir', id, req.user?.id, efetivo);
+              // Registrar auditoria
+        await logAction(req.user?.id, 'delete', 'efetivos', {
+          efetivo_id: id,
+          efetivo_deletado: efetivo
+        });
 
       res.json({
         success: true,
