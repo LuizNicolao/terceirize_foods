@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Modal, Button, Input } from '../ui';
 
 const IntoleranciaModal = ({ 
-  show, 
+  show: isOpen, 
   onClose, 
   onSubmit, 
   intolerancia = null, 
@@ -39,7 +39,7 @@ const IntoleranciaModal = ({
 
   return (
     <Modal
-      show={show}
+      isOpen={isOpen}
       onClose={handleClose}
       title={viewMode ? 'Visualizar Intolerância' : intolerancia ? 'Editar Intolerância' : 'Nova Intolerância'}
       size="md"

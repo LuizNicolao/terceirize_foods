@@ -23,6 +23,13 @@ const Intolerancias = () => {
     canCreate: canCreate('intolerancias')
   });
   
+  console.log('Estados dos modais:', {
+    showModal,
+    viewMode,
+    editingIntolerancia,
+    showAuditModal
+  });
+  
   // Hooks customizados
   const {
     intolerancias,
@@ -155,7 +162,7 @@ const Intolerancias = () => {
 
       {/* Modal de Auditoria */}
       <AuditModal
-        show={showAuditModal}
+        isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
         logs={auditLogs}
         loading={auditLoading}
@@ -163,13 +170,13 @@ const Intolerancias = () => {
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
-        onFiltersChange={setAuditFilters}
+        onSetFilters={setAuditFilters}
         resourceName="intolerâncias"
       />
 
       {/* Modal de Erros de Validação */}
       <ValidationErrorModal
-        show={showValidationModal}
+        isOpen={showValidationModal}
         onClose={handleCloseValidationModal}
         errors={validationErrors}
       />

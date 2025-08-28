@@ -116,6 +116,7 @@ export const useIntolerancias = () => {
     setEditingIntolerancia(null);
     setViewMode(false);
     setShowModal(true);
+    console.log('Estado do modal após setShowModal:', { showModal: true, viewMode: false, editingIntolerancia: null });
   };
 
   const handleViewIntolerancia = (intolerancia) => {
@@ -123,6 +124,7 @@ export const useIntolerancias = () => {
     setEditingIntolerancia(intolerancia);
     setViewMode(true);
     setShowModal(true);
+    console.log('Estado do modal após setShowModal:', { showModal: true, viewMode: true, editingIntolerancia: intolerancia });
   };
 
   const handleEditIntolerancia = (intolerancia) => {
