@@ -333,7 +333,7 @@ const AlmoxarifadoModal = ({
                       <Table.Row key={almox.id}>
                         <Table.Cell>{almox.nome}</Table.Cell>
                         <Table.Cell>
-                          {almox.unidade_escolar_nome || '-'}
+                          {almox.unidade_escolar_id ? 'Vinculado a Unidade Escolar' : '-'}
                         </Table.Cell>
                         <Table.Cell>
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
