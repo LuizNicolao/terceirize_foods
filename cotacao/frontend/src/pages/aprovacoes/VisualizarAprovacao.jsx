@@ -458,32 +458,7 @@ const VisualizarAprovacao = () => {
         formatarValor={formatarValor} 
       />
 
-      {/* Resumo das Aprovações Selecionadas */}
-      {viewMode === 'resumo' && (
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="text-lg font-semibold text-blue-900 mb-3">📋 Resumo das Aprovações Selecionadas</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-3 rounded border">
-              <h5 className="font-medium text-green-700 mb-2">💰 Melhor Preço</h5>
-              <p className="text-sm text-gray-600">
-                {aprovacoesResumo.melhorPreco.length} produto(s) selecionado(s)
-              </p>
-            </div>
-            <div className="bg-white p-3 rounded border">
-              <h5 className="font-medium text-blue-700 mb-2">🚚 Melhor Entrega</h5>
-              <p className="text-sm text-gray-600">
-                {aprovacoesResumo.melhorEntrega.length} produto(s) selecionado(s)
-              </p>
-            </div>
-            <div className="bg-white p-3 rounded border">
-              <h5 className="font-medium text-purple-700 mb-2">💳 Melhor Pagamento</h5>
-              <p className="text-sm text-gray-600">
-                {aprovacoesResumo.melhorPagamento.length} produto(s) selecionado(s)
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Botões de Ação de Aprovação (substituindo os do supervisor) */}
       <div className="flex gap-4 justify-center mt-8 pt-6 border-t border-gray-200">

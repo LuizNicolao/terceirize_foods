@@ -13,7 +13,13 @@ const ModalAprovacao = ({
   aprovacoesResumo
 }) => {
   const [motivoAprovacao, setMotivoAprovacao] = useState('');
-  const [tipoAprovacao, setTipoAprovacao] = useState('manual');
+  const [tipoAprovacao, setTipoAprovacao] = useState(() => {
+    // Se há seleções no resumo comparativo, usar seleção personalizada como padrão
+    if (aprovacoesResumo && Object.values(aprovacoesResumo).some(arr => arr.length > 0)) {
+      return 'selecao-personalizada';
+    }
+    return 'manual';
+  });
   const [itensSelecionados, setItensSelecionados] = useState([]);
   const [saving, setSaving] = useState(false);
 
