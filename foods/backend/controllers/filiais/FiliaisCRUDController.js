@@ -229,7 +229,7 @@ class FiliaisCRUDController {
    */
   static criarAlmoxarifado = asyncHandler(async (req, res) => {
     const { filialId } = req.params;
-    const { nome, unidade_escolar_id } = req.body;
+    const { nome } = req.body;
 
     if (!nome || nome.trim() === '') {
       return errorResponse(res, 'O nome do almoxarifado é obrigatório', STATUS_CODES.BAD_REQUEST);
@@ -239,27 +239,6 @@ class FiliaisCRUDController {
     const filial = await executeQuery('SELECT id FROM filiais WHERE id = ?', [filialId]);
     if (filial.length === 0) {
       return notFoundResponse(res, 'Filial não encontrada');
-    }
-
-    // Se unidade_escolar_id for fornecido, verificar se existe
-    if (unidade_escolar_id) {
-      const unidadeEscolar = await executeQuery(
-        'SELECT id FROM unidades_escolares WHERE id = ?', 
-        [unidade_escolar_id]
-      );
-      if (unidadeEscolar.length === 0) {
-        return notFoundResponse(res, 'Unidade escolar não encontrada');
-      }
-
-      // Verificar se já existe um almoxarifado para esta unidade escolar
-      const almoxarifadoUnidadeExistente = await executeQuery(
-        'SELECT id FROM almoxarifados WHERE unidade_escolar_id = ?',
-        [unidade_escolar_id]
-      );
-
-      if (almoxarifadoUnidadeExistente.length > 0) {
-        return conflictResponse(res, 'Já existe um almoxarifado para esta unidade escolar');
-      }
     }
 
     // Verificar se já existe um almoxarifado com o mesmo nome na filial
@@ -273,11 +252,11 @@ class FiliaisCRUDController {
     }
 
     const query = `
-      INSERT INTO almoxarifados (filial_id, unidade_escolar_id, nome, status, criado_em, atualizado_em)
-      VALUES (?, ?, ?, 1, NOW(), NOW())
+      INSERT INTO almoxarifados (filial_id, nome, status, criado_em, atualizado_em)
+      VALUES (?, ?, 1, NOW(), NOW())
     `;
 
-    const result = await executeQuery(query, [filialId, unidade_escolar_id || null, nome.trim()]);
+    const result = await executeQuery(query, [filialId, nome.trim()]);
 
     // Buscar o almoxarifado criado
     const almoxarifado = await executeQuery(
@@ -296,7 +275,7 @@ class FiliaisCRUDController {
    */
   static atualizarAlmoxarifado = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { nome, status, unidade_escolar_id } = req.body;
+    const { nome, status } = req.body;
 
     if (!nome || nome.trim() === '') {
       return errorResponse(res, 'O nome do almoxarifado é obrigatório', STATUS_CODES.BAD_REQUEST);
@@ -306,27 +285,6 @@ class FiliaisCRUDController {
     const almoxarifado = await executeQuery('SELECT * FROM almoxarifados WHERE id = ?', [id]);
     if (almoxarifado.length === 0) {
       return notFoundResponse(res, 'Almoxarifado não encontrado');
-    }
-
-    // Se unidade_escolar_id for fornecido, verificar se existe
-    if (unidade_escolar_id) {
-      const unidadeEscolar = await executeQuery(
-        'SELECT id FROM unidades_escolares WHERE id = ?', 
-        [unidade_escolar_id]
-      );
-      if (unidadeEscolar.length === 0) {
-        return notFoundResponse(res, 'Unidade escolar não encontrada');
-      }
-
-      // Verificar se já existe outro almoxarifado para esta unidade escolar
-      const almoxarifadoUnidadeExistente = await executeQuery(
-        'SELECT id FROM almoxarifados WHERE unidade_escolar_id = ? AND id != ?',
-        [unidade_escolar_id, id]
-      );
-
-      if (almoxarifadoUnidadeExistente.length > 0) {
-        return conflictResponse(res, 'Já existe um almoxarifado para esta unidade escolar');
-      }
     }
 
     // Verificar se já existe outro almoxarifado com o mesmo nome na mesma filial
@@ -341,11 +299,11 @@ class FiliaisCRUDController {
 
     const query = `
       UPDATE almoxarifados 
-      SET nome = ?, status = ?, unidade_escolar_id = ?, atualizado_em = NOW()
+      SET nome = ?, status = ?, atualizado_em = NOW()
       WHERE id = ?
     `;
 
-    await executeQuery(query, [nome.trim(), status, unidade_escolar_id || null, id]);
+    await executeQuery(query, [nome.trim(), status, id]);
 
     // Buscar o almoxarifado atualizado
     const almoxarifadoAtualizado = await executeQuery(

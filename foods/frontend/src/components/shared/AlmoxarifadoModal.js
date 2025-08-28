@@ -4,7 +4,6 @@ import { FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import { Button, Input, Table } from '../ui';
 import { LoadingSpinner } from '../ui';
 import filiaisService from '../../services/filiais';
-import unidadesEscolaresService from '../../services/unidadesEscolares';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -25,7 +24,6 @@ const AlmoxarifadoModal = ({
   const [produtos, setProdutos] = useState([]);
   const [selectedProduto, setSelectedProduto] = useState(null);
   const [quantidadeProduto, setQuantidadeProduto] = useState('');
-  const [unidadesEscolares, setUnidadesEscolares] = useState([]);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
@@ -58,18 +56,6 @@ const AlmoxarifadoModal = ({
     }
   };
 
-  // Carregar unidades escolares
-  const loadUnidadesEscolares = async () => {
-    try {
-      const response = await unidadesEscolaresService.buscarAtivas();
-      if (response.success) {
-        setUnidadesEscolares(response.data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar unidades escolares:', error);
-    }
-  };
-
   // Carregar itens do almoxarifado
   const loadItensAlmoxarifado = async (almoxarifadoId) => {
     setLoadingItens(true);
@@ -92,8 +78,7 @@ const AlmoxarifadoModal = ({
     try {
       const payload = {
         ...data,
-        status: parseInt(data.status),
-        unidade_escolar_id: data.unidade_escolar_id || null
+        status: parseInt(data.status)
       };
 
       if (editingAlmoxarifado) {
@@ -209,7 +194,6 @@ const AlmoxarifadoModal = ({
   useEffect(() => {
     if (isOpen && filialId) {
       loadAlmoxarifados();
-      loadUnidadesEscolares();
     }
   }, [isOpen, filialId]);
 
@@ -275,25 +259,6 @@ const AlmoxarifadoModal = ({
                     </select>
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Unidade Escolar (Opcional)
-                  </label>
-                  <select
-                    {...register('unidade_escolar_id')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  >
-                    <option value="">Selecione uma unidade escolar</option>
-                    {unidadesEscolares.map(unidade => (
-                      <option key={unidade.id} value={unidade.id}>
-                        {unidade.nome_escola}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Se selecionado, apenas um almoxarifado será permitido por unidade escolar
-                  </p>
-                </div>
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                   <Button
                     type="button"
@@ -324,7 +289,6 @@ const AlmoxarifadoModal = ({
                 <Table>
                   <Table.Header>
                     <Table.HeaderCell>Nome</Table.HeaderCell>
-                    <Table.HeaderCell>Unidade Escolar</Table.HeaderCell>
                     <Table.HeaderCell>Status</Table.HeaderCell>
                     <Table.HeaderCell>Ações</Table.HeaderCell>
                   </Table.Header>
@@ -332,9 +296,6 @@ const AlmoxarifadoModal = ({
                     {almoxarifados.map(almox => (
                       <Table.Row key={almox.id}>
                         <Table.Cell>{almox.nome}</Table.Cell>
-                        <Table.Cell>
-                          {almox.unidade_escolar_id ? 'Vinculado a Unidade Escolar' : '-'}
-                        </Table.Cell>
                         <Table.Cell>
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             almox.status === 1 

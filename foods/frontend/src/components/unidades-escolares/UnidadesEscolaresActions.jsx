@@ -8,7 +8,7 @@ const UnidadesEscolaresActions = ({
   canDelete, 
   onView, 
   onEdit, 
-  onDelete
+  onDelete 
 }) => {
   return (
     <ActionButtons

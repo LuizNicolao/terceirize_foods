@@ -12,8 +12,6 @@ module.exports = {
   // Métodos de Listagem
   listarUnidadesEscolares: UnidadesEscolaresListController.listarUnidadesEscolares,
   buscarUnidadeEscolarPorId: UnidadesEscolaresListController.buscarUnidadeEscolarPorId,
-  listarAlmoxarifadosUnidadeEscolar: UnidadesEscolaresListController.listarAlmoxarifadosUnidadeEscolar,
-  criarAlmoxarifadoUnidadeEscolar: UnidadesEscolaresListController.criarAlmoxarifadoUnidadeEscolar,
   
   // Métodos CRUD
   criarUnidadeEscolar: UnidadesEscolaresCRUDController.criarUnidadeEscolar,

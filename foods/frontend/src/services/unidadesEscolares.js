@@ -196,38 +196,6 @@ class UnidadesEscolaresService {
       };
     }
   }
-
-  static async listarAlmoxarifados(unidadeEscolarId) {
-    try {
-      const response = await api.get(`/unidades-escolares/${unidadeEscolarId}/almoxarifados`);
-      return {
-        success: true,
-        data: response.data.data || [],
-        unidade_escolar: response.data.unidade_escolar
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.error || 'Erro ao listar almoxarifados da unidade escolar',
-        data: []
-      };
-    }
-  }
-
-  static async criarAlmoxarifado(unidadeEscolarId, data) {
-    try {
-      const response = await api.post(`/unidades-escolares/${unidadeEscolarId}/almoxarifados`, data);
-      return {
-        success: true,
-        data: response.data.data || response.data
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.error || 'Erro ao criar almoxarifado para unidade escolar'
-      };
-    }
-  }
 }
 
 export default UnidadesEscolaresService; 

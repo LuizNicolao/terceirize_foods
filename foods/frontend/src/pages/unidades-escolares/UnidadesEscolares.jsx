@@ -14,8 +14,6 @@ import { AuditModal } from '../../components/shared';
 const UnidadesEscolares = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
-
-  
   // Hooks customizados
   const {
     unidades,

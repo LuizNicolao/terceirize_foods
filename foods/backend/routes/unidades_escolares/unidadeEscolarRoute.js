@@ -96,20 +96,4 @@ router.delete('/:id', [
   commonValidations.id
 ], unidadesEscolaresController.excluirUnidadeEscolar);
 
-// ===== ROTAS DE ALMOXARIFADOS =====
-
-// Listar almoxarifados de uma unidade escolar
-router.get('/:unidadeEscolarId/almoxarifados', 
-  checkScreenPermission('unidades_escolares', 'visualizar'),
-  commonValidations.id,
-  unidadesEscolaresController.listarAlmoxarifadosUnidadeEscolar
-);
-
-// Criar almoxarifado para uma unidade escolar
-router.post('/:unidadeEscolarId/almoxarifados', 
-  checkScreenPermission('unidades_escolares', 'criar'),
-  commonValidations.id,
-  unidadesEscolaresController.criarAlmoxarifadoUnidadeEscolar
-);
-
 module.exports = router;
