@@ -57,7 +57,7 @@ class IntoleranciasCRUDController {
 
     // Verificar se a intolerância existe
     const checkQuery = 'SELECT * FROM intolerancias WHERE id = ?';
-    const [existing] = await executeQuery(checkQuery, [id]);
+    const existing = await executeQuery(checkQuery, [id]);
 
     if (existing.length === 0) {
       return notFoundResponse(res, 'Intolerância não encontrada');
@@ -111,7 +111,7 @@ class IntoleranciasCRUDController {
 
     // Verificar se a intolerância existe
     const checkQuery = 'SELECT * FROM intolerancias WHERE id = ?';
-    const [existing] = await executeQuery(checkQuery, [id]);
+    const existing = await executeQuery(checkQuery, [id]);
 
     if (existing.length === 0) {
       return notFoundResponse(res, 'Intolerância não encontrada');

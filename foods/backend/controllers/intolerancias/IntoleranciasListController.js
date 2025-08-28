@@ -12,7 +12,9 @@ class IntoleranciasListController {
    */
   static listarIntolerancias = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, search = '', status = '' } = req.query;
-    const offset = (page - 1) * limit;
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+    const offset = (pageNum - 1) * limitNum;
 
     let whereClause = 'WHERE 1=1';
     const params = [];
@@ -48,17 +50,17 @@ class IntoleranciasListController {
       LIMIT ? OFFSET ?
     `;
 
-    const intolerancias = await executeQuery(query, [...params, parseInt(limit), offset]);
+    const intolerancias = await executeQuery(query, [...params, limitNum, offset]);
 
-    const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = Math.ceil(totalItems / limitNum);
 
     const response = {
       data: intolerancias,
       pagination: {
-        currentPage: parseInt(page),
+        currentPage: pageNum,
         totalPages,
         totalItems,
-        itemsPerPage: parseInt(limit)
+        itemsPerPage: limitNum
       }
     };
 
