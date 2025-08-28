@@ -7,7 +7,7 @@ const IntoleranciaModal = ({
   onClose, 
   onSubmit, 
   intolerancia = null, 
-  viewMode = false,
+  viewMode: isViewMode = false,
   loading = false 
 }) => {
   const {
@@ -18,15 +18,17 @@ const IntoleranciaModal = ({
     setValue
   } = useForm();
 
-  // Resetar formulário quando intolerância mudar
+  // Resetar formulário quando modal abrir/fechar
   React.useEffect(() => {
-    if (intolerancia) {
-      setValue('nome', intolerancia.nome);
-      setValue('status', intolerancia.status);
-    } else {
-      reset();
+    if (isOpen) {
+      if (intolerancia) {
+        setValue('nome', intolerancia.nome);
+        setValue('status', intolerancia.status);
+      } else {
+        reset();
+      }
     }
-  }, [intolerancia, setValue, reset]);
+  }, [isOpen, intolerancia, setValue, reset]);
 
   const handleFormSubmit = (data) => {
     onSubmit(data);
@@ -41,7 +43,7 @@ const IntoleranciaModal = ({
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title={viewMode ? 'Visualizar Intolerância' : intolerancia ? 'Editar Intolerância' : 'Nova Intolerância'}
+      title={isViewMode ? 'Visualizar Intolerância' : intolerancia ? 'Editar Intolerância' : 'Nova Intolerância'}
       size="md"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
@@ -54,7 +56,7 @@ const IntoleranciaModal = ({
               maxLength: { value: 100, message: 'Nome deve ter no máximo 100 caracteres' }
             })}
             error={errors.nome?.message}
-            disabled={viewMode || loading}
+            disabled={isViewMode || loading}
             placeholder="Digite o nome da intolerância"
           />
         </div>
@@ -65,14 +67,14 @@ const IntoleranciaModal = ({
             type="select"
             {...register('status')}
             error={errors.status?.message}
-            disabled={viewMode || loading}
+            disabled={isViewMode || loading}
           >
             <option value="ativo">Ativo</option>
             <option value="inativo">Inativo</option>
           </Input>
         </div>
 
-        {!viewMode && (
+        {!isViewMode && (
           <div className="flex justify-end space-x-2 pt-4">
             <Button
               type="button"
@@ -91,7 +93,7 @@ const IntoleranciaModal = ({
           </div>
         )}
 
-        {viewMode && (
+        {isViewMode && (
           <div className="flex justify-end pt-4">
             <Button
               type="button"

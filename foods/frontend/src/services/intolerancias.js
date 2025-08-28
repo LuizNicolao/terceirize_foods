@@ -1,74 +1,146 @@
 import api from './api';
 
 class IntoleranciasService {
-  /**
-   * Lista todas as intolerâncias com paginação e filtros
-   */
-  static async listarIntolerancias(params = {}) {
-    const response = await api.get('/intolerancias', { params });
-    return response.data;
+  async listar(params = {}) {
+    try {
+      const response = await api.get('/intolerancias', { params });
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        pagination: response.data.pagination
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar intolerâncias'
+      };
+    }
   }
 
-  /**
-   * Busca uma intolerância específica por ID
-   */
-  static async buscarIntoleranciaPorId(id) {
-    const response = await api.get(`/intolerancias/${id}`);
-    return response.data;
+  async buscarPorId(id) {
+    try {
+      const response = await api.get(`/intolerancias/${id}`);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar intolerância'
+      };
+    }
   }
 
-  /**
-   * Cria uma nova intolerância
-   */
-  static async criarIntolerancia(data) {
-    const response = await api.post('/intolerancias', data);
-    return response.data;
+  async criar(data) {
+    try {
+      const response = await api.post('/intolerancias', data);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao criar intolerância'
+      };
+    }
   }
 
-  /**
-   * Atualiza uma intolerância existente
-   */
-  static async atualizarIntolerancia(id, data) {
-    const response = await api.put(`/intolerancias/${id}`, data);
-    return response.data;
+  async atualizar(id, data) {
+    try {
+      const response = await api.put(`/intolerancias/${id}`, data);
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          message: error.response.data.message || 'Dados inválidos',
+          validationErrors: error.response.data.errors,
+          errorCategories: error.response.data.errorCategories
+        };
+      }
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao atualizar intolerância'
+      };
+    }
   }
 
-  /**
-   * Exclui uma intolerância
-   */
-  static async excluirIntolerancia(id) {
-    const response = await api.delete(`/intolerancias/${id}`);
-    return response.data;
+  async excluir(id) {
+    try {
+      await api.delete(`/intolerancias/${id}`);
+      return {
+        success: true
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao excluir intolerância'
+      };
+    }
   }
 
-  /**
-   * Lista todas as intolerâncias ativas
-   */
-  static async listarIntoleranciasAtivas() {
-    const response = await api.get('/intolerancias/ativas/listar');
-    return response.data;
+  async buscarAtivas() {
+    try {
+      const response = await api.get('/intolerancias/ativas/listar');
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao buscar intolerâncias ativas'
+      };
+    }
   }
 
-  /**
-   * Exporta dados para XLSX
-   */
-  static async exportarXLSX(params = {}) {
-    const response = await api.get('/intolerancias/export/xlsx', { 
-      params,
-      responseType: 'blob'
-    });
-    return response.data;
+  async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/intolerancias/export/xlsx', { 
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar XLSX'
+      };
+    }
   }
 
-  /**
-   * Exporta dados para PDF
-   */
-  static async exportarPDF(params = {}) {
-    const response = await api.get('/intolerancias/export/pdf', { 
-      params,
-      responseType: 'blob'
-    });
-    return response.data;
+  async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/intolerancias/export/pdf', { 
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar PDF'
+      };
+    }
   }
 }
 

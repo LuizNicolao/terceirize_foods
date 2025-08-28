@@ -76,7 +76,6 @@ export const useAuditoria = (recurso) => {
 
   // Abrir modal de auditoria
   const handleOpenAuditModal = () => {
-    console.log('handleOpenAuditModal chamado');
     setShowAuditModal(true);
     loadAuditLogs();
   };

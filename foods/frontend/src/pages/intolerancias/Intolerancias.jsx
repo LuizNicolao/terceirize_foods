@@ -15,27 +15,12 @@ import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 const Intolerancias = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
-  // Debug logs
-  console.log('Permissões:', {
-    canView: canView('intolerancias'),
-    canEdit: canEdit('intolerancias'),
-    canDelete: canDelete('intolerancias'),
-    canCreate: canCreate('intolerancias')
-  });
-  
-  console.log('Estados dos modais:', {
-    showModal,
-    viewMode,
-    editingIntolerancia,
-    showAuditModal
-  });
-  
   // Hooks customizados
   const {
     intolerancias,
     loading,
     showModal,
-    viewMode,
+    isViewMode,
     editingIntolerancia,
     searchTerm,
     statusFilter,
@@ -72,6 +57,8 @@ const Intolerancias = () => {
   } = useAuditoria('intolerancias');
 
   const { handleExportXLSX, handleExportPDF } = useExport(IntoleranciasService);
+
+
 
   if (loading) {
     return (
@@ -114,49 +101,40 @@ const Intolerancias = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        statusOptions={[
-          { value: '', label: 'Todos os status' },
-          { value: 'ativo', label: 'Ativo' },
-          { value: 'inativo', label: 'Inativo' }
-        ]}
-        onExportXLSX={() => handleExportXLSX({ search: searchTerm, status: statusFilter })}
-        onExportPDF={() => handleExportPDF({ search: searchTerm, status: statusFilter })}
-        totalItems={totalItems}
+        onStatusFilterChange={setStatusFilter}
+        placeholder="Buscar por nome..."
       />
 
       {/* Tabela */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <IntoleranciasTable
-          intolerancias={intolerancias}
-          onView={handleViewIntolerancia}
-          onEdit={handleEditIntolerancia}
-          onDelete={handleDeleteIntolerancia}
-          canView={canView}
-          canEdit={canEdit}
-          canDelete={canDelete}
-        />
-      </div>
+      <IntoleranciasTable
+        intolerancias={intolerancias}
+        onView={handleViewIntolerancia}
+        onEdit={handleEditIntolerancia}
+        onDelete={handleDeleteIntolerancia}
+        canView={canView}
+        canEdit={canEdit}
+        canDelete={canDelete}
+      />
 
       {/* Paginação */}
-      <div className="mt-4">
+      {totalPages > 1 && (
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
+          onPageChange={handlePageChange}
           totalItems={totalItems}
           itemsPerPage={itemsPerPage}
-          onPageChange={handlePageChange}
           onItemsPerPageChange={handleItemsPerPageChange}
         />
-      </div>
+      )}
 
       {/* Modal de Intolerância */}
       <IntoleranciaModal
-        show={showModal}
+        isOpen={showModal}
         onClose={handleCloseModal}
         onSubmit={onSubmit}
         intolerancia={editingIntolerancia}
-        viewMode={viewMode}
+        isViewMode={isViewMode}
         loading={loading}
       />
 
@@ -164,21 +142,22 @@ const Intolerancias = () => {
       <AuditModal
         isOpen={showAuditModal}
         onClose={handleCloseAuditModal}
-        logs={auditLogs}
-        loading={auditLoading}
-        filters={auditFilters}
+        title="Relatório de Auditoria - Intolerâncias"
+        auditLogs={auditLogs}
+        auditLoading={auditLoading}
+        auditFilters={auditFilters}
         onApplyFilters={handleApplyAuditFilters}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
-        onSetFilters={setAuditFilters}
-        resourceName="intolerâncias"
+        onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
       />
 
       {/* Modal de Erros de Validação */}
       <ValidationErrorModal
         isOpen={showValidationModal}
         onClose={handleCloseValidationModal}
-        errors={validationErrors}
+        errors={validationErrors?.errors}
+        errorCategories={validationErrors?.errorCategories}
       />
     </div>
   );

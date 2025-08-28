@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import IntoleranciasService from '../services/intolerancias';
+import { useValidation } from './useValidation';
 
 export const useIntolerancias = () => {
   const [intolerancias, setIntolerancias] = useState([]);
@@ -9,13 +10,19 @@ export const useIntolerancias = () => {
   const [viewMode, setViewMode] = useState(false);
   const [editingIntolerancia, setEditingIntolerancia] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [validationErrors, setValidationErrors] = useState({});
-  const [showValidationModal, setShowValidationModal] = useState(false);
+  // Hook de validação
+  const {
+    validationErrors,
+    showValidationModal,
+    handleApiResponse,
+    handleCloseValidationModal,
+    clearValidationErrors
+  } = useValidation();
 
   // Carregar intolerâncias
   const loadIntolerancias = useCallback(async () => {
@@ -23,12 +30,10 @@ export const useIntolerancias = () => {
       setLoading(true);
       const params = {
         page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm,
-        status: statusFilter
+        limit: itemsPerPage
       };
 
-      const response = await IntoleranciasService.listarIntolerancias(params);
+      const response = await IntoleranciasService.listar(params);
       
       if (response.success) {
         setIntolerancias(response.data.data || []);
@@ -43,45 +48,49 @@ export const useIntolerancias = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, searchTerm, statusFilter]);
+  }, [currentPage, itemsPerPage]);
 
   // Carregar dados iniciais
   useEffect(() => {
     loadIntolerancias();
   }, [loadIntolerancias]);
 
+  // Filtrar intolerâncias (client-side)
+  const filteredIntolerancias = intolerancias.filter(intolerancia => {
+    const matchesSearch = !searchTerm || 
+      (intolerancia.nome && intolerancia.nome.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const matchesStatus = statusFilter === 'todos' || intolerancia.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+
   // Função para submeter formulário (criar/atualizar)
   const onSubmit = async (data) => {
     try {
-      setValidationErrors({});
+      clearValidationErrors();
       
       if (editingIntolerancia) {
         // Atualizar
-        const response = await IntoleranciasService.atualizarIntolerancia(editingIntolerancia.id, data);
+        const response = await IntoleranciasService.atualizar(editingIntolerancia.id, data);
         if (response.success) {
           toast.success('Intolerância atualizada com sucesso!');
           handleCloseModal();
           loadIntolerancias();
         } else {
-          if (response.validationErrors) {
-            setValidationErrors(response.validationErrors);
-            setShowValidationModal(true);
-          } else {
+          if (!handleApiResponse(response)) {
             toast.error(response.message || 'Erro ao atualizar intolerância');
           }
         }
       } else {
         // Criar
-        const response = await IntoleranciasService.criarIntolerancia(data);
+        const response = await IntoleranciasService.criar(data);
         if (response.success) {
           toast.success('Intolerância criada com sucesso!');
           handleCloseModal();
           loadIntolerancias();
         } else {
-          if (response.validationErrors) {
-            setValidationErrors(response.validationErrors);
-            setShowValidationModal(true);
-          } else {
+          if (!handleApiResponse(response)) {
             toast.error(response.message || 'Erro ao criar intolerância');
           }
         }
@@ -96,7 +105,7 @@ export const useIntolerancias = () => {
   const handleDeleteIntolerancia = async (id) => {
     if (window.confirm('Tem certeza que deseja excluir esta intolerância?')) {
       try {
-        const response = await IntoleranciasService.excluirIntolerancia(id);
+        const response = await IntoleranciasService.excluir(id);
         if (response.success) {
           toast.success('Intolerância excluída com sucesso!');
           loadIntolerancias();
@@ -112,23 +121,18 @@ export const useIntolerancias = () => {
 
   // Funções para manipular modal
   const handleAddIntolerancia = () => {
-    console.log('handleAddIntolerancia chamado');
     setEditingIntolerancia(null);
     setViewMode(false);
     setShowModal(true);
-    console.log('Estado do modal após setShowModal:', { showModal: true, viewMode: false, editingIntolerancia: null });
   };
 
   const handleViewIntolerancia = (intolerancia) => {
-    console.log('handleViewIntolerancia chamado', intolerancia);
     setEditingIntolerancia(intolerancia);
     setViewMode(true);
     setShowModal(true);
-    console.log('Estado do modal após setShowModal:', { showModal: true, viewMode: true, editingIntolerancia: intolerancia });
   };
 
   const handleEditIntolerancia = (intolerancia) => {
-    console.log('handleEditIntolerancia chamado', intolerancia);
     setEditingIntolerancia(intolerancia);
     setViewMode(false);
     setShowModal(true);
@@ -138,14 +142,10 @@ export const useIntolerancias = () => {
     setShowModal(false);
     setEditingIntolerancia(null);
     setViewMode(false);
-    setValidationErrors({});
-    setShowValidationModal(false);
+    clearValidationErrors();
   };
 
-  const handleCloseValidationModal = () => {
-    setShowValidationModal(false);
-    setValidationErrors({});
-  };
+
 
   // Funções para paginação
   const handlePageChange = (page) => {
@@ -161,10 +161,10 @@ export const useIntolerancias = () => {
 
   return {
     // Estado
-    intolerancias,
+    intolerancias: filteredIntolerancias,
     loading,
     showModal,
-    viewMode,
+    isViewMode: viewMode,
     editingIntolerancia,
     searchTerm,
     statusFilter,
