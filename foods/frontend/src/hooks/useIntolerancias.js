@@ -58,19 +58,6 @@ export const useIntolerancias = () => {
           setTotalItems(result.data.length);
           setTotalPages(Math.ceil(result.data.length / itemsPerPage));
         }
-        
-        // Calcular estatísticas básicas
-        const total = result.pagination?.totalItems || result.data.length;
-        const ativas = result.data.filter(i => i.status === 'ativo').length;
-        const inativas = result.data.filter(i => i.status === 'inativo').length;
-        const nomesUnicos = new Set(result.data.map(i => i.nome)).size;
-        
-        setEstatisticas({
-          total_intolerancias: total,
-          intolerancias_ativas: ativas,
-          intolerancias_inativas: inativas,
-          nomes_unicos: nomesUnicos
-        });
       } else {
         toast.error(result.error);
       }
@@ -82,9 +69,22 @@ export const useIntolerancias = () => {
     }
   };
 
+  // Carregar estatísticas
+  const loadEstatisticas = async () => {
+    try {
+      const result = await IntoleranciasService.buscarEstatisticas();
+      if (result.success && result.data?.geral) {
+        setEstatisticas(result.data.geral);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar estatísticas:', error);
+    }
+  };
+
   // Carregar dados quando dependências mudarem
   useEffect(() => {
     loadIntolerancias();
+    loadEstatisticas();
   }, [currentPage, itemsPerPage]);
 
   // Filtrar intolerâncias (client-side)

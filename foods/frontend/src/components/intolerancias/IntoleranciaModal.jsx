@@ -101,33 +101,7 @@ const IntoleranciaModal = ({
           </Input>
         </div>
 
-        {/* Informações de Auditoria (apenas visualização) */}
-        {isViewMode && intolerancia && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                ID
-              </label>
-              <p className="text-sm text-gray-900">{intolerancia.id}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Criado em
-              </label>
-              <p className="text-sm text-gray-900">
-                {new Date(intolerancia.criado_em).toLocaleString('pt-BR')}
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Atualizado em
-              </label>
-              <p className="text-sm text-gray-900">
-                {new Date(intolerancia.atualizado_em).toLocaleString('pt-BR')}
-              </p>
-            </div>
-          </div>
-        )}
+
 
         {/* Botões */}
         {!isViewMode && (
