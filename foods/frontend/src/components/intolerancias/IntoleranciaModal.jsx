@@ -1,6 +1,6 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
-import { Modal, Button, Input, Select } from '../ui';
+import { Modal, Button, Input } from '../ui';
 
 const IntoleranciaModal = ({ 
   show, 
@@ -60,15 +60,16 @@ const IntoleranciaModal = ({
         </div>
 
         <div>
-          <Select
+          <Input
             label="Status"
+            type="select"
             {...register('status')}
             error={errors.status?.message}
             disabled={viewMode || loading}
           >
             <option value="ativo">Ativo</option>
             <option value="inativo">Inativo</option>
-          </Select>
+          </Input>
         </div>
 
         {!viewMode && (
