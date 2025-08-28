@@ -11,10 +11,8 @@ class IntoleranciasListController {
    * Lista todas as intolerâncias com paginação e filtros
    */
   static listarIntolerancias = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, search = '', status = '' } = req.query;
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 10;
-    const offset = (pageNum - 1) * limitNum;
+    const { search = '', status = '' } = req.query;
+    const pagination = req.pagination;
 
     let whereClause = 'WHERE 1=1';
     const params = [];
@@ -37,7 +35,7 @@ class IntoleranciasListController {
     const totalItems = countResult[0].total;
 
     // Query principal com paginação
-    const query = `
+    const baseQuery = `
       SELECT 
         id,
         nome,
@@ -47,21 +45,22 @@ class IntoleranciasListController {
       FROM intolerancias 
       ${whereClause}
       ORDER BY nome ASC
-      LIMIT ? OFFSET ?
     `;
 
-    const intolerancias = await executeQuery(query, [...params, limitNum, offset]);
+    // Aplicar paginação usando o middleware
+    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    const intolerancias = await executeQuery(query, paginatedParams);
 
-    const totalPages = Math.ceil(totalItems / limitNum);
+    // Gerar metadados de paginação
+    const queryParams = { ...req.query };
+    delete queryParams.page;
+    delete queryParams.limit;
+    
+    const meta = pagination.generateMeta(totalItems, '/api/intolerancias', queryParams);
 
     const response = {
       data: intolerancias,
-      pagination: {
-        currentPage: pageNum,
-        totalPages,
-        totalItems,
-        itemsPerPage: limitNum
-      }
+      pagination: meta.pagination
     };
 
     return successResponse(res, response, 'Intolerâncias listadas com sucesso');
