@@ -36,14 +36,25 @@ class IntoleranciasListController {
       // Aplicar paginação manualmente
       const limit = pagination.limit;
       const offset = pagination.offset;
-      const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+      const query = `${baseQuery} LIMIT ? OFFSET ?`;
       
       // Executar query paginada
-      const intolerancias = await executeQuery(query, params);
+      const intolerancias = await executeQuery(query, [...params, limit, offset]);
 
       // Contar total de registros
-      const countQuery = `SELECT COUNT(*) as total FROM intolerancias WHERE 1=1${search ? ' AND (nome LIKE ?)' : ''}${status && status !== 'todos' ? ' AND status = ?' : ''}`;
-      const countParams = [...params];
+      let countQuery = 'SELECT COUNT(*) as total FROM intolerancias WHERE 1=1';
+      let countParams = [];
+      
+      if (search) {
+        countQuery += ' AND (nome LIKE ?)';
+        countParams.push(`%${search}%`);
+      }
+      
+      if (status && status !== 'todos') {
+        countQuery += ' AND status = ?';
+        countParams.push(status);
+      }
+      
       const totalResult = await executeQuery(countQuery, countParams);
       const totalItems = totalResult[0].total;
 
