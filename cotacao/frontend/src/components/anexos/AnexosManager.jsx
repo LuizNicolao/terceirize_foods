@@ -4,7 +4,7 @@ import { anexosService } from '../../services/anexos';
 import { ConfirmModal } from '../ui';
 import toast from 'react-hot-toast';
 
-const AnexosManager = ({ cotacaoId, fornecedorId, fornecedorNome, onAnexoChange }) => {
+const AnexosManager = ({ cotacaoId, fornecedorId, fornecedorNome, onAnexoChange, isVisible = true }) => {
   const [anexos, setAnexos] = useState([]);
   const [validacoes, setValidacoes] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -15,9 +15,17 @@ const AnexosManager = ({ cotacaoId, fornecedorId, fornecedorNome, onAnexoChange 
   useEffect(() => {
     if (cotacaoId) {
       fetchAnexos();
-      fetchValidacoes();
+      // Só buscar validações se o componente estiver visível (showAnexos)
+      // Isso evita validações desnecessárias quando apenas mudando de aba
     }
   }, [cotacaoId, fornecedorId]);
+
+  // Buscar validações apenas quando necessário
+  useEffect(() => {
+    if (cotacaoId && isVisible) {
+      fetchValidacoes();
+    }
+  }, [cotacaoId, fornecedorId, isVisible]);
 
   const fetchAnexos = async () => {
     try {
@@ -42,6 +50,7 @@ const AnexosManager = ({ cotacaoId, fornecedorId, fornecedorNome, onAnexoChange 
       setValidacoes(validacoesFornecedor);
     } catch (error) {
       console.error('Erro ao buscar validações:', error);
+      // Não mostrar toast de erro para não poluir a interface
     }
   };
 

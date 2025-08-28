@@ -178,6 +178,7 @@ const FornecedorCard = ({
             cotacaoId={cotacaoId}
             fornecedorId={fornecedor.id}
             fornecedorNome={fornecedor.nome}
+            isVisible={showAnexos}
             onAnexoChange={() => {
               // Callback para notificar mudanças nos anexos
             }}
