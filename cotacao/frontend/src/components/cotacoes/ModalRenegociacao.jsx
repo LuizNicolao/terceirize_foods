@@ -20,7 +20,7 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { AnaliseComparativa, MelhorPreco } from '../../pages/supervisor/components/visualizacoes';
+import { AnaliseComparativaAprovacao, MelhorPrecoAprovacao } from '../../pages/aprovacoes/components/visualizacoes';
 
 const ModalRenegociacao = ({ cotacao, onClose, onConfirm }) => {
   const [observacoes, setObservacoes] = useState('');
@@ -602,7 +602,7 @@ const ModalRenegociacao = ({ cotacao, onClose, onConfirm }) => {
 
           {viewMode === 'resumo' && (
             <div className="mb-8">
-              <AnaliseComparativa 
+              <AnaliseComparativaAprovacao 
                 cotacao={cotacao} 
                 active={true} 
                 formatarValor={formatarValor}
@@ -612,7 +612,7 @@ const ModalRenegociacao = ({ cotacao, onClose, onConfirm }) => {
 
           {viewMode === 'melhor-preco' && (
             <div className="mb-8">
-              <MelhorPreco 
+              <MelhorPrecoAprovacao 
                 cotacao={cotacao}
                 active={true} 
                 formatarValor={formatarValor}
