@@ -15,6 +15,14 @@ import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 const Intolerancias = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
   
+  // Debug logs
+  console.log('Permissões:', {
+    canView: canView('intolerancias'),
+    canEdit: canEdit('intolerancias'),
+    canDelete: canDelete('intolerancias'),
+    canCreate: canCreate('intolerancias')
+  });
+  
   // Hooks customizados
   const {
     intolerancias,

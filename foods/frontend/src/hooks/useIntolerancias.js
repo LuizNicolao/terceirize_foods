@@ -112,18 +112,21 @@ export const useIntolerancias = () => {
 
   // Funções para manipular modal
   const handleAddIntolerancia = () => {
+    console.log('handleAddIntolerancia chamado');
     setEditingIntolerancia(null);
     setViewMode(false);
     setShowModal(true);
   };
 
   const handleViewIntolerancia = (intolerancia) => {
+    console.log('handleViewIntolerancia chamado', intolerancia);
     setEditingIntolerancia(intolerancia);
     setViewMode(true);
     setShowModal(true);
   };
 
   const handleEditIntolerancia = (intolerancia) => {
+    console.log('handleEditIntolerancia chamado', intolerancia);
     setEditingIntolerancia(intolerancia);
     setViewMode(false);
     setShowModal(true);
