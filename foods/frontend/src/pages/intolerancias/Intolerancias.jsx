@@ -40,8 +40,7 @@ const Intolerancias = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
-    setStatusFilter,
-    formatDate
+    setStatusFilter
   } = useIntolerancias();
 
   const {
@@ -121,7 +120,6 @@ const Intolerancias = () => {
           canView={canView}
           canEdit={canEdit}
           canDelete={canDelete}
-          formatDate={formatDate}
         />
       </div>
 

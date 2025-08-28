@@ -152,11 +152,7 @@ export const useIntolerancias = () => {
     setCurrentPage(1);
   };
 
-  // Função para formatar data
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
+
 
   return {
     // Estado
@@ -185,7 +181,6 @@ export const useIntolerancias = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
-    setStatusFilter,
-    formatDate
+    setStatusFilter
   };
 };

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql:3306
--- Tempo de geração: 19/08/2025 às 11:28
+-- Tempo de geração: 28/08/2025 às 16:58
 -- Versão do servidor: 8.0.43
 -- Versão do PHP: 8.2.27
 
@@ -63,7 +63,8 @@ CREATE TABLE `almoxarifados` (
 
 INSERT INTO `almoxarifados` (`id`, `filial_id`, `nome`, `status`, `criado_em`, `atualizado_em`) VALUES
 (2, 2, 'CD TOLEDO', 1, '2025-07-23 19:32:29', '2025-07-23 19:32:29'),
-(3, 2, 'COZINHA TOLEDO', 1, '2025-07-23 19:32:38', '2025-07-23 19:32:38');
+(3, 2, 'COZINHA TOLEDO', 1, '2025-07-23 19:32:38', '2025-07-23 19:32:38'),
+(4, 1, 'TESTE', 1, '2025-08-28 15:08:10', '2025-08-28 15:08:10');
 
 -- --------------------------------------------------------
 
@@ -651,7 +652,79 @@ INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`
 (643, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 0}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-18 15:35:18'),
 (644, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-18 15:35:36'),
 (645, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\"}', '187.45.102.250', '2025-08-18 15:58:55'),
-(646, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\"}', '186.227.148.185', '2025-08-18 18:41:03');
+(646, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\"}', '186.227.148.185', '2025-08-18 18:41:03'),
+(647, 4, 'delete', 'unidades', '{\"url\": \"/foods/api/unidades/40\", \"method\": \"DELETE\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"40\", \"statusCode\": 204}', '187.45.102.250', '2025-08-19 13:24:26'),
+(648, 4, 'update', 'unidades', '{\"url\": \"/foods/api/unidades/26\", \"method\": \"PUT\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"26\", \"statusCode\": 200, \"requestBody\": {\"id\": 26, \"nome\": \"QUILOGRAMA\", \"sigla\": \"KG\", \"status\": 1, \"criado_em\": \"2025-07-20 12:45:04\", \"atualizado_em\": \"2025-07-20 12:45:04\"}}', '187.45.102.250', '2025-08-19 13:24:45'),
+(649, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": true, \"tokenExpiration\": \"30d\"}', '187.45.102.250', '2025-08-19 14:37:30'),
+(650, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-19 16:29:58'),
+(651, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-19 17:26:48'),
+(652, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-19 17:33:57'),
+(653, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-19 17:45:49'),
+(654, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-19 19:04:56'),
+(655, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '186.227.148.185', '2025-08-19 19:05:23'),
+(656, 4, 'update', 'unidades_escolares', '{\"url\": \"/foods/api/unidades-escolares/17\", \"method\": \"PUT\", \"changes\": {\"email\": {\"to\": \"\"}, \"status\": {\"to\": \"inativo\", \"from\": \"ativo\"}, \"diretor\": {\"to\": \"\"}, \"rota_nome\": {\"to\": \"R01 - Canoinhas\"}}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"17\", \"statusCode\": 200, \"requestBody\": {\"id\": 17, \"cep\": \"89460-152\", \"lot\": \"LOTE 06\", \"pais\": \"BRASIL\", \"email\": \"\", \"bairro\": \"CENTRO\", \"cidade\": \"CANOINHAS\", \"estado\": \"SC\", \"numero\": \"1182\", \"status\": \"inativo\", \"diretor\": \"\", \"rota_id\": 2, \"endereco\": \"ANEXO (EEF SAGRADO CORACAO DE JESUS)\", \"regional\": \"CANOINHAS\", \"cc_senior\": \"267\", \"rota_nome\": \"R01 - Canoinhas\", \"created_at\": \"2025-07-20 14:41:42\", \"updated_at\": \"2025-08-17 22:01:02\", \"nome_escola\": \"CEJA CANOINHAS\", \"observacoes\": \"\", \"abastecimento\": \"SEMANAL\", \"codigo_senior\": \"105766\", \"ordem_entrega\": 6, \"codigo_teknisa\": \"402\", \"centro_distribuicao\": \"CD CURITIBANOS\"}}', '187.45.102.250', '2025-08-19 19:50:21'),
+(657, 4, 'update', 'unidades_escolares', '{\"url\": \"/foods/api/unidades-escolares/17\", \"method\": \"PUT\", \"changes\": {\"email\": {\"to\": \"\"}, \"status\": {\"to\": \"ativo\", \"from\": \"inativo\"}, \"diretor\": {\"to\": \"\"}, \"rota_nome\": {\"to\": \"R01 - Canoinhas\"}}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"17\", \"statusCode\": 200, \"requestBody\": {\"id\": 17, \"cep\": \"89460-152\", \"lot\": \"LOTE 06\", \"pais\": \"BRASIL\", \"email\": \"\", \"bairro\": \"CENTRO\", \"cidade\": \"CANOINHAS\", \"estado\": \"SC\", \"numero\": \"1182\", \"status\": \"ativo\", \"diretor\": \"\", \"rota_id\": 2, \"endereco\": \"ANEXO (EEF SAGRADO CORACAO DE JESUS)\", \"regional\": \"CANOINHAS\", \"cc_senior\": \"267\", \"rota_nome\": \"R01 - Canoinhas\", \"created_at\": \"2025-07-20 14:41:42\", \"updated_at\": \"2025-08-19 19:50:21\", \"nome_escola\": \"CEJA CANOINHAS\", \"observacoes\": \"\", \"abastecimento\": \"SEMANAL\", \"codigo_senior\": \"105766\", \"ordem_entrega\": 6, \"codigo_teknisa\": \"402\", \"centro_distribuicao\": \"CD CURITIBANOS\"}}', '187.45.102.250', '2025-08-19 19:50:25'),
+(658, 5, 'login', 'auth', '{\"email\": \"arlindo.borges@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '177.10.88.100', '2025-08-20 01:58:23'),
+(659, 12, 'login', 'auth', '{\"email\": \"projetos2@costaoesteserv.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '186.226.48.21', '2025-08-20 10:53:56'),
+(660, 10, 'login', 'auth', '{\"email\": \"planejamento@costaoesteserv.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '186.226.48.21', '2025-08-20 11:11:45'),
+(661, 12, 'login', 'auth', '{\"email\": \"projetos2@costaoesteserv.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '186.226.48.21', '2025-08-20 11:49:44'),
+(662, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-20 19:13:04'),
+(663, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-21 10:43:55'),
+(664, 12, 'login', 'auth', '{\"email\": \"projetos2@costaoesteserv.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '186.226.48.21', '2025-08-21 12:15:49'),
+(665, 10, 'login', 'auth', '{\"email\": \"planejamento@costaoesteserv.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0\", \"rememberMe\": true, \"tokenExpiration\": \"30d\"}', '186.226.48.21', '2025-08-21 14:02:09'),
+(666, 10, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/10\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0\", \"resourceId\": \"10\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '186.226.48.21', '2025-08-21 14:03:26'),
+(667, 10, 'login', 'auth', '{\"email\": \"planejamento@costaoesteserv.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0\", \"rememberMe\": true, \"tokenExpiration\": \"30d\"}', '186.226.48.21', '2025-08-21 14:03:42'),
+(668, 5, 'login', 'auth', '{\"email\": \"arlindo.borges@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '177.10.88.100', '2025-08-22 12:16:55'),
+(669, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-22 12:17:19'),
+(670, 12, 'login', 'auth', '{\"email\": \"projetos2@costaoesteserv.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '186.226.48.21', '2025-08-22 13:32:55'),
+(671, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Mobile Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '191.201.27.15', '2025-08-23 01:42:08'),
+(672, 12, 'login', 'auth', '{\"email\": \"projetos2@costaoesteserv.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '186.226.48.21', '2025-08-26 11:14:05'),
+(673, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 12:20:49'),
+(674, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 13:49:43'),
+(675, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 14:05:55'),
+(676, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 14:06:44'),
+(677, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 14:10:26'),
+(678, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 14:10:47'),
+(679, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 14:21:39'),
+(680, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 14:25:23'),
+(681, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 14:27:24'),
+(682, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 15:06:12'),
+(683, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 15:06:19'),
+(684, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/8\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"8\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"filiais\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"rotas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"produto_origem\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"motoristas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"ajudantes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"cotacao\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"permissoes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}]}}', '187.45.102.250', '2025-08-27 15:06:46'),
+(685, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 15:06:52'),
+(686, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 15:25:57'),
+(687, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 15:26:19'),
+(688, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 15:31:09'),
+(689, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 15:33:33'),
+(690, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 15:36:37'),
+(691, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 16:37:04'),
+(692, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 16:58:09'),
+(693, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:00:54'),
+(694, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:02:33'),
+(695, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:15:06'),
+(696, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:16:54'),
+(697, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:19:38'),
+(698, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:21:30'),
+(699, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:26:23'),
+(700, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:27:15'),
+(701, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:28:26'),
+(702, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:40:53'),
+(703, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:42:13'),
+(704, 4, 'create', 'usuarios', '{\"url\": \"/foods/api/usuarios\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"statusCode\": 201, \"requestBody\": {\"nome\": \"Danielle Ferreira\", \"email\": \"danielle.ferreira@terceirizemais.com.br\", \"senha\": \"[REDACTED]\", \"status\": \"ativo\", \"tipo_de_acesso\": \"administrativo\", \"nivel_de_acesso\": \"I\"}}', '187.45.102.250', '2025-08-27 17:42:30'),
+(705, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/13\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"13\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"fornecedores\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"clientes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"filiais\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"rotas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"produtos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"grupos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"subgrupos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"classes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"produto_origem\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"unidades\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"marcas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"veiculos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"motoristas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"ajudantes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"cotacao\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"permissoes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}]}}', '187.45.102.250', '2025-08-27 17:42:57'),
+(706, 13, 'login', 'auth', '{\"email\": \"danielle.ferreira@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 17:43:07'),
+(707, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/13\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"13\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"filiais\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"rotas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"produtos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"grupos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"subgrupos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"classes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"produto_origem\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"unidades\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"marcas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"veiculos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"motoristas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"ajudantes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"cotacao\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"permissoes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}]}}', '187.45.102.250', '2025-08-27 17:43:54'),
+(708, 4, 'create', 'usuarios', '{\"url\": \"/foods/api/usuarios\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"statusCode\": 201, \"requestBody\": {\"nome\": \"Eliane Kuosinski\", \"email\": \"eliane.surpevisora@tercerizemais.com.br\", \"senha\": \"[REDACTED]\", \"status\": \"ativo\", \"tipo_de_acesso\": \"administrativo\", \"nivel_de_acesso\": \"I\"}}', '187.45.102.250', '2025-08-27 18:03:01'),
+(709, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/14\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"14\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"filiais\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"rotas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"produtos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"grupos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"subgrupos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"classes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"produto_origem\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"unidades\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"marcas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"veiculos\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"motoristas\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"ajudantes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"cotacao\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}, {\"tela\": \"permissoes\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 0}]}}', '187.45.102.250', '2025-08-27 18:03:27'),
+(710, 8, 'login', 'auth', '{\"email\": \"marcos.vinicius@tercerizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 20:37:20'),
+(711, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-27 20:37:49'),
+(712, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '186.227.148.185', '2025-08-27 20:56:11'),
+(713, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-28 14:39:31'),
+(714, 4, 'create', 'usuarios', '{\"url\": \"/foods/api/usuarios\", \"method\": \"POST\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"statusCode\": 201, \"requestBody\": {\"nome\": \"Natanael\", \"email\": \"natanael@terceirizemais.combr\", \"senha\": \"[REDACTED]\", \"status\": \"ativo\", \"tipo_de_acesso\": \"administrador\", \"nivel_de_acesso\": \"III\"}}', '187.45.102.250', '2025-08-28 16:09:21');
+INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`, `ip_address`, `timestamp`) VALUES
+(715, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/15\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"15\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-28 16:09:44'),
+(716, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-28 16:32:51'),
+(717, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"intolerancias\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-28 16:35:33');
 
 -- --------------------------------------------------------
 
@@ -1049,6 +1122,31 @@ CREATE TABLE `grupos` (
 -- --------------------------------------------------------
 
 --
+-- Estrutura para tabela `intolerancias`
+--
+
+CREATE TABLE `intolerancias` (
+  `id` int NOT NULL,
+  `nome` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  `status` enum('ativo','inativo') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT 'ativo',
+  `criado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `intolerancias`
+--
+
+INSERT INTO `intolerancias` (`id`, `nome`, `status`, `criado_em`, `atualizado_em`) VALUES
+(1, 'Lactose', 'ativo', '2025-08-28 16:44:22', '2025-08-28 16:44:22'),
+(2, 'Glúten', 'ativo', '2025-08-28 16:44:22', '2025-08-28 16:44:22'),
+(3, 'Diabetico', 'ativo', '2025-08-28 16:44:22', '2025-08-28 16:44:22'),
+(4, 'Proteina do Leite de Soja', 'ativo', '2025-08-28 16:44:22', '2025-08-28 16:44:22'),
+(5, 'Ovo', 'ativo', '2025-08-28 16:44:22', '2025-08-28 16:44:22');
+
+-- --------------------------------------------------------
+
+--
 -- Estrutura para tabela `marcas`
 --
 
@@ -1117,14 +1215,6 @@ CREATE TABLE `permissoes_usuario` (
 --
 
 INSERT INTO `permissoes_usuario` (`id`, `usuario_id`, `tela`, `pode_visualizar`, `pode_criar`, `pode_editar`, `pode_excluir`, `criado_em`, `atualizado_em`) VALUES
-(575, 8, 'fornecedores', 1, 1, 1, 0, '2025-07-18 18:00:35', '2025-07-18 18:00:35'),
-(576, 8, 'grupos', 1, 1, 1, 0, '2025-07-18 18:00:35', '2025-07-18 18:00:35'),
-(577, 8, 'marcas', 1, 1, 1, 0, '2025-07-18 18:00:35', '2025-07-18 18:00:35'),
-(578, 8, 'permissoes', 0, 0, 0, 0, '2025-07-18 18:00:35', '2025-07-18 18:00:35'),
-(579, 8, 'produtos', 1, 1, 1, 0, '2025-07-18 18:00:35', '2025-07-18 18:00:35'),
-(580, 8, 'subgrupos', 1, 1, 1, 0, '2025-07-18 18:00:35', '2025-07-18 18:00:35'),
-(581, 8, 'unidades', 1, 1, 1, 0, '2025-07-18 18:00:35', '2025-07-18 18:00:35'),
-(582, 8, 'usuarios', 0, 0, 0, 0, '2025-07-18 18:00:35', '2025-07-18 18:00:35'),
 (583, 7, 'usuarios', 0, 0, 0, 0, '2025-07-21 12:49:39', '2025-07-21 12:49:39'),
 (584, 7, 'fornecedores', 1, 1, 0, 0, '2025-07-21 12:49:39', '2025-07-21 12:49:39'),
 (585, 7, 'produtos', 1, 1, 0, 0, '2025-07-21 12:49:39', '2025-07-21 12:49:39'),
@@ -1157,25 +1247,6 @@ INSERT INTO `permissoes_usuario` (`id`, `usuario_id`, `tela`, `pode_visualizar`,
 (875, 5, 'motoristas', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
 (876, 5, 'ajudantes', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
 (877, 5, 'produto_generico', 1, 1, 1, 1, '2025-08-14 18:50:45', '2025-08-14 18:50:45'),
-(897, 10, 'usuarios', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(898, 10, 'fornecedores', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(899, 10, 'clientes', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(900, 10, 'filiais', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(901, 10, 'rotas', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(902, 10, 'produtos', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(903, 10, 'grupos', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(904, 10, 'subgrupos', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(905, 10, 'classes', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(906, 10, 'unidades', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(907, 10, 'unidades_escolares', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(908, 10, 'marcas', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(909, 10, 'veiculos', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(910, 10, 'motoristas', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(911, 10, 'ajudantes', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(912, 10, 'cotacao', 1, 0, 0, 0, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(913, 10, 'produto_origem', 1, 0, 0, 0, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(914, 10, 'produto_generico', 1, 0, 0, 0, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
-(915, 10, 'permissoes', 1, 1, 1, 1, '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
 (916, 9, 'usuarios', 1, 1, 1, 1, '2025-08-15 19:10:34', '2025-08-15 19:10:34'),
 (917, 9, 'fornecedores', 1, 1, 1, 1, '2025-08-15 19:10:34', '2025-08-15 19:10:34'),
 (918, 9, 'clientes', 1, 1, 1, 1, '2025-08-15 19:10:34', '2025-08-15 19:10:34'),
@@ -1233,25 +1304,75 @@ INSERT INTO `permissoes_usuario` (`id`, `usuario_id`, `tela`, `pode_visualizar`,
 (970, 12, 'produto_origem', 1, 0, 0, 0, '2025-08-18 13:14:13', '2025-08-18 13:14:13'),
 (971, 12, 'produto_generico', 1, 0, 0, 0, '2025-08-18 13:14:13', '2025-08-18 13:14:13'),
 (972, 12, 'permissoes', 1, 1, 1, 1, '2025-08-18 13:14:13', '2025-08-18 13:14:13'),
-(992, 4, 'usuarios', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(993, 4, 'fornecedores', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(994, 4, 'clientes', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(995, 4, 'filiais', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(996, 4, 'rotas', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(997, 4, 'produtos', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(998, 4, 'grupos', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(999, 4, 'subgrupos', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1000, 4, 'classes', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1001, 4, 'produto_origem', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1002, 4, 'unidades', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1003, 4, 'unidades_escolares', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1004, 4, 'marcas', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1005, 4, 'veiculos', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1006, 4, 'motoristas', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1007, 4, 'ajudantes', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1008, 4, 'cotacao', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1009, 4, 'produto_generico', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36'),
-(1010, 4, 'permissoes', 1, 1, 1, 1, '2025-08-18 15:35:36', '2025-08-18 15:35:36');
+(1011, 10, 'usuarios', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1012, 10, 'fornecedores', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1013, 10, 'clientes', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1014, 10, 'filiais', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1015, 10, 'rotas', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1016, 10, 'produtos', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1017, 10, 'grupos', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1018, 10, 'subgrupos', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1019, 10, 'classes', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1020, 10, 'produto_origem', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1021, 10, 'unidades', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1022, 10, 'unidades_escolares', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1023, 10, 'marcas', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1024, 10, 'veiculos', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1025, 10, 'motoristas', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1026, 10, 'ajudantes', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1027, 10, 'cotacao', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1028, 10, 'produto_generico', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1029, 10, 'permissoes', 1, 1, 1, 1, '2025-08-21 14:03:26', '2025-08-21 14:03:26'),
+(1030, 8, 'fornecedores', 1, 1, 1, 0, '2025-08-27 15:06:46', '2025-08-27 15:06:46'),
+(1031, 8, 'produtos', 1, 1, 1, 0, '2025-08-27 15:06:46', '2025-08-27 15:06:46'),
+(1032, 8, 'grupos', 1, 1, 1, 0, '2025-08-27 15:06:46', '2025-08-27 15:06:46'),
+(1033, 8, 'subgrupos', 1, 1, 1, 0, '2025-08-27 15:06:46', '2025-08-27 15:06:46'),
+(1034, 8, 'unidades', 1, 1, 1, 0, '2025-08-27 15:06:46', '2025-08-27 15:06:46'),
+(1035, 8, 'marcas', 1, 1, 1, 0, '2025-08-27 15:06:46', '2025-08-27 15:06:46'),
+(1036, 8, 'cotacao', 1, 0, 0, 0, '2025-08-27 15:06:46', '2025-08-27 15:06:46'),
+(1057, 13, 'fornecedores', 1, 1, 1, 0, '2025-08-27 17:43:54', '2025-08-27 17:43:54'),
+(1058, 13, 'cotacao', 1, 0, 0, 0, '2025-08-27 17:43:54', '2025-08-27 17:43:54'),
+(1078, 14, 'fornecedores', 1, 1, 1, 0, '2025-08-27 18:03:27', '2025-08-27 18:03:27'),
+(1079, 14, 'cotacao', 1, 0, 0, 0, '2025-08-27 18:03:27', '2025-08-27 18:03:27'),
+(1099, 15, 'usuarios', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1100, 15, 'fornecedores', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1101, 15, 'clientes', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1102, 15, 'filiais', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1103, 15, 'rotas', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1104, 15, 'produtos', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1105, 15, 'grupos', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1106, 15, 'subgrupos', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1107, 15, 'classes', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1108, 15, 'produto_origem', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1109, 15, 'unidades', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1110, 15, 'unidades_escolares', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1111, 15, 'marcas', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1112, 15, 'veiculos', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1113, 15, 'motoristas', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1114, 15, 'ajudantes', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1115, 15, 'cotacao', 1, 0, 0, 0, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1116, 15, 'produto_generico', 1, 1, 1, 0, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1117, 15, 'permissoes', 1, 1, 1, 1, '2025-08-28 16:09:44', '2025-08-28 16:09:44'),
+(1118, 4, 'usuarios', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1119, 4, 'fornecedores', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1120, 4, 'clientes', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1121, 4, 'filiais', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1122, 4, 'rotas', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1123, 4, 'produtos', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1124, 4, 'grupos', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1125, 4, 'subgrupos', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1126, 4, 'classes', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1127, 4, 'produto_origem', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1128, 4, 'unidades', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1129, 4, 'unidades_escolares', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1130, 4, 'marcas', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1131, 4, 'veiculos', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1132, 4, 'motoristas', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1133, 4, 'ajudantes', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1134, 4, 'cotacao', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1135, 4, 'produto_generico', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1136, 4, 'intolerancias', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33'),
+(1137, 4, 'permissoes', 1, 1, 1, 1, '2025-08-28 16:35:33', '2025-08-28 16:35:33');
 
 -- --------------------------------------------------------
 
@@ -1464,7 +1585,7 @@ INSERT INTO `unidades_escolares` (`id`, `codigo_teknisa`, `nome_escola`, `cidade
 (14, '453', 'EEB LUIZ DAVET', 'MAJOR VIEIRA', 'SC', 'BRASIL', 'R LUIZ DAVET', '1193', 'CENTRO', '89480-000', 'CD CURITIBANOS', 2, 'CANOINHAS', 'LOTE 06', '267', '105777', 'SEMANAL', 3, 'ativo', '', '2025-07-20 14:41:42', '2025-07-23 20:43:06'),
 (15, '447', 'EEB JULIA BALEOLI ZANIOLO', 'CANOINHAS', 'SC', 'BRASIL', 'R JACOBE SCHEUER', '152', 'CAMPO DA AGUA VERDE', '89460-000', 'CD CURITIBANOS', 2, 'CANOINHAS', 'LOTE 06', '267', '105745', 'SEMANAL', 4, 'ativo', '', '2025-07-20 14:41:42', '2025-07-23 20:43:06'),
 (16, '479', 'EEB RODOLFO ZIPPERER', 'CANOINHAS', 'SC', 'BRASIL', 'AV EXPEDICIONARIOS', '566', 'CAMPO DA ÁGUA VERDE', '89466-072', 'CD CURITIBANOS', 2, 'CANOINHAS', 'LOTE 06', '267', '105742', 'SEMANAL', 5, 'ativo', '', '2025-07-20 14:41:42', '2025-07-23 20:43:06'),
-(17, '402', 'CEJA CANOINHAS', 'CANOINHAS', 'SC', 'BRASIL', 'ANEXO (EEF SAGRADO CORACAO DE JESUS)', '1182', 'CENTRO', '89460-152', 'CD CURITIBANOS', 2, 'CANOINHAS', 'LOTE 06', '267', '105766', 'SEMANAL', 6, 'ativo', '', '2025-07-20 14:41:42', '2025-08-17 22:01:02'),
+(17, '402', 'CEJA CANOINHAS', 'CANOINHAS', 'SC', 'BRASIL', 'ANEXO (EEF SAGRADO CORACAO DE JESUS)', '1182', 'CENTRO', '89460-152', 'CD CURITIBANOS', 2, 'CANOINHAS', 'LOTE 06', '267', '105766', 'SEMANAL', 6, 'ativo', '', '2025-07-20 14:41:42', '2025-08-19 19:50:25'),
 (18, '480', 'EEF SAGRADO CORACAO DE JESUS', 'CANOINHAS', 'SC', 'BRASIL', 'R BARAO DO RIO BRANCO', '1182', 'CENTRO', '89460-152', 'CD CURITIBANOS', 2, 'CANOINHAS', 'LOTE 06', '267', '105751', 'SEMANAL', 7, 'ativo', '', '2025-07-20 14:41:42', '2025-07-23 20:43:06'),
 (19, '408', 'EEB ALMIRANTE BARROSO', 'CANOINHAS', 'SC', 'BRASIL', 'R CURITIBANOS', '655', 'CENTRO', '89460-146', 'CD CURITIBANOS', 2, 'CANOINHAS', 'LOTE 06', '267', '105754', 'SEMANAL', 8, 'ativo', '', '2025-07-20 14:41:42', '2025-07-23 20:43:06'),
 (20, '443', 'EEB JOAO JOSE DE S CABRAL', 'CANOINHAS', 'SC', 'BRASIL', 'R BARAO DO RIO BRANCO', '59', 'TRICOLIN', '89460-000', 'CD CURITIBANOS', 2, 'CANOINHAS', 'LOTE 06', '267', '105748', 'SEMANAL', 9, 'ativo', '', '2025-07-20 14:41:42', '2025-07-23 20:43:06'),
@@ -1596,7 +1717,7 @@ CREATE TABLE `unidades_medida` (
 INSERT INTO `unidades_medida` (`id`, `nome`, `sigla`, `status`, `criado_em`, `atualizado_em`) VALUES
 (24, 'UNIDADE', 'UN', 1, '2025-07-20 12:43:53', '2025-07-20 12:43:53'),
 (25, 'PACOTE', 'PC', 1, '2025-07-20 12:44:04', '2025-07-20 12:44:04'),
-(26, 'QUILO', 'KG', 1, '2025-07-20 12:45:04', '2025-07-20 12:45:04'),
+(26, 'QUILOGRAMA', 'KG', 1, '2025-07-20 12:45:04', '2025-08-19 13:24:45'),
 (27, 'LITRO', 'LT', 1, '2025-07-20 12:46:51', '2025-07-20 12:46:51'),
 (28, 'GARRAFA', 'GF', 1, '2025-07-20 12:47:11', '2025-07-20 12:47:11'),
 (29, 'CAIXA', 'CX', 1, '2025-07-20 12:47:20', '2025-07-20 12:47:20'),
@@ -1609,8 +1730,7 @@ INSERT INTO `unidades_medida` (`id`, `nome`, `sigla`, `status`, `criado_em`, `at
 (36, 'METRO CUBICO', 'M3', 1, '2025-07-20 12:49:13', '2025-07-20 12:49:13'),
 (37, 'DUZIA', 'DZ', 1, '2025-07-20 12:49:43', '2025-07-20 12:49:43'),
 (38, 'GRAMA', 'GR', 1, '2025-07-20 12:50:33', '2025-07-22 11:47:40'),
-(39, 'MILILITRO', 'ML', 1, '2025-07-20 12:51:05', '2025-07-20 12:51:05'),
-(40, 'Pacote', 'PCT', 1, '2025-08-14 20:24:35', '2025-08-14 20:24:35');
+(39, 'MILILITRO', 'ML', 1, '2025-07-20 12:51:05', '2025-07-20 12:51:05');
 
 -- --------------------------------------------------------
 
@@ -1643,7 +1763,10 @@ INSERT INTO `usuarios` (`id`, `nome`, `email`, `senha`, `nivel_de_acesso`, `tipo
 (9, 'Guilherme Brandão', 'suporte.dev1@costaoesteserv.com.br', '$2a$12$S22k1eE9gQLCguvbm4wAZe3yZdkM1wdORbMXa2LHM9E4b2yqGvl4m', 'III', 'administrador', 'ativo', '2025-08-15 18:19:29', '2025-08-15 18:19:29'),
 (10, 'João Dysarz', 'planejamento@costaoesteserv.com.br', '$2a$12$EHz8ePlQn89HNfNnY8DVJeuGiOdZfpiKD/kL94suOT2Rf3BB2Gc/u', 'III', 'administrador', 'ativo', '2025-08-15 18:25:33', '2025-08-15 18:25:33'),
 (11, 'Arthur Ritzel', 'suporte.dev2@costaoesteserv.com.br', '$2a$12$8EQsNZdRtuDftbR7EUW9Ku6hRejtCTNfbpnXD4raydF3FJ5Ab1iNW', 'III', 'administrador', 'ativo', '2025-08-18 12:00:20', '2025-08-18 12:00:20'),
-(12, 'Tainá Dreissig', 'projetos2@costaoesteserv.com.br', '$2a$12$xmRVlO4W3bO60iAgfrR8CO9Y3Gl9oCeYPeu/sJ19MorJfYWAhJI0a', 'III', 'administrador', 'ativo', '2025-08-18 13:14:13', '2025-08-18 13:14:13');
+(12, 'Tainá Dreissig', 'projetos2@costaoesteserv.com.br', '$2a$12$xmRVlO4W3bO60iAgfrR8CO9Y3Gl9oCeYPeu/sJ19MorJfYWAhJI0a', 'III', 'administrador', 'ativo', '2025-08-18 13:14:13', '2025-08-18 13:14:13'),
+(13, 'Danielle Ferreira', 'danielle.ferreira@terceirizemais.com.br', '$2a$12$yHppddpK7xpN7y4ytmiuAeLefs8oWLHM/vCUxIUFcQCs0LqYP24Jq', 'I', 'administrativo', 'ativo', '2025-08-27 17:42:29', '2025-08-27 17:42:29'),
+(14, 'Eliane Kuosinski', 'eliane.surpevisora@tercerizemais.com.br', '$2a$12$e5qkb970z/a1QIF7XPGaLe8VsfzJLvft55VPx0HYN1kX7xRWm0OyC', 'I', 'administrativo', 'ativo', '2025-08-27 18:03:01', '2025-08-27 18:03:01'),
+(15, 'Natanael', 'natanael@terceirizemais.combr', '$2a$12$KTIPB6QnAg3qI0dL0WY0XeVKoaIv3qi.FsbqQkEXKvj5HaceLpvWO', 'III', 'administrador', 'ativo', '2025-08-28 16:09:21', '2025-08-28 16:09:21');
 
 -- --------------------------------------------------------
 
@@ -1790,6 +1913,13 @@ ALTER TABLE `grupos`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `uk_nome` (`nome`),
   ADD UNIQUE KEY `uk_codigo` (`codigo`);
+
+--
+-- Índices de tabela `intolerancias`
+--
+ALTER TABLE `intolerancias`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `nome` (`nome`);
 
 --
 -- Índices de tabela `marcas`
@@ -1945,7 +2075,7 @@ ALTER TABLE `ajudantes`
 -- AUTO_INCREMENT de tabela `almoxarifados`
 --
 ALTER TABLE `almoxarifados`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT de tabela `almoxarifado_itens`
@@ -1957,7 +2087,7 @@ ALTER TABLE `almoxarifado_itens`
 -- AUTO_INCREMENT de tabela `auditoria_acoes`
 --
 ALTER TABLE `auditoria_acoes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=647;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=718;
 
 --
 -- AUTO_INCREMENT de tabela `classes`
@@ -1990,6 +2120,12 @@ ALTER TABLE `grupos`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
+-- AUTO_INCREMENT de tabela `intolerancias`
+--
+ALTER TABLE `intolerancias`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT de tabela `marcas`
 --
 ALTER TABLE `marcas`
@@ -1999,7 +2135,7 @@ ALTER TABLE `marcas`
 -- AUTO_INCREMENT de tabela `permissoes_usuario`
 --
 ALTER TABLE `permissoes_usuario`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1011;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1138;
 
 --
 -- AUTO_INCREMENT de tabela `produtos`
@@ -2047,7 +2183,7 @@ ALTER TABLE `unidades_medida`
 -- AUTO_INCREMENT de tabela `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- Restrições para tabelas despejadas

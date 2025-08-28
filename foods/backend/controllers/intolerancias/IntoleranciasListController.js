@@ -39,9 +39,7 @@ class IntoleranciasListController {
       SELECT 
         id,
         nome,
-        status,
-        criado_em,
-        atualizado_em
+        status
       FROM intolerancias 
       ${whereClause}
       ORDER BY nome ASC
