@@ -6,7 +6,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import toast from 'react-hot-toast';
 import { 
   FaEye, 
   FaSearch, 
@@ -54,28 +53,28 @@ import ModalRenegociacao from '../../components/cotacoes/ModalRenegociacao';
 import ModalAprovacao from '../../components/aprovacoes/ModalAprovacao';
 import ModalRejeicao from '../../components/aprovacoes/ModalRejeicao';
 import HeaderAprovacoes from '../../components/aprovacoes/HeaderAprovacoes';
-import InformacoesAprovacao from '../../components/aprovacoes/InformacoesAprovacao';
-import ResumoAprovacao from '../../components/aprovacoes/ResumoAprovacao';
-import BotoesVisualizacaoAprovacao from '../../components/aprovacoes/BotoesVisualizacaoAprovacao';
-import BotoesExportacaoAprovacao from '../../components/aprovacoes/BotoesExportacaoAprovacao';
+import InformacoesSupervisor from '../../components/supervisor/InformacoesSupervisor';
+import ResumoSupervisor from '../../components/supervisor/ResumoSupervisor';
+import BotoesVisualizacaoSupervisor from '../../components/supervisor/BotoesVisualizacaoSupervisor';
+import BotoesExportacaoSupervisor from '../../components/supervisor/BotoesExportacaoSupervisor';
 import { aprovacoesService } from '../../services/aprovacoes';
-import { cotacoesService } from '../../services/cotacoes';
-import { useAprovacaoExport } from '../../hooks/useAprovacaoExport';
+import { useSupervisorExport } from '../../hooks/useSupervisorExport';
 import { useItensMelhoresCriterios } from '../../hooks/useItensMelhoresCriterios';
 import {
   VisualizacaoPadrao,
-  AnaliseComparativaAprovacao,
+  AnaliseComparativa,
   MelhorPreco,
   MelhorPrazoEntrega,
   MelhorPrazoPagamento,
   ComparativoProdutos
-} from './components/visualizacoes';
+} from '../supervisor/components/visualizacoes';
+import toast from 'react-hot-toast';
 
 const VisualizarAprovacao = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { exporting, handleExportPDF, handleExportExcel } = useAprovacaoExport();
+  const { exporting, handleExportPDF, handleExportExcel } = useSupervisorExport();
   
   const [cotacao, setCotacao] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -99,10 +98,57 @@ const VisualizarAprovacao = () => {
       setLoading(true);
       setError(null);
       
-      const response = await cotacoesService.getCotacao(id);
+      const response = await aprovacoesService.getAprovacao(id);
       
       // Verificar se a resposta tem a estrutura esperada
       const cotacaoData = response.data || response;
+      
+      // Transformar a estrutura para ser compatível com o modal de renegociação
+      if (cotacaoData.itens && Array.isArray(cotacaoData.itens)) {
+        // Agrupar itens por fornecedor para criar a estrutura esperada pelo modal
+        const fornecedoresMap = {};
+        
+        cotacaoData.itens.forEach(item => {
+          const fornecedorId = item.fornecedor_id;
+          const fornecedorNome = item.fornecedor_nome;
+          
+          if (!fornecedoresMap[fornecedorId]) {
+            fornecedoresMap[fornecedorId] = {
+              id: fornecedorId,
+              nome: fornecedorNome,
+              fornecedor_id: item.fornecedor_codigo,
+              prazo_pagamento: item.prazo_pagamento,
+              tipo_frete: item.tipo_frete,
+              valor_frete: item.valor_frete,
+              frete: item.frete,
+              difal: item.difal,
+              produtos: []
+            };
+          }
+          
+          // Adicionar produto ao fornecedor
+          fornecedoresMap[fornecedorId].produtos.push({
+            id: item.item_id,
+            produto_id: item.produto_id,
+            nome: item.produto_nome,
+            qtde: item.quantidade,
+            un: item.unidade,
+            valor_unitario: item.valor_unitario,
+            primeiro_valor: item.primeiro_valor,
+            valor_anterior: item.valor_anterior,
+            total: item.total,
+            difal: item.difal,
+            ipi: item.ipi,
+            prazo_entrega: item.prazo_entrega,
+            data_entrega_fn: item.data_entrega_fn,
+            ult_valor_aprovado: item.ult_valor_aprovado,
+            ult_fornecedor_aprovado: item.ult_fornecedor_aprovado
+          });
+        });
+        
+        // Converter o map para array
+        cotacaoData.fornecedores = Object.values(fornecedoresMap);
+      }
       
       setCotacao(cotacaoData);
     } catch (error) {
@@ -276,26 +322,7 @@ const VisualizarAprovacao = () => {
     };
   };
 
-  const handleEnviarGestor = async () => {
-    setSaving(true);
-    
-    try {
-      const data = await aprovacoesService.aprovarCotacao(id, {
-        motivo_aprovacao: 'Aprovado pelo gestor',
-        itens_aprovados: cotacao.itens.map(item => item.id),
-        tipo_aprovacao: 'manual'
-      });
-      
-      toast.success(data.message || 'Cotação aprovada com sucesso!');
-      navigate('/aprovacoes');
-    } catch (error) {
-      console.error('Erro ao enviar para gerência:', error);
-      toast.error(error.message || 'Erro ao conectar com o servidor');
-    } finally {
-      setSaving(false);
-    }
-  };
-
+  // Funções de aprovação (substituindo as do supervisor)
   const handleAprovar = () => {
     setShowModalAprovacao(true);
   };
@@ -308,6 +335,12 @@ const VisualizarAprovacao = () => {
     setShowModalRenegociacao(true);
   };
 
+  const handleRenegociacaoConfirmada = () => {
+    setShowModalRenegociacao(false);
+    // Recarregar a cotação para mostrar as mudanças
+    fetchCotacao();
+  };
+
   const handleAprovacaoSuccess = () => {
     setShowModalAprovacao(false);
     navigate('/aprovacoes');
@@ -316,12 +349,6 @@ const VisualizarAprovacao = () => {
   const handleRejeicaoSuccess = () => {
     setShowModalRejeicao(false);
     navigate('/aprovacoes');
-  };
-
-  const handleRenegociacaoConfirmada = () => {
-    setShowModalRenegociacao(false);
-    // Recarregar a cotação para mostrar as mudanças
-    fetchCotacao();
   };
 
   const handleProdutoClick = (produtoNome, fornecedorNome) => {
@@ -334,6 +361,8 @@ const VisualizarAprovacao = () => {
       setProdutoDestacado(null);
     }, 3000);
   };
+
+
 
   if (loading) {
     return (
@@ -374,14 +403,14 @@ const VisualizarAprovacao = () => {
     <div className="p-6">
       <HeaderAprovacoes cotacao={cotacao} />
       
-      <InformacoesAprovacao cotacao={cotacao} />
+      <InformacoesSupervisor cotacao={cotacao} />
       
-      <ResumoAprovacao estatisticas={estatisticas} formatarValor={formatarValor} />
+      <ResumoSupervisor estatisticas={estatisticas} formatarValor={formatarValor} />
       
-      <BotoesVisualizacaoAprovacao viewMode={viewMode} setViewMode={setViewMode} />
+      <BotoesVisualizacaoSupervisor viewMode={viewMode} setViewMode={setViewMode} />
 
       {/* Botões de Exportação */}
-      <BotoesExportacaoAprovacao
+      <BotoesExportacaoSupervisor
         viewMode={viewMode}
         cotacao={cotacao}
         formatarValor={formatarValor}
@@ -396,7 +425,7 @@ const VisualizarAprovacao = () => {
         formatarValor={formatarValor}
         produtoDestacado={produtoDestacado}
       />
-      <AnaliseComparativaAprovacao 
+      <AnaliseComparativa 
         cotacao={cotacao} 
         active={viewMode === 'resumo'} 
         formatarValor={formatarValor}
@@ -423,7 +452,7 @@ const VisualizarAprovacao = () => {
         formatarValor={formatarValor} 
       />
 
-      {/* Botões de Ação de Aprovação */}
+      {/* Botões de Ação de Aprovação (substituindo os do supervisor) */}
       <div className="flex gap-4 justify-center mt-8 pt-6 border-t border-gray-200">
         <button
           onClick={handleAprovar}

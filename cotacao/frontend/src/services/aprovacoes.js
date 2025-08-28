@@ -13,12 +13,6 @@ export const aprovacoesService = {
     return response.data.data || response.data; // Extrair dados da estrutura padronizada
   },
 
-  // Buscar cotação específica para aprovação
-  async fetchCotacao(id) {
-    const response = await api.get(`/cotacoes/${id}`);
-    return response.data.data || response.data; // Extrair dados da estrutura padronizada
-  },
-
   // Aprovar cotação
   async aprovarCotacao(id, data) {
     const response = await api.post(`/aprovacoes/${id}/aprovar`, data);
