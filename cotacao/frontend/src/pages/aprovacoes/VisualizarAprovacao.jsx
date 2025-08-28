@@ -53,28 +53,28 @@ import ModalRenegociacao from '../../components/cotacoes/ModalRenegociacao';
 import ModalAprovacao from '../../components/aprovacoes/ModalAprovacao';
 import ModalRejeicao from '../../components/aprovacoes/ModalRejeicao';
 import HeaderAprovacoes from '../../components/aprovacoes/HeaderAprovacoes';
-import InformacoesSupervisor from '../../components/supervisor/InformacoesSupervisor';
-import ResumoSupervisor from '../../components/supervisor/ResumoSupervisor';
-import BotoesVisualizacaoSupervisor from '../../components/supervisor/BotoesVisualizacaoSupervisor';
-import BotoesExportacaoSupervisor from '../../components/supervisor/BotoesExportacaoSupervisor';
+import InformacoesAprovacao from '../../components/aprovacoes/InformacoesAprovacao';
+import ResumoAprovacao from '../../components/aprovacoes/ResumoAprovacao';
+import BotoesVisualizacaoAprovacao from '../../components/aprovacoes/BotoesVisualizacaoAprovacao';
+import BotoesExportacaoAprovacao from '../../components/aprovacoes/BotoesExportacaoAprovacao';
 import { aprovacoesService } from '../../services/aprovacoes';
-import { useSupervisorExport } from '../../hooks/useSupervisorExport';
+import { useAprovacaoExport } from '../../hooks/useAprovacaoExport';
 import { useItensMelhoresCriterios } from '../../hooks/useItensMelhoresCriterios';
 import {
   VisualizacaoPadrao,
-  AnaliseComparativa,
+  AnaliseComparativaAprovacao,
   MelhorPreco,
   MelhorPrazoEntrega,
   MelhorPrazoPagamento,
   ComparativoProdutos
-} from '../supervisor/components/visualizacoes';
+} from './components/visualizacoes';
 import toast from 'react-hot-toast';
 
 const VisualizarAprovacao = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { exporting, handleExportPDF, handleExportExcel } = useSupervisorExport();
+  const { exporting, handleExportPDF, handleExportExcel } = useAprovacaoExport();
   
   const [cotacao, setCotacao] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -403,14 +403,14 @@ const VisualizarAprovacao = () => {
     <div className="p-6">
       <HeaderAprovacoes cotacao={cotacao} />
       
-      <InformacoesSupervisor cotacao={cotacao} />
+      <InformacoesAprovacao cotacao={cotacao} />
       
-      <ResumoSupervisor estatisticas={estatisticas} formatarValor={formatarValor} />
+      <ResumoAprovacao estatisticas={estatisticas} formatarValor={formatarValor} />
       
-      <BotoesVisualizacaoSupervisor viewMode={viewMode} setViewMode={setViewMode} />
+      <BotoesVisualizacaoAprovacao viewMode={viewMode} setViewMode={setViewMode} />
 
       {/* Botões de Exportação */}
-      <BotoesExportacaoSupervisor
+      <BotoesExportacaoAprovacao
         viewMode={viewMode}
         cotacao={cotacao}
         formatarValor={formatarValor}
@@ -425,7 +425,7 @@ const VisualizarAprovacao = () => {
         formatarValor={formatarValor}
         produtoDestacado={produtoDestacado}
       />
-      <AnaliseComparativa 
+      <AnaliseComparativaAprovacao 
         cotacao={cotacao} 
         active={viewMode === 'resumo'} 
         formatarValor={formatarValor}
