@@ -31,7 +31,7 @@ class IntoleranciasListController {
 
     // Query para contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM intolerancias ${whereClause}`;
-    const [countResult] = await executeQuery(countQuery, params);
+    const countResult = await executeQuery(countQuery, params);
     const totalItems = countResult[0].total;
 
     // Query principal com paginação
@@ -48,7 +48,7 @@ class IntoleranciasListController {
       LIMIT ? OFFSET ?
     `;
 
-    const [intolerancias] = await executeQuery(query, [...params, parseInt(limit), offset]);
+    const intolerancias = await executeQuery(query, [...params, parseInt(limit), offset]);
 
     const totalPages = Math.ceil(totalItems / limit);
 
@@ -82,7 +82,7 @@ class IntoleranciasListController {
       WHERE id = ?
     `;
 
-    const [intolerancias] = await executeQuery(query, [id]);
+    const intolerancias = await executeQuery(query, [id]);
 
     if (intolerancias.length === 0) {
       return notFoundResponse(res, 'Intolerância não encontrada');
@@ -105,7 +105,7 @@ class IntoleranciasListController {
       ORDER BY nome ASC
     `;
 
-    const [intolerancias] = await executeQuery(query);
+    const intolerancias = await executeQuery(query);
 
     return successResponse(res, intolerancias, 'Intolerâncias ativas listadas com sucesso');
   });
