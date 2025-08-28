@@ -1,5 +1,10 @@
-const db = require('../../config/database');
-const { formatResponse } = require('../../utils/formatters');
+const { executeQuery } = require('../../config/database');
+const { 
+  successResponse, 
+  notFoundResponse, 
+  errorResponse,
+  conflictResponse 
+} = require('../../middleware/responseHandler');
 const { logAuditoria } = require('../../utils/audit');
 
 class IntoleranciasCRUDController {
@@ -16,7 +21,7 @@ class IntoleranciasCRUDController {
       const [existing] = await db.execute(checkQuery, [nome]);
 
       if (existing.length > 0) {
-        return res.status(400).json(formatResponse(null, 'Já existe uma intolerância com este nome', false));
+        return conflictResponse(res, 'Já existe uma intolerância com este nome');
       }
 
       // Inserir nova intolerância
@@ -39,10 +44,10 @@ class IntoleranciasCRUDController {
         status
       });
 
-      res.status(201).json(formatResponse(intolerancias[0], 'Intolerância criada com sucesso'));
+      return successResponse(res, intolerancias[0], 'Intolerância criada com sucesso', 201);
     } catch (error) {
       console.error('Erro ao criar intolerância:', error);
-      res.status(500).json(formatResponse(null, 'Erro interno do servidor', false));
+      return errorResponse(res, 'Erro interno do servidor');
     }
   }
 
@@ -60,7 +65,7 @@ class IntoleranciasCRUDController {
       const [existing] = await db.execute(checkQuery, [id]);
 
       if (existing.length === 0) {
-        return res.status(404).json(formatResponse(null, 'Intolerância não encontrada', false));
+        return notFoundResponse(res, 'Intolerância não encontrada');
       }
 
       // Verificar se já existe outra intolerância com o mesmo nome
@@ -69,7 +74,7 @@ class IntoleranciasCRUDController {
         const [nameConflict] = await db.execute(nameCheckQuery, [nome, id]);
 
         if (nameConflict.length > 0) {
-          return res.status(400).json(formatResponse(null, 'Já existe uma intolerância com este nome', false));
+          return conflictResponse(res, 'Já existe uma intolerância com este nome');
         }
       }
 
@@ -79,7 +84,7 @@ class IntoleranciasCRUDController {
       if (status !== undefined) updateData.status = status;
 
       if (Object.keys(updateData).length === 0) {
-        return res.status(400).json(formatResponse(null, 'Nenhum dado fornecido para atualização', false));
+        return errorResponse(res, 'Nenhum dado fornecido para atualização', 400);
       }
 
       // Construir query de atualização dinamicamente
@@ -99,10 +104,10 @@ class IntoleranciasCRUDController {
         ...updateData
       });
 
-      res.json(formatResponse(intolerancias[0], 'Intolerância atualizada com sucesso'));
+      return successResponse(res, intolerancias[0], 'Intolerância atualizada com sucesso');
     } catch (error) {
       console.error('Erro ao atualizar intolerância:', error);
-      res.status(500).json(formatResponse(null, 'Erro interno do servidor', false));
+      return errorResponse(res, 'Erro interno do servidor');
     }
   }
 
@@ -119,7 +124,7 @@ class IntoleranciasCRUDController {
       const [existing] = await db.execute(checkQuery, [id]);
 
       if (existing.length === 0) {
-        return res.status(404).json(formatResponse(null, 'Intolerância não encontrada', false));
+        return notFoundResponse(res, 'Intolerância não encontrada');
       }
 
       // Excluir a intolerância
@@ -132,10 +137,10 @@ class IntoleranciasCRUDController {
         nome: existing[0].nome
       });
 
-      res.json(formatResponse(null, 'Intolerância excluída com sucesso'));
+      return successResponse(res, null, 'Intolerância excluída com sucesso');
     } catch (error) {
       console.error('Erro ao excluir intolerância:', error);
-      res.status(500).json(formatResponse(null, 'Erro interno do servidor', false));
+      return errorResponse(res, 'Erro interno do servidor');
     }
   }
 }

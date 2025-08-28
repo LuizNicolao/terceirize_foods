@@ -1,5 +1,9 @@
-const db = require('../../config/database');
-const { formatResponse } = require('../../utils/formatters');
+const { executeQuery } = require('../../config/database');
+const { 
+  successResponse, 
+  notFoundResponse, 
+  errorResponse 
+} = require('../../middleware/responseHandler');
 
 class IntoleranciasListController {
   /**
@@ -58,10 +62,10 @@ class IntoleranciasListController {
         }
       };
 
-      res.json(formatResponse(response, 'Intolerâncias listadas com sucesso'));
+      return successResponse(res, response, 'Intolerâncias listadas com sucesso');
     } catch (error) {
       console.error('Erro ao listar intolerâncias:', error);
-      res.status(500).json(formatResponse(null, 'Erro interno do servidor', false));
+      return errorResponse(res, 'Erro interno do servidor');
     }
   }
 
@@ -86,13 +90,13 @@ class IntoleranciasListController {
       const [intolerancias] = await db.execute(query, [id]);
 
       if (intolerancias.length === 0) {
-        return res.status(404).json(formatResponse(null, 'Intolerância não encontrada', false));
+        return notFoundResponse(res, 'Intolerância não encontrada');
       }
 
-      res.json(formatResponse(intolerancias[0], 'Intolerância encontrada com sucesso'));
+      return successResponse(res, intolerancias[0], 'Intolerância encontrada com sucesso');
     } catch (error) {
       console.error('Erro ao buscar intolerância:', error);
-      res.status(500).json(formatResponse(null, 'Erro interno do servidor', false));
+      return errorResponse(res, 'Erro interno do servidor');
     }
   }
 
@@ -113,10 +117,10 @@ class IntoleranciasListController {
 
       const [intolerancias] = await db.execute(query);
 
-      res.json(formatResponse(intolerancias, 'Intolerâncias ativas listadas com sucesso'));
+      return successResponse(res, intolerancias, 'Intolerâncias ativas listadas com sucesso');
     } catch (error) {
       console.error('Erro ao listar intolerâncias ativas:', error);
-      res.status(500).json(formatResponse(null, 'Erro interno do servidor', false));
+      return errorResponse(res, 'Erro interno do servidor');
     }
   }
 }
