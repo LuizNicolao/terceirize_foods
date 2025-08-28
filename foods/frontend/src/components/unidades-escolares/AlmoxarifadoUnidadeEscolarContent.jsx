@@ -27,7 +27,6 @@ const AlmoxarifadoUnidadeEscolarContent = ({
   const [showConfirmRemoveModal, setShowConfirmRemoveModal] = useState(false);
   const [almoxarifadoToDelete, setAlmoxarifadoToDelete] = useState(null);
   const [itemToRemove, setItemToRemove] = useState(null);
-  const [filiais, setFiliais] = useState([]);
   const [unidadeEscolar, setUnidadeEscolar] = useState(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
@@ -55,17 +54,7 @@ const AlmoxarifadoUnidadeEscolarContent = ({
     }
   };
 
-  // Carregar filiais
-  const loadFiliais = async () => {
-    try {
-      const response = await api.get('/filiais');
-      const filiaisData = response.data?.data || response.data || [];
-      setFiliais(Array.isArray(filiaisData) ? filiaisData : []);
-    } catch (error) {
-      console.error('Erro ao carregar filiais:', error);
-      setFiliais([]);
-    }
-  };
+
 
   // Carregar produtos
   const loadProdutos = async () => {
@@ -116,7 +105,11 @@ const AlmoxarifadoUnidadeEscolarContent = ({
           toast.error(response.error);
         }
       } else {
-        const response = await filiaisService.criarAlmoxarifado(data.filial_id, payload);
+        // Usar o método específico para criar almoxarifado de unidade escolar
+        const response = await unidadesEscolaresService.criarAlmoxarifado(unidadeEscolarId, {
+          nome: data.nome,
+          status: data.status
+        });
         if (response.success) {
           toast.success('Almoxarifado criado!');
         } else {
@@ -237,7 +230,6 @@ const AlmoxarifadoUnidadeEscolarContent = ({
   useEffect(() => {
     if (unidadeEscolarId) {
       loadAlmoxarifados();
-      loadFiliais();
     }
   }, [unidadeEscolarId]);
 
@@ -272,37 +264,16 @@ const AlmoxarifadoUnidadeEscolarContent = ({
             {editingAlmoxarifado ? 'Editar Almoxarifado' : 'Novo Almoxarifado'}
           </h4>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nome *
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Nome do almoxarifado"
-                  {...register('nome', { required: 'Nome é obrigatório' })}
-                  error={errors.nome?.message}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Filial *
-                </label>
-                <select
-                  {...register('filial_id', { required: 'Filial é obrigatória' })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                >
-                  <option value="">Selecione uma filial</option>
-                  {filiais.map(filial => (
-                    <option key={filial.id} value={filial.id}>
-                      {filial.filial}
-                    </option>
-                  ))}
-                </select>
-                {errors.filial_id && (
-                  <p className="text-red-500 text-sm mt-1">{errors.filial_id.message}</p>
-                )}
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Nome *
+              </label>
+              <Input
+                type="text"
+                placeholder="Nome do almoxarifado"
+                {...register('nome', { required: 'Nome é obrigatório' })}
+                error={errors.nome?.message}
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">

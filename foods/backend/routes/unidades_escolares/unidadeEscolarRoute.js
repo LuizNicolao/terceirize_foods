@@ -105,4 +105,11 @@ router.get('/:unidadeEscolarId/almoxarifados',
   unidadesEscolaresController.listarAlmoxarifadosUnidadeEscolar
 );
 
+// Criar almoxarifado para uma unidade escolar
+router.post('/:unidadeEscolarId/almoxarifados', 
+  checkScreenPermission('unidades_escolares', 'criar'),
+  commonValidations.id,
+  unidadesEscolaresController.criarAlmoxarifadoUnidadeEscolar
+);
+
 module.exports = router;

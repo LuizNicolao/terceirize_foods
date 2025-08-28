@@ -218,6 +218,87 @@ class UnidadesEscolaresListController {
       });
     }
   }
+
+  // Criar almoxarifado para uma unidade escolar
+  static async criarAlmoxarifadoUnidadeEscolar(req, res) {
+    try {
+      const { unidadeEscolarId } = req.params;
+      const { nome, status = 1 } = req.body;
+
+      if (!nome || nome.trim() === '') {
+        return res.status(400).json({
+          success: false,
+          error: 'O nome do almoxarifado é obrigatório'
+        });
+      }
+
+      // Verificar se a unidade escolar existe
+      const unidadeEscolar = await executeQuery(
+        'SELECT id, nome_escola FROM unidades_escolares WHERE id = ?',
+        [unidadeEscolarId]
+      );
+
+      if (unidadeEscolar.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Unidade escolar não encontrada'
+        });
+      }
+
+      // Verificar se já existe um almoxarifado para esta unidade escolar
+      const almoxarifadoExistente = await executeQuery(
+        'SELECT id FROM almoxarifados WHERE unidade_escolar_id = ?',
+        [unidadeEscolarId]
+      );
+
+      if (almoxarifadoExistente.length > 0) {
+        return res.status(409).json({
+          success: false,
+          error: 'Já existe um almoxarifado para esta unidade escolar'
+        });
+      }
+
+      // Buscar a primeira filial disponível (ou implementar lógica específica)
+      const filiais = await executeQuery('SELECT id FROM filiais WHERE status = 1 LIMIT 1');
+      
+      if (filiais.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Não há filiais disponíveis para criar o almoxarifado'
+        });
+      }
+
+      const filialId = filiais[0].id;
+
+      // Criar o almoxarifado
+      const insertQuery = `
+        INSERT INTO almoxarifados (filial_id, unidade_escolar_id, nome, status, criado_em, atualizado_em)
+        VALUES (?, ?, ?, ?, NOW(), NOW())
+      `;
+
+      const result = await executeQuery(insertQuery, [filialId, unidadeEscolarId, nome.trim(), status]);
+
+      // Buscar o almoxarifado criado
+      const almoxarifado = await executeQuery(
+        'SELECT * FROM almoxarifados WHERE id = ?',
+        [result.insertId]
+      );
+
+      res.status(201).json({
+        success: true,
+        data: almoxarifado[0],
+        message: 'Almoxarifado criado com sucesso'
+      });
+
+    } catch (error) {
+      console.error('Erro ao criar almoxarifado para unidade escolar:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível criar o almoxarifado'
+      });
+    }
+  }
 }
 
 module.exports = UnidadesEscolaresListController;
