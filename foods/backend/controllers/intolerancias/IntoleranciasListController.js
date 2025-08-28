@@ -3,48 +3,56 @@ const { executeQuery } = require('../../config/database');
 class IntoleranciasListController {
   static async listarIntolerancias(req, res) {
     try {
-      const { page = 1, limit = 20, search, status } = req.query;
-      const offset = (page - 1) * limit;
+      const { search, status } = req.query;
+      const pagination = req.pagination;
 
-      // Construir query base
-      let baseQuery = 'FROM intolerancias WHERE 1=1';
-      const queryParams = [];
-
-      // Adicionar filtros
-      if (search) {
-        baseQuery += ' AND (nome LIKE ?)';
-        queryParams.push(`%${search}%`);
-      }
-
-      if (status && status !== 'todos') {
-        baseQuery += ' AND status = ?';
-        queryParams.push(status);
-      }
-
-      // Query para contar total
-      const countQuery = `SELECT COUNT(*) as total ${baseQuery}`;
-      const [countResult] = await executeQuery(countQuery, queryParams);
-      const totalItems = countResult.total;
-
-      // Query para buscar dados
-      const dataQuery = `
+      // Query base
+      let baseQuery = `
         SELECT 
           id,
           nome,
           status,
           criado_em,
           atualizado_em
-        ${baseQuery}
-        ORDER BY nome ASC
-        LIMIT ? OFFSET ?
+        FROM intolerancias 
+        WHERE 1=1
       `;
+      
+      let params = [];
 
-      const dataParams = [...queryParams, parseInt(limit), offset];
-      const intolerancias = await executeQuery(dataQuery, dataParams);
+      // Aplicar filtros
+      if (search) {
+        baseQuery += ' AND (nome LIKE ?)';
+        params.push(`%${search}%`);
+      }
 
-      // Calcular paginação
-      const totalPages = Math.ceil(totalItems / limit);
-      const currentPage = parseInt(page);
+      if (status && status !== 'todos') {
+        baseQuery += ' AND status = ?';
+        params.push(status);
+      }
+
+      baseQuery += ' ORDER BY nome ASC';
+
+      // Aplicar paginação manualmente
+      const limit = pagination.limit;
+      const offset = pagination.offset;
+      const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
+      
+      // Executar query paginada
+      const intolerancias = await executeQuery(query, params);
+
+      // Contar total de registros
+      const countQuery = `SELECT COUNT(*) as total FROM intolerancias WHERE 1=1${search ? ' AND (nome LIKE ?)' : ''}${status && status !== 'todos' ? ' AND status = ?' : ''}`;
+      const countParams = [...params];
+      const totalResult = await executeQuery(countQuery, countParams);
+      const totalItems = totalResult[0].total;
+
+      // Gerar metadados de paginação
+      const queryParams = { ...req.query };
+      delete queryParams.page;
+      delete queryParams.limit;
+      
+      const meta = pagination.generateMeta(totalItems, '/api/intolerancias', queryParams);
 
       // Adicionar links HATEOAS
       const intoleranciasComLinks = intolerancias.map(intolerancia => ({
@@ -59,14 +67,7 @@ class IntoleranciasListController {
       res.json({
         success: true,
         data: intoleranciasComLinks,
-        pagination: {
-          currentPage,
-          totalPages,
-          totalItems,
-          itemsPerPage: parseInt(limit),
-          hasNextPage: currentPage < totalPages,
-          hasPrevPage: currentPage > 1
-        }
+        pagination: meta
       });
     } catch (error) {
       console.error('Erro ao listar intolerâncias:', error);
@@ -92,7 +93,7 @@ class IntoleranciasListController {
         WHERE id = ?
       `;
 
-      const [intolerancia] = await executeQuery(query, [id]);
+      const [intolerancia] = await executeQuery(query, [parseInt(id)]);
 
       if (!intolerancia) {
         return res.status(404).json({
