@@ -84,12 +84,9 @@ const EfetivosContent = ({
       {/* Tabela */}
       <EfetivosTable
         efetivos={efetivos}
-        canView={canView}
-        canEdit={canEdit}
-        canDelete={canDelete}
-        onView={handleViewEfetivo}
-        onEdit={handleEditEfetivo}
-        onDelete={handleDeleteEfetivo}
+        onView={canView('efetivos') ? handleViewEfetivo : null}
+        onEdit={canEdit('efetivos') ? handleEditEfetivo : null}
+        onDelete={canDelete('efetivos') ? handleDeleteEfetivo : null}
         formatDate={formatDate}
       />
 

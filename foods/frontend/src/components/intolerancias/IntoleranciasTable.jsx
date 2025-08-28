@@ -31,53 +31,83 @@ const IntoleranciasTable = ({
   }
 
   return (
-    <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nome
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {intolerancias.map((intolerancia) => (
-              <tr key={intolerancia.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">
-                    {intolerancia.nome}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {getStatusBadge(intolerancia.status)}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end">
+    <>
+      {/* Versão Desktop - Tabela */}
+      <div className="hidden lg:block bg-white shadow-sm rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Nome
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {intolerancias.map((intolerancia) => (
+                <tr key={intolerancia.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {intolerancia.nome}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {getStatusBadge(intolerancia.status)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <ActionButtons
-                      canView={canView('intolerancias')}
-                      canEdit={canEdit('intolerancias')}
-                      canDelete={canDelete('intolerancias')}
+                      canView={!!onView}
+                      canEdit={!!onEdit}
+                      canDelete={!!onDelete}
                       onView={onView}
                       onEdit={onEdit}
                       onDelete={onDelete}
                       item={intolerancia}
-                      size="sm"
+                      size="xs"
                     />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
+
+      {/* Versão Mobile - Cards */}
+      <div className="lg:hidden space-y-3">
+        {intolerancias.map((intolerancia) => (
+          <div key={intolerancia.id} className="bg-white rounded-lg shadow-sm p-4 border">
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 text-sm">{intolerancia.nome}</h3>
+              </div>
+              <ActionButtons
+                canView={!!onView}
+                canEdit={!!onEdit}
+                canDelete={!!onDelete}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={intolerancia}
+                size="xs"
+                className="p-2"
+              />
+            </div>
+            
+            <div className="flex items-center">
+              <span className="text-gray-500 text-xs mr-2">Status:</span>
+              {getStatusBadge(intolerancia.status)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
 
