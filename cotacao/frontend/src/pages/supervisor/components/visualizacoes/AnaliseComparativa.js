@@ -189,7 +189,6 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Critério</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fornecedor</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Unitário</th>
@@ -235,7 +234,7 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
                 <React.Fragment key={index}>
                   {/* Linha de título do produto */}
                   <tr className="bg-gray-100 border-b-2 border-gray-300">
-                    <td colSpan="9" className="px-4 py-3">
+                    <td colSpan="8" className="px-4 py-3">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-gray-900">{produto.nome}</span>
                         <span className="text-sm text-gray-600">Qtd: {produto.quantidade.toFixed(2)} {produto.unidade}</span>
@@ -245,7 +244,6 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
                   
                   {/* Linha - Melhor Preço */}
                   <tr className="hover:bg-green-50 border-l-4 border-l-green-500">
-                    <td className="px-4 py-3"></td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         💰 Melhor Preço
@@ -278,7 +276,6 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
                   {/* Linha - Melhor Entrega */}
                   {itemMelhorEntrega && (
                     <tr className="hover:bg-blue-50 border-l-4 border-l-blue-500">
-                      <td className="px-4 py-3"></td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           🚚 Melhor Entrega
@@ -312,7 +309,6 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
                   {/* Linha - Melhor Pagamento */}
                   {itemMelhorPagamento && (
                     <tr className="hover:bg-purple-50 border-l-4 border-l-purple-500">
-                      <td className="px-4 py-3"></td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                           💳 Melhor Pagamento
@@ -345,7 +341,7 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
                   
                   {/* Linha de separação */}
                   <tr className="h-2 bg-gray-100">
-                    <td colSpan="9" className="px-0 py-0"></td>
+                    <td colSpan="8" className="px-0 py-0"></td>
                   </tr>
                 </React.Fragment>
               );
