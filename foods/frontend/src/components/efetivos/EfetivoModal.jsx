@@ -26,11 +26,9 @@ const EfetivoModal = ({
       if (!unidadeEscolarId) {
         loadUnidadesEscolares();
       }
-      if (tipoEfetivo === 'NAE') {
-        loadIntolerancias();
-      }
+      loadIntolerancias();
     }
-  }, [isOpen, tipoEfetivo, unidadeEscolarId]);
+  }, [isOpen, unidadeEscolarId]);
 
   const loadUnidadesEscolares = async () => {
     setLoadingUnidades(true);
@@ -80,6 +78,7 @@ const EfetivoModal = ({
   }, [efetivo, isOpen, setValue, reset]);
 
   const handleFormSubmit = (data) => {
+    console.log('Dados do formulário:', data);
     onSubmit(data);
   };
 

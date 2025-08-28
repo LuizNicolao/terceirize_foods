@@ -5,6 +5,7 @@ class EfetivosCRUDController {
 
 
   static async criarEfetivo(req, res) {
+    console.log('criarEfetivo chamado:', { params: req.params, body: req.body });
     try {
       const { unidade_escolar_id } = req.params;
       const { tipo_efetivo, quantidade, intolerancia_id } = req.body;
