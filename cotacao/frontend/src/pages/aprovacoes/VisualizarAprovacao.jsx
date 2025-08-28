@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import toast from 'react-hot-toast';
 import { 
   FaEye, 
   FaSearch, 
@@ -68,7 +69,6 @@ import {
   MelhorPrazoPagamento,
   ComparativoProdutos
 } from './components/visualizacoes';
-import toast from 'react-hot-toast';
 
 const VisualizarAprovacao = () => {
   const { id } = useParams();
@@ -98,57 +98,10 @@ const VisualizarAprovacao = () => {
       setLoading(true);
       setError(null);
       
-      const response = await aprovacoesService.getAprovacao(id);
+      const response = await aprovacoesService.fetchCotacao(id);
       
       // Verificar se a resposta tem a estrutura esperada
       const cotacaoData = response.data || response;
-      
-      // Transformar a estrutura para ser compatível com o modal de renegociação
-      if (cotacaoData.itens && Array.isArray(cotacaoData.itens)) {
-        // Agrupar itens por fornecedor para criar a estrutura esperada pelo modal
-        const fornecedoresMap = {};
-        
-        cotacaoData.itens.forEach(item => {
-          const fornecedorId = item.fornecedor_id;
-          const fornecedorNome = item.fornecedor_nome;
-          
-          if (!fornecedoresMap[fornecedorId]) {
-            fornecedoresMap[fornecedorId] = {
-              id: fornecedorId,
-              nome: fornecedorNome,
-              fornecedor_id: item.fornecedor_codigo,
-              prazo_pagamento: item.prazo_pagamento,
-              tipo_frete: item.tipo_frete,
-              valor_frete: item.valor_frete,
-              frete: item.frete,
-              difal: item.difal,
-              produtos: []
-            };
-          }
-          
-          // Adicionar produto ao fornecedor
-          fornecedoresMap[fornecedorId].produtos.push({
-            id: item.item_id,
-            produto_id: item.produto_id,
-            nome: item.produto_nome,
-            qtde: item.quantidade,
-            un: item.unidade,
-            valor_unitario: item.valor_unitario,
-            primeiro_valor: item.primeiro_valor,
-            valor_anterior: item.valor_anterior,
-            total: item.total,
-            difal: item.difal,
-            ipi: item.ipi,
-            prazo_entrega: item.prazo_entrega,
-            data_entrega_fn: item.data_entrega_fn,
-            ult_valor_aprovado: item.ult_valor_aprovado,
-            ult_fornecedor_aprovado: item.ult_fornecedor_aprovado
-          });
-        });
-        
-        // Converter o map para array
-        cotacaoData.fornecedores = Object.values(fornecedoresMap);
-      }
       
       setCotacao(cotacaoData);
     } catch (error) {
@@ -322,7 +275,26 @@ const VisualizarAprovacao = () => {
     };
   };
 
-  // Funções de aprovação (substituindo as do supervisor)
+  const handleEnviarGestor = async () => {
+    setSaving(true);
+    
+    try {
+      const data = await aprovacoesService.aprovarCotacao(id, {
+        motivo_aprovacao: 'Aprovado pelo gestor',
+        itens_aprovados: cotacao.itens.map(item => item.id),
+        tipo_aprovacao: 'manual'
+      });
+      
+      toast.success(data.message || 'Cotação aprovada com sucesso!');
+      navigate('/aprovacoes');
+    } catch (error) {
+      console.error('Erro ao enviar para gerência:', error);
+      toast.error(error.message || 'Erro ao conectar com o servidor');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleAprovar = () => {
     setShowModalAprovacao(true);
   };
@@ -335,12 +307,6 @@ const VisualizarAprovacao = () => {
     setShowModalRenegociacao(true);
   };
 
-  const handleRenegociacaoConfirmada = () => {
-    setShowModalRenegociacao(false);
-    // Recarregar a cotação para mostrar as mudanças
-    fetchCotacao();
-  };
-
   const handleAprovacaoSuccess = () => {
     setShowModalAprovacao(false);
     navigate('/aprovacoes');
@@ -349,6 +315,12 @@ const VisualizarAprovacao = () => {
   const handleRejeicaoSuccess = () => {
     setShowModalRejeicao(false);
     navigate('/aprovacoes');
+  };
+
+  const handleRenegociacaoConfirmada = () => {
+    setShowModalRenegociacao(false);
+    // Recarregar a cotação para mostrar as mudanças
+    fetchCotacao();
   };
 
   const handleProdutoClick = (produtoNome, fornecedorNome) => {
@@ -361,8 +333,6 @@ const VisualizarAprovacao = () => {
       setProdutoDestacado(null);
     }, 3000);
   };
-
-
 
   if (loading) {
     return (
@@ -452,7 +422,7 @@ const VisualizarAprovacao = () => {
         formatarValor={formatarValor} 
       />
 
-      {/* Botões de Ação de Aprovação (substituindo os do supervisor) */}
+      {/* Botões de Ação de Aprovação */}
       <div className="flex gap-4 justify-center mt-8 pt-6 border-t border-gray-200">
         <button
           onClick={handleAprovar}
