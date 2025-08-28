@@ -1,43 +1,59 @@
 import React from 'react';
+import { Modal, Button, Input, Select } from '../ui';
 import { useForm } from 'react-hook-form';
-import { Modal, Button, Input } from '../ui';
 
 const IntoleranciaModal = ({ 
-  show: isOpen, 
+  isOpen, 
   onClose, 
   onSubmit, 
-  intolerancia = null, 
-  viewMode: isViewMode = false,
-  loading = false 
+  intolerancia, 
+  isViewMode = false 
 }) => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     reset,
-    setValue
-  } = useForm();
-
-  // Resetar formulário quando modal abrir/fechar
-  React.useEffect(() => {
-    if (isOpen) {
-      if (intolerancia) {
-        setValue('nome', intolerancia.nome);
-        setValue('status', intolerancia.status);
-      } else {
-        reset();
-      }
+    watch
+  } = useForm({
+    defaultValues: {
+      nome: intolerancia?.nome || '',
+      status: intolerancia?.status || 'ativo'
     }
-  }, [isOpen, intolerancia, setValue, reset]);
+  });
 
-  const handleFormSubmit = (data) => {
-    onSubmit(data);
+  const statusOptions = [
+    { value: 'ativo', label: 'Ativo' },
+    { value: 'inativo', label: 'Inativo' }
+  ];
+
+  const handleFormSubmit = async (data) => {
+    try {
+      await onSubmit(data);
+      reset();
+    } catch (error) {
+      console.error('Erro ao submeter formulário:', error);
+    }
   };
 
   const handleClose = () => {
     reset();
     onClose();
   };
+
+  React.useEffect(() => {
+    if (intolerancia) {
+      reset({
+        nome: intolerancia.nome || '',
+        status: intolerancia.status || 'ativo'
+      });
+    } else {
+      reset({
+        nome: '',
+        status: 'ativo'
+      });
+    }
+  }, [intolerancia, reset]);
 
   return (
     <Modal
@@ -46,64 +62,104 @@ const IntoleranciaModal = ({
       title={isViewMode ? 'Visualizar Intolerância' : intolerancia ? 'Editar Intolerância' : 'Nova Intolerância'}
       size="md"
     >
-      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        {/* Nome */}
         <div>
+          <label htmlFor="nome" className="block text-sm font-medium text-gray-700 mb-2">
+            Nome *
+          </label>
           <Input
-            label="Nome"
-            {...register('nome', { 
+            id="nome"
+            type="text"
+            placeholder="Digite o nome da intolerância"
+            {...register('nome', {
               required: 'Nome é obrigatório',
-              minLength: { value: 2, message: 'Nome deve ter pelo menos 2 caracteres' },
-              maxLength: { value: 100, message: 'Nome deve ter no máximo 100 caracteres' }
+              minLength: {
+                value: 2,
+                message: 'Nome deve ter pelo menos 2 caracteres'
+              },
+              maxLength: {
+                value: 100,
+                message: 'Nome deve ter no máximo 100 caracteres'
+              },
+              pattern: {
+                value: /^[a-zA-ZÀ-ÿ\s]+$/,
+                message: 'Nome deve conter apenas letras e espaços'
+              }
             })}
             error={errors.nome?.message}
-            disabled={isViewMode || loading}
-            placeholder="Digite o nome da intolerância"
+            disabled={isViewMode}
+            className="w-full"
           />
         </div>
 
+        {/* Status */}
         <div>
-          <Input
-            label="Status"
-            type="select"
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">
+            Status
+          </label>
+          <Select
+            id="status"
             {...register('status')}
-            error={errors.status?.message}
-            disabled={isViewMode || loading}
+            disabled={isViewMode}
+            className="w-full"
           >
-            <option value="ativo">Ativo</option>
-            <option value="inativo">Inativo</option>
-          </Input>
+            {statusOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
         </div>
 
-        {!isViewMode && (
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={loading}
-            >
-              Cancelar
-            </Button>
+        {/* Informações de Auditoria (apenas visualização) */}
+        {isViewMode && intolerancia && (
+          <div className="space-y-4 pt-4 border-t border-gray-200">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                ID
+              </label>
+              <p className="text-sm text-gray-900">{intolerancia.id}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Criado em
+              </label>
+              <p className="text-sm text-gray-900">
+                {new Date(intolerancia.criado_em).toLocaleString('pt-BR')}
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Atualizado em
+              </label>
+              <p className="text-sm text-gray-900">
+                {new Date(intolerancia.atualizado_em).toLocaleString('pt-BR')}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Botões */}
+        <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
+            {isViewMode ? 'Fechar' : 'Cancelar'}
+          </Button>
+          {!isViewMode && (
             <Button
               type="submit"
-              loading={loading}
+              disabled={isSubmitting}
+              loading={isSubmitting}
             >
               {intolerancia ? 'Atualizar' : 'Criar'}
             </Button>
-          </div>
-        )}
-
-        {isViewMode && (
-          <div className="flex justify-end pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-            >
-              Fechar
-            </Button>
-          </div>
-        )}
+          )}
+        </div>
       </form>
     </Modal>
   );

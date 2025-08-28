@@ -42,6 +42,7 @@ const routes = [
   { path: '/unidades', router: unidadesRoutes },
   { path: '/marcas', router: marcasRoutes },
   { path: '/classes', router: classesRoutes },
+  { path: '/intolerancias', router: intoleranciasRoutes },
   { path: '/permissoes', router: permissoesRoutes },
   { path: '/dashboard', router: dashboardRoutes },
   { path: '/auditoria', router: auditoriaRoutes },
@@ -49,8 +50,7 @@ const routes = [
   { path: '/motoristas', router: motoristasRoutes },
   { path: '/ajudantes', router: ajudantesRoutes },
   { path: '/produto-origem', router: produtoOrigemRoutes },
-  { path: '/produto-generico', router: produtoGenericoRoutes },
-  { path: '/intolerancias', router: intoleranciasRoutes }
+  { path: '/produto-generico', router: produtoGenericoRoutes }
 ];
 
 module.exports = routes;

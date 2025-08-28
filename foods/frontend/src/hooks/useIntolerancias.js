@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import IntoleranciasService from '../services/intolerancias';
 import { useValidation } from './useValidation';
 
 export const useIntolerancias = () => {
+  // Estados principais
   const [intolerancias, setIntolerancias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -11,10 +12,21 @@ export const useIntolerancias = () => {
   const [editingIntolerancia, setEditingIntolerancia] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
+
+  // Estados de paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+
+  // Estados de estatísticas
+  const [estatisticas, setEstatisticas] = useState({
+    total_intolerancias: 0,
+    intolerancias_ativas: 0,
+    intolerancias_inativas: 0,
+    nomes_unicos: 0
+  });
+
   // Hook de validação
   const {
     validationErrors,
@@ -25,22 +37,42 @@ export const useIntolerancias = () => {
   } = useValidation();
 
   // Carregar intolerâncias
-  const loadIntolerancias = useCallback(async () => {
+  const loadIntolerancias = async (params = {}) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const params = {
+      const paginationParams = {
         page: currentPage,
-        limit: itemsPerPage
+        limit: itemsPerPage,
+        ...params
       };
 
-      const response = await IntoleranciasService.listar(params);
-      
-      if (response.success) {
-        setIntolerancias(response.data.data || []);
-        setTotalPages(response.data.pagination?.totalPages || 1);
-        setTotalItems(response.data.pagination?.totalItems || 0);
+      const result = await IntoleranciasService.listar(paginationParams);
+      if (result.success) {
+        setIntolerancias(result.data || []);
+        
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages || 1);
+          setTotalItems(result.pagination.totalItems || result.data.length);
+          setCurrentPage(result.pagination.currentPage || 1);
+        } else {
+          setTotalItems(result.data.length);
+          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
+        }
+        
+        // Calcular estatísticas básicas
+        const total = result.pagination?.totalItems || result.data.length;
+        const ativas = result.data.filter(i => i.status === 'ativo').length;
+        const inativas = result.data.filter(i => i.status === 'inativo').length;
+        const nomesUnicos = new Set(result.data.map(i => i.nome)).size;
+        
+        setEstatisticas({
+          total_intolerancias: total,
+          intolerancias_ativas: ativas,
+          intolerancias_inativas: inativas,
+          nomes_unicos: nomesUnicos
+        });
       } else {
-        toast.error(response.message || 'Erro ao carregar intolerâncias');
+        toast.error(result.error);
       }
     } catch (error) {
       console.error('Erro ao carregar intolerâncias:', error);
@@ -48,12 +80,12 @@ export const useIntolerancias = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage]);
+  };
 
-  // Carregar dados iniciais
+  // Carregar dados quando dependências mudarem
   useEffect(() => {
     loadIntolerancias();
-  }, [loadIntolerancias]);
+  }, [currentPage, itemsPerPage]);
 
   // Filtrar intolerâncias (client-side)
   const filteredIntolerancias = intolerancias.filter(intolerancia => {
@@ -65,35 +97,33 @@ export const useIntolerancias = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Função para submeter formulário (criar/atualizar)
+  // Funções de CRUD
   const onSubmit = async (data) => {
     try {
-      clearValidationErrors();
+      clearValidationErrors(); // Limpar erros anteriores
       
+      // Limpar campos vazios para evitar problemas de validação
+      const cleanData = {
+        ...data,
+        nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null
+      };
+
+      let result;
       if (editingIntolerancia) {
-        // Atualizar
-        const response = await IntoleranciasService.atualizar(editingIntolerancia.id, data);
-        if (response.success) {
-          toast.success('Intolerância atualizada com sucesso!');
-          handleCloseModal();
-          loadIntolerancias();
-        } else {
-          if (!handleApiResponse(response)) {
-            toast.error(response.message || 'Erro ao atualizar intolerância');
-          }
-        }
+        result = await IntoleranciasService.atualizar(editingIntolerancia.id, cleanData);
       } else {
-        // Criar
-        const response = await IntoleranciasService.criar(data);
-        if (response.success) {
-          toast.success('Intolerância criada com sucesso!');
-          handleCloseModal();
-          loadIntolerancias();
-        } else {
-          if (!handleApiResponse(response)) {
-            toast.error(response.message || 'Erro ao criar intolerância');
-          }
+        result = await IntoleranciasService.criar(cleanData);
+      }
+      
+      if (result.success) {
+        toast.success(editingIntolerancia ? 'Intolerância atualizada com sucesso!' : 'Intolerância criada com sucesso!');
+        handleCloseModal();
+        loadIntolerancias();
+      } else {
+        if (handleApiResponse(result)) {
+          return; // Erros de validação foram tratados
         }
+        toast.error(result.message || 'Erro ao salvar intolerância');
       }
     } catch (error) {
       console.error('Erro ao salvar intolerância:', error);
@@ -101,53 +131,48 @@ export const useIntolerancias = () => {
     }
   };
 
-  // Função para excluir intolerância
-  const handleDeleteIntolerancia = async (id) => {
+  const handleDeleteIntolerancia = async (intoleranciaId) => {
     if (window.confirm('Tem certeza que deseja excluir esta intolerância?')) {
       try {
-        const response = await IntoleranciasService.excluir(id);
-        if (response.success) {
+        const result = await IntoleranciasService.excluir(intoleranciaId);
+        if (result.success) {
           toast.success('Intolerância excluída com sucesso!');
           loadIntolerancias();
         } else {
-          toast.error(response.message || 'Erro ao excluir intolerância');
+          toast.error(result.error);
         }
       } catch (error) {
-        console.error('Erro ao excluir intolerância:', error);
         toast.error('Erro ao excluir intolerância');
       }
     }
   };
 
-  // Funções para manipular modal
+  // Funções de modal
   const handleAddIntolerancia = () => {
-    setEditingIntolerancia(null);
     setViewMode(false);
+    setEditingIntolerancia(null);
     setShowModal(true);
   };
 
   const handleViewIntolerancia = (intolerancia) => {
-    setEditingIntolerancia(intolerancia);
     setViewMode(true);
+    setEditingIntolerancia(intolerancia);
     setShowModal(true);
   };
 
   const handleEditIntolerancia = (intolerancia) => {
-    setEditingIntolerancia(intolerancia);
     setViewMode(false);
+    setEditingIntolerancia(intolerancia);
     setShowModal(true);
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditingIntolerancia(null);
     setViewMode(false);
-    clearValidationErrors();
+    setEditingIntolerancia(null);
   };
 
-
-
-  // Funções para paginação
+  // Funções de paginação
   const handlePageChange = (page) => {
     setCurrentPage(page);
   };
@@ -157,14 +182,18 @@ export const useIntolerancias = () => {
     setCurrentPage(1);
   };
 
-
+  // Funções utilitárias
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString('pt-BR');
+  };
 
   return {
-    // Estado
-    intolerancias: filteredIntolerancias,
+    // Estados
+    intolerancias: Array.isArray(filteredIntolerancias) ? filteredIntolerancias : [],
     loading,
     showModal,
-    isViewMode: viewMode,
+    viewMode,
     editingIntolerancia,
     searchTerm,
     statusFilter,
@@ -172,20 +201,30 @@ export const useIntolerancias = () => {
     totalPages,
     totalItems,
     itemsPerPage,
+    estatisticas,
     validationErrors,
     showValidationModal,
 
-    // Funções
+    // Funções CRUD
     onSubmit,
     handleDeleteIntolerancia,
+
+    // Funções de modal
     handleAddIntolerancia,
     handleViewIntolerancia,
     handleEditIntolerancia,
     handleCloseModal,
     handleCloseValidationModal,
+
+    // Funções de paginação
     handlePageChange,
     handleItemsPerPageChange,
+
+    // Funções de filtros
     setSearchTerm,
-    setStatusFilter
+    setStatusFilter,
+
+    // Funções utilitárias
+    formatDate
   };
 };

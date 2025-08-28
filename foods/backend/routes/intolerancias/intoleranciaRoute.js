@@ -48,9 +48,14 @@ router.delete('/:id',
 
 // ===== ROTAS ESPECÍFICAS =====
 
-// Listar intolerâncias ativas
+// Buscar intolerâncias ativas
 router.get('/ativas/listar', 
-  IntoleranciasController.listarIntoleranciasAtivas
+  IntoleranciasController.buscarIntoleranciasAtivas
+);
+
+// Buscar estatísticas
+router.get('/stats/geral', 
+  IntoleranciasController.buscarEstatisticas
 );
 
 module.exports = router;

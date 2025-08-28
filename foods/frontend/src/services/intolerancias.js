@@ -102,7 +102,22 @@ class IntoleranciasService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao buscar intolerâncias ativas'
+        error: error.response?.data?.message || 'Erro ao carregar intolerâncias ativas'
+      };
+    }
+  }
+
+  async buscarEstatisticas() {
+    try {
+      const response = await api.get('/intolerancias/stats/geral');
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar estatísticas'
       };
     }
   }
@@ -120,7 +135,7 @@ class IntoleranciasService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao exportar XLSX'
+        error: error.response?.data?.message || 'Erro ao exportar dados'
       };
     }
   }
@@ -138,10 +153,10 @@ class IntoleranciasService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao exportar PDF'
+        error: error.response?.data?.message || 'Erro ao exportar dados'
       };
     }
   }
 }
 
-export default IntoleranciasService;
+export default new IntoleranciasService();

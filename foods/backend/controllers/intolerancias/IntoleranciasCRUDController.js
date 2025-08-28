@@ -1,134 +1,217 @@
 const { executeQuery } = require('../../config/database');
-const { 
-  successResponse, 
-  notFoundResponse, 
-  errorResponse,
-  conflictResponse,
-  asyncHandler 
-} = require('../../middleware/responseHandler');
-const { logAuditoria } = require('../../utils/audit');
+const { auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 
 class IntoleranciasCRUDController {
-  /**
-   * Cria uma nova intolerância
-   */
-  static criarIntolerancia = asyncHandler(async (req, res) => {
-    const { nome, status = 'ativo' } = req.body;
-    const usuarioId = req.user.id;
+  static async criarIntolerancia(req, res) {
+    try {
+      const { nome, status = 'ativo' } = req.body;
 
-    // Verificar se já existe uma intolerância com o mesmo nome
-    const checkQuery = 'SELECT id FROM intolerancias WHERE nome = ?';
-    const existing = await executeQuery(checkQuery, [nome]);
+      // Verificar se já existe uma intolerância com o mesmo nome
+      const checkQuery = 'SELECT id FROM intolerancias WHERE nome = ?';
+      const [existing] = await executeQuery(checkQuery, [nome]);
 
-    if (existing.length > 0) {
-      return conflictResponse(res, 'Já existe uma intolerância com este nome');
-    }
-
-    // Inserir nova intolerância
-    const insertQuery = `
-      INSERT INTO intolerancias (nome, status) 
-      VALUES (?, ?)
-    `;
-
-    const result = await executeQuery(insertQuery, [nome, status]);
-    const novaIntoleranciaId = result.insertId;
-
-    // Buscar a intolerância criada
-    const selectQuery = 'SELECT * FROM intolerancias WHERE id = ?';
-    const intolerancias = await executeQuery(selectQuery, [novaIntoleranciaId]);
-
-    // Registrar auditoria
-    await logAuditoria(usuarioId, 'CREATE', 'intolerancias', {
-      id: novaIntoleranciaId,
-      nome,
-      status
-    });
-
-    return successResponse(res, intolerancias[0], 'Intolerância criada com sucesso', 201);
-  });
-
-  /**
-   * Atualiza uma intolerância existente
-   */
-  static atualizarIntolerancia = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const { nome, status } = req.body;
-    const usuarioId = req.user.id;
-
-    // Verificar se a intolerância existe
-    const checkQuery = 'SELECT * FROM intolerancias WHERE id = ?';
-    const existing = await executeQuery(checkQuery, [id]);
-
-    if (existing.length === 0) {
-      return notFoundResponse(res, 'Intolerância não encontrada');
-    }
-
-    // Verificar se já existe outra intolerância com o mesmo nome
-    if (nome && nome !== existing[0].nome) {
-      const nameCheckQuery = 'SELECT id FROM intolerancias WHERE nome = ? AND id != ?';
-      const nameConflict = await executeQuery(nameCheckQuery, [nome, id]);
-
-      if (nameConflict.length > 0) {
-        return conflictResponse(res, 'Já existe uma intolerância com este nome');
+      if (existing) {
+        return res.status(422).json({
+          success: false,
+          message: 'Já existe uma intolerância com este nome',
+          errors: {
+            nome: ['Já existe uma intolerância com este nome']
+          },
+          errorCategories: {
+            nome: ['duplicate']
+          }
+        });
       }
+
+      // Inserir nova intolerância
+      const insertQuery = `
+        INSERT INTO intolerancias (nome, status) 
+        VALUES (?, ?)
+      `;
+
+      const result = await executeQuery(insertQuery, [nome, status]);
+      const intoleranciaId = result.insertId;
+
+      // Buscar a intolerância criada
+      const selectQuery = `
+        SELECT 
+          id,
+          nome,
+          status,
+          criado_em,
+          atualizado_em
+        FROM intolerancias 
+        WHERE id = ?
+      `;
+
+      const [intolerancia] = await executeQuery(selectQuery, [intoleranciaId]);
+
+      // Registrar auditoria
+      await auditChangesMiddleware(req, res, () => {});
+
+      // Adicionar links HATEOAS
+      intolerancia.links = [
+        { rel: 'self', href: `/intolerancias/${intolerancia.id}`, method: 'GET' },
+        { rel: 'update', href: `/intolerancias/${intolerancia.id}`, method: 'PUT' },
+        { rel: 'delete', href: `/intolerancias/${intolerancia.id}`, method: 'DELETE' }
+      ];
+
+      res.status(201).json({
+        success: true,
+        message: 'Intolerância criada com sucesso',
+        data: intolerancia
+      });
+    } catch (error) {
+      console.error('Erro ao criar intolerância:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
     }
+  }
 
-    // Preparar dados para atualização
-    const updateData = {};
-    if (nome !== undefined) updateData.nome = nome;
-    if (status !== undefined) updateData.status = status;
+  static async atualizarIntolerancia(req, res) {
+    try {
+      const { id } = req.params;
+      const { nome, status } = req.body;
 
-    if (Object.keys(updateData).length === 0) {
-      return errorResponse(res, 'Nenhum dado fornecido para atualização', 400);
+      // Verificar se a intolerância existe
+      const checkQuery = 'SELECT id, nome FROM intolerancias WHERE id = ?';
+      const [existing] = await executeQuery(checkQuery, [id]);
+
+      if (!existing) {
+        return res.status(404).json({
+          success: false,
+          message: 'Intolerância não encontrada'
+        });
+      }
+
+      // Verificar se já existe outra intolerância com o mesmo nome
+      if (nome && nome !== existing.nome) {
+        const duplicateQuery = 'SELECT id FROM intolerancias WHERE nome = ? AND id != ?';
+        const [duplicate] = await executeQuery(duplicateQuery, [nome, id]);
+
+        if (duplicate) {
+          return res.status(422).json({
+            success: false,
+            message: 'Já existe uma intolerância com este nome',
+            errors: {
+              nome: ['Já existe uma intolerância com este nome']
+            },
+            errorCategories: {
+              nome: ['duplicate']
+            }
+          });
+        }
+      }
+
+      // Construir query de atualização
+      const updateFields = [];
+      const updateParams = [];
+
+      if (nome !== undefined) {
+        updateFields.push('nome = ?');
+        updateParams.push(nome);
+      }
+
+      if (status !== undefined) {
+        updateFields.push('status = ?');
+        updateParams.push(status);
+      }
+
+      if (updateFields.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nenhum campo foi fornecido para atualização'
+        });
+      }
+
+      updateFields.push('atualizado_em = CURRENT_TIMESTAMP');
+      updateParams.push(id);
+
+      const updateQuery = `
+        UPDATE intolerancias 
+        SET ${updateFields.join(', ')}
+        WHERE id = ?
+      `;
+
+      await executeQuery(updateQuery, updateParams);
+
+      // Buscar a intolerância atualizada
+      const selectQuery = `
+        SELECT 
+          id,
+          nome,
+          status,
+          criado_em,
+          atualizado_em
+        FROM intolerancias 
+        WHERE id = ?
+      `;
+
+      const [intolerancia] = await executeQuery(selectQuery, [id]);
+
+      // Registrar auditoria
+      await auditChangesMiddleware(req, res, () => {});
+
+      // Adicionar links HATEOAS
+      intolerancia.links = [
+        { rel: 'self', href: `/intolerancias/${intolerancia.id}`, method: 'GET' },
+        { rel: 'update', href: `/intolerancias/${intolerancia.id}`, method: 'PUT' },
+        { rel: 'delete', href: `/intolerancias/${intolerancia.id}`, method: 'DELETE' }
+      ];
+
+      res.json({
+        success: true,
+        message: 'Intolerância atualizada com sucesso',
+        data: intolerancia
+      });
+    } catch (error) {
+      console.error('Erro ao atualizar intolerância:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
     }
+  }
 
-    // Construir query de atualização dinamicamente
-    const updateFields = Object.keys(updateData).map(key => `${key} = ?`).join(', ');
-    const updateValues = Object.values(updateData);
-    updateValues.push(id);
+  static async excluirIntolerancia(req, res) {
+    try {
+      const { id } = req.params;
 
-    const updateQuery = `UPDATE intolerancias SET ${updateFields} WHERE id = ?`;
-    await executeQuery(updateQuery, updateValues);
+      // Verificar se a intolerância existe
+      const checkQuery = 'SELECT id, nome FROM intolerancias WHERE id = ?';
+      const [existing] = await executeQuery(checkQuery, [id]);
 
-    // Buscar a intolerância atualizada
-    const intolerancias = await executeQuery(checkQuery, [id]);
+      if (!existing) {
+        return res.status(404).json({
+          success: false,
+          message: 'Intolerância não encontrada'
+        });
+      }
 
-    // Registrar auditoria
-    await logAuditoria(usuarioId, 'UPDATE', 'intolerancias', {
-      id: parseInt(id),
-      ...updateData
-    });
+      // Verificar se há dependências (aqui você pode adicionar verificações específicas)
+      // Por exemplo, verificar se há produtos ou alunos associados a esta intolerância
 
-    return successResponse(res, intolerancias[0], 'Intolerância atualizada com sucesso');
-  });
+      // Excluir a intolerância
+      const deleteQuery = 'DELETE FROM intolerancias WHERE id = ?';
+      await executeQuery(deleteQuery, [id]);
 
-  /**
-   * Exclui uma intolerância
-   */
-  static excluirIntolerancia = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const usuarioId = req.user.id;
+      // Registrar auditoria
+      await auditChangesMiddleware(req, res, () => {});
 
-    // Verificar se a intolerância existe
-    const checkQuery = 'SELECT * FROM intolerancias WHERE id = ?';
-    const existing = await executeQuery(checkQuery, [id]);
-
-    if (existing.length === 0) {
-      return notFoundResponse(res, 'Intolerância não encontrada');
+      res.json({
+        success: true,
+        message: 'Intolerância excluída com sucesso'
+      });
+    } catch (error) {
+      console.error('Erro ao excluir intolerância:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
     }
-
-    // Excluir a intolerância
-    const deleteQuery = 'DELETE FROM intolerancias WHERE id = ?';
-    await executeQuery(deleteQuery, [id]);
-
-    // Registrar auditoria
-    await logAuditoria(usuarioId, 'DELETE', 'intolerancias', {
-      id: parseInt(id),
-      nome: existing[0].nome
-    });
-
-    return successResponse(res, null, 'Intolerância excluída com sucesso');
-  });
+  }
 }
 
 module.exports = IntoleranciasCRUDController;

@@ -8,7 +8,7 @@ import IntoleranciasService from '../../services/intolerancias';
 import { Button } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { IntoleranciaModal, IntoleranciasTable } from '../../components/intolerancias';
+import { IntoleranciaModal, IntoleranciasTable, IntoleranciasStats } from '../../components/intolerancias';
 import { AuditModal } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
@@ -20,7 +20,7 @@ const Intolerancias = () => {
     intolerancias,
     loading,
     showModal,
-    isViewMode,
+    viewMode,
     editingIntolerancia,
     searchTerm,
     statusFilter,
@@ -28,6 +28,7 @@ const Intolerancias = () => {
     totalPages,
     totalItems,
     itemsPerPage,
+    estatisticas,
     validationErrors,
     showValidationModal,
     handleCloseValidationModal,
@@ -40,7 +41,8 @@ const Intolerancias = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
-    setStatusFilter
+    setStatusFilter,
+    formatDate
   } = useIntolerancias();
 
   const {
@@ -57,8 +59,6 @@ const Intolerancias = () => {
   } = useAuditoria('intolerancias');
 
   const { handleExportXLSX, handleExportPDF } = useExport(IntoleranciasService);
-
-
 
   if (loading) {
     return (
@@ -96,6 +96,9 @@ const Intolerancias = () => {
         </div>
       </div>
 
+      {/* Estatísticas */}
+      <IntoleranciasStats estatisticas={estatisticas} />
+
       {/* Filtros */}
       <CadastroFilterBar
         searchTerm={searchTerm}
@@ -108,25 +111,14 @@ const Intolerancias = () => {
       {/* Tabela */}
       <IntoleranciasTable
         intolerancias={intolerancias}
-        onView={handleViewIntolerancia}
-        onEdit={handleEditIntolerancia}
-        onDelete={handleDeleteIntolerancia}
         canView={canView}
         canEdit={canEdit}
         canDelete={canDelete}
+        onView={handleViewIntolerancia}
+        onEdit={handleEditIntolerancia}
+        onDelete={handleDeleteIntolerancia}
+        formatDate={formatDate}
       />
-
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
-        />
-      )}
 
       {/* Modal de Intolerância */}
       <IntoleranciaModal
@@ -134,8 +126,7 @@ const Intolerancias = () => {
         onClose={handleCloseModal}
         onSubmit={onSubmit}
         intolerancia={editingIntolerancia}
-        isViewMode={isViewMode}
-        loading={loading}
+        isViewMode={viewMode}
       />
 
       {/* Modal de Auditoria */}
@@ -159,6 +150,18 @@ const Intolerancias = () => {
         errors={validationErrors?.errors}
         errorCategories={validationErrors?.errorCategories}
       />
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
+      )}
     </div>
   );
 };

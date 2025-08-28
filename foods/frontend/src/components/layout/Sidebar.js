@@ -28,7 +28,7 @@ import {
   FaRoute,
   FaCar,
   FaUserTie,
-  FaExclamationTriangle
+  FaAllergies
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -75,9 +75,9 @@ const menuGroups = [
       { path: '/foods/classes', icon: FaCubes, label: 'Classes', screen: 'classes' },
       { path: '/foods/produto-origem', icon: FaBox, label: 'Produtos Origem', screen: 'produto_origem' },
       { path: '/foods/produto-generico', icon: FaBox, label: 'Produtos Genéricos', screen: 'produto_generico' },
+      { path: '/foods/intolerancias', icon: FaAllergies, label: 'Intolerâncias', screen: 'intolerancias' },
       { path: '/foods/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
       { path: '/foods/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
-      { path: '/foods/intolerancias', icon: FaExclamationTriangle, label: 'Intolerâncias', screen: 'intolerancias' },
     ]
   },
   {

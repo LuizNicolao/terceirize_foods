@@ -1,117 +1,165 @@
 const { executeQuery } = require('../../config/database');
-const { 
-  successResponse, 
-  notFoundResponse, 
-  errorResponse,
-  asyncHandler 
-} = require('../../middleware/responseHandler');
+const { buildPaginationQuery, buildSearchQuery } = require('../../utils/queryBuilder');
 
 class IntoleranciasListController {
-  /**
-   * Lista todas as intolerâncias com paginação e filtros
-   */
-  static listarIntolerancias = asyncHandler(async (req, res) => {
-    const { search = '', status = '' } = req.query;
-    const pagination = req.pagination;
+  static async listarIntolerancias(req, res) {
+    try {
+      const { page = 1, limit = 20, search, status } = req.query;
+      const offset = (page - 1) * limit;
 
-    let whereClause = 'WHERE 1=1';
-    const params = [];
+      // Construir query base
+      let baseQuery = 'FROM intolerancias WHERE 1=1';
+      const queryParams = [];
 
-    // Filtro de busca por nome
-    if (search) {
-      whereClause += ' AND nome LIKE ?';
-      params.push(`%${search}%`);
+      // Adicionar filtros
+      if (search) {
+        baseQuery += ' AND (nome LIKE ?)';
+        queryParams.push(`%${search}%`);
+      }
+
+      if (status && status !== 'todos') {
+        baseQuery += ' AND status = ?';
+        queryParams.push(status);
+      }
+
+      // Query para contar total
+      const countQuery = `SELECT COUNT(*) as total ${baseQuery}`;
+      const [countResult] = await executeQuery(countQuery, queryParams);
+      const totalItems = countResult.total;
+
+      // Query para buscar dados
+      const dataQuery = `
+        SELECT 
+          id,
+          nome,
+          status,
+          criado_em,
+          atualizado_em
+        ${baseQuery}
+        ORDER BY nome ASC
+        LIMIT ? OFFSET ?
+      `;
+
+      const dataParams = [...queryParams, parseInt(limit), offset];
+      const intolerancias = await executeQuery(dataQuery, dataParams);
+
+      // Calcular paginação
+      const totalPages = Math.ceil(totalItems / limit);
+      const currentPage = parseInt(page);
+
+      // Adicionar links HATEOAS
+      const intoleranciasComLinks = intolerancias.map(intolerancia => ({
+        ...intolerancia,
+        links: [
+          { rel: 'self', href: `/intolerancias/${intolerancia.id}`, method: 'GET' },
+          { rel: 'update', href: `/intolerancias/${intolerancia.id}`, method: 'PUT' },
+          { rel: 'delete', href: `/intolerancias/${intolerancia.id}`, method: 'DELETE' }
+        ]
+      }));
+
+      res.json({
+        success: true,
+        data: intoleranciasComLinks,
+        pagination: {
+          currentPage,
+          totalPages,
+          totalItems,
+          itemsPerPage: parseInt(limit),
+          hasNextPage: currentPage < totalPages,
+          hasPrevPage: currentPage > 1
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao listar intolerâncias:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
     }
+  }
 
-    // Filtro por status
-    if (status) {
-      whereClause += ' AND status = ?';
-      params.push(status);
+  static async buscarIntoleranciaPorId(req, res) {
+    try {
+      const { id } = req.params;
+
+      const query = `
+        SELECT 
+          id,
+          nome,
+          status,
+          criado_em,
+          atualizado_em
+        FROM intolerancias 
+        WHERE id = ?
+      `;
+
+      const [intolerancia] = await executeQuery(query, [id]);
+
+      if (!intolerancia) {
+        return res.status(404).json({
+          success: false,
+          message: 'Intolerância não encontrada'
+        });
+      }
+
+      // Adicionar links HATEOAS
+      intolerancia.links = [
+        { rel: 'self', href: `/intolerancias/${intolerancia.id}`, method: 'GET' },
+        { rel: 'update', href: `/intolerancias/${intolerancia.id}`, method: 'PUT' },
+        { rel: 'delete', href: `/intolerancias/${intolerancia.id}`, method: 'DELETE' }
+      ];
+
+      res.json({
+        success: true,
+        data: intolerancia
+      });
+    } catch (error) {
+      console.error('Erro ao buscar intolerância:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
     }
+  }
 
-    // Query para contar total de registros
-    const countQuery = `SELECT COUNT(*) as total FROM intolerancias ${whereClause}`;
-    const countResult = await executeQuery(countQuery, params);
-    const totalItems = countResult[0].total;
+  static async buscarIntoleranciasAtivas(req, res) {
+    try {
+      const query = `
+        SELECT 
+          id,
+          nome,
+          status,
+          criado_em,
+          atualizado_em
+        FROM intolerancias 
+        WHERE status = 'ativo'
+        ORDER BY nome ASC
+      `;
 
-    // Query principal com paginação
-    const baseQuery = `
-      SELECT 
-        id,
-        nome,
-        status
-      FROM intolerancias 
-      ${whereClause}
-      ORDER BY nome ASC
-    `;
+      const intolerancias = await executeQuery(query);
 
-    // Aplicar paginação manualmente (como outros controllers)
-    const limit = pagination.limit;
-    const offset = pagination.offset;
-    const query = `${baseQuery} LIMIT ${limit} OFFSET ${offset}`;
-    
-    // Executar query paginada
-    const intolerancias = await executeQuery(query, params);
+      // Adicionar links HATEOAS
+      const intoleranciasComLinks = intolerancias.map(intolerancia => ({
+        ...intolerancia,
+        links: [
+          { rel: 'self', href: `/intolerancias/${intolerancia.id}`, method: 'GET' },
+          { rel: 'update', href: `/intolerancias/${intolerancia.id}`, method: 'PUT' },
+          { rel: 'delete', href: `/intolerancias/${intolerancia.id}`, method: 'DELETE' }
+        ]
+      }));
 
-    // Gerar metadados de paginação
-    const queryParams = { ...req.query };
-    delete queryParams.page;
-    delete queryParams.limit;
-    
-    const meta = pagination.generateMeta(totalItems, '/api/intolerancias', queryParams);
-
-    const response = {
-      data: intolerancias,
-      pagination: meta.pagination
-    };
-
-    return successResponse(res, response, 'Intolerâncias listadas com sucesso');
-  });
-
-  /**
-   * Busca uma intolerância específica por ID
-   */
-  static buscarIntoleranciaPorId = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    const query = `
-      SELECT 
-        id,
-        nome,
-        status,
-        criado_em,
-        atualizado_em
-      FROM intolerancias 
-      WHERE id = ?
-    `;
-
-    const intolerancias = await executeQuery(query, [id]);
-
-    if (intolerancias.length === 0) {
-      return notFoundResponse(res, 'Intolerância não encontrada');
+      res.json({
+        success: true,
+        data: intoleranciasComLinks
+      });
+    } catch (error) {
+      console.error('Erro ao buscar intolerâncias ativas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
     }
-
-    return successResponse(res, intolerancias[0], 'Intolerância encontrada com sucesso');
-  });
-
-  /**
-   * Lista todas as intolerâncias ativas
-   */
-  static listarIntoleranciasAtivas = asyncHandler(async (req, res) => {
-    const query = `
-      SELECT 
-        id,
-        nome,
-        status
-      FROM intolerancias 
-      WHERE status = 'ativo'
-      ORDER BY nome ASC
-    `;
-
-    const intolerancias = await executeQuery(query);
-
-    return successResponse(res, intolerancias, 'Intolerâncias ativas listadas com sucesso');
-  });
+  }
 }
 
 module.exports = IntoleranciasListController;

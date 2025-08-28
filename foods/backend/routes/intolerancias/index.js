@@ -1,3 +1,3 @@
-const intoleranciaRouter = require('./intoleranciaRoute');
+const intoleranciasRoutes = require('./intoleranciaRoute');
 
-module.exports = intoleranciaRouter;
+module.exports = intoleranciasRoutes;

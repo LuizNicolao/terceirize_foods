@@ -5,15 +5,19 @@
 
 const IntoleranciasListController = require('./IntoleranciasListController');
 const IntoleranciasCRUDController = require('./IntoleranciasCRUDController');
+const IntoleranciasStatsController = require('./IntoleranciasStatsController');
 
 module.exports = {
   // Métodos de Listagem
   listarIntolerancias: IntoleranciasListController.listarIntolerancias,
   buscarIntoleranciaPorId: IntoleranciasListController.buscarIntoleranciaPorId,
-  listarIntoleranciasAtivas: IntoleranciasListController.listarIntoleranciasAtivas,
+  buscarIntoleranciasAtivas: IntoleranciasListController.buscarIntoleranciasAtivas,
   
   // Métodos CRUD
   criarIntolerancia: IntoleranciasCRUDController.criarIntolerancia,
   atualizarIntolerancia: IntoleranciasCRUDController.atualizarIntolerancia,
-  excluirIntolerancia: IntoleranciasCRUDController.excluirIntolerancia
+  excluirIntolerancia: IntoleranciasCRUDController.excluirIntolerancia,
+  
+  // Métodos de Estatísticas
+  buscarEstatisticas: IntoleranciasStatsController.buscarEstatisticas
 };
