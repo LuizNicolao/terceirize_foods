@@ -222,6 +222,11 @@ const AlmoxarifadoUnidadeEscolarContent = ({
 
   // Novo almoxarifado
   const handleNew = () => {
+    // Verificar se já existe um almoxarifado
+    if (almoxarifados.length > 0) {
+      toast.error('Cada unidade escolar pode ter apenas um almoxarifado');
+      return;
+    }
     setEditingAlmoxarifado(null);
     reset();
     setShowForm(true);
@@ -261,8 +266,13 @@ const AlmoxarifadoUnidadeEscolarContent = ({
       {showForm && (
         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
           <h4 className="text-md font-medium mb-4">
-            {editingAlmoxarifado ? 'Editar Almoxarifado' : 'Novo Almoxarifado'}
+            {editingAlmoxarifado ? 'Editar Almoxarifado' : 'Criar Almoxarifado da Unidade Escolar'}
           </h4>
+          {!editingAlmoxarifado && (
+            <p className="text-sm text-gray-600 mb-4">
+              Cada unidade escolar pode ter apenas um almoxarifado. Este será o almoxarifado único da unidade escolar.
+            </p>
+          )}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -314,6 +324,7 @@ const AlmoxarifadoUnidadeEscolarContent = ({
         ) : almoxarifados.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <p>Nenhum almoxarifado cadastrado para esta unidade escolar</p>
+            <p className="text-sm text-gray-400 mt-2">Cada unidade escolar pode ter apenas um almoxarifado</p>
             {!viewMode && (
               <Button
                 variant="primary"
@@ -322,68 +333,75 @@ const AlmoxarifadoUnidadeEscolarContent = ({
                 className="mt-4"
               >
                 <FaPlus className="mr-1" />
-                Criar Primeiro Almoxarifado
+                Criar Almoxarifado
               </Button>
             )}
           </div>
         ) : (
-          <Table>
-            <Table.Header>
-              <Table.HeaderCell>Nome</Table.HeaderCell>
-              <Table.HeaderCell>Filial</Table.HeaderCell>
-              <Table.HeaderCell>Status</Table.HeaderCell>
-              <Table.HeaderCell>Ações</Table.HeaderCell>
-            </Table.Header>
-            <Table.Body>
-              {almoxarifados.map(almox => (
-                <Table.Row key={almox.id}>
-                  <Table.Cell>{almox.nome}</Table.Cell>
-                  <Table.Cell>{almox.filial_nome}</Table.Cell>
-                  <Table.Cell>
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      almox.status === 1 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {almox.status === 1 ? 'Ativo' : 'Inativo'}
-                    </span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        onClick={() => handleOpenItensModal(almox)}
-                        title="Ver Itens"
-                      >
-                        <FaEye />
-                      </Button>
-                      {!viewMode && (
-                        <>
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleEdit(almox)}
-                            title="Editar"
-                          >
-                            <FaEdit />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="xs"
-                            onClick={() => handleDelete(almox)}
-                            title="Excluir"
-                          >
-                            <FaTrash />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
+          <div>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <p className="text-sm text-blue-800">
+                <strong>Almoxarifado da Unidade Escolar:</strong> Cada unidade escolar pode ter apenas um almoxarifado.
+              </p>
+            </div>
+            <Table>
+              <Table.Header>
+                <Table.HeaderCell>Nome</Table.HeaderCell>
+                <Table.HeaderCell>Filial</Table.HeaderCell>
+                <Table.HeaderCell>Status</Table.HeaderCell>
+                <Table.HeaderCell>Ações</Table.HeaderCell>
+              </Table.Header>
+              <Table.Body>
+                {almoxarifados.map(almox => (
+                  <Table.Row key={almox.id}>
+                    <Table.Cell>{almox.nome}</Table.Cell>
+                    <Table.Cell>{almox.filial_nome}</Table.Cell>
+                    <Table.Cell>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        almox.status === 1 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {almox.status === 1 ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          onClick={() => handleOpenItensModal(almox)}
+                          title="Ver Itens"
+                        >
+                          <FaEye />
+                        </Button>
+                        {!viewMode && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleEdit(almox)}
+                              title="Editar"
+                            >
+                              <FaEdit />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleDelete(almox)}
+                              title="Excluir"
+                            >
+                              <FaTrash />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table>
+          </div>
         )}
       </div>
 
