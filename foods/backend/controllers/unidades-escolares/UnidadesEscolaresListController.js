@@ -155,23 +155,9 @@ class UnidadesEscolaresListController {
         });
       }
 
-      const unidade = unidades[0];
-
-      // Buscar almoxarifado da unidade escolar
-      const almoxarifadoQuery = `
-        SELECT id, nome, status, criado_em, atualizado_em
-        FROM almoxarifados 
-        WHERE unidade_escolar_id = ?
-        ORDER BY nome ASC
-      `;
-      const almoxarifados = await executeQuery(almoxarifadoQuery, [id]);
-
-      unidade.almoxarifados = almoxarifados;
-      unidade.total_almoxarifados = almoxarifados.length;
-
       res.json({
         success: true,
-        data: unidade
+        data: unidades[0]
       });
 
     } catch (error) {
