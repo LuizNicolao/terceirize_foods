@@ -18,7 +18,7 @@ class IntoleranciasCRUDController {
 
       // Verificar se já existe uma intolerância com o mesmo nome
       const checkQuery = 'SELECT id FROM intolerancias WHERE nome = ?';
-      const [existing] = await db.execute(checkQuery, [nome]);
+      const [existing] = await executeQuery(checkQuery, [nome]);
 
       if (existing.length > 0) {
         return conflictResponse(res, 'Já existe uma intolerância com este nome');
@@ -30,12 +30,12 @@ class IntoleranciasCRUDController {
         VALUES (?, ?)
       `;
 
-      const [result] = await db.execute(insertQuery, [nome, status]);
+      const [result] = await executeQuery(insertQuery, [nome, status]);
       const novaIntoleranciaId = result.insertId;
 
       // Buscar a intolerância criada
       const selectQuery = 'SELECT * FROM intolerancias WHERE id = ?';
-      const [intolerancias] = await db.execute(selectQuery, [novaIntoleranciaId]);
+      const [intolerancias] = await executeQuery(selectQuery, [novaIntoleranciaId]);
 
       // Registrar auditoria
       await logAuditoria(usuarioId, 'CREATE', 'intolerancias', {
@@ -62,7 +62,7 @@ class IntoleranciasCRUDController {
 
       // Verificar se a intolerância existe
       const checkQuery = 'SELECT * FROM intolerancias WHERE id = ?';
-      const [existing] = await db.execute(checkQuery, [id]);
+      const [existing] = await executeQuery(checkQuery, [id]);
 
       if (existing.length === 0) {
         return notFoundResponse(res, 'Intolerância não encontrada');
@@ -71,7 +71,7 @@ class IntoleranciasCRUDController {
       // Verificar se já existe outra intolerância com o mesmo nome
       if (nome && nome !== existing[0].nome) {
         const nameCheckQuery = 'SELECT id FROM intolerancias WHERE nome = ? AND id != ?';
-        const [nameConflict] = await db.execute(nameCheckQuery, [nome, id]);
+        const [nameConflict] = await executeQuery(nameCheckQuery, [nome, id]);
 
         if (nameConflict.length > 0) {
           return conflictResponse(res, 'Já existe uma intolerância com este nome');
@@ -93,10 +93,10 @@ class IntoleranciasCRUDController {
       updateValues.push(id);
 
       const updateQuery = `UPDATE intolerancias SET ${updateFields} WHERE id = ?`;
-      await db.execute(updateQuery, updateValues);
+      await executeQuery(updateQuery, updateValues);
 
       // Buscar a intolerância atualizada
-      const [intolerancias] = await db.execute(checkQuery, [id]);
+      const [intolerancias] = await executeQuery(checkQuery, [id]);
 
       // Registrar auditoria
       await logAuditoria(usuarioId, 'UPDATE', 'intolerancias', {
@@ -121,7 +121,7 @@ class IntoleranciasCRUDController {
 
       // Verificar se a intolerância existe
       const checkQuery = 'SELECT * FROM intolerancias WHERE id = ?';
-      const [existing] = await db.execute(checkQuery, [id]);
+      const [existing] = await executeQuery(checkQuery, [id]);
 
       if (existing.length === 0) {
         return notFoundResponse(res, 'Intolerância não encontrada');
@@ -129,7 +129,7 @@ class IntoleranciasCRUDController {
 
       // Excluir a intolerância
       const deleteQuery = 'DELETE FROM intolerancias WHERE id = ?';
-      await db.execute(deleteQuery, [id]);
+      await executeQuery(deleteQuery, [id]);
 
       // Registrar auditoria
       await logAuditoria(usuarioId, 'DELETE', 'intolerancias', {
