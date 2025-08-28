@@ -23,6 +23,7 @@ import Motoristas from './pages/motoristas/Motoristas';
 import Ajudantes from './pages/ajudantes/Ajudantes';
 import ProdutoOrigem from './pages/produto-origem/ProdutoOrigem';
 import ProdutoGenerico from './pages/produto-generico/ProdutoGenerico';
+import Intolerancias from './pages/intolerancias/Intolerancias';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -260,6 +261,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="produto_generico">
               <ProdutoGenerico />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/intolerancias" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="intolerancias">
+              <Intolerancias />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

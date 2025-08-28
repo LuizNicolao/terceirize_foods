@@ -25,6 +25,7 @@ const motoristasRoutes = require('./motoristas');
 const ajudantesRoutes = require('./ajudantes');
 const produtoOrigemRoutes = require('./produto-origem');
 const produtoGenericoRoutes = require('./produto-generico');
+const intoleranciasRoutes = require('./intolerancias');
 
 // Definir todas as rotas com seus caminhos
 const routes = [
@@ -48,7 +49,8 @@ const routes = [
   { path: '/motoristas', router: motoristasRoutes },
   { path: '/ajudantes', router: ajudantesRoutes },
   { path: '/produto-origem', router: produtoOrigemRoutes },
-  { path: '/produto-generico', router: produtoGenericoRoutes }
+  { path: '/produto-generico', router: produtoGenericoRoutes },
+  { path: '/intolerancias', router: intoleranciasRoutes }
 ];
 
 module.exports = routes;

@@ -31,6 +31,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -52,6 +53,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -73,6 +75,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -96,6 +99,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -117,6 +121,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -138,6 +143,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -161,6 +167,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -203,6 +210,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: true, editar: true, excluir: false },
       produto_generico: { visualizar: true, criar: true, editar: true, excluir: false },
+      intolerancias: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -226,6 +234,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -247,6 +256,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -268,6 +278,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -291,6 +302,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -312,6 +324,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -333,6 +346,7 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -478,6 +492,7 @@ router.get('/usuario/:usuarioId', checkPermission('visualizar'), async (req, res
       'ajudantes',
       'cotacao',
       'produto_generico',
+      'intolerancias',
       'permissoes'
     ];
 
@@ -673,6 +688,7 @@ router.get('/telas', checkPermission('visualizar'), (req, res) => {
     { nome: 'cotacao', descricao: 'Sistema de Cotação' },
     { nome: 'produto_origem', descricao: 'Gerenciamento de Produtos Origem' },
     { nome: 'produto_generico', descricao: 'Gerenciamento de Produtos Genéricos' },
+    { nome: 'intolerancias', descricao: 'Gerenciamento de Intolerâncias' },
     { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
   ];
 
