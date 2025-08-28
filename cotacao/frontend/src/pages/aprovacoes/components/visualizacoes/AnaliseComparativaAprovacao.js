@@ -1,6 +1,34 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
+const AnaliseComparativaAprovacao = ({ cotacao, active, formatarValor, analise, onAprovacaoChange }) => {
+  const [aprovacoesSelecionadas, setAprovacoesSelecionadas] = useState({
+    melhorPreco: [],
+    melhorEntrega: [],
+    melhorPagamento: []
+  });
+
+  // Notificar mudanças nas aprovações
+  useEffect(() => {
+    if (onAprovacaoChange) {
+      onAprovacaoChange(aprovacoesSelecionadas);
+    }
+  }, [aprovacoesSelecionadas, onAprovacaoChange]);
+
+  const handleAprovacaoChange = (tipo, produtoId, checked) => {
+    setAprovacoesSelecionadas(prev => {
+      const newState = { ...prev };
+      if (checked) {
+        newState[tipo] = [...newState[tipo], produtoId];
+      } else {
+        newState[tipo] = newState[tipo].filter(id => id !== produtoId);
+      }
+      return newState;
+    });
+  };
+
+  const isAprovado = (tipo, produtoId) => {
+    return aprovacoesSelecionadas[tipo].includes(produtoId);
+  };
   if (!active || !cotacao?.itens) {
     return null;
   }
@@ -71,6 +99,57 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
   });
 
   const produtos = Object.values(produtosComparacao);
+
+  // Função para agrupar produtos por prazo de entrega e somar quantidades
+  const agruparPorPrazoEntrega = (produtos) => {
+    const grupos = {};
+    
+    produtos.forEach(produto => {
+      const prazoEntrega = produto.melhorPrazoEntrega.prazoStr || 'Não informado';
+      const dataEntrega = extrairDataEntrega(prazoEntrega);
+      
+      if (!grupos[dataEntrega]) {
+        grupos[dataEntrega] = {
+          data: dataEntrega,
+          produtos: []
+        };
+      }
+      
+      grupos[dataEntrega].produtos.push(produto);
+    });
+    
+    // Ordenar por data de entrega
+    return Object.values(grupos).sort((a, b) => {
+      if (a.data === 'Não informado') return 1;
+      if (b.data === 'Não informado') return -1;
+      return new Date(a.data) - new Date(b.data);
+    });
+  };
+
+  // Função para extrair data de entrega do prazo
+  const extrairDataEntrega = (prazoStr) => {
+    if (!prazoStr) return 'Não informado';
+    
+    // Tentar extrair data no formato DD/MM/YYYY
+    const dataMatch = prazoStr.match(/(\d{2}\/\d{2}\/\d{4})/);
+    if (dataMatch) {
+      return dataMatch[1];
+    }
+    
+    // Tentar extrair dias e calcular data
+    const diasMatch = prazoStr.match(/(\d+)\s*dias?/i);
+    if (diasMatch) {
+      const dias = parseInt(diasMatch[1]);
+      const dataEntrega = new Date();
+      dataEntrega.setDate(dataEntrega.getDate() + dias);
+      return dataEntrega.toLocaleDateString('pt-BR');
+    }
+    
+    return prazoStr;
+  };
+
+  // Agrupar produtos por prazo de entrega
+  const produtosAgrupadosPorEntrega = agruparPorPrazoEntrega(produtos);
 
   // Calcular valores totais para os cards de resumo
   let valorTotalMelhorPreco = 0;
@@ -189,6 +268,7 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aprovar</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Critério</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Fornecedor</th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valor Unitário</th>
@@ -234,7 +314,7 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
                 <React.Fragment key={index}>
                   {/* Linha de título do produto */}
                   <tr className="bg-gray-100 border-b-2 border-gray-300">
-                    <td colSpan="8" className="px-4 py-3">
+                    <td colSpan="9" className="px-4 py-3">
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-gray-900">{produto.nome}</span>
                         <span className="text-sm text-gray-600">Qtd: {produto.quantidade.toFixed(2)} {produto.unidade}</span>
@@ -244,6 +324,14 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
                   
                   {/* Linha - Melhor Preço */}
                   <tr className="hover:bg-green-50 border-l-4 border-l-green-500">
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={isAprovado('melhorPreco', produto.nome)}
+                        onChange={(e) => handleAprovacaoChange('melhorPreco', produto.nome, e.target.checked)}
+                        className="w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 focus:ring-2"
+                      />
+                    </td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         💰 Melhor Preço
@@ -276,6 +364,14 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
                   {/* Linha - Melhor Entrega */}
                   {itemMelhorEntrega && (
                     <tr className="hover:bg-blue-50 border-l-4 border-l-blue-500">
+                      <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={isAprovado('melhorEntrega', produto.nome)}
+                          onChange={(e) => handleAprovacaoChange('melhorEntrega', produto.nome, e.target.checked)}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                        />
+                      </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           🚚 Melhor Entrega
@@ -310,6 +406,14 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
                   {itemMelhorPagamento && (
                     <tr className="hover:bg-purple-50 border-l-4 border-l-purple-500">
                       <td className="px-4 py-3">
+                        <input
+                          type="checkbox"
+                          checked={isAprovado('melhorPagamento', produto.nome)}
+                          onChange={(e) => handleAprovacaoChange('melhorPagamento', produto.nome, e.target.checked)}
+                          className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
+                        />
+                      </td>
+                      <td className="px-4 py-3">
                         <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                           💳 Melhor Pagamento
                         </span>
@@ -341,7 +445,7 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
                   
                   {/* Linha de separação */}
                   <tr className="h-2 bg-gray-100">
-                    <td colSpan="8" className="px-0 py-0"></td>
+                    <td colSpan="9" className="px-0 py-0"></td>
                   </tr>
                 </React.Fragment>
               );
@@ -353,4 +457,4 @@ const AnaliseComparativa = ({ cotacao, active, formatarValor, analise }) => {
   );
 };
 
-export default AnaliseComparativa; 
+export default AnaliseComparativaAprovacao; 
