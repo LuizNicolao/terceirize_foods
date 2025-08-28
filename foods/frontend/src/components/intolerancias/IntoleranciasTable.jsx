@@ -3,39 +3,26 @@ import { ActionButtons, EmptyState } from '../ui';
 
 const IntoleranciasTable = ({ 
   intolerancias, 
-  canView, 
-  canEdit, 
-  canDelete, 
   onView, 
   onEdit, 
-  onDelete, 
-  formatDate 
+  onDelete
 }) => {
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      ativo: { color: 'bg-green-100 text-green-800', text: 'Ativo' },
-      inativo: { color: 'bg-red-100 text-red-800', text: 'Inativo' }
-    };
-
-    const config = statusConfig[status] || { color: 'bg-gray-100 text-gray-800', text: status };
-
+  if (intolerancias.length === 0) {
     return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
-        {config.text}
-      </span>
+      <EmptyState
+        title="Nenhuma intolerância encontrada"
+        description="Tente ajustar os filtros de busca ou adicionar uma nova intolerância"
+        icon="intolerancias"
+      />
     );
-  };
-
-  if (!intolerancias || intolerancias.length === 0) {
-    return <EmptyState message="Nenhuma intolerância encontrada" />;
   }
 
   return (
     <>
-      {/* Versão Desktop - Tabela */}
-      <div className="hidden lg:block bg-white shadow-sm rounded-lg overflow-hidden">
+      {/* Versão Desktop - Tabela completa */}
+      <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="w-full">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -44,7 +31,7 @@ const IntoleranciasTable = ({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -58,9 +45,15 @@ const IntoleranciasTable = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(intolerancia.status)}
+                    <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
+                      intolerancia.status === 'ativo' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {intolerancia.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                    </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <ActionButtons
                       canView={!!onView}
                       canEdit={!!onEdit}
@@ -100,9 +93,17 @@ const IntoleranciasTable = ({
               />
             </div>
             
-            <div className="flex items-center">
-              <span className="text-gray-500 text-xs mr-2">Status:</span>
-              {getStatusBadge(intolerancia.status)}
+            <div className="grid grid-cols-1 gap-3 text-xs">
+              <div>
+                <span className="text-gray-500">Status:</span>
+                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                  intolerancia.status === 'ativo' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {intolerancia.status === 'ativo' ? 'Ativo' : 'Inativo'}
+                </span>
+              </div>
             </div>
           </div>
         ))}
