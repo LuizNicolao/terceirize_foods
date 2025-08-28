@@ -9,7 +9,8 @@ const ModalAprovacao = ({
   onSuccess,
   itensMelhorPreco,
   itensMelhorEntrega,
-  itensMelhorPagamento
+  itensMelhorPagamento,
+  aprovacoesResumo
 }) => {
   const [motivoAprovacao, setMotivoAprovacao] = useState('');
   const [tipoAprovacao, setTipoAprovacao] = useState('manual');
@@ -37,6 +38,51 @@ const ModalAprovacao = ({
         break;
       case 'melhor-prazo-pagamento':
         itensAprovados = itensMelhorPagamento;
+        break;
+      case 'selecao-personalizada':
+        // Usar as seleções do resumo comparativo
+        const produtosSelecionados = [];
+        
+        // Adicionar produtos de melhor preço selecionados
+        if (aprovacoesResumo?.melhorPreco) {
+          aprovacoesResumo.melhorPreco.forEach(produtoNome => {
+            const item = cotacao.itens.find(item => 
+              item.produto_nome === produtoNome && 
+              item.fornecedor_nome === cotacao.itens.find(i => 
+                i.produto_nome === produtoNome
+              )?.fornecedor_nome
+            );
+            if (item) produtosSelecionados.push(item);
+          });
+        }
+        
+        // Adicionar produtos de melhor entrega selecionados
+        if (aprovacoesResumo?.melhorEntrega) {
+          aprovacoesResumo.melhorEntrega.forEach(produtoNome => {
+            const item = cotacao.itens.find(item => 
+              item.produto_nome === produtoNome && 
+              item.fornecedor_nome === cotacao.itens.find(i => 
+                i.produto_nome === produtoNome
+              )?.fornecedor_nome
+            );
+            if (item) produtosSelecionados.push(item);
+          });
+        }
+        
+        // Adicionar produtos de melhor pagamento selecionados
+        if (aprovacoesResumo?.melhorPagamento) {
+          aprovacoesResumo.melhorPagamento.forEach(produtoNome => {
+            const item = cotacao.itens.find(item => 
+              item.produto_nome === produtoNome && 
+              item.fornecedor_nome === cotacao.itens.find(i => 
+                i.produto_nome === produtoNome
+              )?.fornecedor_nome
+            );
+            if (item) produtosSelecionados.push(item);
+          });
+        }
+        
+        itensAprovados = produtosSelecionados;
         break;
     }
 
@@ -235,6 +281,52 @@ const ModalAprovacao = ({
                   </div>
                 </div>
               </label>
+
+              {/* Nova opção: Seleção Personalizada */}
+              {aprovacoesResumo && Object.values(aprovacoesResumo).some(arr => arr.length > 0) && (
+                <label className={`relative cursor-pointer transition-all duration-200 ${
+                  tipoAprovacao === 'selecao-personalizada' 
+                    ? 'ring-2 ring-blue-500 bg-blue-50' 
+                    : 'hover:bg-gray-50'
+                } border-2 border-gray-200 rounded-lg p-6`}>
+                  <input
+                    type="radio"
+                    name="tipo-aprovacao"
+                    value="selecao-personalizada"
+                    checked={tipoAprovacao === 'selecao-personalizada'}
+                    onChange={(e) => setTipoAprovacao(e.target.value)}
+                    className="sr-only"
+                  />
+                  <div className="flex items-start gap-3">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      tipoAprovacao === 'selecao-personalizada' 
+                        ? 'border-blue-500 bg-blue-500' 
+                        : 'border-gray-300'
+                    }`}>
+                      {tipoAprovacao === 'selecao-personalizada' && (
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">Seleção Personalizada</div>
+                      <div className="text-sm text-gray-600 mt-1">
+                        Usa as seleções do Resumo Comparativo
+                      </div>
+                      <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
+                        <div className="bg-green-100 text-green-800 px-2 py-1 rounded">
+                          💰 Melhor Preço: {aprovacoesResumo.melhorPreco?.length || 0}
+                        </div>
+                        <div className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          🚚 Melhor Entrega: {aprovacoesResumo.melhorEntrega?.length || 0}
+                        </div>
+                        <div className="bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                          💳 Melhor Pagamento: {aprovacoesResumo.melhorPagamento?.length || 0}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </label>
+              )}
             </div>
           </div>
 
@@ -330,7 +422,7 @@ const ModalAprovacao = ({
                  )}
 
           {/* Resumo dos Itens Selecionados */}
-          {(tipoAprovacao === 'melhor-preco' || tipoAprovacao === 'melhor-prazo-entrega' || tipoAprovacao === 'melhor-prazo-pagamento') && (
+          {(tipoAprovacao === 'melhor-preco' || tipoAprovacao === 'melhor-prazo-entrega' || tipoAprovacao === 'melhor-prazo-pagamento' || tipoAprovacao === 'selecao-personalizada') && (
             <div className="mb-8">
               <h4 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                 <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
@@ -340,7 +432,49 @@ const ModalAprovacao = ({
                 <div className="grid gap-3">
                   {(tipoAprovacao === 'melhor-preco' ? itensMelhorPreco :
                     tipoAprovacao === 'melhor-prazo-entrega' ? itensMelhorEntrega :
-                    itensMelhorPagamento).map((item, index) => (
+                    tipoAprovacao === 'melhor-prazo-pagamento' ? itensMelhorPagamento :
+                    tipoAprovacao === 'selecao-personalizada' ? (() => {
+                      // Calcular itens da seleção personalizada
+                      const produtosSelecionados = [];
+                      
+                      if (aprovacoesResumo?.melhorPreco) {
+                        aprovacoesResumo.melhorPreco.forEach(produtoNome => {
+                          const item = cotacao.itens.find(item => 
+                            item.produto_nome === produtoNome && 
+                            item.fornecedor_nome === cotacao.itens.find(i => 
+                              i.produto_nome === produtoNome
+                            )?.fornecedor_nome
+                          );
+                          if (item) produtosSelecionados.push(item);
+                        });
+                      }
+                      
+                      if (aprovacoesResumo?.melhorEntrega) {
+                        aprovacoesResumo.melhorEntrega.forEach(produtoNome => {
+                          const item = cotacao.itens.find(item => 
+                            item.produto_nome === produtoNome && 
+                            item.fornecedor_nome === cotacao.itens.find(i => 
+                              i.produto_nome === produtoNome
+                            )?.fornecedor_nome
+                          );
+                          if (item) produtosSelecionados.push(item);
+                        });
+                      }
+                      
+                      if (aprovacoesResumo?.melhorPagamento) {
+                        aprovacoesResumo.melhorPagamento.forEach(produtoNome => {
+                          const item = cotacao.itens.find(item => 
+                            item.produto_nome === produtoNome && 
+                            item.fornecedor_nome === cotacao.itens.find(i => 
+                              i.produto_nome === produtoNome
+                            )?.fornecedor_nome
+                          );
+                          if (item) produtosSelecionados.push(item);
+                        });
+                      }
+                      
+                      return produtosSelecionados;
+                    })() : []).map((item, index) => (
                     <div key={index} className="flex items-center p-4 bg-white rounded-lg border border-green-200">
                       <div className="w-3 h-3 bg-green-500 rounded-full mr-4"></div>
                                                    <div className="flex-1">

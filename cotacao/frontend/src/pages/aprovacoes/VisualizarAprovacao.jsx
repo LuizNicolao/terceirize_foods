@@ -531,6 +531,7 @@ const VisualizarAprovacao = () => {
           itensMelhorPreco={itensMelhorPreco}
           itensMelhorEntrega={itensMelhorEntrega}
           itensMelhorPagamento={itensMelhorPagamento}
+          aprovacoesResumo={aprovacoesResumo}
         />
       )}
 
