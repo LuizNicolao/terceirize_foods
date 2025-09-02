@@ -66,6 +66,37 @@ class EfetivosCRUDController {
         }
       }
 
+      // Verificar se já existe um efetivo duplicado
+      const duplicateQuery = `
+        SELECT id 
+        FROM efetivos 
+        WHERE unidade_escolar_id = ? 
+        AND tipo_efetivo = ? 
+        AND quantidade = ?
+        AND (intolerancia_id = ? OR (intolerancia_id IS NULL AND ? IS NULL))
+      `;
+      
+      const [duplicate] = await executeQuery(duplicateQuery, [
+        unidade_escolar_id,
+        tipo_efetivo,
+        quantidade,
+        intolerancia_id,
+        intolerancia_id
+      ]);
+
+      if (duplicate) {
+        return res.status(422).json({
+          success: false,
+          message: 'Já existe um efetivo com estas características para esta unidade escolar',
+          errors: {
+            duplicate: ['Efetivo duplicado']
+          },
+          errorCategories: {
+            duplicate: [{ msg: 'Já existe um efetivo com estas características para esta unidade escolar' }]
+          }
+        });
+      }
+
       // Inserir efetivo
       const insertQuery = `
         INSERT INTO efetivos (unidade_escolar_id, tipo_efetivo, quantidade, intolerancia_id)
@@ -196,6 +227,39 @@ class EfetivosCRUDController {
             message: 'Intolerância não encontrada'
           });
         }
+      }
+
+      // Verificar se já existe um efetivo duplicado (excluindo o atual)
+      const duplicateQuery = `
+        SELECT id 
+        FROM efetivos 
+        WHERE unidade_escolar_id = ? 
+        AND tipo_efetivo = ? 
+        AND quantidade = ?
+        AND (intolerancia_id = ? OR (intolerancia_id IS NULL AND ? IS NULL))
+        AND id != ?
+      `;
+      
+      const [duplicate] = await executeQuery(duplicateQuery, [
+        unidade_escolar_id,
+        tipo_efetivo,
+        quantidade,
+        intolerancia_id,
+        intolerancia_id,
+        id
+      ]);
+
+      if (duplicate) {
+        return res.status(422).json({
+          success: false,
+          message: 'Já existe um efetivo com estas características para esta unidade escolar',
+          errors: {
+            duplicate: ['Efetivo duplicado']
+          },
+          errorCategories: {
+            duplicate: [{ msg: 'Já existe um efetivo com estas características para esta unidade escolar' }]
+          }
+        });
       }
 
       // Atualizar efetivo

@@ -35,6 +35,7 @@ const UnidadesEscolaresTable = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome da Escola</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Centro</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -48,6 +49,7 @@ const UnidadesEscolaresTable = ({
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.cidade}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.estado}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.filial_nome || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
                 </td>

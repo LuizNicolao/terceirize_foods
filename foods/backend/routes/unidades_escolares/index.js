@@ -3,6 +3,14 @@
  * Centraliza a exportação das rotas organizadas
  */
 
-const unidadeEscolarRoute = require('./unidadeEscolarRoute');
+const express = require('express');
+const router = express.Router();
 
-module.exports = unidadeEscolarRoute;
+const unidadeEscolarRoute = require('./unidadeEscolarRoute');
+const almoxarifadoRoute = require('./almoxarifadoRoute');
+
+// Usar as rotas
+router.use('/', unidadeEscolarRoute);
+router.use('/', almoxarifadoRoute);
+
+module.exports = router;

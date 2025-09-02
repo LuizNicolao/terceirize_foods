@@ -3,7 +3,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const cookieParser = require('cookie-parser');
-const csurf = require('csurf');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -37,7 +36,7 @@ const corsOptions = {
       ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-csrf-token', 'X-CSRF-Token']
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions));
@@ -75,15 +74,6 @@ const loginLimiter = rateLimit({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
-
-// Middleware CSRF
-app.use(
-  csurf({
-    cookie: true,
-    ignoreMethods: ['GET', 'HEAD', 'OPTIONS'],
-    ignorePaths: ['/api/auth/validate-cotacao-token', '/foods/api/auth/validate-cotacao-token']
-  })
-);
 
 module.exports = {
   app,

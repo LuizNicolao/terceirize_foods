@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
+import FiliaisService from '../services/filiais';
 import api from '../services/api';
 import { useValidation } from './useValidation';
 
@@ -18,8 +19,10 @@ export const useUnidadesEscolares = () => {
   // Estados principais
   const [unidades, setUnidades] = useState([]);
   const [rotas, setRotas] = useState([]);
+  const [filiais, setFiliais] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingRotas, setLoadingRotas] = useState(false);
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [editingUnidade, setEditingUnidade] = useState(null);
@@ -112,10 +115,30 @@ export const useUnidadesEscolares = () => {
     }
   };
 
+  // Carregar filiais
+  const loadFiliais = async () => {
+    try {
+      setLoadingFiliais(true);
+      const result = await FiliaisService.buscarAtivas();
+      if (result.success) {
+        setFiliais(result.data || []);
+      } else {
+        toast.error(result.error);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar filiais:', error);
+      setFiliais([]);
+      toast.error('Erro ao carregar filiais');
+    } finally {
+      setLoadingFiliais(false);
+    }
+  };
+
   // Carregar dados quando dependências mudarem
   useEffect(() => {
     loadUnidades();
     loadRotas();
+    loadFiliais();
     loadEstatisticas();
   }, [currentPage, itemsPerPage]);
 
@@ -239,8 +262,10 @@ export const useUnidadesEscolares = () => {
     // Estados
     unidades: filteredUnidades,
     rotas,
+    filiais,
     loading,
     loadingRotas,
+    loadingFiliais,
     showModal,
     viewMode,
     editingUnidade,

@@ -17,7 +17,8 @@ class UnidadesEscolaresListController {
         estado,
         cidade,
         centro_distribuicao,
-        rota_id
+        rota_id,
+        filial_id
       } = req.query;
 
       const pageNum = parseInt(page) || 1;
@@ -63,6 +64,12 @@ class UnidadesEscolaresListController {
         params.push(rota_id);
       }
 
+      // Filtro por filial
+      if (filial_id) {
+        whereConditions.push('ue.filial_id = ?');
+        params.push(filial_id);
+      }
+
       // Query para contar total de registros
       const countQuery = `
         SELECT COUNT(*) as total 
@@ -80,10 +87,12 @@ class UnidadesEscolaresListController {
           ue.pais, ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, ue.rota_id, ue.regional, ue.lot, 
           ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
-          ue.status, ue.observacoes, ue.created_at, ue.updated_at,
-          r.nome as rota_nome
+          ue.status, ue.observacoes, ue.created_at, ue.updated_at, ue.filial_id,
+          r.nome as rota_nome,
+          f.filial as filial_nome
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
+        LEFT JOIN filiais f ON ue.filial_id = f.id
         WHERE ${whereConditions.join(' AND ')}
         ORDER BY ue.nome_escola ASC
         LIMIT ${limitNum} OFFSET ${offset}
@@ -113,7 +122,8 @@ class UnidadesEscolaresListController {
           estado: estado || null,
           cidade: cidade || null,
           centro_distribuicao: centro_distribuicao || null,
-          rota_id: rota_id || null
+          rota_id: rota_id || null,
+          filial_id: filial_id || null
         }
       });
 
@@ -138,10 +148,12 @@ class UnidadesEscolaresListController {
           ue.pais, ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, ue.rota_id, ue.regional, ue.lot, 
           ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
-          ue.status, ue.observacoes, ue.created_at, ue.updated_at,
-          r.nome as rota_nome
+          ue.status, ue.observacoes, ue.created_at, ue.updated_at, ue.filial_id,
+          r.nome as rota_nome,
+          f.filial as filial_nome
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
+        LEFT JOIN filiais f ON ue.filial_id = f.id
         WHERE ue.id = ?
       `;
 

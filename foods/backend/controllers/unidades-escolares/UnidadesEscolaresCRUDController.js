@@ -28,7 +28,8 @@ class UnidadesEscolaresCRUDController {
         abastecimento,
         ordem_entrega = 0,
         status = 'ativo',
-        observacoes
+        observacoes,
+        filial_id
       } = req.body;
 
       // Verificar se a rota existe (se fornecida)
@@ -43,6 +44,22 @@ class UnidadesEscolaresCRUDController {
             success: false,
             error: 'Rota não encontrada',
             message: 'A rota especificada não foi encontrada'
+          });
+        }
+      }
+
+      // Verificar se a filial existe (se fornecida)
+      if (filial_id) {
+        const filial = await executeQuery(
+          'SELECT id FROM filiais WHERE id = ?',
+          [filial_id]
+        );
+
+        if (filial.length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Filial não encontrada',
+            message: 'A filial especificada não foi encontrada'
           });
         }
       }
@@ -66,8 +83,8 @@ class UnidadesEscolaresCRUDController {
         INSERT INTO unidades_escolares (
           codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
           centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
-          ordem_entrega, status, observacoes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ordem_entrega, status, observacoes, filial_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const insertParams = [
@@ -89,7 +106,8 @@ class UnidadesEscolaresCRUDController {
         abastecimento || null,
         ordem_entrega,
         status,
-        observacoes || null
+        observacoes || null,
+        filial_id || null
       ];
 
       const result = await executeQuery(insertQuery, insertParams);
@@ -97,7 +115,7 @@ class UnidadesEscolaresCRUDController {
 
       // Buscar unidade escolar criada
       const newUnidade = await executeQuery(
-        'SELECT ue.*, r.nome as rota_nome FROM unidades_escolares ue LEFT JOIN rotas r ON ue.rota_id = r.id WHERE ue.id = ?',
+        'SELECT ue.*, r.nome as rota_nome, f.filial as filial_nome FROM unidades_escolares ue LEFT JOIN rotas r ON ue.rota_id = r.id LEFT JOIN filiais f ON ue.filial_id = f.id WHERE ue.id = ?',
         [newId]
       );
 
@@ -140,7 +158,8 @@ class UnidadesEscolaresCRUDController {
         abastecimento,
         ordem_entrega,
         status,
-        observacoes
+        observacoes,
+        filial_id
       } = req.body;
 
       // Verificar se a unidade escolar existe
@@ -169,6 +188,22 @@ class UnidadesEscolaresCRUDController {
             success: false,
             error: 'Rota não encontrada',
             message: 'A rota especificada não foi encontrada'
+          });
+        }
+      }
+
+      // Verificar se a filial existe (se fornecida)
+      if (filial_id) {
+        const filial = await executeQuery(
+          'SELECT id FROM filiais WHERE id = ?',
+          [filial_id]
+        );
+
+        if (filial.length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Filial não encontrada',
+            message: 'A filial especificada não foi encontrada'
           });
         }
       }
@@ -268,6 +303,10 @@ class UnidadesEscolaresCRUDController {
       if (observacoes !== undefined) {
         updateFields.push('observacoes = ?');
         updateParams.push(observacoes);
+      }
+      if (filial_id !== undefined) {
+        updateFields.push('filial_id = ?');
+        updateParams.push(filial_id);
       }
 
       // Sempre atualizar o timestamp

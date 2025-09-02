@@ -15,17 +15,7 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Função para buscar e setar o token CSRF
-export const setCSRFToken = async () => {
-  try {
-    const response = await api.get('/csrf-token', { withCredentials: true });
-    api.defaults.headers['X-CSRF-Token'] = response.data.csrfToken;
-  } catch (error) {
-    console.error('Erro ao buscar token CSRF:', error);
-  }
-};
-
-// Interceptor para garantir o envio do token CSRF em métodos protegidos
+// Interceptor para garantir o envio do token JWT
 api.interceptors.request.use(
   async (config) => {
     const token = localStorage.getItem('token');
@@ -34,11 +24,6 @@ api.interceptors.request.use(
     }
     // Sempre enviar cookies
     config.withCredentials = true;
-    // Adicionar CSRF em métodos protegidos
-    if (['post', 'put', 'delete', 'patch'].includes(config.method)) {
-      await setCSRFToken();
-      config.headers['X-CSRF-Token'] = api.defaults.headers['X-CSRF-Token'];
-    }
     return config;
   },
   (error) => {

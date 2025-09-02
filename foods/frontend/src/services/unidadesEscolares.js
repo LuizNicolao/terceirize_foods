@@ -196,6 +196,110 @@ class UnidadesEscolaresService {
       };
     }
   }
+
+  static async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/unidades-escolares/export/pdf', { 
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao exportar dados'
+      };
+    }
+  }
+
+  // Métodos para Almoxarifado
+  static async buscarAlmoxarifado(unidadeEscolarId) {
+    try {
+      const response = await api.get(`/unidades-escolares/${unidadeEscolarId}/almoxarifado`);
+      return {
+        success: true,
+        data: response.data.data || response.data
+      };
+    } catch (error) {
+      if (error.response?.status === 404) {
+        return {
+          success: false,
+          error: 'Almoxarifado não encontrado'
+        };
+      }
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar almoxarifado'
+      };
+    }
+  }
+
+  static async criarAlmoxarifado(unidadeEscolarId, data) {
+    try {
+      const response = await api.post(`/unidades-escolares/${unidadeEscolarId}/almoxarifado`, data);
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: 'Almoxarifado criado com sucesso!'
+      };
+    } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          error: error.response?.data?.message || 'Dados inválidos',
+          validationErrors: error.response?.data?.errors,
+          errorCategories: error.response?.data?.errorCategories
+        };
+      }
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao criar almoxarifado'
+      };
+    }
+  }
+
+  static async atualizarAlmoxarifado(id, data) {
+    try {
+      const response = await api.put(`/unidades-escolares/almoxarifado/${id}`, data);
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: 'Almoxarifado atualizado com sucesso!'
+      };
+    } catch (error) {
+      if (error.response?.status === 422) {
+        return {
+          success: false,
+          error: error.response?.data?.message || 'Dados inválidos',
+          validationErrors: error.response?.data?.errors,
+          errorCategories: error.response?.data?.errorCategories
+        };
+      }
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao atualizar almoxarifado'
+      };
+    }
+  }
+
+  static async excluirAlmoxarifado(id) {
+    try {
+      const response = await api.delete(`/unidades-escolares/almoxarifado/${id}`);
+      return {
+        success: true,
+        data: response.data,
+        message: 'Almoxarifado excluído com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao excluir almoxarifado'
+      };
+    }
+  }
 }
 
 export default UnidadesEscolaresService; 

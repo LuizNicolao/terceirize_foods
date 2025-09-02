@@ -192,49 +192,49 @@ class FiliaisService {
     }
   }
 
-  async listarItensAlmoxarifado(almoxarifadoId) {
-    try {
-      const response = await api.get(`/filiais/almoxarifados/${almoxarifadoId}/itens`);
-      return {
-        success: true,
-        data: response.data.data || response.data
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Erro ao carregar itens do almoxarifado'
-      };
-    }
-  }
+  // async listarItensAlmoxarifado(almoxarifadoId) {
+  //   try {
+  //     const response = await api.get(`/filiais/almoxarifados/${almoxarifadoId}/itens`);
+  //     return {
+  //       success: true,
+  //       data: response.data.data || response.data
+  //     };
+  //   } catch (error) {
+  //     return {
+  //       success: false,
+  //       error: error.response?.data?.message || 'Erro ao carregar itens do almoxarifado'
+  //     };
+  //   }
+  // }
 
-  async adicionarItemAlmoxarifado(almoxarifadoId, data) {
-    try {
-      const response = await api.post(`/filiais/almoxarifados/${almoxarifadoId}/itens`, data);
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Erro ao adicionar item ao almoxarifado'
-      };
-    }
-  }
+  // async adicionarItemAlmoxarifado(almoxarifadoId, data) {
+  //   try {
+  //     const response = await api.post(`/filiais/almoxarifados/${almoxarifadoId}/itens`, data);
+  //     return {
+  //       success: true,
+  //       data: response.data
+  //     };
+  //   } catch (error) {
+  //     return {
+  //       success: false,
+  //       error: error.response?.data?.message || 'Erro ao adicionar item ao almoxarifado'
+  //     };
+  //   }
+  // }
 
-  async removerItemAlmoxarifado(almoxarifadoId, itemId) {
-    try {
-      await api.delete(`/filiais/almoxarifados/${almoxarifadoId}/itens/${itemId}`);
-      return {
-        success: true
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Erro ao remover item do almoxarifado'
-      };
-    }
-  }
+  // async removerItemAlmoxarifado(almoxarifadoId, itemId) {
+  //   try {
+  //     await api.delete(`/filiais/almoxarifados/${almoxarifadoId}/itens/${itemId}`);
+  //     return {
+  //       success: true
+  //     };
+  //   } catch (error) {
+  //     return {
+  //       success: false,
+  //       error: error.response?.data?.message || 'Erro ao remover item do almoxarifado'
+  //     };
+  //   }
+  // }
 
   async exportarXLSX(params = {}) {
     try {

@@ -51,7 +51,8 @@ const ValidationErrorModal = ({ isOpen, onClose, errors, errorCategories }) => {
       'Informações de Mercado': '🏪',
       'Detalhes de Referência': '🔍',
       'Validade': '⏰',
-      'Integração': '🔌'
+      'Integração': '🔌',
+      'Duplicação': '🔄'
     };
 
     return iconMap[categoryName] || '⚠️';
@@ -118,7 +119,8 @@ const ValidationErrorModal = ({ isOpen, onClose, errors, errorCategories }) => {
                   'referenceDetails': 'Detalhes de Referência',
                   'validityInfo': 'Validade',
                   'integrationInfo': 'Integração',
-                  'general': 'Campos Gerais'
+                  'general': 'Campos Gerais',
+                  'duplicate': 'Duplicação'
                 };
                 
                 const categoryName = categoryNames[categoryCode] || categoryCode;

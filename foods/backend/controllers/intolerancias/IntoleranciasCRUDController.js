@@ -76,7 +76,7 @@ class IntoleranciasCRUDController {
       const { nome, status } = req.body;
 
       // Verificar se a intolerância existe
-      const checkQuery = 'SELECT id, nome FROM intolerancias WHERE id = ?';
+      const checkQuery = 'SELECT id, nome, status FROM intolerancias WHERE id = ?';
       const [existing] = await executeQuery(checkQuery, [id]);
 
       if (!existing) {
@@ -86,26 +86,24 @@ class IntoleranciasCRUDController {
         });
       }
 
-      // Verificar se já existe outra intolerância com o mesmo nome
-      if (nome && nome !== existing.nome) {
-        const duplicateQuery = 'SELECT id FROM intolerancias WHERE nome = ? AND id != ?';
-        const [duplicate] = await executeQuery(duplicateQuery, [nome, id]);
-
-        if (duplicate) {
-          return res.status(422).json({
+      // Se está tentando desativar a intolerância, verificar se há efetivos vinculados
+      if (status !== undefined && status === 0 && existing.status === 1) {
+        const checkEfetivosQuery = `
+          SELECT COUNT(*) as total 
+          FROM efetivos 
+          WHERE intolerancia_id = ? AND status = 1
+        `;
+        const [efetivosResult] = await executeQuery(checkEfetivosQuery, [id]);
+        
+        if (efetivosResult.total > 0) {
+          return res.status(400).json({
             success: false,
-            message: 'Já existe uma intolerância com este nome',
-            errors: {
-              nome: ['Já existe uma intolerância com este nome']
-            },
-            errorCategories: {
-              nome: ['duplicate']
-            }
+            message: `Não é possível desativar esta intolerância. Ela está vinculada a ${efetivosResult.total} efetivo(s) ativo(s).`
           });
         }
       }
 
-      // Construir query de atualização
+      // Construir query de atualização dinamicamente
       const updateFields = [];
       const updateParams = [];
 
@@ -190,8 +188,20 @@ class IntoleranciasCRUDController {
         });
       }
 
-      // Verificar se há dependências (aqui você pode adicionar verificações específicas)
-      // Por exemplo, verificar se há produtos ou alunos associados a esta intolerância
+      // Verificar se há efetivos vinculados a esta intolerância
+      const checkEfetivosQuery = `
+        SELECT COUNT(*) as total 
+        FROM efetivos 
+        WHERE intolerancia_id = ?
+      `;
+      const [efetivosResult] = await executeQuery(checkEfetivosQuery, [id]);
+      
+      if (efetivosResult.total > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Não é possível excluir esta intolerância. Ela está vinculada a ${efetivosResult.total} efetivo(s).`
+        });
+      }
 
       // Excluir a intolerância
       const deleteQuery = 'DELETE FROM intolerancias WHERE id = ?';

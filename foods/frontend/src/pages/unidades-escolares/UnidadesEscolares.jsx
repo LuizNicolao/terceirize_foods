@@ -18,8 +18,10 @@ const UnidadesEscolares = () => {
   const {
     unidades,
     rotas,
+    filiais,
     loading,
     loadingRotas,
+    loadingFiliais,
     showModal,
     viewMode,
     editingUnidade,
@@ -147,7 +149,9 @@ const UnidadesEscolares = () => {
         unidade={editingUnidade}
         isViewMode={viewMode}
         rotas={rotas}
+        filiais={filiais}
         loadingRotas={loadingRotas}
+        loadingFiliais={loadingFiliais}
       />
 
       {/* Modal de Auditoria */}

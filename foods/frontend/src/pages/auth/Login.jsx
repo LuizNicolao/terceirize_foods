@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { FaUser, FaLock, FaEye, FaEyeSlash, FaSpinner } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { SecurityNotice } from '../../components/auth/SecurityNotice';
-import { Logo } from '../../components/ui';
+import { Logo, CaptchaCheckbox } from '../../components/ui';
 import toast from 'react-hot-toast';
 
 const Login = () => {
@@ -14,6 +14,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showSecurityNotice, setShowSecurityNotice] = useState(true);
+  const [captchaChecked, setCaptchaChecked] = useState(false);
+  const [captchaError, setCaptchaError] = useState('');
   
   const {
     register,
@@ -29,7 +31,21 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
+  const validateCaptcha = () => {
+    if (!captchaChecked) {
+      setCaptchaError('Por favor, confirme que você não é um robô');
+      return false;
+    }
+    setCaptchaError('');
+    return true;
+  };
+
   const onSubmit = async (data) => {
+    // Validar captcha antes de prosseguir
+    if (!validateCaptcha()) {
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -57,6 +73,13 @@ const Login = () => {
       toast.error('Erro interno do servidor');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCaptchaChange = (checked) => {
+    setCaptchaChecked(checked);
+    if (checked && captchaError) {
+      setCaptchaError('');
     }
   };
 
@@ -148,6 +171,17 @@ const Login = () => {
             )}
           </div>
 
+          {/* Captcha */}
+          <div className="space-y-1">
+            <CaptchaCheckbox
+              isChecked={captchaChecked}
+              onChange={handleCaptchaChange}
+              disabled={isLoading}
+              error={captchaError}
+              required={true}
+            />
+          </div>
+
           <div className="flex items-center justify-between">
             <label className="flex items-center">
               <input
@@ -185,8 +219,12 @@ const Login = () => {
 
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center"
+            disabled={isLoading || !captchaChecked}
+            className={`w-full font-semibold py-3 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-0.5 disabled:transform-none disabled:cursor-not-allowed flex items-center justify-center ${
+              isLoading || !captchaChecked
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-green-600 hover:bg-green-700 text-white'
+            }`}
           >
             {isLoading ? (
               <>

@@ -6,15 +6,17 @@ class IntoleranciasListController {
       const { search, status } = req.query;
       const pagination = req.pagination;
 
-      // Query base
+      // Query base com contagem de unidades escolares
       let baseQuery = `
         SELECT 
-          id,
-          nome,
-          status,
-          criado_em,
-          atualizado_em
-        FROM intolerancias 
+          i.id,
+          i.nome,
+          i.status,
+          i.criado_em,
+          i.atualizado_em,
+          COUNT(DISTINCT e.unidade_escolar_id) as unidades_escolares_count
+        FROM intolerancias i
+        LEFT JOIN efetivos e ON i.id = e.intolerancia_id
         WHERE 1=1
       `;
       
@@ -22,16 +24,17 @@ class IntoleranciasListController {
 
       // Aplicar filtros
       if (search) {
-        baseQuery += ' AND (nome LIKE ?)';
+        baseQuery += ' AND (i.nome LIKE ?)';
         params.push(`%${search}%`);
       }
 
       if (status && status !== 'todos') {
-        baseQuery += ' AND status = ?';
+        baseQuery += ' AND i.status = ?';
         params.push(status);
       }
 
-      baseQuery += ' ORDER BY nome ASC';
+      baseQuery += ' GROUP BY i.id, i.nome, i.status, i.criado_em, i.atualizado_em';
+      baseQuery += ' ORDER BY i.nome ASC';
 
       // Aplicar paginação manualmente
       const limit = pagination.limit;
@@ -95,13 +98,16 @@ class IntoleranciasListController {
 
       const query = `
         SELECT 
-          id,
-          nome,
-          status,
-          criado_em,
-          atualizado_em
-        FROM intolerancias 
-        WHERE id = ?
+          i.id,
+          i.nome,
+          i.status,
+          i.criado_em,
+          i.atualizado_em,
+          COUNT(DISTINCT e.unidade_escolar_id) as unidades_escolares_count
+        FROM intolerancias i
+        LEFT JOIN efetivos e ON i.id = e.intolerancia_id
+        WHERE i.id = ?
+        GROUP BY i.id, i.nome, i.status, i.criado_em, i.atualizado_em
       `;
 
       const [intolerancia] = await executeQuery(query, [parseInt(id)]);
@@ -137,14 +143,17 @@ class IntoleranciasListController {
     try {
       const query = `
         SELECT 
-          id,
-          nome,
-          status,
-          criado_em,
-          atualizado_em
-        FROM intolerancias 
-        WHERE status = 'ativo'
-        ORDER BY nome ASC
+          i.id,
+          i.nome,
+          i.status,
+          i.criado_em,
+          i.atualizado_em,
+          COUNT(DISTINCT e.unidade_escolar_id) as unidades_escolares_count
+        FROM intolerancias i
+        LEFT JOIN efetivos e ON i.id = e.intolerancia_id
+        WHERE i.status = 'ativo'
+        GROUP BY i.id, i.nome, i.status, i.criado_em, i.atualizado_em
+        ORDER BY i.nome ASC
       `;
 
       const intolerancias = await executeQuery(query);

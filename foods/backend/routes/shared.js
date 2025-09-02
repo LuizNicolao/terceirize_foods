@@ -6,11 +6,6 @@ const express = require('express');
 const router = express.Router();
 const TokenValidationController = require('../controllers/shared/tokenValidationController');
 
-// Rota para fornecer o token CSRF ao frontend
-router.get('/csrf-token', (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
-});
-
 // Rota para validar token do sistema de cotação
 router.post('/auth/validate-cotacao-token', TokenValidationController.validateCotacaoToken);
 

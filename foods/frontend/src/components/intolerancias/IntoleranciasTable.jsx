@@ -29,6 +29,9 @@ const IntoleranciasTable = ({
                   Nome
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Unidades Escolares
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -43,6 +46,9 @@ const IntoleranciasTable = ({
                     <div className="text-sm font-medium text-gray-900">
                       {intolerancia.nome}
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {intolerancia.unidades_escolares_count || 0}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
@@ -93,7 +99,11 @@ const IntoleranciasTable = ({
               />
             </div>
             
-            <div className="grid grid-cols-1 gap-3 text-xs">
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <span className="text-gray-500">Unidades Escolares:</span>
+                <p className="font-medium">{intolerancia.unidades_escolares_count || 0}</p>
+              </div>
               <div>
                 <span className="text-gray-500">Status:</span>
                 <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ml-2 ${

@@ -13,7 +13,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
-const { atualizarPermissoesPorTipoNivel } = require('../../routes/permissoes');
+const { atualizarPermissoesPorTipoNivel } = require('../../routes/permissoes/index');
 
 class UsuariosCRUDController {
   

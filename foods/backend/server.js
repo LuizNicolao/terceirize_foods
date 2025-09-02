@@ -22,7 +22,6 @@ app.locals.loginLimiter = loginLimiter;
 
 // Middleware de logging
 app.use((req, res, next) => {
-  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
 
@@ -33,15 +32,6 @@ app.use('/foods/api', sharedRoutes);
 // Aplicar todas as rotas com prefixos automaticamente
 applyRoutePrefixes(app, routes);
 
-// Middleware de tratamento de erros CSRF
-app.use((err, req, res, next) => {
-  if (err.code === 'EBADCSRFTOKEN') {
-    console.log('❌ Erro CSRF:', req.path);
-    return res.status(403).json({ error: 'Token CSRF inválido ou ausente.' });
-  }
-  next(err);
-});
-
 // Middleware de tratamento de erros padronizado
 const { errorHandler } = require('./middleware/responseHandler');
 app.use(errorHandler);
@@ -51,8 +41,8 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Rota não encontrada' });
 });
 
-// Iniciar servidor
-app.listen(PORT, '0.0.0.0', () => {
+// Inicializar servidor
+app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📊 Ambiente: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 URL: http://localhost:${PORT}`);

@@ -29,11 +29,25 @@ export const PermissionsProvider = ({ children }) => {
   const loadUserPermissions = async () => {
     try {
       setLoading(true);
+      
       const response = await api.get(`/permissoes/usuario/${user.id}`);
+      
+      // Verificar se a resposta tem a estrutura esperada
+      let permissoes = [];
+      
+      if (response.data && response.data.success && response.data.data && response.data.data.permissoes) {
+        // Nova estrutura: { success: true, data: { permissoes: [...] } }
+        permissoes = response.data.data.permissoes;
+      } else if (response.data && response.data.permissoes) {
+        // Estrutura antiga: { permissoes: [...] }
+        permissoes = response.data.permissoes;
+      } else {
+        permissoes = [];
+      }
       
       // Converter permissões para um formato mais fácil de usar
       const permissions = {};
-      response.data.permissoes.forEach(perm => {
+      permissoes.forEach(perm => {
         permissions[perm.tela] = {
           pode_visualizar: perm.pode_visualizar === 1,
           pode_criar: perm.pode_criar === 1,

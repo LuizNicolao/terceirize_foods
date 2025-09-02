@@ -19,6 +19,10 @@ export const useEfetivos = (unidadeEscolarId) => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  // Estados para modal de confirmação
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false);
+  const [efetivoToDelete, setEfetivoToDelete] = useState(null);
+
   // Hook de validação
   const {
     validationErrors,
@@ -114,20 +118,24 @@ export const useEfetivos = (unidadeEscolarId) => {
     }
   };
 
-  const handleDeleteEfetivo = async (efetivo) => {
-    const efetivoId = typeof efetivo === 'object' ? efetivo.id : efetivo;
-    if (window.confirm('Tem certeza que deseja excluir este efetivo?')) {
-      try {
-        const result = await EfetivosService.excluir(efetivoId);
-        if (result.success) {
-          toast.success('Efetivo excluído com sucesso!');
-          loadEfetivos();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir efetivo');
+  const handleDeleteEfetivo = async (efetivoId) => {
+    setEfetivoToDelete(efetivoId);
+    setShowConfirmDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!efetivoToDelete) return;
+
+    try {
+      const result = await EfetivosService.excluir(efetivoToDelete);
+      if (result.success) {
+        toast.success('Efetivo excluído com sucesso!');
+        loadEfetivos();
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      toast.error('Erro ao excluir efetivo');
     }
   };
 
@@ -187,10 +195,12 @@ export const useEfetivos = (unidadeEscolarId) => {
     itemsPerPage,
     validationErrors,
     showValidationModal,
+    showConfirmDeleteModal,
 
     // Funções CRUD
     onSubmit,
     handleDeleteEfetivo,
+    handleConfirmDelete,
 
     // Funções de modal
     handleAddEfetivo,
@@ -198,6 +208,7 @@ export const useEfetivos = (unidadeEscolarId) => {
     handleEditEfetivo,
     handleCloseModal,
     handleCloseValidationModal,
+    setShowConfirmDeleteModal,
 
     // Funções de paginação
     handlePageChange,

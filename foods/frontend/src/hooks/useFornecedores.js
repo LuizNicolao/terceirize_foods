@@ -219,19 +219,20 @@ export const useFornecedores = () => {
     }
   };
 
-  const handleViewAudit = async (fornecedorId) => {
-    // Esta função será substituída pelo hook useAuditoria
-    console.log('handleViewAudit chamado com fornecedorId:', fornecedorId);
+  const handleViewAudit = (fornecedorId) => {
+    setSelectedFornecedorId(fornecedorId);
+    setShowAuditModal(true);
   };
 
   const handleAuditFilterChange = (newFilters) => {
-    // Esta função será substituída pelo hook useAuditoria
-    console.log('handleAuditFilterChange chamado com:', newFilters);
+    setAuditFilters(newFilters);
+    loadAuditLogs(selectedFornecedorId, newFilters);
   };
 
   const handleCloseAuditModal = () => {
-    // Esta função será substituída pelo hook useAuditoria
-    console.log('handleCloseAuditModal chamado');
+    setShowAuditModal(false);
+    setSelectedFornecedorId(null);
+    setAuditLogs([]);
   };
 
   const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(FornecedoresService);

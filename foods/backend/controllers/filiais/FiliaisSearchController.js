@@ -47,11 +47,11 @@ class FiliaisSearchController {
     let params = [];
     baseQuery += ' ORDER BY filial ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação usando valores diretos na query
+    const paginatedQuery = baseQuery + ` LIMIT ${pagination.limit} OFFSET ${pagination.offset}`;
     
     // Executar query paginada
-    const filiais = await executeQuery(query, paginatedParams);
+    const filiais = await executeQuery(paginatedQuery, []);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM filiais WHERE status = 1`;
@@ -105,11 +105,11 @@ class FiliaisSearchController {
     let params = [estado];
     baseQuery += ' ORDER BY filial ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação usando valores diretos na query
+    const paginatedQuery = baseQuery + ` LIMIT ${pagination.limit} OFFSET ${pagination.offset}`;
     
     // Executar query paginada
-    const filiais = await executeQuery(query, paginatedParams);
+    const filiais = await executeQuery(paginatedQuery, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM filiais WHERE estado = ? AND status = 1`;
@@ -163,11 +163,11 @@ class FiliaisSearchController {
     let params = [`%${supervisao}%`];
     baseQuery += ' ORDER BY filial ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação usando valores diretos na query
+    const paginatedQuery = baseQuery + ` LIMIT ${pagination.limit} OFFSET ${pagination.offset}`;
     
     // Executar query paginada
-    const filiais = await executeQuery(query, paginatedParams);
+    const filiais = await executeQuery(paginatedQuery, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM filiais WHERE supervisao LIKE ? AND status = 1`;
@@ -221,11 +221,11 @@ class FiliaisSearchController {
     let params = [`%${coordenacao}%`];
     baseQuery += ' ORDER BY filial ASC';
 
-    // Aplicar paginação
-    const { query, params: paginatedParams } = pagination.applyPagination(baseQuery, params);
+    // Aplicar paginação usando valores diretos na query
+    const paginatedQuery = baseQuery + ` LIMIT ${pagination.limit} OFFSET ${pagination.offset}`;
     
     // Executar query paginada
-    const filiais = await executeQuery(query, paginatedParams);
+    const filiais = await executeQuery(paginatedQuery, params);
 
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM filiais WHERE coordenacao LIKE ? AND status = 1`;

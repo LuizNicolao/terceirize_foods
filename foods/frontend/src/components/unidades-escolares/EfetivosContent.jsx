@@ -6,6 +6,7 @@ import { Button } from '../ui';
 import { CadastroFilterBar } from '../ui';
 import { Pagination } from '../ui';
 import { EfetivosTable, EfetivoModal } from '../efetivos';
+import { ConfirmModal } from '../ui';
 import ValidationErrorModal from '../ui/ValidationErrorModal';
 
 const EfetivosContent = ({ 
@@ -29,13 +30,16 @@ const EfetivosContent = ({
     itemsPerPage,
     validationErrors,
     showValidationModal,
+    showConfirmDeleteModal,
     handleCloseValidationModal,
     onSubmit,
     handleDeleteEfetivo,
+    handleConfirmDelete,
     handleAddEfetivo,
     handleViewEfetivo,
     handleEditEfetivo,
     handleCloseModal,
+    setShowConfirmDeleteModal,
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
@@ -88,10 +92,14 @@ const EfetivosContent = ({
       {/* Tabela */}
       <EfetivosTable
         efetivos={efetivos}
-        onView={canView('efetivos') ? handleViewEfetivo : null}
-        onEdit={canEdit('efetivos') ? handleEditEfetivo : null}
-        onDelete={canDelete('efetivos') ? handleDeleteEfetivo : null}
+        canView={canView}
+        canEdit={canEdit}
+        canDelete={canDelete}
+        onView={handleViewEfetivo}
+        onEdit={handleEditEfetivo}
+        onDelete={handleDeleteEfetivo}
         formatDate={formatDate}
+        viewMode={viewMode}
       />
 
       {/* Modal de Efetivo */}
@@ -110,6 +118,18 @@ const EfetivosContent = ({
         onClose={handleCloseValidationModal}
         errors={validationErrors?.errors}
         errorCategories={validationErrors?.errorCategories}
+      />
+
+      {/* Modal de Confirmação para Excluir */}
+      <ConfirmModal
+        isOpen={showConfirmDeleteModal}
+        onClose={() => setShowConfirmDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Efetivo"
+        message="Tem certeza que deseja excluir este efetivo? Esta ação não pode ser desfeita."
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
       />
 
       {/* Paginação */}

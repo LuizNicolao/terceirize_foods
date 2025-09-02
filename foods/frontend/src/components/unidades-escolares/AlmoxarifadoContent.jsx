@@ -3,14 +3,14 @@ import { useForm } from 'react-hook-form';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
 import { Button, Input, Table, ConfirmModal } from '../ui';
 import { LoadingSpinner } from '../ui';
-import filiaisService from '../../services/filiais';
+import UnidadesEscolaresService from '../../services/unidadesEscolares';
 import toast from 'react-hot-toast';
 
 const AlmoxarifadoContent = ({ 
-  filialId, 
+  unidadeEscolarId, 
   viewMode = false 
 }) => {
-  const [almoxarifados, setAlmoxarifados] = useState([]);
+  const [almoxarifado, setAlmoxarifado] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingAlmoxarifado, setEditingAlmoxarifado] = useState(null);
@@ -19,23 +19,21 @@ const AlmoxarifadoContent = ({
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  // Carregar almoxarifados
-  const loadAlmoxarifados = async () => {
-    if (!filialId) return;
+  // Carregar almoxarifado
+  const loadAlmoxarifado = async () => {
+    if (!unidadeEscolarId) return;
     
     setLoading(true);
     try {
-      const response = await filiaisService.listarAlmoxarifados(filialId);
+      const response = await UnidadesEscolaresService.buscarAlmoxarifado(unidadeEscolarId);
       if (response.success) {
-        const almoxarifadosData = response.data || [];
-        setAlmoxarifados(Array.isArray(almoxarifadosData) ? almoxarifadosData : []);
+        setAlmoxarifado(response.data);
       } else {
-        toast.error(response.error);
-        setAlmoxarifados([]);
+        setAlmoxarifado(null);
       }
     } catch (error) {
-      toast.error('Erro ao carregar almoxarifados');
-      setAlmoxarifados([]);
+      console.error('Erro ao carregar almoxarifado:', error);
+      setAlmoxarifado(null);
     } finally {
       setLoading(false);
     }
@@ -50,16 +48,16 @@ const AlmoxarifadoContent = ({
       };
 
       if (editingAlmoxarifado) {
-        const response = await filiaisService.atualizarAlmoxarifado(editingAlmoxarifado.id, payload);
+        const response = await UnidadesEscolaresService.atualizarAlmoxarifado(editingAlmoxarifado.id, payload);
         if (response.success) {
-          toast.success('Almoxarifado atualizado!');
+          toast.success('Almoxarifado atualizado com sucesso!');
         } else {
           toast.error(response.error);
         }
       } else {
-        const response = await filiaisService.criarAlmoxarifado(filialId, payload);
+        const response = await UnidadesEscolaresService.criarAlmoxarifado(unidadeEscolarId, payload);
         if (response.success) {
-          toast.success('Almoxarifado criado!');
+          toast.success('Almoxarifado criado com sucesso!');
         } else {
           toast.error(response.error);
         }
@@ -68,7 +66,7 @@ const AlmoxarifadoContent = ({
       setShowForm(false);
       setEditingAlmoxarifado(null);
       reset();
-      loadAlmoxarifados();
+      loadAlmoxarifado();
     } catch (error) {
       toast.error('Erro ao salvar almoxarifado');
     }
@@ -84,10 +82,10 @@ const AlmoxarifadoContent = ({
     if (!almoxarifadoToDelete) return;
 
     try {
-      const response = await filiaisService.excluirAlmoxarifado(almoxarifadoToDelete.id);
+      const response = await UnidadesEscolaresService.excluirAlmoxarifado(almoxarifadoToDelete.id);
       if (response.success) {
-        toast.success('Almoxarifado excluído!');
-        loadAlmoxarifados();
+        toast.success('Almoxarifado excluído com sucesso!');
+        loadAlmoxarifado();
       } else {
         toast.error(response.error);
       }
@@ -111,24 +109,35 @@ const AlmoxarifadoContent = ({
   };
 
   useEffect(() => {
-    if (filialId) {
-      loadAlmoxarifados();
+    if (unidadeEscolarId) {
+      loadAlmoxarifado();
     }
-  }, [filialId]);
+  }, [unidadeEscolarId]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-32">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
+          <p className="text-gray-600 text-sm">Carregando almoxarifado...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-gray-900">Almoxarifados da Filial</h3>
-        {!viewMode && (
+        <h3 className="text-lg font-semibold text-gray-900">Almoxarifado da Unidade Escolar</h3>
+        {!viewMode && !almoxarifado && (
           <Button
             variant="primary"
             size="sm"
             onClick={handleNew}
           >
             <FaPlus className="mr-1" />
-            Novo Almoxarifado
+            Criar Almoxarifado
           </Button>
         )}
       </div>
@@ -166,6 +175,7 @@ const AlmoxarifadoContent = ({
                   </select>
                 </div>
               </div>
+
               <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                 <Button
                   type="button"
@@ -186,11 +196,9 @@ const AlmoxarifadoContent = ({
           </div>
         ) : (
           <div>
-            {loading ? (
-              <LoadingSpinner inline={true} text="Carregando almoxarifados..." />
-            ) : almoxarifados.length === 0 ? (
+            {!almoxarifado ? (
               <div className="text-center py-8 text-gray-500">
-                Nenhum almoxarifado cadastrado para esta filial
+                Nenhum almoxarifado cadastrado para esta unidade escolar
               </div>
             ) : (
               <Table>
@@ -200,44 +208,42 @@ const AlmoxarifadoContent = ({
                   <Table.HeaderCell>Ações</Table.HeaderCell>
                 </Table.Header>
                 <Table.Body>
-                  {almoxarifados.map(almox => (
-                    <Table.Row key={almox.id}>
-                      <Table.Cell>{almox.nome}</Table.Cell>
-                      <Table.Cell>
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          almox.status === 1 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {almox.status === 1 ? 'Ativo' : 'Inativo'}
-                        </span>
-                      </Table.Cell>
-                      <Table.Cell>
-                        <div className="flex gap-2">
-                          {!viewMode && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="xs"
-                                onClick={() => handleEdit(almox)}
-                                title="Editar"
-                              >
-                                <FaEdit />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="xs"
-                                onClick={() => handleDelete(almox)}
-                                title="Excluir"
-                              >
-                                <FaTrash />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
+                  <Table.Row>
+                    <Table.Cell>{almoxarifado.nome}</Table.Cell>
+                    <Table.Cell>
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                        almoxarifado.status === 1 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {almoxarifado.status === 1 ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <div className="flex gap-2">
+                        {!viewMode && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleEdit(almoxarifado)}
+                              title="Editar"
+                            >
+                              <FaEdit />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleDelete(almoxarifado)}
+                              title="Excluir"
+                            >
+                              <FaTrash />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </Table.Cell>
+                  </Table.Row>
                 </Table.Body>
               </Table>
             )}
@@ -245,13 +251,13 @@ const AlmoxarifadoContent = ({
         )}
       </div>
 
-      {/* Modal de Confirmação para Excluir Almoxarifado */}
+      {/* Modal de Confirmação para Excluir */}
       <ConfirmModal
         isOpen={showConfirmDeleteModal}
         onClose={() => setShowConfirmDeleteModal(false)}
         onConfirm={handleConfirmDelete}
         title="Excluir Almoxarifado"
-        message="Deseja excluir este almoxarifado?"
+        message="Tem certeza que deseja excluir este almoxarifado? Esta ação não pode ser desfeita."
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"

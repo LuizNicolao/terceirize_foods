@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaUsers } from 'react-icons/fa';
+import { FaUsers, FaWarehouse } from 'react-icons/fa';
 import { Button, Input, Modal, MaskedFormInput } from '../ui';
 import EfetivosContent from './EfetivosContent';
+import AlmoxarifadoContent from './AlmoxarifadoContent';
 
 const UnidadeEscolarModal = ({ 
   isOpen, 
@@ -11,10 +12,12 @@ const UnidadeEscolarModal = ({
   unidade, 
   isViewMode = false,
   rotas = [],
-  loadingRotas = false
+  loadingRotas = false,
+  filiais = [],
+  loadingFiliais = false
 }) => {
   const { register, handleSubmit, reset, setValue } = useForm();
-  const [activeTab, setActiveTab] = useState('info'); // 'info' ou 'efetivos'
+  const [activeTab, setActiveTab] = useState('info'); // 'info', 'efetivos' ou 'almoxarifado'
 
   React.useEffect(() => {
     if (isOpen) {
@@ -79,6 +82,19 @@ const UnidadeEscolarModal = ({
             >
               <FaUsers className="text-sm" />
               Efetivos
+            </button>
+          )}
+          {unidade && (
+            <button
+              onClick={() => setActiveTab('almoxarifado')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                activeTab === 'almoxarifado'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <FaWarehouse className="text-sm" />
+              Almoxarifado
             </button>
           )}
         </nav>
@@ -211,6 +227,22 @@ const UnidadeEscolarModal = ({
             </h3>
             <div className="space-y-3">
               <Input
+                label="Filial"
+                type="select"
+                {...register('filial_id')}
+                disabled={isViewMode || loadingFiliais}
+              >
+                <option value="">
+                  {loadingFiliais ? 'Carregando filiais...' : 'Selecione uma filial'}
+                </option>
+                {filiais.map(filial => (
+                  <option key={filial.id} value={filial.id}>
+                    {filial.filial} ({filial.codigo_filial})
+                  </option>
+                ))}
+              </Input>
+
+              <Input
                 label="Rota"
                 type="select"
                 {...register('rota_id')}
@@ -289,6 +321,16 @@ const UnidadeEscolarModal = ({
       {activeTab === 'efetivos' && unidade && (
         <div className="max-h-[75vh] overflow-y-auto">
           <EfetivosContent
+            unidadeEscolarId={unidade.id}
+            viewMode={isViewMode}
+          />
+        </div>
+      )}
+
+      {/* Aba de Almoxarifado */}
+      {activeTab === 'almoxarifado' && unidade && (
+        <div className="max-h-[75vh] overflow-y-auto">
+          <AlmoxarifadoContent
             unidadeEscolarId={unidade.id}
             viewMode={isViewMode}
           />

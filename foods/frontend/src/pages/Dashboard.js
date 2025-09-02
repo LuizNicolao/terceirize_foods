@@ -32,9 +32,9 @@ const Dashboard = () => {
     navigate(route);
   };
 
-  const handleFilterChange = (filters) => {
-    // Aqui você pode implementar a lógica de filtros
-    console.log('Filtros aplicados:', filters);
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    loadDashboardData(newFilters);
   };
 
   const handleRefresh = () => {
