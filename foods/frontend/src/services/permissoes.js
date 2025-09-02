@@ -46,12 +46,12 @@ class PermissoesService {
     try {
       const response = await api.get(`/permissoes/usuario/${userId}`);
       
-      // O backend retorna { usuario, permissoes: [...] }
-      return {
-        success: true,
-        data: response.data
-      };
+      // O backend retorna { success: true, data: { usuario, permissoes: [...] } }
+      // Retornar diretamente response.data para evitar duplicação
+      return response.data;
     } catch (error) {
+      console.error('Erro na API de permissões:', error);
+      
       return {
         success: false,
         error: error.response?.data?.message || 'Erro ao carregar permissões'

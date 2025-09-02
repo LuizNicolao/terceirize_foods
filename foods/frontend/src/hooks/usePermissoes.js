@@ -66,7 +66,16 @@ export const usePermissoes = () => {
       
       if (result.success) {
         // O backend retorna { usuario, permissoes: [...] }
-        const permissoes = result.data.permissoes || result.data || [];
+        const permissoes = result.data.permissoes || [];
+        
+        // Verificar se permissoes é um array antes de usar forEach
+        if (!Array.isArray(permissoes)) {
+          console.error('Permissões não é um array:', permissoes);
+          toast.error('Formato de permissões inválido');
+          setUserPermissions({});
+          setEditingPermissions({});
+          return;
+        }
         
         // Converter array de permissões para objeto
         const permissionsObj = {};
