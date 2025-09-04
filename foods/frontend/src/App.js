@@ -26,6 +26,7 @@ import ProdutoGenerico from './pages/produto-generico/ProdutoGenerico';
 import Intolerancias from './pages/intolerancias/Intolerancias';
 import Patrimonios from './pages/patrimonios/Patrimonios';
 import RotasNutricionistas from './pages/rotas-nutricionistas/RotasNutricionistas';
+import TiposCardapio from './pages/tipos-cardapio/TiposCardapio';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -141,6 +142,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="rotas_nutricionistas">
               <RotasNutricionistas />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/tipos-cardapio" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="tipos_cardapio">
+              <TiposCardapio />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

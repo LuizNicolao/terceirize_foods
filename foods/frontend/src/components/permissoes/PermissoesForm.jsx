@@ -32,7 +32,9 @@ const PermissoesForm = ({
       { key: 'produto_generico', label: 'Produtos Genéricos' },
       { key: 'intolerancias', label: 'Intolerâncias' },
       { key: 'patrimonios', label: 'Patrimônios' },
-      { key: 'rotas_nutricionistas', label: 'Rotas Nutricionistas' }
+      { key: 'rotas_nutricionistas', label: 'Rotas Nutricionistas' },
+      { key: 'tipos_cardapio', label: 'Tipos de Cardápio' }
+
     ],
     'Logística': [
       { key: 'veiculos', label: 'Veículos' },

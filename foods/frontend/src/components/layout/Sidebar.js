@@ -80,6 +80,7 @@ const menuGroups = [
       { path: '/foods/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
       { path: '/foods/patrimonios', icon: FaBuilding, label: 'Patrimônios', screen: 'patrimonios' },
       { path: '/foods/rotas-nutricionistas', icon: FaBuilding, label: 'Rotas Nutricionistas', screen: 'rotas_nutricionistas' },
+      { path: '/foods/tipos-cardapio', icon: FaClipboardList, label: 'Tipos de Cardápio', screen: 'tipos_cardapio' },
     ]
   },
   {
