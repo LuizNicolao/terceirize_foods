@@ -215,6 +215,22 @@ class UnidadesEscolaresService {
     }
   }
 
+  static async buscarPorIds(ids) {
+    try {
+      const response = await api.post('/unidades-escolares/buscar-por-ids', { ids });
+      return {
+        success: true,
+        data: response.data.data || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar unidades escolares por IDs',
+        data: []
+      };
+    }
+  }
+
   static async listarEstados() {
     try {
       const response = await api.get('/unidades-escolares/estados/listar');

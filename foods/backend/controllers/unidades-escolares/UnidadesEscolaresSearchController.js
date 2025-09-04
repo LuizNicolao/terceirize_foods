@@ -201,6 +201,64 @@ class UnidadesEscolaresSearchController {
       });
     }
   }
+
+  // Buscar unidades escolares por IDs específicos
+  static async buscarUnidadesEscolaresPorIds(req, res) {
+    try {
+      const { ids } = req.body;
+
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'IDs inválidos',
+          message: 'É necessário fornecer uma lista de IDs válidos'
+        });
+      }
+
+      // Validar se todos os IDs são números
+      const idsValidos = ids.filter(id => !isNaN(parseInt(id)) && parseInt(id) > 0);
+      
+      if (idsValidos.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'IDs inválidos',
+          message: 'Nenhum ID válido foi fornecido'
+        });
+      }
+
+      // Criar placeholders para a query IN
+      const placeholders = idsValidos.map(() => '?').join(',');
+
+      const query = `
+        SELECT 
+          ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
+          ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
+          ue.filial_id,
+          r.nome as rota_nome,
+          f.filial as filial_nome
+        FROM unidades_escolares ue
+        LEFT JOIN rotas r ON ue.rota_id = r.id
+        LEFT JOIN filiais f ON ue.filial_id = f.id
+        WHERE ue.id IN (${placeholders}) AND ue.status = 'ativo'
+        ORDER BY ue.nome_escola ASC
+      `;
+
+      const unidades = await executeQuery(query, idsValidos);
+
+      res.json({
+        success: true,
+        data: unidades
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar unidades escolares por IDs:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível buscar as unidades escolares por IDs'
+      });
+    }
+  }
 }
 
 module.exports = UnidadesEscolaresSearchController;

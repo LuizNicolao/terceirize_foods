@@ -24,6 +24,7 @@ module.exports = {
   buscarUnidadesEscolaresPorEstado: UnidadesEscolaresSearchController.buscarUnidadesEscolaresPorEstado,
   buscarUnidadesEscolaresPorRota: UnidadesEscolaresSearchController.buscarUnidadesEscolaresPorRota,
   buscarUnidadesEscolaresPorFilial: UnidadesEscolaresSearchController.buscarUnidadesEscolaresPorFilial,
+  buscarUnidadesEscolaresPorIds: UnidadesEscolaresSearchController.buscarUnidadesEscolaresPorIds,
   listarEstados: UnidadesEscolaresSearchController.listarEstados,
   listarCentrosDistribuicao: UnidadesEscolaresSearchController.listarCentrosDistribuicao,
   

@@ -20,6 +20,43 @@ const RotasNutricionistasEscolasSelector = ({
   const [escolasLoading, setEscolasLoading] = useState(false);
   const [todasEscolas, setTodasEscolas] = useState([]);
 
+  // Carregar escolas específicas por IDs (para modo de visualização)
+  const carregarEscolasEspecificas = useCallback(async (escolasIds) => {
+    if (!escolasIds || escolasIds.length === 0) {
+      setTodasEscolas([]);
+      return;
+    }
+
+    try {
+      setEscolasLoading(true);
+      const result = await UnidadesEscolaresService.buscarPorIds(escolasIds);
+      
+      if (result.success) {
+        setTodasEscolas(result.data || []);
+        setEscolasTotalPages(1);
+        setEscolasTotalItems(result.data?.length || 0);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar escolas específicas:', error);
+      // Fallback: tentar carregar uma por uma se o método buscarPorIds não existir
+      try {
+        const escolasPromises = escolasIds.map(id => UnidadesEscolaresService.buscarPorId(id));
+        const resultados = await Promise.all(escolasPromises);
+        const escolasEncontradas = resultados
+          .filter(result => result.success)
+          .map(result => result.data);
+        setTodasEscolas(escolasEncontradas);
+        setEscolasTotalPages(1);
+        setEscolasTotalItems(escolasEncontradas.length);
+      } catch (fallbackError) {
+        console.error('Erro no fallback ao carregar escolas:', fallbackError);
+        setTodasEscolas([]);
+      }
+    } finally {
+      setEscolasLoading(false);
+    }
+  }, []);
+
   // Carregar escolas com paginação - APENAS quando nutricionista for selecionada
   const carregarEscolas = useCallback(async (page = 1, search = '') => {
     // Só carregar se tiver nutricionista selecionada
@@ -66,7 +103,13 @@ const RotasNutricionistasEscolasSelector = ({
       // Resetar para página 1 quando nutricionista mudar
       setEscolasPage(1);
       setTodasEscolas([]);
-      carregarEscolas(1);
+      
+      // Em modo de visualização, se há escolas selecionadas, carregar apenas essas
+      if (isViewMode && escolasSelecionadas.length > 0) {
+        carregarEscolasEspecificas(escolasSelecionadas);
+      } else {
+        carregarEscolas(1);
+      }
     } else {
       // Limpar escolas quando não há nutricionista
       setTodasEscolas([]);
@@ -74,7 +117,7 @@ const RotasNutricionistasEscolasSelector = ({
       setEscolasTotalItems(0);
       setEscolasPage(1);
     }
-  }, [watchedUsuarioId, carregarEscolas]);
+  }, [watchedUsuarioId, carregarEscolas, carregarEscolasEspecificas, isViewMode, escolasSelecionadas]);
 
   // Busca em tempo real para escolas
   useEffect(() => {
@@ -120,23 +163,33 @@ const RotasNutricionistasEscolasSelector = ({
   const escolasFiltradas = useMemo(() => {
     let escolas = todasEscolas;
     
-    // Aplicar filtro de busca (já filtrado pelo backend, mas manter para consistência)
-    if (searchEscolas) {
-      const searchLower = searchEscolas.toLowerCase();
-      escolas = escolas.filter(escola => 
-        (escola.nome_escola || escola.nome || '').toLowerCase().includes(searchLower) ||
-        (escola.codigo_teknisa || escola.codigo || '').toLowerCase().includes(searchLower) ||
-        (escola.cidade || '').toLowerCase().includes(searchLower)
-      );
-    }
-    
-    // Aplicar filtro de apenas selecionadas
-    if (showSelectedOnly) {
+    // Em modo de visualização, mostrar apenas as escolas vinculadas à rota
+    if (isViewMode) {
+      // Se não temos as escolas carregadas mas temos IDs selecionados, precisamos buscar essas escolas específicas
+      if (escolasSelecionadas.length > 0 && todasEscolas.length === 0) {
+        return []; // Retornar vazio temporariamente até carregar as escolas específicas
+      }
+      // Filtrar apenas as escolas que estão vinculadas à rota
       escolas = escolas.filter(escola => escolasSelecionadas.includes(escola.id));
+    } else {
+      // Aplicar filtro de busca (já filtrado pelo backend, mas manter para consistência)
+      if (searchEscolas) {
+        const searchLower = searchEscolas.toLowerCase();
+        escolas = escolas.filter(escola => 
+          (escola.nome_escola || escola.nome || '').toLowerCase().includes(searchLower) ||
+          (escola.codigo_teknisa || escola.codigo || '').toLowerCase().includes(searchLower) ||
+          (escola.cidade || '').toLowerCase().includes(searchLower)
+        );
+      }
+      
+      // Aplicar filtro de apenas selecionadas
+      if (showSelectedOnly) {
+        escolas = escolas.filter(escola => escolasSelecionadas.includes(escola.id));
+      }
     }
     
     return escolas;
-  }, [todasEscolas, searchEscolas, showSelectedOnly, escolasSelecionadas]);
+  }, [todasEscolas, searchEscolas, showSelectedOnly, escolasSelecionadas, isViewMode]);
 
   return (
     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -155,8 +208,8 @@ const RotasNutricionistasEscolasSelector = ({
       <div className="space-y-3">
 
 
-        {/* Barra de busca - só mostrar se tiver nutricionista */}
-        {watchedUsuarioId && (
+        {/* Barra de busca - só mostrar se tiver nutricionista e não estiver em modo de visualização */}
+        {watchedUsuarioId && !isViewMode && (
           <div className="relative">
             <input
               type="text"
@@ -170,8 +223,8 @@ const RotasNutricionistasEscolasSelector = ({
           </div>
         )}
 
-        {/* Contadores e filtros - só mostrar se tiver nutricionista */}
-        {watchedUsuarioId && (
+        {/* Contadores e filtros - só mostrar se tiver nutricionista e não estiver em modo de visualização */}
+        {watchedUsuarioId && !isViewMode && (
           <div className="flex items-center justify-between text-xs text-gray-600">
             <span>
               {escolasFiltradas.length} escolas carregadas
@@ -201,6 +254,15 @@ const RotasNutricionistasEscolasSelector = ({
                 </button>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Contador simples para modo de visualização */}
+        {watchedUsuarioId && isViewMode && (
+          <div className="text-xs text-gray-600">
+            <span>
+              {escolasFiltradas.length} escola{escolasFiltradas.length !== 1 ? 's' : ''} vinculada{escolasFiltradas.length !== 1 ? 's' : ''} à rota
+            </span>
           </div>
         )}
 
@@ -244,13 +306,14 @@ const RotasNutricionistasEscolasSelector = ({
               </div>
             ) : (
               <div className="text-sm text-gray-500 text-center py-8">
-                {searchEscolas ? 'Nenhuma escola encontrada para a busca' : 
+                {isViewMode ? 'Nenhuma escola vinculada a esta rota' :
+                 searchEscolas ? 'Nenhuma escola encontrada para a busca' : 
                  'Nenhuma escola disponível para a nutricionista selecionada'}
               </div>
             )}
             
-            {/* Botão para carregar mais escolas */}
-            {escolasPage < escolasTotalPages && !escolasLoading && (
+            {/* Botão para carregar mais escolas - só mostrar se não estiver em modo de visualização */}
+            {!isViewMode && escolasPage < escolasTotalPages && !escolasLoading && (
               <div className="border-t border-gray-200 p-3 bg-gray-50">
                 <button
                   type="button"
@@ -263,8 +326,8 @@ const RotasNutricionistasEscolasSelector = ({
               </div>
             )}
 
-            {/* Indicador de carregamento */}
-            {escolasLoading && todasEscolas.length > 0 && (
+            {/* Indicador de carregamento - só mostrar se não estiver em modo de visualização */}
+            {!isViewMode && escolasLoading && todasEscolas.length > 0 && (
               <div className="border-t border-gray-200 p-3 bg-gray-50">
                 <div className="text-center text-sm text-gray-600">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mx-auto mb-2"></div>

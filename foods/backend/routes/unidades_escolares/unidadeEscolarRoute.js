@@ -75,6 +75,12 @@ router.get('/centros-distribuicao/listar',
 
 // ===== ROTAS CRUD PRINCIPAIS =====
 
+// Buscar unidades escolares por IDs específicos (deve vir antes da rota /:id)
+router.post('/buscar-por-ids', 
+  checkScreenPermission('unidades_escolares', 'visualizar'),
+  unidadesEscolaresController.buscarUnidadesEscolaresPorIds
+);
+
 // Buscar unidade escolar por ID
 router.get('/:id', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
