@@ -37,6 +37,8 @@ const RotasNutricionistas = () => {
     coordenadores,
     unidadesEscolares,
     estatisticas,
+    showDeleteModal,
+    rotaToDelete,
     handleSave,
     openCreateModal,
     openEditModal,
@@ -192,6 +194,19 @@ const RotasNutricionistas = () => {
         unidadesEscolares={unidadesEscolares}
         loadingUsuarios={false}
         onSubmit={handleSave}
+      />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteModal}
+        onClose={closeDeleteModal}
+        onConfirm={handleDelete}
+        title="Confirmar Exclusão"
+        message={`Tem certeza que deseja excluir a rota nutricionista "${rotaToDelete?.codigo || rotaToDelete?.usuario_nome || 'N/A'}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        variant="danger"
+        loading={saving}
       />
     </div>
   );
