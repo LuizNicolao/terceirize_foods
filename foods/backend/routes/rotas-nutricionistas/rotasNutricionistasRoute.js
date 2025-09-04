@@ -41,6 +41,12 @@ router.get('/export/pdf',
   RotasNutricionistasController.exportarPDF
 );
 
+// GET /api/rotas-nutricionistas/ativas/listar - Buscar rotas nutricionistas ativas
+router.get('/ativas/listar',
+  checkPermission('visualizar'),
+  RotasNutricionistasController.buscarRotasAtivas
+);
+
 // GET /api/rotas-nutricionistas/:id - Buscar rota nutricionista por ID
 router.get('/:id',
   checkPermission('visualizar'),

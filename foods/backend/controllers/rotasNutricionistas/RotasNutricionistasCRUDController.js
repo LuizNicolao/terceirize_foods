@@ -407,6 +407,58 @@ class RotasNutricionistasCRUDController {
   }
 
   /**
+   * Buscar rotas nutricionistas ativas
+   */
+  static async buscarRotasAtivas(req, res) {
+    try {
+      const query = `
+        SELECT 
+          rn.id,
+          rn.codigo,
+          rn.usuario_id,
+          rn.supervisor_id,
+          rn.coordenador_id,
+          rn.escolas_responsaveis,
+          rn.status,
+          rn.observacoes,
+          u.nome as usuario_nome,
+          u.email as usuario_email,
+          s.nome as supervisor_nome,
+          s.email as supervisor_email,
+          c.nome as coordenador_nome,
+          c.email as coordenador_email
+        FROM rotas_nutricionistas rn
+        LEFT JOIN usuarios u ON rn.usuario_id = u.id
+        LEFT JOIN usuarios s ON rn.supervisor_id = s.id
+        LEFT JOIN usuarios c ON rn.coordenador_id = c.id
+        WHERE rn.status = 'ativo'
+        ORDER BY rn.codigo ASC
+      `;
+
+      const rotas = await executeQuery(query);
+
+      // Criar log de auditoria
+      try {
+        await logAction(req.user.id, 'visualizar', 'rotas-nutricionistas', { action: 'buscar_ativas' });
+      } catch (auditError) {
+        console.error('Erro ao criar log de auditoria:', auditError);
+        // Não falhar a operação principal se a auditoria falhar
+      }
+
+      res.json({
+        success: true,
+        data: rotas
+      });
+    } catch (error) {
+      console.error('Erro ao buscar rotas nutricionistas ativas:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
+  /**
    * Excluir rota nutricionista
    */
   static async excluir(req, res) {

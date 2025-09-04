@@ -27,6 +27,42 @@ class UnidadesEscolaresListController {
       let whereConditions = ['1=1'];
       let params = [];
 
+      // Verificar se é um usuário nutricionista para aplicar filtros específicos
+      const isNutricionista = req.user.tipo_de_acesso === 'nutricionista';
+      
+      if (isNutricionista) {
+        // Filtro 1: Apenas unidades escolares das filiais que o nutricionista tem acesso
+        whereConditions.push(`
+          ue.filial_id IN (
+            SELECT uf.filial_id 
+            FROM usuarios_filiais uf 
+            WHERE uf.usuario_id = ?
+          )
+        `);
+        params.push(req.user.id);
+
+        // Filtro 2: Apenas unidades escolares vinculadas ao nutricionista nas rotas nutricionistas
+        whereConditions.push(`
+          ue.id IN (
+            SELECT DISTINCT CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) AS UNSIGNED) as escola_id
+            FROM rotas_nutricionistas rn
+            CROSS JOIN (
+              SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION 
+              SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION
+              SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION
+              SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20
+            ) numbers
+            WHERE rn.usuario_id = ? 
+              AND rn.status = 'ativo'
+              AND rn.escolas_responsaveis IS NOT NULL 
+              AND rn.escolas_responsaveis != ''
+              AND CHAR_LENGTH(rn.escolas_responsaveis) - CHAR_LENGTH(REPLACE(rn.escolas_responsaveis, ',', '')) >= numbers.n - 1
+              AND TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) != ''
+          )
+        `);
+        params.push(req.user.id);
+      }
+
       // Filtro de busca
       if (search) {
         whereConditions.push('(ue.nome_escola LIKE ? OR ue.cidade LIKE ? OR ue.estado LIKE ? OR ue.codigo_teknisa LIKE ? OR ue.centro_distribuicao LIKE ?)');
@@ -142,6 +178,45 @@ class UnidadesEscolaresListController {
     try {
       const { id } = req.params;
 
+      // Verificar se é um usuário nutricionista para aplicar filtros específicos
+      const isNutricionista = req.user.tipo_de_acesso === 'nutricionista';
+      
+      let whereConditions = ['ue.id = ?'];
+      let params = [id];
+
+      if (isNutricionista) {
+        // Filtro 1: Apenas unidades escolares das filiais que o nutricionista tem acesso
+        whereConditions.push(`
+          ue.filial_id IN (
+            SELECT uf.filial_id 
+            FROM usuarios_filiais uf 
+            WHERE uf.usuario_id = ?
+          )
+        `);
+        params.push(req.user.id);
+
+        // Filtro 2: Apenas unidades escolares vinculadas ao nutricionista nas rotas nutricionistas
+        whereConditions.push(`
+          ue.id IN (
+            SELECT DISTINCT CAST(TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) AS UNSIGNED) as escola_id
+            FROM rotas_nutricionistas rn
+            CROSS JOIN (
+              SELECT 1 n UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 UNION SELECT 5 UNION 
+              SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 UNION SELECT 10 UNION
+              SELECT 11 UNION SELECT 12 UNION SELECT 13 UNION SELECT 14 UNION SELECT 15 UNION
+              SELECT 16 UNION SELECT 17 UNION SELECT 18 UNION SELECT 19 UNION SELECT 20
+            ) numbers
+            WHERE rn.usuario_id = ? 
+              AND rn.status = 'ativo'
+              AND rn.escolas_responsaveis IS NOT NULL 
+              AND rn.escolas_responsaveis != ''
+              AND CHAR_LENGTH(rn.escolas_responsaveis) - CHAR_LENGTH(REPLACE(rn.escolas_responsaveis, ',', '')) >= numbers.n - 1
+              AND TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(rn.escolas_responsaveis, ',', numbers.n), ',', -1)) != ''
+          )
+        `);
+        params.push(req.user.id);
+      }
+
       const query = `
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
@@ -154,10 +229,10 @@ class UnidadesEscolaresListController {
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
-        WHERE ue.id = ?
+        WHERE ${whereConditions.join(' AND ')}
       `;
 
-      const unidades = await executeQuery(query, [id]);
+      const unidades = await executeQuery(query, params);
 
       if (unidades.length === 0) {
         return res.status(404).json({
