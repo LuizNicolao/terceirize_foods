@@ -3,7 +3,7 @@
  * Lógica de negócio para gerenciamento de permissões
  */
 
-const { executeQuery } = require('../../../config/database');
+const { executeQuery } = require('../../config/database');
 const { PERMISSOES_PADRAO, TIPOS_ACESSO, NIVEIS_ACESSO, TELAS_COM_DESCRICOES } = require('./permissoesPadrao');
 const {
   converterPermissoesParaFormatoTabela,

@@ -13,7 +13,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
-const { atualizarPermissoesPorTipoNivel } = require('../../routes/permissoes/index');
+const { atualizarPermissoesPorTipoNivel } = require('../permissoes/permissoesUtils');
 
 class UsuariosCRUDController {
   
@@ -21,7 +21,7 @@ class UsuariosCRUDController {
    * Criar novo usuário
    */
   static criarUsuario = asyncHandler(async (req, res) => {
-    const { nome, email, senha, nivel_de_acesso, tipo_de_acesso } = req.body;
+    const { nome, email, senha, nivel_de_acesso, tipo_de_acesso, filiais } = req.body;
 
     // Verificar se email já existe
     const existingUser = await executeQuery(
@@ -56,6 +56,11 @@ class UsuariosCRUDController {
     // Atualizar permissões baseado no tipo de acesso
     await atualizarPermissoesPorTipoNivel(novoUsuarioId, tipo_de_acesso, nivel_de_acesso);
 
+    // Vincular filiais se fornecidas
+    if (filiais && Array.isArray(filiais) && filiais.length > 0) {
+      await this.vincularFiliais(novoUsuarioId, filiais);
+    }
+
     // Adicionar links HATEOAS
     const data = res.addResourceLinks(usuario);
 
@@ -73,7 +78,7 @@ class UsuariosCRUDController {
    */
   static atualizarUsuario = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { nome, email, nivel_de_acesso, tipo_de_acesso, status } = req.body;
+    const { nome, email, nivel_de_acesso, tipo_de_acesso, status, filiais } = req.body;
 
     // Verificar se usuário existe
     const existingUser = await executeQuery(
@@ -152,6 +157,11 @@ class UsuariosCRUDController {
       await atualizarPermissoesPorTipoNivel(id, currentTipo, currentNivel);
     }
 
+    // Atualizar vínculos com filiais se fornecidos
+    if (filiais !== undefined) {
+      await this.atualizarVinculosFiliais(id, filiais);
+    }
+
     // Buscar usuário atualizado
     const usuarios = await executeQuery(
       'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status, criado_em, atualizado_em FROM usuarios WHERE id = ?',
@@ -220,6 +230,138 @@ class UsuariosCRUDController {
     // Por enquanto, retorna permissões básicas
     return ['visualizar', 'criar', 'editar', 'excluir'];
   }
+
+  /**
+   * Vincular usuário a filiais
+   */
+  static async vincularFiliais(usuarioId, filiais) {
+    try {
+      // Remover vínculos existentes
+      await executeQuery(
+        'DELETE FROM usuarios_filiais WHERE usuario_id = ?',
+        [usuarioId]
+      );
+
+      // Inserir novos vínculos
+      if (filiais.length > 0) {
+        const values = filiais.map(filialId => [usuarioId, filialId]);
+        const placeholders = values.map(() => '(?, ?)').join(', ');
+        
+        await executeQuery(
+          `INSERT INTO usuarios_filiais (usuario_id, filial_id) VALUES ${placeholders}`,
+          values.flat()
+        );
+      }
+    } catch (error) {
+      console.error('Erro ao vincular filiais:', error);
+      throw new Error('Erro ao vincular usuário às filiais');
+    }
+  }
+
+  /**
+   * Atualizar vínculos com filiais
+   */
+  static async atualizarVinculosFiliais(usuarioId, filiais) {
+    try {
+      // Remover vínculos existentes
+      await executeQuery(
+        'DELETE FROM usuarios_filiais WHERE usuario_id = ?',
+        [usuarioId]
+      );
+
+      // Inserir novos vínculos
+      if (filiais.length > 0) {
+        const values = filiais.map(filialId => [usuarioId, filialId]);
+        const placeholders = values.map(() => '(?, ?)').join(', ');
+        
+        await executeQuery(
+          `INSERT INTO usuarios_filiais (usuario_id, filial_id) VALUES ${placeholders}`,
+          values.flat()
+        );
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar vínculos com filiais:', error);
+      throw new Error('Erro ao atualizar vínculos com filiais');
+    }
+  }
+
+  /**
+   * Obter filiais vinculadas ao usuário
+   */
+  static async obterFiliaisUsuario(usuarioId) {
+    try {
+      const filiais = await executeQuery(
+        `SELECT f.id, f.filial, f.cidade, f.estado
+         FROM filiais f
+         INNER JOIN usuarios_filiais uf ON f.id = uf.filial_id
+         WHERE uf.usuario_id = ? AND f.status = 'ativo'
+         ORDER BY f.filial`,
+        [usuarioId]
+      );
+      return filiais;
+    } catch (error) {
+      console.error('Erro ao obter filiais do usuário:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Verificar se usuário tem acesso à filial
+   */
+  static async verificarAcessoFilial(usuarioId, filialId) {
+    try {
+      const resultado = await executeQuery(
+        'SELECT COUNT(*) as count FROM usuarios_filiais WHERE usuario_id = ? AND filial_id = ?',
+        [usuarioId, filialId]
+      );
+      return resultado[0].count > 0;
+    } catch (error) {
+      console.error('Erro ao verificar acesso à filial:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Atualizar filiais do usuário (rota específica)
+   */
+  static atualizarFiliaisUsuario = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { filiais } = req.body;
+
+    // Verificar se usuário existe
+    const existingUser = await executeQuery(
+      'SELECT id, nome FROM usuarios WHERE id = ?',
+      [id]
+    );
+
+    if (existingUser.length === 0) {
+      return notFoundResponse(res, 'Usuário não encontrado');
+    }
+
+    // Validar se filiais é um array
+    if (!Array.isArray(filiais)) {
+      return errorResponse(res, 'Filiais deve ser um array', STATUS_CODES.BAD_REQUEST);
+    }
+
+    try {
+      // Atualizar vínculos com filiais
+      await this.atualizarVinculosFiliais(id, filiais);
+
+      // Buscar filiais atualizadas
+      const filiaisAtualizadas = await this.obterFiliaisUsuario(id);
+
+      // Adicionar links HATEOAS
+      const data = res.addResourceLinks({
+        usuario: existingUser[0],
+        filiais: filiaisAtualizadas
+      });
+
+      return successResponse(res, data, 'Filiais do usuário atualizadas com sucesso', STATUS_CODES.OK);
+    } catch (error) {
+      console.error('Erro ao atualizar filiais do usuário:', error);
+      return errorResponse(res, 'Erro ao atualizar filiais do usuário', STATUS_CODES.INTERNAL_SERVER_ERROR);
+    }
+  });
 }
 
 module.exports = UsuariosCRUDController;

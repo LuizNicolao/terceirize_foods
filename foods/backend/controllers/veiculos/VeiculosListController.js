@@ -152,21 +152,7 @@ class VeiculosListController {
         });
       }
 
-      // Log para debug das datas
       const veiculo = veiculos[0];
-      console.log('🔍 DEBUG - Datas do veículo:', {
-        id: veiculo.id,
-        placa: veiculo.placa,
-        data_emplacamento: veiculo.data_emplacamento,
-        vencimento_licenciamento: veiculo.vencimento_licenciamento,
-        vencimento_ipva: veiculo.vencimento_ipva,
-        vencimento_dpvat: veiculo.vencimento_dpvat,
-        data_ultima_revisao: veiculo.data_ultima_revisao,
-        data_ultima_troca_oleo: veiculo.data_ultima_troca_oleo,
-        vencimento_alinhamento_balanceamento: veiculo.vencimento_alinhamento_balanceamento,
-        proxima_inspecao_veicular: veiculo.proxima_inspecao_veicular,
-        data_aquisicao: veiculo.data_aquisicao
-      });
 
       res.json({
         success: true,

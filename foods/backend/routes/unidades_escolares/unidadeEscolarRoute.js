@@ -9,6 +9,7 @@ const { unidadeEscolarValidations, commonValidations } = require('./unidadeEscol
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const { uploadExcel, handleUploadError } = require('../../middleware/upload');
 const unidadesEscolaresController = require('../../controllers/unidades-escolares');
 
 const router = express.Router();
@@ -46,6 +47,12 @@ router.get('/estado/:estado',
 router.get('/rota/:rotaId', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
   unidadesEscolaresController.buscarUnidadesEscolaresPorRota
+);
+
+// Buscar unidades escolares por filial
+router.get('/filial/:filialId', 
+  checkScreenPermission('unidades_escolares', 'visualizar'),
+  unidadesEscolaresController.buscarUnidadesEscolaresPorFilial
 );
 
 // Listar estados disponíveis
@@ -95,5 +102,21 @@ router.delete('/:id', [
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'unidades_escolares'),
   commonValidations.id
 ], unidadesEscolaresController.excluirUnidadeEscolar);
+
+// ===== ROTAS DE IMPORTAÇÃO =====
+
+// Gerar template de planilha para download
+router.get('/importar/template', 
+  checkScreenPermission('unidades_escolares', 'criar'),
+  unidadesEscolaresController.gerarTemplate
+);
+
+// Importar unidades escolares de planilha
+router.post('/importar', [
+  checkScreenPermission('unidades_escolares', 'criar'),
+  uploadExcel,
+  handleUploadError,
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares'),
+], unidadesEscolaresController.importarUnidadesEscolares);
 
 module.exports = router;

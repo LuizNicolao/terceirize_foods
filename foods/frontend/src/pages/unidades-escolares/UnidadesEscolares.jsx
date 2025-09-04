@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useUnidadesEscolares } from '../../hooks/useUnidadesEscolares';
@@ -8,11 +8,14 @@ import UnidadesEscolaresService from '../../services/unidadesEscolares';
 import { Button, ValidationErrorModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { UnidadeEscolarModal, UnidadesEscolaresTable, UnidadesEscolaresStats } from '../../components/unidades-escolares';
+import { UnidadeEscolarModal, UnidadesEscolaresTable, UnidadesEscolaresStats, ImportarUnidadesEscolares } from '../../components/unidades-escolares';
 import { AuditModal } from '../../components/shared';
 
 const UnidadesEscolares = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
+  
+  // Estado para modal de importação
+  const [showImportModal, setShowImportModal] = useState(false);
   
   // Hooks customizados
   const {
@@ -93,11 +96,21 @@ const UnidadesEscolares = () => {
             <span className="hidden sm:inline">Auditoria</span>
           </Button>
           {canCreate('unidades_escolares') && (
-            <Button onClick={handleAddUnidade} size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar Unidade</span>
-              <span className="sm:hidden">Adicionar</span>
-            </Button>
+            <>
+              <Button 
+                onClick={() => setShowImportModal(true)} 
+                variant="outline" 
+                size="sm"
+                className="text-green-600 border-green-600 hover:bg-green-50"
+              >
+                📊 Importar
+              </Button>
+              <Button onClick={handleAddUnidade} size="sm">
+                <FaPlus className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Adicionar Unidade</span>
+                <span className="sm:hidden">Adicionar</span>
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -127,6 +140,26 @@ const UnidadesEscolares = () => {
         ]}
         placeholder="Buscar por código, nome, cidade ou estado..."
       />
+
+      {/* Ações */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
+        <Button
+          onClick={handleExportXLSX}
+          variant="outline"
+          size="sm"
+          disabled={!canView('unidades_escolares')}
+        >
+          Exportar XLSX
+        </Button>
+        <Button
+          onClick={handleExportPDF}
+          variant="outline"
+          size="sm"
+          disabled={!canView('unidades_escolares')}
+        >
+          Exportar PDF
+        </Button>
+      </div>
 
       {/* Tabela */}
       <UnidadesEscolaresTable
@@ -186,6 +219,17 @@ const UnidadesEscolares = () => {
         onClose={handleCloseValidationModal}
         errors={validationErrors?.errors}
         errorCategories={validationErrors?.errorCategories}
+      />
+
+      {/* Modal de Importação */}
+      <ImportarUnidadesEscolares
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImportSuccess={(data) => {
+          setShowImportModal(false);
+          // Recarregar a lista de unidades escolares
+          window.location.reload();
+        }}
       />
     </div>
   );

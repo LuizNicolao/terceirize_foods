@@ -66,6 +66,7 @@ export const useUsuarios = () => {
         const ativos = result.data.filter(u => u.status === 'ativo').length;
         const administradores = result.data.filter(u => u.tipo_de_acesso === 'administrador').length;
         const coordenadores = result.data.filter(u => u.tipo_de_acesso === 'coordenador').length;
+        const nutricionistas = result.data.filter(u => u.tipo_de_acesso === 'nutricionista').length;
         
         setEstatisticas({
           total_usuarios: total,
@@ -156,16 +157,38 @@ export const useUsuarios = () => {
     setShowModal(true);
   };
 
-  const handleViewUser = (usuario) => {
-    setViewMode(true);
-    setEditingUsuario(usuario);
-    setShowModal(true);
+  const handleViewUser = async (usuario) => {
+    try {
+      // Buscar usuário completo com filiais vinculadas
+      const result = await UsuariosService.buscarPorId(usuario.id);
+      if (result.success) {
+        setViewMode(true);
+        setEditingUsuario(result.data);
+        setShowModal(true);
+      } else {
+        toast.error('Erro ao carregar dados do usuário');
+      }
+    } catch (verifyError) {
+      console.error('Erro ao buscar usuário:', verifyError);
+      toast.error('Erro ao carregar dados do usuário');
+    }
   };
 
-  const handleEditUser = (usuario) => {
-    setViewMode(false);
-    setEditingUsuario(usuario);
-    setShowModal(true);
+  const handleEditUser = async (usuario) => {
+    try {
+      // Buscar usuário completo com filiais vinculadas
+      const result = await UsuariosService.buscarPorId(usuario.id);
+      if (result.success) {
+        setViewMode(false);
+        setEditingUsuario(result.data);
+        setShowModal(true);
+      } else {
+        toast.error('Erro ao carregar dados do usuário');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar usuário:', error);
+      toast.error('Erro ao carregar dados do usuário');
+    }
   };
 
   const handleCloseModal = () => {
@@ -177,6 +200,8 @@ export const useUsuarios = () => {
   // Funções de paginação
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    // Recarregar dados da nova página
+    loadUsuarios({ page });
   };
 
   // Funções utilitárias

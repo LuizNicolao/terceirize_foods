@@ -53,6 +53,19 @@ class UsuariosListController {
     // Executar query paginada
     const usuarios = await executeQuery(query, params);
 
+    // Buscar filiais vinculadas para cada usuário
+    for (let usuario of usuarios) {
+      const filiais = await executeQuery(
+        `SELECT f.id, f.filial, f.cidade, f.estado
+         FROM filiais f
+         INNER JOIN usuarios_filiais uf ON f.id = uf.filial_id
+         WHERE uf.usuario_id = ? AND f.status = 1
+         ORDER BY f.filial`,
+        [usuario.id]
+      );
+      usuario.filiais = filiais;
+    }
+
     // Contar total de registros
     const countQuery = `SELECT COUNT(*) as total FROM usuarios WHERE 1=1${search ? ' AND (nome LIKE ? OR email LIKE ?)' : ''}`;
     const countParams = search ? [`%${search}%`, `%${search}%`] : [];
@@ -96,6 +109,17 @@ class UsuariosListController {
 
     const usuario = usuarios[0];
 
+    // Buscar filiais vinculadas ao usuário
+    const filiais = await executeQuery(
+      `SELECT f.id, f.filial, f.cidade, f.estado
+       FROM filiais f
+       INNER JOIN usuarios_filiais uf ON f.id = uf.filial_id
+       WHERE uf.usuario_id = ? AND f.status = 1
+       ORDER BY f.filial`,
+      [usuario.id]
+    );
+    usuario.filiais = filiais;
+
     // Adicionar links HATEOAS
     const data = res.addResourceLinks(usuario);
 
@@ -116,6 +140,41 @@ class UsuariosListController {
     // Por enquanto, retorna permissões básicas
     return ['visualizar', 'criar', 'editar', 'excluir'];
   }
+
+  /**
+   * Buscar filiais vinculadas ao usuário
+   */
+  static buscarFiliaisUsuario = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Verificar se usuário existe
+    const usuario = await executeQuery(
+      'SELECT id, nome, email FROM usuarios WHERE id = ?',
+      [id]
+    );
+
+    if (usuario.length === 0) {
+      return notFoundResponse(res, 'Usuário não encontrado');
+    }
+
+    // Buscar filiais vinculadas
+    const filiais = await executeQuery(
+      `SELECT f.id, f.filial, f.cidade, f.estado, f.status
+       FROM filiais f
+       INNER JOIN usuarios_filiais uf ON f.id = uf.filial_id
+       WHERE uf.usuario_id = ? AND f.status = 1
+       ORDER BY f.filial`,
+      [id]
+    );
+
+    // Adicionar links HATEOAS
+    const data = res.addResourceLinks({
+      usuario: usuario[0],
+      filiais: filiais
+    });
+
+    return successResponse(res, data, 'Filiais do usuário encontradas com sucesso', STATUS_CODES.OK);
+  });
 }
 
 module.exports = UsuariosListController;

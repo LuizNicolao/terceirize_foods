@@ -52,7 +52,8 @@ export const PermissionsProvider = ({ children }) => {
           pode_visualizar: perm.pode_visualizar === 1,
           pode_criar: perm.pode_criar === 1,
           pode_editar: perm.pode_editar === 1,
-          pode_excluir: perm.pode_excluir === 1
+          pode_excluir: perm.pode_excluir === 1,
+          pode_movimentar: perm.pode_movimentar === 1
         };
       });
       
@@ -79,6 +80,8 @@ export const PermissionsProvider = ({ children }) => {
         return userPermissions[screen].pode_editar;
       case 'excluir':
         return userPermissions[screen].pode_excluir;
+      case 'movimentar':
+        return userPermissions[screen].pode_movimentar;
       default:
         return false;
     }
@@ -88,6 +91,7 @@ export const PermissionsProvider = ({ children }) => {
   const canCreate = (screen) => hasPermission(screen, 'criar');
   const canEdit = (screen) => hasPermission(screen, 'editar');
   const canDelete = (screen) => hasPermission(screen, 'excluir');
+  const canMovimentar = (screen) => hasPermission(screen, 'movimentar');
 
   const value = {
     userPermissions,
@@ -97,6 +101,7 @@ export const PermissionsProvider = ({ children }) => {
     canCreate,
     canEdit,
     canDelete,
+    canMovimentar,
     reloadPermissions: loadUserPermissions
   };
 

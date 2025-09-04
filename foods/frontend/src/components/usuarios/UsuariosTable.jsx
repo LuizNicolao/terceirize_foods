@@ -27,7 +27,7 @@ const UsuariosTable = ({
   return (
     <>
       {/* Versão Desktop - Tabela completa */}
-      <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="hidden xl:block bg-white rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-gray-50">
@@ -99,8 +99,8 @@ const UsuariosTable = ({
         </div>
       </div>
 
-      {/* Versão Mobile - Cards */}
-      <div className="lg:hidden space-y-3">
+      {/* Versão Mobile e Tablet - Cards */}
+      <div className="xl:hidden space-y-3">
         {usuarios.map((usuario) => (
           <div key={usuario.id} className="bg-white rounded-lg shadow-sm p-4 border">
             <div className="flex justify-between items-start mb-3">

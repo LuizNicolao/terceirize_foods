@@ -3,7 +3,7 @@
  * Funções auxiliares para gerenciamento de permissões
  */
 
-const { executeQuery } = require('../../../config/database');
+const { executeQuery } = require('../../config/database');
 const { PERMISSOES_PADRAO, TODAS_TELAS } = require('./permissoesPadrao');
 
 /**
@@ -27,14 +27,15 @@ const atualizarPermissoesPorTipoNivel = async (usuarioId, tipoAcesso, nivelAcess
     // Inserir novas permissões padrão
     for (const [tela, permissoesTela] of Object.entries(permissoes)) {
       await executeQuery(
-        'INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir, pode_movimentar) VALUES (?, ?, ?, ?, ?, ?, ?)',
         [
           usuarioId,
           tela,
           permissoesTela.visualizar ? 1 : 0,
           permissoesTela.criar ? 1 : 0,
           permissoesTela.editar ? 1 : 0,
-          permissoesTela.excluir ? 1 : 0
+          permissoesTela.excluir ? 1 : 0,
+          permissoesTela.movimentar ? 1 : 0
         ]
       );
     }
@@ -86,7 +87,8 @@ const converterPermissoesParaFormatoTabela = (permissoes) => {
     pode_visualizar: permissoes[tela].visualizar ? 1 : 0,
     pode_criar: permissoes[tela].criar ? 1 : 0,
     pode_editar: permissoes[tela].editar ? 1 : 0,
-    pode_excluir: permissoes[tela].excluir ? 1 : 0
+    pode_excluir: permissoes[tela].excluir ? 1 : 0,
+    pode_movimentar: permissoes[tela].movimentar ? 1 : 0
   }));
 };
 
@@ -117,7 +119,8 @@ const gerarPermissoesCompletas = async (usuarioId) => {
         pode_visualizar: 0,
         pode_criar: 0,
         pode_editar: 0,
-        pode_excluir: 0
+        pode_excluir: 0,
+        pode_movimentar: 0
       };
     }
   });
@@ -159,15 +162,16 @@ const sincronizarPermissoesUsuarios = async () => {
           for (const tela of telasFaltantes) {
             const permissoesTela = permissoesPadrao[tela];
             await executeQuery(
-              `INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir)
-               VALUES (?, ?, ?, ?, ?, ?)`,
+              `INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir, pode_movimentar)
+               VALUES (?, ?, ?, ?, ?, ?, ?)`,
               [
                 usuario.id,
                 tela,
                 permissoesTela.visualizar ? 1 : 0,
                 permissoesTela.criar ? 1 : 0,
                 permissoesTela.editar ? 1 : 0,
-                permissoesTela.excluir ? 1 : 0
+                permissoesTela.excluir ? 1 : 0,
+                permissoesTela.movimentar ? 1 : 0
               ]
             );
           }
@@ -175,7 +179,7 @@ const sincronizarPermissoesUsuarios = async () => {
           usuariosAtualizados++;
           telasAdicionadas += telasFaltantes.length;
           
-          console.log(`Usuário ${usuario.id}: Adicionadas ${telasFaltantes.length} telas: ${telasFaltantes.join(', ')}`);
+
         }
       }
     }
@@ -211,16 +215,17 @@ const atualizarPermissoesUsuario = async (usuarioId, permissoes) => {
     // Inserir novas permissões (apenas para telas com alguma permissão)
     for (const permissao of permissoes) {
       // Só insere se tiver alguma permissão
-      if (permissao.pode_visualizar || permissao.pode_criar || permissao.pode_editar || permissao.pode_excluir) {
+      if (permissao.pode_visualizar || permissao.pode_criar || permissao.pode_editar || permissao.pode_excluir || permissao.pode_movimentar) {
         await executeQuery(
-          'INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir) VALUES (?, ?, ?, ?, ?, ?)',
+          'INSERT INTO permissoes_usuario (usuario_id, tela, pode_visualizar, pode_criar, pode_editar, pode_excluir, pode_movimentar) VALUES (?, ?, ?, ?, ?, ?, ?)',
           [
             usuarioId,
             permissao.tela,
             permissao.pode_visualizar ? 1 : 0,
             permissao.pode_criar ? 1 : 0,
             permissao.pode_editar ? 1 : 0,
-            permissao.pode_excluir ? 1 : 0
+            permissao.pode_excluir ? 1 : 0,
+            permissao.pode_movimentar ? 1 : 0
           ]
         );
       }

@@ -28,6 +28,7 @@ const EmptyState = ({
       'motoristas': FaUser,
       'ajudantes': FaUser,
       'intolerancias': FaAllergies,
+      'patrimonios': FaBuilding,
       'default': FaBox
     };
 

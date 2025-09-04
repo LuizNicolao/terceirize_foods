@@ -183,11 +183,15 @@ export const useFiliais = () => {
   // Funções de paginação
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    // Recarregar dados da nova página
+    loadFiliais({ page });
   };
 
   const handleItemsPerPageChange = (newItemsPerPage) => {
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1);
+    // Recarregar dados com o novo limite de itens
+    loadFiliais({ page: 1, limit: newItemsPerPage });
   };
 
   // Funções utilitárias

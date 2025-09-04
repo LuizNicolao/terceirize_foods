@@ -42,14 +42,16 @@ class SubgruposCRUDController {
       return conflictResponse(res, 'Nome do subgrupo já existe neste grupo');
     }
 
-    // Inserir subgrupo (sem código inicialmente)
+    // Inserir subgrupo com código temporário
+    const codigoTemporario = `TEMP-${Date.now()}`;
     const result = await executeQuery(
-      'INSERT INTO subgrupos (nome, descricao, grupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, NOW())',
+      'INSERT INTO subgrupos (nome, descricao, grupo_id, status, codigo, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
       [
         nome && nome.trim() ? nome.trim() : null, 
         req.body.descricao && req.body.descricao.trim() ? req.body.descricao.trim() : null,
         grupo_id || null, 
-        status === 1 ? 'ativo' : 'inativo'
+        status === 1 ? 'ativo' : 'inativo',
+        codigoTemporario
       ]
     );
 

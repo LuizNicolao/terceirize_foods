@@ -17,7 +17,7 @@ const subgruposRoutes = require('./subgrupos');
 const unidadesRoutes = require('./unidades');
 const marcasRoutes = require('./marcas');
 const classesRoutes = require('./classes');
-const { router: permissoesRoutes } = require('./permissoes/index');
+const permissoesRoutes = require('./permissoes');
 const dashboardRoutes = require('./dashboard');
 const auditoriaRoutes = require('./auditoria');
 const veiculosRoutes = require('./veiculos');
@@ -26,7 +26,9 @@ const ajudantesRoutes = require('./ajudantes');
 const produtoOrigemRoutes = require('./produto-origem');
 const produtoGenericoRoutes = require('./produto-generico');
 const intoleranciasRoutes = require('./intolerancias');
+const rotasNutricionistasRoutes = require('./rotas-nutricionistas');
 const efetivosRoutes = require('./efetivos');
+const patrimoniosRoutes = require('./patrimonios');
 
 // Definir todas as rotas com seus caminhos
 const routes = [
@@ -44,6 +46,7 @@ const routes = [
   { path: '/marcas', router: marcasRoutes },
   { path: '/classes', router: classesRoutes },
   { path: '/intolerancias', router: intoleranciasRoutes },
+  { path: '/rotas-nutricionistas', router: rotasNutricionistasRoutes },
   { path: '/permissoes', router: permissoesRoutes },
   { path: '/dashboard', router: dashboardRoutes },
   { path: '/auditoria', router: auditoriaRoutes },
@@ -52,7 +55,8 @@ const routes = [
   { path: '/ajudantes', router: ajudantesRoutes },
   { path: '/produto-origem', router: produtoOrigemRoutes },
   { path: '/produto-generico', router: produtoGenericoRoutes },
-  { path: '/efetivos', router: efetivosRoutes }
+  { path: '/efetivos', router: efetivosRoutes },
+  { path: '/patrimonios', router: patrimoniosRoutes }
 ];
 
 module.exports = routes;

@@ -124,14 +124,20 @@ export const useRotas = () => {
   const loadUnidadesEscolares = async (rotaId) => {
     try {
       setLoadingUnidades(true);
+      
       const result = await RotasService.buscarUnidadesEscolares(rotaId);
+      
       if (result.success) {
-        setUnidadesEscolares(result.data || []);
-        setTotalUnidades(result.data?.length || 0);
+        setUnidadesEscolares(result.data?.unidades || []);
+        setTotalUnidades(result.data?.total || 0);
+      } else {
+        setUnidadesEscolares([]);
+        setTotalUnidades(0);
       }
     } catch (error) {
       console.error('Erro ao carregar unidades escolares:', error);
       setUnidadesEscolares([]);
+      setTotalUnidades(0);
     } finally {
       setLoadingUnidades(false);
     }
@@ -221,14 +227,16 @@ export const useRotas = () => {
     setViewMode(true);
     setShowModal(true);
     setShowUnidades(false);
-    setUnidadesEscolares([]);
-    setTotalUnidades(0);
+    // Carregar unidades escolares automaticamente
+    loadUnidadesEscolares(rota.id);
   };
 
   const handleEditRota = (rota) => {
     setEditingRota(rota);
     setViewMode(false);
     setShowModal(true);
+    // Carregar unidades escolares automaticamente
+    loadUnidadesEscolares(rota.id);
   };
 
   const handleCloseModal = () => {
@@ -252,9 +260,7 @@ export const useRotas = () => {
 
   // Funções de unidades escolares
   const toggleUnidades = () => {
-    if (!showUnidades && unidadesEscolares.length === 0 && editingRota) {
-      loadUnidadesEscolares(editingRota.id);
-    }
+    // Apenas alternar visibilidade, os dados já foram carregados
     setShowUnidades(!showUnidades);
   };
 

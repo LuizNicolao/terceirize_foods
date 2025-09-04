@@ -34,7 +34,7 @@ const EfetivosTable = ({
   return (
     <>
       {/* Versão Desktop - Tabela */}
-      <div className="hidden lg:block bg-white shadow-sm rounded-lg overflow-hidden">
+      <div className="hidden xl:block bg-white shadow-sm rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -92,8 +92,8 @@ const EfetivosTable = ({
         </div>
       </div>
 
-      {/* Versão Mobile - Cards */}
-      <div className="lg:hidden space-y-3">
+      {/* Versão Mobile e Tablet - Cards */}
+      <div className="xl:hidden space-y-3">
         {efetivos.map((efetivo) => (
           <div key={efetivo.id} className="bg-white rounded-lg shadow-sm p-4 border">
             <div className="flex justify-between items-start mb-3">

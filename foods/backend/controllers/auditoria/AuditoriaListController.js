@@ -10,13 +10,6 @@ class AuditoriaListController {
   // Listar logs de auditoria com filtros
   static async listarLogs(req, res) {
     try {
-      console.log('=== INÍCIO DA REQUISIÇÃO DE AUDITORIA ===');
-      console.log('Usuário atual:', {
-        id: req.user.id,
-        nome: req.user.nome,
-        tipo_de_acesso: req.user.tipo_de_acesso,
-        nivel_de_acesso: req.user.nivel_de_acesso
-      });
 
       // Verificar se usuário tem permissão para visualizar auditoria
       if (req.user.tipo_de_acesso !== 'administrador' && 
@@ -27,8 +20,6 @@ class AuditoriaListController {
           message: 'Apenas administradores e coordenadores nível III podem visualizar logs de auditoria.' 
         });
       }
-
-      console.log('Usuário tem permissão, buscando logs...');
 
       // Buscar logs com todos os filtros disponíveis
       const { 
@@ -56,9 +47,7 @@ class AuditoriaListController {
       if (recurso) filters.recurso = recurso;
       if (usuario_id) filters.usuario_id = parseInt(usuario_id);
 
-      console.log('Buscando logs de auditoria com filtros:', filters);
       const logs = await getAuditLogs(filters);
-      console.log('Logs encontrados:', logs.length);
 
       // Buscar total de registros para paginação
       let totalCount = 0;

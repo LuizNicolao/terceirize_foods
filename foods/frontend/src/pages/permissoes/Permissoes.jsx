@@ -94,6 +94,38 @@ const Permissoes = () => {
         onSearchChange={handleSearchChange}
         onClear={() => handleSearchChange('')}
         placeholder="Buscar por nome ou email..."
+        statusFilter="todos"
+        onStatusFilterChange={(value) => {
+          // Implementar filtro de status se necessário
+        }}
+        additionalFilters={[
+          {
+            value: 'todos',
+            onChange: (value) => {
+              // Implementar filtro de nível de acesso
+            },
+            options: [
+              { value: 'todos', label: 'Todos os níveis' },
+              { value: 'I', label: 'Nível I - Básico' },
+              { value: 'II', label: 'Nível II - Intermediário' },
+              { value: 'III', label: 'Nível III - Avançado' }
+            ]
+          },
+          {
+            value: 'todos',
+            onChange: (value) => {
+              // Implementar filtro de tipo de acesso
+            },
+            options: [
+              { value: 'todos', label: 'Todos os tipos' },
+              { value: 'administrador', label: 'Administrador' },
+              { value: 'coordenador', label: 'Coordenador' },
+              { value: 'administrativo', label: 'Administrativo' },
+              { value: 'gerente', label: 'Gerente' },
+              { value: 'supervisor', label: 'Supervisor' }
+            ]
+          }
+        ]}
       />
 
       {/* Ações */}
@@ -108,9 +140,7 @@ const Permissoes = () => {
         selectedUserId={selectedUserId}
         selectedUser={selectedUser}
         isSelectOpen={isSelectOpen}
-        searchTerm={searchTerm}
         onUserSelect={handleUserSelect}
-        onSearchChange={handleSearchChange}
         setIsSelectOpen={setIsSelectOpen}
       />
 

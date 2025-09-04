@@ -159,7 +159,7 @@ const userValidations = {
         if (value === null || value === undefined || value === '') {
           return true; // Aceita valores vazios
         }
-        return ['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'].includes(value);
+        return ['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor', 'nutricionista'].includes(value);
       })
       .withMessage('Tipo de acesso inválido'),
     

@@ -83,7 +83,7 @@ const checkScreenPermission = (screen, permission) => {
 
       // Buscar permissões do usuário para a tela específica
       const permissoes = await executeQuery(
-        `SELECT pode_visualizar, pode_criar, pode_editar, pode_excluir 
+        `SELECT pode_visualizar, pode_criar, pode_editar, pode_excluir, pode_movimentar 
          FROM permissoes_usuario 
          WHERE usuario_id = ? AND tela = ?`,
         [user.id, screen]
@@ -101,7 +101,8 @@ const checkScreenPermission = (screen, permission) => {
         'visualizar': permissao.pode_visualizar,
         'criar': permissao.pode_criar,
         'editar': permissao.pode_editar,
-        'excluir': permissao.pode_excluir
+        'excluir': permissao.pode_excluir,
+        'movimentar': permissao.pode_movimentar
       };
 
       if (permissionMap[permission]) {

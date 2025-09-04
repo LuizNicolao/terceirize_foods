@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaEye, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronRight, FaSave, FaTimes } from 'react-icons/fa';
+import { FaEye, FaPlus, FaEdit, FaTrash, FaChevronDown, FaChevronRight, FaSave, FaTimes, FaExchangeAlt } from 'react-icons/fa';
 import { Button, Modal } from '../ui';
 
 const PermissoesForm = ({ 
@@ -30,7 +30,9 @@ const PermissoesForm = ({
       { key: 'marcas', label: 'Marcas' },
       { key: 'produto_origem', label: 'Produtos Origem' },
       { key: 'produto_generico', label: 'Produtos Genéricos' },
-      { key: 'intolerancias', label: 'Intolerâncias' }
+      { key: 'intolerancias', label: 'Intolerâncias' },
+      { key: 'patrimonios', label: 'Patrimônios' },
+      { key: 'rotas_nutricionistas', label: 'Rotas Nutricionistas' }
     ],
     'Logística': [
       { key: 'veiculos', label: 'Veículos' },
@@ -49,11 +51,16 @@ const PermissoesForm = ({
       pode_visualizar: false,
       pode_criar: false,
       pode_editar: false,
-      pode_excluir: false
+      pode_excluir: false,
+      pode_movimentar: false
     };
 
+    // Determinar se deve mostrar a coluna movimentar (apenas para patrimônios)
+    const mostrarMovimentar = tela === 'patrimonios';
+    const colSpan = mostrarMovimentar ? 6 : 5;
+
     return (
-      <div key={tela} className="grid grid-cols-5 gap-2 p-3 border-b border-gray-100 hover:bg-gray-50">
+      <div key={tela} className={`grid grid-cols-${colSpan} gap-2 p-3 border-b border-gray-100 hover:bg-gray-50`}>
         <div className="col-span-1 flex items-center">
           <span className="text-sm font-medium text-gray-700">{label}</span>
         </div>
@@ -93,9 +100,25 @@ const PermissoesForm = ({
             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
           />
         </div>
+        
+        {mostrarMovimentar && (
+          <div className="col-span-1 flex justify-center">
+            <input
+              type="checkbox"
+              checked={perms.pode_movimentar}
+              onChange={(e) => onPermissionChange(tela, 'pode_movimentar', e.target.checked)}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+            />
+          </div>
+        )}
       </div>
     );
   };
+
+  // Determinar se deve mostrar a coluna movimentar (verificar se há patrimônios expandidos)
+  const temPatrimoniosExpandidos = Object.entries(gruposTelas).some(([grupoNome, telas]) => 
+    expandedGroups[grupoNome] && telas.some(({ key }) => key === 'patrimonios')
+  );
 
   if (!isOpen) return null;
 
@@ -139,6 +162,14 @@ const PermissoesForm = ({
                     <span className="hidden sm:inline">Excluir</span>
                   </div>
                 </th>
+                {temPatrimoniosExpandidos && (
+                  <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <div className="flex items-center justify-center gap-1">
+                      <FaExchangeAlt className="text-sm" />
+                      <span className="hidden sm:inline">Movimentar</span>
+                    </div>
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -146,7 +177,7 @@ const PermissoesForm = ({
                 <React.Fragment key={grupoNome}>
                   {/* Cabeçalho do grupo */}
                   <tr className="bg-gray-50">
-                    <td colSpan="5" className="px-6 py-3">
+                    <td colSpan={temPatrimoniosExpandidos ? 6 : 5} className="px-6 py-3">
                       <button
                         onClick={() => onExpandGroup(grupoNome)}
                         className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-gray-900"
@@ -162,45 +193,60 @@ const PermissoesForm = ({
                   </tr>
                   
                   {/* Telas do grupo */}
-                  {expandedGroups[grupoNome] && telas.map(({ key, label }) => (
-                    <tr key={key} className="hover:bg-gray-50">
-                      <td className="px-6 py-3 text-sm text-gray-900">
-                        {label}
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        <input
-                          type="checkbox"
-                          checked={editingPermissions[key]?.pode_visualizar || false}
-                          onChange={(e) => onPermissionChange(key, 'pode_visualizar', e.target.checked)}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                        />
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        <input
-                          type="checkbox"
-                          checked={editingPermissions[key]?.pode_criar || false}
-                          onChange={(e) => onPermissionChange(key, 'pode_criar', e.target.checked)}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                        />
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        <input
-                          type="checkbox"
-                          checked={editingPermissions[key]?.pode_editar || false}
-                          onChange={(e) => onPermissionChange(key, 'pode_editar', e.target.checked)}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                        />
-                      </td>
-                      <td className="px-3 py-3 text-center">
-                        <input
-                          type="checkbox"
-                          checked={editingPermissions[key]?.pode_excluir || false}
-                          onChange={(e) => onPermissionChange(key, 'pode_excluir', e.target.checked)}
-                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                  {expandedGroups[grupoNome] && telas.map(({ key, label }) => {
+                    // Determinar se deve mostrar a coluna movimentar (apenas para patrimônios)
+                    const mostrarMovimentar = key === 'patrimonios';
+                    
+                    return (
+                      <tr key={key} className="hover:bg-gray-50">
+                        <td className="px-6 py-3 text-sm text-gray-900">
+                          {label}
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={editingPermissions[key]?.pode_visualizar || false}
+                            onChange={(e) => onPermissionChange(key, 'pode_visualizar', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                          />
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={editingPermissions[key]?.pode_criar || false}
+                            onChange={(e) => onPermissionChange(key, 'pode_criar', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                          />
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={editingPermissions[key]?.pode_editar || false}
+                            onChange={(e) => onPermissionChange(key, 'pode_editar', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                          />
+                        </td>
+                        <td className="px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={editingPermissions[key]?.pode_excluir || false}
+                            onChange={(e) => onPermissionChange(key, 'pode_excluir', e.target.checked)}
+                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                          />
+                        </td>
+                        {mostrarMovimentar && (
+                          <td className="px-3 py-3 text-center">
+                            <input
+                              type="checkbox"
+                              checked={editingPermissions[key]?.pode_movimentar || false}
+                              onChange={(e) => onPermissionChange(key, 'pode_movimentar', e.target.checked)}
+                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                            />
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
                 </React.Fragment>
               ))}
             </tbody>

@@ -32,7 +32,7 @@ const ProdutosGenericosTable = ({
   return (
     <>
       {/* Versão Desktop - Tabela completa */}
-      <div className="hidden lg:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="hidden xl:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -145,8 +145,8 @@ const ProdutosGenericosTable = ({
         </div>
       </div>
 
-      {/* Versão Mobile - Cards */}
-      <div className="lg:hidden space-y-3">
+      {/* Versão Mobile e Tablet - Cards */}
+      <div className="xl:hidden space-y-3">
         {produtosGenericos.map((produtoGenerico) => (
           <div key={produtoGenerico.id} className="bg-white rounded-lg shadow-sm p-4 border">
             <div className="flex justify-between items-start mb-3">

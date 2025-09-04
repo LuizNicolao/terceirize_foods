@@ -1,12 +1,8 @@
 /**
  * Índice das Rotas de Permissões
- * Centraliza a exportação do router e funções auxiliares
+ * Centraliza a exportação do router
  */
 
 const permissoesRouter = require('./permissoesRoute');
-const { atualizarPermissoesPorTipoNivel } = require('./modules/permissoesUtils');
 
-module.exports = {
-  router: permissoesRouter,
-  atualizarPermissoesPorTipoNivel
-};
+module.exports = permissoesRouter;

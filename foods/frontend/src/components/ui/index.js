@@ -18,3 +18,4 @@ export { default as CaptchaCheckbox } from './CaptchaCheckbox';
 export { FormInput } from './FormInput';
 export { MaskedInput } from './MaskedInput';
 export { MaskedFormInput } from './MaskedFormInput'; 
+export { default as SearchableSelect } from './SearchableSelect';

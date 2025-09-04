@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaSearch, FaWarehouse } from 'react-icons/fa';
+import { FaSearch, FaWarehouse, FaBuilding } from 'react-icons/fa';
 import { Modal, Input, Button, MaskedFormInput } from '../ui';
 import FiliaisService from '../../services/filiais';
 import AlmoxarifadoContent from '../shared/AlmoxarifadoContent';
+import { PatrimoniosList } from '../patrimonios';
+import { usePermissions } from '../../contexts/PermissionsContext';
 import toast from 'react-hot-toast';
 
 const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
-  const [activeTab, setActiveTab] = useState('info'); // 'info' ou 'almoxarifados'
+  const [activeTab, setActiveTab] = useState('info'); // 'info', 'almoxarifados' ou 'patrimonios'
+  const { canView, canEdit, canDelete } = usePermissions();
 
   const cnpj = watch('cnpj');
 
@@ -99,14 +102,27 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >
-              <FaWarehouse className="text-sm" />
+              <FaWarehouse />
               Almoxarifados
+            </button>
+          )}
+          {filial && (
+            <button
+              onClick={() => setActiveTab('patrimonios')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                activeTab === 'patrimonios'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <FaBuilding />
+              Patrimônios
             </button>
           )}
         </nav>
       </div>
 
-      {/* Conteúdo das Abas */}
+      {/* Conteúdo das abas */}
       {activeTab === 'info' && (
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
           {/* Primeira Linha - 2 Cards */}
@@ -311,6 +327,17 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
             viewMode={isViewMode}
           />
         </div>
+      )}
+
+      {activeTab === 'patrimonios' && filial && (
+        <PatrimoniosList
+          tipoLocal="filial"
+          localId={filial.id}
+          localNome={filial.filial}
+          canView={canView('patrimonios')}
+          canEdit={canEdit('patrimonios')}
+          canDelete={canDelete('patrimonios')}
+        />
       )}
     </Modal>
   );

@@ -48,9 +48,11 @@ export const useUnidadesEscolares = () => {
   const loadUnidades = async (params = {}) => {
     setLoading(true);
     try {
+      // Se não há parâmetros específicos, usar os estados atuais
+      // Se há parâmetros específicos (como mudança de página), usar eles
       const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
+        page: params.page !== undefined ? params.page : currentPage,
+        limit: params.limit !== undefined ? params.limit : itemsPerPage,
         ...params
       };
 
@@ -60,8 +62,8 @@ export const useUnidadesEscolares = () => {
         
         if (result.pagination) {
           setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
+          setTotalItems(result.pagination.total || result.pagination.totalItems || result.data.length);
+          setCurrentPage(result.pagination.page || result.pagination.currentPage || 1);
         } else {
           setTotalItems(result.data.length);
           setTotalPages(Math.ceil(result.data.length / itemsPerPage));
@@ -134,9 +136,17 @@ export const useUnidadesEscolares = () => {
     }
   };
 
-  // Carregar dados quando dependências mudarem
+  // Carregar dados iniciais
   useEffect(() => {
     loadUnidades();
+    loadRotas();
+    loadFiliais();
+    loadEstatisticas();
+  }, []); // Só executa uma vez na montagem
+
+  // Carregar dados quando dependências mudarem (apenas para outras funções)
+  useEffect(() => {
+    // Não chamar loadUnidades aqui, pois pode sobrescrever mudanças manuais
     loadRotas();
     loadFiliais();
     loadEstatisticas();
@@ -237,11 +247,15 @@ export const useUnidadesEscolares = () => {
   // Funções de paginação
   const handlePageChange = (page) => {
     setCurrentPage(page);
+    // Recarregar dados da nova página
+    loadUnidades({ page });
   };
 
   const handleItemsPerPageChange = (newItemsPerPage) => {
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1);
+    // Recarregar dados com o novo limite de itens
+    loadUnidades({ page: 1, limit: newItemsPerPage });
   };
 
   // Funções utilitárias

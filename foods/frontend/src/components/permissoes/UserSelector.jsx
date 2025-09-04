@@ -1,15 +1,13 @@
 import React from 'react';
-import { FaChevronDown, FaSearch } from 'react-icons/fa';
-import { Button, Input } from '../ui';
+import { FaChevronDown } from 'react-icons/fa';
+import { Button } from '../ui';
 
 const UserSelector = ({ 
   usuarios, 
   selectedUserId, 
   selectedUser, 
   isSelectOpen, 
-  searchTerm,
   onUserSelect, 
-  onSearchChange, 
   setIsSelectOpen 
 }) => {
   return (
@@ -35,22 +33,8 @@ const UserSelector = ({
 
             {isSelectOpen && (
               <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-hidden">
-                {/* Campo de busca */}
-                <div className="p-3 border-b border-gray-200">
-                  <div className="relative">
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
-                    <Input
-                      type="text"
-                      placeholder="Buscar usuário..."
-                      value={searchTerm}
-                      onChange={(e) => onSearchChange(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-
                 {/* Lista de usuários */}
-                <div className="max-h-48 overflow-y-auto">
+                <div className="max-h-60 overflow-y-auto">
                   {usuarios.length === 0 ? (
                     <div className="p-3 text-center text-gray-500 text-sm">
                       Nenhum usuário encontrado
@@ -98,49 +82,11 @@ const UserSelector = ({
               size="sm"
               className="text-red-600 hover:text-red-700"
             >
-              Limpar
+              Limpar Seleção
             </Button>
           </div>
         )}
       </div>
-
-      {/* Informações do usuário selecionado */}
-      {selectedUser && (
-        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
-            <div>
-              <span className="font-medium text-gray-700">Nome:</span>
-              <p className="text-gray-900">{selectedUser.nome}</p>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">Email:</span>
-              <p className="text-gray-900">{selectedUser.email}</p>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">Nível de Acesso:</span>
-              <p className="text-gray-900">{selectedUser.nivel_de_acesso || 'N/A'}</p>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">Tipo de Acesso:</span>
-              <p className="text-gray-900">{selectedUser.tipo_de_acesso || 'N/A'}</p>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">Status:</span>
-              <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                selectedUser.status === 'ativo' 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {selectedUser.status === 'ativo' ? 'Ativo' : 'Inativo'}
-              </span>
-            </div>
-            <div>
-              <span className="font-medium text-gray-700">Permissões:</span>
-              <p className="text-gray-900">{selectedUser.permissoes_count || 0} tela(s)</p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

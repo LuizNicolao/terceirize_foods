@@ -7,6 +7,7 @@ const UnidadesEscolaresListController = require('./UnidadesEscolaresListControll
 const UnidadesEscolaresCRUDController = require('./UnidadesEscolaresCRUDController');
 const UnidadesEscolaresSearchController = require('./UnidadesEscolaresSearchController');
 const UnidadesEscolaresStatsController = require('./UnidadesEscolaresStatsController');
+const UnidadesEscolaresImportController = require('./UnidadesEscolaresImportController');
 
 module.exports = {
   // Métodos de Listagem
@@ -22,9 +23,14 @@ module.exports = {
   buscarUnidadesEscolaresAtivas: UnidadesEscolaresSearchController.buscarUnidadesEscolaresAtivas,
   buscarUnidadesEscolaresPorEstado: UnidadesEscolaresSearchController.buscarUnidadesEscolaresPorEstado,
   buscarUnidadesEscolaresPorRota: UnidadesEscolaresSearchController.buscarUnidadesEscolaresPorRota,
+  buscarUnidadesEscolaresPorFilial: UnidadesEscolaresSearchController.buscarUnidadesEscolaresPorFilial,
   listarEstados: UnidadesEscolaresSearchController.listarEstados,
   listarCentrosDistribuicao: UnidadesEscolaresSearchController.listarCentrosDistribuicao,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: UnidadesEscolaresStatsController.buscarEstatisticas
+  buscarEstatisticas: UnidadesEscolaresStatsController.buscarEstatisticas,
+  
+  // Métodos de Importação
+  importarUnidadesEscolares: UnidadesEscolaresImportController.importarUnidadesEscolares,
+  gerarTemplate: UnidadesEscolaresImportController.gerarTemplate
 };

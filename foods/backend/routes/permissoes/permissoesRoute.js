@@ -5,21 +5,24 @@
 
 const express = require('express');
 const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { paginationMiddleware } = require('../../middleware/pagination');
+const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
-const { commonValidations, permissoesValidations, handleValidationErrors } = require('./permissoesValidator');
-const PermissoesController = require('./modules/permissoesController');
+const { commonValidations, permissoesValidations } = require('./permissoesValidator');
+const PermissoesController = require('../../controllers/permissoes');
 
 const router = express.Router();
 
-// Aplicar autenticação em todas as rotas
+// Aplicar middlewares globais
 router.use(authenticateToken);
+router.use(paginationMiddleware);
+router.use(hateoasMiddleware('permissoes'));
 
 // GET /api/permissoes/usuarios - Listar usuários com contagem de permissões
 router.get('/usuarios', 
   checkPermission('visualizar'),
   commonValidations.search,
   commonValidations.pagination,
-  handleValidationErrors,
   PermissoesController.listarUsuarios
 );
 
@@ -27,7 +30,6 @@ router.get('/usuarios',
 router.get('/padrao/:tipoAcesso/:nivelAcesso', 
   checkPermission('visualizar'),
   permissoesValidations.obterPermissoesPadrao,
-  handleValidationErrors,
   PermissoesController.obterPermissoesPadrao
 );
 
@@ -35,7 +37,6 @@ router.get('/padrao/:tipoAcesso/:nivelAcesso',
 router.get('/usuario/:usuarioId', 
   checkPermission('visualizar'),
   commonValidations.usuarioId,
-  handleValidationErrors,
   PermissoesController.listarPermissoesUsuario
 );
 
@@ -44,7 +45,6 @@ router.put('/usuario/:usuarioId',
   checkPermission('editar'),
   auditMiddleware(AUDIT_ACTIONS.UPDATE, 'permissoes'),
   permissoesValidations.atualizarPermissoes,
-  handleValidationErrors,
   PermissoesController.atualizarPermissoes
 );
 

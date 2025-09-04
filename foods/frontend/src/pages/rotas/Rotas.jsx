@@ -152,6 +152,11 @@ const Rotas = () => {
         isViewMode={viewMode}
         filiais={filiais}
         loadingFiliais={loadingFiliais}
+        unidadesEscolares={unidadesEscolares}
+        loadingUnidades={loadingUnidades}
+        showUnidades={showUnidades}
+        totalUnidades={totalUnidades}
+        onToggleUnidades={toggleUnidades}
       />
 
       {/* Modal de Auditoria */}

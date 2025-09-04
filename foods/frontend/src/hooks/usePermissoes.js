@@ -84,7 +84,8 @@ export const usePermissoes = () => {
             pode_visualizar: perm.pode_visualizar === 1 || perm.pode_visualizar === true,
             pode_criar: perm.pode_criar === 1 || perm.pode_criar === true,
             pode_editar: perm.pode_editar === 1 || perm.pode_editar === true,
-            pode_excluir: perm.pode_excluir === 1 || perm.pode_excluir === true
+            pode_excluir: perm.pode_excluir === 1 || perm.pode_excluir === true,
+            pode_movimentar: perm.pode_movimentar === 1 || perm.pode_movimentar === true
           };
         });
         
@@ -133,7 +134,8 @@ export const usePermissoes = () => {
         pode_visualizar: perms.pode_visualizar ? 1 : 0,
         pode_criar: perms.pode_criar ? 1 : 0,
         pode_editar: perms.pode_editar ? 1 : 0,
-        pode_excluir: perms.pode_excluir ? 1 : 0
+        pode_excluir: perms.pode_excluir ? 1 : 0,
+        pode_movimentar: perms.pode_movimentar ? 1 : 0
       }));
 
       const result = await PermissoesService.salvarPermissoes(selectedUserId, permissoesArray);

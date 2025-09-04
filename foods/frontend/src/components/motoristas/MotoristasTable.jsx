@@ -77,7 +77,7 @@ const MotoristasTable = ({
   return (
     <div className="overflow-hidden">
       {/* Desktop Table */}
-      <div className="hidden lg:block">
+      <div className="hidden xl:block">
         <Table>
           <thead className="bg-gray-50">
             <tr>
@@ -182,7 +182,7 @@ const MotoristasTable = ({
       </div>
 
       {/* Mobile Cards */}
-      <div className="lg:hidden space-y-4">
+      <div className="xl:hidden space-y-4">
         {motoristas.map((motorista) => {
           const statusInfo = getStatusLabel(motorista.status);
           return (

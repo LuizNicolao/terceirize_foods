@@ -25,7 +25,9 @@ const PERMISSOES_PADRAO = {
       cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
-      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false }, 
+      intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -48,6 +50,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false }, 
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -70,6 +74,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },   
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -94,6 +100,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -116,6 +124,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: true, editar: true, excluir: false },
+      patrimonios: { visualizar: true, criar: true, editar: true, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -138,6 +148,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -162,6 +174,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -184,6 +198,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: true, editar: true, excluir: false },
       produto_generico: { visualizar: true, criar: true, editar: true, excluir: false },
       intolerancias: { visualizar: true, criar: true, editar: true, excluir: false },
+      patrimonios: { visualizar: true, criar: true, editar: true, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -206,6 +222,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: true, editar: true, excluir: false },
       produto_generico: { visualizar: true, criar: true, editar: true, excluir: false },
       intolerancias: { visualizar: true, criar: true, editar: true, excluir: false },
+      patrimonios: { visualizar: true, criar: true, editar: true, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -230,6 +248,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -252,6 +272,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -274,6 +296,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -298,6 +322,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -320,6 +346,8 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -342,6 +370,82 @@ const PERMISSOES_PADRAO = {
       produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
       produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
       intolerancias: { visualizar: true, criar: false, editar: false, excluir: false },
+      patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
+      permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
+    }
+  },
+  nutricionista: {
+    I: {
+      usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
+      fornecedores: { visualizar: false, criar: false, editar: false, excluir: false },
+      clientes: { visualizar: false, criar: false, editar: false, excluir: false },
+      filiais: { visualizar: false, criar: false, editar: false, excluir: false },
+      rotas: { visualizar: false, criar: false, editar: false, excluir: false },
+      produtos: { visualizar: true, criar: false, editar: false, excluir: false },
+      grupos: { visualizar: true, criar: false, editar: false, excluir: false },
+      subgrupos: { visualizar: true, criar: false, editar: false, excluir: false },
+      classes: { visualizar: true, criar: false, editar: false, excluir: false },
+      unidades: { visualizar: true, criar: false, editar: false, excluir: false },
+      unidades_escolares: { visualizar: true, criar: false, editar: false, excluir: false },
+      marcas: { visualizar: true, criar: false, editar: false, excluir: false },
+      veiculos: { visualizar: false, criar: false, editar: false, excluir: false },
+      motoristas: { visualizar: false, criar: false, editar: false, excluir: false },
+      ajudantes: { visualizar: false, criar: false, editar: false, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_origem: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_generico: { visualizar: true, criar: false, editar: false, excluir: false },
+      intolerancias: { visualizar: true, criar: true, editar: true, excluir: false },
+      patrimonios: { visualizar: false, criar: false, editar: false, excluir: false, movimentar: false },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
+      permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
+    },
+    II: {
+      usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
+      fornecedores: { visualizar: false, criar: false, editar: false, excluir: false },
+      clientes: { visualizar: false, criar: false, editar: false, excluir: false },
+      filiais: { visualizar: false, criar: false, editar: false, excluir: false },
+      rotas: { visualizar: false, criar: false, editar: false, excluir: false },
+      produtos: { visualizar: true, criar: true, editar: true, excluir: false },
+      grupos: { visualizar: true, criar: true, editar: true, excluir: false },
+      subgrupos: { visualizar: true, criar: true, editar: true, excluir: false },
+      classes: { visualizar: true, criar: true, editar: true, excluir: false },
+      unidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: false },
+      marcas: { visualizar: true, criar: true, editar: true, excluir: false },
+      veiculos: { visualizar: false, criar: false, editar: false, excluir: false },
+      motoristas: { visualizar: false, criar: false, editar: false, excluir: false },
+      ajudantes: { visualizar: false, criar: false, editar: false, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_origem: { visualizar: true, criar: true, editar: true, excluir: false },
+      produto_generico: { visualizar: true, criar: true, editar: true, excluir: false },
+      intolerancias: { visualizar: true, criar: true, editar: true, excluir: true },
+      patrimonios: { visualizar: false, criar: false, editar: false, excluir: false, movimentar: false },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
+      permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
+    },
+    III: {
+      usuarios: { visualizar: false, criar: false, editar: false, excluir: false },
+      fornecedores: { visualizar: false, criar: false, editar: false, excluir: false },
+      clientes: { visualizar: false, criar: false, editar: false, excluir: false },
+      filiais: { visualizar: false, criar: false, editar: false, excluir: false },
+      rotas: { visualizar: false, criar: false, editar: false, excluir: false },
+      produtos: { visualizar: true, criar: true, editar: true, excluir: true },
+      grupos: { visualizar: true, criar: true, editar: true, excluir: true },
+      subgrupos: { visualizar: true, criar: true, editar: true, excluir: true },
+      classes: { visualizar: true, criar: true, editar: true, excluir: true },
+      unidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      unidades_escolares: { visualizar: true, criar: true, editar: true, excluir: true },
+      marcas: { visualizar: true, criar: true, editar: true, excluir: true },
+      veiculos: { visualizar: false, criar: false, editar: false, excluir: false },
+      motoristas: { visualizar: false, criar: false, editar: false, excluir: false },
+      ajudantes: { visualizar: false, criar: false, editar: false, excluir: false },
+      cotacao: { visualizar: true, criar: false, editar: false, excluir: false },
+      produto_origem: { visualizar: true, criar: true, editar: true, excluir: true },
+      produto_generico: { visualizar: true, criar: true, editar: true, excluir: true },
+      intolerancias: { visualizar: true, criar: true, editar: true, excluir: true },
+      patrimonios: { visualizar: false, criar: false, editar: false, excluir: false, movimentar: false },
+      rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -369,7 +473,9 @@ const TODAS_TELAS = [
   'produto_generico',
   'intolerancias',
   'efetivos',
-  'permissoes'
+  'permissoes',
+  'patrimonios',
+  'rotas_nutricionistas'
 ];
 
 // Tipos de acesso disponíveis
@@ -378,7 +484,8 @@ const TIPOS_ACESSO = [
   { valor: 'coordenador', descricao: 'Coordenador' },
   { valor: 'administrativo', descricao: 'Administrativo' },
   { valor: 'gerente', descricao: 'Gerente' },
-  { valor: 'supervisor', descricao: 'Supervisor' }
+  { valor: 'supervisor', descricao: 'Supervisor' },
+  { valor: 'nutricionista', descricao: 'Nutricionista' }
 ];
 
 // Níveis de acesso disponíveis
@@ -410,7 +517,9 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'produto_generico', descricao: 'Gerenciamento de Produtos Genéricos' },
   { nome: 'intolerancias', descricao: 'Gerenciamento de Intolerâncias' },
   { nome: 'efetivos', descricao: 'Gerenciamento de Efetivos' },
-  { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
+  { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' },
+  { nome: 'patrimonios', descricao: 'Gerenciamento de Patrimônios' },
+  { nome: 'rotas_nutricionistas', descricao: 'Gerenciamento de Rotas Nutricionistas' }
 ];
 
 module.exports = {

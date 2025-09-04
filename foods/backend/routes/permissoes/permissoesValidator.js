@@ -1,9 +1,13 @@
 /**
- * Validações para Permissões
- * Validações usando express-validator
+ * Validações específicas para Permissões
+ * Implementa validações usando express-validator
  */
 
-const { param, query, body, validationResult } = require('express-validator');
+const { body, param, query } = require('express-validator');
+const { createEntityValidationHandler } = require('../../middleware/validationHandler');
+
+// Criar handler de validação específico para permissões
+const handleValidationErrors = createEntityValidationHandler('permissoes');
 
 // Validações comuns
 const commonValidations = {
@@ -12,7 +16,7 @@ const commonValidations = {
     .isInt({ min: 1 })
     .withMessage('ID deve ser um número inteiro positivo'),
 
-  // Validação específica para usuarioId
+  // Validação de ID de usuário
   usuarioId: param('usuarioId')
     .isInt({ min: 1 })
     .withMessage('ID do usuário deve ser um número inteiro positivo'),
@@ -33,8 +37,8 @@ const commonValidations = {
       .withMessage('Página deve ser um número inteiro positivo'),
     query('limit')
       .optional()
-      .isInt({ min: 1, max: 1000 })
-      .withMessage('Limite deve ser um número entre 1 e 1000')
+      .isInt({ min: 1, max: 100 })
+      .withMessage('Limite deve ser um número entre 1 e 100')
   ]
 };
 
@@ -43,13 +47,12 @@ const permissoesValidations = {
   // Validação para obter permissões padrão
   obterPermissoesPadrao: [
     param('tipoAcesso')
-      .isString()
       .isIn(['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'])
-      .withMessage('Tipo de acesso deve ser um dos valores válidos'),
+      .withMessage('Tipo de acesso deve ser: administrador, coordenador, administrativo, gerente ou supervisor'),
     param('nivelAcesso')
-      .isString()
       .isIn(['I', 'II', 'III'])
-      .withMessage('Nível de acesso deve ser I, II ou III')
+      .withMessage('Nível de acesso deve ser: I, II ou III'),
+    handleValidationErrors
   ],
 
   // Validação para atualizar permissões
@@ -59,41 +62,26 @@ const permissoesValidations = {
       .withMessage('ID do usuário deve ser um número inteiro positivo'),
     body('permissoes')
       .isArray({ min: 1 })
-      .withMessage('Permissões deve ser um array não vazio'),
+      .withMessage('Permissões devem ser um array não vazio'),
     body('permissoes.*.tela')
       .isString()
+      .trim()
       .isLength({ min: 1, max: 50 })
       .withMessage('Tela deve ser uma string válida'),
     body('permissoes.*.pode_visualizar')
-      .optional()
       .isBoolean()
       .withMessage('pode_visualizar deve ser um booleano'),
     body('permissoes.*.pode_criar')
-      .optional()
       .isBoolean()
       .withMessage('pode_criar deve ser um booleano'),
     body('permissoes.*.pode_editar')
-      .optional()
       .isBoolean()
       .withMessage('pode_editar deve ser um booleano'),
     body('permissoes.*.pode_excluir')
-      .optional()
       .isBoolean()
-      .withMessage('pode_excluir deve ser um booleano')
+      .withMessage('pode_excluir deve ser um booleano'),
+    handleValidationErrors
   ]
-};
-
-// Middleware para capturar erros de validação
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      error: 'Dados inválidos',
-      details: errors.array()
-    });
-  }
-  
-  next();
 };
 
 module.exports = {

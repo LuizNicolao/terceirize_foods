@@ -78,6 +78,8 @@ const menuGroups = [
       { path: '/foods/intolerancias', icon: FaAllergies, label: 'Intolerâncias', screen: 'intolerancias' },
       { path: '/foods/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
       { path: '/foods/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
+      { path: '/foods/patrimonios', icon: FaBuilding, label: 'Patrimônios', screen: 'patrimonios' },
+      { path: '/foods/rotas-nutricionistas', icon: FaBuilding, label: 'Rotas Nutricionistas', screen: 'rotas_nutricionistas' },
     ]
   },
   {

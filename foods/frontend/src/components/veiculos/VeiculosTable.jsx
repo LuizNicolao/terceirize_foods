@@ -29,7 +29,7 @@ const VeiculosTable = ({
   return (
     <>
       {/* Versão Desktop - Tabela completa */}
-      <div className="hidden lg:block bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="hidden xl:block bg-white rounded-lg shadow-sm overflow-hidden">
         <Table>
           <thead className="bg-gray-50">
             <tr>
@@ -89,8 +89,8 @@ const VeiculosTable = ({
         </Table>
       </div>
 
-      {/* Versão Mobile - Cards */}
-      <div className="lg:hidden space-y-3">
+      {/* Versão Mobile e Tablet - Cards */}
+      <div className="xl:hidden space-y-3">
         {veiculos.map((veiculo) => (
           <div key={veiculo.id} className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
             <div className="flex justify-between items-start mb-3">

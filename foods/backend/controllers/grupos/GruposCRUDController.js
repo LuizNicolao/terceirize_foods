@@ -32,13 +32,15 @@ class GruposCRUDController {
       return conflictResponse(res, 'Nome do grupo já existe');
     }
 
-    // Inserir grupo (sem código inicialmente)
+    // Inserir grupo com código temporário
+    const codigoTemporario = `TEMP-${Date.now()}`;
     const result = await executeQuery(
-      'INSERT INTO grupos (nome, descricao, status, data_cadastro) VALUES (?, ?, ?, NOW())',
+      'INSERT INTO grupos (nome, descricao, status, codigo, data_cadastro) VALUES (?, ?, ?, ?, NOW())',
       [
         nome && nome.trim() ? nome.trim() : null, 
         descricao && descricao.trim() ? descricao.trim() : null,
-        status === 1 ? 'ativo' : 'inativo'
+        status === 1 ? 'ativo' : 'inativo',
+        codigoTemporario
       ]
     );
 

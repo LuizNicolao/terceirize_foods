@@ -114,10 +114,7 @@ class ProdutoGenericoListController {
       FROM produto_generico
     `;
     
-    console.log('Query de estatísticas:', statsQuery);
     const stats = await executeQuery(statsQuery);
-    
-    console.log('Estatísticas calculadas:', stats[0]);
 
     const response = {
       success: true,
@@ -131,7 +128,6 @@ class ProdutoGenericoListController {
       statistics: stats[0]
     };
     
-    console.log('Resposta final:', response);
     res.json(response);
   });
 

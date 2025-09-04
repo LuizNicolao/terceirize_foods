@@ -24,6 +24,8 @@ import Ajudantes from './pages/ajudantes/Ajudantes';
 import ProdutoOrigem from './pages/produto-origem/ProdutoOrigem';
 import ProdutoGenerico from './pages/produto-generico/ProdutoGenerico';
 import Intolerancias from './pages/intolerancias/Intolerancias';
+import Patrimonios from './pages/patrimonios/Patrimonios';
+import RotasNutricionistas from './pages/rotas-nutricionistas/RotasNutricionistas';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -128,6 +130,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="rotas">
               <Rotas />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/rotas-nutricionistas" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="rotas_nutricionistas">
+              <RotasNutricionistas />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 
@@ -277,6 +290,16 @@ const App = () => {
         } 
       />
 
+      <Route 
+        path="/foods/patrimonios" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="patrimonios">
+              <Patrimonios />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
 
 
       <Route 

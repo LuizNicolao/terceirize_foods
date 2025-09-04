@@ -187,20 +187,7 @@ class VeiculosCRUDController {
         [result.insertId]
       );
 
-      // Log para debug das datas salvas
-      console.log('💾 DEBUG - Datas salvas no veículo:', {
-        id: newVeiculo[0].id,
-        placa: newVeiculo[0].placa,
-        data_emplacamento: newVeiculo[0].data_emplacamento,
-        vencimento_licenciamento: newVeiculo[0].vencimento_licenciamento,
-        vencimento_ipva: newVeiculo[0].vencimento_ipva,
-        vencimento_dpvat: newVeiculo[0].vencimento_dpvat,
-        data_ultima_revisao: newVeiculo[0].data_ultima_revisao,
-        data_ultima_troca_oleo: newVeiculo[0].data_ultima_troca_oleo,
-        vencimento_alinhamento_balanceamento: newVeiculo[0].vencimento_alinhamento_balanceamento,
-        proxima_inspecao_veicular: newVeiculo[0].proxima_inspecao_veicular,
-        data_aquisicao: newVeiculo[0].data_aquisicao
-      });
+
 
       res.status(201).json({
         success: true,

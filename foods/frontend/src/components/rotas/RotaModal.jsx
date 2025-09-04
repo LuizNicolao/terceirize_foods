@@ -213,8 +213,15 @@ const RotaModal = ({
                         {unidadesEscolares.map((unidade) => (
                           <tr key={unidade.id} className="hover:bg-gray-50">
                             <td className="px-4 py-2 text-sm text-gray-900">{unidade.id}</td>
-                            <td className="px-4 py-2 text-sm text-gray-900 font-medium">{unidade.nome}</td>
-                            <td className="px-4 py-2 text-sm text-gray-900">{unidade.endereco}</td>
+                            <td className="px-4 py-2 text-sm text-gray-900 font-medium">
+                              {unidade.nome_escola || unidade.codigo_teknisa || 'Nome não informado'}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-900">
+                              {unidade.endereco ? 
+                                `${unidade.endereco}, ${unidade.cidade}/${unidade.estado}` : 
+                                `${unidade.cidade}/${unidade.estado}`
+                              }
+                            </td>
                             <td className="px-4 py-2 text-sm text-gray-900">
                               <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
                                 unidade.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'

@@ -20,7 +20,12 @@ module.exports = {
   
   // Métodos de Busca
   buscarPorTipoAcesso: UsuariosSearchController.buscarPorTipoAcesso,
+  buscarPorTipoEFilial: UsuariosSearchController.buscarPorTipoEFilial,
   
   // Métodos de Autenticação
-  alterarSenha: UsuariosAuthController.alterarSenha
+  alterarSenha: UsuariosAuthController.alterarSenha,
+  
+  // Métodos para Gerenciar Filiais
+  buscarFiliaisUsuario: UsuariosListController.buscarFiliaisUsuario,
+  atualizarFiliaisUsuario: UsuariosCRUDController.atualizarFiliaisUsuario
 };

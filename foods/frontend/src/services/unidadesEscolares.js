@@ -102,6 +102,56 @@ class UnidadesEscolaresService {
     }
   }
 
+  // Métodos de Importação
+  static async importarPlanilha(formData) {
+    try {
+      const response = await api.post('/unidades-escolares/importar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        message: response.data.message || 'Importação realizada com sucesso!'
+      };
+    } catch (error) {
+      if (error.response?.status === 400) {
+        return {
+          success: false,
+          error: error.response?.data?.error || 'Erro na validação',
+          message: error.response?.data?.message || 'Erro na validação da planilha',
+          validationErrors: error.response?.data?.validationErrors || []
+        };
+      }
+      
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao importar planilha',
+        message: error.response?.data?.message || 'Erro ao importar planilha'
+      };
+    }
+  }
+
+  static async downloadTemplate() {
+    try {
+      const response = await api.get('/unidades-escolares/importar/template', {
+        responseType: 'blob',
+      });
+      
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao baixar template'
+      };
+    }
+  }
+
   static async buscarAtivas() {
     try {
       const response = await api.get('/unidades-escolares/ativas/listar');

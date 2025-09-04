@@ -13,9 +13,12 @@ class UnidadesEscolaresSearchController {
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
           ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
-          r.nome as rota_nome
+          ue.filial_id,
+          r.nome as rota_nome,
+          f.filial as filial_nome
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
+        LEFT JOIN filiais f ON ue.filial_id = f.id
         WHERE ue.status = 'ativo'
         ORDER BY ue.nome_escola ASC
       `;
@@ -46,9 +49,12 @@ class UnidadesEscolaresSearchController {
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
           ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
-          r.nome as rota_nome
+          ue.filial_id,
+          r.nome as rota_nome,
+          f.filial as filial_nome
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
+        LEFT JOIN filiais f ON ue.filial_id = f.id
         WHERE ue.estado = ? AND ue.status = 'ativo'
         ORDER BY ue.nome_escola ASC
       `;
@@ -79,9 +85,12 @@ class UnidadesEscolaresSearchController {
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
           ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
-          r.nome as rota_nome
+          ue.filial_id,
+          r.nome as rota_nome,
+          f.filial as filial_nome
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
+        LEFT JOIN filiais f ON ue.filial_id = f.id
         WHERE ue.rota_id = ? AND ue.status = 'ativo'
         ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
       `;
@@ -136,7 +145,7 @@ class UnidadesEscolaresSearchController {
       const query = `
         SELECT DISTINCT centro_distribuicao 
         FROM unidades_escolares 
-        WHERE centro_distribuicao IS NOT NULL AND centro_distribuicao != '' AND status = 'ativo'
+        WHERE centro_distribuicao IS NOT NULL AND centro_distribucao != '' AND status = 'ativo'
         ORDER BY centro_distribuicao ASC
       `;
 
@@ -153,6 +162,42 @@ class UnidadesEscolaresSearchController {
         success: false,
         error: 'Erro interno do servidor',
         message: 'Não foi possível listar os centros de distribuição'
+      });
+    }
+  }
+
+  // Buscar unidades escolares por filial
+  static async buscarUnidadesEscolaresPorFilial(req, res) {
+    try {
+      const { filialId } = req.params;
+
+      const query = `
+        SELECT 
+          ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
+          ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
+          ue.filial_id,
+          r.nome as rota_nome,
+          f.filial as filial_nome
+        FROM unidades_escolares ue
+        LEFT JOIN rotas r ON ue.rota_id = r.id
+        LEFT JOIN filiais f ON ue.filial_id = f.id
+        WHERE ue.filial_id = ? AND ue.status = 'ativo'
+        ORDER BY ue.nome_escola ASC
+      `;
+
+      const unidades = await executeQuery(query, [filialId]);
+
+      res.json({
+        success: true,
+        data: unidades
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar unidades escolares por filial:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível buscar as unidades escolares por filial'
       });
     }
   }

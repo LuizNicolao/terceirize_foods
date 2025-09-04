@@ -26,6 +26,18 @@ router.get('/',
   UsuariosController.listarUsuarios
 );
 
+// GET /api/usuarios/tipo/:tipo - Buscar usuários por tipo de acesso
+router.get('/tipo/:tipo',
+  checkPermission('visualizar'),
+  UsuariosController.buscarPorTipoAcesso
+);
+
+// GET /api/usuarios/tipo/:tipo/filiais/:filialId - Buscar usuários por tipo e filial específica
+router.get('/tipo/:tipo/filiais/:filialId',
+  checkPermission('visualizar'),
+  UsuariosController.buscarPorTipoEFilial
+);
+
 // GET /api/usuarios/:id - Buscar usuário por ID
 router.get('/:id', 
   checkPermission('visualizar'),
@@ -63,10 +75,21 @@ router.put('/:id/senha',
   UsuariosController.alterarSenha
 );
 
-// GET /api/usuarios/tipo/:tipo - Buscar usuários por tipo de acesso
-router.get('/tipo/:tipo',
+// ===== ROTAS PARA FILIAIS =====
+
+// GET /api/usuarios/:id/filiais - Buscar filiais do usuário
+router.get('/:id/filiais',
   checkPermission('visualizar'),
-  UsuariosController.buscarPorTipoAcesso
+  commonValidations.id,
+  UsuariosController.buscarFiliaisUsuario
+);
+
+// PUT /api/usuarios/:id/filiais - Atualizar filiais do usuário
+router.put('/:id/filiais',
+  checkPermission('editar'),
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'usuarios'),
+  commonValidations.id,
+  UsuariosController.atualizarFiliaisUsuario
 );
 
 module.exports = router; 
