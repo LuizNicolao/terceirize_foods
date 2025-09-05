@@ -418,6 +418,76 @@ class UnidadesEscolaresService {
       };
     }
   }
+
+  // ===== MÉTODOS PARA PERÍODOS DE REFEIÇÃO =====
+
+  static async getPeriodosRefeicao(unidadeId) {
+    try {
+      const response = await api.get(`/unidades-escolares/${unidadeId}/periodos-refeicao`);
+      return {
+        success: true,
+        data: response.data.data || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar períodos de refeição da unidade',
+        data: []
+      };
+    }
+  }
+
+  static async vincularPeriodoRefeicao(unidadeId, periodoId, quantidadeEfetivosPadrao = 0, quantidadeEfetivosNae = 0) {
+    try {
+      const response = await api.post(`/unidades-escolares/${unidadeId}/periodos-refeicao`, {
+        periodo_refeicao_id: periodoId,
+        quantidade_efetivos_padrao: quantidadeEfetivosPadrao,
+        quantidade_efetivos_nae: quantidadeEfetivosNae
+      });
+      return {
+        success: true,
+        data: response.data.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao vincular período de refeição'
+      };
+    }
+  }
+
+  static async atualizarQuantidadesEfetivos(unidadeId, periodoId, quantidadeEfetivosPadrao, quantidadeEfetivosNae) {
+    try {
+      const response = await api.put(`/unidades-escolares/${unidadeId}/periodos-refeicao/${periodoId}/quantidades`, {
+        quantidade_efetivos_padrao: quantidadeEfetivosPadrao,
+        quantidade_efetivos_nae: quantidadeEfetivosNae
+      });
+      return {
+        success: true,
+        data: response.data.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao atualizar quantidades de efetivos'
+      };
+    }
+  }
+
+  static async desvincularPeriodoRefeicao(unidadeId, periodoId) {
+    try {
+      const response = await api.delete(`/unidades-escolares/${unidadeId}/periodos-refeicao/${periodoId}`);
+      return {
+        success: true,
+        data: response.data.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao desvincular período de refeição'
+      };
+    }
+  }
 }
 
 export default UnidadesEscolaresService; 

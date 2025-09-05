@@ -28,6 +28,7 @@ const produtoGenericoRoutes = require('./produto-generico');
 const intoleranciasRoutes = require('./intolerancias');
 const rotasNutricionistasRoutes = require('./rotas-nutricionistas');
 const tiposCardapioRoutes = require('./tipos-cardapio');
+const periodosRefeicaoRoutes = require('./periodos-refeicao');
 const efetivosRoutes = require('./efetivos');
 const patrimoniosRoutes = require('./patrimonios');
 
@@ -49,6 +50,7 @@ const routes = [
   { path: '/intolerancias', router: intoleranciasRoutes },
   { path: '/rotas-nutricionistas', router: rotasNutricionistasRoutes },
   { path: '/tipos-cardapio', router: tiposCardapioRoutes },
+  { path: '/periodos-refeicao', router: periodosRefeicaoRoutes },
   { path: '/permissoes', router: permissoesRoutes },
   { path: '/dashboard', router: dashboardRoutes },
   { path: '/auditoria', router: auditoriaRoutes },

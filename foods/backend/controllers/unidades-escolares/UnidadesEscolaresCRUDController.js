@@ -561,6 +561,270 @@ class UnidadesEscolaresCRUDController {
       });
     }
   }
+
+  // ===== MÉTODOS PARA PERÍODOS DE REFEIÇÃO =====
+
+  static async getPeriodosRefeicao(req, res) {
+    try {
+      const { id } = req.params;
+
+      const query = `
+        SELECT 
+          pr.id,
+          pr.nome,
+          pr.codigo,
+          pr.descricao,
+          pr.status,
+          uepr.data_vinculacao,
+          uepr.quantidade_efetivos_padrao,
+          uepr.quantidade_efetivos_nae,
+          uepr.id as vinculo_id,
+          COALESCE(efetivos_padrao.total, 0) as efetivos_cadastrados_padrao,
+          COALESCE(efetivos_nae.total, 0) as efetivos_cadastrados_nae
+        FROM periodos_refeicao pr
+        INNER JOIN unidades_escolares_periodos_refeicao uepr ON pr.id = uepr.periodo_refeicao_id
+        LEFT JOIN (
+          SELECT 
+            periodo_refeicao_id,
+            SUM(quantidade) as total
+          FROM efetivos 
+          WHERE tipo_efetivo = 'PADRAO' AND unidade_escolar_id = ?
+          GROUP BY periodo_refeicao_id
+        ) efetivos_padrao ON pr.id = efetivos_padrao.periodo_refeicao_id
+        LEFT JOIN (
+          SELECT 
+            periodo_refeicao_id,
+            SUM(quantidade) as total
+          FROM efetivos 
+          WHERE tipo_efetivo = 'NAE' AND unidade_escolar_id = ?
+          GROUP BY periodo_refeicao_id
+        ) efetivos_nae ON pr.id = efetivos_nae.periodo_refeicao_id
+        WHERE uepr.unidade_escolar_id = ?
+        ORDER BY pr.nome ASC
+      `;
+
+      const periodos = await executeQuery(query, [id, id, id]);
+
+      res.json({
+        success: true,
+        data: periodos
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar períodos de refeição da unidade:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível buscar os períodos de refeição da unidade'
+      });
+    }
+  }
+
+  // Vincular período de refeição à unidade escolar
+  static async vincularPeriodoRefeicao(req, res) {
+    try {
+      const { id } = req.params;
+      const { 
+        periodo_refeicao_id, 
+        quantidade_efetivos_padrao = 0, 
+        quantidade_efetivos_nae = 0 
+      } = req.body;
+
+      if (!id || !periodo_refeicao_id) {
+        return res.status(400).json({
+          success: false,
+          error: 'ID da unidade escolar e ID do período de refeição são obrigatórios'
+        });
+      }
+
+      // Verificar se a unidade escolar existe
+      const unidadeQuery = 'SELECT id, filial_id FROM unidades_escolares WHERE id = ?';
+      const unidades = await executeQuery(unidadeQuery, [id]);
+      
+      if (unidades.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Unidade escolar não encontrada'
+        });
+      }
+
+      const unidade = unidades[0];
+
+      // Verificar se o período de refeição está disponível para a filial da unidade
+      const periodoDisponivelQuery = `
+        SELECT pr.id 
+        FROM periodos_refeicao pr
+        INNER JOIN periodos_refeicao_filiais prf ON pr.id = prf.periodo_refeicao_id
+        WHERE pr.id = ? AND prf.filial_id = ? AND pr.status = 'ativo'
+      `;
+      const periodosDisponiveis = await executeQuery(periodoDisponivelQuery, [periodo_refeicao_id, unidade.filial_id]);
+      
+      if (periodosDisponiveis.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Período de refeição não está disponível para a filial desta unidade escolar'
+        });
+      }
+
+      // Verificar se já não está vinculado
+      const jaVinculadoQuery = `
+        SELECT id FROM unidades_escolares_periodos_refeicao 
+        WHERE unidade_escolar_id = ? AND periodo_refeicao_id = ?
+      `;
+      const jaVinculado = await executeQuery(jaVinculadoQuery, [id, periodo_refeicao_id]);
+      
+      if (jaVinculado.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Período de refeição já está vinculado a esta unidade escolar'
+        });
+      }
+
+      // Vincular período de refeição
+      const vincularQuery = `
+        INSERT INTO unidades_escolares_periodos_refeicao 
+        (unidade_escolar_id, periodo_refeicao_id, quantidade_efetivos_padrao, quantidade_efetivos_nae, data_vinculacao)
+        VALUES (?, ?, ?, ?, NOW())
+      `;
+      
+      await executeQuery(vincularQuery, [id, periodo_refeicao_id, quantidade_efetivos_padrao, quantidade_efetivos_nae]);
+
+      res.json({
+        success: true,
+        message: 'Período de refeição vinculado com sucesso!',
+        data: { unidade_escolar_id: id, periodo_refeicao_id }
+      });
+
+    } catch (error) {
+      console.error('Erro ao vincular período de refeição:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível vincular o período de refeição'
+      });
+    }
+  }
+
+  // Atualizar quantidades de efetivos de um período vinculado
+  static async atualizarQuantidadesEfetivos(req, res) {
+    try {
+      const { id, periodoId } = req.params;
+      const { quantidade_efetivos_padrao, quantidade_efetivos_nae } = req.body;
+
+      if (!id || !periodoId) {
+        return res.status(400).json({
+          success: false,
+          error: 'ID da unidade escolar e ID do período de refeição são obrigatórios'
+        });
+      }
+
+      if (quantidade_efetivos_padrao === undefined || quantidade_efetivos_nae === undefined) {
+        return res.status(400).json({
+          success: false,
+          error: 'Quantidades de efetivos padrão e NAE são obrigatórias'
+        });
+      }
+
+      if (quantidade_efetivos_padrao < 0 || quantidade_efetivos_nae < 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'As quantidades de efetivos devem ser números positivos'
+        });
+      }
+
+      // Verificar se o vínculo existe
+      const vinculoQuery = `
+        SELECT id FROM unidades_escolares_periodos_refeicao 
+        WHERE unidade_escolar_id = ? AND periodo_refeicao_id = ?
+      `;
+      const vinculos = await executeQuery(vinculoQuery, [id, periodoId]);
+      
+      if (vinculos.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Vínculo não encontrado'
+        });
+      }
+
+      // Atualizar quantidades
+      const atualizarQuery = `
+        UPDATE unidades_escolares_periodos_refeicao 
+        SET quantidade_efetivos_padrao = ?, quantidade_efetivos_nae = ?, atualizado_em = NOW()
+        WHERE unidade_escolar_id = ? AND periodo_refeicao_id = ?
+      `;
+      
+      await executeQuery(atualizarQuery, [quantidade_efetivos_padrao, quantidade_efetivos_nae, id, periodoId]);
+
+      res.json({
+        success: true,
+        message: 'Quantidades de efetivos atualizadas com sucesso!',
+        data: { 
+          unidade_escolar_id: id, 
+          periodo_refeicao_id: periodoId,
+          quantidade_efetivos_padrao,
+          quantidade_efetivos_nae
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro ao atualizar quantidades de efetivos:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível atualizar as quantidades de efetivos'
+      });
+    }
+  }
+
+  // Desvincular período de refeição da unidade escolar
+  static async desvincularPeriodoRefeicao(req, res) {
+    try {
+      const { id, periodoId } = req.params;
+
+      if (!id || !periodoId) {
+        return res.status(400).json({
+          success: false,
+          error: 'ID da unidade escolar e ID do período de refeição são obrigatórios'
+        });
+      }
+
+      // Verificar se o vínculo existe
+      const vinculoQuery = `
+        SELECT id FROM unidades_escolares_periodos_refeicao 
+        WHERE unidade_escolar_id = ? AND periodo_refeicao_id = ?
+      `;
+      const vinculos = await executeQuery(vinculoQuery, [id, periodoId]);
+      
+      if (vinculos.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Vínculo não encontrado'
+        });
+      }
+
+      // Desvincular período de refeição
+      const desvincularQuery = `
+        DELETE FROM unidades_escolares_periodos_refeicao 
+        WHERE unidade_escolar_id = ? AND periodo_refeicao_id = ?
+      `;
+      
+      await executeQuery(desvincularQuery, [id, periodoId]);
+
+      res.json({
+        success: true,
+        message: 'Período de refeição desvinculado com sucesso!',
+        data: { unidade_escolar_id: id, periodo_refeicao_id: periodoId }
+      });
+
+    } catch (error) {
+      console.error('Erro ao desvincular período de refeição:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível desvincular o período de refeição'
+      });
+    }
+  }
 }
 
 module.exports = UnidadesEscolaresCRUDController;

@@ -38,5 +38,11 @@ module.exports = {
   // Métodos de Tipos de Cardápio
   getTiposCardapioUnidade: UnidadesEscolaresCRUDController.getTiposCardapioUnidade,
   vincularTipoCardapio: UnidadesEscolaresCRUDController.vincularTipoCardapio,
-  desvincularTipoCardapio: UnidadesEscolaresCRUDController.desvincularTipoCardapio
+  desvincularTipoCardapio: UnidadesEscolaresCRUDController.desvincularTipoCardapio,
+
+  // Métodos de Períodos de Refeição
+  getPeriodosRefeicao: UnidadesEscolaresCRUDController.getPeriodosRefeicao,
+  vincularPeriodoRefeicao: UnidadesEscolaresCRUDController.vincularPeriodoRefeicao,
+  atualizarQuantidadesEfetivos: UnidadesEscolaresCRUDController.atualizarQuantidadesEfetivos,
+  desvincularPeriodoRefeicao: UnidadesEscolaresCRUDController.desvincularPeriodoRefeicao
 };

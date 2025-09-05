@@ -49,7 +49,7 @@ const EfetivosTable = ({
                   Intolerância
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
+                  Períodos
                 </th>
               </tr>
             </thead>
@@ -69,20 +69,9 @@ const EfetivosTable = ({
                       {efetivo.intolerancia_nome || '-'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex justify-start">
-                      {!viewMode && (
-                        <ActionButtons
-                          canView={!!onView}
-                          canEdit={!!onEdit}
-                          canDelete={!!onDelete}
-                          onView={onView}
-                          onEdit={onEdit}
-                          onDelete={onDelete}
-                          item={efetivo}
-                          size="xs"
-                        />
-                      )}
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {efetivo.periodos_nomes || '-'}
                     </div>
                   </td>
                 </tr>
@@ -96,34 +85,23 @@ const EfetivosTable = ({
       <div className="xl:hidden space-y-3">
         {efetivos.map((efetivo) => (
           <div key={efetivo.id} className="bg-white rounded-lg shadow-sm p-4 border">
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 text-sm">
-                  {getTipoEfetivoBadge(efetivo.tipo_efetivo)}
-                </h3>
-                <p className="text-xs text-gray-500">
-                  Quantidade: {efetivo.quantidade}
-                </p>
-              </div>
-              {!viewMode && (
-                <ActionButtons
-                  canView={!!onView}
-                  canEdit={!!onEdit}
-                  canDelete={!!onDelete}
-                  onView={onView}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  item={efetivo}
-                  size="xs"
-                  className="p-2"
-                />
-              )}
+            <div className="mb-3">
+              <h3 className="font-semibold text-gray-900 text-sm">
+                {getTipoEfetivoBadge(efetivo.tipo_efetivo)}
+              </h3>
+              <p className="text-xs text-gray-500">
+                Quantidade: {efetivo.quantidade}
+              </p>
             </div>
             
             <div className="text-xs">
-              <div>
+              <div className="mb-2">
                 <span className="text-gray-500">Intolerância:</span>
                 <p className="font-medium">{efetivo.intolerancia_nome || '-'}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">Períodos:</span>
+                <p className="font-medium">{efetivo.periodos_nomes || '-'}</p>
               </div>
             </div>
           </div>

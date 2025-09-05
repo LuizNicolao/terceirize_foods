@@ -27,6 +27,7 @@ import Intolerancias from './pages/intolerancias/Intolerancias';
 import Patrimonios from './pages/patrimonios/Patrimonios';
 import RotasNutricionistas from './pages/rotas-nutricionistas/RotasNutricionistas';
 import TiposCardapio from './pages/tipos-cardapio/TiposCardapio';
+import PeriodosRefeicao from './pages/periodos-refeicao/PeriodosRefeicao';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -153,6 +154,17 @@ const App = () => {
           <AuthenticatedRoute>
             <ProtectedRoute screen="tipos_cardapio">
               <TiposCardapio />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/foods/periodos-refeicao" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="periodos_refeicao">
+              <PeriodosRefeicao />
             </ProtectedRoute>
           </AuthenticatedRoute>
         } 

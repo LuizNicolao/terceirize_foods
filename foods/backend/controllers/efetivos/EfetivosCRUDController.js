@@ -7,7 +7,7 @@ class EfetivosCRUDController {
   static async criarEfetivo(req, res) {
     try {
       const { unidade_escolar_id } = req.params;
-      const { tipo_efetivo, quantidade, intolerancia_id } = req.body;
+      const { tipo_efetivo, quantidade, intolerancia_id, periodo_refeicao_id } = req.body;
 
       // Validações
       if (!tipo_efetivo || !quantidade) {
@@ -66,51 +66,84 @@ class EfetivosCRUDController {
         }
       }
 
-      // Verificar se já existe um efetivo duplicado
-      const duplicateQuery = `
-        SELECT id 
-        FROM efetivos 
-        WHERE unidade_escolar_id = ? 
-        AND tipo_efetivo = ? 
-        AND quantidade = ?
-        AND (intolerancia_id = ? OR (intolerancia_id IS NULL AND ? IS NULL))
-      `;
-      
-      const [duplicate] = await executeQuery(duplicateQuery, [
-        unidade_escolar_id,
-        tipo_efetivo,
-        quantidade,
-        intolerancia_id,
-        intolerancia_id
-      ]);
+      // Verificar se o período de refeição existe (se fornecido)
+      if (periodo_refeicao_id) {
+        const [periodo] = await executeQuery(
+          'SELECT id FROM periodos_refeicao WHERE id = ?',
+          [periodo_refeicao_id]
+        );
 
-      if (duplicate) {
-        return res.status(422).json({
-          success: false,
-          message: 'Já existe um efetivo com estas características para esta unidade escolar',
-          errors: {
-            duplicate: ['Efetivo duplicado']
-          },
-          errorCategories: {
-            duplicate: [{ msg: 'Já existe um efetivo com estas características para esta unidade escolar' }]
-          }
-        });
+        if (!periodo) {
+          return res.status(404).json({
+            success: false,
+            message: 'Período de refeição não encontrado'
+          });
+        }
+
+        // Verificar se o período está vinculado à unidade escolar
+        const [vinculo] = await executeQuery(
+          'SELECT id FROM unidades_escolares_periodos_refeicao WHERE unidade_escolar_id = ? AND periodo_refeicao_id = ?',
+          [unidade_escolar_id, periodo_refeicao_id]
+        );
+
+        if (!vinculo) {
+          return res.status(400).json({
+            success: false,
+            message: 'O período de refeição não está vinculado a esta unidade escolar'
+          });
+        }
       }
 
-      // Inserir efetivo
-      const insertQuery = `
-        INSERT INTO efetivos (unidade_escolar_id, tipo_efetivo, quantidade, intolerancia_id)
-        VALUES (?, ?, ?, ?)
+      // Verificar se já existe um efetivo do mesmo tipo para somar
+      const existingQuery = `
+        SELECT id, quantidade 
+        FROM efetivos 
+        WHERE unidade_escolar_id = ? 
+        AND tipo_efetivo = ?
+        AND (intolerancia_id = ? OR (intolerancia_id IS NULL AND ? IS NULL))
+        AND (periodo_refeicao_id = ? OR (periodo_refeicao_id IS NULL AND ? IS NULL))
       `;
-
-      const result = await executeQuery(insertQuery, [
+      
+      const [existing] = await executeQuery(existingQuery, [
         unidade_escolar_id,
         tipo_efetivo,
-        quantidade,
-        intolerancia_id || null
+        intolerancia_id || null,
+        intolerancia_id || null,
+        periodo_refeicao_id || null,
+        periodo_refeicao_id || null
       ]);
 
-      const efetivoId = result.insertId;
+      let efetivoId;
+      
+      if (existing) {
+        // Se já existe, somar as quantidades
+        const novaQuantidade = existing.quantidade + quantidade;
+        
+        const updateQuery = `
+          UPDATE efetivos 
+          SET quantidade = ?, atualizado_em = NOW()
+          WHERE id = ?
+        `;
+        
+        await executeQuery(updateQuery, [novaQuantidade, existing.id]);
+        efetivoId = existing.id;
+      } else {
+        // Se não existe, criar novo registro
+        const insertQuery = `
+          INSERT INTO efetivos (unidade_escolar_id, tipo_efetivo, quantidade, intolerancia_id, periodo_refeicao_id)
+          VALUES (?, ?, ?, ?, ?)
+        `;
+
+        const result = await executeQuery(insertQuery, [
+          unidade_escolar_id,
+          tipo_efetivo,
+          quantidade,
+          intolerancia_id || null,
+          periodo_refeicao_id || null
+        ]);
+        
+        efetivoId = result.insertId;
+      }
 
       // Buscar efetivo criado
       const [efetivo] = await executeQuery(
@@ -120,13 +153,16 @@ class EfetivosCRUDController {
           e.tipo_efetivo,
           e.quantidade,
           e.intolerancia_id,
+          e.periodo_refeicao_id,
           e.criado_em,
           e.atualizado_em,
           i.nome as intolerancia_nome,
-          ue.nome_escola as unidade_escolar_nome
+          ue.nome_escola as unidade_escolar_nome,
+          pr.nome as periodo_refeicao_nome
         FROM efetivos e
         LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
         LEFT JOIN unidades_escolares ue ON e.unidade_escolar_id = ue.id
+        LEFT JOIN periodos_refeicao pr ON e.periodo_refeicao_id = pr.id
         WHERE e.id = ?`,
         [efetivoId]
       );

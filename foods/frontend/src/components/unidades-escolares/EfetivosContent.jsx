@@ -63,16 +63,9 @@ const EfetivosContent = ({
       {/* Header */}
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-gray-900">Efetivos da Unidade Escolar</h3>
-        {!viewMode && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleAddEfetivo}
-          >
-            <FaPlus className="mr-1" />
-            Adicionar Efetivo
-          </Button>
-        )}
+        <div className="text-sm text-gray-500 bg-blue-50 px-3 py-2 rounded-lg border border-blue-200">
+          <span className="font-medium">ℹ️ Modo Visualização:</span> Os efetivos são cadastrados nos períodos de refeição
+        </div>
       </div>
 
       {/* Filtros */}
@@ -93,43 +86,23 @@ const EfetivosContent = ({
       <EfetivosTable
         efetivos={efetivos}
         canView={canView}
-        canEdit={canEdit}
-        canDelete={canDelete}
+        canEdit={false}
+        canDelete={false}
         onView={handleViewEfetivo}
-        onEdit={handleEditEfetivo}
-        onDelete={handleDeleteEfetivo}
+        onEdit={null}
+        onDelete={null}
         formatDate={formatDate}
-        viewMode={viewMode}
+        viewMode={true}
       />
 
-      {/* Modal de Efetivo */}
+      {/* Modal de Efetivo - Apenas Visualização */}
       <EfetivoModal
         isOpen={showModal}
         onClose={handleCloseModal}
-        onSubmit={onSubmit}
+        onSubmit={null}
         efetivo={editingEfetivo}
-        isViewMode={efetivoViewMode}
+        isViewMode={true}
         unidadeEscolarId={unidadeEscolarId}
-      />
-
-      {/* Modal de Erros de Validação */}
-      <ValidationErrorModal
-        isOpen={showValidationModal}
-        onClose={handleCloseValidationModal}
-        errors={validationErrors?.errors}
-        errorCategories={validationErrors?.errorCategories}
-      />
-
-      {/* Modal de Confirmação para Excluir */}
-      <ConfirmModal
-        isOpen={showConfirmDeleteModal}
-        onClose={() => setShowConfirmDeleteModal(false)}
-        onConfirm={handleConfirmDelete}
-        title="Excluir Efetivo"
-        message="Tem certeza que deseja excluir este efetivo? Esta ação não pode ser desfeita."
-        confirmText="Excluir"
-        cancelText="Cancelar"
-        type="danger"
       />
 
       {/* Paginação */}

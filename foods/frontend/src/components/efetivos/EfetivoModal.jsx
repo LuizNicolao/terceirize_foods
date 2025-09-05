@@ -10,7 +10,8 @@ const EfetivoModal = ({
   onSubmit, 
   efetivo, 
   isViewMode = false,
-  unidadeEscolarId = null
+  unidadeEscolarId = null,
+  periodoRefeicao = null
 }) => {
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
   const [intolerancias, setIntolerancias] = useState([]);
@@ -97,6 +98,23 @@ const EfetivoModal = ({
       size="full"
     >
       <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6 max-h-[75vh] overflow-y-auto">
+        {/* Informações do Período (se fornecido) */}
+        {periodoRefeicao && (
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+            <h3 className="text-sm font-semibold text-blue-700 mb-2">
+              📅 Período de Refeição
+            </h3>
+            <p className="text-sm text-blue-600">
+              <strong>Nome:</strong> {periodoRefeicao.nome}
+            </p>
+            {periodoRefeicao.descricao && (
+              <p className="text-sm text-blue-600">
+                <strong>Descrição:</strong> {periodoRefeicao.descricao}
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Primeira Linha - 2 Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Card 1: Informações Básicas */}

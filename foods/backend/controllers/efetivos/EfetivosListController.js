@@ -9,28 +9,30 @@ class EfetivosListController {
       const { search, status } = req.query;
       const pagination = req.pagination;
 
-      // Query base
+      // Query base - Agrupar por tipo e intolerância, somando quantidades
       let baseQuery = `
         SELECT 
-          e.id,
-          e.unidade_escolar_id,
           e.tipo_efetivo,
-          e.quantidade,
+          SUM(e.quantidade) as quantidade,
           e.intolerancia_id,
-          e.criado_em,
-          e.atualizado_em,
-          i.nome as intolerancia_nome
+          i.nome as intolerancia_nome,
+          GROUP_CONCAT(DISTINCT pr.nome ORDER BY pr.nome SEPARATOR ', ') as periodos_nomes,
+          COUNT(DISTINCT e.periodo_refeicao_id) as total_periodos,
+          MIN(e.criado_em) as criado_em,
+          MAX(e.atualizado_em) as atualizado_em
         FROM efetivos e
         LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
+        LEFT JOIN periodos_refeicao pr ON e.periodo_refeicao_id = pr.id
         WHERE e.unidade_escolar_id = ?
+        GROUP BY e.tipo_efetivo, e.intolerancia_id, i.nome
       `;
       
       let params = [unidade_escolar_id];
 
       // Aplicar filtros
       if (search) {
-        baseQuery += ' AND (e.tipo_efetivo LIKE ? OR i.nome LIKE ?)';
-        params.push(`%${search}%`, `%${search}%`);
+        baseQuery += ' AND (e.tipo_efetivo LIKE ? OR i.nome LIKE ? OR pr.nome LIKE ?)';
+        params.push(`%${search}%`, `%${search}%`, `%${search}%`);
       }
 
       if (status && status !== 'todos') {
@@ -48,24 +50,28 @@ class EfetivosListController {
       // Executar query paginada
       const efetivos = await executeQuery(query, params);
 
-      // Contar total de registros
+      // Contar total de registros agrupados
       let countQuery = `
-        SELECT COUNT(*) as total 
-        FROM efetivos e
-        LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
-        WHERE e.unidade_escolar_id = ?
+        SELECT COUNT(*) as total FROM (
+          SELECT e.tipo_efetivo, e.intolerancia_id
+          FROM efetivos e
+          LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
+          LEFT JOIN periodos_refeicao pr ON e.periodo_refeicao_id = pr.id
+          WHERE e.unidade_escolar_id = ?
       `;
       let countParams = [unidade_escolar_id];
       
       if (search) {
-        countQuery += ' AND (e.tipo_efetivo LIKE ? OR i.nome LIKE ?)';
-        countParams.push(`%${search}%`, `%${search}%`);
+        countQuery += ' AND (e.tipo_efetivo LIKE ? OR i.nome LIKE ? OR pr.nome LIKE ?)';
+        countParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
       }
       
       if (status && status !== 'todos') {
         countQuery += ' AND e.tipo_efetivo = ?';
         countParams.push(status);
       }
+      
+      countQuery += ' GROUP BY e.tipo_efetivo, e.intolerancia_id) as grouped';
       
       const totalResult = await executeQuery(countQuery, countParams);
       const totalItems = totalResult[0].total;
@@ -77,14 +83,11 @@ class EfetivosListController {
       
       const meta = pagination.generateMeta(totalItems, `/api/unidades-escolares/${unidade_escolar_id}/efetivos`, queryParams);
 
-      // Adicionar links HATEOAS
+      // Adicionar links HATEOAS (agrupados não têm ID único, então removemos os links de ação)
       const efetivosComLinks = efetivos.map(efetivo => ({
         ...efetivo,
-        links: [
-          { rel: 'self', href: `/efetivos/${efetivo.id}`, method: 'GET' },
-          { rel: 'update', href: `/efetivos/${efetivo.id}`, method: 'PUT' },
-          { rel: 'delete', href: `/efetivos/${efetivo.id}`, method: 'DELETE' }
-        ]
+        // Para efetivos agrupados, não temos ID único, então não incluímos links de ação
+        links: []
       }));
 
       res.json({
@@ -112,13 +115,16 @@ class EfetivosListController {
           e.tipo_efetivo,
           e.quantidade,
           e.intolerancia_id,
+          e.periodo_refeicao_id,
           e.criado_em,
           e.atualizado_em,
           i.nome as intolerancia_nome,
-          ue.nome_escola as unidade_escolar_nome
+          ue.nome_escola as unidade_escolar_nome,
+          pr.nome as periodo_refeicao_nome
         FROM efetivos e
         LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
         LEFT JOIN unidades_escolares ue ON e.unidade_escolar_id = ue.id
+        LEFT JOIN periodos_refeicao pr ON e.periodo_refeicao_id = pr.id
         WHERE e.id = ?
       `;
 

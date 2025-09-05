@@ -29,6 +29,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -54,6 +55,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -79,6 +81,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: true, editar: true, excluir: true },
       tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
+      periodos_refeicao: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -106,6 +109,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: true, editar: true, excluir: true },
       tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
+      periodos_refeicao: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -131,6 +135,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: true, editar: true, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: true, editar: true, excluir: false },
       tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -156,6 +161,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -183,6 +189,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -208,6 +215,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: true, editar: true, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: true, editar: true, excluir: false },
       tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -233,6 +241,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: true, editar: true, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: true, editar: true, excluir: false },
       tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -260,6 +269,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -285,6 +295,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -310,6 +321,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -337,6 +349,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -362,6 +375,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -387,6 +401,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: true, criar: false, editar: false, excluir: false, movimentar: true },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -414,6 +429,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: false, criar: false, editar: false, excluir: false, movimentar: false },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -439,6 +455,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: false, criar: false, editar: false, excluir: false, movimentar: false },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -464,6 +481,7 @@ const PERMISSOES_PADRAO = {
       patrimonios: { visualizar: false, criar: false, editar: false, excluir: false, movimentar: false },
       rotas_nutricionistas: { visualizar: true, criar: false, editar: false, excluir: false },
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
+      periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -494,7 +512,8 @@ const TODAS_TELAS = [
   'permissoes',
   'patrimonios',
   'rotas_nutricionistas',
-  'tipos_cardapio'
+  'tipos_cardapio',
+  'periodos_refeicao'
 ];
 
 // Tipos de acesso disponíveis
@@ -539,7 +558,8 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' },
   { nome: 'patrimonios', descricao: 'Gerenciamento de Patrimônios' },
   { nome: 'rotas_nutricionistas', descricao: 'Gerenciamento de Rotas Nutricionistas' },
-  { nome: 'tipos_cardapio', descricao: 'Gerenciamento de Tipos de Cardápio' }
+  { nome: 'tipos_cardapio', descricao: 'Gerenciamento de Tipos de Cardápio' },
+  { nome: 'periodos_refeicao', descricao: 'Gerenciamento de Períodos de Refeição' }
 ];
 
 module.exports = {

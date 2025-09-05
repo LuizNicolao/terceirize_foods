@@ -145,4 +145,29 @@ router.delete('/:id/tipos-cardapio/:tipoId', [
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'unidades_escolares'),
 ], unidadesEscolaresController.desvincularTipoCardapio);
 
+// ===== ROTAS PARA PERÍODOS DE REFEIÇÃO =====
+
+// Buscar períodos de refeição da unidade escolar
+router.get('/:id/periodos-refeicao', [
+  checkScreenPermission('unidades_escolares', 'visualizar'),
+], unidadesEscolaresController.getPeriodosRefeicao);
+
+// Vincular período de refeição à unidade escolar
+router.post('/:id/periodos-refeicao', [
+  checkScreenPermission('unidades_escolares', 'editar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares'),
+], unidadesEscolaresController.vincularPeriodoRefeicao);
+
+// Atualizar quantidades de efetivos de um período vinculado
+router.put('/:id/periodos-refeicao/:periodoId/quantidades', [
+  checkScreenPermission('unidades_escolares', 'editar'),
+  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'unidades_escolares'),
+], unidadesEscolaresController.atualizarQuantidadesEfetivos);
+
+// Desvincular período de refeição da unidade escolar
+router.delete('/:id/periodos-refeicao/:periodoId', [
+  checkScreenPermission('unidades_escolares', 'editar'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'unidades_escolares'),
+], unidadesEscolaresController.desvincularPeriodoRefeicao);
+
 module.exports = router;
