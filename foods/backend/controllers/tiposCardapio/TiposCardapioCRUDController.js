@@ -345,6 +345,43 @@ class TiposCardapioCRUDController {
 
       // Atualizar filiais se fornecidas
       if (filiais !== undefined) {
+        // Buscar filiais atuais
+        const filiaisAtuais = await executeQuery(
+          'SELECT filial_id FROM tipos_cardapio_filiais WHERE tipo_cardapio_id = ?',
+          [id]
+        );
+        const filiaisAtuaisIds = filiaisAtuais.map(f => f.filial_id);
+
+        // Verificar se alguma filial está sendo removida
+        const filiaisRemovidas = filiaisAtuaisIds.filter(filialId => !filiais.includes(filialId));
+
+        if (filiaisRemovidas.length > 0) {
+          // Verificar se há unidades escolares vinculadas nas filiais que serão removidas
+          for (const filialId of filiaisRemovidas) {
+            const unidadesVinculadas = await executeQuery(
+              `SELECT COUNT(*) as total 
+               FROM unidades_escolares_tipos_cardapio uetc
+               INNER JOIN unidades_escolares ue ON uetc.unidade_escolar_id = ue.id
+               WHERE uetc.tipo_cardapio_id = ? AND ue.filial_id = ?`,
+              [id, filialId]
+            );
+
+            if (unidadesVinculadas[0].total > 0) {
+              // Buscar nome da filial para a mensagem de erro
+              const filialInfo = await executeQuery(
+                'SELECT filial FROM filiais WHERE id = ?',
+                [filialId]
+              );
+              const nomeFilial = filialInfo[0]?.filial || 'filial';
+
+              return res.status(400).json({
+                success: false,
+                message: `Não é possível remover a filial "${nomeFilial}" pois existem unidades escolares vinculadas a este tipo de cardápio nesta filial`
+              });
+            }
+          }
+        }
+
         // Remover vínculos existentes
         await executeQuery('DELETE FROM tipos_cardapio_filiais WHERE tipo_cardapio_id = ?', [id]);
 

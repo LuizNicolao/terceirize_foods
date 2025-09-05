@@ -18,6 +18,7 @@ module.exports = {
   // Controller de listagem
   listarTiposCardapio: TiposCardapioListController.listarTiposCardapio,
   buscarTipoCardapioPorId: TiposCardapioListController.buscarTipoCardapioPorId,
+  listarPorFilial: TiposCardapioListController.listarPorFilial,
 
   // Controller de busca
   buscarAtivos: TiposCardapioSearchController.buscarAtivos,

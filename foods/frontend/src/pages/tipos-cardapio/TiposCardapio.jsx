@@ -8,6 +8,7 @@ import TiposCardapioService from '../../services/tiposCardapio';
 import { Button } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
+import { ConfirmModal } from '../../components/ui';
 import { TipoCardapioModal } from '../../components/tipos-cardapio';
 import TiposCardapioStats from '../../components/tipos-cardapio/TiposCardapioStats';
 import TiposCardapioActions from '../../components/tipos-cardapio/TiposCardapioActions';
@@ -25,6 +26,8 @@ const TiposCardapio = () => {
     showModal,
     viewMode,
     editingTipo,
+    showDeleteConfirmModal,
+    tipoToDelete,
     searchTerm,
     currentPage,
     totalPages,
@@ -36,6 +39,8 @@ const TiposCardapio = () => {
     handleCloseValidationModal,
     onSubmit,
     handleDeleteTipo,
+    confirmDeleteTipo,
+    closeDeleteConfirmModal,
     handleAddTipo,
     handleViewTipo,
     handleEditTipo,
@@ -148,6 +153,18 @@ const TiposCardapio = () => {
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFiltersChange={setAuditFilters}
+      />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={closeDeleteConfirmModal}
+        onConfirm={confirmDeleteTipo}
+        title="Excluir Tipo de Cardápio"
+        message={`Tem certeza que deseja excluir o tipo de cardápio "${tipoToDelete?.nome}"? Esta ação não pode ser desfeita.`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
       />
 
       {/* Modal de Erros de Validação */}

@@ -384,6 +384,183 @@ class UnidadesEscolaresCRUDController {
       });
     }
   }
+
+  // ===== MÉTODOS PARA TIPOS DE CARDÁPIO =====
+
+  // Listar tipos de cardápio vinculados à unidade escolar
+  static async getTiposCardapioUnidade(req, res) {
+    try {
+      const { id } = req.params;
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          error: 'ID da unidade escolar é obrigatório'
+        });
+      }
+
+      const query = `
+        SELECT 
+          tc.id,
+          tc.nome,
+          tc.codigo,
+          tc.descricao,
+          tc.status,
+          tc.created_at,
+          tc.updated_at,
+          uetc.data_vinculo
+        FROM unidades_escolares_tipos_cardapio uetc
+        INNER JOIN tipos_cardapio tc ON uetc.tipo_cardapio_id = tc.id
+        WHERE uetc.unidade_escolar_id = ?
+        ORDER BY tc.nome ASC
+      `;
+
+      const tipos = await executeQuery(query, [id]);
+
+      res.json({
+        success: true,
+        data: tipos
+      });
+
+    } catch (error) {
+      console.error('Erro ao buscar tipos de cardápio da unidade:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível buscar os tipos de cardápio da unidade'
+      });
+    }
+  }
+
+  // Vincular tipo de cardápio à unidade escolar
+  static async vincularTipoCardapio(req, res) {
+    try {
+      const { id } = req.params;
+      const { tipo_cardapio_id } = req.body;
+
+      if (!id || !tipo_cardapio_id) {
+        return res.status(400).json({
+          success: false,
+          error: 'ID da unidade escolar e ID do tipo de cardápio são obrigatórios'
+        });
+      }
+
+      // Verificar se a unidade escolar existe
+      const unidadeQuery = 'SELECT id, filial_id FROM unidades_escolares WHERE id = ?';
+      const unidades = await executeQuery(unidadeQuery, [id]);
+      
+      if (unidades.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Unidade escolar não encontrada'
+        });
+      }
+
+      const unidade = unidades[0];
+
+      // Verificar se o tipo de cardápio está disponível para a filial da unidade
+      const tipoDisponivelQuery = `
+        SELECT tc.id 
+        FROM tipos_cardapio tc
+        INNER JOIN tipos_cardapio_filiais tcf ON tc.id = tcf.tipo_cardapio_id
+        WHERE tc.id = ? AND tcf.filial_id = ? AND tc.status = 'ativo'
+      `;
+      const tiposDisponiveis = await executeQuery(tipoDisponivelQuery, [tipo_cardapio_id, unidade.filial_id]);
+      
+      if (tiposDisponiveis.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Tipo de cardápio não está disponível para a filial desta unidade escolar'
+        });
+      }
+
+      // Verificar se já não está vinculado
+      const jaVinculadoQuery = `
+        SELECT id FROM unidades_escolares_tipos_cardapio 
+        WHERE unidade_escolar_id = ? AND tipo_cardapio_id = ?
+      `;
+      const jaVinculado = await executeQuery(jaVinculadoQuery, [id, tipo_cardapio_id]);
+      
+      if (jaVinculado.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Tipo de cardápio já está vinculado a esta unidade escolar'
+        });
+      }
+
+      // Vincular tipo de cardápio
+      const vincularQuery = `
+        INSERT INTO unidades_escolares_tipos_cardapio (unidade_escolar_id, tipo_cardapio_id, data_vinculo)
+        VALUES (?, ?, NOW())
+      `;
+      
+      await executeQuery(vincularQuery, [id, tipo_cardapio_id]);
+
+      res.json({
+        success: true,
+        message: 'Tipo de cardápio vinculado com sucesso!',
+        data: { unidade_escolar_id: id, tipo_cardapio_id }
+      });
+
+    } catch (error) {
+      console.error('Erro ao vincular tipo de cardápio:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível vincular o tipo de cardápio'
+      });
+    }
+  }
+
+  // Desvincular tipo de cardápio da unidade escolar
+  static async desvincularTipoCardapio(req, res) {
+    try {
+      const { id, tipoId } = req.params;
+
+      if (!id || !tipoId) {
+        return res.status(400).json({
+          success: false,
+          error: 'ID da unidade escolar e ID do tipo de cardápio são obrigatórios'
+        });
+      }
+
+      // Verificar se o vínculo existe
+      const vinculoQuery = `
+        SELECT id FROM unidades_escolares_tipos_cardapio 
+        WHERE unidade_escolar_id = ? AND tipo_cardapio_id = ?
+      `;
+      const vinculos = await executeQuery(vinculoQuery, [id, tipoId]);
+      
+      if (vinculos.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Vínculo não encontrado'
+        });
+      }
+
+      // Desvincular tipo de cardápio
+      const desvincularQuery = `
+        DELETE FROM unidades_escolares_tipos_cardapio 
+        WHERE unidade_escolar_id = ? AND tipo_cardapio_id = ?
+      `;
+      
+      await executeQuery(desvincularQuery, [id, tipoId]);
+
+      res.json({
+        success: true,
+        message: 'Tipo de cardápio desvinculado com sucesso!',
+        data: { unidade_escolar_id: id, tipo_cardapio_id: tipoId }
+      });
+
+    } catch (error) {
+      console.error('Erro ao desvincular tipo de cardápio:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível desvincular o tipo de cardápio'
+      });
+    }
+  }
 }
 
 module.exports = UnidadesEscolaresCRUDController;

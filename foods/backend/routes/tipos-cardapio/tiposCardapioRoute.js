@@ -88,4 +88,10 @@ router.delete('/:id', [
   commonValidations.id
 ], tiposCardapioController.excluir);
 
+// Listar tipos de cardápio por filial
+router.get('/filial/:filialId', 
+  checkScreenPermission('tipos_cardapio', 'visualizar'),
+  tiposCardapioController.listarPorFilial
+);
+
 module.exports = router;

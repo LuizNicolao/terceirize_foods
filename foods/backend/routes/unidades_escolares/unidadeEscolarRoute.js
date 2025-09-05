@@ -125,4 +125,24 @@ router.post('/importar', [
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares'),
 ], unidadesEscolaresController.importarUnidadesEscolares);
 
+// ===== ROTAS DE TIPOS DE CARDÁPIO =====
+
+// Listar tipos de cardápio vinculados à unidade escolar
+router.get('/:id/tipos-cardapio', 
+  checkScreenPermission('unidades_escolares', 'visualizar'),
+  unidadesEscolaresController.getTiposCardapioUnidade
+);
+
+// Vincular tipo de cardápio à unidade escolar
+router.post('/:id/tipos-cardapio', [
+  checkScreenPermission('unidades_escolares', 'editar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'unidades_escolares'),
+], unidadesEscolaresController.vincularTipoCardapio);
+
+// Desvincular tipo de cardápio da unidade escolar
+router.delete('/:id/tipos-cardapio/:tipoId', [
+  checkScreenPermission('unidades_escolares', 'editar'),
+  auditMiddleware(AUDIT_ACTIONS.DELETE, 'unidades_escolares'),
+], unidadesEscolaresController.desvincularTipoCardapio);
+
 module.exports = router;

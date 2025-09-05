@@ -23,6 +23,8 @@ export const useTiposCardapio = () => {
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [editingTipo, setEditingTipo] = useState(null);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [tipoToDelete, setTipoToDelete] = useState(null);
 
   // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
@@ -155,16 +157,24 @@ export const useTiposCardapio = () => {
     }
   };
 
-  // Excluir tipo
-  const handleDeleteTipo = async (tipo) => {
-    if (!tipo) return;
+  // Abrir modal de confirmação de exclusão
+  const handleDeleteTipo = (tipo) => {
+    setTipoToDelete(tipo);
+    setShowDeleteConfirmModal(true);
+  };
+
+  // Confirmar exclusão
+  const confirmDeleteTipo = async () => {
+    if (!tipoToDelete) return;
 
     try {
-      const result = await TiposCardapioService.excluir(tipo.id);
+      const result = await TiposCardapioService.excluir(tipoToDelete.id);
       
       if (result.success) {
         toast.success(result.message);
         await loadTipos(); // Recarregar lista
+        setShowDeleteConfirmModal(false);
+        setTipoToDelete(null);
       } else {
         toast.error(result.error);
       }
@@ -172,6 +182,12 @@ export const useTiposCardapio = () => {
       console.error('Erro ao excluir tipo de cardápio:', error);
       toast.error('Erro ao excluir tipo de cardápio');
     }
+  };
+
+  // Fechar modal de confirmação
+  const closeDeleteConfirmModal = () => {
+    setShowDeleteConfirmModal(false);
+    setTipoToDelete(null);
   };
 
   // Abrir modal para criar
@@ -246,6 +262,8 @@ export const useTiposCardapio = () => {
     showModal,
     viewMode,
     editingTipo,
+    showDeleteConfirmModal,
+    tipoToDelete,
     searchTerm,
     currentPage,
     totalPages,
@@ -259,6 +277,8 @@ export const useTiposCardapio = () => {
     // Funções de CRUD
     onSubmit,
     handleDeleteTipo,
+    confirmDeleteTipo,
+    closeDeleteConfirmModal,
     handleAddTipo,
     handleViewTipo,
     handleEditTipo,

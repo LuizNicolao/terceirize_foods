@@ -197,6 +197,51 @@ class TiposCardapioListController {
       });
     }
   }
+
+  // Listar tipos de cardápio por filial
+  static async listarPorFilial(req, res) {
+    try {
+      const { filialId } = req.params;
+
+      if (!filialId) {
+        return res.status(400).json({
+          success: false,
+          error: 'ID da filial é obrigatório'
+        });
+      }
+
+      const query = `
+        SELECT DISTINCT
+          tc.id,
+          tc.nome,
+          tc.codigo,
+          tc.descricao,
+          tc.status,
+          tc.created_at,
+          tc.updated_at
+        FROM tipos_cardapio tc
+        INNER JOIN tipos_cardapio_filiais tcf ON tc.id = tcf.tipo_cardapio_id
+        WHERE tcf.filial_id = ? 
+          AND tc.status = 'ativo'
+        ORDER BY tc.nome ASC
+      `;
+
+      const tipos = await executeQuery(query, [filialId]);
+
+      res.json({
+        success: true,
+        data: tipos
+      });
+
+    } catch (error) {
+      console.error('Erro ao listar tipos de cardápio por filial:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Não foi possível listar os tipos de cardápio da filial'
+      });
+    }
+  }
 }
 
 module.exports = TiposCardapioListController;

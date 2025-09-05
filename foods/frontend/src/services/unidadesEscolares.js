@@ -366,6 +366,58 @@ class UnidadesEscolaresService {
       };
     }
   }
+
+  // ===== MÉTODOS PARA TIPOS DE CARDÁPIO =====
+
+  static async getTiposCardapio(unidadeId) {
+    try {
+      const response = await api.get(`/unidades-escolares/${unidadeId}/tipos-cardapio`);
+      return {
+        success: true,
+        data: response.data.data || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar tipos de cardápio da unidade',
+        data: []
+      };
+    }
+  }
+
+  static async vincularTipoCardapio(unidadeId, tipoId) {
+    try {
+      const response = await api.post(`/unidades-escolares/${unidadeId}/tipos-cardapio`, {
+        tipo_cardapio_id: tipoId
+      });
+      return {
+        success: true,
+        data: response.data.data,
+        message: 'Tipo de cardápio vinculado com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao vincular tipo de cardápio'
+      };
+    }
+  }
+
+  static async desvincularTipoCardapio(unidadeId, tipoId) {
+    try {
+      const response = await api.delete(`/unidades-escolares/${unidadeId}/tipos-cardapio/${tipoId}`);
+      return {
+        success: true,
+        data: response.data.data,
+        message: 'Tipo de cardápio desvinculado com sucesso!'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao desvincular tipo de cardápio'
+      };
+    }
+  }
 }
 
 export default UnidadesEscolaresService; 

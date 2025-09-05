@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaUsers, FaWarehouse, FaBuilding } from 'react-icons/fa';
+import { FaUsers, FaWarehouse, FaBuilding, FaClipboardList } from 'react-icons/fa';
 import { Button, Input, Modal, MaskedFormInput } from '../ui';
 import EfetivosContent from './EfetivosContent';
 import AlmoxarifadoContent from './AlmoxarifadoContent';
+import TiposCardapioContent from './TiposCardapioContent';
 import { PatrimoniosList } from '../patrimonios';
 import { usePermissions } from '../../contexts/PermissionsContext';
 
@@ -19,7 +20,7 @@ const UnidadeEscolarModal = ({
   loadingFiliais = false
 }) => {
   const { register, handleSubmit, reset, setValue } = useForm();
-  const [activeTab, setActiveTab] = useState('info'); // 'info', 'efetivos', 'almoxarifado' ou 'patrimonios'
+  const [activeTab, setActiveTab] = useState('info'); // 'info', 'efetivos', 'almoxarifado', 'patrimonios' ou 'tipos-cardapio'
   const { canView, canEdit, canDelete } = usePermissions();
 
   React.useEffect(() => {
@@ -111,6 +112,19 @@ const UnidadeEscolarModal = ({
             >
               <FaBuilding />
               Patrimônios
+            </button>
+          )}
+          {unidade && (
+            <button
+              onClick={() => setActiveTab('tipos-cardapio')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                activeTab === 'tipos-cardapio'
+                  ? 'border-green-500 text-green-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <FaClipboardList />
+              Tipos de Cardápio
             </button>
           )}
         </nav>
@@ -363,6 +377,17 @@ const UnidadeEscolarModal = ({
             canView={canView('patrimonios')}
             canEdit={canEdit('patrimonios')}
             canDelete={canDelete('patrimonios')}
+          />
+        </div>
+      )}
+
+      {/* Aba de Tipos de Cardápio */}
+      {activeTab === 'tipos-cardapio' && unidade && (
+        <div className="max-h-[75vh] overflow-y-auto">
+          <TiposCardapioContent
+            unidade={unidade}
+            canEdit={canEdit}
+            canDelete={canDelete}
           />
         </div>
       )}

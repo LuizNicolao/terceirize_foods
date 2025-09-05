@@ -61,6 +61,23 @@ class TiposCardapioService {
     }
   }
 
+  // Listar tipos de cardápio por filial
+  static async listarPorFilial(filialId) {
+    try {
+      const response = await api.get(`/tipos-cardapio/filial/${filialId}`);
+      return {
+        success: true,
+        data: response.data.data || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao listar tipos de cardápio da filial',
+        data: []
+      };
+    }
+  }
+
   // Criar tipo de cardápio
   static async criar(data) {
     try {

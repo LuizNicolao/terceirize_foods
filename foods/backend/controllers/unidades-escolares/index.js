@@ -33,5 +33,10 @@ module.exports = {
   
   // Métodos de Importação
   importarUnidadesEscolares: UnidadesEscolaresImportController.importarUnidadesEscolares,
-  gerarTemplate: UnidadesEscolaresImportController.gerarTemplate
+  gerarTemplate: UnidadesEscolaresImportController.gerarTemplate,
+
+  // Métodos de Tipos de Cardápio
+  getTiposCardapioUnidade: UnidadesEscolaresCRUDController.getTiposCardapioUnidade,
+  vincularTipoCardapio: UnidadesEscolaresCRUDController.vincularTipoCardapio,
+  desvincularTipoCardapio: UnidadesEscolaresCRUDController.desvincularTipoCardapio
 };
