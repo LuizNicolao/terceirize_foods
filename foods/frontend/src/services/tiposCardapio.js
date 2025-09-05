@@ -125,7 +125,7 @@ class TiposCardapioService {
       }
       return {
         success: false,
-        error: error.response?.data?.error || 'Erro ao atualizar tipo de cardápio'
+        error: error.response?.data?.message || error.response?.data?.error || 'Erro ao atualizar tipo de cardápio'
       };
     }
   }
@@ -139,9 +139,10 @@ class TiposCardapioService {
         message: 'Tipo de cardápio excluído com sucesso!'
       };
     } catch (error) {
+      console.log('Erro ao excluir tipo de cardápio:', error.response?.data);
       return {
         success: false,
-        error: error.response?.data?.error || 'Erro ao excluir tipo de cardápio'
+        error: error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir tipo de cardápio'
       };
     }
   }
