@@ -5,7 +5,7 @@ import { useProdutos } from '../../hooks/useProdutos';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import ProdutosService from '../../services/produtos';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ProdutoModal } from '../../components/produtos';
@@ -40,8 +40,12 @@ const Produtos = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    showDeleteConfirmModal,
+    produtoToDelete,
     handleSubmitProduto,
     handleDeleteProduto,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddProduto,
     handleViewProduto,
     handleEditProduto,
@@ -184,6 +188,18 @@ const Produtos = () => {
         onClose={handleCloseValidationModal}
         errors={validationErrors?.errors}
         errorCategories={validationErrors?.errorCategories}
+      />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Produto"
+        message={`Tem certeza que deseja excluir o produto "${produtoToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
       />
     </div>
   );

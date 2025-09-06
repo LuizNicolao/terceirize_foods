@@ -5,7 +5,7 @@ import { useClientes } from '../../hooks/useClientes';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import ClientesService from '../../services/clientes';
-import { Button } from '../../components/ui';
+import { Button, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ClienteModal, ClientesTable, ClientesStats } from '../../components/clientes';
@@ -33,8 +33,12 @@ const Clientes = () => {
     validationErrors,
     showValidationModal,
     handleCloseValidationModal,
+    showDeleteConfirmModal,
+    clienteToDelete,
     onSubmit,
     handleDeleteCliente,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddCliente,
     handleViewCliente,
     handleEditCliente,
@@ -201,6 +205,18 @@ const Clientes = () => {
           onItemsPerPageChange={handleItemsPerPageChange}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Cliente"
+        message={`Tem certeza que deseja excluir o cliente "${clienteToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

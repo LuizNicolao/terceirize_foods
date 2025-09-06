@@ -9,6 +9,8 @@ export const useNomeGenericoProduto = () => {
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [editingNomeGenerico, setEditingNomeGenerico] = useState(null);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [nomeGenericoToDelete, setNomeGenericoToDelete] = useState(null);
 
   // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
@@ -121,20 +123,33 @@ export const useNomeGenericoProduto = () => {
     }
   };
 
-  const handleDeleteNomeGenerico = async (nomeGenericoId) => {
-    if (window.confirm('Tem certeza que deseja excluir este produto genérico?')) {
-      try {
-        const result = await NomeGenericoProdutoService.excluir(nomeGenericoId);
-        if (result.success) {
-          toast.success('Produto genérico excluído com sucesso!');
-          loadNomesGenericos();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir produto genérico');
+  const handleDeleteNomeGenerico = (nomeGenerico) => {
+    setNomeGenericoToDelete(nomeGenerico);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!nomeGenericoToDelete) return;
+
+    try {
+      const result = await NomeGenericoProdutoService.excluir(nomeGenericoToDelete.id);
+      if (result.success) {
+        toast.success('Produto genérico excluído com sucesso!');
+        loadNomesGenericos();
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      toast.error('Erro ao excluir produto genérico');
+    } finally {
+      setShowDeleteConfirmModal(false);
+      setNomeGenericoToDelete(null);
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setNomeGenericoToDelete(null);
   };
 
   // Funções de modal
@@ -200,6 +215,8 @@ export const useNomeGenericoProduto = () => {
     showModal,
     viewMode,
     editingNomeGenerico,
+    showDeleteConfirmModal,
+    nomeGenericoToDelete,
     searchTerm,
     currentPage,
     totalPages,
@@ -210,6 +227,8 @@ export const useNomeGenericoProduto = () => {
     // Funções CRUD
     onSubmit,
     handleDeleteNomeGenerico,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddNomeGenerico,

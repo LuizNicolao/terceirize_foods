@@ -25,6 +25,8 @@ export const useProdutoGenerico = () => {
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [editingProdutoGenerico, setEditingProdutoGenerico] = useState(null);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [produtoGenericoToDelete, setProdutoGenericoToDelete] = useState(null);
 
   // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
@@ -238,20 +240,33 @@ export const useProdutoGenerico = () => {
     }
   };
 
-  const handleDeleteProdutoGenerico = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este produto genérico?')) {
-      try {
-        const result = await produtoGenericoService.excluir(id);
-        if (result.success) {
-          toast.success('Produto genérico excluído com sucesso!');
-          loadProdutosGenericos();
-        } else {
-          toast.error(result.message || 'Erro ao excluir produto genérico');
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir produto genérico');
+  const handleDeleteProdutoGenerico = (produtoGenerico) => {
+    setProdutoGenericoToDelete(produtoGenerico);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!produtoGenericoToDelete) return;
+
+    try {
+      const result = await produtoGenericoService.excluir(produtoGenericoToDelete.id);
+      if (result.success) {
+        toast.success('Produto genérico excluído com sucesso!');
+        loadProdutosGenericos();
+      } else {
+        toast.error(result.message || 'Erro ao excluir produto genérico');
       }
+    } catch (error) {
+      toast.error('Erro ao excluir produto genérico');
+    } finally {
+      setShowDeleteConfirmModal(false);
+      setProdutoGenericoToDelete(null);
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setProdutoGenericoToDelete(null);
   };
 
   const handleAddProdutoGenerico = () => {
@@ -359,6 +374,8 @@ export const useProdutoGenerico = () => {
     editingProdutoGenerico,
     showValidationModal,
     validationErrors,
+    showDeleteConfirmModal,
+    produtoGenericoToDelete,
     grupos,
     subgrupos,
     classes,
@@ -379,6 +396,8 @@ export const useProdutoGenerico = () => {
     // Funções
     onSubmit,
     handleDeleteProdutoGenerico,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddProdutoGenerico,
     handleViewProdutoGenerico,
     handleEditProdutoGenerico,

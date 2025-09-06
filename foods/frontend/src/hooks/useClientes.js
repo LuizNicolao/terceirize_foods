@@ -28,6 +28,10 @@ export const useClientes = () => {
     com_telefone: 0
   });
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [clienteToDelete, setClienteToDelete] = useState(null);
+
   // Hook de validação
   const {
     validationErrors,
@@ -139,20 +143,32 @@ export const useClientes = () => {
     }
   };
 
-  const handleDeleteCliente = async (clienteId) => {
-    if (window.confirm('Tem certeza que deseja excluir este cliente?')) {
-      try {
-        const result = await ClientesService.excluir(clienteId);
-        if (result.success) {
-          toast.success('Cliente excluído com sucesso!');
-          loadClientes();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir cliente');
+  const handleDeleteCliente = (cliente) => {
+    setClienteToDelete(cliente);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!clienteToDelete) return;
+
+    try {
+      const result = await ClientesService.excluir(clienteToDelete.id);
+      if (result.success) {
+        toast.success('Cliente excluído com sucesso!');
+        loadClientes();
+        setShowDeleteConfirmModal(false);
+        setClienteToDelete(null);
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      toast.error('Erro ao excluir cliente');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setClienteToDelete(null);
   };
 
   // Funções de modal
@@ -217,9 +233,15 @@ export const useClientes = () => {
     showValidationModal,
     handleCloseValidationModal,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    clienteToDelete,
+
     // Funções CRUD
     onSubmit,
     handleDeleteCliente,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddCliente,

@@ -27,6 +27,10 @@ export const useFiliais = () => {
     com_cnpj: 0
   });
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [filialToDelete, setFilialToDelete] = useState(null);
+
   // Hook de validação
   const {
     validationErrors,
@@ -139,20 +143,32 @@ export const useFiliais = () => {
     }
   };
 
-  const handleDeleteFilial = async (filialId) => {
-    if (window.confirm('Tem certeza que deseja excluir esta filial?')) {
-      try {
-        const result = await FiliaisService.excluir(filialId);
-        if (result.success) {
-          toast.success('Filial excluída com sucesso!');
-          loadFiliais();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir filial');
+  const handleDeleteFilial = (filial) => {
+    setFilialToDelete(filial);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!filialToDelete) return;
+
+    try {
+      const result = await FiliaisService.excluir(filialToDelete.id);
+      if (result.success) {
+        toast.success('Filial excluída com sucesso!');
+        loadFiliais();
+        setShowDeleteConfirmModal(false);
+        setFilialToDelete(null);
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      toast.error('Erro ao excluir filial');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setFilialToDelete(null);
   };
 
   // Funções de modal
@@ -217,9 +233,15 @@ export const useFiliais = () => {
     validationErrors,
     showValidationModal,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    filialToDelete,
+
     // Funções CRUD
     onSubmit,
     handleDeleteFilial,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddFilial,

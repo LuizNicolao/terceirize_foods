@@ -20,6 +20,10 @@ export const useUnidades = () => {
   const [viewMode, setViewMode] = useState(false);
   const [editingUnidade, setEditingUnidade] = useState(null);
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [unidadeToDelete, setUnidadeToDelete] = useState(null);
+
   // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
@@ -135,20 +139,33 @@ export const useUnidades = () => {
     }
   };
 
-  const handleDeleteUnidade = async (unidadeId) => {
-    if (window.confirm('Tem certeza que deseja excluir esta unidade?')) {
-      try {
-        const result = await UnidadesService.excluir(unidadeId);
-        if (result.success) {
-          toast.success('Unidade excluída com sucesso!');
-          loadUnidades();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir unidade');
+  const handleDeleteUnidade = (unidade) => {
+    setUnidadeToDelete(unidade);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!unidadeToDelete) return;
+
+    try {
+      const result = await UnidadesService.excluir(unidadeToDelete.id);
+      if (result.success) {
+        toast.success('Unidade excluída com sucesso!');
+        loadUnidades();
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      toast.error('Erro ao excluir unidade');
+    } finally {
+      setShowDeleteConfirmModal(false);
+      setUnidadeToDelete(null);
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setUnidadeToDelete(null);
   };
 
   // Funções de modal
@@ -210,9 +227,15 @@ export const useUnidades = () => {
     validationErrors,
     showValidationModal,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    unidadeToDelete,
+
     // Funções CRUD
     onSubmit,
     handleDeleteUnidade,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddUnidade,
@@ -236,3 +259,6 @@ export const useUnidades = () => {
     getStatusLabel
   };
 };
+
+
+

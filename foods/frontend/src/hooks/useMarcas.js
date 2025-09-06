@@ -28,6 +28,10 @@ export const useMarcas = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [marcaToDelete, setMarcaToDelete] = useState(null);
+
   // Estados de estatísticas
   const [estatisticas, setEstatisticas] = useState({
     total_marcas: 0,
@@ -135,20 +139,32 @@ export const useMarcas = () => {
     }
   };
 
-  const handleDeleteMarca = async (marcaId) => {
-    if (window.confirm('Tem certeza que deseja excluir esta marca?')) {
-      try {
-        const result = await MarcasService.excluir(marcaId);
-        if (result.success) {
-          toast.success('Marca excluída com sucesso!');
-          loadMarcas();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir marca');
+  const handleDeleteMarca = (marca) => {
+    setMarcaToDelete(marca);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!marcaToDelete) return;
+
+    try {
+      const result = await MarcasService.excluir(marcaToDelete.id);
+      if (result.success) {
+        toast.success('Marca excluída com sucesso!');
+        loadMarcas();
+        setShowDeleteConfirmModal(false);
+        setMarcaToDelete(null);
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      toast.error('Erro ao excluir marca');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setMarcaToDelete(null);
   };
 
   // Funções de modal
@@ -210,9 +226,15 @@ export const useMarcas = () => {
     validationErrors,
     showValidationModal,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    marcaToDelete,
+
     // Funções CRUD
     onSubmit,
     handleDeleteMarca,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddMarca,

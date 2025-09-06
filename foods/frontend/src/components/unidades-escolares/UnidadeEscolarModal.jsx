@@ -22,7 +22,7 @@ const UnidadeEscolarModal = ({
 }) => {
   const { register, handleSubmit, reset, setValue } = useForm();
   const [activeTab, setActiveTab] = useState('info'); // 'info', 'efetivos', 'almoxarifado', 'patrimonios', 'tipos-cardapio' ou 'periodos-refeicao'
-  const { canView, canEdit, canDelete } = usePermissions();
+  const { canView, canEdit, canDelete, canMovimentar } = usePermissions();
 
   React.useEffect(() => {
     if (isOpen) {
@@ -391,6 +391,7 @@ const UnidadeEscolarModal = ({
             canView={canView('patrimonios')}
             canEdit={canEdit('patrimonios')}
             canDelete={canDelete('patrimonios')}
+            canMovimentar={canMovimentar('patrimonios')}
           />
         </div>
       )}

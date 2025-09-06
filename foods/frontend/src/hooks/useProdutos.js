@@ -30,6 +30,10 @@ export const useProdutos = () => {
   const [produtoGenerico, setProdutoGenerico] = useState([]);
   const [produtoOrigem, setProdutoOrigem] = useState([]);
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [produtoToDelete, setProdutoToDelete] = useState(null);
+
   // Estados de filtros e paginação
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
@@ -201,16 +205,21 @@ export const useProdutos = () => {
     }
   };
 
-  const handleDeleteProduto = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este produto?')) {
-      return;
-    }
+  const handleDeleteProduto = (produto) => {
+    setProdutoToDelete(produto);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!produtoToDelete) return;
 
     try {
-      const response = await ProdutosService.excluir(id);
+      const response = await ProdutosService.excluir(produtoToDelete.id);
       if (response.success) {
         toast.success('Produto excluído com sucesso');
         loadData();
+        setShowDeleteConfirmModal(false);
+        setProdutoToDelete(null);
       } else {
         toast.error(response.error);
       }
@@ -218,6 +227,11 @@ export const useProdutos = () => {
       console.error('Erro ao excluir produto:', error);
       toast.error('Erro ao excluir produto');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setProdutoToDelete(null);
   };
 
   const handleAddProduto = () => {
@@ -288,10 +302,16 @@ export const useProdutos = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    produtoToDelete,
     
     // Funções
     handleSubmitProduto,
     handleDeleteProduto,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddProduto,
     handleViewProduto,
     handleEditProduto,

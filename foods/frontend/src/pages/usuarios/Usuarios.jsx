@@ -5,7 +5,7 @@ import { useUsuarios } from '../../hooks/useUsuarios';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import UsuariosService from '../../services/usuarios';
-import { Button } from '../../components/ui';
+import { Button, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { UsuarioModal } from '../../components/usuarios';
@@ -34,8 +34,12 @@ const Usuarios = () => {
     validationErrors,
     showValidationModal,
     handleCloseValidationModal,
+    showDeleteConfirmModal,
+    usuarioToDelete,
     onSubmit,
     handleDeleteUser,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddUser,
     handleViewUser,
     handleEditUser,
@@ -172,6 +176,18 @@ const Usuarios = () => {
           itemsPerPage={itemsPerPage}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Usuário"
+        message={`Tem certeza que deseja excluir o usuário "${usuarioToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

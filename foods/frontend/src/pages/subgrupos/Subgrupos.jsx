@@ -5,7 +5,7 @@ import { useSubgrupos } from '../../hooks/useSubgrupos';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import SubgruposService from '../../services/subgrupos';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { SubgrupoModal } from '../../components/subgrupos';
@@ -35,10 +35,14 @@ const Subgrupos = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    showDeleteConfirmModal,
+    subgrupoToDelete,
 
     // Funções CRUD
     onSubmit,
     handleDeleteSubgrupo,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddSubgrupo,
@@ -202,6 +206,18 @@ const Subgrupos = () => {
           itemsPerPage={itemsPerPage}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Subgrupo"
+        message={`Tem certeza que deseja excluir o subgrupo "${subgrupoToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

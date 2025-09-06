@@ -29,6 +29,10 @@ export const useVeiculos = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [veiculoToDelete, setVeiculoToDelete] = useState(null);
+
   // Estados de estatísticas
   const [estatisticas, setEstatisticas] = useState({
     total_veiculos: 0,
@@ -131,21 +135,33 @@ export const useVeiculos = () => {
     }
   };
 
-  const handleDeleteVeiculo = async (veiculoId) => {
-    if (window.confirm('Tem certeza que deseja excluir este veículo?')) {
-      try {
-        const result = await VeiculosService.excluir(veiculoId);
-        if (result.success) {
-          toast.success(result.message);
-          loadVeiculos();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        console.error('Erro ao excluir veículo:', error);
-        toast.error('Erro ao excluir veículo');
+  const handleDeleteVeiculo = (veiculo) => {
+    setVeiculoToDelete(veiculo);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!veiculoToDelete) return;
+
+    try {
+      const result = await VeiculosService.excluir(veiculoToDelete.id);
+      if (result.success) {
+        toast.success(result.message);
+        loadVeiculos();
+        setShowDeleteConfirmModal(false);
+        setVeiculoToDelete(null);
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      console.error('Erro ao excluir veículo:', error);
+      toast.error('Erro ao excluir veículo');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setVeiculoToDelete(null);
   };
 
   // Funções de modal
@@ -244,6 +260,8 @@ export const useVeiculos = () => {
     // Funções CRUD
     onSubmit,
     handleDeleteVeiculo,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddVeiculo,
@@ -253,6 +271,10 @@ export const useVeiculos = () => {
 
     // Funções de validação (do hook universal)
     handleCloseValidationModal,
+
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    veiculoToDelete,
 
     // Funções de paginação
     handlePageChange,

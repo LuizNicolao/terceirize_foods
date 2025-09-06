@@ -24,6 +24,8 @@ export const useProdutoOrigem = () => {
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [editingProdutoOrigem, setEditingProdutoOrigem] = useState(null);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [produtoOrigemToDelete, setProdutoOrigemToDelete] = useState(null);
   
   // Dados auxiliares
   const [grupos, setGrupos] = useState([]);
@@ -182,27 +184,37 @@ export const useProdutoOrigem = () => {
     }
   };
 
-  const handleDeleteProdutoOrigem = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este produto origem?')) {
-      return;
-    }
+  const handleDeleteProdutoOrigem = (produtoOrigem) => {
+    setProdutoOrigemToDelete(produtoOrigem);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!produtoOrigemToDelete) return;
 
     try {
       setLoading(true);
-      const response = await ProdutoOrigemService.excluir(id);
+      const response = await ProdutoOrigemService.excluir(produtoOrigemToDelete.id);
       if (response.success) {
         toast.success(response.message || 'Produto origem excluído com sucesso!');
+        carregarProdutosOrigem();
       } else {
         throw new Error(response.message || 'Erro ao excluir produto origem');
       }
-      carregarProdutosOrigem();
     } catch (error) {
       console.error('Erro ao excluir produto origem:', error);
       const message = error.message || 'Erro ao excluir produto origem';
       toast.error(message);
     } finally {
       setLoading(false);
+      setShowDeleteConfirmModal(false);
+      setProdutoOrigemToDelete(null);
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setProdutoOrigemToDelete(null);
   };
 
   const handleAddProdutoOrigem = () => {
@@ -302,6 +314,8 @@ export const useProdutoOrigem = () => {
     editingProdutoOrigem,
     showValidationModal,
     validationErrors,
+    showDeleteConfirmModal,
+    produtoOrigemToDelete,
     grupos,
     subgrupos,
     classes,
@@ -320,6 +334,8 @@ export const useProdutoOrigem = () => {
     // Funções
     handleSubmitProdutoOrigem,
     handleDeleteProdutoOrigem,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddProdutoOrigem,
     handleViewProdutoOrigem,
     handleEditProdutoOrigem,

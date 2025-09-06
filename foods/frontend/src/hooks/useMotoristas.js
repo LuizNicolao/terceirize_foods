@@ -25,6 +25,10 @@ export const useMotoristas = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [motoristaToDelete, setMotoristaToDelete] = useState(null);
+
   // Hook de validação
   const {
     validationErrors,
@@ -152,19 +156,31 @@ export const useMotoristas = () => {
   };
 
   // Handler de exclusão
-  const handleDelete = async (id) => {
-    if (window.confirm('Tem certeza que deseja excluir este motorista?')) {
-      try {
-        const result = await MotoristasService.excluir(id);
-        if (result.success) {
-          toast.success('Motorista excluído com sucesso!');
-          loadMotoristas();
-        }
-      } catch (error) {
-        console.error('Erro ao excluir motorista:', error);
-        toast.error('Erro ao excluir motorista');
+  const handleDelete = (motorista) => {
+    setMotoristaToDelete(motorista);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!motoristaToDelete) return;
+
+    try {
+      const result = await MotoristasService.excluir(motoristaToDelete.id);
+      if (result.success) {
+        toast.success('Motorista excluído com sucesso!');
+        loadMotoristas();
+        setShowDeleteConfirmModal(false);
+        setMotoristaToDelete(null);
       }
+    } catch (error) {
+      console.error('Erro ao excluir motorista:', error);
+      toast.error('Erro ao excluir motorista');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setMotoristaToDelete(null);
   };
 
   // Handlers de paginação
@@ -223,6 +239,10 @@ export const useMotoristas = () => {
     validationErrors,
     showValidationModal,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    motoristaToDelete,
+
     // Setters
     setSearchTerm,
 
@@ -233,6 +253,8 @@ export const useMotoristas = () => {
     handleCloseModal,
     handleSubmit,
     handleDelete,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handlePageChange,
     handleItemsPerPageChange,
     handleExportXLSX,

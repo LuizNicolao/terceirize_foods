@@ -30,6 +30,10 @@ export const useUnidadesEscolares = () => {
   const [statusFilter, setStatusFilter] = useState('todos');
   const [rotaFilter, setRotaFilter] = useState('todos');
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [unidadeToDelete, setUnidadeToDelete] = useState(null);
+
   // Estados de paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -195,22 +199,34 @@ export const useUnidadesEscolares = () => {
     }
   };
 
-  const handleDeleteUnidade = async (unidadeId) => {
-    if (window.confirm('Tem certeza que deseja excluir esta unidade escolar?')) {
-      try {
-        const result = await UnidadesEscolaresService.excluir(unidadeId);
-        
-        if (result.success) {
-          toast.success(result.message);
-          reloadData();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        console.error('Erro ao excluir unidade escolar:', error);
-        toast.error('Erro ao excluir unidade escolar');
+  const handleDeleteUnidade = (unidade) => {
+    setUnidadeToDelete(unidade);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!unidadeToDelete) return;
+
+    try {
+      const result = await UnidadesEscolaresService.excluir(unidadeToDelete.id);
+      
+      if (result.success) {
+        toast.success(result.message);
+        reloadData();
+        setShowDeleteConfirmModal(false);
+        setUnidadeToDelete(null);
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      console.error('Erro ao excluir unidade escolar:', error);
+      toast.error('Erro ao excluir unidade escolar');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setUnidadeToDelete(null);
   };
 
   // Funções de modal
@@ -299,6 +315,8 @@ export const useUnidadesEscolares = () => {
     // Funções CRUD
     onSubmit,
     handleDeleteUnidade,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     reloadData,
 
     // Funções de modal
@@ -309,6 +327,10 @@ export const useUnidadesEscolares = () => {
 
     // Funções de validação (do hook universal)
     handleCloseValidationModal,
+
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    unidadeToDelete,
 
     // Funções de paginação
     handlePageChange,

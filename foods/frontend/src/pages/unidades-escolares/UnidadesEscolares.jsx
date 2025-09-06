@@ -5,7 +5,7 @@ import { useUnidadesEscolares } from '../../hooks/useUnidadesEscolares';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import UnidadesEscolaresService from '../../services/unidadesEscolares';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { UnidadeEscolarModal, UnidadesEscolaresTable, UnidadesEscolaresStats, ImportarUnidadesEscolares } from '../../components/unidades-escolares';
@@ -38,8 +38,12 @@ const UnidadesEscolares = () => {
     estatisticas,
     validationErrors,
     showValidationModal,
+    showDeleteConfirmModal,
+    unidadeToDelete,
     onSubmit,
     handleDeleteUnidade,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddUnidade,
     handleViewUnidade,
     handleEditUnidade,
@@ -230,6 +234,18 @@ const UnidadesEscolares = () => {
           // Recarregar a lista de unidades escolares
           window.location.reload();
         }}
+      />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Unidade Escolar"
+        message={`Tem certeza que deseja excluir a unidade escolar "${unidadeToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
       />
     </div>
   );

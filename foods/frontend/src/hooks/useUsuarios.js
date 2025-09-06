@@ -26,6 +26,10 @@ export const useUsuarios = () => {
     coordenadores: 0
   });
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [usuarioToDelete, setUsuarioToDelete] = useState(null);
+
   // Hook de validação
   const {
     validationErrors,
@@ -134,20 +138,32 @@ export const useUsuarios = () => {
     }
   };
 
-  const handleDeleteUser = async (userId) => {
-    if (window.confirm('Tem certeza que deseja excluir este usuário?')) {
-      try {
-        const result = await UsuariosService.excluir(userId);
-        if (result.success) {
-          toast.success('Usuário excluído com sucesso!');
-          loadUsuarios();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir usuário');
+  const handleDeleteUser = (usuario) => {
+    setUsuarioToDelete(usuario);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!usuarioToDelete) return;
+
+    try {
+      const result = await UsuariosService.excluir(usuarioToDelete.id);
+      if (result.success) {
+        toast.success('Usuário excluído com sucesso!');
+        loadUsuarios();
+        setShowDeleteConfirmModal(false);
+        setUsuarioToDelete(null);
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      toast.error('Erro ao excluir usuário');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setUsuarioToDelete(null);
   };
 
   // Funções de modal
@@ -258,9 +274,15 @@ export const useUsuarios = () => {
     showValidationModal,
     handleCloseValidationModal,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    usuarioToDelete,
+
     // Funções CRUD
     onSubmit,
     handleDeleteUser,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddUser,

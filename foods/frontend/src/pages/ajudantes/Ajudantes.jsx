@@ -5,7 +5,7 @@ import { useAjudantes } from '../../hooks/useAjudantes';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import AjudantesService from '../../services/ajudantes';
-import { Button } from '../../components/ui';
+import { Button, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { AjudanteModal } from '../../components/ajudantes';
@@ -47,7 +47,11 @@ const Ajudantes = () => {
     // Estados de validação
     validationErrors,
     showValidationModal,
-    handleCloseValidationModal
+    handleCloseValidationModal,
+    showDeleteConfirmModal,
+    ajudanteToDelete,
+    handleConfirmDelete,
+    handleCloseDeleteModal
   } = useAjudantes();
 
   const {
@@ -173,6 +177,18 @@ const Ajudantes = () => {
           itemsPerPage={itemsPerPage}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Ajudante"
+        message={`Tem certeza que deseja excluir o ajudante "${ajudanteToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

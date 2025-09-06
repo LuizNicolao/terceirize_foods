@@ -28,6 +28,10 @@ export const useAjudantes = () => {
     em_licenca: 0
   });
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [ajudanteToDelete, setAjudanteToDelete] = useState(null);
+
   // Hook de validação
   const {
     validationErrors,
@@ -160,20 +164,32 @@ export const useAjudantes = () => {
     }
   };
 
-  const handleDeleteAjudante = async (ajudanteId) => {
-    if (window.confirm('Tem certeza que deseja excluir este ajudante?')) {
-      try {
-        const result = await AjudantesService.excluir(ajudanteId);
-        if (result.success) {
-          toast.success('Ajudante excluído com sucesso!');
-          reloadData();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir ajudante');
+  const handleDeleteAjudante = (ajudante) => {
+    setAjudanteToDelete(ajudante);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!ajudanteToDelete) return;
+
+    try {
+      const result = await AjudantesService.excluir(ajudanteToDelete.id);
+      if (result.success) {
+        toast.success('Ajudante excluído com sucesso!');
+        reloadData();
+        setShowDeleteConfirmModal(false);
+        setAjudanteToDelete(null);
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      toast.error('Erro ao excluir ajudante');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setAjudanteToDelete(null);
   };
 
   // Funções de modal
@@ -241,9 +257,15 @@ export const useAjudantes = () => {
     validationErrors,
     showValidationModal,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    ajudanteToDelete,
+
     // Funções
     onSubmit,
     handleDeleteAjudante,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddAjudante,
     handleViewAjudante,
     handleEditAjudante,

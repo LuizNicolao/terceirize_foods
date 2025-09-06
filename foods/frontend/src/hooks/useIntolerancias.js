@@ -27,6 +27,10 @@ export const useIntolerancias = () => {
     nomes_unicos: 0
   });
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [intoleranciaToDelete, setIntoleranciaToDelete] = useState(null);
+
   // Hook de validação
   const {
     validationErrors,
@@ -131,20 +135,32 @@ export const useIntolerancias = () => {
     }
   };
 
-  const handleDeleteIntolerancia = async (intoleranciaId) => {
-    if (window.confirm('Tem certeza que deseja excluir esta intolerância?')) {
-      try {
-        const result = await IntoleranciasService.excluir(intoleranciaId);
-        if (result.success) {
-          toast.success('Intolerância excluída com sucesso!');
-          loadIntolerancias();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir intolerância');
+  const handleDeleteIntolerancia = (intolerancia) => {
+    setIntoleranciaToDelete(intolerancia);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!intoleranciaToDelete) return;
+
+    try {
+      const result = await IntoleranciasService.excluir(intoleranciaToDelete.id);
+      if (result.success) {
+        toast.success('Intolerância excluída com sucesso!');
+        loadIntolerancias();
+        setShowDeleteConfirmModal(false);
+        setIntoleranciaToDelete(null);
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      toast.error('Erro ao excluir intolerância');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setIntoleranciaToDelete(null);
   };
 
   // Funções de modal
@@ -205,9 +221,15 @@ export const useIntolerancias = () => {
     validationErrors,
     showValidationModal,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    intoleranciaToDelete,
+
     // Funções CRUD
     onSubmit,
     handleDeleteIntolerancia,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddIntolerancia,

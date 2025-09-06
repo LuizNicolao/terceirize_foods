@@ -5,7 +5,7 @@ import { useFiliais } from '../../hooks/useFiliais';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import FiliaisService from '../../services/filiais';
-import { Button } from '../../components/ui';
+import { Button, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { FilialModal, FiliaisTable, FiliaisStats } from '../../components/filiais';
@@ -32,8 +32,12 @@ const Filiais = () => {
     validationErrors,
     showValidationModal,
     handleCloseValidationModal,
+    showDeleteConfirmModal,
+    filialToDelete,
     onSubmit,
     handleDeleteFilial,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddFilial,
     handleViewFilial,
     handleEditFilial,
@@ -162,6 +166,18 @@ const Filiais = () => {
           onItemsPerPageChange={handleItemsPerPageChange}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Filial"
+        message={`Tem certeza que deseja excluir a filial "${filialToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

@@ -32,6 +32,10 @@ export const useClasses = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [classeToDelete, setClasseToDelete] = useState(null);
+
   // Estados de estatísticas
   const [estatisticas, setEstatisticas] = useState({
     total_classes: 0,
@@ -169,20 +173,32 @@ export const useClasses = () => {
     }
   };
 
-  const handleDeleteClasse = async (classeId) => {
-    if (window.confirm('Tem certeza que deseja excluir esta classe?')) {
-      try {
-        const result = await ClassesService.excluir(classeId);
-        if (result.success) {
-          toast.success('Classe excluída com sucesso!');
-          loadClasses();
-        } else {
-          toast.error(result.message || 'Erro ao excluir classe');
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir classe');
+  const handleDeleteClasse = (classe) => {
+    setClasseToDelete(classe);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!classeToDelete) return;
+
+    try {
+      const result = await ClassesService.excluir(classeToDelete.id);
+      if (result.success) {
+        toast.success('Classe excluída com sucesso!');
+        loadClasses();
+        setShowDeleteConfirmModal(false);
+        setClasseToDelete(null);
+      } else {
+        toast.error(result.message || 'Erro ao excluir classe');
       }
+    } catch (error) {
+      toast.error('Erro ao excluir classe');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setClasseToDelete(null);
   };
 
   // Funções de modal
@@ -258,9 +274,15 @@ export const useClasses = () => {
     itemsPerPage,
     estatisticas,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    classeToDelete,
+
     // Funções CRUD
     onSubmit,
     handleDeleteClasse,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddClasse,

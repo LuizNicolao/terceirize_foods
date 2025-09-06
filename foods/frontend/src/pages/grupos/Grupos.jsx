@@ -5,7 +5,7 @@ import { useGrupos } from '../../hooks/useGrupos';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import GruposService from '../../services/grupos';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { GrupoModal } from '../../components/grupos';
@@ -33,8 +33,12 @@ const Grupos = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    showDeleteConfirmModal,
+    grupoToDelete,
     onSubmit,
     handleDeleteGrupo,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddGrupo,
     handleViewGrupo,
     handleEditGrupo,
@@ -173,6 +177,18 @@ const Grupos = () => {
           itemsPerPage={itemsPerPage}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Grupo"
+        message={`Tem certeza que deseja excluir o grupo "${grupoToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

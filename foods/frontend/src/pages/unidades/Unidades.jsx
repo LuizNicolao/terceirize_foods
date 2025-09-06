@@ -5,7 +5,7 @@ import { useUnidades } from '../../hooks/useUnidades';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import UnidadesService from '../../services/unidades';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { UnidadeModal } from '../../components/unidades';
@@ -33,8 +33,12 @@ const Unidades = () => {
     estatisticas,
     validationErrors,
     showValidationModal,
+    showDeleteConfirmModal,
+    unidadeToDelete,
     onSubmit,
     handleDeleteUnidade,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddUnidade,
     handleViewUnidade,
     handleEditUnidade,
@@ -173,6 +177,18 @@ const Unidades = () => {
           itemsPerPage={itemsPerPage}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Unidade"
+        message={`Tem certeza que deseja excluir a unidade "${unidadeToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

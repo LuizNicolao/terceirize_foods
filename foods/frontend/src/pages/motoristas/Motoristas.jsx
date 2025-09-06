@@ -5,7 +5,7 @@ import { useMotoristas } from '../../hooks/useMotoristas';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import MotoristasService from '../../services/motoristas';
-import { Button } from '../../components/ui';
+import { Button, ConfirmModal } from '../../components/ui';
 import { 
   MotoristaModal, 
   MotoristasTable, 
@@ -39,6 +39,8 @@ const Motoristas = () => {
     // Estados de validação
     validationErrors,
     showValidationModal,
+    showDeleteConfirmModal,
+    motoristaToDelete,
 
     // Handlers
     handleAddMotorista,
@@ -47,6 +49,8 @@ const Motoristas = () => {
     handleCloseModal,
     handleSubmit,
     handleDelete,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handlePageChange,
     handleItemsPerPageChange,
     handleExportXLSX,
@@ -174,6 +178,18 @@ const Motoristas = () => {
           itemsPerPage={itemsPerPage}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Motorista"
+        message={`Tem certeza que deseja excluir o motorista "${motoristaToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

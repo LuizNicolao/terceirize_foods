@@ -5,7 +5,7 @@ import { useVeiculos } from '../../hooks/useVeiculos';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import VeiculosService from '../../services/veiculos';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { VeiculoModal, VeiculosTable, VeiculosStats } from '../../components/veiculos';
@@ -31,8 +31,12 @@ const Veiculos = () => {
     estatisticas,
     validationErrors,
     showValidationModal,
+    showDeleteConfirmModal,
+    veiculoToDelete,
     onSubmit,
     handleDeleteVeiculo,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddVeiculo,
     handleViewVeiculo,
     handleEditVeiculo,
@@ -183,6 +187,18 @@ const Veiculos = () => {
         onClose={handleCloseValidationModal}
         errors={validationErrors?.errors}
         errorCategories={validationErrors?.errorCategories}
+      />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Veículo"
+        message={`Tem certeza que deseja excluir o veículo "${veiculoToDelete?.placa}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
       />
     </div>
   );

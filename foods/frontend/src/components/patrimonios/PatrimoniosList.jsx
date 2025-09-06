@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
 import { usePatrimonios } from '../../hooks/usePatrimonios';
 import PatrimoniosTable from './PatrimoniosTable';
-import { Pagination } from '../ui';
+import { Pagination, Modal, Button } from '../ui';
+import PatrimoniosMovimentacaoForm from './PatrimoniosMovimentacaoForm';
+import toast from 'react-hot-toast';
 
 const PatrimoniosList = ({ 
   tipoLocal, 
@@ -10,12 +12,19 @@ const PatrimoniosList = ({
   localNome, 
   canView, 
   canEdit, 
-  canDelete 
+  canDelete,
+  canMovimentar
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  
+  // Estados para modais
+  const [selectedPatrimonio, setSelectedPatrimonio] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showMovimentacaoModal, setShowMovimentacaoModal] = useState(false);
+  const [movimentacaoData, setMovimentacaoData] = useState({});
   
   const { 
     patrimonios, 
@@ -61,6 +70,44 @@ const PatrimoniosList = ({
     setSearchTerm('');
     setStatusFilter('');
     setCurrentPage(1);
+  };
+
+  // Funções para modais
+  const handleViewPatrimonio = (patrimonio) => {
+    setSelectedPatrimonio(patrimonio);
+    setShowViewModal(true);
+  };
+
+  const handleMovimentarPatrimonio = (patrimonio) => {
+    setSelectedPatrimonio(patrimonio);
+    setMovimentacaoData({
+      patrimonio_id: patrimonio.id,
+      local_destino_id: '',
+      motivo: 'transferencia',
+      observacoes: ''
+    });
+    setShowMovimentacaoModal(true);
+  };
+
+  const handleCloseModals = () => {
+    setShowViewModal(false);
+    setShowMovimentacaoModal(false);
+    setSelectedPatrimonio(null);
+    setMovimentacaoData({});
+  };
+
+  const handleMovimentacaoSuccess = () => {
+    toast.success('Patrimônio movimentado com sucesso!');
+    handleCloseModals();
+    // Recarregar a lista de patrimônios
+    loadPatrimonios({
+      search: searchTerm,
+      status: statusFilter,
+      page: currentPage,
+      limit: itemsPerPage,
+      localId,
+      tipoLocal
+    });
   };
 
   if (!localId) {
@@ -136,9 +183,16 @@ const PatrimoniosList = ({
             canView={canView}
             canEdit={canEdit}
             canDelete={canDelete}
-            onView={() => {}} // Será implementado quando necessário
-            onEdit={() => {}} // Será implementado quando necessário
-            onDelete={() => {}} // Será implementado quando necessário
+            canMovimentar={canMovimentar}
+            onPatrimonioSelect={handleViewPatrimonio}
+            onView={handleViewPatrimonio}
+            onEdit={(patrimonio) => {
+              toast.info('Funcionalidade de edição será implementada em breve');
+            }}
+            onDelete={(patrimonio) => {
+              toast.info('Funcionalidade de exclusão será implementada em breve');
+            }}
+            onMovimentar={handleMovimentarPatrimonio}
           />
 
           {/* Paginação */}
@@ -155,6 +209,61 @@ const PatrimoniosList = ({
 
         </>
       )}
+
+      {/* Modal de Visualização */}
+      <Modal
+        isOpen={showViewModal}
+        onClose={handleCloseModals}
+        title={`Patrimônio - ${selectedPatrimonio?.numero_patrimonio}`}
+        size="lg"
+      >
+        {selectedPatrimonio && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Número do Patrimônio</label>
+                <p className="mt-1 text-sm text-gray-900">{selectedPatrimonio.numero_patrimonio}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Status</label>
+                <p className="mt-1 text-sm text-gray-900">{selectedPatrimonio.status}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Produto</label>
+                <p className="mt-1 text-sm text-gray-900">{selectedPatrimonio.nome_produto}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Localização Atual</label>
+                <p className="mt-1 text-sm text-gray-900">{selectedPatrimonio.local_atual_nome}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Data de Aquisição</label>
+                <p className="mt-1 text-sm text-gray-900">
+                  {selectedPatrimonio.data_aquisicao ? new Date(selectedPatrimonio.data_aquisicao).toLocaleDateString('pt-BR') : '-'}
+                </p>
+              </div>
+            </div>
+            {selectedPatrimonio.observacoes && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">Observações</label>
+                <p className="mt-1 text-sm text-gray-900">{selectedPatrimonio.observacoes}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal de Movimentação */}
+      <PatrimoniosMovimentacaoForm
+        isOpen={showMovimentacaoModal}
+        onClose={handleCloseModals}
+        patrimonio={selectedPatrimonio}
+        movimentacaoData={movimentacaoData}
+        onMovimentacaoDataChange={(field, value) => {
+          setMovimentacaoData(prev => ({ ...prev, [field]: value }));
+        }}
+        onSubmit={handleMovimentacaoSuccess}
+      />
     </div>
   );
 };

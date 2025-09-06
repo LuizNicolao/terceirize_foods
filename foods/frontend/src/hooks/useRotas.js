@@ -30,6 +30,10 @@ export const useRotas = () => {
   const [totalUnidades, setTotalUnidades] = useState(0);
   const [loadingFiliais, setLoadingFiliais] = useState(false);
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [rotaToDelete, setRotaToDelete] = useState(null);
+
   // Estados de paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -194,22 +198,34 @@ export const useRotas = () => {
     }
   };
 
-  const handleDeleteRota = async (rotaId) => {
-    if (window.confirm('Tem certeza que deseja excluir esta rota?')) {
-      try {
-        const result = await RotasService.excluir(rotaId);
-        if (result.success) {
-          toast.success(result.message);
-          loadRotas();
-          loadEstatisticas();
-        } else {
-          toast.error(result.error);
-        }
-      } catch (error) {
-        console.error('Erro ao excluir rota:', error);
-        toast.error('Erro ao excluir rota');
+  const handleDeleteRota = (rota) => {
+    setRotaToDelete(rota);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!rotaToDelete) return;
+
+    try {
+      const result = await RotasService.excluir(rotaToDelete.id);
+      if (result.success) {
+        toast.success(result.message);
+        loadRotas();
+        loadEstatisticas();
+        setShowDeleteConfirmModal(false);
+        setRotaToDelete(null);
+      } else {
+        toast.error(result.error);
       }
+    } catch (error) {
+      console.error('Erro ao excluir rota:', error);
+      toast.error('Erro ao excluir rota');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setRotaToDelete(null);
   };
 
   // Funções de modal
@@ -314,9 +330,15 @@ export const useRotas = () => {
     validationErrors,
     showValidationModal,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    rotaToDelete,
+
     // Funções
     onSubmit,
     handleDeleteRota,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddRota,
     handleViewRota,
     handleEditRota,

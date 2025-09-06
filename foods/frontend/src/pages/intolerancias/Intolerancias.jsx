@@ -5,7 +5,7 @@ import { useIntolerancias } from '../../hooks/useIntolerancias';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import IntoleranciasService from '../../services/intolerancias';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { IntoleranciaModal, IntoleranciasTable, IntoleranciasStats, IntoleranciasActions } from '../../components/intolerancias';
@@ -31,8 +31,12 @@ const Intolerancias = () => {
     validationErrors,
     showValidationModal,
     handleCloseValidationModal,
+    showDeleteConfirmModal,
+    intoleranciaToDelete,
     onSubmit,
     handleDeleteIntolerancia,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddIntolerancia,
     handleViewIntolerancia,
     handleEditIntolerancia,
@@ -164,6 +168,18 @@ const Intolerancias = () => {
           onItemsPerPageChange={handleItemsPerPageChange}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Intolerância"
+        message={`Tem certeza que deseja excluir a intolerância "${intoleranciaToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

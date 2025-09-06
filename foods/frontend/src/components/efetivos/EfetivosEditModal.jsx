@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, Table } from '../ui';
 import { FaTrash, FaSave } from 'react-icons/fa';
 import EfetivosService from '../../services/efetivos';
-import IntoleranciasService from '../../services/intolerancias';
 import toast from 'react-hot-toast';
 
 const EfetivosEditModal = ({ 
@@ -13,7 +12,6 @@ const EfetivosEditModal = ({
   periodoRefeicao
 }) => {
   const [efetivos, setEfetivos] = useState([]);
-  const [intolerancias, setIntolerancias] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -21,7 +19,6 @@ const EfetivosEditModal = ({
   useEffect(() => {
     if (isOpen && unidadeEscolarId && periodoRefeicao?.id) {
       loadEfetivosDoPeriodo();
-      loadIntolerancias();
     }
   }, [isOpen, unidadeEscolarId, periodoRefeicao?.id]);
 
@@ -44,16 +41,6 @@ const EfetivosEditModal = ({
     }
   };
 
-  const loadIntolerancias = async () => {
-    try {
-      const result = await IntoleranciasService.buscarAtivas();
-      if (result.success) {
-        setIntolerancias(result.data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar intolerâncias:', error);
-    }
-  };
 
   const handleQuantidadeChange = (index, value) => {
     const newEfetivos = [...efetivos];
@@ -61,11 +48,6 @@ const EfetivosEditModal = ({
     setEfetivos(newEfetivos);
   };
 
-  const handleIntoleranciaChange = (index, intoleranciaId) => {
-    const newEfetivos = [...efetivos];
-    newEfetivos[index].intolerancia_id = intoleranciaId || null;
-    setEfetivos(newEfetivos);
-  };
 
   const handleRemoveEfetivo = (index) => {
     const newEfetivos = efetivos.filter((_, i) => i !== index);
@@ -79,10 +61,9 @@ const EfetivosEditModal = ({
       // Salvar/atualizar cada efetivo
       for (const efetivo of efetivos) {
         if (efetivo.id) {
-          // Atualizar efetivo existente
+          // Atualizar efetivo existente (apenas quantidade)
           await EfetivosService.atualizar(efetivo.id, {
-            quantidade: efetivo.quantidade,
-            intolerancia_id: efetivo.intolerancia_id
+            quantidade: efetivo.quantidade
           });
         } else {
           // Criar novo efetivo
@@ -198,18 +179,9 @@ const EfetivosEditModal = ({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         {efetivo.tipo_efetivo === 'NAE' ? (
-                          <select
-                            value={efetivo.intolerancia_id || ''}
-                            onChange={(e) => handleIntoleranciaChange(index, e.target.value)}
-                            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
-                          >
-                            <option value="">Selecione a intolerância</option>
-                            {intolerancias.map(intolerancia => (
-                              <option key={intolerancia.id} value={intolerancia.id}>
-                                {intolerancia.nome}
-                              </option>
-                            ))}
-                          </select>
+                          <span className="text-sm text-gray-700">
+                            {efetivo.intolerancia_nome || 'Sem intolerância'}
+                          </span>
                         ) : (
                           <span className="text-gray-500">-</span>
                         )}

@@ -9,7 +9,7 @@ class EfetivosListController {
       const { search, status } = req.query;
       const pagination = req.pagination;
 
-      // Query base - Agrupar por tipo e intolerância, somando quantidades
+      // Query base - Agrupar efetivos por tipo e intolerância, somando quantidades e concatenando períodos
       let baseQuery = `
         SELECT 
           e.tipo_efetivo,
@@ -17,14 +17,12 @@ class EfetivosListController {
           e.intolerancia_id,
           i.nome as intolerancia_nome,
           GROUP_CONCAT(DISTINCT pr.nome ORDER BY pr.nome SEPARATOR ', ') as periodos_nomes,
-          COUNT(DISTINCT e.periodo_refeicao_id) as total_periodos,
-          MIN(e.criado_em) as criado_em,
-          MAX(e.atualizado_em) as atualizado_em
+          GROUP_CONCAT(e.id) as ids
         FROM efetivos e
         LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
         LEFT JOIN periodos_refeicao pr ON e.periodo_refeicao_id = pr.id
         WHERE e.unidade_escolar_id = ?
-        GROUP BY e.tipo_efetivo, e.intolerancia_id, i.nome
+        GROUP BY e.tipo_efetivo, e.intolerancia_id
       `;
       
       let params = [unidade_escolar_id];
@@ -50,14 +48,13 @@ class EfetivosListController {
       // Executar query paginada
       const efetivos = await executeQuery(query, params);
 
-      // Contar total de registros agrupados
+      // Contar total de grupos (tipo + intolerância)
       let countQuery = `
-        SELECT COUNT(*) as total FROM (
-          SELECT e.tipo_efetivo, e.intolerancia_id
-          FROM efetivos e
-          LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
-          LEFT JOIN periodos_refeicao pr ON e.periodo_refeicao_id = pr.id
-          WHERE e.unidade_escolar_id = ?
+        SELECT COUNT(DISTINCT CONCAT(e.tipo_efetivo, '-', COALESCE(e.intolerancia_id, 'NULL'))) as total
+        FROM efetivos e
+        LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
+        LEFT JOIN periodos_refeicao pr ON e.periodo_refeicao_id = pr.id
+        WHERE e.unidade_escolar_id = ?
       `;
       let countParams = [unidade_escolar_id];
       
@@ -71,7 +68,6 @@ class EfetivosListController {
         countParams.push(status);
       }
       
-      countQuery += ' GROUP BY e.tipo_efetivo, e.intolerancia_id) as grouped';
       
       const totalResult = await executeQuery(countQuery, countParams);
       const totalItems = totalResult[0].total;
@@ -83,12 +79,19 @@ class EfetivosListController {
       
       const meta = pagination.generateMeta(totalItems, `/api/unidades-escolares/${unidade_escolar_id}/efetivos`, queryParams);
 
-      // Adicionar links HATEOAS (agrupados não têm ID único, então removemos os links de ação)
-      const efetivosComLinks = efetivos.map(efetivo => ({
-        ...efetivo,
-        // Para efetivos agrupados, não temos ID único, então não incluímos links de ação
-        links: []
-      }));
+      // Adicionar links HATEOAS (usando o primeiro ID do grupo)
+      const efetivosComLinks = efetivos.map(efetivo => {
+        const firstId = efetivo.ids ? efetivo.ids.split(',')[0] : null;
+        return {
+          ...efetivo,
+          id: firstId, // Usar o primeiro ID para compatibilidade
+          links: firstId ? [
+            { rel: 'self', href: `/efetivos/${firstId}`, method: 'GET' },
+            { rel: 'update', href: `/efetivos/${firstId}`, method: 'PUT' },
+            { rel: 'delete', href: `/efetivos/${firstId}`, method: 'DELETE' }
+          ] : []
+        };
+      });
 
       res.json({
         success: true,

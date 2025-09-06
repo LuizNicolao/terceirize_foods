@@ -3,7 +3,7 @@ import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useFornecedores } from '../../hooks';
 import { useAuditoria } from '../../hooks';
-import { Button } from '../../components/ui';
+import { Button, ConfirmModal } from '../../components/ui';
 import { 
   FornecedorModal, 
   FornecedoresTable, 
@@ -35,6 +35,8 @@ const Fornecedores = () => {
     validationErrors,
     showValidationModal,
     handleCloseValidationModal,
+    showDeleteConfirmModal,
+    fornecedorToDelete,
 
     // Funções
     loadFornecedores,
@@ -46,6 +48,8 @@ const Fornecedores = () => {
     handleCloseModal,
     onSubmit,
     handleDeleteFornecedor,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleViewAudit,
     handleAuditFilterChange,
     handleExportXLSX,
@@ -184,6 +188,18 @@ const Fornecedores = () => {
           onItemsPerPageChange={handleItemsPerPageChange}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Fornecedor"
+        message={`Tem certeza que deseja excluir o fornecedor "${fornecedorToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

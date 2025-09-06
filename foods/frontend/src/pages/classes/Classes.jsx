@@ -5,7 +5,7 @@ import { useClasses } from '../../hooks/useClasses';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import ClassesService from '../../services/classes';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ClasseModal } from '../../components/classes';
@@ -35,10 +35,14 @@ const Classes = () => {
     totalItems,
     itemsPerPage,
     estatisticas,
+    showDeleteConfirmModal,
+    classeToDelete,
 
     // Funções CRUD
     onSubmit,
     handleDeleteClasse,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddClasse,
@@ -202,6 +206,18 @@ const Classes = () => {
           itemsPerPage={itemsPerPage}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Classe"
+        message={`Tem certeza que deseja excluir a classe "${classeToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

@@ -28,6 +28,10 @@ export const useFornecedores = () => {
     com_email: 0,
     com_telefone: 0
   });
+
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [fornecedorToDelete, setFornecedorToDelete] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   
@@ -200,16 +204,21 @@ export const useFornecedores = () => {
     }
   };
 
-  const handleDeleteFornecedor = async (id) => {
-    if (!window.confirm('Tem certeza que deseja excluir este fornecedor?')) {
-      return;
-    }
+  const handleDeleteFornecedor = (fornecedor) => {
+    setFornecedorToDelete(fornecedor);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!fornecedorToDelete) return;
 
     try {
-      const result = await FornecedoresService.excluir(id);
+      const result = await FornecedoresService.excluir(fornecedorToDelete.id);
       if (result.success) {
         toast.success('Fornecedor excluído com sucesso!');
         reloadData();
+        setShowDeleteConfirmModal(false);
+        setFornecedorToDelete(null);
       } else {
         toast.error(result.message || 'Erro ao excluir fornecedor');
       }
@@ -217,6 +226,11 @@ export const useFornecedores = () => {
       console.error('Erro ao excluir fornecedor:', error);
       toast.error('Erro ao excluir fornecedor');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setFornecedorToDelete(null);
   };
 
   const handleViewAudit = (fornecedorId) => {
@@ -280,6 +294,10 @@ export const useFornecedores = () => {
     showValidationModal,
     handleCloseValidationModal,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    fornecedorToDelete,
+
     // Funções
     register,
     handleSubmit,
@@ -293,6 +311,8 @@ export const useFornecedores = () => {
     handleCloseModal,
     onSubmit,
     handleDeleteFornecedor,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleViewAudit,
     handleAuditFilterChange,
     handleCloseAuditModal,

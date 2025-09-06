@@ -28,6 +28,10 @@ export const useGrupos = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [grupoToDelete, setGrupoToDelete] = useState(null);
+
   // Estados de estatísticas
   const [estatisticas, setEstatisticas] = useState({
     total_grupos: 0,
@@ -141,20 +145,32 @@ export const useGrupos = () => {
     }
   };
 
-  const handleDeleteGrupo = async (grupoId) => {
-    if (window.confirm('Tem certeza que deseja excluir este grupo?')) {
-      try {
-        const result = await GruposService.excluir(grupoId);
-        if (result.success) {
-          toast.success('Grupo excluído com sucesso!');
-          loadGrupos();
-        } else {
-          toast.error(result.message || 'Erro ao excluir grupo');
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir grupo');
+  const handleDeleteGrupo = (grupo) => {
+    setGrupoToDelete(grupo);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!grupoToDelete) return;
+
+    try {
+      const result = await GruposService.excluir(grupoToDelete.id);
+      if (result.success) {
+        toast.success('Grupo excluído com sucesso!');
+        loadGrupos();
+        setShowDeleteConfirmModal(false);
+        setGrupoToDelete(null);
+      } else {
+        toast.error(result.message || 'Erro ao excluir grupo');
       }
+    } catch (error) {
+      toast.error('Erro ao excluir grupo');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setGrupoToDelete(null);
   };
 
   // Funções de modal
@@ -221,9 +237,15 @@ export const useGrupos = () => {
     itemsPerPage,
     estatisticas,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    grupoToDelete,
+
     // Funções CRUD
     onSubmit,
     handleDeleteGrupo,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddGrupo,

@@ -10,7 +10,7 @@ import { useProdutoGenerico } from '../../hooks/useProdutoGenerico';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import produtoGenericoService from '../../services/produtoGenerico';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ProdutoGenericoModal } from '../../components/produto-generico';
@@ -31,6 +31,8 @@ const ProdutoGenerico = () => {
     editingProdutoGenerico,
     showValidationModal,
     validationErrors,
+    showDeleteConfirmModal,
+    produtoGenericoToDelete,
     grupos,
     subgrupos,
     classes,
@@ -49,6 +51,8 @@ const ProdutoGenerico = () => {
     estatisticas,
     onSubmit,
     handleDeleteProdutoGenerico,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddProdutoGenerico,
     handleViewProdutoGenerico,
     handleEditProdutoGenerico,
@@ -250,6 +254,18 @@ const ProdutoGenerico = () => {
         onClose={handleCloseValidationModal}
         errors={validationErrors?.errors}
         errorCategories={validationErrors?.errorCategories}
+      />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Produto Genérico"
+        message={`Tem certeza que deseja excluir o produto genérico "${produtoGenericoToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
       />
     </div>
   );

@@ -43,7 +43,7 @@ const ActionButtons = ({
         <Button
           variant="ghost"
           size={size}
-          onClick={() => onDelete(item.id || item)}
+          onClick={() => onDelete(item)}
           title="Excluir"
           className="text-red-600 hover:text-red-800 hover:bg-red-50"
         >

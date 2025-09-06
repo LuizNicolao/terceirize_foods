@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaPlus, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button, Input, Table } from '../ui';
+import { Button, Input, Table, ConfirmModal } from '../ui';
 import { LoadingSpinner } from '../ui';
 import filiaisService from '../../services/filiais';
 import toast from 'react-hot-toast';
@@ -16,6 +16,8 @@ const AlmoxarifadoModal = ({
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [editingAlmoxarifado, setEditingAlmoxarifado] = useState(null);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [almoxarifadoToDelete, setAlmoxarifadoToDelete] = useState(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
@@ -72,11 +74,16 @@ const AlmoxarifadoModal = ({
   };
 
   // Excluir almoxarifado
-  const handleDelete = async (almoxarifado) => {
-    if (!window.confirm('Deseja excluir este almoxarifado?')) return;
+  const handleDelete = (almoxarifado) => {
+    setAlmoxarifadoToDelete(almoxarifado);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!almoxarifadoToDelete) return;
 
     try {
-      const response = await filiaisService.excluirAlmoxarifado(almoxarifado.id);
+      const response = await filiaisService.excluirAlmoxarifado(almoxarifadoToDelete.id);
       if (response.success) {
         toast.success('Almoxarifado excluído!');
         loadAlmoxarifados();
@@ -85,7 +92,15 @@ const AlmoxarifadoModal = ({
       }
     } catch (error) {
       toast.error('Erro ao excluir almoxarifado');
+    } finally {
+      setShowDeleteConfirmModal(false);
+      setAlmoxarifadoToDelete(null);
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setAlmoxarifadoToDelete(null);
   };
 
   // Editar almoxarifado
@@ -248,6 +263,18 @@ const AlmoxarifadoModal = ({
             </div>
           )}
         </div>
+
+        {/* Modal de Confirmação de Exclusão */}
+        <ConfirmModal
+          isOpen={showDeleteConfirmModal}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleConfirmDelete}
+          title="Excluir Almoxarifado"
+          message={`Tem certeza que deseja excluir o almoxarifado "${almoxarifadoToDelete?.nome}"?`}
+          confirmText="Excluir"
+          cancelText="Cancelar"
+          type="danger"
+        />
       </div>
     </div>
   );

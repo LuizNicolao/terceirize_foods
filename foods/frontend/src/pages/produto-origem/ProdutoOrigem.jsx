@@ -5,7 +5,7 @@ import { useProdutoOrigem } from '../../hooks/useProdutoOrigem';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import ProdutoOrigemService from '../../services/produtoOrigem';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ProdutoOrigemModal } from '../../components/produto-origem';
@@ -26,6 +26,8 @@ const ProdutoOrigem = () => {
     editingProdutoOrigem,
     showValidationModal,
     validationErrors,
+    showDeleteConfirmModal,
+    produtoOrigemToDelete,
     grupos,
     subgrupos,
     classes,
@@ -42,6 +44,8 @@ const ProdutoOrigem = () => {
     estatisticas,
     handleSubmitProdutoOrigem,
     handleDeleteProdutoOrigem,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddProdutoOrigem,
     handleViewProdutoOrigem,
     handleEditProdutoOrigem,
@@ -214,6 +218,18 @@ const ProdutoOrigem = () => {
         onClose={handleCloseValidationModal}
         errors={validationErrors?.errors}
         errorCategories={validationErrors?.errorCategories}
+      />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Produto Origem"
+        message={`Tem certeza que deseja excluir o produto origem "${produtoOrigemToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
       />
     </div>
   );

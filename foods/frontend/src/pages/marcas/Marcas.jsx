@@ -5,7 +5,7 @@ import { useMarcas } from '../../hooks/useMarcas';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import MarcasService from '../../services/marcas';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { MarcaModal } from '../../components/marcas';
@@ -33,8 +33,12 @@ const Marcas = () => {
     estatisticas,
     validationErrors,
     showValidationModal,
+    showDeleteConfirmModal,
+    marcaToDelete,
     onSubmit,
     handleDeleteMarca,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddMarca,
     handleViewMarca,
     handleEditMarca,
@@ -173,6 +177,18 @@ const Marcas = () => {
           itemsPerPage={itemsPerPage}
         />
       )}
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Marca"
+        message={`Tem certeza que deseja excluir a marca "${marcaToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

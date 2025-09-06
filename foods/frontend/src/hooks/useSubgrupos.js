@@ -32,6 +32,10 @@ export const useSubgrupos = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
 
+  // Estados para modal de confirmação
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [subgrupoToDelete, setSubgrupoToDelete] = useState(null);
+
   // Estados de estatísticas
   const [estatisticas, setEstatisticas] = useState({
     total_subgrupos: 0,
@@ -167,20 +171,32 @@ export const useSubgrupos = () => {
     }
   };
 
-  const handleDeleteSubgrupo = async (subgrupoId) => {
-    if (window.confirm('Tem certeza que deseja excluir este subgrupo?')) {
-      try {
-        const result = await SubgruposService.excluir(subgrupoId);
-        if (result.success) {
-          toast.success('Subgrupo excluído com sucesso!');
-          loadSubgrupos();
-        } else {
-          toast.error(result.message || 'Erro ao excluir subgrupo');
-        }
-      } catch (error) {
-        toast.error('Erro ao excluir subgrupo');
+  const handleDeleteSubgrupo = (subgrupo) => {
+    setSubgrupoToDelete(subgrupo);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!subgrupoToDelete) return;
+
+    try {
+      const result = await SubgruposService.excluir(subgrupoToDelete.id);
+      if (result.success) {
+        toast.success('Subgrupo excluído com sucesso!');
+        loadSubgrupos();
+        setShowDeleteConfirmModal(false);
+        setSubgrupoToDelete(null);
+      } else {
+        toast.error(result.message || 'Erro ao excluir subgrupo');
       }
+    } catch (error) {
+      toast.error('Erro ao excluir subgrupo');
     }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteConfirmModal(false);
+    setSubgrupoToDelete(null);
   };
 
   // Funções de modal
@@ -256,9 +272,15 @@ export const useSubgrupos = () => {
     itemsPerPage,
     estatisticas,
 
+    // Estados para modal de confirmação
+    showDeleteConfirmModal,
+    subgrupoToDelete,
+
     // Funções CRUD
     onSubmit,
     handleDeleteSubgrupo,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
 
     // Funções de modal
     handleAddSubgrupo,

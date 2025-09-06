@@ -29,7 +29,7 @@ const PatrimoniosMovimentacaoForm = ({
       loadFiliais();
       loadUnidadesEscolares();
       // Preencher automaticamente o responsável com o usuário logado
-      if (user && !movimentacaoData.responsavel_id) {
+      if (user && movimentacaoData && !movimentacaoData.responsavel_id) {
         onMovimentacaoDataChange('responsavel_id', user.id);
       }
     }
@@ -143,6 +143,11 @@ const PatrimoniosMovimentacaoForm = ({
     
     // Validação das regras de movimentação
     setValidationError('');
+    
+    if (!movimentacaoData) {
+      setValidationError('Dados de movimentação não encontrados.');
+      return;
+    }
     
     if (tipoLocal === 'unidade_escolar') {
       const unidadeDestino = unidadesEscolares.find(ue => ue.id === movimentacaoData.local_destino_id);
@@ -311,7 +316,7 @@ const PatrimoniosMovimentacaoForm = ({
                 value: filial.id,
                 label: `${filial.filial} - ${filial.cidade}/${filial.estado}`
               }))}
-              value={movimentacaoData.local_destino_id}
+              value={movimentacaoData?.local_destino_id || ''}
               onChange={(value) => onMovimentacaoDataChange('local_destino_id', value)}
               placeholder="Selecione a filial de destino"
               disabled={loadingFiliais}
@@ -322,7 +327,7 @@ const PatrimoniosMovimentacaoForm = ({
                 value: unidade.id,
                 label: `${unidade.nome_escola} - ${unidade.cidade}/${unidade.estado}`
               }))}
-              value={movimentacaoData.local_destino_id}
+              value={movimentacaoData?.local_destino_id || ''}
               onChange={(value) => onMovimentacaoDataChange('local_destino_id', value)}
               placeholder={
                 unidadesEscolaresFiltradas.length === 0 
@@ -359,7 +364,7 @@ const PatrimoniosMovimentacaoForm = ({
             </label>
             <Input
               type="select"
-              value={movimentacaoData.motivo}
+              value={movimentacaoData?.motivo || ''}
               onChange={(e) => onMovimentacaoDataChange('motivo', e.target.value)}
             >
               <option value="transferencia">Transferência</option>
@@ -378,7 +383,7 @@ const PatrimoniosMovimentacaoForm = ({
             <Input
               type="textarea"
               placeholder="Observações sobre a movimentação..."
-              value={movimentacaoData.observacoes}
+              value={movimentacaoData?.observacoes || ''}
               onChange={(e) => onMovimentacaoDataChange('observacoes', e.target.value)}
               rows={4}
             />

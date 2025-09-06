@@ -5,7 +5,7 @@ import { useRotas } from '../../hooks/useRotas';
 import { useAuditoria } from '../../hooks/useAuditoria';
 import { useExport } from '../../hooks/useExport';
 import RotasService from '../../services/rotas';
-import { Button, ValidationErrorModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { RotaModal, RotasTable, RotasStats } from '../../components/rotas';
@@ -37,8 +37,12 @@ const Rotas = () => {
     totalUnidades,
     validationErrors,
     showValidationModal,
+    showDeleteConfirmModal,
+    rotaToDelete,
     onSubmit,
     handleDeleteRota,
+    handleConfirmDelete,
+    handleCloseDeleteModal,
     handleAddRota,
     handleViewRota,
     handleEditRota,
@@ -178,6 +182,18 @@ const Rotas = () => {
         onClose={handleCloseValidationModal}
         errors={validationErrors?.errors}
         errorCategories={validationErrors?.errorCategories}
+      />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Rota"
+        message={`Tem certeza que deseja excluir a rota "${rotaToDelete?.nome}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
       />
     </div>
   );
