@@ -48,7 +48,7 @@ const VeiculoModal = ({
       reset();
       setValue('status', 'ativo');
       setValue('tipo_veiculo', 'caminhao');
-      setValue('categoria', 'carga');
+      setValue('categoria', 'Frota');
     }
   }, [veiculo, isOpen, setValue, reset]);
 
@@ -217,10 +217,9 @@ const VeiculoModal = ({
                 disabled={isViewMode}
               >
                 <option value="">Selecione a categoria</option>
-                <option value="carga">Carga</option>
-                <option value="passageiros">Passageiros</option>
-                <option value="utilitario">Utilitário</option>
-                <option value="especial">Especial</option>
+                <option value="Frota">Frota</option>
+                <option value="Agregado">Agregado</option>
+                <option value="Terceiro">Terceiro</option>
               </Input>
             </div>
           </div>

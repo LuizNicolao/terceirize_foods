@@ -1,47 +1,32 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import RotasService from '../services/rotas';
 import api from '../services/api';
-import { useValidation } from './useValidation';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useRotas = () => {
-  // Hook de validação universal
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('rotas', RotasService, {
+    initialItemsPerPage: 20,
+    initialFilters: { filialFilter: 'todos' },
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados principais
-  const [rotas, setRotas] = useState([]);
+  // Hook de filtros customizados para rotas
+  const customFilters = useFilters({ filialFilter: 'todos' });
+
+  // Estados específicos das rotas
   const [filiais, setFiliais] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [editingRota, setEditingRota] = useState(null);
-  const [viewMode, setViewMode] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [filialFilter, setFilialFilter] = useState('todos');
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
   const [unidadesEscolares, setUnidadesEscolares] = useState([]);
   const [loadingUnidades, setLoadingUnidades] = useState(false);
   const [showUnidades, setShowUnidades] = useState(false);
   const [totalUnidades, setTotalUnidades] = useState(0);
-  const [loadingFiliais, setLoadingFiliais] = useState(false);
 
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [rotaToDelete, setRotaToDelete] = useState(null);
-
-  // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
+  // Estados de estatísticas específicas das rotas
+  const [estatisticasRotas, setEstatisticasRotas] = useState({
     total_rotas: 0,
     rotas_ativas: 0,
     rotas_inativas: 0,
@@ -53,41 +38,10 @@ export const useRotas = () => {
     custo_total_diario: 0
   });
 
-  // Carregar rotas
-  const loadRotas = async () => {
-    try {
-      setLoading(true);
-      
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage
-      };
-
-      const result = await RotasService.listar(paginationParams);
-      if (result.success) {
-        setRotas(result.data || []);
-        
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
-        } else {
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
-        }
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar rotas:', error);
-      toast.error('Erro ao carregar rotas');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Carregar filiais
-  const loadFiliais = async () => {
+  /**
+   * Carrega filiais
+   */
+  const loadFiliais = useCallback(async () => {
     try {
       setLoadingFiliais(true);
       const response = await api.get('/filiais');
@@ -99,15 +53,17 @@ export const useRotas = () => {
     } finally {
       setLoadingFiliais(false);
     }
-  };
+  }, []);
 
-  // Carregar estatísticas
-  const loadEstatisticas = async () => {
+  /**
+   * Carrega estatísticas específicas das rotas
+   */
+  const loadEstatisticasRotas = useCallback(async () => {
     try {
       const result = await RotasService.buscarEstatisticas();
       if (result.success) {
         const stats = result.data || {};
-        setEstatisticas({
+        setEstatisticasRotas({
           total_rotas: parseInt(stats.total_rotas) || 0,
           rotas_ativas: parseInt(stats.rotas_ativas) || 0,
           rotas_inativas: parseInt(stats.rotas_inativas) || 0,
@@ -122,10 +78,12 @@ export const useRotas = () => {
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
     }
-  };
+  }, []);
 
-  // Carregar unidades escolares
-  const loadUnidadesEscolares = async (rotaId) => {
+  /**
+   * Carrega unidades escolares de uma rota
+   */
+  const loadUnidadesEscolares = useCallback(async (rotaId) => {
     try {
       setLoadingUnidades(true);
       
@@ -145,156 +103,80 @@ export const useRotas = () => {
     } finally {
       setLoadingUnidades(false);
     }
-  };
-
-  // Carregar dados quando dependências mudarem
-  useEffect(() => {
-    loadRotas();
-  }, [currentPage, itemsPerPage]);
-
-  // Carregar filiais e estatísticas apenas uma vez
-  useEffect(() => {
-    loadFiliais();
-    loadEstatisticas();
   }, []);
 
-  // Função de submissão com validação universal
-  const onSubmit = async (data) => {
-    try {
-      let response;
-      if (editingRota) {
-        response = await RotasService.atualizar(editingRota.id, data);
-        if (response.success) {
-          toast.success('Rota atualizada com sucesso');
-        } else {
-          // Usar sistema universal de validação
-          if (handleApiResponse(response)) {
-            return; // Erros de validação tratados pelo hook
-          } else {
-            toast.error(response.error);
-          }
-          return;
-        }
-      } else {
-        response = await RotasService.criar(data);
-        if (response.success) {
-          toast.success('Rota criada com sucesso');
-        } else {
-          // Usar sistema universal de validação
-          if (handleApiResponse(response)) {
-            return; // Erros de validação tratados pelo hook
-          } else {
-            toast.error(response.error);
-          }
-          return;
-        }
-      }
-      
-      handleCloseModal();
-      loadRotas();
-    } catch (error) {
-      console.error('Erro ao salvar rota:', error);
-      toast.error('Erro ao salvar rota');
-    }
-  };
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
+      filial: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
+    };
 
-  const handleDeleteRota = (rota) => {
-    setRotaToDelete(rota);
-    setShowDeleteConfirmModal(true);
-  };
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
 
-  const handleConfirmDelete = async () => {
-    if (!rotaToDelete) return;
+  /**
+   * Submissão customizada que recarrega estatísticas
+   */
+  const onSubmitCustom = useCallback(async (formData) => {
+    await baseEntity.onSubmit(formData);
+    // Recarregar estatísticas após salvar
+    await loadEstatisticasRotas();
+  }, [baseEntity, loadEstatisticasRotas]);
 
-    try {
-      const result = await RotasService.excluir(rotaToDelete.id);
-      if (result.success) {
-        toast.success(result.message);
-        loadRotas();
-        loadEstatisticas();
-        setShowDeleteConfirmModal(false);
-        setRotaToDelete(null);
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao excluir rota:', error);
-      toast.error('Erro ao excluir rota');
-    }
-  };
+  /**
+   * Exclusão customizada que recarrega estatísticas
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recarregar estatísticas após excluir
+    await loadEstatisticasRotas();
+  }, [baseEntity, loadEstatisticasRotas]);
 
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setRotaToDelete(null);
-  };
+  /**
+   * Handlers customizados para modais
+   */
+  const handleViewRota = useCallback((rota) => {
+    baseEntity.handleView(rota);
+    // Carregar unidades escolares automaticamente
+    loadUnidadesEscolares(rota.id);
+  }, [baseEntity, loadUnidadesEscolares]);
 
-  // Funções de modal
-  const handleAddRota = () => {
-    setEditingRota(null);
-    setViewMode(false);
-    setShowModal(true);
+  const handleEditRota = useCallback((rota) => {
+    baseEntity.handleEdit(rota);
+    // Carregar unidades escolares automaticamente
+    loadUnidadesEscolares(rota.id);
+  }, [baseEntity, loadUnidadesEscolares]);
+
+  const handleCloseModalCustom = useCallback(() => {
+    baseEntity.handleCloseModal();
     setShowUnidades(false);
     setUnidadesEscolares([]);
     setTotalUnidades(0);
-  };
+  }, [baseEntity]);
 
-  const handleViewRota = (rota) => {
-    setEditingRota(rota);
-    setViewMode(true);
-    setShowModal(true);
-    setShowUnidades(false);
-    // Carregar unidades escolares automaticamente
-    loadUnidadesEscolares(rota.id);
-  };
-
-  const handleEditRota = (rota) => {
-    setEditingRota(rota);
-    setViewMode(false);
-    setShowModal(true);
-    // Carregar unidades escolares automaticamente
-    loadUnidadesEscolares(rota.id);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingRota(null);
-    setViewMode(false);
-    setShowUnidades(false);
-    setUnidadesEscolares([]);
-    setTotalUnidades(0);
-  };
-
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-  };
-
-  // Funções de unidades escolares
-  const toggleUnidades = () => {
-    // Apenas alternar visibilidade, os dados já foram carregados
-    setShowUnidades(!showUnidades);
-  };
-
-  // Funções utilitárias
-  const getFilialName = (filialId) => {
+  /**
+   * Funções utilitárias
+   */
+  const getFilialName = useCallback((filialId) => {
     if (!filialId) return 'N/A';
     const filial = filiais.find(f => f.id === parseInt(filialId));
     return filial ? filial.filial : 'Filial não encontrada';
-  };
+  }, [filiais]);
 
-  const formatCurrency = (value) => {
+  const formatCurrency = useCallback((value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value || 0);
-  };
+  }, []);
 
-  const formatTipoRota = (tipo) => {
+  const formatTipoRota = useCallback((tipo) => {
     const tipos = {
       'semanal': 'Semanal',
       'quinzenal': 'Quinzenal',
@@ -302,58 +184,98 @@ export const useRotas = () => {
       'transferencia': 'Transferência'
     };
     return tipos[tipo] || tipo;
-  };
+  }, []);
+
+  const toggleUnidades = useCallback(() => {
+    setShowUnidades(!showUnidades);
+  }, [showUnidades]);
+
+  // Carregar dados iniciais
+  useEffect(() => {
+    loadFiliais();
+    loadEstatisticasRotas();
+  }, [loadFiliais, loadEstatisticasRotas]);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 
   return {
-    // Estados principais
-    rotas,
+    // Estados principais (do hook base)
+    rotas: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasRotas, // Usar estatísticas específicas das rotas
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingRota: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    rotaToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    filialFilter: customFilters.filters.filialFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Estados específicos das rotas
     filiais,
-    loading,
     loadingFiliais,
-    showModal,
-    viewMode,
-    editingRota,
-    searchTerm,
-    statusFilter,
-    filialFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
     unidadesEscolares,
     loadingUnidades,
     showUnidades,
     totalUnidades,
-
-    // Estados de validação (do hook universal)
-    validationErrors,
-    showValidationModal,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    rotaToDelete,
-
-    // Funções
-    onSubmit,
-    handleDeleteRota,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-    handleAddRota,
+    estatisticasRotas,
+    
+    // Ações de modal (customizadas)
+    handleAddRota: baseEntity.handleAdd,
     handleViewRota,
     handleEditRota,
-    handleCloseModal,
-    handlePageChange,
-    handleItemsPerPageChange,
-    setSearchTerm,
-    setStatusFilter,
-    setFilialFilter,
+    handleCloseModal: handleCloseModalCustom,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
+    
+    // Ações de CRUD (customizadas)
+    onSubmit: onSubmitCustom,
+    handleDeleteRota: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
+    // Ações específicas das rotas
     toggleUnidades,
+    loadUnidadesEscolares,
+    
+    // Funções utilitárias
     getFilialName,
     formatCurrency,
-    formatTipoRota,
-
-    // Funções de validação (do hook universal)
-    handleCloseValidationModal
+    formatTipoRota
   };
 };

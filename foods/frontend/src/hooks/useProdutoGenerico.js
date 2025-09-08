@@ -3,59 +3,49 @@
  * Gerencia estado e operações relacionadas a produtos genéricos
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import produtoGenericoService from '../services/produtoGenerico';
 import api from '../services/api';
-import { useValidation } from './useValidation';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useProdutoGenerico = () => {
-  // Hook de validação universal
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
-
-  // Estados principais
-  const [produtosGenericos, setProdutosGenericos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingProdutoGenerico, setEditingProdutoGenerico] = useState(null);
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [produtoGenericoToDelete, setProdutoGenericoToDelete] = useState(null);
-
-  // Estados de filtros e paginação
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [grupoFilter, setGrupoFilter] = useState('');
-  const [subgrupoFilter, setSubgrupoFilter] = useState('');
-  const [classeFilter, setClasseFilter] = useState('');
-  const [produtoOrigemFilter, setProdutoOrigemFilter] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
-    total_produtos_genericos: 0,
-    produtos_ativos: 0,
-    produtos_inativos: 0
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('produto-generico', produtoGenericoService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
   });
 
-  // Estados para dados auxiliares
+  // Hook de filtros customizados para produto genérico
+  const customFilters = useFilters({});
+  
+  // Estados locais
+  const [loading, setLoading] = useState(false);
+  
+  // Dados auxiliares
   const [grupos, setGrupos] = useState([]);
   const [subgrupos, setSubgrupos] = useState([]);
   const [classes, setClasses] = useState([]);
   const [produtosOrigem, setProdutosOrigem] = useState([]);
   const [unidadesMedida, setUnidadesMedida] = useState([]);
+  
+  // Estatísticas específicas
+  const [estatisticasProdutoGenerico, setEstatisticasProdutoGenerico] = useState({
+    total_produtos_genericos: 0,
+    produtos_ativos: 0,
+    produtos_inativos: 0,
+    produtos_padrao: 0,
+    com_produto_origem: 0,
+    total_produtos_vinculados: 0
+  });
 
-  // Carregar dados auxiliares
-  const carregarDadosAuxiliares = async () => {
+  /**
+   * Carrega dados auxiliares
+   */
+  const carregarDadosAuxiliares = useCallback(async () => {
     try {
       const [gruposRes, subgruposRes, classesRes, produtosOrigemRes, unidadesRes] = await Promise.all([
         api.get('/grupos?limit=1000'),
@@ -65,106 +55,64 @@ export const useProdutoGenerico = () => {
         api.get('/unidades?limit=1000')
       ]);
 
-      // Carregar grupos
-      if (gruposRes.data?.data?.items) {
-        setGrupos(gruposRes.data.data.items);
-      } else if (gruposRes.data?.data) {
-        setGrupos(gruposRes.data.data);
-      } else {
-        setGrupos(gruposRes.data || []);
-      }
+      // Processar dados auxiliares
+      const processData = (response) => {
+        if (response.data?.data?.items) return response.data.data.items;
+        if (response.data?.data) return response.data.data;
+        return response.data || [];
+      };
 
-      // Carregar subgrupos
-      if (subgruposRes.data?.data?.items) {
-        setSubgrupos(subgruposRes.data.data.items);
-      } else if (subgruposRes.data?.data) {
-        setSubgrupos(subgruposRes.data.data);
-      } else {
-        setSubgrupos(subgruposRes.data || []);
-      }
-
-      // Carregar classes
-      if (classesRes.data?.data?.items) {
-        setClasses(classesRes.data.data.items);
-      } else if (classesRes.data?.data) {
-        setClasses(classesRes.data.data);
-      } else {
-        setClasses(classesRes.data || []);
-      }
-
-      // Carregar produtos origem
-      if (produtosOrigemRes.data?.data?.items) {
-        setProdutosOrigem(produtosOrigemRes.data.data.items);
-      } else if (produtosOrigemRes.data?.data) {
-        setProdutosOrigem(produtosOrigemRes.data.data);
-      } else {
-        setProdutosOrigem(produtosOrigemRes.data || []);
-      }
-
-      // Carregar unidades de medida
-      if (unidadesRes.data?.data?.items) {
-        setUnidadesMedida(unidadesRes.data.data.items);
-      } else if (unidadesRes.data?.data) {
-        setUnidadesMedida(unidadesRes.data.data);
-      } else {
-        setUnidadesMedida(unidadesRes.data || []);
-      }
+      setGrupos(processData(gruposRes));
+      setSubgrupos(processData(subgruposRes));
+      setClasses(processData(classesRes));
+      setProdutosOrigem(processData(produtosOrigemRes));
+      setUnidadesMedida(processData(unidadesRes));
     } catch (error) {
       console.error('Erro ao carregar dados auxiliares:', error);
       toast.error('Erro ao carregar dados auxiliares');
     }
-  };
+  }, []);
 
-  // Carregar produtos genéricos
-  const loadProdutosGenericos = async (params = {}) => {
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
+      grupo_id: customFilters.grupoFilter || undefined,
+      subgrupo_id: customFilters.subgrupoFilter || undefined,
+      classe_id: customFilters.classeFilter || undefined,
+      produto_origem_id: customFilters.produtoOrigemFilter || undefined
+    };
+
     setLoading(true);
     try {
-      // Parâmetros de paginação
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm,
-        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : statusFilter === 'todos' ? undefined : statusFilter,
-        grupo_id: grupoFilter || undefined,
-        subgrupo_id: subgrupoFilter || undefined,
-        classe_id: classeFilter || undefined,
-        produto_origem_id: produtoOrigemFilter || undefined,
-        ...params
-      };
-
-      const result = await produtoGenericoService.listar(paginationParams);
-      if (result.success) {
-        setProdutosGenericos(result.data);
+      const response = await produtoGenericoService.listar(params);
+      
+      if (response.success) {
+        // Usar o método loadData do baseEntity que já gerencia tudo
+        await baseEntity.loadData(params);
         
-        // Extrair informações de paginação
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
-        } else {
-          // Fallback se não houver paginação no backend
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
-        }
-        
-        // Usar estatísticas do backend
-        
-        if (result.statistics) {
-          setEstatisticas({
-            total_produtos_genericos: result.statistics.total || 0,
-            produtos_ativos: result.statistics.ativos || 0,
-            produtos_inativos: result.statistics.inativos || 0,
-            produtos_padrao: result.statistics.produtos_padrao || 0,
-            com_produto_origem: result.statistics.com_produto_origem || 0,
-            total_produtos_vinculados: result.statistics.total_produtos_vinculados || 0
+        // Usar estatísticas do backend se disponíveis
+        if (response.statistics) {
+          setEstatisticasProdutoGenerico({
+            total_produtos_genericos: response.statistics.total || 0,
+            produtos_ativos: response.statistics.ativos || 0,
+            produtos_inativos: response.statistics.inativos || 0,
+            produtos_padrao: response.statistics.produtos_padrao || 0,
+            com_produto_origem: response.statistics.com_produto_origem || 0,
+            total_produtos_vinculados: response.statistics.total_produtos_vinculados || 0
           });
         } else {
-          // Fallback para estatísticas básicas
-          const total = result.pagination?.totalItems || result.data.length;
-          const ativos = result.data.filter(p => p.status === 1).length;
-          const inativos = result.data.filter(p => p.status === 0).length;
+          // Fallback: calcular com dados da página
+          const total = response.pagination?.total || response.data?.length || 0;
+          const ativos = response.data?.filter(item => item.status === 1).length || 0;
+          const inativos = response.data?.filter(item => item.status === 0).length || 0;
           
-          setEstatisticas({
+          setEstatisticasProdutoGenerico({
             total_produtos_genericos: total,
             produtos_ativos: ativos,
             produtos_inativos: inativos,
@@ -174,245 +122,222 @@ export const useProdutoGenerico = () => {
           });
         }
       } else {
-        toast.error(result.message || 'Erro ao carregar produtos genéricos');
+        toast.error(response.message || 'Erro ao carregar produtos genéricos');
       }
     } catch (error) {
+      console.error('Erro ao carregar produtos genéricos:', error);
       toast.error('Erro ao carregar produtos genéricos');
     } finally {
       setLoading(false);
     }
-  };
+  }, [baseEntity, customFilters]);
 
-  // Carregar dados quando dependências mudarem
+  /**
+   * Submissão customizada
+   */
+  const onSubmitCustom = useCallback(async (data) => {
+    const cleanData = {
+      ...data,
+      nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
+      descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null
+    };
+    
+    await baseEntity.onSubmit(cleanData);
+    // Recalcular estatísticas após salvar
+    setEstatisticasProdutoGenerico(baseEntity.statistics || { total_produtos_genericos: 0, produtos_ativos: 0, produtos_inativos: 0 });
+  }, [baseEntity]);
+
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recalcular estatísticas após excluir
+    setEstatisticasProdutoGenerico(baseEntity.statistics || { total_produtos_genericos: 0, produtos_ativos: 0, produtos_inativos: 0 });
+  }, [baseEntity]);
+
+  // Carregar dados auxiliares na inicialização
   useEffect(() => {
     carregarDadosAuxiliares();
-    loadProdutosGenericos();
-  }, [currentPage, itemsPerPage, searchTerm, statusFilter, grupoFilter, subgrupoFilter, classeFilter, produtoOrigemFilter]);
+  }, [carregarDadosAuxiliares]);
 
-  // Filtrar produtos genéricos (client-side)
-  const filteredProdutosGenericos = (Array.isArray(produtosGenericos) ? produtosGenericos : []).filter(produto => {
-    const matchesSearch = !searchTerm || 
-      (produto.nome && produto.nome.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    return matchesSearch;
-  });
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.grupoFilter, customFilters.subgrupoFilter, customFilters.classeFilter, customFilters.produtoOrigemFilter, customFilters.filters]);
 
-  // Funções de CRUD
-  const onSubmit = async (data) => {
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  // Atualizar estatísticas quando os dados mudam
+  useEffect(() => {
+    setEstatisticasProdutoGenerico(baseEntity.statistics || { total_produtos_genericos: 0, produtos_ativos: 0, produtos_inativos: 0 });
+  }, [baseEntity.statistics]);
+
+  /**
+   * Funções auxiliares
+   */
+  const handleClearFilters = useCallback(() => {
+    customFilters.setSearchTerm('');
+    customFilters.setStatusFilter('todos');
+    customFilters.setGrupoFilter('');
+    customFilters.setSubgrupoFilter('');
+    customFilters.setClasseFilter('');
+    customFilters.setProdutoOrigemFilter('');
+    baseEntity.setCurrentPage(1);
+  }, [customFilters, baseEntity]);
+
+  /**
+   * Visualizar produto genérico (busca dados completos)
+   */
+  const handleViewProdutoGenerico = useCallback(async (id) => {
     try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
-      // Limpar campos vazios para evitar problemas de validação
-      const cleanData = {
-        ...data,
-        nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
-        descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null
-      };
-
-      let result;
-      if (editingProdutoGenerico) {
-        result = await produtoGenericoService.atualizar(editingProdutoGenerico.id, cleanData);
-        if (result.success) {
-          toast.success('Produto genérico atualizado com sucesso!');
-          handleCloseModal();
-          loadProdutosGenericos();
-        } else {
-          if (handleApiResponse(result)) {
-            return; // Erros de validação foram tratados
-          }
-          toast.error(result.message || 'Erro ao atualizar produto genérico');
-        }
+      setLoading(true);
+      const response = await produtoGenericoService.buscarPorId(id);
+      if (response.success) {
+        baseEntity.handleView(response.data);
       } else {
-        result = await produtoGenericoService.criar(cleanData);
-        if (result.success) {
-          toast.success('Produto genérico criado com sucesso!');
-          handleCloseModal();
-          loadProdutosGenericos();
-        } else {
-          if (handleApiResponse(result)) {
-            return; // Erros de validação foram tratados
-          }
-          toast.error(result.message || 'Erro ao criar produto genérico');
-        }
+        toast.error(response.message || 'Erro ao buscar produto genérico');
       }
     } catch (error) {
-      toast.error('Erro ao salvar produto genérico');
-    }
-  };
-
-  const handleDeleteProdutoGenerico = (produtoGenerico) => {
-    setProdutoGenericoToDelete(produtoGenerico);
-    setShowDeleteConfirmModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!produtoGenericoToDelete) return;
-
-    try {
-      const result = await produtoGenericoService.excluir(produtoGenericoToDelete.id);
-      if (result.success) {
-        toast.success('Produto genérico excluído com sucesso!');
-        loadProdutosGenericos();
-      } else {
-        toast.error(result.message || 'Erro ao excluir produto genérico');
-      }
-    } catch (error) {
-      toast.error('Erro ao excluir produto genérico');
+      console.error('Erro ao buscar produto genérico:', error);
+      toast.error('Erro ao carregar dados do produto genérico');
     } finally {
-      setShowDeleteConfirmModal(false);
-      setProdutoGenericoToDelete(null);
+      setLoading(false);
     }
-  };
+  }, [baseEntity]);
 
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setProdutoGenericoToDelete(null);
-  };
-
-  const handleAddProdutoGenerico = () => {
-    setEditingProdutoGenerico(null);
-    setViewMode(false);
-    setShowModal(true);
-  };
-
-  const handleViewProdutoGenerico = async (id) => {
+  /**
+   * Editar produto genérico (busca dados completos)
+   */
+  const handleEditProdutoGenerico = useCallback(async (id) => {
     try {
-      const result = await produtoGenericoService.buscarPorId(id);
-      if (result.success) {
-        setEditingProdutoGenerico(result.data);
-        setViewMode(true);
-        setShowModal(true);
+      setLoading(true);
+      const response = await produtoGenericoService.buscarPorId(id);
+      if (response.success) {
+        baseEntity.handleEdit(response.data);
       } else {
-        toast.error(result.message || 'Erro ao carregar produto genérico');
+        toast.error(response.message || 'Erro ao buscar produto genérico');
       }
     } catch (error) {
-      toast.error('Erro ao carregar produto genérico');
+      console.error('Erro ao buscar produto genérico:', error);
+      toast.error('Erro ao carregar dados do produto genérico');
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleEditProdutoGenerico = async (id) => {
-    try {
-      const result = await produtoGenericoService.buscarPorId(id);
-      if (result.success) {
-        setEditingProdutoGenerico(result.data);
-        setViewMode(false);
-        setShowModal(true);
-      } else {
-        toast.error(result.message || 'Erro ao carregar produto genérico');
-      }
-    } catch (error) {
-      toast.error('Erro ao carregar produto genérico');
-    }
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingProdutoGenerico(null);
-    setViewMode(false);
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  // Limpar filtros
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('todos');
-    setGrupoFilter('');
-    setSubgrupoFilter('');
-    setClasseFilter('');
-    setProdutoOrigemFilter('');
-    setCurrentPage(1);
-  };
+  }, [baseEntity]);
 
   // Funções auxiliares
-  const formatDate = (date) => {
+  const formatDate = useCallback((date) => {
     if (!date) return '-';
     return new Date(date).toLocaleDateString('pt-BR');
-  };
+  }, []);
 
-  const getStatusLabel = (status) => {
+  const getStatusLabel = useCallback((status) => {
     return status === 1 ? 'Ativo' : 'Inativo';
-  };
+  }, []);
 
-  const getStatusColor = (status) => {
+  const getStatusColor = useCallback((status) => {
     return status === 1 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-  };
+  }, []);
 
-  const getGrupoName = (grupoId) => {
+  const getGrupoName = useCallback((grupoId) => {
     const grupo = grupos.find(g => g.id === grupoId);
     return grupo ? grupo.nome : '-';
-  };
+  }, [grupos]);
 
-  const getSubgrupoName = (subgrupoId) => {
+  const getSubgrupoName = useCallback((subgrupoId) => {
     const subgrupo = subgrupos.find(sg => sg.id === subgrupoId);
     return subgrupo ? subgrupo.nome : '-';
-  };
+  }, [subgrupos]);
 
-  const getClasseName = (classeId) => {
+  const getClasseName = useCallback((classeId) => {
     const classe = classes.find(c => c.id === classeId);
     return classe ? classe.nome : '-';
-  };
+  }, [classes]);
 
-  const getProdutoOrigemName = (produtoOrigemId) => {
+  const getProdutoOrigemName = useCallback((produtoOrigemId) => {
     const produtoOrigem = produtosOrigem.find(po => po.id === produtoOrigemId);
     return produtoOrigem ? produtoOrigem.nome : '-';
-  };
+  }, [produtosOrigem]);
 
-  const getUnidadeMedidaName = (unidadeId) => {
+  const getUnidadeMedidaName = useCallback((unidadeId) => {
     const unidade = unidadesMedida.find(u => u.id === unidadeId);
     return unidade ? unidade.nome : '-';
-  };
+  }, [unidadesMedida]);
 
   return {
-    // Estados
-    produtosGenericos: filteredProdutosGenericos,
+    // Estados principais
+    produtosGenericos: baseEntity.items,
     loading,
-    showModal,
-    viewMode,
-    editingProdutoGenerico,
-    showValidationModal,
-    validationErrors,
-    showDeleteConfirmModal,
-    produtoGenericoToDelete,
+    estatisticas: estatisticasProdutoGenerico,
+    
+    // Estados de modal (compatibilidade com modal existente)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingProdutoGenerico: baseEntity.editingItem,
+    produtoGenerico: baseEntity.editingItem, // Alias para compatibilidade com modal
+    
+    // Estados de exclusão
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    produtoGenericoToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    grupoFilter: customFilters.grupoFilter,
+    subgrupoFilter: customFilters.subgrupoFilter,
+    classeFilter: customFilters.classeFilter,
+    produtoOrigemFilter: customFilters.produtoOrigemFilter,
+    
+    // Estados de validação
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Estados de dados auxiliares
     grupos,
     subgrupos,
     classes,
     produtosOrigem,
     unidadesMedida,
-    searchTerm,
-    statusFilter,
-    grupoFilter,
-    subgrupoFilter,
-    classeFilter,
-    produtoOrigemFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
-
-    // Funções
-    onSubmit,
-    handleDeleteProdutoGenerico,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-    handleAddProdutoGenerico,
+    
+    // Ações de modal
+    handleAddProdutoGenerico: baseEntity.handleAdd,
     handleViewProdutoGenerico,
     handleEditProdutoGenerico,
-    handleCloseModal,
-    handleCloseValidationModal,
-    handlePageChange,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setGrupoFilter: customFilters.setGrupoFilter,
+    setSubgrupoFilter: customFilters.setSubgrupoFilter,
+    setClasseFilter: customFilters.setClasseFilter,
+    setProdutoOrigemFilter: customFilters.setProdutoOrigemFilter,
+    setItemsPerPage: baseEntity.handleItemsPerPageChange,
     handleClearFilters,
-    setSearchTerm,
-    setStatusFilter,
-    setGrupoFilter,
-    setSubgrupoFilter,
-    setClasseFilter,
-    setProdutoOrigemFilter,
-    setItemsPerPage,
-
+    
+    // Ações de CRUD
+    onSubmit: onSubmitCustom,
+    handleDeleteProdutoGenerico: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
     // Funções auxiliares
     formatDate,
     getStatusLabel,

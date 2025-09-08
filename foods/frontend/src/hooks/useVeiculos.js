@@ -1,206 +1,93 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import VeiculosService from '../services/veiculos';
-import { useValidation } from './useValidation';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useVeiculos = () => {
-  // Hook de validação universal
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('veículos', VeiculosService, {
+    initialItemsPerPage: 20,
+    initialFilters: { tipoFilter: 'todos' },
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados principais
-  const [veiculos, setVeiculos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingVeiculo, setEditingVeiculo] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [tipoFilter, setTipoFilter] = useState('todos');
+  // Hook de filtros customizados para veículos
+  const customFilters = useFilters({ tipoFilter: 'todos' });
 
-  // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [veiculoToDelete, setVeiculoToDelete] = useState(null);
-
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
+  // Estados de estatísticas específicas dos veículos
+  const [estatisticasVeiculos, setEstatisticasVeiculos] = useState({
     total_veiculos: 0,
     veiculos_ativos: 0,
     em_manutencao: 0,
     total_tipos: 0
   });
 
-  // Carregar veículos
-  const loadVeiculos = async (params = {}) => {
-    setLoading(true);
-    try {
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        ...params
-      };
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
+      tipo: customFilters.filters.tipoFilter !== 'todos' ? customFilters.filters.tipoFilter : undefined
+    };
 
-      const result = await VeiculosService.listar(paginationParams);
-      if (result.success) {
-        setVeiculos(result.data);
-        
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
-        } else {
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
-        }
-        
-        // Calcular estatísticas básicas
-        const total = result.pagination?.totalItems || result.data.length;
-        const ativos = result.data.filter(v => v.status === 'ativo').length;
-        const manutencao = result.data.filter(v => v.status === 'manutencao').length;
-        const tipos = new Set(result.data.map(v => v.tipo_veiculo)).size;
-        
-        setEstatisticas({
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
+
+  /**
+   * Calcula estatísticas específicas dos veículos
+   */
+  const calculateEstatisticas = useCallback((veiculos) => {
+    if (!veiculos || veiculos.length === 0) {
+      setEstatisticasVeiculos({
+        total_veiculos: 0,
+        veiculos_ativos: 0,
+        em_manutencao: 0,
+        total_tipos: 0
+      });
+      return;
+    }
+
+    const total = veiculos.length;
+    const ativos = veiculos.filter(v => v.status === 'ativo').length;
+    const manutencao = veiculos.filter(v => v.status === 'manutencao').length;
+    const tipos = new Set(veiculos.map(v => v.tipo_veiculo)).size;
+
+    setEstatisticasVeiculos({
           total_veiculos: total,
           veiculos_ativos: ativos,
           em_manutencao: manutencao,
           total_tipos: tipos
         });
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar veículos:', error);
-      toast.error('Erro ao carregar veículos');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, []);
 
-  // Carregar dados quando dependências mudarem
-  useEffect(() => {
-    loadVeiculos();
-  }, [currentPage, itemsPerPage]);
+  /**
+   * Submissão customizada que recarrega dados
+   */
+  const onSubmitCustom = useCallback(async (formData) => {
+    await baseEntity.onSubmit(formData);
+    // Recalcular estatísticas após salvar
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-  // Filtrar veículos
-  const filteredVeiculos = veiculos.filter(veiculo => {
-    const matchesSearch = !searchTerm || 
-      (veiculo.placa && veiculo.placa.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (veiculo.modelo && veiculo.modelo.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (veiculo.marca && veiculo.marca.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (veiculo.chassi && veiculo.chassi.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (veiculo.id && veiculo.id.toString().includes(searchTerm));
-    
-    const matchesStatus = statusFilter === 'todos' || veiculo.status === statusFilter;
-    const matchesTipo = tipoFilter === 'todos' || veiculo.tipo_veiculo === tipoFilter;
-    
-    return matchesSearch && matchesStatus && matchesTipo;
-  });
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recalcular estatísticas após excluir
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-  // Funções de CRUD
-  const onSubmit = async (data) => {
-    try {
-      let result;
-      if (editingVeiculo) {
-        result = await VeiculosService.atualizar(editingVeiculo.id, data);
-      } else {
-        result = await VeiculosService.criar(data);
-      }
-      
-      if (result.success) {
-        toast.success(result.message);
-        handleCloseModal();
-        loadVeiculos();
-      } else {
-        // Usar sistema universal de validação
-        if (handleApiResponse(result)) {
-          return; // Erros de validação tratados pelo hook
-        } else {
-          toast.error(result.error);
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao salvar veículo:', error);
-      toast.error('Erro ao salvar veículo');
-    }
-  };
-
-  const handleDeleteVeiculo = (veiculo) => {
-    setVeiculoToDelete(veiculo);
-    setShowDeleteConfirmModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!veiculoToDelete) return;
-
-    try {
-      const result = await VeiculosService.excluir(veiculoToDelete.id);
-      if (result.success) {
-        toast.success(result.message);
-        loadVeiculos();
-        setShowDeleteConfirmModal(false);
-        setVeiculoToDelete(null);
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao excluir veículo:', error);
-      toast.error('Erro ao excluir veículo');
-    }
-  };
-
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setVeiculoToDelete(null);
-  };
-
-  // Funções de modal
-  const handleAddVeiculo = () => {
-    setEditingVeiculo(null);
-    setViewMode(false);
-    setShowModal(true);
-  };
-
-  const handleViewVeiculo = (veiculo) => {
-    setEditingVeiculo(veiculo);
-    setViewMode(true);
-    setShowModal(true);
-  };
-
-  const handleEditVeiculo = (veiculo) => {
-    setEditingVeiculo(veiculo);
-    setViewMode(false);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingVeiculo(null);
-    setViewMode(false);
-  };
-
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-  };
-
-  // Funções utilitárias
-  const getStatusLabel = (status) => {
+  /**
+   * Funções utilitárias
+   */
+  const getStatusLabel = useCallback((status) => {
     const statusLabels = {
       'ativo': 'Ativo',
       'inativo': 'Inativo',
@@ -208,9 +95,9 @@ export const useVeiculos = () => {
       'aposentado': 'Aposentado'
     };
     return statusLabels[status] || status;
-  };
+  }, []);
 
-  const getTipoVeiculoLabel = (tipo) => {
+  const getTipoVeiculoLabel = useCallback((tipo) => {
     const tipoLabels = {
       'caminhao': 'Caminhão',
       'van': 'Van',
@@ -219,71 +106,92 @@ export const useVeiculos = () => {
       'utilitario': 'Utilitário'
     };
     return tipoLabels[tipo] || tipo;
-  };
+  }, []);
 
-  const getCategoriaLabel = (categoria) => {
+  const getCategoriaLabel = useCallback((categoria) => {
     const categoriaLabels = {
       'leve': 'Leve',
       'medio': 'Médio',
       'pesado': 'Pesado'
     };
     return categoriaLabels[categoria] || categoria;
-  };
+  }, []);
 
-  const formatCurrency = (value) => {
+  const formatCurrency = useCallback((value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value || 0);
-  };
+  }, []);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  // Recalcular estatísticas quando os dados mudam
+  useEffect(() => {
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    // Estados
-    veiculos: filteredVeiculos,
-    loading,
-    showModal,
-    viewMode,
-    editingVeiculo,
-    searchTerm,
-    statusFilter,
-    tipoFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
-
-    // Estados de validação (do hook universal)
-    validationErrors,
-    showValidationModal,
-
-    // Funções CRUD
-    onSubmit,
-    handleDeleteVeiculo,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-
-    // Funções de modal
-    handleAddVeiculo,
-    handleViewVeiculo,
-    handleEditVeiculo,
-    handleCloseModal,
-
-    // Funções de validação (do hook universal)
-    handleCloseValidationModal,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    veiculoToDelete,
-
-    // Funções de paginação
-    handlePageChange,
-    handleItemsPerPageChange,
-
-    // Funções de filtros
-    setSearchTerm,
-    setStatusFilter,
-    setTipoFilter,
+    // Estados principais (do hook base)
+    veiculos: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasVeiculos, // Usar estatísticas específicas dos veículos
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingVeiculo: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    veiculoToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    tipoFilter: customFilters.filters.tipoFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Ações de modal (do hook base)
+    handleAddVeiculo: baseEntity.handleAdd,
+    handleViewVeiculo: baseEntity.handleView,
+    handleEditVeiculo: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setTipoFilter: (value) => customFilters.updateFilter('tipoFilter', value),
+    
+    // Ações de CRUD (customizadas)
+    onSubmit: onSubmitCustom,
+    handleDeleteVeiculo: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
 
     // Funções utilitárias
     getStatusLabel,

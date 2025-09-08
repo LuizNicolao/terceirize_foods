@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import EfetivosService from '../services/efetivos';
-import { useValidation } from './useValidation';
+import { useValidation } from './common/useValidation';
 
 export const useEfetivos = (unidadeEscolarId) => {
   // Estados principais

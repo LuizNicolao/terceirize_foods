@@ -1,12 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaSpinner } from 'react-icons/fa';
 import { Modal, Input, Button, MaskedFormInput } from '../ui';
 import ClientesService from '../../services/clientes';
 import toast from 'react-hot-toast';
 
 const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
-  const { register, handleSubmit, reset, setValue, watch } = useForm();
+  const { register, handleSubmit, reset, setValue, watch, getValues } = useForm();
+  const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
 
   const cnpj = watch('cnpj');
 
@@ -36,13 +37,27 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
 
   // Função para buscar CNPJ
   const handleBuscarCNPJ = async () => {
-    if (!cnpj) {
-      toast.error('Digite um CNPJ para consultar');
+    // Tentar pegar o valor do CNPJ de diferentes formas
+    const cnpjValue = cnpj || getValues('cnpj') || '';
+    
+    if (!cnpjValue || cnpjValue.replace(/\D/g, '').length < 14) {
+      toast.error('Digite um CNPJ válido para consultar');
       return;
     }
 
+    if (isLoadingCNPJ) {
+      return; // Evitar múltiplas chamadas
+    }
+
+    setIsLoadingCNPJ(true);
+    const loadingToast = toast.loading('Buscando dados do CNPJ...');
+
     try {
-      const response = await ClientesService.buscarCNPJ(cnpj);
+      const response = await ClientesService.buscarCNPJ(cnpjValue);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
       if (response.success) {
         const dados = response.data;
         // Preencher os campos com os dados retornados
@@ -59,11 +74,15 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
         
         toast.success('Dados do CNPJ carregados com sucesso!');
       } else {
-        toast.error(response.error);
+        toast.error(response.error || 'Erro ao buscar dados do CNPJ');
       }
     } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
       console.error('Erro ao buscar CNPJ:', error);
-      toast.error('Erro ao buscar dados do CNPJ');
+      toast.error('Erro ao buscar dados do CNPJ. Tente novamente.');
+    } finally {
+      setIsLoadingCNPJ(false);
     }
   };
 
@@ -89,24 +108,39 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
                   CNPJ *
                 </label>
                 <div className="flex gap-2">
-                  <MaskedFormInput
-                    maskType="cnpj"
-                    register={register}
-                    fieldName="cnpj"
+                  <input
+                    {...register('cnpj')}
+                    type="text"
+                    placeholder="00.000.000/0000-00"
                     disabled={isViewMode}
-                    className="flex-1"
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    onChange={(e) => {
+                      // Aplicar máscara CNPJ
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 14) {
+                        value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                        value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                        value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                        value = value.replace(/(\d{4})(\d)/, '$1-$2');
+                        e.target.value = value;
+                      }
+                      // Notificar o react-hook-form
+                      register('cnpj').onChange(e);
+                    }}
                   />
                   {!isViewMode && (
-                    <Button
+                    <button
                       type="button"
                       onClick={handleBuscarCNPJ}
-                      variant="outline"
-                      size="sm"
-                      disabled={!cnpj}
-                      className="mt-0"
+                      disabled={isLoadingCNPJ}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <FaSearch className="h-4 w-4" />
-                    </Button>
+                      {isLoadingCNPJ ? (
+                        <FaSpinner className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FaSearch className="h-4 w-4" />
+                      )}
+                    </button>
                   )}
                 </div>
               </div>

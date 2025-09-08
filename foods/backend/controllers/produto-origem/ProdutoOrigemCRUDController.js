@@ -83,15 +83,18 @@ class ProdutoOrigemCRUDController {
       }
     }
 
-    // Inserir produto origem (sem código inicialmente)
+    // Gerar código temporário primeiro
+    const codigoTemporario = `TEMP-${Date.now()}`;
+
+    // Inserir produto origem com código temporário
     const result = await executeQuery(
       `INSERT INTO produto_origem (
-        nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
+        codigo, nome, unidade_medida_id, fator_conversao, grupo_id, subgrupo_id, 
         classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id, 
         status, usuario_criador_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        nome, unidade_medida_id, fator_conversao || 1.000, grupo_id, subgrupo_id,
+        codigoTemporario, nome, unidade_medida_id, fator_conversao || 1.000, grupo_id, subgrupo_id,
         classe_id, peso_liquido, referencia_mercado, produto_generico_padrao_id,
         status !== undefined ? status : 1, req.user.id
       ]

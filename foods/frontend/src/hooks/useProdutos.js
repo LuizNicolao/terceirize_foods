@@ -1,25 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import ProdutosService from '../services/produtos';
 import api from '../services/api';
-import { useValidation } from './useValidation';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useProdutos = () => {
-  // Hook de validação universal
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('produtos', ProdutosService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados principais
-  const [produtos, setProdutos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingProduto, setEditingProduto] = useState(null);
+  // Hook de filtros customizados para produtos
+  const customFilters = useFilters({});
   
   // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);
@@ -30,45 +26,20 @@ export const useProdutos = () => {
   const [produtoGenerico, setProdutoGenerico] = useState([]);
   const [produtoOrigem, setProdutoOrigem] = useState([]);
 
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [produtoToDelete, setProdutoToDelete] = useState(null);
-
-  // Estados de filtros e paginação
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
+  // Estados de estatísticas específicas dos produtos
+  const [estatisticasProdutos, setEstatisticasProdutos] = useState({
     total_produtos: 0,
     produtos_ativos: 0,
     produtos_inativos: 0,
     grupos_diferentes: 0
   });
 
-  // Carregar dados principais
-  const loadData = async () => {
-    setLoading(true);
+  /**
+   * Carrega dados auxiliares
+   */
+  const loadAuxiliaryData = useCallback(async () => {
     try {
-      // Resetar página se os filtros mudaram
-      if (searchTerm !== '' || statusFilter !== 'todos') {
-        setCurrentPage(1);
-      }
-      
-      // Carregar produtos com paginação
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm,
-        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
-      };
-
-      const [produtosRes, gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes, produtoGenericoRes, produtoOrigemRes] = await Promise.all([
-        ProdutosService.listar(paginationParams),
+      const [gruposRes, subgruposRes, classesRes, unidadesRes, marcasRes, produtoGenericoRes, produtoOrigemRes] = await Promise.all([
         api.get('/grupos?limit=1000'),
         api.get('/subgrupos?limit=1000'),
         api.get('/classes?limit=1000'),
@@ -78,216 +49,153 @@ export const useProdutos = () => {
         api.get('/produto-origem?limit=1000')
       ]);
 
-      if (produtosRes.success) {
-        setProdutos(produtosRes.data);
-        
-        // Extrair informações de paginação
-        if (produtosRes.pagination) {
-          setTotalPages(produtosRes.pagination.totalPages || 1);
-          setTotalItems(produtosRes.pagination.totalItems || produtosRes.data.length);
-          setCurrentPage(produtosRes.pagination.currentPage || 1);
-        } else {
-          setTotalItems(produtosRes.data.length);
-          setTotalPages(Math.ceil(produtosRes.data.length / itemsPerPage));
-        }
-        
-        // Calcular estatísticas
-        const total = produtosRes.pagination?.totalItems || produtosRes.data.length;
-        const ativos = produtosRes.data.filter(p => p.status === 1).length;
-        const inativos = produtosRes.data.filter(p => p.status === 0).length;
-        const gruposUnicos = new Set(produtosRes.data.map(p => p.grupo_id)).size;
-        
-        setEstatisticas({
+      // Processar dados auxiliares
+      const processData = (response) => {
+        if (response.data?.data?.items) return response.data.data.items;
+        if (response.data?.data) return response.data.data;
+        return response.data || [];
+      };
+
+      setGrupos(processData(gruposRes));
+      setSubgrupos(processData(subgruposRes));
+      setClasses(processData(classesRes));
+      setUnidades(processData(unidadesRes));
+      setMarcas(processData(marcasRes));
+      setProdutoGenerico(processData(produtoGenericoRes));
+      setProdutoOrigem(processData(produtoOrigemRes));
+    } catch (error) {
+      console.error('Erro ao carregar dados auxiliares:', error);
+    }
+  }, []);
+
+  /**
+   * Calcula estatísticas específicas dos produtos
+   */
+  const calculateEstatisticas = useCallback((produtos) => {
+    if (!produtos || produtos.length === 0) {
+      setEstatisticasProdutos({
+        total_produtos: 0,
+        produtos_ativos: 0,
+        produtos_inativos: 0,
+        grupos_diferentes: 0
+      });
+      return;
+    }
+
+    const total = produtos.length;
+    const ativos = produtos.filter(p => p.status === 1).length;
+    const inativos = produtos.filter(p => p.status === 0).length;
+    const gruposUnicos = new Set(produtos.map(p => p.grupo_id)).size;
+
+    setEstatisticasProdutos({
           total_produtos: total,
           produtos_ativos: ativos,
           produtos_inativos: inativos,
           grupos_diferentes: gruposUnicos
         });
-      } else {
-        toast.error(produtosRes.error);
-      }
+  }, []);
 
-      // Carregar dados auxiliares
-      if (gruposRes.data?.data?.items) {
-        setGrupos(gruposRes.data.data.items);
-      } else if (gruposRes.data?.data) {
-        setGrupos(gruposRes.data.data);
-      } else {
-        setGrupos(gruposRes.data || []);
-      }
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
+    };
 
-      if (subgruposRes.data?.data?.items) {
-        setSubgrupos(subgruposRes.data.data.items);
-      } else if (subgruposRes.data?.data) {
-        setSubgrupos(subgruposRes.data.data);
-      } else {
-        setSubgrupos(subgruposRes.data || []);
-      }
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
 
-      if (classesRes.data?.data?.items) {
-        setClasses(classesRes.data.data.items);
-      } else if (classesRes.data?.data) {
-        setClasses(classesRes.data.data);
-      } else {
-        setClasses(classesRes.data || []);
-      }
+  /**
+   * Submissão customizada
+   */
+  const onSubmitCustom = useCallback(async (data) => {
+    await baseEntity.onSubmit(data);
+    // Recalcular estatísticas após salvar
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-      if (unidadesRes.data?.data?.items) {
-        setUnidades(unidadesRes.data.data.items);
-      } else if (unidadesRes.data?.data) {
-        setUnidades(unidadesRes.data.data);
-      } else {
-        setUnidades(unidadesRes.data || []);
-      }
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recalcular estatísticas após excluir
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-      if (marcasRes.data?.data?.items) {
-        setMarcas(marcasRes.data.data.items);
-      } else if (marcasRes.data?.data) {
-        setMarcas(marcasRes.data.data);
-      } else {
-        setMarcas(marcasRes.data || []);
-      }
-
-      if (produtoGenericoRes.data?.data?.items) {
-        setProdutoGenerico(produtoGenericoRes.data.data.items);
-      } else if (produtoGenericoRes.data?.data) {
-        setProdutoGenerico(produtoGenericoRes.data.data);
-      } else {
-        setProdutoGenerico(produtoGenericoRes.data || []);
-      }
-
-      if (produtoOrigemRes.data?.data?.items) {
-        setProdutoOrigem(produtoOrigemRes.data.data.items);
-      } else if (produtoOrigemRes.data?.data) {
-        setProdutoOrigem(produtoOrigemRes.data.data);
-      } else {
-        setProdutoOrigem(produtoOrigemRes.data || []);
-      }
-
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-      toast.error('Erro ao carregar dados');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Carregar dados quando componentes montar ou filtros mudarem
-  useEffect(() => {
-    loadData();
-  }, [currentPage, itemsPerPage, searchTerm, statusFilter]);
-
-  // Funções de manipulação de produtos
-  const handleSubmitProduto = async (data) => {
-    try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
-      let response;
-      if (editingProduto) {
-        response = await ProdutosService.atualizar(editingProduto.id, data);
-      } else {
-        response = await ProdutosService.criar(data);
-      }
-      
-      if (response.success) {
-        toast.success(editingProduto ? 'Produto atualizado com sucesso!' : 'Produto criado com sucesso!');
-        handleCloseModal();
-        loadData();
-      } else {
-        if (handleApiResponse(response)) {
-          return; // Erros de validação foram tratados
-        }
-        toast.error(response.message || 'Erro ao salvar produto');
-      }
-    } catch (error) {
-      console.error('Erro ao salvar produto:', error);
-      toast.error('Erro ao salvar produto');
-    }
-  };
-
-  const handleDeleteProduto = (produto) => {
-    setProdutoToDelete(produto);
-    setShowDeleteConfirmModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!produtoToDelete) return;
-
-    try {
-      const response = await ProdutosService.excluir(produtoToDelete.id);
-      if (response.success) {
-        toast.success('Produto excluído com sucesso');
-        loadData();
-        setShowDeleteConfirmModal(false);
-        setProdutoToDelete(null);
-      } else {
-        toast.error(response.error);
-      }
-    } catch (error) {
-      console.error('Erro ao excluir produto:', error);
-      toast.error('Erro ao excluir produto');
-    }
-  };
-
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setProdutoToDelete(null);
-  };
-
-  const handleAddProduto = () => {
-    setEditingProduto(null);
-    setViewMode(false);
-    setShowModal(true);
-  };
-
-  const handleViewProduto = (produto) => {
-    setEditingProduto(produto);
-    setViewMode(true);
-    setShowModal(true);
-  };
-
-  const handleEditProduto = (produto) => {
-    setEditingProduto(produto);
-    setViewMode(false);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setViewMode(false);
-    setEditingProduto(null);
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('todos');
-    setCurrentPage(1);
-  };
-
-  // Funções auxiliares
-  const getGrupoName = (grupoId) => {
+  /**
+   * Funções auxiliares
+   */
+  const getGrupoName = useCallback((grupoId) => {
     const grupo = grupos.find(g => g.id === grupoId);
     return grupo ? grupo.nome : '-';
-  };
+  }, [grupos]);
 
-  const getUnidadeName = (unidadeId) => {
+  const getUnidadeName = useCallback((unidadeId) => {
     const unidade = unidades.find(u => u.id === unidadeId);
     return unidade ? unidade.nome : '-';
-  };
+  }, [unidades]);
+
+  const handleClearFilters = useCallback(() => {
+    customFilters.setSearchTerm('');
+    customFilters.setStatusFilter('todos');
+    baseEntity.setCurrentPage(1);
+  }, [customFilters, baseEntity]);
+
+  // Carregar dados auxiliares na inicialização
+  useEffect(() => {
+    loadAuxiliaryData();
+  }, [loadAuxiliaryData]);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  // Recalcular estatísticas quando os dados mudam
+  useEffect(() => {
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    // Estados
-    produtos,
-    loading,
-    showModal,
-    viewMode,
-    editingProduto,
-    showValidationModal,
-    validationErrors,
+    // Estados principais (do hook base)
+    produtos: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasProdutos, // Usar estatísticas específicas dos produtos
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingProduto: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    produtoToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Estados de dados auxiliares
     grupos,
     subgrupos,
     classes,
@@ -295,33 +203,33 @@ export const useProdutos = () => {
     marcas,
     produtoGenerico,
     produtoOrigem,
-    searchTerm,
-    statusFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    produtoToDelete,
     
-    // Funções
-    handleSubmitProduto,
-    handleDeleteProduto,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-    handleAddProduto,
-    handleViewProduto,
-    handleEditProduto,
-    handleCloseModal,
-    handleCloseValidationModal,
-    handlePageChange,
+    // Ações de modal (do hook base)
+    handleAddProduto: baseEntity.handleAdd,
+    handleViewProduto: baseEntity.handleView,
+    handleEditProduto: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,
-    setSearchTerm,
-    setStatusFilter,
-    setItemsPerPage,
+    
+    // Ações de CRUD (customizadas)
+    handleSubmitProduto: onSubmitCustom,
+    handleDeleteProduto: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
+    // Funções auxiliares
     getGrupoName,
     getUnidadeName
   };

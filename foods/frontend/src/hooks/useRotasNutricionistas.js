@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import RotasNutricionistasService from '../services/rotasNutricionistas';
-import { useAuditoria } from './useAuditoria';
-import { useExport } from './useExport';
+import { useAuditoria } from './common/useAuditoria';
+import { useExport } from './common/useExport';
 
 export const useRotasNutricionistas = () => {
   // Estados principais

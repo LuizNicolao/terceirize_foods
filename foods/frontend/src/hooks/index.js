@@ -33,11 +33,17 @@ export { useFiliais } from './useFiliais';
 
 // Hooks de funcionalidades
 export { useIntolerancias } from './useIntolerancias';
-export { useAuditoria } from './useAuditoria';
 export { useDashboard } from './useDashboard';
-export { useExport } from './useExport';
 
-// Hooks de utilidades
-export { useInputMask } from './useInputMask';
-export { useMaskedField } from './useMaskedField';
-export { useValidation } from './useValidation';
+// Hooks base/comuns (inclui utilidades)
+export { 
+  usePagination, 
+  useModal, 
+  useFilters, 
+  useBaseEntity,
+  useValidation,
+  useExport,
+  useAuditoria,
+  useInputMask,
+  useMaskedField
+} from './common';

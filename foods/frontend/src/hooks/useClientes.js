@@ -1,263 +1,176 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import ClientesService from '../services/clientes';
-import { useValidation } from './useValidation';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useClientes = () => {
-  // Estados principais
-  const [clientes, setClientes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingCliente, setEditingCliente] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [ufFilter, setUfFilter] = useState('todos');
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('clientes', ClientesService, {
+    initialItemsPerPage: 20,
+    initialFilters: { ufFilter: 'todos' },
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  // Hook de filtros customizados para clientes
+  const customFilters = useFilters({ ufFilter: 'todos' });
 
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
+  // Estados de estatísticas específicas dos clientes
+  const [estatisticasClientes, setEstatisticasClientes] = useState({
     total_clientes: 0,
     clientes_ativos: 0,
     com_email: 0,
     com_telefone: 0
   });
 
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [clienteToDelete, setClienteToDelete] = useState(null);
-
-  // Hook de validação
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
-
-  // Carregar clientes
-  const loadClientes = async (params = {}) => {
-    setLoading(true);
-    try {
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        ...params
-      };
-
-      const result = await ClientesService.listar(paginationParams);
-      if (result.success) {
-        setClientes(result.data || []);
-        
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
-        } else {
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
-        }
-        
-        // Calcular estatísticas básicas
-        const total = result.pagination?.totalItems || result.data.length;
-        const ativos = result.data.filter(c => c.status === 'ativo').length;
-        const comEmail = result.data.filter(c => c.email && c.email.trim() !== '').length;
-        const comTelefone = result.data.filter(c => c.telefone && c.telefone.trim() !== '').length;
-        
-        setEstatisticas({
-          total_clientes: total,
-          clientes_ativos: ativos,
-          com_email: comEmail,
-          com_telefone: comTelefone
-        });
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-      toast.error('Erro ao carregar clientes');
-    } finally {
-      setLoading(false);
+  /**
+   * Calcula estatísticas específicas dos clientes
+   */
+  const calculateEstatisticas = useCallback((clientes) => {
+    if (!clientes || clientes.length === 0) {
+      setEstatisticasClientes({
+        total_clientes: 0,
+        clientes_ativos: 0,
+        com_email: 0,
+        com_telefone: 0
+      });
+      return;
     }
-  };
 
-  // Carregar dados quando dependências mudarem
-  useEffect(() => {
-    loadClientes();
-  }, [currentPage, itemsPerPage]);
+    const total = clientes.length;
+    const ativos = clientes.filter(c => c.status === 'ativo').length;
+    const comEmail = clientes.filter(c => c.email && c.email.trim() !== '').length;
+    const comTelefone = clientes.filter(c => c.telefone && c.telefone.trim() !== '').length;
 
-  // Filtrar clientes (client-side)
-  const filteredClientes = clientes.filter(cliente => {
-    const matchesSearch = !searchTerm || 
-      (cliente.razao_social && cliente.razao_social.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (cliente.nome_fantasia && cliente.nome_fantasia.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (cliente.cnpj && cliente.cnpj.includes(searchTerm));
-    
-    const matchesStatus = statusFilter === 'todos' || cliente.status === statusFilter;
-    const matchesUf = ufFilter === 'todos' || cliente.uf === ufFilter;
-    
-    return matchesSearch && matchesStatus && matchesUf;
-  });
+    setEstatisticasClientes({
+      total_clientes: total,
+      clientes_ativos: ativos,
+      com_email: comEmail,
+      com_telefone: comTelefone
+    });
+  }, []);
 
-  // Funções de CRUD
-  const onSubmit = async (data) => {
-    try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
-      // Limpar campos vazios para evitar problemas de validação
-      const cleanData = {
-        ...data,
-        razao_social: data.razao_social && data.razao_social.trim() !== '' ? data.razao_social.trim() : null,
-        nome_fantasia: data.nome_fantasia && data.nome_fantasia.trim() !== '' ? data.nome_fantasia.trim() : null,
-        cnpj: data.cnpj && data.cnpj.trim() !== '' ? data.cnpj.trim() : null,
-        email: data.email && data.email.trim() !== '' ? data.email.trim() : null,
-        telefone: data.telefone && data.telefone.trim() !== '' ? data.telefone.trim() : null
-      };
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
+      uf: customFilters.filters.ufFilter === 'todos' ? undefined : customFilters.filters.ufFilter
+    };
 
-      let result;
-      if (editingCliente) {
-        result = await ClientesService.atualizar(editingCliente.id, cleanData);
-      } else {
-        result = await ClientesService.criar(cleanData);
-      }
-      
-      if (result.success) {
-        toast.success(editingCliente ? 'Cliente atualizado com sucesso!' : 'Cliente criado com sucesso!');
-        handleCloseModal();
-        loadClientes();
-      } else {
-        if (handleApiResponse(result)) {
-          return; // Erros de validação foram tratados
-        }
-        toast.error(result.message || 'Erro ao salvar cliente');
-      }
-    } catch (error) {
-      console.error('Erro ao salvar cliente:', error);
-      toast.error('Erro ao salvar cliente');
-    }
-  };
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
 
-  const handleDeleteCliente = (cliente) => {
-    setClienteToDelete(cliente);
-    setShowDeleteConfirmModal(true);
-  };
+  /**
+   * Submissão customizada com limpeza de dados
+   */
+  const onSubmitCustom = useCallback(async (data) => {
+    // Limpar campos vazios para evitar problemas de validação
+    const cleanData = {
+      ...data,
+      razao_social: data.razao_social && data.razao_social.trim() !== '' ? data.razao_social.trim() : null,
+      nome_fantasia: data.nome_fantasia && data.nome_fantasia.trim() !== '' ? data.nome_fantasia.trim() : null,
+      cnpj: data.cnpj && data.cnpj.trim() !== '' ? data.cnpj.trim() : null,
+      email: data.email && data.email.trim() !== '' ? data.email.trim() : null,
+      telefone: data.telefone && data.telefone.trim() !== '' ? data.telefone.trim() : null
+    };
 
-  const handleConfirmDelete = async () => {
-    if (!clienteToDelete) return;
+    await baseEntity.onSubmit(cleanData);
+    // Recalcular estatísticas após salvar
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-    try {
-      const result = await ClientesService.excluir(clienteToDelete.id);
-      if (result.success) {
-        toast.success('Cliente excluído com sucesso!');
-        loadClientes();
-        setShowDeleteConfirmModal(false);
-        setClienteToDelete(null);
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      toast.error('Erro ao excluir cliente');
-    }
-  };
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recalcular estatísticas após excluir
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setClienteToDelete(null);
-  };
-
-  // Funções de modal
-  const handleAddCliente = () => {
-    setViewMode(false);
-    setEditingCliente(null);
-    setShowModal(true);
-  };
-
-  const handleViewCliente = (cliente) => {
-    setViewMode(true);
-    setEditingCliente(cliente);
-    setShowModal(true);
-  };
-
-  const handleEditCliente = (cliente) => {
-    setViewMode(false);
-    setEditingCliente(cliente);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setViewMode(false);
-    setEditingCliente(null);
-  };
-
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-  };
-
-  // Funções utilitárias
-  const formatDate = (dateString) => {
+  /**
+   * Funções utilitárias
+   */
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleString('pt-BR');
-  };
+  }, []);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  // Recalcular estatísticas quando os dados mudam
+  useEffect(() => {
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    // Estados
-    clientes: Array.isArray(filteredClientes) ? filteredClientes : [],
-    loading,
-    showModal,
-    viewMode,
-    editingCliente,
-    searchTerm,
-    statusFilter,
-    ufFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
-
-    // Estados de validação
-    validationErrors,
-    showValidationModal,
-    handleCloseValidationModal,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    clienteToDelete,
-
-    // Funções CRUD
-    onSubmit,
-    handleDeleteCliente,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-
-    // Funções de modal
-    handleAddCliente,
-    handleViewCliente,
-    handleEditCliente,
-    handleCloseModal,
-
-    // Funções de paginação
-    handlePageChange,
-    handleItemsPerPageChange,
-
-    // Funções de filtros
-    setSearchTerm,
-    setStatusFilter,
-    setUfFilter,
-
+    // Estados principais (do hook base)
+    clientes: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasClientes, // Usar estatísticas específicas dos clientes
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingCliente: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    clienteToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    ufFilter: customFilters.filters.ufFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Ações de modal (do hook base)
+    handleAddCliente: baseEntity.handleAdd,
+    handleViewCliente: baseEntity.handleView,
+    handleEditCliente: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setUfFilter: (value) => customFilters.setFilters(prev => ({ ...prev, ufFilter: value })),
+    
+    // Ações de CRUD (customizadas)
+    onSubmit: onSubmitCustom,
+    handleDeleteCliente: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
     // Funções utilitárias
     formatDate
   };

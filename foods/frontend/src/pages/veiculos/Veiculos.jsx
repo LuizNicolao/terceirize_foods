@@ -1,9 +1,9 @@
 import React from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useVeiculos } from '../../hooks/useVeiculos';
-import { useAuditoria } from '../../hooks/useAuditoria';
-import { useExport } from '../../hooks/useExport';
+import { useAuditoria } from '../../hooks/common/useAuditoria';
+import { useExport } from '../../hooks/common/useExport';
 import VeiculosService from '../../services/veiculos';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
@@ -130,6 +130,20 @@ const Veiculos = () => {
         ]}
         placeholder="Buscar por placa, marca, modelo ou chassi..."
       />
+
+      {/* Ações de Exportação */}
+      <div className="flex gap-2 sm:gap-3 mb-4">
+        <Button onClick={handleExportXLSX} variant="outline" size="sm">
+          <FaFileExcel className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar XLSX</span>
+          <span className="sm:hidden">XLSX</span>
+        </Button>
+        <Button onClick={handleExportPDF} variant="outline" size="sm">
+          <FaFilePdf className="mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Exportar PDF</span>
+          <span className="sm:hidden">PDF</span>
+        </Button>
+      </div>
 
       {/* Tabela */}
       <VeiculosTable

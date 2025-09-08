@@ -146,7 +146,10 @@ class FornecedoresService {
 
   async buscarCNPJ(cnpj) {
     try {
-      const response = await api.get(`/fornecedores/buscar-cnpj/${cnpj}`);
+      // Limpar CNPJ (remover pontos, traços e barras)
+      const cnpjLimpo = cnpj.replace(/\D/g, '');
+      
+      const response = await api.get(`/fornecedores/buscar-cnpj/${cnpjLimpo}`);
       
       // Extrair dados da estrutura HATEOAS
       let dados = null;

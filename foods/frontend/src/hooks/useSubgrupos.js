@@ -1,102 +1,65 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import SubgruposService from '../services/subgrupos';
 import GruposService from '../services/grupos';
-import { useValidation } from './useValidation';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useSubgrupos = () => {
-  // Hook de validação universal
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('subgrupos', SubgruposService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados principais
-  const [subgrupos, setSubgrupos] = useState([]);
+  // Hook de filtros customizados para subgrupos
+  const customFilters = useFilters({});
+
+  // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [loadingGrupos, setLoadingGrupos] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingSubgrupo, setEditingSubgrupo] = useState(null);
 
-  // Estados de filtros e paginação
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [grupoFilter, setGrupoFilter] = useState('todos');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [subgrupoToDelete, setSubgrupoToDelete] = useState(null);
-
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
+  // Estados de estatísticas específicas dos subgrupos
+  const [estatisticasSubgrupos, setEstatisticasSubgrupos] = useState({
     total_subgrupos: 0,
     subgrupos_ativos: 0,
     subgrupos_inativos: 0,
     produtos_total: 0
   });
 
-  // Carregar subgrupos
-  const loadSubgrupos = async (params = {}) => {
-    setLoading(true);
-    try {
-      // Parâmetros de paginação
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm,
-        status: statusFilter === 'ativo' ? 'ativo' : statusFilter === 'inativo' ? 'inativo' : undefined,
-        grupo_id: grupoFilter === 'todos' ? undefined : grupoFilter,
-        ...params
-      };
-
-      const result = await SubgruposService.listar(paginationParams);
-      if (result.success) {
-        setSubgrupos(result.data);
-        
-        // Extrair informações de paginação
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
-        } else {
-          // Fallback se não houver paginação no backend
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
-        }
-        
-        // Calcular estatísticas básicas
-        const total = result.pagination?.totalItems || result.data.length;
-        const ativos = result.data.filter(sg => sg.status === 'ativo').length;
-        const inativos = result.data.filter(sg => sg.status === 'inativo').length;
-        const produtos = result.data.reduce((acc, subgrupo) => acc + (subgrupo.total_produtos || 0), 0);
-        
-        setEstatisticas({
-          total_subgrupos: total,
-          subgrupos_ativos: ativos,
-          subgrupos_inativos: inativos,
-          produtos_total: produtos
-        });
-      } else {
-        toast.error(result.message || 'Erro ao carregar subgrupos');
-      }
-    } catch (error) {
-      toast.error('Erro ao carregar subgrupos');
-    } finally {
-      setLoading(false);
+  /**
+   * Calcula estatísticas específicas dos subgrupos
+   */
+  const calculateEstatisticas = useCallback((subgrupos) => {
+    if (!subgrupos || subgrupos.length === 0) {
+      setEstatisticasSubgrupos({
+        total_subgrupos: 0,
+        subgrupos_ativos: 0,
+        subgrupos_inativos: 0,
+        produtos_total: 0
+      });
+      return;
     }
-  };
 
-  // Carregar grupos
-  const loadGrupos = async () => {
+    const total = subgrupos.length;
+    const ativos = subgrupos.filter(sg => sg.status === 'ativo').length;
+    const inativos = subgrupos.filter(sg => sg.status === 'inativo').length;
+    const produtos = subgrupos.reduce((acc, subgrupo) => acc + (subgrupo.total_produtos || 0), 0);
+
+    setEstatisticasSubgrupos({
+      total_subgrupos: total,
+      subgrupos_ativos: ativos,
+      subgrupos_inativos: inativos,
+      produtos_total: produtos
+    });
+  }, []);
+
+  /**
+   * Carrega dados auxiliares (grupos)
+   */
+  const loadAuxiliaryData = useCallback(async () => {
     try {
       setLoadingGrupos(true);
       const result = await GruposService.buscarAtivos();
@@ -108,199 +71,157 @@ export const useSubgrupos = () => {
     } finally {
       setLoadingGrupos(false);
     }
-  };
-
-  // Carregar dados quando dependências mudarem
-  useEffect(() => {
-    loadSubgrupos();
-  }, [currentPage, itemsPerPage, searchTerm, statusFilter, grupoFilter]);
-
-  // Carregar grupos uma vez
-  useEffect(() => {
-    loadGrupos();
   }, []);
 
-  // Filtrar subgrupos (client-side)
-  const filteredSubgrupos = (Array.isArray(subgrupos) ? subgrupos : []).filter(subgrupo => {
-    const matchesSearch = !searchTerm || 
-      (subgrupo.nome && subgrupo.nome.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesStatus = statusFilter === 'todos' || 
-      (statusFilter === 'ativo' && subgrupo.status === 'ativo') ||
-      (statusFilter === 'inativo' && subgrupo.status === 'inativo');
-    
-    const matchesGrupo = grupoFilter === 'todos' || 
-      subgrupo.grupo_id === parseInt(grupoFilter);
-    
-    return matchesSearch && matchesStatus && matchesGrupo;
-  });
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 'ativo' : customFilters.statusFilter === 'inativo' ? 'inativo' : undefined,
+      grupo_id: customFilters.grupoFilter === 'todos' ? undefined : customFilters.grupoFilter
+    };
 
-  // Funções de CRUD
-  const onSubmit = async (data) => {
-    try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
-      // Limpar campos vazios para evitar problemas de validação
-      const cleanData = {
-        ...data,
-        nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
-        descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null,
-        grupo_id: data.grupo_id ? parseInt(data.grupo_id) : null,
-        status: data.status === '1' ? 'ativo' : 'inativo'
-      };
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
 
-      let result;
-      if (editingSubgrupo) {
-        result = await SubgruposService.atualizar(editingSubgrupo.id, cleanData);
-      } else {
-        result = await SubgruposService.criar(cleanData);
-      }
-      
-      if (result.success) {
-        toast.success(editingSubgrupo ? 'Subgrupo atualizado com sucesso!' : 'Subgrupo criado com sucesso!');
-        handleCloseModal();
-        loadSubgrupos();
-      } else {
-        if (handleApiResponse(result)) {
-          return; // Erros de validação foram tratados
-        }
-        toast.error(result.message || 'Erro ao salvar subgrupo');
-      }
-    } catch (error) {
-      toast.error('Erro ao salvar subgrupo');
-    }
-  };
+  /**
+   * Submissão customizada
+   */
+  const onSubmitCustom = useCallback(async (data) => {
+    // Limpar e normalizar dados antes de enviar
+    const cleanData = {
+      ...data,
+      nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
+      descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null,
+      grupo_id: data.grupo_id ? parseInt(data.grupo_id) : null,
+      status: data.status === '1' || data.status === 'Ativo' ? 'ativo' : 'inativo'
+    };
 
-  const handleDeleteSubgrupo = (subgrupo) => {
-    setSubgrupoToDelete(subgrupo);
-    setShowDeleteConfirmModal(true);
-  };
+    await baseEntity.onSubmit(cleanData);
+    // Recalcular estatísticas após salvar
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-  const handleConfirmDelete = async () => {
-    if (!subgrupoToDelete) return;
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recalcular estatísticas após excluir
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-    try {
-      const result = await SubgruposService.excluir(subgrupoToDelete.id);
-      if (result.success) {
-        toast.success('Subgrupo excluído com sucesso!');
-        loadSubgrupos();
-        setShowDeleteConfirmModal(false);
-        setSubgrupoToDelete(null);
-      } else {
-        toast.error(result.message || 'Erro ao excluir subgrupo');
-      }
-    } catch (error) {
-      toast.error('Erro ao excluir subgrupo');
-    }
-  };
+  /**
+   * Funções auxiliares
+   */
+  const handleClearFilters = useCallback(() => {
+    customFilters.setSearchTerm('');
+    customFilters.setStatusFilter('todos');
+    customFilters.setGrupoFilter('todos');
+    baseEntity.setCurrentPage(1);
+  }, [customFilters, baseEntity]);
 
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setSubgrupoToDelete(null);
-  };
-
-  // Funções de modal
-  const handleAddSubgrupo = () => {
-    setViewMode(false);
-    setEditingSubgrupo(null);
-    setShowModal(true);
-  };
-
-  const handleViewSubgrupo = (subgrupo) => {
-    setViewMode(true);
-    setEditingSubgrupo(subgrupo);
-    setShowModal(true);
-  };
-
-  const handleEditSubgrupo = (subgrupo) => {
-    setViewMode(false);
-    setEditingSubgrupo(subgrupo);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setViewMode(false);
-    setEditingSubgrupo(null);
-  };
-
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  // Funções de filtros
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('todos');
-    setGrupoFilter('todos');
-    setCurrentPage(1);
-  };
-
-  // Funções utilitárias
-  const getStatusLabel = (status) => {
+  const getStatusLabel = useCallback((status) => {
     return status === 'ativo' ? 'Ativo' : 'Inativo';
-  };
+  }, []);
 
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleString('pt-BR');
-  };
+  }, []);
 
-  const getGrupoNome = (grupoId) => {
+  const getGrupoNome = useCallback((grupoId) => {
     const grupo = grupos.find(g => g.id === grupoId);
     return grupo ? grupo.nome : 'N/A';
-  };
+  }, [grupos]);
+
+  // Carregar dados auxiliares na inicialização
+  useEffect(() => {
+    loadAuxiliaryData();
+  }, [loadAuxiliaryData]);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.grupoFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  // Recalcular estatísticas quando os dados mudam
+  useEffect(() => {
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    // Estados
-    subgrupos: Array.isArray(filteredSubgrupos) ? filteredSubgrupos : [],
+    // Estados principais (do hook base)
+    subgrupos: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasSubgrupos, // Usar estatísticas específicas dos subgrupos
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingSubgrupo: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    subgrupoToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    grupoFilter: customFilters.grupoFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Estados de dados auxiliares
     grupos: Array.isArray(grupos) ? grupos : [],
-    loading,
     loadingGrupos,
-    showModal,
-    viewMode,
-    editingSubgrupo,
-    showValidationModal,
-    validationErrors,
-    searchTerm,
-    statusFilter,
-    grupoFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    subgrupoToDelete,
-
-    // Funções CRUD
-    onSubmit,
-    handleDeleteSubgrupo,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-
-    // Funções de modal
-    handleAddSubgrupo,
-    handleViewSubgrupo,
-    handleEditSubgrupo,
-    handleCloseModal,
-    handleCloseValidationModal,
-
-    // Funções de paginação
-    handlePageChange,
-
-    // Funções de filtros
-    setSearchTerm,
-    setStatusFilter,
-    setGrupoFilter,
+    
+    // Ações de modal (do hook base)
+    handleAddSubgrupo: baseEntity.handleAdd,
+    handleViewSubgrupo: baseEntity.handleView,
+    handleEditSubgrupo: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setGrupoFilter: customFilters.setGrupoFilter,
+    setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,
-
+    
+    // Ações de CRUD (customizadas)
+    onSubmit: onSubmitCustom,
+    handleDeleteSubgrupo: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
     // Funções utilitárias
-    formatDate,
     getStatusLabel,
+    formatDate,
     getGrupoNome
   };
 };

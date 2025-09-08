@@ -2,116 +2,60 @@ import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import FornecedoresService from '../services/fornecedores';
-import { useValidation } from './useValidation';
-import { useExport } from './useExport';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
+import { useExport } from './common/useExport';
+import { useAuditoria } from './common/useAuditoria';
 
 export const useFornecedores = () => {
-  const [fornecedores, setFornecedores] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingFornecedor, setEditingFornecedor] = useState(null);
-  const [showAuditModal, setShowAuditModal] = useState(false);
-  const [auditLogs, setAuditLogs] = useState([]);
-  const [auditLoading, setAuditLoading] = useState(false);
-  const [auditFilters, setAuditFilters] = useState({
-    dataInicio: '',
-    dataFim: '',
-    acao: '',
-    usuario_id: '',
-    periodo: ''
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('fornecedores', FornecedoresService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
   });
+
+  // Hook de filtros customizados para fornecedores
+  const customFilters = useFilters({});
+
+  // Hook de exportação
+  const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(FornecedoresService);
+
+  // Hook de auditoria
+  const {
+    showAuditModal,
+    auditLogs,
+    auditLoading,
+    auditFilters,
+    handleOpenAuditModal,
+    handleCloseAuditModal,
+    handleApplyAuditFilters,
+    handleExportAuditXLSX,
+    handleExportAuditPDF,
+    setAuditFilters
+  } = useAuditoria('fornecedores');
+
+  // Hook de formulário
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+
+  // Estados específicos dos fornecedores
   const [searching, setSearching] = useState(false);
-  const [estatisticas, setEstatisticas] = useState({
+  const [estatisticasFornecedores, setEstatisticasFornecedores] = useState({
     total_fornecedores: 0,
     fornecedores_ativos: 0,
     com_email: 0,
     com_telefone: 0
   });
 
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [fornecedorToDelete, setFornecedorToDelete] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  
-  // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
-
-  // Hook de validação
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
-
-  // Debounce para busca
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-      // Resetar para primeira página quando buscar
-      if (searchTerm !== debouncedSearchTerm) {
-        setCurrentPage(1);
-      }
-    }, 500); // 500ms de delay
-
-    return () => clearTimeout(timer);
-  }, [searchTerm, debouncedSearchTerm]);
-
-  // Mostrar loading quando buscar
-  useEffect(() => {
-    if (searchTerm && searchTerm !== debouncedSearchTerm) {
-      setSearching(true);
-    } else {
-      setSearching(false);
-    }
-  }, [searchTerm, debouncedSearchTerm]);
-
-  useEffect(() => {
-    loadFornecedores();
-    loadEstatisticas();
-  }, [currentPage, itemsPerPage, debouncedSearchTerm]);
-
-  const loadFornecedores = async (params = {}) => {
-    setLoading(true);
-    try {
-      // Parâmetros de paginação e busca
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: debouncedSearchTerm, // Usar termo de busca com debounce
-        ...params
-      };
-
-      const result = await FornecedoresService.listar(paginationParams);
-      if (result.success) {
-        setFornecedores(result.data || []);
-        setTotalPages(result.pagination?.totalPages || 1);
-        setTotalItems(result.pagination?.totalItems || result.data?.length || 0);
-      } else {
-        toast.error(result.error || 'Erro ao carregar fornecedores');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar fornecedores:', error);
-      toast.error('Erro ao carregar fornecedores');
-    } finally {
-      setLoading(false);
-      setSearching(false);
-    }
-  };
-
-  const loadEstatisticas = async () => {
+  /**
+   * Carrega estatísticas específicas dos fornecedores
+   */
+  const loadEstatisticas = useCallback(async () => {
     try {
       const result = await FornecedoresService.buscarEstatisticas();
       if (result.success) {
-        setEstatisticas(result.data || {
+        setEstatisticasFornecedores(result.data || {
           total_fornecedores: 0,
           fornecedores_ativos: 0,
           com_email: 0,
@@ -123,31 +67,45 @@ export const useFornecedores = () => {
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
     }
-  };
+  }, []);
 
-  // Função para recarregar dados
-  const reloadData = () => {
-    loadFornecedores();
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
+    };
+
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
+
+  /**
+   * Submissão customizada
+   */
+  const onSubmitCustom = useCallback(async (data) => {
+    await baseEntity.onSubmit(data);
+    // Recarregar estatísticas após salvar
     loadEstatisticas();
-  };
+  }, [baseEntity, loadEstatisticas]);
 
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recarregar estatísticas após excluir
+    loadEstatisticas();
+  }, [baseEntity, loadEstatisticas]);
 
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1); // Resetar para primeira página
-  };
-
-  const handleSearch = (term) => {
-    setSearchTerm(term);
-  };
-
-  const handleOpenModal = (fornecedor = null, isView = false) => {
-    setEditingFornecedor(fornecedor);
-    setViewMode(isView);
-    setShowModal(true);
+  /**
+   * Abertura de modal customizada com reset do formulário
+   */
+  const handleOpenModalCustom = useCallback((fornecedor = null, isView = false) => {
+    baseEntity.handleOpenModal(fornecedor, isView);
     
     if (fornecedor) {
       reset(fornecedor);
@@ -167,156 +125,153 @@ export const useFornecedores = () => {
         status: 1
       });
     }
-  };
+  }, [baseEntity, reset]);
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingFornecedor(null);
-    setViewMode(false);
+  /**
+   * Fechamento de modal customizado com reset do formulário
+   */
+  const handleCloseModalCustom = useCallback(() => {
+    baseEntity.handleCloseModal();
     reset();
-  };
+  }, [baseEntity, reset]);
 
-  const onSubmit = async (data) => {
-    try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
-      let result;
-      
-      if (editingFornecedor) {
-        result = await FornecedoresService.atualizar(editingFornecedor.id, data);
-      } else {
-        result = await FornecedoresService.criar(data);
-      }
-
-      if (result.success) {
-        toast.success(editingFornecedor ? 'Fornecedor atualizado com sucesso!' : 'Fornecedor criado com sucesso!');
-        handleCloseModal();
-        reloadData();
-      } else {
-        if (handleApiResponse(result)) {
-          return; // Erros de validação foram tratados
-        }
-        toast.error(result.message || 'Erro ao salvar fornecedor');
-      }
-    } catch (error) {
-      console.error('Erro ao salvar fornecedor:', error);
-      toast.error('Erro ao salvar fornecedor');
-    }
-  };
-
-  const handleDeleteFornecedor = (fornecedor) => {
-    setFornecedorToDelete(fornecedor);
-    setShowDeleteConfirmModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!fornecedorToDelete) return;
-
-    try {
-      const result = await FornecedoresService.excluir(fornecedorToDelete.id);
-      if (result.success) {
-        toast.success('Fornecedor excluído com sucesso!');
-        reloadData();
-        setShowDeleteConfirmModal(false);
-        setFornecedorToDelete(null);
-      } else {
-        toast.error(result.message || 'Erro ao excluir fornecedor');
-      }
-    } catch (error) {
-      console.error('Erro ao excluir fornecedor:', error);
-      toast.error('Erro ao excluir fornecedor');
-    }
-  };
-
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setFornecedorToDelete(null);
-  };
-
-  const handleViewAudit = (fornecedorId) => {
-    setSelectedFornecedorId(fornecedorId);
-    setShowAuditModal(true);
-  };
-
-  const handleAuditFilterChange = (newFilters) => {
-    setAuditFilters(newFilters);
-    loadAuditLogs(selectedFornecedorId, newFilters);
-  };
-
-  const handleCloseAuditModal = () => {
-    setShowAuditModal(false);
-    setSelectedFornecedorId(null);
-    setAuditLogs([]);
-  };
-
-  const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(FornecedoresService);
-
-  const handleExportXLSX = async () => {
+  /**
+   * Exportação customizada com parâmetros de busca
+   */
+  const handleExportXLSXCustom = useCallback(async () => {
     const params = {
-      search: debouncedSearchTerm,
-      page: currentPage,
-      limit: itemsPerPage
+      search: customFilters.searchTerm,
+      page: baseEntity.currentPage,
+      limit: baseEntity.itemsPerPage
     };
     await exportXLSX(params);
-  };
+  }, [exportXLSX, customFilters.searchTerm, baseEntity.currentPage, baseEntity.itemsPerPage]);
 
-  const handleExportPDF = async () => {
+  const handleExportPDFCustom = useCallback(async () => {
     const params = {
-      search: debouncedSearchTerm,
-      page: currentPage,
-      limit: itemsPerPage
+      search: customFilters.searchTerm,
+      page: baseEntity.currentPage,
+      limit: baseEntity.itemsPerPage
     };
     await exportPDF(params);
-  };
+  }, [exportPDF, customFilters.searchTerm, baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  /**
+   * Função para recarregar dados
+   */
+  const reloadData = useCallback(() => {
+    loadDataWithFilters();
+    loadEstatisticas();
+  }, [loadDataWithFilters, loadEstatisticas]);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  // Carregar estatísticas iniciais
+  useEffect(() => {
+    loadEstatisticas();
+  }, [loadEstatisticas]);
+
+  // Mostrar loading quando buscar
+  useEffect(() => {
+    if (customFilters.searchTerm) {
+      setSearching(true);
+      const timer = setTimeout(() => setSearching(false), 500);
+      return () => clearTimeout(timer);
+    } else {
+      setSearching(false);
+    }
+  }, [customFilters.searchTerm]);
 
   return {
-    // Estados
-    fornecedores: Array.isArray(fornecedores) ? fornecedores : [],
-    loading,
-    showModal,
-    viewMode,
-    editingFornecedor,
+    // Estados principais (do hook base)
+    fornecedores: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasFornecedores, // Usar estatísticas específicas dos fornecedores
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingFornecedor: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    fornecedorToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Estados específicos dos fornecedores
+    searching,
+    
+    // Estados de auditoria (do hook auditoria)
     showAuditModal,
     auditLogs,
     auditLoading,
     auditFilters,
-    searching,
-    estatisticas,
-    searchTerm,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
+    
+    // Estados de formulário
     errors,
-
-    // Estados de validação
-    validationErrors,
-    showValidationModal,
-    handleCloseValidationModal,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    fornecedorToDelete,
-
-    // Funções
+    
+    // Ações de modal (customizadas)
+    handleOpenModal: handleOpenModalCustom,
+    handleCloseModal: handleCloseModalCustom,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    handleSearch: customFilters.setSearchTerm,
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    
+    // Ações de CRUD (customizadas)
+    onSubmit: onSubmitCustom,
+    handleDeleteFornecedor: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
+    // Ações de formulário
     register,
     handleSubmit,
     reset,
-    loadFornecedores,
+    
+    // Ações de dados
+    loadFornecedores: loadDataWithFilters,
     reloadData,
-    handlePageChange,
-    handleItemsPerPageChange,
-    handleSearch,
-    handleOpenModal,
-    handleCloseModal,
-    onSubmit,
-    handleDeleteFornecedor,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-    handleViewAudit,
-    handleAuditFilterChange,
+    
+    // Ações de auditoria (do hook auditoria)
+    handleViewAudit: handleOpenAuditModal,
+    handleAuditFilterChange: setAuditFilters,
     handleCloseAuditModal,
-    handleExportXLSX,
-    handleExportPDF
+    handleApplyAuditFilters,
+    handleExportAuditXLSX,
+    handleExportAuditPDF,
+    
+    // Ações de exportação (customizadas)
+    handleExportXLSX: handleExportXLSXCustom,
+    handleExportPDF: handleExportPDFCustom
   };
 };

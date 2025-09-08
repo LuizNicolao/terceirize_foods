@@ -83,7 +83,7 @@ const veiculoValidations = {
     
     body('categoria')
       .optional()
-      .isIn(['carga', 'passageiros', 'utilitario', 'especial']).withMessage('Categoria deve ser carga, passageiros, utilitario ou especial'),
+      .isIn(['Frota', 'Agregado', 'Terceiro']).withMessage('Categoria deve ser Frota, Agregado ou Terceiro'),
     
     body('capacidade_carga')
       .optional()
@@ -242,7 +242,7 @@ const veiculoValidations = {
     
     body('categoria')
       .optional()
-      .isIn(['carga', 'passageiros', 'utilitario', 'especial']).withMessage('Categoria deve ser carga, passageiros, utilitario ou especial'),
+      .isIn(['Frota', 'Agregado', 'Terceiro']).withMessage('Categoria deve ser Frota, Agregado ou Terceiro'),
     
     body('capacidade_carga')
       .optional()

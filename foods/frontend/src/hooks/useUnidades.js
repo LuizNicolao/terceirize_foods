@@ -1,260 +1,146 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import UnidadesService from '../services/unidades';
-import { useValidation } from './useValidation';
+import api from '../services/api';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useUnidades = () => {
-  // Hook de validação universal
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
+  const baseEntity = useBaseEntity('unidades', UnidadesService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados principais
-  const [unidades, setUnidades] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingUnidade, setEditingUnidade] = useState(null);
-
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [unidadeToDelete, setUnidadeToDelete] = useState(null);
-
-  // Estados de filtros e paginação
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
+  const customFilters = useFilters({});
+  
+  const [loading, setLoading] = useState(false);
+  
+  const [estatisticasUnidades, setEstatisticasUnidades] = useState({
     total_unidades: 0,
     unidades_ativas: 0,
     unidades_inativas: 0
   });
 
-  // Carregar unidades
-  const loadUnidades = async (params = {}) => {
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
+    };
+
     setLoading(true);
     try {
-      // Parâmetros de paginação
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        ...params
-      };
-
-      const result = await UnidadesService.listar(paginationParams);
-      if (result.success) {
-        // Garantir que data seja um array
-        const data = Array.isArray(result.data) ? result.data : [];
-        setUnidades(data);
+      const response = await UnidadesService.listar(params);
+      
+      if (response.success) {
+        await baseEntity.loadData(params);
         
-        // Extrair informações de paginação
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
+        if (response.statistics) {
+          setEstatisticasUnidades({
+            total_unidades: response.statistics.total || 0,
+            unidades_ativas: response.statistics.ativos || 0,
+            unidades_inativas: response.statistics.inativos || 0
+          });
         } else {
-          // Fallback se não houver paginação no backend
-          setTotalItems(data.length);
-          setTotalPages(Math.ceil(data.length / itemsPerPage));
+          const total = response.pagination?.total || response.data?.length || 0;
+          const ativos = response.data?.filter(item => item.status === 1).length || 0;
+          const inativos = response.data?.filter(item => item.status === 0).length || 0;
+          setEstatisticasUnidades({
+            total_unidades: total,
+            unidades_ativas: ativos,
+            unidades_inativas: inativos
+          });
         }
-        
-        // Calcular estatísticas básicas
-        const total = result.pagination?.totalItems || data.length;
-        const ativas = data.filter(u => u.status === 1).length;
-        const inativas = data.filter(u => u.status === 0).length;
-        
-        setEstatisticas({
-          total_unidades: total,
-          unidades_ativas: ativas,
-          unidades_inativas: inativas
-        });
       } else {
-        toast.error(result.error);
+        toast.error(response.message || 'Erro ao carregar unidades');
       }
     } catch (error) {
+      console.error('Erro ao carregar unidades:', error);
       toast.error('Erro ao carregar unidades');
     } finally {
       setLoading(false);
     }
-  };
+  }, [baseEntity, customFilters]);
 
-  // Carregar dados quando dependências mudarem
+  const onSubmitCustom = useCallback(async (data) => {
+    const cleanData = {
+      ...data,
+      nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
+      sigla: data.sigla && data.sigla.trim() !== '' ? data.sigla.trim() : null
+    };
+    
+    await baseEntity.onSubmit(cleanData);
+    setEstatisticasUnidades(baseEntity.statistics || { total_unidades: 0, unidades_ativas: 0, unidades_inativas: 0 });
+  }, [baseEntity]);
+
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    setEstatisticasUnidades(baseEntity.statistics || { total_unidades: 0, unidades_ativas: 0, unidades_inativas: 0 });
+  }, [baseEntity]);
+
   useEffect(() => {
-    loadUnidades();
-  }, [currentPage, itemsPerPage]);
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+  
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+  
+  useEffect(() => {
+    setEstatisticasUnidades(baseEntity.statistics || { total_unidades: 0, unidades_ativas: 0, unidades_inativas: 0 });
+  }, [baseEntity.statistics]);
 
-  // Filtrar unidades (client-side)
-  const filteredUnidades = (Array.isArray(unidades) ? unidades : []).filter(unidade => {
-    const matchesSearch = !searchTerm || 
-      (unidade.nome && unidade.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (unidade.sigla && unidade.sigla.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesStatus = statusFilter === 'todos' || 
-      (statusFilter === 'ativo' && unidade.status === 1) ||
-      (statusFilter === 'inativo' && unidade.status === 0);
-    
-    return matchesSearch && matchesStatus;
-  });
+  const handleClearFilters = useCallback(() => {
+    customFilters.clearFilters();
+    baseEntity.setCurrentPage(1);
+  }, [customFilters, baseEntity]);
 
-  // Funções de CRUD
-  const onSubmit = async (data) => {
-    try {
-      // Limpar campos vazios para evitar problemas de validação
-      const cleanData = {
-        ...data,
-        nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
-        sigla: data.sigla && data.sigla.trim() !== '' ? data.sigla.trim() : null
-      };
-
-      let result;
-      if (editingUnidade) {
-        result = await UnidadesService.atualizar(editingUnidade.id, cleanData);
-      } else {
-        result = await UnidadesService.criar(cleanData);
-      }
-      
-      // Verificar se há erros de validação
-      if (handleApiResponse(result)) {
-        return; // Se há erros de validação, não continua
-      }
-      
-      if (result.success) {
-        toast.success(editingUnidade ? 'Unidade atualizada com sucesso!' : 'Unidade criada com sucesso!');
-        handleCloseModal();
-        loadUnidades();
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      toast.error('Erro ao salvar unidade');
-    }
-  };
-
-  const handleDeleteUnidade = (unidade) => {
-    setUnidadeToDelete(unidade);
-    setShowDeleteConfirmModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!unidadeToDelete) return;
-
-    try {
-      const result = await UnidadesService.excluir(unidadeToDelete.id);
-      if (result.success) {
-        toast.success('Unidade excluída com sucesso!');
-        loadUnidades();
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      toast.error('Erro ao excluir unidade');
-    } finally {
-      setShowDeleteConfirmModal(false);
-      setUnidadeToDelete(null);
-    }
-  };
-
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setUnidadeToDelete(null);
-  };
-
-  // Funções de modal
-  const handleAddUnidade = () => {
-    setViewMode(false);
-    setEditingUnidade(null);
-    setShowModal(true);
-  };
-
-  const handleViewUnidade = (unidade) => {
-    setViewMode(true);
-    setEditingUnidade(unidade);
-    setShowModal(true);
-  };
-
-  const handleEditUnidade = (unidade) => {
-    setViewMode(false);
-    setEditingUnidade(unidade);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setViewMode(false);
-    setEditingUnidade(null);
-  };
-
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  // Funções utilitárias
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleString('pt-BR');
-  };
+  }, []);
 
-  const getStatusLabel = (status) => {
+  const getStatusLabel = useCallback((status) => {
     return status === 1 ? 'Ativo' : 'Inativo';
-  };
+  }, []);
 
   return {
-    // Estados
-    unidades: Array.isArray(filteredUnidades) ? filteredUnidades : [],
+    unidades: baseEntity.items,
     loading,
-    showModal,
-    viewMode,
-    editingUnidade,
-    searchTerm,
-    statusFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
-
-    // Estados de validação (do hook universal)
-    validationErrors,
-    showValidationModal,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    unidadeToDelete,
-
-    // Funções CRUD
-    onSubmit,
-    handleDeleteUnidade,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-
-    // Funções de modal
-    handleAddUnidade,
-    handleViewUnidade,
-    handleEditUnidade,
-    handleCloseModal,
-
-    // Funções de validação (do hook universal)
-    handleCloseValidationModal,
-
-    // Funções de paginação
-    handlePageChange,
-
-    // Funções de filtros
-    setSearchTerm,
-    setStatusFilter,
-    setItemsPerPage,
-
-    // Funções utilitárias
+    estatisticas: estatisticasUnidades,
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingUnidade: baseEntity.editingItem,
+    unidade: baseEntity.editingItem, // Alias for modal compatibility
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    unidadeToDelete: baseEntity.itemToDelete,
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    handleAddUnidade: baseEntity.handleAdd,
+    handleViewUnidade: baseEntity.handleView,
+    handleEditUnidade: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setItemsPerPage: baseEntity.handleItemsPerPageChange,
+    handleClearFilters,
+    onSubmit: onSubmitCustom,
+    handleSubmitUnidade: onSubmitCustom,
+    handleDeleteUnidade: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
     formatDate,
     getStatusLabel
   };

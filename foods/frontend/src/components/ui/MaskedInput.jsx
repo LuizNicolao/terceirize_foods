@@ -1,5 +1,5 @@
 import React from 'react';
-import { useInputMask } from '../../hooks/useInputMask';
+import { useInputMask } from '../../hooks/common/useInputMask';
 
 export const MaskedInput = ({
   maskType,

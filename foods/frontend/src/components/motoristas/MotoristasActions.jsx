@@ -4,24 +4,16 @@ import { Button } from '../ui';
 
 const MotoristasActions = ({ onExportXLSX, onExportPDF }) => {
   return (
-    <div className="flex justify-end gap-2 mb-4">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onExportXLSX}
-        className="flex items-center gap-2"
-      >
-        <FaFileExcel className="w-4 h-4" />
-        Exportar XLSX
+    <div className="flex gap-2 sm:gap-3 mb-4">
+      <Button onClick={onExportXLSX} variant="outline" size="sm">
+        <FaFileExcel className="mr-1 sm:mr-2" />
+        <span className="hidden sm:inline">Exportar XLSX</span>
+        <span className="sm:hidden">XLSX</span>
       </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={onExportPDF}
-        className="flex items-center gap-2"
-      >
-        <FaFilePdf className="w-4 h-4" />
-        Exportar PDF
+      <Button onClick={onExportPDF} variant="outline" size="sm">
+        <FaFilePdf className="mr-1 sm:mr-2" />
+        <span className="hidden sm:inline">Exportar PDF</span>
+        <span className="sm:hidden">PDF</span>
       </Button>
     </div>
   );

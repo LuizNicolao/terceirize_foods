@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMaskedField } from '../../hooks/useMaskedField';
+import { useMaskedField } from '../../hooks/common/useMaskedField';
 
 export const MaskedFormInput = ({
   maskType,

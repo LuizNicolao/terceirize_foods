@@ -7,12 +7,17 @@ const AuditModal = ({
   isOpen,
   onClose,
   logs,
+  auditLogs, // Adicionar suporte para auditLogs
   loading,
+  auditLoading, // Adicionar suporte para auditLoading
   filters,
+  auditFilters, // Adicionar suporte para auditFilters
   onApplyFilters,
   onExportXLSX,
   onExportPDF,
-  onSetFilters
+  onSetFilters,
+  onFilterChange, // Adicionar suporte para onFilterChange
+  title // Adicionar suporte para title
 }) => {
   const [expandedDetails, setExpandedDetails] = useState({});
 
@@ -25,13 +30,18 @@ const AuditModal = ({
 
   if (!isOpen) return null;
 
+  // Usar as props corretas com fallback
+  const currentLogs = Array.isArray(auditLogs) ? auditLogs : (Array.isArray(logs) ? logs : []);
+  const currentLoading = auditLoading !== undefined ? auditLoading : loading;
+  const currentFilters = auditFilters || filters || {};
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="full">
       <div className="bg-white rounded-lg shadow-xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900">
-            Relatório de Auditoria
+            {title || 'Relatório de Auditoria'}
           </h2>
           <div className="flex items-center gap-2">
             <ExportButtons
@@ -60,8 +70,15 @@ const AuditModal = ({
               </label>
               <Input
                 type="date"
-                value={filters?.dataInicio || ''}
-                onChange={(e) => onSetFilters({ ...filters, dataInicio: e.target.value })}
+                value={currentFilters?.dataInicio || ''}
+                onChange={(e) => {
+                  const newFilters = { ...currentFilters, dataInicio: e.target.value };
+                  if (onSetFilters) {
+                    onSetFilters(newFilters);
+                  } else if (onFilterChange) {
+                    onFilterChange('dataInicio', e.target.value);
+                  }
+                }}
               />
             </div>
             <div>
@@ -70,8 +87,15 @@ const AuditModal = ({
               </label>
               <Input
                 type="date"
-                value={filters?.dataFim || ''}
-                onChange={(e) => onSetFilters({ ...filters, dataFim: e.target.value })}
+                value={currentFilters?.dataFim || ''}
+                onChange={(e) => {
+                  const newFilters = { ...currentFilters, dataFim: e.target.value };
+                  if (onSetFilters) {
+                    onSetFilters(newFilters);
+                  } else if (onFilterChange) {
+                    onFilterChange('dataFim', e.target.value);
+                  }
+                }}
               />
             </div>
             <div>
@@ -80,8 +104,15 @@ const AuditModal = ({
               </label>
               <select
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                value={filters?.acao || ''}
-                onChange={(e) => onSetFilters({ ...filters, acao: e.target.value })}
+                value={currentFilters?.acao || ''}
+                onChange={(e) => {
+                  const newFilters = { ...currentFilters, acao: e.target.value };
+                  if (onSetFilters) {
+                    onSetFilters(newFilters);
+                  } else if (onFilterChange) {
+                    onFilterChange('acao', e.target.value);
+                  }
+                }}
               >
                 <option value="">Todas</option>
                 <option value="create">Criar</option>
@@ -105,12 +136,12 @@ const AuditModal = ({
 
         {/* Conteúdo */}
         <div className="p-6">
-          {loading ? (
+          {currentLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
               <p className="mt-2 text-gray-600">Carregando logs de auditoria...</p>
             </div>
-          ) : logs.length === 0 ? (
+          ) : currentLogs.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               Nenhum log de auditoria encontrado
             </div>
@@ -134,7 +165,7 @@ const AuditModal = ({
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {logs.map((log, index) => (
+                  {currentLogs.map((log, index) => (
                     <React.Fragment key={index}>
                       <tr className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

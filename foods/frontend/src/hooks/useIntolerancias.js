@@ -1,69 +1,64 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import IntoleranciasService from '../services/intolerancias';
-import { useValidation } from './useValidation';
+import api from '../services/api';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useIntolerancias = () => {
-  // Estados principais
-  const [intolerancias, setIntolerancias] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingIntolerancia, setEditingIntolerancia] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
+  const baseEntity = useBaseEntity('intolerancias', IntoleranciasService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
+  const customFilters = useFilters({});
+  
+  const [loading, setLoading] = useState(false);
+  
+  const [estatisticasIntolerancias, setEstatisticasIntolerancias] = useState({
     total_intolerancias: 0,
     intolerancias_ativas: 0,
     intolerancias_inativas: 0,
     nomes_unicos: 0
   });
 
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [intoleranciaToDelete, setIntoleranciaToDelete] = useState(null);
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
+    };
 
-  // Hook de validação
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
-
-  // Carregar intolerâncias
-  const loadIntolerancias = async (params = {}) => {
     setLoading(true);
     try {
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        ...params
-      };
-
-      const result = await IntoleranciasService.listar(paginationParams);
-      if (result.success) {
-        setIntolerancias(result.data || []);
+      const response = await IntoleranciasService.listar(params);
+      
+      if (response.success) {
+        await baseEntity.loadData(params);
         
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
+        if (response.statistics) {
+          setEstatisticasIntolerancias({
+            total_intolerancias: response.statistics.total || 0,
+            intolerancias_ativas: response.statistics.ativos || 0,
+            intolerancias_inativas: response.statistics.inativos || 0,
+            nomes_unicos: response.statistics.nomes_unicos || 0
+          });
         } else {
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
+          const total = response.pagination?.total || response.data?.length || 0;
+          const ativos = response.data?.filter(item => item.status === 1).length || 0;
+          const inativos = response.data?.filter(item => item.status === 0).length || 0;
+          setEstatisticasIntolerancias({
+            total_intolerancias: total,
+            intolerancias_ativas: ativos,
+            intolerancias_inativas: inativos,
+            nomes_unicos: 0
+          });
         }
       } else {
-        toast.error(result.error);
+        toast.error(response.message || 'Erro ao carregar intolerâncias');
       }
     } catch (error) {
       console.error('Erro ao carregar intolerâncias:', error);
@@ -71,182 +66,79 @@ export const useIntolerancias = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [baseEntity, customFilters]);
 
-  // Carregar estatísticas
-  const loadEstatisticas = async () => {
-    try {
-      const result = await IntoleranciasService.buscarEstatisticas();
-      if (result.success && result.data?.geral) {
-        setEstatisticas(result.data.geral);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error);
-    }
-  };
+  const onSubmitCustom = useCallback(async (data) => {
+    const cleanData = {
+      ...data,
+      nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null
+    };
+    
+    await baseEntity.onSubmit(cleanData);
+    setEstatisticasIntolerancias(baseEntity.statistics || { total_intolerancias: 0, intolerancias_ativas: 0, intolerancias_inativas: 0, nomes_unicos: 0 });
+  }, [baseEntity]);
 
-  // Carregar dados quando dependências mudarem
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    setEstatisticasIntolerancias(baseEntity.statistics || { total_intolerancias: 0, intolerancias_ativas: 0, intolerancias_inativas: 0, nomes_unicos: 0 });
+  }, [baseEntity]);
+
   useEffect(() => {
-    loadIntolerancias();
-    loadEstatisticas();
-  }, [currentPage, itemsPerPage]);
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+  
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+  
+  useEffect(() => {
+    setEstatisticasIntolerancias(baseEntity.statistics || { total_intolerancias: 0, intolerancias_ativas: 0, intolerancias_inativas: 0, nomes_unicos: 0 });
+  }, [baseEntity.statistics]);
 
-  // Filtrar intolerâncias (client-side)
-  const filteredIntolerancias = intolerancias.filter(intolerancia => {
-    const matchesSearch = !searchTerm || 
-      (intolerancia.nome && intolerancia.nome.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesStatus = statusFilter === 'todos' || intolerancia.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
-  });
+  const handleClearFilters = useCallback(() => {
+    customFilters.clearFilters();
+    baseEntity.setCurrentPage(1);
+  }, [customFilters, baseEntity]);
 
-  // Funções de CRUD
-  const onSubmit = async (data) => {
-    try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
-      // Limpar campos vazios para evitar problemas de validação
-      const cleanData = {
-        ...data,
-        nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null
-      };
-
-      let result;
-      if (editingIntolerancia) {
-        result = await IntoleranciasService.atualizar(editingIntolerancia.id, cleanData);
-      } else {
-        result = await IntoleranciasService.criar(cleanData);
-      }
-      
-      if (result.success) {
-        toast.success(editingIntolerancia ? 'Intolerância atualizada com sucesso!' : 'Intolerância criada com sucesso!');
-        handleCloseModal();
-        loadIntolerancias();
-      } else {
-        if (handleApiResponse(result)) {
-          return; // Erros de validação foram tratados
-        }
-        toast.error(result.message || 'Erro ao salvar intolerância');
-      }
-    } catch (error) {
-      console.error('Erro ao salvar intolerância:', error);
-      toast.error('Erro ao salvar intolerância');
-    }
-  };
-
-  const handleDeleteIntolerancia = (intolerancia) => {
-    setIntoleranciaToDelete(intolerancia);
-    setShowDeleteConfirmModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!intoleranciaToDelete) return;
-
-    try {
-      const result = await IntoleranciasService.excluir(intoleranciaToDelete.id);
-      if (result.success) {
-        toast.success('Intolerância excluída com sucesso!');
-        loadIntolerancias();
-        setShowDeleteConfirmModal(false);
-        setIntoleranciaToDelete(null);
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      toast.error('Erro ao excluir intolerância');
-    }
-  };
-
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setIntoleranciaToDelete(null);
-  };
-
-  // Funções de modal
-  const handleAddIntolerancia = () => {
-    setViewMode(false);
-    setEditingIntolerancia(null);
-    setShowModal(true);
-  };
-
-  const handleViewIntolerancia = (intolerancia) => {
-    setViewMode(true);
-    setEditingIntolerancia(intolerancia);
-    setShowModal(true);
-  };
-
-  const handleEditIntolerancia = (intolerancia) => {
-    setViewMode(false);
-    setEditingIntolerancia(intolerancia);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setViewMode(false);
-    setEditingIntolerancia(null);
-  };
-
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-  };
-
-  // Funções utilitárias
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleString('pt-BR');
-  };
+  }, []);
 
   return {
-    // Estados
-    intolerancias: Array.isArray(filteredIntolerancias) ? filteredIntolerancias : [],
+    intolerancias: baseEntity.items,
     loading,
-    showModal,
-    viewMode,
-    editingIntolerancia,
-    searchTerm,
-    statusFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
-    validationErrors,
-    showValidationModal,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    intoleranciaToDelete,
-
-    // Funções CRUD
-    onSubmit,
-    handleDeleteIntolerancia,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-
-    // Funções de modal
-    handleAddIntolerancia,
-    handleViewIntolerancia,
-    handleEditIntolerancia,
-    handleCloseModal,
-    handleCloseValidationModal,
-
-    // Funções de paginação
-    handlePageChange,
-    handleItemsPerPageChange,
-
-    // Funções de filtros
-    setSearchTerm,
-    setStatusFilter,
-
-    // Funções utilitárias
+    estatisticas: estatisticasIntolerancias,
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingIntolerancia: baseEntity.editingItem,
+    intolerancia: baseEntity.editingItem, // Alias for modal compatibility
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    intoleranciaToDelete: baseEntity.itemToDelete,
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    handleAddIntolerancia: baseEntity.handleAdd,
+    handleViewIntolerancia: baseEntity.handleView,
+    handleEditIntolerancia: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setItemsPerPage: baseEntity.handleItemsPerPageChange,
+    handleClearFilters,
+    onSubmit: onSubmitCustom,
+    handleSubmitIntolerancia: onSubmitCustom,
+    handleDeleteIntolerancia: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
     formatDate
   };
 };

@@ -1,45 +1,37 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import MotoristasService from '../services/motoristas';
 import FiliaisService from '../services/filiais';
-import { useValidation } from './useValidation';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useMotoristas = () => {
-  const [motoristas, setMotoristas] = useState([]);
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('motoristas', MotoristasService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
+  });
+
+  // Hook de filtros customizados para motoristas
+  const customFilters = useFilters({});
+
+  // Estados específicos dos motoristas
   const [filiais, setFiliais] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingMotorista, setEditingMotorista] = useState(null);
-  const [estatisticas, setEstatisticas] = useState({
+
+  // Estados de estatísticas específicas dos motoristas
+  const [estatisticasMotoristas, setEstatisticasMotoristas] = useState({
     total_motoristas: 0,
     motoristas_ativos: 0,
     em_ferias: 0,
     em_licenca: 0
   });
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
 
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [motoristaToDelete, setMotoristaToDelete] = useState(null);
-
-  // Hook de validação
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
-
-  // Carregar filiais
-  const loadFiliais = async () => {
+  /**
+   * Carrega filiais ativas
+   */
+  const loadFiliais = useCallback(async () => {
     try {
       const result = await FiliaisService.buscarAtivas();
       if (result.success) {
@@ -48,153 +40,71 @@ export const useMotoristas = () => {
     } catch (error) {
       console.error('Erro ao carregar filiais:', error);
     }
-  };
+  }, []);
 
-  // Carregar motoristas
-  const loadMotoristas = async (params = {}) => {
-    setLoading(true);
-    try {
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        ...params
-      };
-
-      const result = await MotoristasService.listar(paginationParams);
-      if (result.success) {
-        setMotoristas(result.data);
-        
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
-        } else {
-          setTotalPages(1);
-          setTotalItems(result.data.length);
-        }
-
-        // Calcular estatísticas
-        const stats = {
-          total_motoristas: result.data.length,
-          motoristas_ativos: result.data.filter(m => m.status === 'ativo').length,
-          em_ferias: result.data.filter(m => m.status === 'ferias').length,
-          em_licenca: result.data.filter(m => m.status === 'licenca').length
-        };
-        setEstatisticas(stats);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar motoristas:', error);
-      toast.error('Erro ao carregar motoristas');
-    } finally {
-      setLoading(false);
+  /**
+   * Calcula estatísticas específicas dos motoristas
+   */
+  const calculateEstatisticas = useCallback((motoristas) => {
+    if (!motoristas || motoristas.length === 0) {
+      setEstatisticasMotoristas({
+        total_motoristas: 0,
+        motoristas_ativos: 0,
+        em_ferias: 0,
+        em_licenca: 0
+      });
+      return;
     }
-  };
 
-  // Handlers de modal
-  const handleAddMotorista = () => {
-    setEditingMotorista(null);
-    setViewMode(false);
-    setShowModal(true);
-  };
+    const total = motoristas.length;
+    const ativos = motoristas.filter(m => m.status === 'ativo').length;
+    const ferias = motoristas.filter(m => m.status === 'ferias').length;
+    const licenca = motoristas.filter(m => m.status === 'licenca').length;
 
-  const handleViewMotorista = (motorista) => {
-    setEditingMotorista(motorista);
-    setViewMode(true);
-    setShowModal(true);
-  };
+    setEstatisticasMotoristas({
+      total_motoristas: total,
+      motoristas_ativos: ativos,
+      em_ferias: ferias,
+      em_licenca: licenca
+    });
+  }, []);
 
-  const handleEditMotorista = (motorista) => {
-    setEditingMotorista(motorista);
-    setViewMode(false);
-    setShowModal(true);
-  };
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
+    };
 
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingMotorista(null);
-    setViewMode(false);
-  };
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
 
-  // Handler de submit
-  const handleSubmit = async (data) => {
-    try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
-      if (editingMotorista) {
-        const result = await MotoristasService.atualizar(editingMotorista.id, data);
-        if (result.success) {
-          toast.success('Motorista atualizado com sucesso!');
-          handleCloseModal();
-          loadMotoristas();
-        } else {
-          // Verificar se há erros de validação
-          if (handleApiResponse(result)) {
-            return; // Erros de validação foram tratados
-          }
-          // Outros tipos de erro
-          toast.error(result.message || 'Erro ao atualizar motorista');
-        }
-      } else {
-        const result = await MotoristasService.criar(data);
-        if (result.success) {
-          toast.success('Motorista criado com sucesso!');
-          handleCloseModal();
-          loadMotoristas();
-        } else {
-          // Verificar se há erros de validação
-          if (handleApiResponse(result)) {
-            return; // Erros de validação foram tratados
-          }
-          // Outros tipos de erro
-          toast.error(result.message || 'Erro ao criar motorista');
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao salvar motorista:', error);
-      toast.error('Erro ao salvar motorista');
-    }
-  };
+  /**
+   * Submissão customizada que recarrega dados
+   */
+  const onSubmitCustom = useCallback(async (formData) => {
+    await baseEntity.onSubmit(formData);
+    // Recalcular estatísticas após salvar
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-  // Handler de exclusão
-  const handleDelete = (motorista) => {
-    setMotoristaToDelete(motorista);
-    setShowDeleteConfirmModal(true);
-  };
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recalcular estatísticas após excluir
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-  const handleConfirmDelete = async () => {
-    if (!motoristaToDelete) return;
-
-    try {
-      const result = await MotoristasService.excluir(motoristaToDelete.id);
-      if (result.success) {
-        toast.success('Motorista excluído com sucesso!');
-        loadMotoristas();
-        setShowDeleteConfirmModal(false);
-        setMotoristaToDelete(null);
-      }
-    } catch (error) {
-      console.error('Erro ao excluir motorista:', error);
-      toast.error('Erro ao excluir motorista');
-    }
-  };
-
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setMotoristaToDelete(null);
-  };
-
-  // Handlers de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-  };
-
-  // Handlers de exportação
-  const handleExportXLSX = async () => {
+  /**
+   * Handlers de exportação
+   */
+  const handleExportXLSX = useCallback(async () => {
     try {
       await MotoristasService.exportarXLSX();
       toast.success('Exportação XLSX iniciada!');
@@ -202,9 +112,9 @@ export const useMotoristas = () => {
       console.error('Erro ao exportar XLSX:', error);
       toast.error('Erro ao exportar XLSX');
     }
-  };
+  }, []);
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = useCallback(async () => {
     try {
       await MotoristasService.exportarPDF();
       toast.success('Exportação PDF iniciada!');
@@ -212,53 +122,85 @@ export const useMotoristas = () => {
       console.error('Erro ao exportar PDF:', error);
       toast.error('Erro ao exportar PDF');
     }
-  };
+  }, []);
 
   // Carregar dados iniciais
   useEffect(() => {
-    loadMotoristas();
     loadFiliais();
-  }, [currentPage, itemsPerPage]);
+  }, [loadFiliais]);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  // Recalcular estatísticas quando os dados mudam
+  useEffect(() => {
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    // Estados
-    motoristas,
+    // Estados principais (do hook base)
+    motoristas: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasMotoristas, // Usar estatísticas específicas dos motoristas
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingMotorista: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    motoristaToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Estados específicos dos motoristas
     filiais,
-    loading,
-    showModal,
-    viewMode,
-    editingMotorista,
-    estatisticas,
-    searchTerm,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-
-    // Estados de validação
-    validationErrors,
-    showValidationModal,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    motoristaToDelete,
-
-    // Setters
-    setSearchTerm,
-
-    // Handlers
-    handleAddMotorista,
-    handleViewMotorista,
-    handleEditMotorista,
-    handleCloseModal,
-    handleSubmit,
-    handleDelete,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-    handlePageChange,
-    handleItemsPerPageChange,
+    
+    // Ações de modal (do hook base)
+    handleAddMotorista: baseEntity.handleAdd,
+    handleViewMotorista: baseEntity.handleView,
+    handleEditMotorista: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    
+    // Ações de CRUD (customizadas)
+    handleSubmit: onSubmitCustom,
+    handleDelete: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
+    // Ações de exportação
     handleExportXLSX,
-    handleExportPDF,
-    handleCloseValidationModal
+    handleExportPDF
   };
 };

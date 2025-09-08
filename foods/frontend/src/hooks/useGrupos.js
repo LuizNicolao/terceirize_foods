@@ -1,270 +1,177 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import GruposService from '../services/grupos';
-import { useValidation } from './useValidation';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useGrupos = () => {
-  // Hook de validação universal
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('grupos', GruposService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados principais
-  const [grupos, setGrupos] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingGrupo, setEditingGrupo] = useState(null);
+  // Hook de filtros customizados para grupos
+  const customFilters = useFilters({});
 
-  // Estados de filtros e paginação
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [grupoToDelete, setGrupoToDelete] = useState(null);
-
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
+  // Estados de estatísticas específicas dos grupos
+  const [estatisticasGrupos, setEstatisticasGrupos] = useState({
     total_grupos: 0,
     grupos_ativos: 0,
     grupos_inativos: 0,
     subgrupos_total: 0
   });
 
-  // Carregar grupos
-  const loadGrupos = async (params = {}) => {
-    setLoading(true);
-    try {
-      // Parâmetros de paginação
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: searchTerm,
-        status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined,
-        ...params
-      };
+  /**
+   * Calcula estatísticas específicas dos grupos
+   */
+  const calculateEstatisticas = useCallback((grupos) => {
+    if (!grupos || grupos.length === 0) {
+      setEstatisticasGrupos({
+        total_grupos: 0,
+        grupos_ativos: 0,
+        grupos_inativos: 0,
+        subgrupos_total: 0
+      });
+      return;
+    }
 
-      const result = await GruposService.listar(paginationParams);
-      if (result.success) {
-        setGrupos(result.data);
-        
-        // Extrair informações de paginação
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
-        } else {
-          // Fallback se não houver paginação no backend
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
-        }
-        
-        // Calcular estatísticas básicas
-        const total = result.pagination?.totalItems || result.data.length;
-        const ativos = result.data.filter(g => g.status === 'ativo').length;
-        const inativos = result.data.filter(g => g.status === 'inativo').length;
-        const subgrupos = result.data.reduce((acc, grupo) => acc + (grupo.subgrupos_count || 0), 0);
-        
-        setEstatisticas({
+    const total = grupos.length;
+    const ativos = grupos.filter(g => g.status === 'ativo').length;
+    const inativos = grupos.filter(g => g.status === 'inativo').length;
+    const subgrupos = grupos.reduce((acc, grupo) => acc + (grupo.subgrupos_count || 0), 0);
+
+    setEstatisticasGrupos({
           total_grupos: total,
           grupos_ativos: ativos,
           grupos_inativos: inativos,
           subgrupos_total: subgrupos
         });
-      } else {
-        toast.error(result.message || 'Erro ao carregar grupos');
-      }
-    } catch (error) {
-      toast.error('Erro ao carregar grupos');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, []);
 
-  // Carregar dados quando dependências mudarem
-  useEffect(() => {
-    loadGrupos();
-  }, [currentPage, itemsPerPage, searchTerm, statusFilter]);
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
+    };
 
-  // Filtrar grupos (client-side)
-  const filteredGrupos = (Array.isArray(grupos) ? grupos : []).filter(grupo => {
-    const matchesSearch = !searchTerm || 
-      (grupo.nome && grupo.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (grupo.codigo && grupo.codigo.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (grupo.descricao && grupo.descricao.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesStatus = statusFilter === 'todos' || 
-      (statusFilter === 'ativo' && grupo.status === 'ativo') ||
-      (statusFilter === 'inativo' && grupo.status === 'inativo');
-    
-    return matchesSearch && matchesStatus;
-  });
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
 
-  // Funções de CRUD
-  const onSubmit = async (data) => {
-    try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
-      // Limpar campos vazios para evitar problemas de validação
-      const cleanData = {
-        ...data,
-        nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
-        codigo: data.codigo && data.codigo.trim() !== '' ? data.codigo.trim() : null,
-        descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null,
-        status: data.status
-      };
+  /**
+   * Submissão customizada
+   */
+  const onSubmitCustom = useCallback(async (data) => {
+    await baseEntity.onSubmit(data);
+    // Recalcular estatísticas após salvar
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-      let result;
-      if (editingGrupo) {
-        result = await GruposService.atualizar(editingGrupo.id, cleanData);
-      } else {
-        result = await GruposService.criar(cleanData);
-      }
-      
-      if (result.success) {
-        toast.success(editingGrupo ? 'Grupo atualizado com sucesso!' : 'Grupo criado com sucesso!');
-        handleCloseModal();
-        loadGrupos();
-      } else {
-        if (handleApiResponse(result)) {
-          return; // Erros de validação foram tratados
-        }
-        toast.error(result.message || 'Erro ao salvar grupo');
-      }
-    } catch (error) {
-      toast.error('Erro ao salvar grupo');
-    }
-  };
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recalcular estatísticas após excluir
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-  const handleDeleteGrupo = (grupo) => {
-    setGrupoToDelete(grupo);
-    setShowDeleteConfirmModal(true);
-  };
+  /**
+   * Funções auxiliares
+   */
+  const handleClearFilters = useCallback(() => {
+    customFilters.setSearchTerm('');
+    customFilters.setStatusFilter('todos');
+    baseEntity.setCurrentPage(1);
+  }, [customFilters, baseEntity]);
 
-  const handleConfirmDelete = async () => {
-    if (!grupoToDelete) return;
-
-    try {
-      const result = await GruposService.excluir(grupoToDelete.id);
-      if (result.success) {
-        toast.success('Grupo excluído com sucesso!');
-        loadGrupos();
-        setShowDeleteConfirmModal(false);
-        setGrupoToDelete(null);
-      } else {
-        toast.error(result.message || 'Erro ao excluir grupo');
-      }
-    } catch (error) {
-      toast.error('Erro ao excluir grupo');
-    }
-  };
-
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setGrupoToDelete(null);
-  };
-
-  // Funções de modal
-  const handleAddGrupo = () => {
-    setViewMode(false);
-    setEditingGrupo(null);
-    setShowModal(true);
-  };
-
-  const handleViewGrupo = (grupo) => {
-    setViewMode(true);
-    setEditingGrupo(grupo);
-    setShowModal(true);
-  };
-
-  const handleEditGrupo = (grupo) => {
-    setViewMode(false);
-    setEditingGrupo(grupo);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setViewMode(false);
-    setEditingGrupo(null);
-  };
-
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-  };
-
-  // Funções de filtros
-  const handleClearFilters = () => {
-    setSearchTerm('');
-    setStatusFilter('todos');
-    setCurrentPage(1);
-  };
-
-  // Funções utilitárias
-  const getStatusLabel = (status) => {
+  const getStatusLabel = useCallback((status) => {
     return status === 'ativo' ? 'Ativo' : 'Inativo';
-  };
+  }, []);
 
-  const formatDate = (dateString) => {
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleString('pt-BR');
-  };
+  }, []);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  // Recalcular estatísticas quando os dados mudam
+  useEffect(() => {
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    // Estados
-    grupos: Array.isArray(filteredGrupos) ? filteredGrupos : [],
-    loading,
-    showModal,
-    viewMode,
-    editingGrupo,
-    showValidationModal,
-    validationErrors,
-    searchTerm,
-    statusFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    grupoToDelete,
-
-    // Funções CRUD
-    onSubmit,
-    handleDeleteGrupo,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-
-    // Funções de modal
-    handleAddGrupo,
-    handleViewGrupo,
-    handleEditGrupo,
-    handleCloseModal,
-    handleCloseValidationModal,
-
-    // Funções de paginação
-    handlePageChange,
-
-    // Funções de filtros
-    setSearchTerm,
-    setStatusFilter,
-    setItemsPerPage,
+    // Estados principais (do hook base)
+    grupos: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasGrupos, // Usar estatísticas específicas dos grupos
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingGrupo: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    grupoToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Ações de modal (do hook base)
+    handleAddGrupo: baseEntity.handleAdd,
+    handleViewGrupo: baseEntity.handleView,
+    handleEditGrupo: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,
+    
+    // Ações de CRUD (customizadas)
+    onSubmit: onSubmitCustom,
+    handleDeleteGrupo: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
 
     // Funções utilitárias
-    formatDate,
-    getStatusLabel
+    getStatusLabel,
+    formatDate
   };
 };

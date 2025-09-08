@@ -127,17 +127,20 @@ class ProdutoGenericoCRUDController {
       }
     }
 
-    // Inserir novo produto genérico (sem código inicialmente)
+    // Gerar código temporário primeiro
+    const codigoTemporario = `TEMP-${Date.now()}`;
+
+    // Inserir novo produto genérico com código temporário
     const result = await executeQuery(
       `INSERT INTO produto_generico (
-        nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
+        codigo, nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
         unidade_medida_id, referencia_mercado, produto_padrao, peso_liquido, peso_bruto,
         regra_palet, informacoes_adicionais, referencia_interna, referencia_externa,
         registro_especifico, tipo_registro, prazo_validade_padrao, unidade_validade,
         integracao_senior, status, usuario_criador_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        nome, produto_origem_id, fator_conversao || 1.000, grupo_id, subgrupo_id, classe_id,
+        codigoTemporario, nome, produto_origem_id, fator_conversao || 1.000, grupo_id, subgrupo_id, classe_id,
         unidade_medida_id, referencia_mercado, produto_padrao || 'Não', peso_liquido, peso_bruto,
         regra_palet, informacoes_adicionais, referencia_interna, referencia_externa,
         registro_especifico, tipo_registro, prazo_validade_padrao, unidade_validade,
@@ -157,13 +160,13 @@ class ProdutoGenericoCRUDController {
     // Gerenciar vínculo automático com produto origem
     try {
       await ProdutoGenericoCRUDController.gerenciarVinculoProdutoOrigem(
-        novoProdutoGenerico.insertId, 
+        result.insertId, 
         produto_origem_id, 
         produto_padrao || 'Não'
       );
     } catch (error) {
       // Se houve erro no vínculo, excluir o produto genérico criado
-      await executeQuery('DELETE FROM produto_generico WHERE id = ?', [novoProdutoGenerico.insertId]);
+      await executeQuery('DELETE FROM produto_generico WHERE id = ?', [result.insertId]);
       return errorResponse(res, error.message, STATUS_CODES.CONFLICT);
     }
 
@@ -188,7 +191,7 @@ class ProdutoGenericoCRUDController {
       LEFT JOIN usuarios uc ON pg.usuario_criador_id = uc.id
       LEFT JOIN usuarios ua ON pg.usuario_atualizador_id = ua.id
       WHERE pg.id = ?`,
-      [novoProdutoGenerico.insertId]
+      [result.insertId]
     );
 
     successResponse(res, produtoGenericoCriado[0], 'Produto genérico criado com sucesso');
@@ -294,10 +297,10 @@ class ProdutoGenericoCRUDController {
       return errorResponse(res, error.message, STATUS_CODES.CONFLICT);
     }
 
-    // Atualizar produto genérico
+    // Atualizar produto genérico (codigo não é editável)
     await executeQuery(
       `UPDATE produto_generico SET 
-        codigo = ?, nome = ?, produto_origem_id = ?, fator_conversao = ?, 
+        nome = ?, produto_origem_id = ?, fator_conversao = ?, 
         grupo_id = ?, subgrupo_id = ?, classe_id = ?, unidade_medida_id = ?, 
         referencia_mercado = ?, produto_padrao = ?, peso_liquido = ?, peso_bruto = ?,
         regra_palet = ?, informacoes_adicionais = ?, referencia_interna = ?, 
@@ -306,7 +309,7 @@ class ProdutoGenericoCRUDController {
         status = ?, usuario_atualizador_id = ?
       WHERE id = ?`,
       [
-        codigo, nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
+        nome, produto_origem_id, fator_conversao, grupo_id, subgrupo_id, classe_id,
         unidade_medida_id, referencia_mercado, produto_padrao, peso_liquido, peso_bruto,
         regra_palet, informacoes_adicionais, referencia_interna, referencia_externa,
         registro_especifico, tipo_registro, prazo_validade_padrao, unidade_validade,

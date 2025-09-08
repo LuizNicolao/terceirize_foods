@@ -1,109 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
 import FiliaisService from '../services/filiais';
-import api from '../services/api';
-import { useValidation } from './useValidation';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useUnidadesEscolares = () => {
-  // Hook de validação universal
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('unidades escolares', UnidadesEscolaresService, {
+    initialItemsPerPage: 20,
+    initialFilters: { rotaFilter: 'todos' },
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados principais
-  const [unidades, setUnidades] = useState([]);
+  // Hook de filtros customizados para unidades escolares
+  const customFilters = useFilters({ rotaFilter: 'todos' });
+
+  // Estados específicos das unidades escolares
   const [rotas, setRotas] = useState([]);
   const [filiais, setFiliais] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [loadingRotas, setLoadingRotas] = useState(false);
   const [loadingFiliais, setLoadingFiliais] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingUnidade, setEditingUnidade] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
-  const [rotaFilter, setRotaFilter] = useState('todos');
 
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [unidadeToDelete, setUnidadeToDelete] = useState(null);
-
-  // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
-
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
+  // Estados de estatísticas específicas das unidades escolares
+  const [estatisticasUnidades, setEstatisticasUnidades] = useState({
     total_unidades: 0,
     unidades_ativas: 0,
     total_estados: 0,
     total_cidades: 0
   });
 
-  // Carregar unidades escolares
-  const loadUnidades = async (params = {}) => {
-    setLoading(true);
-    try {
-      // Se não há parâmetros específicos, usar os estados atuais
-      // Se há parâmetros específicos (como mudança de página), usar eles
-      const paginationParams = {
-        page: params.page !== undefined ? params.page : currentPage,
-        limit: params.limit !== undefined ? params.limit : itemsPerPage,
-        ...params
-      };
-
-      const result = await UnidadesEscolaresService.listar(paginationParams);
-      if (result.success) {
-        setUnidades(result.data);
-        
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.total || result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.page || result.pagination.currentPage || 1);
-        } else {
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
-        }
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar unidades escolares:', error);
-      toast.error('Erro ao carregar unidades escolares');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Carregar estatísticas
-  const loadEstatisticas = async () => {
-    try {
-      const result = await UnidadesEscolaresService.buscarEstatisticas();
-      if (result.success) {
-        setEstatisticas(result.data || {
-          total_unidades: 0,
-          unidades_ativas: 0,
-          total_estados: 0,
-          total_cidades: 0
-        });
-      } else {
-        console.error('Erro ao carregar estatísticas:', result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar estatísticas:', error);
-    }
-  };
-
-  // Carregar rotas
-  const loadRotas = async () => {
+  /**
+   * Carrega rotas ativas
+   */
+  const loadRotas = useCallback(async () => {
     try {
       setLoadingRotas(true);
       const result = await RotasService.buscarAtivas();
@@ -119,10 +51,12 @@ export const useUnidadesEscolares = () => {
     } finally {
       setLoadingRotas(false);
     }
-  };
+  }, []);
 
-  // Carregar filiais
-  const loadFiliais = async () => {
+  /**
+   * Carrega filiais ativas
+   */
+  const loadFiliais = useCallback(async () => {
     try {
       setLoadingFiliais(true);
       const result = await FiliaisService.buscarAtivas();
@@ -138,209 +72,164 @@ export const useUnidadesEscolares = () => {
     } finally {
       setLoadingFiliais(false);
     }
-  };
+  }, []);
 
-  // Carregar dados iniciais
-  useEffect(() => {
-    loadUnidades();
-    loadRotas();
-    loadFiliais();
-    loadEstatisticas();
-  }, []); // Só executa uma vez na montagem
-
-  // Carregar dados quando dependências mudarem (apenas para outras funções)
-  useEffect(() => {
-    // Não chamar loadUnidades aqui, pois pode sobrescrever mudanças manuais
-    loadRotas();
-    loadFiliais();
-    loadEstatisticas();
-  }, [currentPage, itemsPerPage]);
-
-  // Filtrar unidades escolares
-  const filteredUnidades = unidades.filter(unidade => {
-    const matchesSearch = !searchTerm || 
-      (unidade.codigo_teknisa && unidade.codigo_teknisa.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (unidade.nome_escola && unidade.nome_escola.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (unidade.cidade && unidade.cidade.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (unidade.estado && unidade.estado.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (unidade.id && unidade.id.toString().includes(searchTerm));
-    
-    const matchesStatus = statusFilter === 'todos' || unidade.status === statusFilter;
-    const matchesRota = rotaFilter === 'todos' || unidade.rota_id?.toString() === rotaFilter;
-    
-    return matchesSearch && matchesStatus && matchesRota;
-  });
-
-  // Funções de CRUD
-  const onSubmit = async (data) => {
+  /**
+   * Carrega estatísticas específicas das unidades escolares
+   */
+  const loadEstatisticasUnidades = useCallback(async () => {
     try {
-      let result;
-      if (editingUnidade) {
-        result = await UnidadesEscolaresService.atualizar(editingUnidade.id, data);
-      } else {
-        result = await UnidadesEscolaresService.criar(data);
-      }
-      
+      const result = await UnidadesEscolaresService.buscarEstatisticas();
       if (result.success) {
-        toast.success(result.message);
-        handleCloseModal();
-        reloadData();
+        setEstatisticasUnidades(result.data || {
+          total_unidades: 0,
+          unidades_ativas: 0,
+          total_estados: 0,
+          total_cidades: 0
+        });
       } else {
-        // Usar sistema universal de validação
-        if (handleApiResponse(result)) {
-          return; // Erros de validação tratados pelo hook
-        } else {
-          toast.error(result.error);
-        }
+        console.error('Erro ao carregar estatísticas:', result.error);
       }
     } catch (error) {
-      console.error('Erro ao salvar unidade escolar:', error);
-      toast.error('Erro ao salvar unidade escolar');
+      console.error('Erro ao carregar estatísticas:', error);
     }
-  };
+  }, []);
 
-  const handleDeleteUnidade = (unidade) => {
-    setUnidadeToDelete(unidade);
-    setShowDeleteConfirmModal(true);
-  };
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
+      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
+    };
 
-  const handleConfirmDelete = async () => {
-    if (!unidadeToDelete) return;
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
 
-    try {
-      const result = await UnidadesEscolaresService.excluir(unidadeToDelete.id);
-      
-      if (result.success) {
-        toast.success(result.message);
-        reloadData();
-        setShowDeleteConfirmModal(false);
-        setUnidadeToDelete(null);
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao excluir unidade escolar:', error);
-      toast.error('Erro ao excluir unidade escolar');
-    }
-  };
+  /**
+   * Submissão customizada que recarrega estatísticas
+   */
+  const onSubmitCustom = useCallback(async (formData) => {
+    await baseEntity.onSubmit(formData);
+    // Recarregar estatísticas após salvar
+    await loadEstatisticasUnidades();
+  }, [baseEntity, loadEstatisticasUnidades]);
 
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setUnidadeToDelete(null);
-  };
+  /**
+   * Exclusão customizada que recarrega estatísticas
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recarregar estatísticas após excluir
+    await loadEstatisticasUnidades();
+  }, [baseEntity, loadEstatisticasUnidades]);
 
-  // Funções de modal
-  const handleAddUnidade = () => {
-    setEditingUnidade(null);
-    setViewMode(false);
-    setShowModal(true);
-  };
+  /**
+   * Função para recarregar dados
+   */
+  const reloadData = useCallback(async () => {
+    await loadDataWithFilters();
+    await loadEstatisticasUnidades();
+  }, [loadDataWithFilters, loadEstatisticasUnidades]);
 
-  const handleViewUnidade = (unidade) => {
-    setEditingUnidade(unidade);
-    setViewMode(true);
-    setShowModal(true);
-  };
-
-  const handleEditUnidade = (unidade) => {
-    setEditingUnidade(unidade);
-    setViewMode(false);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setEditingUnidade(null);
-    setViewMode(false);
-  };
-
-  // Função para recarregar dados
-  const reloadData = () => {
-    loadUnidades();
-    loadEstatisticas();
-  };
-
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    // Recarregar dados da nova página
-    loadUnidades({ page });
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-    // Recarregar dados com o novo limite de itens
-    loadUnidades({ page: 1, limit: newItemsPerPage });
-  };
-
-  // Funções utilitárias
-  const getRotaName = (rotaId) => {
+  /**
+   * Funções utilitárias
+   */
+  const getRotaName = useCallback((rotaId) => {
     if (!rotaId) return 'N/A';
     const rota = rotas.find(r => r.id === parseInt(rotaId));
     return rota ? rota.nome : 'Rota não encontrada';
-  };
+  }, [rotas]);
 
-  const formatCurrency = (value) => {
+  const formatCurrency = useCallback((value) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL'
     }).format(value || 0);
-  };
+  }, []);
+
+  // Carregar dados iniciais
+  useEffect(() => {
+    loadRotas();
+    loadFiliais();
+    loadEstatisticasUnidades();
+  }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 
   return {
-    // Estados
-    unidades: filteredUnidades,
+    // Estados principais (do hook base)
+    unidades: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasUnidades, // Usar estatísticas específicas das unidades escolares
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingUnidade: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    unidadeToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    rotaFilter: customFilters.filters.rotaFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Estados específicos das unidades escolares
     rotas,
     filiais,
-    loading,
     loadingRotas,
     loadingFiliais,
-    showModal,
-    viewMode,
-    editingUnidade,
-    searchTerm,
-    statusFilter,
-    rotaFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
-
-    // Estados de validação (do hook universal)
-    validationErrors,
-    showValidationModal,
-
-    // Funções CRUD
-    onSubmit,
-    handleDeleteUnidade,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
+    
+    // Ações de modal (do hook base)
+    handleAddUnidade: baseEntity.handleAdd,
+    handleViewUnidade: baseEntity.handleView,
+    handleEditUnidade: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    setRotaFilter: (value) => customFilters.updateFilter('rotaFilter', value),
+    
+    // Ações de CRUD (customizadas)
+    onSubmit: onSubmitCustom,
+    handleDeleteUnidade: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
     reloadData,
-
-    // Funções de modal
-    handleAddUnidade,
-    handleViewUnidade,
-    handleEditUnidade,
-    handleCloseModal,
-
-    // Funções de validação (do hook universal)
-    handleCloseValidationModal,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    unidadeToDelete,
-
-    // Funções de paginação
-    handlePageChange,
-    handleItemsPerPageChange,
-
-    // Funções de filtros
-    setSearchTerm,
-    setStatusFilter,
-    setRotaFilter,
-
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
     // Funções utilitárias
     getRotaName,
     formatCurrency

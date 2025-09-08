@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import PeriodosRefeicaoService from '../services/periodosRefeicao';
 import FiliaisService from '../services/filiais';
-import { useValidation } from './useValidation';
+import { useValidation } from './common/useValidation';
 
 export const usePeriodosRefeicao = () => {
   // Hook de validação universal

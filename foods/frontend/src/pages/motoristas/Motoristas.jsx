@@ -2,8 +2,8 @@ import React from 'react';
 import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useMotoristas } from '../../hooks/useMotoristas';
-import { useAuditoria } from '../../hooks/useAuditoria';
-import { useExport } from '../../hooks/useExport';
+import { useAuditoria } from '../../hooks/common/useAuditoria';
+import { useExport } from '../../hooks/common/useExport';
 import MotoristasService from '../../services/motoristas';
 import { Button, ConfirmModal } from '../../components/ui';
 import { 

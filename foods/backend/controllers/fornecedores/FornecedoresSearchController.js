@@ -34,7 +34,7 @@ class FornecedoresSearchController {
     try {
       // Usar Brasil API que é mais confiável
       const response = await axios.get(`https://brasilapi.com.br/api/cnpj/v1/${cnpjLimpo}`, {
-        timeout: 8000,
+        timeout: 5000, // Reduzir timeout para 5 segundos
         headers: {
           'Accept': 'application/json',
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'

@@ -1,263 +1,174 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import FiliaisService from '../services/filiais';
-import { useValidation } from './useValidation';
+import { useBaseEntity } from './common/useBaseEntity';
+import { useFilters } from './common/useFilters';
 
 export const useFiliais = () => {
-  // Estados principais
-  const [filiais, setFiliais] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [viewMode, setViewMode] = useState(false);
-  const [editingFilial, setEditingFilial] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('filiais', FiliaisService, {
+    initialItemsPerPage: 20,
+    initialFilters: {},
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  // Hook de filtros customizados para filiais
+  const customFilters = useFilters({});
 
-  // Estados de estatísticas
-  const [estatisticas, setEstatisticas] = useState({
+  // Estados de estatísticas específicas das filiais
+  const [estatisticasFiliais, setEstatisticasFiliais] = useState({
     total_filiais: 0,
     filiais_ativas: 0,
     filiais_inativas: 0,
     com_cnpj: 0
   });
 
-  // Estados para modal de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [filialToDelete, setFilialToDelete] = useState(null);
-
-  // Hook de validação
-  const {
-    validationErrors,
-    showValidationModal,
-    handleApiResponse,
-    handleCloseValidationModal,
-    clearValidationErrors
-  } = useValidation();
-
-  // Carregar filiais
-  const loadFiliais = async (params = {}) => {
-    setLoading(true);
-    try {
-      const paginationParams = {
-        page: currentPage,
-        limit: itemsPerPage,
-        ...params
-      };
-
-      const result = await FiliaisService.listar(paginationParams);
-      if (result.success) {
-        setFiliais(result.data || []);
-        
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages || 1);
-          setTotalItems(result.pagination.totalItems || result.data.length);
-          setCurrentPage(result.pagination.currentPage || 1);
-        } else {
-          setTotalItems(result.data.length);
-          setTotalPages(Math.ceil(result.data.length / itemsPerPage));
-        }
-        
-        // Calcular estatísticas básicas
-        const total = result.pagination?.totalItems || result.data.length;
-        const ativas = result.data.filter(f => f.status === 1).length;
-        const inativas = result.data.filter(f => f.status === 0).length;
-        const comCnpj = result.data.filter(f => f.cnpj && f.cnpj.trim() !== '').length;
-        
-        setEstatisticas({
-          total_filiais: total,
-          filiais_ativas: ativas,
-          filiais_inativas: inativas,
-          com_cnpj: comCnpj
-        });
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar filiais:', error);
-      toast.error('Erro ao carregar filiais');
-    } finally {
-      setLoading(false);
+  /**
+   * Calcula estatísticas específicas das filiais
+   */
+  const calculateEstatisticas = useCallback((filiais) => {
+    if (!filiais || filiais.length === 0) {
+      setEstatisticasFiliais({
+        total_filiais: 0,
+        filiais_ativas: 0,
+        filiais_inativas: 0,
+        com_cnpj: 0
+      });
+      return;
     }
-  };
 
-  // Carregar dados quando dependências mudarem
-  useEffect(() => {
-    loadFiliais();
-  }, [currentPage, itemsPerPage]);
+    const total = filiais.length;
+    const ativas = filiais.filter(f => f.status === 1).length;
+    const inativas = filiais.filter(f => f.status === 0).length;
+    const comCnpj = filiais.filter(f => f.cnpj && f.cnpj.trim() !== '').length;
 
-  // Filtrar filiais (client-side)
-  const filteredFiliais = filiais.filter(filial => {
-    const matchesSearch = !searchTerm || 
-      (filial.filial && filial.filial.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (filial.razao_social && filial.razao_social.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (filial.cidade && filial.cidade.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (filial.codigo_filial && filial.codigo_filial.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    const matchesStatus = statusFilter === 'todos' || filial.status === parseInt(statusFilter);
-    
-    return matchesSearch && matchesStatus;
-  });
+    setEstatisticasFiliais({
+      total_filiais: total,
+      filiais_ativas: ativas,
+      filiais_inativas: inativas,
+      com_cnpj: comCnpj
+    });
+  }, []);
 
-  // Funções de CRUD
-  const onSubmit = async (data) => {
-    try {
-      clearValidationErrors(); // Limpar erros anteriores
-      
-      // Limpar campos vazios para evitar problemas de validação
-      const cleanData = {
-        ...data,
-        codigo_filial: data.codigo_filial && data.codigo_filial.trim() !== '' ? data.codigo_filial.trim() : null,
-        cnpj: data.cnpj && data.cnpj.trim() !== '' ? data.cnpj.trim() : null,
-        filial: data.filial && data.filial.trim() !== '' ? data.filial.trim() : null,
-        razao_social: data.razao_social && data.razao_social.trim() !== '' ? data.razao_social.trim() : null,
-        email: data.email && data.email.trim() !== '' ? data.email.trim() : null,
-        telefone: data.telefone && data.telefone.trim() !== '' ? data.telefone.trim() : null
-      };
+  /**
+   * Carrega dados com filtros customizados
+   */
+  const loadDataWithFilters = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: customFilters.searchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
+    };
 
-      let result;
-      if (editingFilial) {
-        result = await FiliaisService.atualizar(editingFilial.id, cleanData);
-      } else {
-        result = await FiliaisService.criar(cleanData);
-      }
-      
-      if (result.success) {
-        toast.success(editingFilial ? 'Filial atualizada com sucesso!' : 'Filial criada com sucesso!');
-        handleCloseModal();
-        loadFiliais();
-      } else {
-        if (handleApiResponse(result)) {
-          return; // Erros de validação foram tratados
-        }
-        toast.error(result.message || 'Erro ao salvar filial');
-      }
-    } catch (error) {
-      console.error('Erro ao salvar filial:', error);
-      toast.error('Erro ao salvar filial');
-    }
-  };
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters]);
 
-  const handleDeleteFilial = (filial) => {
-    setFilialToDelete(filial);
-    setShowDeleteConfirmModal(true);
-  };
+  /**
+   * Submissão customizada com limpeza de dados
+   */
+  const onSubmitCustom = useCallback(async (data) => {
+    // Limpar campos vazios para evitar problemas de validação
+    const cleanData = {
+      ...data,
+      codigo_filial: data.codigo_filial && data.codigo_filial.trim() !== '' ? data.codigo_filial.trim() : null,
+      cnpj: data.cnpj && data.cnpj.trim() !== '' ? data.cnpj.trim() : null,
+      filial: data.filial && data.filial.trim() !== '' ? data.filial.trim() : null,
+      razao_social: data.razao_social && data.razao_social.trim() !== '' ? data.razao_social.trim() : null,
+      email: data.email && data.email.trim() !== '' ? data.email.trim() : null,
+      telefone: data.telefone && data.telefone.trim() !== '' ? data.telefone.trim() : null
+    };
 
-  const handleConfirmDelete = async () => {
-    if (!filialToDelete) return;
+    await baseEntity.onSubmit(cleanData);
+    // Recalcular estatísticas após salvar
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-    try {
-      const result = await FiliaisService.excluir(filialToDelete.id);
-      if (result.success) {
-        toast.success('Filial excluída com sucesso!');
-        loadFiliais();
-        setShowDeleteConfirmModal(false);
-        setFilialToDelete(null);
-      } else {
-        toast.error(result.error);
-      }
-    } catch (error) {
-      toast.error('Erro ao excluir filial');
-    }
-  };
+  /**
+   * Exclusão customizada que recarrega dados
+   */
+  const handleDeleteCustom = useCallback(async () => {
+    await baseEntity.handleConfirmDelete();
+    // Recalcular estatísticas após excluir
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity, calculateEstatisticas]);
 
-  const handleCloseDeleteModal = () => {
-    setShowDeleteConfirmModal(false);
-    setFilialToDelete(null);
-  };
-
-  // Funções de modal
-  const handleAddFilial = () => {
-    setViewMode(false);
-    setEditingFilial(null);
-    setShowModal(true);
-  };
-
-  const handleViewFilial = (filial) => {
-    setViewMode(true);
-    setEditingFilial(filial);
-    setShowModal(true);
-  };
-
-  const handleEditFilial = (filial) => {
-    setViewMode(false);
-    setEditingFilial(filial);
-    setShowModal(true);
-  };
-
-  const handleCloseModal = () => {
-    setShowModal(false);
-    setViewMode(false);
-    setEditingFilial(null);
-  };
-
-  // Funções de paginação
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    // Recarregar dados da nova página
-    loadFiliais({ page });
-  };
-
-  const handleItemsPerPageChange = (newItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1);
-    // Recarregar dados com o novo limite de itens
-    loadFiliais({ page: 1, limit: newItemsPerPage });
-  };
-
-  // Funções utilitárias
-  const formatDate = (dateString) => {
+  /**
+   * Funções utilitárias
+   */
+  const formatDate = useCallback((dateString) => {
     if (!dateString) return '-';
     return new Date(dateString).toLocaleString('pt-BR');
-  };
+  }, []);
+
+  // Carregar dados quando filtros mudam
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+
+  // Recalcular estatísticas quando os dados mudam
+  useEffect(() => {
+    calculateEstatisticas(baseEntity.items);
+  }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    // Estados
-    filiais: Array.isArray(filteredFiliais) ? filteredFiliais : [],
-    loading,
-    showModal,
-    viewMode,
-    editingFilial,
-    searchTerm,
-    statusFilter,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    estatisticas,
-    validationErrors,
-    showValidationModal,
-
-    // Estados para modal de confirmação
-    showDeleteConfirmModal,
-    filialToDelete,
-
-    // Funções CRUD
-    onSubmit,
-    handleDeleteFilial,
-    handleConfirmDelete,
-    handleCloseDeleteModal,
-
-    // Funções de modal
-    handleAddFilial,
-    handleViewFilial,
-    handleEditFilial,
-    handleCloseModal,
-    handleCloseValidationModal,
-
-    // Funções de paginação
-    handlePageChange,
-    handleItemsPerPageChange,
-
-    // Funções de filtros
-    setSearchTerm,
-    setStatusFilter,
-
+    // Estados principais (do hook base)
+    filiais: baseEntity.items,
+    loading: baseEntity.loading,
+    estatisticas: estatisticasFiliais, // Usar estatísticas específicas das filiais
+    
+    // Estados de modal (do hook base)
+    showModal: baseEntity.showModal,
+    viewMode: baseEntity.viewMode,
+    editingFilial: baseEntity.editingItem,
+    
+    // Estados de exclusão (do hook base)
+    showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
+    filialToDelete: baseEntity.itemToDelete,
+    
+    // Estados de paginação (do hook base)
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    
+    // Estados de filtros
+    searchTerm: customFilters.searchTerm,
+    statusFilter: customFilters.statusFilter,
+    
+    // Estados de validação (do hook base)
+    validationErrors: baseEntity.validationErrors,
+    showValidationModal: baseEntity.showValidationModal,
+    
+    // Ações de modal (do hook base)
+    handleAddFilial: baseEntity.handleAdd,
+    handleViewFilial: baseEntity.handleView,
+    handleEditFilial: baseEntity.handleEdit,
+    handleCloseModal: baseEntity.handleCloseModal,
+    
+    // Ações de paginação (do hook base)
+    handlePageChange: baseEntity.handlePageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    
+    // Ações de filtros
+    setSearchTerm: customFilters.setSearchTerm,
+    setStatusFilter: customFilters.setStatusFilter,
+    
+    // Ações de CRUD (customizadas)
+    onSubmit: onSubmitCustom,
+    handleDeleteFilial: baseEntity.handleDelete,
+    handleConfirmDelete: handleDeleteCustom,
+    handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
+    
+    // Ações de validação (do hook base)
+    handleCloseValidationModal: baseEntity.handleCloseValidationModal,
+    
     // Funções utilitárias
     formatDate
   };
