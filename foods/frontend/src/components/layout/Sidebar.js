@@ -192,7 +192,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         <div className="p-5 border-b border-gray-200 text-center relative flex-shrink-0">
           <div className="flex items-center justify-center m-0">
             <img 
-              src="./logo-small.png" 
+              src="/foods/logo-small.png" 
               alt="Foods Logo" 
               className={`object-contain ${collapsed ? 'h-8' : 'h-10'}`}
               onError={(e) => {

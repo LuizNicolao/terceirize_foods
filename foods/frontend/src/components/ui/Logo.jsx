@@ -35,7 +35,7 @@ export const Logo = ({
     <div className={`flex items-center justify-center ${className}`}>
       {!imageError && (
         <img 
-          src="./logo-small.png"
+          src="/foods/logo-small.png"
           alt="Foods Logo" 
           className={`${sizeClasses[size]} object-contain ${!imageLoaded ? 'hidden' : ''}`}
           onLoad={handleImageLoad}
