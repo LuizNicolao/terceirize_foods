@@ -1,203 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { FaBuilding, FaSearch, FaCheckSquare, FaSquare } from 'react-icons/fa';
 import { Button } from '../ui';
-import UsuariosService from '../../services/usuarios';
-import UnidadesEscolaresService from '../../services/unidadesEscolares';
-import { useAuth } from '../../contexts/AuthContext';
+import { useUnidadesEscolares } from '../../hooks/periodicidade';
 
 const UnidadesEscolaresTab = ({
   unidadesSelecionadas,
   onUnidadesChange,
   isViewMode = false
 }) => {
-  const { user } = useAuth();
-  
-  // Estados para Filiais
-  const [filiais, setFiliais] = useState([]);
-  const [filiaisSelecionadas, setFiliaisSelecionadas] = useState([]);
-  const [loadingFiliais, setLoadingFiliais] = useState(false);
-  
-  // Estados para Unidades Escolares
-  const [unidadesEscolares, setUnidadesEscolares] = useState([]);
-  const [loadingUnidades, setLoadingUnidades] = useState(false);
-  const [buscaUnidades, setBuscaUnidades] = useState('');
-  const [unidadesFiltradas, setUnidadesFiltradas] = useState([]);
+  // Hook customizado para unidades escolares
+  const {
+    filiais,
+    filiaisSelecionadas,
+    loadingFiliais,
+    unidadesEscolares,
+    loadingUnidades,
+    buscaUnidades,
+    unidadesFiltradas,
+    setBuscaUnidades,
+    handleFilialChange,
+    handleUnidadeChange,
+    handleSelecionarTodasUnidades,
+    handleDesselecionarTodasUnidades,
+    handleSelecionarTodasFiliais,
+    handleDesselecionarTodasFiliais
+  } = useUnidadesEscolares(unidadesSelecionadas, onUnidadesChange);
 
-  // Carregar filiais do usuário
-  const carregarFiliais = async () => {
-    if (!user?.id) return;
-    
-    try {
-      setLoadingFiliais(true);
-      
-      // Buscar filiais do usuário
-      const userResult = await UsuariosService.buscarPorId(user.id);
-      if (userResult.success && userResult.data?.filiais) {
-        setFiliais(userResult.data.filiais);
-      } else {
-        setFiliais([]);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar filiais:', error);
-      setFiliais([]);
-    } finally {
-      setLoadingFiliais(false);
-    }
-  };
-
-  // Carregar unidades escolares baseado nas filiais selecionadas
-  const carregarUnidadesEscolares = async (filiaisIds = filiaisSelecionadas) => {
-    if (filiaisIds.length === 0) {
-      setUnidadesEscolares([]);
-      return;
-    }
-
-    try {
-      setLoadingUnidades(true);
-      
-      // Buscar unidades escolares das filiais selecionadas
-      const unidadesResult = await UnidadesEscolaresService.buscarAtivas();
-      if (unidadesResult.success) {
-        const unidadesFiltradas = unidadesResult.data.filter(ue => 
-          filiaisIds.includes(parseInt(ue.filial_id))
-        );
-        setUnidadesEscolares(unidadesFiltradas);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar unidades escolares:', error);
-      setUnidadesEscolares([]);
-    } finally {
-      setLoadingUnidades(false);
-    }
-  };
-
-  // Filtrar unidades escolares baseado na busca
-  useEffect(() => {
-    if (!buscaUnidades.trim()) {
-      setUnidadesFiltradas(unidadesEscolares);
-      return;
-    }
-
-    const filtradas = unidadesEscolares.filter(unidade => {
-      const termoBusca = buscaUnidades.toLowerCase();
-      return (
-        (unidade.nome_escola && unidade.nome_escola.toLowerCase().includes(termoBusca)) ||
-        (unidade.cidade && unidade.cidade.toLowerCase().includes(termoBusca)) ||
-        (unidade.estado && unidade.estado.toLowerCase().includes(termoBusca)) ||
-        (unidade.endereco && unidade.endereco.toLowerCase().includes(termoBusca))
-      );
-    });
-    setUnidadesFiltradas(filtradas);
-  }, [buscaUnidades, unidadesEscolares]);
-
-  // Carregar dados quando o componente montar
-  useEffect(() => {
-    carregarFiliais();
-  }, []);
-
-  // Efeito para marcar filiais automaticamente quando unidades são carregadas
-  useEffect(() => {
-    if (unidadesSelecionadas.length > 0 && filiais.length > 0) {
-      // Buscar filiais das unidades selecionadas
-      const filiaisDasUnidades = unidadesSelecionadas.map(unidadeId => {
-        // Como não temos as unidades carregadas ainda, vamos buscar via API
-        // ou usar os dados que já temos
-        return null; // Será preenchido quando carregarmos as unidades
-      }).filter(Boolean);
-      
-      // Se ainda não temos as unidades carregadas, vamos carregar todas as unidades
-      // para identificar as filiais das unidades selecionadas
-      if (unidadesSelecionadas.length > 0 && unidadesEscolares.length === 0) {
-        carregarUnidadesEscolares(filiais.map(f => f.id));
-      }
-    }
-  }, [unidadesSelecionadas, filiais]);
-
-  // Efeito para marcar filiais quando unidades escolares são carregadas
-  useEffect(() => {
-    if (unidadesSelecionadas.length > 0 && unidadesEscolares.length > 0) {
-      // Encontrar filiais das unidades selecionadas
-      const filiaisDasUnidades = unidadesSelecionadas.map(unidadeId => {
-        const unidade = unidadesEscolares.find(u => u.id === unidadeId);
-        return unidade ? unidade.filial_id : null;
-      }).filter(Boolean);
-      
-      // Remover duplicatas
-      const filiaisUnicas = [...new Set(filiaisDasUnidades)];
-      
-      // Marcar as filiais se ainda não estiverem marcadas
-      if (filiaisUnicas.length > 0 && filiaisSelecionadas.length === 0) {
-        setFiliaisSelecionadas(filiaisUnicas);
-      }
-    }
-  }, [unidadesEscolares, unidadesSelecionadas, filiaisSelecionadas]);
-
-  // Funções para manipular seleções de filiais
-  const handleFilialChange = async (filialId, checked) => {
-    if (checked) {
-      const novasFiliais = [...filiaisSelecionadas, filialId];
-      setFiliaisSelecionadas(novasFiliais);
-      // Recarregar unidades escolares com as novas filiais
-      await carregarUnidadesEscolares(novasFiliais);
-    } else {
-      const novasFiliais = filiaisSelecionadas.filter(id => id !== filialId);
-      setFiliaisSelecionadas(novasFiliais);
-      // Remover unidades escolares da filial desmarcada
-      onUnidadesChange(prev => {
-        const filial = filiais.find(f => f.id === filialId);
-        if (filial) {
-          return prev.filter(unidadeId => {
-            const unidade = unidadesEscolares.find(u => u.id === unidadeId);
-            return unidade && unidade.filial_id !== filialId;
-          });
-        }
-        return prev;
-      });
-      // Recarregar unidades escolares com as filiais restantes
-      await carregarUnidadesEscolares(novasFiliais);
-    }
-  };
-
-  // Funções para manipular seleções de unidades escolares
-  const handleUnidadeChange = (unidadeId, checked) => {
-    if (checked) {
-      onUnidadesChange(prev => [...prev, unidadeId]);
-    } else {
-      onUnidadesChange(prev => prev.filter(id => id !== unidadeId));
-    }
-  };
-
-  // Funções para seleção em lote
-  const handleSelecionarTodasUnidades = () => {
-    const todasUnidades = unidadesFiltradas.map(u => u.id);
-    onUnidadesChange(prev => {
-      const novas = [...prev];
-      todasUnidades.forEach(id => {
-        if (!novas.includes(id)) {
-          novas.push(id);
-        }
-      });
-      return novas;
-    });
-  };
-
-  const handleDesselecionarTodasUnidades = () => {
-    const unidadesFiltradasIds = unidadesFiltradas.map(u => u.id);
-    onUnidadesChange(prev => 
-      prev.filter(id => !unidadesFiltradasIds.includes(id))
-    );
-  };
-
-  const handleSelecionarTodasFiliais = () => {
-    setFiliaisSelecionadas(filiais.map(f => f.id));
-    carregarUnidadesEscolares(filiais.map(f => f.id));
-  };
-
-  const handleDesselecionarTodasFiliais = () => {
-    setFiliaisSelecionadas([]);
-    setUnidadesEscolares([]);
-    onUnidadesChange([]);
-  };
 
   return (
     <div className="space-y-4">

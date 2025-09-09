@@ -9,9 +9,10 @@ export const MaskedFormInput = ({
   error,
   size = 'md',
   className = '',
+  setValue,
   ...props
 }) => {
-  const maskProps = useMaskedField(maskType, register, fieldName);
+  const maskProps = useMaskedField(maskType, register, fieldName, setValue);
 
   const baseClasses = 'w-full border border-gray-300 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent';
   

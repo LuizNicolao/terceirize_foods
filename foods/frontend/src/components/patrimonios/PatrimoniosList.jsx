@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaSearch, FaFilter, FaTimes } from 'react-icons/fa';
-import { usePatrimonios } from '../../hooks/usePatrimonios';
+import { usePatrimoniosList } from '../../hooks/usePatrimoniosList';
 import PatrimoniosTable from './PatrimoniosTable';
 import { Pagination, Modal, Button } from '../ui';
 import PatrimoniosMovimentacaoForm from './PatrimoniosMovimentacaoForm';
@@ -32,7 +32,7 @@ const PatrimoniosList = ({
     totalItems, 
     totalPages,
     loadPatrimonios 
-  } = usePatrimonios();
+  } = usePatrimoniosList();
 
   useEffect(() => {
     if (localId) {

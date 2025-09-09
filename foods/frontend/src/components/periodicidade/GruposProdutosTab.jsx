@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { FaBoxes, FaBox, FaSearch, FaCheckSquare, FaSquare, FaChevronDown, FaChevronRight, FaInfoCircle, FaFilter, FaList, FaTh, FaTimes } from 'react-icons/fa';
+import React from 'react';
+import { FaBoxes, FaBox, FaSearch, FaCheckSquare, FaSquare, FaChevronRight, FaList, FaTimes } from 'react-icons/fa';
 import { Button } from '../ui';
-import GruposService from '../../services/grupos';
-import PeriodicidadeService from '../../services/periodicidade';
+import { useGruposProdutos } from '../../hooks/periodicidade';
 
 const GruposProdutosTab = ({
   gruposSelecionados,
@@ -11,218 +10,37 @@ const GruposProdutosTab = ({
   onProdutosIndividuaisChange,
   isViewMode = false
 }) => {
-  // Estados para Grupos e Produtos
-  const [gruposProdutos, setGruposProdutos] = useState([]);
-  const [produtosPorGrupo, setProdutosPorGrupo] = useState({});
-  const [loadingGrupos, setLoadingGrupos] = useState(false);
-  const [loadingProdutos, setLoadingProdutos] = useState({});
-  
-  // Estados para seleção - NOVA LÓGICA
-  const [gruposCompletos, setGruposCompletos] = useState([]); // Grupos selecionados por inteiro
-  const [produtosIndividuaisLocal, setProdutosIndividuaisLocal] = useState(produtosIndividuais); // Produtos individuais selecionados
-  
-  // Estados para nova interface
-  const [grupoSelecionado, setGrupoSelecionado] = useState(null); // Grupo selecionado para ver produtos
-  const [filtroTipo, setFiltroTipo] = useState('todos'); // 'todos', 'grupos', 'produtos'
-  const [buscaGlobal, setBuscaGlobal] = useState('');
-
-  // Carregar grupos de produtos
-  const carregarGruposProdutos = async () => {
-    try {
-      setLoadingGrupos(true);
-      const result = await GruposService.buscarAtivos();
-      if (result.success) {
-        setGruposProdutos(result.data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar grupos de produtos:', error);
-      setGruposProdutos([]);
-    } finally {
-      setLoadingGrupos(false);
-    }
-  };
-
-  // Carregar produtos de um grupo específico
-  const carregarProdutosGrupo = async (grupoId) => {
-    try {
-      setLoadingProdutos(prev => ({ ...prev, [grupoId]: true }));
-      const result = await PeriodicidadeService.buscarProdutosPorGrupo(grupoId);
-      if (result.success) {
-        setProdutosPorGrupo(prev => ({
-          ...prev,
-          [grupoId]: result.data || []
-        }));
-      }
-    } catch (error) {
-      console.error('Erro ao carregar produtos do grupo:', error);
-      setProdutosPorGrupo(prev => ({
-        ...prev,
-        [grupoId]: []
-      }));
-    } finally {
-      setLoadingProdutos(prev => ({ ...prev, [grupoId]: false }));
-    }
-  };
-
-  // Carregar dados quando o componente montar
-  useEffect(() => {
-    carregarGruposProdutos();
-  }, []);
-
-  // NOVA LÓGICA: Função para selecionar grupo completo
-  const handleGrupoCompletoChange = (grupoId, checked) => {
-    if (checked) {
-      setGruposCompletos(prev => [...prev, grupoId]);
-    } else {
-      setGruposCompletos(prev => prev.filter(id => id !== grupoId));
-    }
-  };
-
-  // NOVA LÓGICA: Função para selecionar produto individual
-  const handleProdutoIndividualChange = (produtoId, grupoId, checked) => {
-    if (checked) {
-      const novosProdutos = [...produtosIndividuaisLocal, produtoId];
-      setProdutosIndividuaisLocal(novosProdutos);
-      onProdutosIndividuaisChange && onProdutosIndividuaisChange(novosProdutos);
-    } else {
-      const novosProdutos = produtosIndividuaisLocal.filter(id => id !== produtoId);
-      setProdutosIndividuaisLocal(novosProdutos);
-      onProdutosIndividuaisChange && onProdutosIndividuaisChange(novosProdutos);
-    }
-  };
-
-  // Calcular total de produtos finais
-  const calcularTotalProdutosFinais = () => {
-    let total = 0;
-    
-    // Adicionar produtos de grupos completos
-    gruposCompletos.forEach(grupoId => {
-      const produtosGrupo = produtosPorGrupo[grupoId] || [];
-      total += produtosGrupo.length;
-    });
-    
-    // Adicionar produtos individuais (apenas os que não estão em grupos completos)
-    produtosIndividuaisLocal.forEach(produtoId => {
-      const produto = Object.values(produtosPorGrupo)
-        .flat()
-        .find(p => p.id === produtoId);
-      
-      if (produto && !gruposCompletos.includes(produto.grupo_id)) {
-        total += 1;
-      }
-    });
-    
-    return total;
-  };
-
-  // NOVA FUNÇÃO: Verificar se produto está em grupo completo
-  const isProdutoEmGrupoCompleto = (produtoId) => {
-    const produto = Object.values(produtosPorGrupo)
-      .flat()
-      .find(p => p.id === produtoId);
-    
-    return produto && gruposCompletos.includes(produto.grupo_id);
-  };
-
-  // Funções para nova interface
-  const contarProdutosSelecionadosNoGrupo = (grupoId) => {
-    if (!produtosPorGrupo[grupoId]) return 0;
-    return produtosPorGrupo[grupoId].filter(produto => 
-      produtosIndividuaisLocal.includes(produto.id)
-    ).length;
-  };
-
-  const isGrupoCompleto = (grupoId) => {
-    return gruposCompletos.includes(grupoId);
-  };
-
-  const isGrupoParcial = (grupoId) => {
-    const totalProdutos = produtosPorGrupo[grupoId]?.length || 0;
-    const produtosSelecionados = contarProdutosSelecionadosNoGrupo(grupoId);
-    return produtosSelecionados > 0 && produtosSelecionados < totalProdutos;
-  };
-
-  const filtrarGrupos = () => {
-    let gruposFiltrados = gruposProdutos;
-    
-    if (buscaGlobal.trim()) {
-      const termo = buscaGlobal.toLowerCase();
-      gruposFiltrados = gruposFiltrados.filter(grupo => 
-        grupo.nome.toLowerCase().includes(termo)
-      );
-    }
-    
-    if (filtroTipo === 'grupos') {
-      gruposFiltrados = gruposFiltrados.filter(grupo => 
-        isGrupoCompleto(grupo.id)
-      );
-    } else if (filtroTipo === 'produtos') {
-      gruposFiltrados = gruposFiltrados.filter(grupo => 
-        contarProdutosSelecionadosNoGrupo(grupo.id) > 0
-      );
-    }
-    
-    return gruposFiltrados;
-  };
-
-  const selecionarTodosGrupos = () => {
-    const todosGrupos = gruposProdutos.map(grupo => grupo.id);
-    setGruposCompletos(todosGrupos);
-    setProdutosIndividuaisLocal([]);
-  };
-
-  const limparTudo = () => {
-    setGruposCompletos([]);
-    setProdutosIndividuaisLocal([]);
-  };
-
-  const selecionarTodosProdutos = () => {
-    if (!grupoSelecionado) return;
-    
-    const produtosGrupo = produtosPorGrupo[grupoSelecionado.id] || [];
-    const produtosIds = produtosGrupo.map(p => p.id);
-    
-    // Adicionar apenas produtos que não estão em grupos completos
-    const novosProdutos = [...produtosIndividuaisLocal];
-    produtosIds.forEach(id => {
-      if (!novosProdutos.includes(id) && !isProdutoEmGrupoCompleto(id)) {
-        novosProdutos.push(id);
-      }
-    });
-    
-    setProdutosIndividuaisLocal(novosProdutos);
-    onProdutosIndividuaisChange && onProdutosIndividuaisChange(novosProdutos);
-  };
-
-  const limparProdutosGrupo = () => {
-    if (!grupoSelecionado) return;
-    
-    const produtosGrupo = produtosPorGrupo[grupoSelecionado.id] || [];
-    const produtosIds = produtosGrupo.map(p => p.id);
-    
-    const novosProdutos = produtosIndividuaisLocal.filter(id => !produtosIds.includes(id));
-    setProdutosIndividuaisLocal(novosProdutos);
-    onProdutosIndividuaisChange && onProdutosIndividuaisChange(novosProdutos);
-  };
-
-  // Sincronizar produtos individuais com as props
-  useEffect(() => {
-    setProdutosIndividuaisLocal(produtosIndividuais);
-    
-    // Se há produtos selecionados, precisamos carregar os produtos dos grupos
-    // para calcular corretamente os contadores
-    if (produtosIndividuais.length > 0 && gruposProdutos.length > 0) {
-      // Carregar produtos de todos os grupos que podem ter produtos selecionados
-      gruposProdutos.forEach(grupo => {
-        if (!produtosPorGrupo[grupo.id] && !loadingProdutos[grupo.id]) {
-          carregarProdutosGrupo(grupo.id);
-        }
-      });
-    }
-  }, [produtosIndividuais, gruposProdutos]);
+  // Hook customizado para grupos e produtos
+  const {
+    gruposProdutos,
+    produtosPorGrupo,
+    loadingGrupos,
+    loadingProdutos,
+    gruposCompletos,
+    produtosIndividuaisLocal,
+    grupoSelecionado,
+    filtroTipo,
+    buscaGlobal,
+    carregarProdutosGrupo,
+    handleGrupoCompletoChange,
+    handleProdutoIndividualChange,
+    setGrupoSelecionado,
+    setFiltroTipo,
+    setBuscaGlobal,
+    selecionarTodosGrupos,
+    limparTudo,
+    selecionarTodosProdutos,
+    limparProdutosGrupo,
+    calcularTotalProdutosFinais,
+    isProdutoEmGrupoCompleto,
+    contarProdutosSelecionadosNoGrupo,
+    isGrupoCompleto,
+    isGrupoParcial,
+    filtrarGrupos
+  } = useGruposProdutos(produtosIndividuais, onProdutosIndividuaisChange);
 
   // Atualizar grupos selecionados quando mudanças ocorrem
-  useEffect(() => {
+  React.useEffect(() => {
     onGruposChange(gruposCompletos);
   }, [gruposCompletos, onGruposChange]);
 

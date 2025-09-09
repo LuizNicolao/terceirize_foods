@@ -10,6 +10,7 @@ const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const { commonValidations, periodicidadeValidations } = require('./periodicidadeValidator');
 const PeriodicidadeController = require('../../controllers/periodicidade');
+const entregasRoute = require('./entregasRoute');
 
 const router = express.Router();
 
@@ -124,5 +125,12 @@ router.get('/unidades-escolares/:unidadeEscolarId/agrupamentos',
   commonValidations.id,
   PeriodicidadeController.buscarAgrupamentosPorUnidade
 );
+
+// =====================================================
+// ROTAS PARA ENTREGAS AGENDADAS
+// =====================================================
+
+// Usar as rotas de entregas
+router.use('/', entregasRoute);
 
 module.exports = router;

@@ -47,11 +47,6 @@ const PeriodicidadeTable = ({
   };
 
 
-  const formatDate = (dateString) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('pt-BR');
-  };
-
   const truncateText = (text, maxLength = 50) => {
     if (!text) return '-';
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
@@ -74,9 +69,6 @@ const PeriodicidadeTable = ({
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Criado em
               </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Ações
@@ -118,10 +110,6 @@ const PeriodicidadeTable = ({
                 
                 <td className="px-6 py-4 whitespace-nowrap">
                   {getStatusBadge(agrupamento.ativo)}
-                </td>
-                
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(agrupamento.criado_em)}
                 </td>
                 
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

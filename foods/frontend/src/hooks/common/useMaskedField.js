@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useInputMask } from './useInputMask';
 
-export const useMaskedField = (maskType, register, fieldName) => {
+export const useMaskedField = (maskType, register, fieldName, setValue) => {
   const maskProps = useInputMask(maskType);
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -19,12 +19,17 @@ export const useMaskedField = (maskType, register, fieldName) => {
         ...e,
         target: {
           ...e.target,
-          value: maskProps.value
+          value: e.target.value // Usar o valor do evento, não o maskProps.value
         }
       };
       registerProps.onChange(formattedEvent);
     }
-  }, [maskProps, registerProps]);
+    
+    // Também usar setValue se disponível
+    if (setValue) {
+      setValue(fieldName, e.target.value);
+    }
+  }, [maskProps, registerProps, fieldName, setValue]);
 
   const handleKeyPress = useCallback((e) => {
     maskProps.onKeyPress(e);

@@ -10,16 +10,21 @@ const AjudanteModal = ({
   isViewMode,
   filiais
 }) => {
-  const { register, handleSubmit, reset } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   // Reset form when ajudante changes
   React.useEffect(() => {
     if (ajudante) {
-      reset(ajudante);
+      // Preencher formulário com dados do ajudante
+      Object.keys(ajudante).forEach(key => {
+        if (ajudante[key] !== null && ajudante[key] !== undefined) {
+          setValue(key, ajudante[key]);
+        }
+      });
     } else {
       reset({});
     }
-  }, [ajudante, reset]);
+  }, [ajudante, setValue, reset]);
 
   const handleClose = () => {
     reset();
@@ -54,6 +59,7 @@ const AjudanteModal = ({
                 maskType="cpf"
                 register={register}
                 fieldName="cpf"
+                setValue={setValue}
                 disabled={isViewMode}
               />
               <Input
@@ -67,6 +73,7 @@ const AjudanteModal = ({
                 maskType="telefone"
                 register={register}
                 fieldName="telefone"
+                setValue={setValue}
                 disabled={isViewMode}
               />
             </div>
