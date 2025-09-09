@@ -125,7 +125,8 @@ class UnidadesEscolaresListController {
           ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
           ue.status, ue.observacoes, ue.created_at, ue.updated_at, ue.filial_id,
           r.nome as rota_nome,
-          f.filial as filial_nome
+          f.filial as filial_nome,
+          f.codigo_filial as filial_codigo
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
@@ -225,7 +226,8 @@ class UnidadesEscolaresListController {
           ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
           ue.status, ue.observacoes, ue.created_at, ue.updated_at, ue.filial_id,
           r.nome as rota_nome,
-          f.filial as filial_nome
+          f.filial as filial_nome,
+          f.codigo_filial as filial_codigo
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id

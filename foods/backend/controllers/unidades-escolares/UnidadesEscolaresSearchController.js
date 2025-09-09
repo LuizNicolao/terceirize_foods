@@ -51,10 +51,12 @@ class UnidadesEscolaresSearchController {
       const query = `
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
+          ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
           ue.filial_id,
           r.nome as rota_nome,
-          f.filial as filial_nome
+          f.filial as filial_nome,
+          f.codigo_filial as filial_codigo
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
@@ -87,10 +89,12 @@ class UnidadesEscolaresSearchController {
       const query = `
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
+          ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
           ue.filial_id,
           r.nome as rota_nome,
-          f.filial as filial_nome
+          f.filial as filial_nome,
+          f.codigo_filial as filial_codigo
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
@@ -123,10 +127,12 @@ class UnidadesEscolaresSearchController {
       const query = `
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
+          ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
           ue.filial_id,
           r.nome as rota_nome,
-          f.filial as filial_nome
+          f.filial as filial_nome,
+          f.codigo_filial as filial_codigo
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
@@ -252,10 +258,12 @@ class UnidadesEscolaresSearchController {
       const query = `
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
+          ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
           ue.filial_id,
           r.nome as rota_nome,
-          f.filial as filial_nome
+          f.filial as filial_nome,
+          f.codigo_filial as filial_codigo
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
@@ -349,10 +357,12 @@ class UnidadesEscolaresSearchController {
       const query = `
         SELECT 
           ue.id, ue.codigo_teknisa, ue.nome_escola, ue.cidade, ue.estado, 
+          ue.endereco, ue.numero, ue.bairro, ue.cep,
           ue.centro_distribuicao, ue.rota_id, ue.ordem_entrega, ue.status,
           ue.filial_id,
           r.nome as rota_nome,
-          f.filial as filial_nome
+          f.filial as filial_nome,
+          f.codigo_filial as filial_codigo
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id

@@ -34,7 +34,8 @@ const PermissoesForm = ({
       { key: 'patrimonios', label: 'Patrimônios' },
       { key: 'rotas_nutricionistas', label: 'Rotas Nutricionistas' },
       { key: 'tipos_cardapio', label: 'Tipos de Cardápio' },
-      { key: 'periodos_refeicao', label: 'Períodos de Refeição' }
+      { key: 'periodos_refeicao', label: 'Períodos de Refeição' },
+      { key: 'periodicidade', label: 'Períodicidade' }
     ],
     'Logística': [
       { key: 'veiculos', label: 'Veículos' },

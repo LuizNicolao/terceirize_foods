@@ -56,7 +56,7 @@ class UsuariosListController {
     // Buscar filiais vinculadas para cada usuário
     for (let usuario of usuarios) {
       const filiais = await executeQuery(
-        `SELECT f.id, f.filial, f.cidade, f.estado
+        `SELECT f.id, f.filial, f.cidade, f.estado, f.codigo_filial
          FROM filiais f
          INNER JOIN usuarios_filiais uf ON f.id = uf.filial_id
          WHERE uf.usuario_id = ? AND f.status = 1
@@ -111,7 +111,7 @@ class UsuariosListController {
 
     // Buscar filiais vinculadas ao usuário
     const filiais = await executeQuery(
-      `SELECT f.id, f.filial, f.cidade, f.estado
+      `SELECT f.id, f.filial, f.cidade, f.estado, f.codigo_filial
        FROM filiais f
        INNER JOIN usuarios_filiais uf ON f.id = uf.filial_id
        WHERE uf.usuario_id = ? AND f.status = 1
@@ -159,7 +159,7 @@ class UsuariosListController {
 
     // Buscar filiais vinculadas
     const filiais = await executeQuery(
-      `SELECT f.id, f.filial, f.cidade, f.estado, f.status
+      `SELECT f.id, f.filial, f.cidade, f.estado, f.codigo_filial, f.status
        FROM filiais f
        INNER JOIN usuarios_filiais uf ON f.id = uf.filial_id
        WHERE uf.usuario_id = ? AND f.status = 1

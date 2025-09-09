@@ -31,6 +31,7 @@ const tiposCardapioRoutes = require('./tipos-cardapio');
 const periodosRefeicaoRoutes = require('./periodos-refeicao');
 const efetivosRoutes = require('./efetivos');
 const patrimoniosRoutes = require('./patrimonios');
+const periodicidadeRoutes = require('./periodicidade');
 
 // Definir todas as rotas com seus caminhos
 const routes = [
@@ -60,7 +61,8 @@ const routes = [
   { path: '/produto-origem', router: produtoOrigemRoutes },
   { path: '/produto-generico', router: produtoGenericoRoutes },
   { path: '/efetivos', router: efetivosRoutes },
-  { path: '/patrimonios', router: patrimoniosRoutes }
+  { path: '/patrimonios', router: patrimoniosRoutes },
+  { path: '/periodicidade', router: periodicidadeRoutes }
 ];
 
 module.exports = routes;

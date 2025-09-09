@@ -29,7 +29,8 @@ import {
   FaCar,
   FaUserTie,
   FaAllergies,
-  FaUtensils
+  FaUtensils,
+  FaCalendarAlt
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -83,6 +84,7 @@ const menuGroups = [
       { path: '/foods/rotas-nutricionistas', icon: FaBuilding, label: 'Rotas Nutricionistas', screen: 'rotas_nutricionistas' },
       { path: '/foods/tipos-cardapio', icon: FaClipboardList, label: 'Tipos de Cardápio', screen: 'tipos_cardapio' },
       { path: '/foods/periodos-refeicao', icon: FaUtensils, label: 'Períodos de Refeição', screen: 'periodos_refeicao' },
+      { path: '/foods/periodicidade', icon: FaCalendarAlt, label: 'Períodicidade', screen: 'periodicidade' },
     ]
   },
   {
@@ -417,3 +419,4 @@ const Sidebar = ({ collapsed, onToggle }) => {
 };
 
 export default Sidebar; 
+

@@ -291,7 +291,7 @@ class UsuariosCRUDController {
   static async obterFiliaisUsuario(usuarioId) {
     try {
       const filiais = await executeQuery(
-        `SELECT f.id, f.filial, f.cidade, f.estado
+        `SELECT f.id, f.filial, f.cidade, f.estado, f.codigo_filial
          FROM filiais f
          INNER JOIN usuarios_filiais uf ON f.id = uf.filial_id
          WHERE uf.usuario_id = ? AND f.status = 'ativo'
