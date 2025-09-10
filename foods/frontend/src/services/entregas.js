@@ -30,12 +30,9 @@ class EntregasService {
    * Criar nova entrega
    */
   static async criarEntrega(agrupamentoId, dadosEntrega) {
-    console.log('🔍 [DEBUG] EntregasService.criarEntrega - dadosEntrega:', dadosEntrega);
-    console.log('🔍 [DEBUG] EntregasService.criarEntrega - data_entrega:', dadosEntrega.data_entrega);
     
     try {
       const response = await api.post(`/periodicidade/${agrupamentoId}/entregas`, dadosEntrega);
-      console.log('🔍 [DEBUG] EntregasService.criarEntrega - resposta:', response.data);
       return response.data;
     } catch (error) {
       console.error('❌ Erro ao criar entrega:', error);

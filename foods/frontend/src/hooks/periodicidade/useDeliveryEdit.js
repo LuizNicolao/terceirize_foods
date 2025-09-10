@@ -9,17 +9,12 @@ export const useDeliveryEdit = (deliveries, setDeliveries, agrupamentoId, carreg
 
   // Função auxiliar para formatar data localmente (evita problemas de timezone)
   const formatDateLocal = (date) => {
-    console.log('🔍 [DEBUG] formatDateLocal - Data recebida:', date);
-    console.log('🔍 [DEBUG] formatDateLocal - Tipo:', typeof date);
-    console.log('🔍 [DEBUG] formatDateLocal - Date object:', date instanceof Date);
     
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const formatted = `${year}-${month}-${day}`;
     
-    console.log('🔍 [DEBUG] formatDateLocal - Resultado:', formatted);
-    console.log('🔍 [DEBUG] formatDateLocal - Year:', year, 'Month:', month, 'Day:', day);
     
     return formatted;
   };
@@ -105,23 +100,16 @@ export const useDeliveryEdit = (deliveries, setDeliveries, agrupamentoId, carreg
 
   // Salvar edição de entrega
   const saveDelivery = useCallback(async (deliveryData) => {
-    console.log('🔍 [DEBUG] saveDelivery - deliveryData recebido:', deliveryData);
-    console.log('🔍 [DEBUG] saveDelivery - deliveryData.date:', deliveryData.date);
-    console.log('🔍 [DEBUG] saveDelivery - deliveryData.date tipo:', typeof deliveryData.date);
-    
     try {
       if (deliveryData.isNew) {
         // Criar nova entrega no banco
         const dataFormatada = formatDateLocal(deliveryData.date);
-        console.log('🔍 [DEBUG] Criando nova entrega - data formatada:', dataFormatada);
         
         const dadosEntrega = {
           data_entrega: dataFormatada, // YYYY-MM-DD
           tipo_entrega: deliveryData.type || 'manual',
           observacoes: deliveryData.notes || ''
         };
-        
-        console.log('🔍 [DEBUG] dadosEntrega para criar:', dadosEntrega);
 
         const response = await EntregasService.criarEntrega(agrupamentoId, dadosEntrega);
         
@@ -170,7 +158,6 @@ export const useDeliveryEdit = (deliveries, setDeliveries, agrupamentoId, carreg
         if (isDatabaseDelivery) {
           // Atualizar entrega existente no banco
           const dataFormatada = formatDateLocal(deliveryData.date);
-          console.log('🔍 [DEBUG] Atualizando entrega - data formatada:', dataFormatada);
           
           const dadosEntrega = {
             data_entrega: dataFormatada, // YYYY-MM-DD
@@ -178,7 +165,6 @@ export const useDeliveryEdit = (deliveries, setDeliveries, agrupamentoId, carreg
             observacoes: deliveryData.notes || ''
           };
           
-          console.log('🔍 [DEBUG] dadosEntrega para atualizar:', dadosEntrega);
 
           const response = await EntregasService.atualizarEntrega(deliveryData.id, dadosEntrega);
         
@@ -237,14 +223,12 @@ export const useDeliveryEdit = (deliveries, setDeliveries, agrupamentoId, carreg
         } else {
           // Verificar se já existe uma entrega para esta data no banco
           const dataEntrega = formatDateLocal(deliveryData.date);
-          console.log('🔍 [DEBUG] Entrega temporária - data formatada:', dataEntrega);
           
           const entregaExistente = deliveries.find(d => 
             typeof d.id === 'number' && 
             formatDateLocal(d.date) === dataEntrega
           );
           
-          console.log('🔍 [DEBUG] Entrega existente encontrada:', entregaExistente);
           
           if (entregaExistente) {
             // Atualizar entrega existente no banco
@@ -264,7 +248,6 @@ export const useDeliveryEdit = (deliveries, setDeliveries, agrupamentoId, carreg
             }
           } else {
             // Entrega temporária - criar no banco com os novos dados
-            console.log('🔍 [DEBUG] Criando nova entrega temporária - dataEntrega:', dataEntrega);
             
             const dadosEntrega = {
               data_entrega: dataEntrega,
@@ -272,7 +255,6 @@ export const useDeliveryEdit = (deliveries, setDeliveries, agrupamentoId, carreg
               observacoes: deliveryData.notes || ''
             };
             
-            console.log('🔍 [DEBUG] dadosEntrega para criar temporária:', dadosEntrega);
 
             const response = await EntregasService.criarEntrega(agrupamentoId, dadosEntrega);
           
@@ -358,7 +340,6 @@ export const useDeliveryEdit = (deliveries, setDeliveries, agrupamentoId, carreg
         }
       } else {
         // Entrega automática - salvar exclusão no banco
-        console.log('🔍 [DEBUG] Excluindo entrega automática - salvando exclusão no banco');
         
         // Extrair data da entrega para salvar a exclusão
         const entregaParaExcluir = deliveries.find(d => d.id === deliveryId);

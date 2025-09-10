@@ -18,17 +18,12 @@ const DeliveryEditModal = ({
 
   // Função auxiliar para formatar data localmente (evita problemas de timezone)
   const formatDateLocal = (date) => {
-    console.log('🔍 [DEBUG] DeliveryEditModal.formatDateLocal - Data recebida:', date);
-    console.log('🔍 [DEBUG] DeliveryEditModal.formatDateLocal - Tipo:', typeof date);
-    console.log('🔍 [DEBUG] DeliveryEditModal.formatDateLocal - Date object:', date instanceof Date);
     
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const formatted = `${year}-${month}-${day}`;
     
-    console.log('🔍 [DEBUG] DeliveryEditModal.formatDateLocal - Resultado:', formatted);
-    console.log('🔍 [DEBUG] DeliveryEditModal.formatDateLocal - Year:', year, 'Month:', month, 'Day:', day);
     
     return formatted;
   };
@@ -37,12 +32,8 @@ const DeliveryEditModal = ({
   useEffect(() => {
     if (delivery) {
       // DEBUG: Log da entrega recebida
-      console.log('🔍 [DEBUG] DeliveryEditModal - delivery recebido:', delivery);
-      console.log('🔍 [DEBUG] DeliveryEditModal - delivery.date:', delivery.date);
-      console.log('🔍 [DEBUG] DeliveryEditModal - delivery.date tipo:', typeof delivery.date);
       
       const dataFormatada = delivery.date ? formatDateLocal(delivery.date) : '';
-      console.log('🔍 [DEBUG] DeliveryEditModal - data formatada para o input:', dataFormatada);
       
       setFormData({
         date: dataFormatada
@@ -75,16 +66,12 @@ const DeliveryEditModal = ({
     setSaving(true);
     try {
       // DEBUG: Log da data original do formulário
-      console.log('🔍 [DEBUG] Data original do formulário:', formData.date);
       
       // Corrigir problema de fuso horário
       const [year, month, day] = formData.date.split('-');
       const correctedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       
       // DEBUG: Log da data corrigida
-      console.log('🔍 [DEBUG] Data corrigida:', correctedDate);
-      console.log('🔍 [DEBUG] Data corrigida (ISO):', correctedDate.toISOString());
-      console.log('🔍 [DEBUG] Data corrigida (local):', correctedDate.toLocaleDateString());
       
       const deliveryData = {
         ...delivery, // Manter dados existentes
@@ -94,7 +81,6 @@ const DeliveryEditModal = ({
       };
       
       // DEBUG: Log dos dados que serão enviados
-      console.log('🔍 [DEBUG] deliveryData.date:', deliveryData.date);
 
       const success = await onSave(deliveryData);
       if (success) {
