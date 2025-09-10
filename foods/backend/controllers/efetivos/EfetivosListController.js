@@ -9,20 +9,20 @@ class EfetivosListController {
       const { search, status } = req.query;
       const pagination = req.pagination;
 
-      // Query base - Agrupar efetivos por tipo e intolerância, somando quantidades e concatenando períodos
+      // Query base - Agrupar efetivos por tipo, intolerância e período de refeição
       let baseQuery = `
         SELECT 
+          e.id,
           e.tipo_efetivo,
-          SUM(e.quantidade) as quantidade,
+          e.quantidade,
           e.intolerancia_id,
+          e.periodo_refeicao_id,
           i.nome as intolerancia_nome,
-          GROUP_CONCAT(DISTINCT pr.nome ORDER BY pr.nome SEPARATOR ', ') as periodos_nomes,
-          GROUP_CONCAT(e.id) as ids
+          pr.nome as periodo_refeicao_nome
         FROM efetivos e
         LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
         LEFT JOIN periodos_refeicao pr ON e.periodo_refeicao_id = pr.id
         WHERE e.unidade_escolar_id = ?
-        GROUP BY e.tipo_efetivo, e.intolerancia_id
       `;
       
       let params = [unidade_escolar_id];
@@ -38,7 +38,7 @@ class EfetivosListController {
         params.push(status);
       }
 
-      baseQuery += ' ORDER BY e.tipo_efetivo ASC, i.nome ASC';
+      baseQuery += ' ORDER BY pr.nome ASC, e.tipo_efetivo ASC, i.nome ASC';
 
       // Aplicar paginação manualmente
       const limit = pagination.limit;
@@ -48,9 +48,9 @@ class EfetivosListController {
       // Executar query paginada
       const efetivos = await executeQuery(query, params);
 
-      // Contar total de grupos (tipo + intolerância)
+      // Contar total de efetivos
       let countQuery = `
-        SELECT COUNT(DISTINCT CONCAT(e.tipo_efetivo, '-', COALESCE(e.intolerancia_id, 'NULL'))) as total
+        SELECT COUNT(*) as total
         FROM efetivos e
         LEFT JOIN intolerancias i ON e.intolerancia_id = i.id
         LEFT JOIN periodos_refeicao pr ON e.periodo_refeicao_id = pr.id
@@ -79,19 +79,15 @@ class EfetivosListController {
       
       const meta = pagination.generateMeta(totalItems, `/api/unidades-escolares/${unidade_escolar_id}/efetivos`, queryParams);
 
-      // Adicionar links HATEOAS (usando o primeiro ID do grupo)
-      const efetivosComLinks = efetivos.map(efetivo => {
-        const firstId = efetivo.ids ? efetivo.ids.split(',')[0] : null;
-        return {
-          ...efetivo,
-          id: firstId, // Usar o primeiro ID para compatibilidade
-          links: firstId ? [
-            { rel: 'self', href: `/efetivos/${firstId}`, method: 'GET' },
-            { rel: 'update', href: `/efetivos/${firstId}`, method: 'PUT' },
-            { rel: 'delete', href: `/efetivos/${firstId}`, method: 'DELETE' }
-          ] : []
-        };
-      });
+      // Adicionar links HATEOAS
+      const efetivosComLinks = efetivos.map(efetivo => ({
+        ...efetivo,
+        links: [
+          { rel: 'self', href: `/efetivos/${efetivo.id}`, method: 'GET' },
+          { rel: 'update', href: `/efetivos/${efetivo.id}`, method: 'PUT' },
+          { rel: 'delete', href: `/efetivos/${efetivo.id}`, method: 'DELETE' }
+        ]
+      }));
 
       res.json({
         success: true,

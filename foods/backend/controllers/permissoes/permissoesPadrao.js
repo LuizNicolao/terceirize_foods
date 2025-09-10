@@ -31,6 +31,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -58,6 +59,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: true, editar: true, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -85,6 +87,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       periodos_refeicao: { visualizar: true, criar: true, editar: true, excluir: true },
       periodicidade: { visualizar: true, criar: true, editar: true, excluir: true },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -114,6 +117,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: true },
       periodos_refeicao: { visualizar: true, criar: true, editar: true, excluir: true },
       periodicidade: { visualizar: true, criar: true, editar: true, excluir: true },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -141,6 +145,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_refeicao: { visualizar: true, criar: true, editar: true, excluir: false },
       periodicidade: { visualizar: true, criar: true, editar: true, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -168,6 +173,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -197,6 +203,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -224,6 +231,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_refeicao: { visualizar: true, criar: true, editar: true, excluir: false },
       periodicidade: { visualizar: true, criar: true, editar: true, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -251,6 +259,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: true, editar: true, excluir: false },
       periodos_refeicao: { visualizar: true, criar: true, editar: true, excluir: false },
       periodicidade: { visualizar: true, criar: true, editar: true, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -280,6 +289,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -307,6 +317,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -334,6 +345,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -363,6 +375,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -390,6 +403,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -417,6 +431,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -446,6 +461,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -473,6 +489,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -500,6 +517,7 @@ const PERMISSOES_PADRAO = {
       tipos_cardapio: { visualizar: true, criar: false, editar: false, excluir: false },
       periodos_refeicao: { visualizar: true, criar: false, editar: false, excluir: false },
       periodicidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      faturamento: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -532,7 +550,8 @@ const TODAS_TELAS = [
   'rotas_nutricionistas',
   'tipos_cardapio',
   'periodos_refeicao',
-  'periodicidade'
+  'periodicidade',
+  'faturamento'
 ];
 
 // Tipos de acesso disponíveis
@@ -580,6 +599,7 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'tipos_cardapio', descricao: 'Gerenciamento de Tipos de Cardápio' },
   { nome: 'periodos_refeicao', descricao: 'Gerenciamento de Períodos de Refeição' },
   { nome: 'periodicidade', descricao: 'Gerenciamento de Periodicidade' },
+  { nome: 'faturamento', descricao: 'Gerenciamento de Faturamento' }
 ];
 
 module.exports = {

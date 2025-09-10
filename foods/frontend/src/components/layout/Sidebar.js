@@ -30,7 +30,8 @@ import {
   FaUserTie,
   FaAllergies,
   FaUtensils,
-  FaCalendarAlt
+  FaCalendarAlt,
+  FaFileInvoice
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -54,6 +55,7 @@ const menuGroups = [
     items: [
       { path: '/foods/rotas', icon: FaRoute, label: 'Rotas', screen: 'rotas' },
       { path: '/foods/unidades-escolares', icon: FaBuilding, label: 'Unidades Escolares', screen: 'unidades_escolares' },
+      { path: '/foods/faturamento', icon: FaFileInvoice, label: 'Faturamento', screen: 'faturamento' },
     ]
   },
   {

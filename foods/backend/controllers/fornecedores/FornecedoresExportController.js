@@ -19,16 +19,16 @@ class FornecedoresExportController {
         { header: 'Razão Social', key: 'razao_social', width: 40 },
         { header: 'Nome Fantasia', key: 'nome_fantasia', width: 30 },
         { header: 'CNPJ', key: 'cnpj', width: 20 },
-        { header: 'Inscrição Estadual', key: 'inscricao_estadual', width: 20 },
-        { header: 'Endereço', key: 'endereco', width: 40 },
-        { header: 'Cidade', key: 'cidade', width: 20 },
+        { header: 'Logradouro', key: 'logradouro', width: 30 },
+        { header: 'Número', key: 'numero', width: 10 },
+        { header: 'Bairro', key: 'bairro', width: 20 },
+        { header: 'Município', key: 'municipio', width: 20 },
         { header: 'UF', key: 'uf', width: 10 },
         { header: 'CEP', key: 'cep', width: 15 },
         { header: 'Telefone', key: 'telefone', width: 15 },
         { header: 'Email', key: 'email', width: 30 },
-        { header: 'Contato', key: 'contato', width: 25 },
         { header: 'Status', key: 'status', width: 15 },
-        { header: 'Data Cadastro', key: 'created_at', width: 20 }
+        { header: 'Data Cadastro', key: 'criado_em', width: 20 }
       ];
 
       // Estilizar cabeçalhos
@@ -58,16 +58,16 @@ class FornecedoresExportController {
           razao_social,
           nome_fantasia,
           cnpj,
-          inscricao_estadual,
-          endereco,
-          cidade,
+          logradouro,
+          numero,
+          bairro,
+          municipio,
           uf,
           cep,
           telefone,
           email,
-          contato,
           status,
-          created_at
+          criado_em
         FROM fornecedores 
         ${whereClause}
         ORDER BY razao_social ASC
@@ -83,9 +83,10 @@ class FornecedoresExportController {
           razao_social: fornecedor.razao_social,
           nome_fantasia: fornecedor.nome_fantasia,
           cnpj: fornecedor.cnpj,
-          inscricao_estadual: fornecedor.inscricao_estadual,
-          endereco: fornecedor.endereco,
-          cidade: fornecedor.cidade,
+          logradouro: fornecedor.logradouro,
+          numero: fornecedor.numero,
+          bairro: fornecedor.bairro,
+          municipio: fornecedor.municipio,
           uf: fornecedor.uf,
           cep: fornecedor.cep,
           telefone: fornecedor.telefone,
@@ -150,16 +151,16 @@ class FornecedoresExportController {
           razao_social,
           nome_fantasia,
           cnpj,
-          inscricao_estadual,
-          endereco,
-          cidade,
+          logradouro,
+          numero,
+          bairro,
+          municipio,
           uf,
           cep,
           telefone,
           email,
-          contato,
           status,
-          created_at
+          criado_em
         FROM fornecedores 
         ${whereClause}
         ORDER BY razao_social ASC
@@ -181,12 +182,12 @@ class FornecedoresExportController {
         
         doc.text(`CNPJ: ${fornecedor.cnpj}`);
         
-        if (fornecedor.inscricao_estadual) {
-          doc.text(`Inscrição Estadual: ${fornecedor.inscricao_estadual}`);
+        if (fornecedor.logradouro) {
+          doc.text(`Endereço: ${fornecedor.logradouro}, ${fornecedor.numero || ''} - ${fornecedor.bairro || ''}`);
         }
         
-        if (fornecedor.endereco) {
-          doc.text(`Endereço: ${fornecedor.endereco}, ${fornecedor.cidade} - ${fornecedor.uf}`);
+        if (fornecedor.municipio) {
+          doc.text(`Município: ${fornecedor.municipio} - ${fornecedor.uf}`);
         }
         
         if (fornecedor.cep) {

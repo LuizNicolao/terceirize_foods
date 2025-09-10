@@ -5,7 +5,7 @@ import { useEfetivos } from '../../hooks/useEfetivos';
 import { Button } from '../ui';
 import { CadastroFilterBar } from '../ui';
 import { Pagination } from '../ui';
-import { EfetivosTable, EfetivoModal } from '../efetivos';
+import { EfetivosGroupedTable, EfetivoModal } from '../efetivos';
 import { ConfirmModal } from '../ui';
 import ValidationErrorModal from '../ui/ValidationErrorModal';
 
@@ -82,15 +82,11 @@ const EfetivosContent = ({
         ]}
       />
 
-      {/* Tabela */}
-      <EfetivosTable
+      {/* Tabela Agrupada por Período */}
+      <EfetivosGroupedTable
         efetivos={efetivos}
         canView={canView}
-        canEdit={false}
-        canDelete={false}
         onView={handleViewEfetivo}
-        onEdit={null}
-        onDelete={null}
         formatDate={formatDate}
         viewMode={true}
       />

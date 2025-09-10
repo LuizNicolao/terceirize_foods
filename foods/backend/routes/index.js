@@ -32,6 +32,7 @@ const periodosRefeicaoRoutes = require('./periodos-refeicao');
 const efetivosRoutes = require('./efetivos');
 const patrimoniosRoutes = require('./patrimonios');
 const periodicidadeRoutes = require('./periodicidade');
+const faturamentoRoutes = require('./faturamento');
 
 // Definir todas as rotas com seus caminhos
 const routes = [
@@ -62,7 +63,8 @@ const routes = [
   { path: '/produto-generico', router: produtoGenericoRoutes },
   { path: '/efetivos', router: efetivosRoutes },
   { path: '/patrimonios', router: patrimoniosRoutes },
-  { path: '/periodicidade', router: periodicidadeRoutes }
+  { path: '/periodicidade', router: periodicidadeRoutes },
+  { path: '/faturamento', router: faturamentoRoutes.faturamentoRoutes }
 ];
 
 module.exports = routes;

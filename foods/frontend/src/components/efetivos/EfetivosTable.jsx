@@ -49,7 +49,7 @@ const EfetivosTable = ({
                   Intolerância
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Períodos
+                  Período
                 </th>
               </tr>
             </thead>
@@ -71,7 +71,7 @@ const EfetivosTable = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {efetivo.periodos_nomes || '-'}
+                      {efetivo.periodo_refeicao_nome || '-'}
                     </div>
                   </td>
                 </tr>
@@ -100,8 +100,8 @@ const EfetivosTable = ({
                 <p className="font-medium">{efetivo.intolerancia_nome || '-'}</p>
               </div>
               <div>
-                <span className="text-gray-500">Períodos:</span>
-                <p className="font-medium">{efetivo.periodos_nomes || '-'}</p>
+                <span className="text-gray-500">Período:</span>
+                <p className="font-medium">{efetivo.periodo_refeicao_nome || '-'}</p>
               </div>
             </div>
           </div>
