@@ -105,10 +105,5 @@ router.get('/exportar/pdf',
   FaturamentoExportController.exportarPDF
 );
 
-router.get('/:id/imprimir', 
-  checkScreenPermission('faturamento', 'visualizar'),
-  commonValidations.id,
-  FaturamentoExportController.imprimirPDF
-);
 
 module.exports = router;

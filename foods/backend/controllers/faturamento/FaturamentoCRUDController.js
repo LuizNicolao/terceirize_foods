@@ -81,6 +81,9 @@ class FaturamentoCRUDController {
 
         await connection.commit();
 
+        // Calcular e atualizar efetivos baseados no faturamento
+        await FaturamentoCRUDController.calcularEAtualizarEfetivos(unidade_escolar_id, mes, ano);
+
         // Buscar o faturamento criado com detalhes
         const [faturamentoCriado] = await executeQuery(
           `SELECT 
@@ -161,9 +164,9 @@ class FaturamentoCRUDController {
       const { id } = req.params;
       const { dados_faturamento, observacoes } = req.body;
 
-      // Verificar se o faturamento existe
+      // Verificar se o faturamento existe e buscar dados necessários
       const [faturamentoExistente] = await executeQuery(
-        'SELECT id FROM faturamento WHERE id = ?',
+        'SELECT id, unidade_escolar_id, mes, ano FROM faturamento WHERE id = ?',
         [id]
       );
 
@@ -216,6 +219,13 @@ class FaturamentoCRUDController {
         }
 
         await connection.commit();
+
+        // Calcular e atualizar efetivos baseados no faturamento
+        await FaturamentoCRUDController.calcularEAtualizarEfetivos(
+          faturamentoExistente.unidade_escolar_id, 
+          faturamentoExistente.mes, 
+          faturamentoExistente.ano
+        );
 
         // Buscar o faturamento atualizado
         const [faturamentoAtualizado] = await executeQuery(
@@ -326,6 +336,134 @@ class FaturamentoCRUDController {
         success: false,
         message: 'Erro interno do servidor'
       });
+    }
+  }
+
+  /**
+   * Calcular e atualizar efetivos baseados no faturamento
+   */
+  static async calcularEAtualizarEfetivos(unidade_escolar_id, mes, ano) {
+    try {
+
+      // Buscar períodos vinculados à unidade escolar
+      const periodosVinculados = await executeQuery(`
+        SELECT pr.id, pr.codigo, pr.nome, pr.descricao
+        FROM periodos_refeicao pr
+        INNER JOIN unidades_escolares_periodos_refeicao uepr ON pr.id = uepr.periodo_refeicao_id
+        WHERE uepr.unidade_escolar_id = ?
+      `, [unidade_escolar_id]);
+
+      // Mapeamento inteligente: código primeiro, depois nome
+      const mapeamento = {};
+      
+      periodosVinculados.forEach(periodo => {
+        // Tentar mapear por código primeiro
+        const mapeamentoPorCodigo = {
+          'DESJ': 'desjejum',
+          'ALM': 'almoco', 
+          'MAT': 'lanche_matutino',
+          'LAN': 'lanche_vespertino',
+          'NOT': 'noturno'
+        };
+        
+        if (mapeamentoPorCodigo[periodo.codigo]) {
+          mapeamento[periodo.codigo] = mapeamentoPorCodigo[periodo.codigo];
+        } else {
+          // Se não encontrar por código, tentar por nome
+          const nomeLower = periodo.nome.toLowerCase();
+          const mapeamentoPorNome = {
+            'desjejum': 'desjejum',
+            'almoço': 'almoco',
+            'matutino': 'lanche_matutino',
+            'vespertino': 'lanche_vespertino', 
+            'noturno': 'noturno'
+          };
+          
+          if (mapeamentoPorNome[nomeLower]) {
+            mapeamento[periodo.codigo] = mapeamentoPorNome[nomeLower];
+          }
+        }
+      });
+
+      // Para cada período de refeição, calcular a média e atualizar efetivos
+      for (const [codigoPeriodo, campoFaturamento] of Object.entries(mapeamento)) {
+        
+        // Buscar faturamento para este período - calcular média diretamente
+        const faturamentoQuery = `
+          SELECT 
+            AVG(fd.${campoFaturamento}) as media_efetivos,
+            COUNT(CASE WHEN fd.${campoFaturamento} > 0 THEN 1 END) as dias_com_dados
+          FROM faturamento f
+          INNER JOIN faturamento_detalhes fd ON f.id = fd.faturamento_id
+          WHERE f.unidade_escolar_id = ? 
+            AND f.mes = ? 
+            AND f.ano = ?
+        `;
+
+
+        const [resultado] = await executeQuery(faturamentoQuery, [unidade_escolar_id, mes, ano]);
+
+
+        if (resultado && resultado.dias_com_dados > 0) {
+          const mediaEfetivos = Math.round(resultado.media_efetivos || 0);
+
+          // Buscar período de refeição
+          const [periodo] = await executeQuery(
+            'SELECT id FROM periodos_refeicao WHERE codigo = ?',
+            [codigoPeriodo]
+          );
+
+
+          if (periodo) {
+
+            // Atualizar quantidade_efetivos_padrao na tabela de vínculos
+            const updateResult = await executeQuery(
+              `UPDATE unidades_escolares_periodos_refeicao 
+               SET quantidade_efetivos_padrao = ?, atualizado_em = NOW()
+               WHERE unidade_escolar_id = ? 
+                 AND periodo_refeicao_id = ?`,
+              [mediaEfetivos, unidade_escolar_id, periodo.id]
+            );
+
+
+            // 2. Atualizar ou inserir efetivo PADRÃO na tabela efetivos
+            
+            // Verificar se já existe um efetivo PADRÃO para este período
+            const [efetivoExistente] = await executeQuery(
+              `SELECT id, quantidade FROM efetivos 
+               WHERE unidade_escolar_id = ? 
+                 AND tipo_efetivo = 'PADRAO' 
+                 AND periodo_refeicao_id = ? 
+                 AND intolerancia_id IS NULL`,
+              [unidade_escolar_id, periodo.id]
+            );
+
+            if (efetivoExistente) {
+              // Atualizar efetivo existente
+              await executeQuery(
+                `UPDATE efetivos 
+                 SET quantidade = ?, atualizado_em = NOW()
+                 WHERE id = ?`,
+                [mediaEfetivos, efetivoExistente.id]
+              );
+            } else {
+              // Inserir novo efetivo PADRÃO
+              const [insertResult] = await executeQuery(
+                `INSERT INTO efetivos (unidade_escolar_id, tipo_efetivo, quantidade, periodo_refeicao_id, criado_em, atualizado_em)
+                 VALUES (?, 'PADRAO', ?, ?, NOW(), NOW())`,
+                [unidade_escolar_id, mediaEfetivos, periodo.id]
+              );
+            }
+          } else {
+          }
+        } else {
+        }
+      }
+
+
+    } catch (error) {
+      console.error('Erro ao calcular e atualizar efetivos:', error);
+      // Não lançar erro para não quebrar o fluxo principal do faturamento
     }
   }
 }

@@ -152,25 +152,6 @@ class FaturamentoService {
     }
   }
 
-  // Imprimir PDF
-  static async imprimirPDF(id) {
-    try {
-      const response = await api.get(`/faturamento/${id}/imprimir`, {
-        responseType: 'blob'
-      });
-      
-      return {
-        success: true,
-        data: response.data,
-        filename: `faturamento_${id}_${new Date().toISOString().split('T')[0]}.pdf`
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Erro ao imprimir PDF'
-      };
-    }
-  }
 
   // Buscar faturamento por unidade escolar
   static async buscarPorUnidade(unidadeEscolarId, params = {}) {

@@ -45,7 +45,7 @@ export const useFaturamento = () => {
   } = useValidation();
 
   // Hook de exportação
-  const { handleExportXLSX, handleExportPDF, handlePrintPDF } = useExport(FaturamentoService);
+  const { handleExportXLSX, handleExportPDF } = useExport(FaturamentoService);
 
   // Estados para validação de campos
   const [fieldErrors, setFieldErrors] = useState({});
@@ -340,8 +340,7 @@ export const useFaturamento = () => {
     clearFieldError,
     handleCloseValidationModal,
     handleExportXLSX,
-    handleExportPDF,
-    handlePrintPDF
+    handleExportPDF
   };
 };
 

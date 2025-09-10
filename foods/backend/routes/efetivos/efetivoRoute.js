@@ -21,6 +21,12 @@ router.get('/unidade-escolar/:unidade_escolar_id',
   EfetivosController.listarEfetivos
 );
 
+// Listar efetivos agrupados de uma unidade escolar (para aba Efetivos)
+router.get('/unidade-escolar/:unidade_escolar_id/agrupados', 
+  commonValidations.search,
+  EfetivosController.listarEfetivosAgrupados
+);
+
 // Criar efetivo para uma unidade escolar
 router.post('/unidade-escolar/:unidade_escolar_id', 
   efetivoValidations,

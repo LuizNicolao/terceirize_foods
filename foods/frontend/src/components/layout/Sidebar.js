@@ -55,7 +55,6 @@ const menuGroups = [
     items: [
       { path: '/foods/rotas', icon: FaRoute, label: 'Rotas', screen: 'rotas' },
       { path: '/foods/unidades-escolares', icon: FaBuilding, label: 'Unidades Escolares', screen: 'unidades_escolares' },
-      { path: '/foods/faturamento', icon: FaFileInvoice, label: 'Faturamento', screen: 'faturamento' },
     ]
   },
   {
@@ -87,6 +86,7 @@ const menuGroups = [
       { path: '/foods/tipos-cardapio', icon: FaClipboardList, label: 'Tipos de Cardápio', screen: 'tipos_cardapio' },
       { path: '/foods/periodos-refeicao', icon: FaUtensils, label: 'Períodos de Refeição', screen: 'periodos_refeicao' },
       { path: '/foods/periodicidade', icon: FaCalendarAlt, label: 'Períodicidade', screen: 'periodicidade' },
+      { path: '/foods/faturamento', icon: FaFileInvoice, label: 'Faturamento', screen: 'faturamento' },
     ]
   },
   {

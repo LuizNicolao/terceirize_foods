@@ -19,6 +19,22 @@ class EfetivosService {
     }
   }
 
+  async listarAgrupadosPorUnidade(unidadeEscolarId, params = {}) {
+    try {
+      const response = await api.get(`/efetivos/unidade-escolar/${unidadeEscolarId}/agrupados`, { params });
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        pagination: response.data.pagination
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar efetivos agrupados'
+      };
+    }
+  }
+
   async buscarPorId(id) {
     try {
       const response = await api.get(`/efetivos/${id}`);

@@ -103,6 +103,100 @@ class EfetivosListController {
     }
   }
 
+  // Listar efetivos agrupados por período (para aba Efetivos da unidade escolar)
+  static async listarEfetivosAgrupados(req, res) {
+    try {
+      const { unidade_escolar_id } = req.params;
+      const { search, status } = req.query;
+
+      // Query para buscar dados da tabela unidades_escolares_periodos_refeicao
+      let baseQuery = `
+        SELECT 
+          pr.id,
+          pr.codigo,
+          pr.nome as periodo_refeicao_nome,
+          uepr.quantidade_efetivos_padrao,
+          uepr.quantidade_efetivos_nae,
+          uepr.id as vinculo_id
+        FROM periodos_refeicao pr
+        INNER JOIN unidades_escolares_periodos_refeicao uepr ON pr.id = uepr.periodo_refeicao_id
+        WHERE uepr.unidade_escolar_id = ?
+      `;
+      
+      let params = [unidade_escolar_id];
+
+      // Aplicar filtros
+      if (search) {
+        baseQuery += ' AND (pr.nome LIKE ? OR pr.codigo LIKE ?)';
+        params.push(`%${search}%`, `%${search}%`);
+      }
+
+      baseQuery += ' ORDER BY pr.nome ASC';
+
+      // Executar query
+      const periodos = await executeQuery(baseQuery, params);
+
+      // Transformar dados para o formato esperado pelo frontend
+      const efetivosAgrupados = [];
+
+      // Adicionar efetivos PADRÃO
+      periodos.forEach(periodo => {
+        if (periodo.quantidade_efetivos_padrao > 0) {
+          efetivosAgrupados.push({
+            id: `padrao_${periodo.id}`,
+            tipo_efetivo: 'PADRAO',
+            quantidade: periodo.quantidade_efetivos_padrao,
+            intolerancia_id: null,
+            intolerancia_nome: null,
+            periodo_refeicao_id: periodo.id,
+            periodo_refeicao_nome: periodo.periodo_refeicao_nome,
+            periodo_refeicao_codigo: periodo.codigo
+          });
+        }
+      });
+
+      // Adicionar efetivos NAE
+      periodos.forEach(periodo => {
+        if (periodo.quantidade_efetivos_nae > 0) {
+          efetivosAgrupados.push({
+            id: `nae_${periodo.id}`,
+            tipo_efetivo: 'NAE',
+            quantidade: periodo.quantidade_efetivos_nae,
+            intolerancia_id: null,
+            intolerancia_nome: 'NAE',
+            periodo_refeicao_id: periodo.id,
+            periodo_refeicao_nome: periodo.periodo_refeicao_nome,
+            periodo_refeicao_codigo: periodo.codigo
+          });
+        }
+      });
+
+      // Aplicar filtro de status se necessário
+      let efetivosFiltrados = efetivosAgrupados;
+      if (status && status !== 'todos') {
+        efetivosFiltrados = efetivosAgrupados.filter(efetivo => efetivo.tipo_efetivo === status);
+      }
+
+      res.json({
+        success: true,
+        data: efetivosFiltrados,
+        pagination: {
+          totalItems: efetivosFiltrados.length,
+          totalPages: 1,
+          currentPage: 1,
+          itemsPerPage: efetivosFiltrados.length
+        }
+      });
+
+    } catch (error) {
+      console.error('Erro ao listar efetivos agrupados:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
   static async buscarEfetivoPorId(req, res) {
     try {
       const { id } = req.params;

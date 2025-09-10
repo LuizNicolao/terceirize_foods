@@ -579,31 +579,15 @@ class UnidadesEscolaresCRUDController {
           uepr.quantidade_efetivos_padrao,
           uepr.quantidade_efetivos_nae,
           uepr.id as vinculo_id,
-          COALESCE(efetivos_padrao.total, 0) as efetivos_cadastrados_padrao,
-          COALESCE(efetivos_nae.total, 0) as efetivos_cadastrados_nae
+          uepr.quantidade_efetivos_padrao as efetivos_cadastrados_padrao,
+          uepr.quantidade_efetivos_nae as efetivos_cadastrados_nae
         FROM periodos_refeicao pr
         INNER JOIN unidades_escolares_periodos_refeicao uepr ON pr.id = uepr.periodo_refeicao_id
-        LEFT JOIN (
-          SELECT 
-            periodo_refeicao_id,
-            SUM(quantidade) as total
-          FROM efetivos 
-          WHERE tipo_efetivo = 'PADRAO' AND unidade_escolar_id = ?
-          GROUP BY periodo_refeicao_id
-        ) efetivos_padrao ON pr.id = efetivos_padrao.periodo_refeicao_id
-        LEFT JOIN (
-          SELECT 
-            periodo_refeicao_id,
-            SUM(quantidade) as total
-          FROM efetivos 
-          WHERE tipo_efetivo = 'NAE' AND unidade_escolar_id = ?
-          GROUP BY periodo_refeicao_id
-        ) efetivos_nae ON pr.id = efetivos_nae.periodo_refeicao_id
         WHERE uepr.unidade_escolar_id = ?
         ORDER BY pr.nome ASC
       `;
 
-      const periodos = await executeQuery(query, [id, id, id]);
+      const periodos = await executeQuery(query, [id]);
 
       res.json({
         success: true,

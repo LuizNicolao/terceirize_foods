@@ -54,8 +54,7 @@ const FaturamentoPage = () => {
     clearFieldError,
     handleCloseValidationModal,
     handleExportXLSX,
-    handleExportPDF,
-    handlePrintPDF
+    handleExportPDF
   } = useFaturamento();
 
   const {
@@ -176,7 +175,6 @@ const FaturamentoPage = () => {
       <FaturamentoActions 
         onExportXLSX={exportXLSX}
         onExportPDF={exportPDF}
-        onPrintPDF={handlePrintPDF}
         totalItems={totalItems}
         selectedItems={[]}
       />
