@@ -138,29 +138,40 @@ class UnidadesEscolaresImportController {
       
       // Mapeamentos diretos
       const directMappings = {
+        // Código Teknisa
         'codigo teknisa': 'codigo_teknisa',
         'codigo_teknisa': 'codigo_teknisa',
         'código teknisa': 'codigo_teknisa',
         'código_teknisa': 'codigo_teknisa',
+        
+        // Nome da Escola
         'nome escola': 'nome_escola',
         'nome_escola': 'nome_escola',
         'nome da escola': 'nome_escola',
+        
+        // Localização
         'cidade': 'cidade',
         'estado': 'estado',
         'pais': 'pais',
         'país': 'pais',
+        
+        // Endereço
         'endereco': 'endereco',
         'endereço': 'endereco',
         'numero': 'numero',
         'número': 'numero',
         'bairro': 'bairro',
         'cep': 'cep',
+        
+        // Operacional
         'centro distribuicao': 'centro_distribuicao',
         'centro_distribuicao': 'centro_distribuicao',
         'centro de distribuição': 'centro_distribuicao',
         'rota': 'rota_id',
         'rota_id': 'rota_id',
         'regional': 'regional',
+        
+        // Lote e Senior
         'lot': 'lot',
         'lote': 'lot',
         'cc senior': 'cc_senior',
@@ -169,12 +180,18 @@ class UnidadesEscolaresImportController {
         'codigo senior': 'codigo_senior',
         'codigo_senior': 'codigo_senior',
         'código senior': 'codigo_senior',
+        
+        // Abastecimento e Ordem
         'abastecimento': 'abastecimento',
         'ordem entrega': 'ordem_entrega',
         'ordem_entrega': 'ordem_entrega',
+        
+        // Status e Observações
         'status': 'status',
         'observacoes': 'observacoes',
         'observações': 'observacoes',
+        
+        // Novos campos
         'atendimento': 'atendimento',
         'horario': 'horario',
         'horário': 'horario'
