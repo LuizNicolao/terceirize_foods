@@ -351,7 +351,14 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           e.preventDefault();
                           
                           const user = JSON.parse(localStorage.getItem('user') || '{}');
-                          console.log('🔍 [DEBUG] User do localStorage:', user);
+                          console.log('🔍 [FOODS DEBUG] User do localStorage:', user);
+                          
+                          // Verificar se temos dados válidos do usuário
+                          if (!user.id || !user.nome || !user.email) {
+                            console.error('❌ [FOODS DEBUG] Dados do usuário incompletos:', user);
+                            alert('Erro: Dados do usuário não encontrados. Faça login novamente.');
+                            return;
+                          }
                           
                           const userData = {
                             id: user.id,
@@ -359,21 +366,27 @@ const Sidebar = ({ collapsed, onToggle }) => {
                             email: user.email,
                             role: user.tipo_de_acesso
                           };
-                          console.log('🔍 [DEBUG] UserData criado:', userData);
+                          console.log('🔍 [FOODS DEBUG] UserData criado:', userData);
                           
-                          // Salvar dados no localStorage (compartilhado entre domínios locais)
+                          // Salvar dados no localStorage ANTES de abrir a nova aba
                           localStorage.setItem('foodsUser', JSON.stringify(userData));
-                          console.log('✅ [DEBUG] foodsUser salvo no localStorage:', localStorage.getItem('foodsUser'));
+                          console.log('✅ [FOODS DEBUG] foodsUser salvo no localStorage:', localStorage.getItem('foodsUser'));
                           
-                          // Preparar URL com dados do usuário
+                          // Preparar URL com dados do usuário como backup
                           const userDataEncoded = encodeURIComponent(JSON.stringify(userData));
                           const cotacaoUrlWithSSO = `${config.cotacaoUrl}?sso=${userDataEncoded}`;
+                          console.log('🔍 [FOODS DEBUG] URL de cotação:', cotacaoUrlWithSSO);
                           
-                          // Abrir cotação em nova aba
-                          const cotacaoWindow = window.open(cotacaoUrlWithSSO, '_blank');
-                          
-                          // Salvar referência da janela para possível fechamento
-                          window.cotacaoWindow = cotacaoWindow;
+                          // Aguardar um pouco para garantir que o localStorage foi salvo
+                          setTimeout(() => {
+                            // Abrir cotação em nova aba
+                            const cotacaoWindow = window.open(cotacaoUrlWithSSO, '_blank');
+                            
+                            // Salvar referência da janela para possível fechamento
+                            window.cotacaoWindow = cotacaoWindow;
+                            
+                            console.log('✅ [FOODS DEBUG] Nova aba de cotação aberta');
+                          }, 100);
                         }
                         
                         // Fechar sidebar no mobile quando clicar em um item
