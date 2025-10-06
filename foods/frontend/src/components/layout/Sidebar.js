@@ -350,21 +350,22 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         if (item.path === '/cotacao') {
                           e.preventDefault();
                           
-                          const user = JSON.parse(localStorage.getItem('user') || '{}');
-                          console.log('🔍 [FOODS DEBUG] User do localStorage:', user);
+                          // Usar dados do contexto de autenticação
+                          const currentUser = user;
+                          console.log('🔍 [FOODS DEBUG] User do contexto:', currentUser);
                           
                           // Verificar se temos dados válidos do usuário
-                          if (!user.id || !user.nome || !user.email) {
-                            console.error('❌ [FOODS DEBUG] Dados do usuário incompletos:', user);
+                          if (!currentUser || !currentUser.id || !currentUser.nome || !currentUser.email) {
+                            console.error('❌ [FOODS DEBUG] Dados do usuário incompletos:', currentUser);
                             alert('Erro: Dados do usuário não encontrados. Faça login novamente.');
                             return;
                           }
                           
                           const userData = {
-                            id: user.id,
-                            name: user.nome,
-                            email: user.email,
-                            role: user.tipo_de_acesso
+                            id: currentUser.id,
+                            name: currentUser.nome,
+                            email: currentUser.email,
+                            role: currentUser.tipo_de_acesso || 'usuario'
                           };
                           console.log('🔍 [FOODS DEBUG] UserData criado:', userData);
                           

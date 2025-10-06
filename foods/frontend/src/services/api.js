@@ -38,6 +38,18 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
+      // Verificar se é uma requisição relacionada ao SSO ou cotacao
+      const isSSORequest = error.config?.url?.includes('/cotacao') || 
+                          error.config?.url?.includes('/sso') ||
+                          error.config?.headers?.['x-sso-request'] === 'true';
+      
+      if (isSSORequest) {
+        console.log('🔄 [FOODS] Erro 401 em requisição SSO, não fazendo logout');
+        return Promise.reject(error);
+      }
+      
+      // Apenas fazer logout para erros 401 não relacionados ao SSO
+      console.log('🔄 [FOODS] Erro 401 não relacionado ao SSO, fazendo logout');
       localStorage.removeItem('token');
       window.location.href = '/foods/login';
     }
