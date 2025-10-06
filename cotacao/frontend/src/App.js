@@ -228,7 +228,102 @@ function AppRoutes() {
       {/* Rota para /cotacao (compatibilidade com SSO) */}
       <Route 
         path="/cotacao" 
-        element={<Navigate to="/dashboard" />} 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="dashboard">
+              <Dashboard />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      {/* Rotas com prefixo /cotacao para navegação */}
+      <Route 
+        path="/cotacao/usuarios" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="usuarios">
+              <Usuarios />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/cotacao/cotacoes" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="cotacoes">
+              <Cotacoes />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/cotacao/cotacoes/:id" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="cotacoes">
+              <VisualizarCotacao />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/cotacao/cotacoes/:id/editar" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="cotacoes">
+              <EditarCotacao />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/cotacao/saving" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="saving">
+              <Saving />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/cotacao/supervisor" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="supervisor">
+              <Supervisor />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/cotacao/aprovacoes" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="aprovacoes">
+              <Aprovacoes />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+
+      <Route 
+        path="/cotacao/aprovacoes/:id" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="aprovacoes">
+              <VisualizarAprovacao />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
       />
 
       <Route 
