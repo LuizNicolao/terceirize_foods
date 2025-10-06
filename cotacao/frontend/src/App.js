@@ -231,6 +231,12 @@ function AppRoutes() {
 
 
 
+      {/* Rota para /cotacao (compatibilidade com SSO) */}
+      <Route 
+        path="/cotacao" 
+        element={<Navigate to="/dashboard" />} 
+      />
+
       <Route 
         path="/" 
         element={<Navigate to="/dashboard" />} 
