@@ -90,20 +90,25 @@ export const AuthProvider = ({ children }) => {
         }
 
         const foodsUser = JSON.parse(foodsUserData);
+        console.log('🔍 foodsUser parseado:', foodsUser);
 
         // 3. Fazer login SSO no cotação
         try {
+          console.log('🔍 Fazendo login SSO...');
           const ssoResponse = await api.post('/auth/sso-login', {
             userData: foodsUser
           });
+          console.log('🔍 Resposta SSO:', ssoResponse.data);
 
           if (ssoResponse.data.success) {
             // 4. Login SSO bem-sucedido
+            console.log('✅ Login SSO bem-sucedido!');
             setUser(ssoResponse.data.user);
             setToken(ssoResponse.data.token);
             
             // Definir token no cabeçalho Authorization do axios
             api.defaults.headers.common['Authorization'] = `Bearer ${ssoResponse.data.token}`;
+            console.log('✅ Token definido no axios');
             
             // 5. Buscar permissões do usuário usando rota pública
             try {
@@ -143,6 +148,8 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (ssoError) {
           // Se falhar o SSO, redirecionar para Foods
+          console.error('❌ Erro no SSO:', ssoError);
+          console.log('❌ Redirecionando para Foods devido ao erro');
           window.location.href = config.foodsUrl;
           return;
         }
