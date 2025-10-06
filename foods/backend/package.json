@@ -27,6 +27,7 @@
     "natural": "^6.5.0",
     "openai": "^5.20.3",
     "pdf-parse": "^1.1.1",
+    "pdfkit": "^0.14.0",
     "puppeteer": "^21.5.2",
     "string-similarity": "^4.0.4",
     "xlsx": "^0.18.5"
