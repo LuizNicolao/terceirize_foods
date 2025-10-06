@@ -145,11 +145,13 @@ export const AuthProvider = ({ children }) => {
         if (!foodsUserData) {
           console.log('⏳ Aguardando dados SSO...');
           
-          // Aguardar 1 segundo e verificar novamente (tempo menor para melhor UX)
+          // Aguardar 3 segundos e verificar novamente (tempo maior para garantir que os dados cheguem)
           setTimeout(async () => {
             const retryFoodsUserData = localStorage.getItem('foodsUser');
+            console.log('🔍 [COTACAO DEBUG] Retry - dados encontrados:', retryFoodsUserData);
+            
             if (!retryFoodsUserData) {
-              console.log('❌ Nenhum dado SSO encontrado após retry, redirecionando para Foods');
+              console.log('❌ [COTACAO DEBUG] Nenhum dado SSO encontrado após retry, redirecionando para Foods');
               
               // Redirecionar para Foods
               window.location.href = config.foodsUrl;
@@ -157,13 +159,14 @@ export const AuthProvider = ({ children }) => {
               // Tentar fazer login com os dados encontrados no retry
               try {
                 const retryFoodsUser = JSON.parse(retryFoodsUserData);
+                console.log('✅ [COTACAO DEBUG] Dados encontrados no retry, fazendo login:', retryFoodsUser);
                 await performSSOLogin(retryFoodsUser);
               } catch (retryError) {
-                console.error('Erro no retry SSO:', retryError);
+                console.error('❌ [COTACAO DEBUG] Erro no retry SSO:', retryError);
                 window.location.href = config.foodsUrl;
               }
             }
-          }, 1000);
+          }, 3000);
           return;
         }
 
