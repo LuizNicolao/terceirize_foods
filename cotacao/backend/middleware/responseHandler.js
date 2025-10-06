@@ -124,8 +124,7 @@ const formatarErro = (res, statusCode, message = 'Erro interno do servidor') => 
   return errorResponse(res, message, statusCode);
 };
 
-// Debug: verificar se os middlewares foram criados
-console.log('📦 Middlewares de resposta criados:', !!successResponse, !!errorResponse, !!validationResponse, !!notFoundResponse);
+// Middlewares de resposta criados
 
 module.exports = {
   STATUS_CODES,

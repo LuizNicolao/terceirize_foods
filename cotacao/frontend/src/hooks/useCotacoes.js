@@ -122,12 +122,9 @@ export const useCotacoes = () => {
       toast.success('Cotação enviada para análise do supervisor com sucesso!');
     } catch (error) {
       console.error('Erro ao enviar para supervisor:', error);
-      console.log('Error response:', error.response);
-      console.log('Error response data:', error.response?.data);
       
       // Verificar se é erro de produtos zerados
       if (error.response?.status === 400 && error.response?.data?.produtosZerados) {
-        console.log('Produtos zerados encontrados:', error.response.data.produtosZerados);
         setProdutosZerados(error.response.data.produtosZerados);
         setShowModalProdutosZerados(true);
       } else if (error.response?.status === 400) {
