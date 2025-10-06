@@ -93,16 +93,22 @@ export const AuthProvider = ({ children }) => {
     // 2. Limpar dados compartilhados
     localStorage.removeItem('foodsUser');
     
-    // 3. Fechar abas abertas dos outros sistemas
-    // Notificar sistemas filhos sobre o logout
+    // 3. Notificar sistemas filhos sobre o logout (mas não fechar janelas automaticamente)
     window.postMessage({ type: 'FOODS_LOGOUT' }, '*');
     
-    // 4. Tentar fechar janela do cotação se estiver aberta
+    // 4. Tentar fechar janela do cotação se estiver aberta (apenas se for logout manual)
     if (window.cotacaoWindow && !window.cotacaoWindow.closed) {
       try {
-        window.cotacaoWindow.close();
+        // Notificar o cotacao sobre o logout antes de fechar
+        window.cotacaoWindow.postMessage({ type: 'FOODS_LOGOUT' }, '*');
+        setTimeout(() => {
+          if (!window.cotacaoWindow.closed) {
+            window.cotacaoWindow.close();
+          }
+        }, 1000);
       } catch (e) {
         // Não foi possível fechar janela do cotação
+        console.log('Não foi possível fechar janela do cotação:', e);
       }
     }
   };

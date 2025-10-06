@@ -27,6 +27,29 @@ export const AuthProvider = ({ children }) => {
     aprovacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true }
   });
 
+  // Listener para mensagens do Foods
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data && event.data.type === 'FOODS_LOGOUT') {
+        console.log('🔄 [COTACAO] Recebida notificação de logout do Foods');
+        // Limpar dados e redirecionar
+        localStorage.removeItem('cotacao_token');
+        localStorage.removeItem('cotacao_user');
+        localStorage.removeItem('foodsUser');
+        setUser(null);
+        setToken(null);
+        setPermissions({});
+        window.location.href = config.foodsUrl;
+      }
+    };
+    
+    window.addEventListener('message', handleMessage);
+    
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
+
   // Função para realizar login SSO
   const performSSOLogin = async (foodsUser) => {
     try {
@@ -246,8 +269,19 @@ export const AuthProvider = ({ children }) => {
     // localStorage.removeItem('foodsUser'); // NÃO limpar - necessário para SSO
     sessionStorage.removeItem('cotacao_token');
     
-    // 3. Redirecionar para Foods
-    window.location.href = config.foodsUrl;
+    // 3. Verificar se está em modo SSO
+    const foodsUser = localStorage.getItem('foodsUser');
+    
+    if (foodsUser) {
+      // Em modo SSO, tentar re-autenticação
+      console.log('🔄 [COTACAO] Logout em modo SSO, tentando re-autenticação...');
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } else {
+      // Modo normal, redirecionar para Foods
+      window.location.href = config.foodsUrl;
+    }
   };
 
   // DESABILITADO - Permissões centralizadas no Foods
