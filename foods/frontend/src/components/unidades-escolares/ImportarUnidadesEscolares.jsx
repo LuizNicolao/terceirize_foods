@@ -74,6 +74,7 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
           onImportSuccess(response.data);
         }
       } else {
+        console.log('Response de erro:', response);
         setErrors(response.validationErrors || []);
         setErrorDetails(response.details || '');
         setErrorsByRow(response.errorsByRow || null);
@@ -221,7 +222,7 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
         </div>
 
         {/* Seção: Erros de Validação */}
-        {errors.length > 0 && (
+        {(errors.length > 0 || totalErrors > 0 || errorDetails) && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-red-800 mb-3 flex items-center gap-2">
               <FaExclamationTriangle /> Erros de Validação
@@ -235,6 +236,13 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
               <p className="text-red-700 text-sm mt-1">
                 Corrija os erros antes de tentar importar novamente.
               </p>
+              
+              {/* Debug Info */}
+              <div className="mt-2 p-2 bg-gray-100 rounded text-xs">
+                <p><strong>Debug:</strong> errors.length: {errors.length}, totalErrors: {totalErrors}, affectedRows: {affectedRows}</p>
+                <p><strong>errorDetails:</strong> {errorDetails ? 'Sim' : 'Não'}</p>
+                <p><strong>errorsByRow:</strong> {errorsByRow ? Object.keys(errorsByRow).length + ' linhas' : 'Não'}</p>
+              </div>
             </div>
 
             {/* Detalhes dos Erros */}
