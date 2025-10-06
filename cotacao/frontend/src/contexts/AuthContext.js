@@ -73,10 +73,14 @@ export const AuthProvider = ({ children }) => {
             
             // 5. Buscar permissões do usuário
             try {
-              const permsResponse = await api.get(`/users/by-email/${encodeURIComponent(foodsUser.email)}`);
-              if (permsResponse.data.data && permsResponse.data.data.permissions) {
+              // Configurar token no api para requisições autenticadas
+              api.defaults.headers.common['Authorization'] = `Bearer ${ssoResponse.data.token}`;
+              
+              // Buscar permissões específicas do usuário
+              const userPermsResponse = await api.get(`/users/${ssoResponse.data.user.id}/permissions`);
+              if (userPermsResponse.data && Array.isArray(userPermsResponse.data)) {
                 const permissionsObj = {};
-                permsResponse.data.data.permissions.forEach(perm => {
+                userPermsResponse.data.forEach(perm => {
                   permissionsObj[perm.screen] = {
                     can_view: perm.can_view === 1,
                     can_create: perm.can_create === 1,
