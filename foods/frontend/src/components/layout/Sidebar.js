@@ -351,6 +351,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           e.preventDefault();
                           
                           const user = JSON.parse(localStorage.getItem('user') || '{}');
+                          console.log('🔍 [DEBUG] User do localStorage:', user);
                           
                           const userData = {
                             id: user.id,
@@ -358,9 +359,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
                             email: user.email,
                             role: user.tipo_de_acesso
                           };
+                          console.log('🔍 [DEBUG] UserData criado:', userData);
                           
                           // Salvar dados no localStorage (compartilhado entre domínios locais)
                           localStorage.setItem('foodsUser', JSON.stringify(userData));
+                          console.log('✅ [DEBUG] foodsUser salvo no localStorage:', localStorage.getItem('foodsUser'));
                           
                           // Preparar URL com dados do usuário
                           const userDataEncoded = encodeURIComponent(JSON.stringify(userData));
