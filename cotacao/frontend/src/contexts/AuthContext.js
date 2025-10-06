@@ -32,8 +32,11 @@ export const AuthProvider = ({ children }) => {
     const validateSSOAccess = async () => {
       try {
         // 1. Verificar se veio do Foods (dados na URL ou localStorage)
+        console.log('🔍 Verificando localStorage...');
+        console.log('🔍 localStorage completo:', localStorage);
         let foodsUserData = localStorage.getItem('foodsUser');
         console.log('🔍 foodsUserData do localStorage:', foodsUserData);
+        console.log('🔍 Tipo do foodsUserData:', typeof foodsUserData);
         
         // Registrar log no localStorage para debug
         const debugLog = {
@@ -202,7 +205,7 @@ export const AuthProvider = ({ children }) => {
     // 2. Limpar localStorage e sessionStorage
     localStorage.removeItem('cotacao_token');
     localStorage.removeItem('cotacao_user');
-    localStorage.removeItem('foodsUser');
+    // localStorage.removeItem('foodsUser'); // NÃO limpar - necessário para SSO
     sessionStorage.removeItem('cotacao_token');
     
     // 3. Redirecionar para Foods
