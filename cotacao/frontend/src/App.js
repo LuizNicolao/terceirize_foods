@@ -32,8 +32,8 @@ import { Aprovacoes, VisualizarAprovacao } from './pages/aprovacoes';
     }
 
     if (!isAuthenticated) {
-      console.log('❌ AuthenticatedRoute - Não autenticado, redirecionando para /login');
-      return <Navigate to="/login" replace />;
+      console.log('❌ AuthenticatedRoute - Não autenticado, redirecionando para /cotacao/login');
+      return <Navigate to="/cotacao/login" replace />;
     }
 
     console.log('✅ AuthenticatedRoute - Renderizando Layout');
@@ -62,7 +62,7 @@ function AppRoutes() {
     <Routes>
       {/* Rota pública */}
       <Route 
-        path="/login" 
+        path="/cotacao/login" 
         element={
           <PublicRoute>
             <Login />
@@ -137,7 +137,7 @@ function AppRoutes() {
         } 
       />
 
-      {/* Rotas removidas - componentes não mais utilizados
+
       <Route 
         path="/editar-usuario/:id" 
         element={
@@ -159,7 +159,7 @@ function AppRoutes() {
           </AuthenticatedRoute>
         } 
       />
-      */}
+
 
       <Route 
         path="/supervisor" 
