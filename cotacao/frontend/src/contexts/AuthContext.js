@@ -57,7 +57,13 @@ export const AuthProvider = ({ children }) => {
           // 3. Se não veio do Foods, bloquear acesso
           console.log('❌ Nenhum dado SSO encontrado, redirecionando para Foods');
           console.log('🔍 localStorage keys:', Object.keys(localStorage));
-          window.location.href = config.foodsUrl;
+          console.log('🔍 URL atual:', window.location.href);
+          console.log('🔍 Config foodsUrl:', config.foodsUrl);
+          
+          // Delay para conseguir ver os logs
+          setTimeout(() => {
+            window.location.href = config.foodsUrl;
+          }, 3000);
           return;
         }
 
