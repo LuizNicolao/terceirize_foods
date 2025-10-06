@@ -25,8 +25,7 @@ class FiliaisStatsController {
         COUNT(DISTINCT estado) as total_estados,
         COUNT(DISTINCT supervisao) as total_supervisoes,
         COUNT(DISTINCT coordenacao) as total_coordenacoes,
-        SUM(CASE WHEN cnpj IS NOT NULL AND cnpj != '' THEN 1 ELSE 0 END) as com_cnpj,
-        SUM(CASE WHEN email IS NOT NULL AND email != '' THEN 1 ELSE 0 END) as com_email
+        SUM(CASE WHEN cnpj IS NOT NULL AND cnpj != '' THEN 1 ELSE 0 END) as com_cnpj
       FROM filiais
     `;
     

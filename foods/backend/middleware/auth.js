@@ -18,11 +18,21 @@ const authenticateToken = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     
-    // Verificar se o usuário ainda existe e está ativo
-    const user = await executeQuery(
-      'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE id = ?',
-      [decoded.userId]
-    );
+    // Se o token contém email, validar por email (para compatibilidade com outros sistemas)
+    // Caso contrário, validar por ID (comportamento padrão)
+    let user;
+    
+    if (decoded.email) {
+      user = await executeQuery(
+        'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE email = ?',
+        [decoded.email]
+      );
+    } else {
+      user = await executeQuery(
+        'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE id = ?',
+        [decoded.userId]
+      );
+    }
 
     if (user.length === 0) {
       return res.status(401).json({ error: 'Usuário não encontrado' });

@@ -12,8 +12,9 @@ class RotasNutricionistasCRUDController {
    */
     static async listar(req, res) {
     try {
-      const { search, status, usuario_id, supervisor_id, coordenador_id } = req.query;
+      const { search, status, usuario_id, supervisor_id, coordenador_id, email } = req.query;
       const pagination = req.pagination;
+      
 
               // Construir query base
         let query = `
@@ -68,9 +69,14 @@ class RotasNutricionistasCRUDController {
         queryParams.push(coordenador_id);
       }
 
+      if (email) {
+        query += ` AND u.email = ?`;
+        queryParams.push(email);
+      }
+
       // Query para contar total de registros
       // Query de contagem simplificada (seguindo o padrão das outras páginas)
-      const countQuery = `SELECT COUNT(*) as total FROM rotas_nutricionistas rn WHERE 1=1${search ? ' AND (rn.codigo LIKE ? OR rn.observacoes LIKE ?)' : ''}${status ? ' AND rn.status = ?' : ''}${usuario_id ? ' AND rn.usuario_id = ?' : ''}${supervisor_id ? ' AND rn.supervisor_id = ?' : ''}${coordenador_id ? ' AND rn.coordenador_id = ?' : ''}`;
+      const countQuery = `SELECT COUNT(*) as total FROM rotas_nutricionistas rn LEFT JOIN usuarios u ON rn.usuario_id = u.id WHERE 1=1${search ? ' AND (rn.codigo LIKE ? OR rn.observacoes LIKE ?)' : ''}${status ? ' AND rn.status = ?' : ''}${usuario_id ? ' AND rn.usuario_id = ?' : ''}${supervisor_id ? ' AND rn.supervisor_id = ?' : ''}${coordenador_id ? ' AND rn.coordenador_id = ?' : ''}${email ? ' AND u.email = ?' : ''}`;
       const countParams = [];
       
       // Aplicar os mesmos filtros na query de contagem
@@ -92,6 +98,10 @@ class RotasNutricionistasCRUDController {
       
       if (coordenador_id) {
         countParams.push(coordenador_id);
+      }
+
+      if (email) {
+        countParams.push(email);
       }
       
       const countResult = await executeQuery(countQuery, countParams);
@@ -133,14 +143,12 @@ class RotasNutricionistasCRUDController {
       
       const response = {
         success: true,
-        data: {
-          rotas,
-          pagination: {
-            currentPage: pagination.page,
-            totalPages,
-            totalItems,
-            itemsPerPage: pagination.limit
-          }
+        data: rotas,
+        pagination: {
+          currentPage: pagination.page,
+          totalPages,
+          totalItems,
+          itemsPerPage: pagination.limit
         }
       };
       

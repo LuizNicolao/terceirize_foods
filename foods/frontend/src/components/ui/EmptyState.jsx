@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaBox, FaUser, FaTruck, FaBuilding, FaUsers, FaRoute, FaSchool, FaTag, FaLayerGroup, FaCubes, FaCar, FaTools, FaAllergies } from 'react-icons/fa';
+import { FaBox, FaUser, FaTruck, FaBuilding, FaUsers, FaRoute, FaSchool, FaTag, FaLayerGroup, FaCubes, FaCar, FaTools, FaAllergies, FaUtensils } from 'react-icons/fa';
 
 const EmptyState = ({ 
   title, 
@@ -29,6 +29,7 @@ const EmptyState = ({
       'ajudantes': FaUser,
       'intolerancias': FaAllergies,
       'patrimonios': FaBuilding,
+      'cardapios': FaUtensils,
       'default': FaBox
     };
 

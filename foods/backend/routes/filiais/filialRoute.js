@@ -21,6 +21,11 @@ router.get('/',
   FiliaisController.listarFiliais
 );
 
+// Buscar estatísticas de filiais (DEVE vir ANTES de /:id)
+router.get('/estatisticas', 
+  FiliaisController.buscarEstatisticas
+);
+
 // Buscar filial por ID
 router.get('/:id', 
   commonValidations.id,
@@ -77,6 +82,7 @@ router.get('/coordenacoes/listar',
 router.get('/consulta-cnpj/:cnpj', 
   FiliaisController.consultarCNPJ
 );
+
 
 // ===== ROTAS DE ALMOXARIFADOS =====
 

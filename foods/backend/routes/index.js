@@ -33,6 +33,9 @@ const efetivosRoutes = require('./efetivos');
 const patrimoniosRoutes = require('./patrimonios');
 const periodicidadeRoutes = require('./periodicidade');
 const faturamentoRoutes = require('./faturamento');
+const receitasRoutes = require('./receitas');
+const necessidadesMerendaRoutes = require('./necessidades-merenda');
+const openaiRoutes = require('./openai/openaiRoute');
 
 // Definir todas as rotas com seus caminhos
 const routes = [
@@ -64,7 +67,10 @@ const routes = [
   { path: '/efetivos', router: efetivosRoutes },
   { path: '/patrimonios', router: patrimoniosRoutes },
   { path: '/periodicidade', router: periodicidadeRoutes },
-  { path: '/faturamento', router: faturamentoRoutes.faturamentoRoutes }
+  { path: '/faturamento', router: faturamentoRoutes.faturamentoRoutes },
+  { path: '/receitas', router: receitasRoutes },
+  { path: '/necessidades-merenda', router: necessidadesMerendaRoutes },
+  { path: '/openai', router: openaiRoutes }
 ];
 
 module.exports = routes;

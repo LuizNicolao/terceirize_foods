@@ -31,7 +31,8 @@ import {
   FaAllergies,
   FaUtensils,
   FaCalendarAlt,
-  FaFileInvoice
+  FaFileInvoice,
+  FaShoppingCart
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -87,6 +88,8 @@ const menuGroups = [
       { path: '/foods/periodos-refeicao', icon: FaUtensils, label: 'Períodos de Refeição', screen: 'periodos_refeicao' },
       { path: '/foods/periodicidade', icon: FaCalendarAlt, label: 'Períodicidade', screen: 'periodicidade' },
       { path: '/foods/faturamento', icon: FaFileInvoice, label: 'Faturamento', screen: 'faturamento' },
+      { path: '/foods/receitas', icon: FaUtensils, label: 'Receitas', screen: 'receitas' },
+      { path: '/foods/necessidades-merenda', icon: FaShoppingCart, label: 'Necessidades da Merenda', screen: 'necessidades_merenda' },
     ]
   },
   {

@@ -21,18 +21,34 @@ const corsOptions = {
         'http://foods.terceirizemais.com.br',
         'https://cotacao.terceirizemais.com.br',
         'http://cotacao.terceirizemais.com.br',
+        'https://implantacao.terceirizemais.com.br',
+        'http://implantacao.terceirizemais.com.br',
+        'https://cozinha-industrial.terceirizemais.com.br',
+        'http://cozinha-industrial.terceirizemais.com.br',
         'http://82.29.57.43:3000', 
         'http://82.29.57.43', 
         'http://localhost:3000',
         'http://82.29.57.43:3001',
         'http://82.29.57.43:3002',
+        'http://82.29.57.43:3004',
+        'http://82.29.57.43:3005',
+        'http://82.29.57.43:3006',
+        'http://82.29.57.43:3007',
         'http://localhost:3001',
-        'http://localhost:3002'
+        'http://localhost:3002',
+        'http://localhost:3004',
+        'http://localhost:3005',
+        'http://localhost:3006',
+        'http://localhost:3007'
       ] 
     : [
         'http://localhost:3000',
         'http://localhost:3001',
-        'http://localhost:3002'
+        'http://localhost:3002',
+        'http://localhost:3004',
+        'http://localhost:3005',
+        'http://localhost:3006',
+        'http://localhost:3007'
       ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],

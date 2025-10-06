@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkPermission, checkScreenPermission } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -20,7 +20,7 @@ router.use(hateoasMiddleware('rotas-nutricionistas'));
 
 // GET /api/rotas-nutricionistas - Listar todas as rotas nutricionistas
 router.get('/', 
-  checkPermission('visualizar'),
+  checkScreenPermission('rotas_nutricionistas', 'visualizar'),
   commonValidations.search,
   commonValidations.pagination,
   rotasNutricionistasValidations.filtros,
@@ -48,8 +48,8 @@ router.get('/ativas/listar',
 );
 
 // GET /api/rotas-nutricionistas/:id - Buscar rota nutricionista por ID
-router.get('/:id',
-  checkPermission('visualizar'),
+router.get('/:id', 
+  checkScreenPermission('rotas_nutricionistas', 'visualizar'),
   commonValidations.id,
   RotasNutricionistasController.buscarPorId
 );
