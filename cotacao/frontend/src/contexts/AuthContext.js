@@ -30,62 +30,54 @@ export const AuthProvider = ({ children }) => {
   // Implementação SSO real - só permite acesso via Foods
   useEffect(() => {
     const validateSSOAccess = async () => {
-      console.log('🔍 [DEBUG] Iniciando validação SSO...');
       try {
         // 1. Verificar se veio do Foods (dados na URL ou localStorage)
         let foodsUserData = localStorage.getItem('foodsUser');
-        console.log('🔍 [DEBUG] Dados do localStorage:', foodsUserData ? 'Encontrados' : 'Não encontrados');
         
         // 2. Se não há dados no localStorage, verificar URL parameters
         if (!foodsUserData) {
           const urlParams = new URLSearchParams(window.location.search);
           const ssoParam = urlParams.get('sso');
-          console.log('🔍 [DEBUG] Parâmetro SSO na URL:', ssoParam ? 'Encontrado' : 'Não encontrado');
           
           if (ssoParam) {
             try {
               foodsUserData = decodeURIComponent(ssoParam);
-              console.log('🔍 [DEBUG] Dados SSO decodificados:', foodsUserData);
               
               // Limpar URL parameters após ler
               const newUrl = window.location.origin + window.location.pathname;
               window.history.replaceState({}, document.title, newUrl);
             } catch (urlError) {
-              console.error('❌ [ERROR] Erro ao decodificar parâmetros da URL:', urlError);
+              console.error('Erro ao decodificar parâmetros da URL:', urlError);
             }
           }
         }
         
         if (!foodsUserData) {
           // 3. Se não veio do Foods, bloquear acesso
-          console.log('❌ [ERROR] Nenhum dado SSO encontrado, redirecionando para Foods');
           window.location.href = config.foodsUrl;
           return;
         }
 
         const foodsUser = JSON.parse(foodsUserData);
-        console.log('🔍 [DEBUG] Dados do usuário Foods:', foodsUser);
 
         // 3. Fazer login SSO no cotação
         try {
-          console.log('🔍 [DEBUG] Fazendo login SSO no cotação...');
           const ssoResponse = await api.post('/auth/sso-login', {
             userData: foodsUser
           });
-          console.log('🔍 [DEBUG] Resposta SSO:', ssoResponse.data);
 
           if (ssoResponse.data.success) {
             // 4. Login SSO bem-sucedido
-            console.log('✅ [SUCCESS] Login SSO bem-sucedido');
             setUser(ssoResponse.data.user);
             setToken(ssoResponse.data.token);
             
+            // Definir token no cabeçalho Authorization do axios
+            api.defaults.headers.common['Authorization'] = `Bearer ${ssoResponse.data.token}`;
+            
             // 5. Buscar permissões do usuário usando rota pública
             try {
-              console.log('🔍 [DEBUG] Buscando permissões do usuário...');
               // Buscar permissões específicas do usuário via rota pública
               const userPermsResponse = await api.get(`/public/usuario/${ssoResponse.data.user.id}/permissions`);
-              console.log('🔍 [DEBUG] Resposta permissões:', userPermsResponse.data);
               if (userPermsResponse.data && Array.isArray(userPermsResponse.data)) {
                 const permissionsObj = {};
                 userPermsResponse.data.forEach(perm => {
@@ -96,11 +88,10 @@ export const AuthProvider = ({ children }) => {
                     can_delete: perm.can_delete === 1
                   };
                 });
-                console.log('✅ [SUCCESS] Permissões carregadas:', permissionsObj);
                 setPermissions(permissionsObj);
               }
             } catch (permError) {
-              console.error('❌ [ERROR] Erro ao buscar permissões:', permError);
+              console.error('Erro ao buscar permissões:', permError);
               // Usar permissões padrão se não conseguir buscar
               const defaultPerms = {
                 dashboard: { can_view: true, can_create: false, can_edit: false, can_delete: false },
@@ -110,13 +101,11 @@ export const AuthProvider = ({ children }) => {
                 supervisor: { can_view: false, can_create: false, can_edit: false, can_delete: false },
                 aprovacoes: { can_view: false, can_create: false, can_edit: false, can_delete: false }
               };
-              console.log('🔍 [DEBUG] Usando permissões padrão:', defaultPerms);
               setPermissions(defaultPerms);
             }
 
             // 6. NÃO limpar dados do localStorage para permitir reload da página
             // localStorage.removeItem('foodsUser');
-            console.log('✅ [SUCCESS] Validação SSO concluída com sucesso');
             
           } else {
             throw new Error('Falha no login SSO');
@@ -136,9 +125,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    console.log('🔍 [DEBUG] Iniciando useEffect do AuthContext');
-    validateSSOAccess();
-    console.log('🔍 [DEBUG] useEffect do AuthContext finalizado');
+        validateSSOAccess();
 
     // 4. Verificar periodicamente se ainda está logado no Foods
     const checkSSOStatus = setInterval(() => {

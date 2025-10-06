@@ -20,25 +20,20 @@ import EditarCotacao from './pages/cotacoes/EditarCotacao';
 import Saving from './pages/saving/Saving';
 import { Aprovacoes, VisualizarAprovacao } from './pages/aprovacoes';
 
-// Componente para rotas protegidas com autenticação
-const AuthenticatedRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+  // Componente para rotas protegidas com autenticação
+  const AuthenticatedRoute = ({ children }) => {
+    const { isAuthenticated, loading } = useAuth();
 
-  console.log('🔍 [DEBUG] AuthenticatedRoute - loading:', loading, 'isAuthenticated:', isAuthenticated);
+    if (loading) {
+      return <LoadingSpinner />;
+    }
 
-  if (loading) {
-    console.log('🔍 [DEBUG] AuthenticatedRoute - Mostrando LoadingSpinner');
-    return <LoadingSpinner />;
-  }
+    if (!isAuthenticated) {
+      return <Navigate to="/login" replace />;
+    }
 
-  if (!isAuthenticated) {
-    console.log('❌ [ERROR] AuthenticatedRoute - Não autenticado, redirecionando para /login');
-    return <Navigate to="/login" replace />;
-  }
-
-  console.log('✅ [SUCCESS] AuthenticatedRoute - Renderizando Layout');
-  return <Layout>{children}</Layout>;
-};
+    return <Layout>{children}</Layout>;
+  };
 
 // Componente para rotas públicas
 const PublicRoute = ({ children }) => {
@@ -57,7 +52,6 @@ const PublicRoute = ({ children }) => {
 
 
 function AppRoutes() {
-  console.log('🔍 [DEBUG] AppRoutes - Renderizando rotas');
   return (
     <Routes>
       {/* Rota pública */}
