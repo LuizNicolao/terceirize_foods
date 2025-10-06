@@ -114,8 +114,8 @@ export const AuthProvider = ({ children }) => {
               setPermissions(defaultPerms);
             }
 
-            // 6. Limpar dados do localStorage APÓS login bem-sucedido
-            localStorage.removeItem('foodsUser');
+            // 6. NÃO limpar dados do localStorage para permitir reload da página
+            // localStorage.removeItem('foodsUser');
             console.log('✅ [SUCCESS] Validação SSO concluída com sucesso');
             
           } else {
