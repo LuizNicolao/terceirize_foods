@@ -1,9 +1,9 @@
 {
-  "name": "implantacao-frontend",
+  "name": "cozinha_industrial-frontend",
   "version": "1.0.0",
-  "description": "Frontend do sistema de implantação",
+  "description": "Frontend do sistema de cozinha industrial",
   "private": true,
-  "homepage": "/implantacao",
+  "homepage": "/cozinha_industrial",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -49,5 +49,5 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:3005"
+  "proxy": "http://localhost:3006"
 }
