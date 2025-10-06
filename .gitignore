@@ -85,3 +85,6 @@ tmp/
 temp/
 *.tmp
 *.temp
+
+# Temporary projects
+Geracao_necessidade/
