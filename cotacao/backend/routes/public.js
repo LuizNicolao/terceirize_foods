@@ -242,6 +242,31 @@ router.get('/usuario/:email', async (req, res) => {
 });
 
 /**
+ * GET /api/public/usuario/:id/permissions
+ * Busca permissões do usuário (para SSO)
+ */
+router.get('/usuario/:id/permissions', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const permissions = await executeQuery(`
+      SELECT screen, can_view, can_create, can_edit, can_delete
+      FROM user_permissions 
+      WHERE user_id = ?
+      ORDER BY screen
+    `, [id]);
+    
+    res.json(permissions);
+  } catch (error) {
+    console.error('Erro ao buscar permissões:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor'
+    });
+  }
+});
+
+/**
  * GET /api/public/health
  * Health check endpoint
  */

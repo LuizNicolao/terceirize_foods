@@ -71,13 +71,10 @@ export const AuthProvider = ({ children }) => {
             setUser(ssoResponse.data.user);
             setToken(ssoResponse.data.token);
             
-            // 5. Buscar permissões do usuário
+            // 5. Buscar permissões do usuário usando rota pública
             try {
-              // Configurar token no api para requisições autenticadas
-              api.defaults.headers.common['Authorization'] = `Bearer ${ssoResponse.data.token}`;
-              
-              // Buscar permissões específicas do usuário
-              const userPermsResponse = await api.get(`/users/${ssoResponse.data.user.id}/permissions`);
+              // Buscar permissões específicas do usuário via rota pública
+              const userPermsResponse = await api.get(`/public/usuario/${ssoResponse.data.user.id}/permissions`);
               if (userPermsResponse.data && Array.isArray(userPermsResponse.data)) {
                 const permissionsObj = {};
                 userPermsResponse.data.forEach(perm => {
