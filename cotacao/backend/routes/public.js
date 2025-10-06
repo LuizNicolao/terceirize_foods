@@ -8,7 +8,24 @@ const { executeQuery } = require('../config/database');
 const validateInternalIP = (req, res, next) => {
   const clientIP = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
   
-  // Redes permitidas
+  // Rotas que permitem acesso externo (para SSO)
+  const publicSSORoutes = [
+    '/usuario/',
+    '/health'
+  ];
+  
+  // Verificar se é uma rota pública de SSO
+  const isSSOPublicRoute = publicSSORoutes.some(route => 
+    req.path.includes(route)
+  );
+  
+  if (isSSOPublicRoute) {
+    console.log(`✅ Cotação - Rota SSO pública autorizada: ${req.path} - IP: ${clientIP}`);
+    next();
+    return;
+  }
+  
+  // Redes permitidas para outras rotas
   const allowedNetworks = [
     '172.16.0.0/12',    // Docker networks
     '10.0.0.0/8',       // Internal networks
