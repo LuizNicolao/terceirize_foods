@@ -39,7 +39,7 @@ class UnidadesEscolaresImportController {
       });
 
       // Mapear colunas para campos do banco
-      const columnMapping = this.mapColumns(headers);
+      const columnMapping = UnidadesEscolaresImportController.mapColumns(headers);
       
       // Validar se as colunas obrigatórias estão presentes
       const requiredColumns = ['codigo_teknisa', 'nome_escola', 'cidade', 'estado'];
@@ -64,7 +64,7 @@ class UnidadesEscolaresImportController {
         if (rowIndex === 1) return; // Pular cabeçalhos
         
         try {
-          const unidade = this.extractUnidadeFromRow(row, columnMapping, rowIndex);
+          const unidade = UnidadesEscolaresImportController.extractUnidadeFromRow(row, columnMapping, rowIndex);
           if (unidade) {
             unidades.push(unidade);
           }
@@ -96,7 +96,7 @@ class UnidadesEscolaresImportController {
       }
 
       // Validar dados antes de inserir
-      const validationErrors = await this.validarUnidades(unidades);
+      const validationErrors = await UnidadesEscolaresImportController.validarUnidades(unidades);
       if (validationErrors.length > 0) {
         return res.status(400).json({
           success: false,
@@ -107,7 +107,7 @@ class UnidadesEscolaresImportController {
       }
 
       // Inserir unidades no banco
-      const insertedCount = await this.inserirUnidades(unidades);
+      const insertedCount = await UnidadesEscolaresImportController.inserirUnidades(unidades);
       
       res.status(200).json({
         success: true,
@@ -223,28 +223,28 @@ class UnidadesEscolaresImportController {
     
     // Campos obrigatórios
     if (columnMapping.codigo_teknisa !== undefined) {
-      unidade.codigo_teknisa = this.getCellValue(row, columnMapping.codigo_teknisa);
+      unidade.codigo_teknisa = UnidadesEscolaresImportController.getCellValue(row, columnMapping.codigo_teknisa);
       if (!unidade.codigo_teknisa) {
         throw new Error(`Código Teknisa é obrigatório na linha ${rowIndex}`);
       }
     }
 
     if (columnMapping.nome_escola !== undefined) {
-      unidade.nome_escola = this.getCellValue(row, columnMapping.nome_escola);
+      unidade.nome_escola = UnidadesEscolaresImportController.getCellValue(row, columnMapping.nome_escola);
       if (!unidade.nome_escola) {
         throw new Error(`Nome da escola é obrigatório na linha ${rowIndex}`);
       }
     }
 
     if (columnMapping.cidade !== undefined) {
-      unidade.cidade = this.getCellValue(row, columnMapping.cidade);
+      unidade.cidade = UnidadesEscolaresImportController.getCellValue(row, columnMapping.cidade);
       if (!unidade.cidade) {
         throw new Error(`Cidade é obrigatória na linha ${rowIndex}`);
       }
     }
 
     if (columnMapping.estado !== undefined) {
-      unidade.estado = this.getCellValue(row, columnMapping.estado);
+      unidade.estado = UnidadesEscolaresImportController.getCellValue(row, columnMapping.estado);
       if (!unidade.estado) {
         throw new Error(`Estado é obrigatório na linha ${rowIndex}`);
       }
@@ -252,92 +252,92 @@ class UnidadesEscolaresImportController {
 
     // Campos opcionais
     if (columnMapping.pais !== undefined) {
-      unidade.pais = this.getCellValue(row, columnMapping.pais) || 'Brasil';
+      unidade.pais = UnidadesEscolaresImportController.getCellValue(row, columnMapping.pais) || 'Brasil';
     }
 
     if (columnMapping.endereco !== undefined) {
-      unidade.endereco = this.getCellValue(row, columnMapping.endereco) || '';
+      unidade.endereco = UnidadesEscolaresImportController.getCellValue(row, columnMapping.endereco) || '';
     }
 
     if (columnMapping.numero !== undefined) {
-      unidade.numero = this.getCellValue(row, columnMapping.numero);
+      unidade.numero = UnidadesEscolaresImportController.getCellValue(row, columnMapping.numero);
     }
 
     if (columnMapping.bairro !== undefined) {
-      unidade.bairro = this.getCellValue(row, columnMapping.bairro);
+      unidade.bairro = UnidadesEscolaresImportController.getCellValue(row, columnMapping.bairro);
     }
 
     if (columnMapping.cep !== undefined) {
-      unidade.cep = this.getCellValue(row, columnMapping.cep);
+      unidade.cep = UnidadesEscolaresImportController.getCellValue(row, columnMapping.cep);
     }
 
     if (columnMapping.centro_distribuicao !== undefined) {
-      unidade.centro_distribuicao = this.getCellValue(row, columnMapping.centro_distribuicao);
+      unidade.centro_distribuicao = UnidadesEscolaresImportController.getCellValue(row, columnMapping.centro_distribuicao);
     }
 
     if (columnMapping.rota_id !== undefined) {
-      const rotaValue = this.getCellValue(row, columnMapping.rota_id);
+      const rotaValue = UnidadesEscolaresImportController.getCellValue(row, columnMapping.rota_id);
       unidade.rota_id = rotaValue ? parseInt(rotaValue) : null;
     }
 
     if (columnMapping.regional !== undefined) {
-      unidade.regional = this.getCellValue(row, columnMapping.regional);
+      unidade.regional = UnidadesEscolaresImportController.getCellValue(row, columnMapping.regional);
     }
 
     if (columnMapping.lot !== undefined) {
-      unidade.lot = this.getCellValue(row, columnMapping.lot);
+      unidade.lot = UnidadesEscolaresImportController.getCellValue(row, columnMapping.lot);
     }
 
     if (columnMapping.cc_senior !== undefined) {
-      unidade.cc_senior = this.getCellValue(row, columnMapping.cc_senior);
+      unidade.cc_senior = UnidadesEscolaresImportController.getCellValue(row, columnMapping.cc_senior);
     }
 
     if (columnMapping.codigo_senior !== undefined) {
-      unidade.codigo_senior = this.getCellValue(row, columnMapping.codigo_senior);
+      unidade.codigo_senior = UnidadesEscolaresImportController.getCellValue(row, columnMapping.codigo_senior);
     }
 
     if (columnMapping.abastecimento !== undefined) {
-      unidade.abastecimento = this.getCellValue(row, columnMapping.abastecimento);
+      unidade.abastecimento = UnidadesEscolaresImportController.getCellValue(row, columnMapping.abastecimento);
     }
 
     if (columnMapping.ordem_entrega !== undefined) {
-      const ordemValue = this.getCellValue(row, columnMapping.ordem_entrega);
+      const ordemValue = UnidadesEscolaresImportController.getCellValue(row, columnMapping.ordem_entrega);
       unidade.ordem_entrega = ordemValue ? parseInt(ordemValue) : 0;
     }
 
     if (columnMapping.status !== undefined) {
-      const statusValue = this.getCellValue(row, columnMapping.status);
+      const statusValue = UnidadesEscolaresImportController.getCellValue(row, columnMapping.status);
       unidade.status = statusValue && ['ativo', 'inativo'].includes(statusValue.toLowerCase()) 
         ? statusValue.toLowerCase() 
         : 'ativo';
     }
 
     if (columnMapping.observacoes !== undefined) {
-      unidade.observacoes = this.getCellValue(row, columnMapping.observacoes);
+      unidade.observacoes = UnidadesEscolaresImportController.getCellValue(row, columnMapping.observacoes);
     }
 
     if (columnMapping.atendimento !== undefined) {
-      unidade.atendimento = this.getCellValue(row, columnMapping.atendimento);
+      unidade.atendimento = UnidadesEscolaresImportController.getCellValue(row, columnMapping.atendimento);
     }
 
     if (columnMapping.horario !== undefined) {
-      unidade.horario = this.getCellValue(row, columnMapping.horario);
+      unidade.horario = UnidadesEscolaresImportController.getCellValue(row, columnMapping.horario);
     }
 
     if (columnMapping.supervisao !== undefined) {
-      unidade.supervisao = this.getCellValue(row, columnMapping.supervisao);
+      unidade.supervisao = UnidadesEscolaresImportController.getCellValue(row, columnMapping.supervisao);
     }
 
     if (columnMapping.coordenacao !== undefined) {
-      unidade.coordenacao = this.getCellValue(row, columnMapping.coordenacao);
+      unidade.coordenacao = UnidadesEscolaresImportController.getCellValue(row, columnMapping.coordenacao);
     }
 
     if (columnMapping.lat !== undefined) {
-      unidade.lat = this.getCellValue(row, columnMapping.lat);
+      unidade.lat = UnidadesEscolaresImportController.getCellValue(row, columnMapping.lat);
     }
 
     if (columnMapping.long !== undefined) {
-      unidade.long = this.getCellValue(row, columnMapping.long);
+      unidade.long = UnidadesEscolaresImportController.getCellValue(row, columnMapping.long);
     }
 
     return unidade;
