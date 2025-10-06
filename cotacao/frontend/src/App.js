@@ -24,14 +24,19 @@ import { Aprovacoes, VisualizarAprovacao } from './pages/aprovacoes';
   const AuthenticatedRoute = ({ children }) => {
     const { isAuthenticated, loading } = useAuth();
 
+    console.log('🔍 AuthenticatedRoute - loading:', loading, 'isAuthenticated:', isAuthenticated);
+
     if (loading) {
+      console.log('🔍 AuthenticatedRoute - Mostrando LoadingSpinner');
       return <LoadingSpinner />;
     }
 
     if (!isAuthenticated) {
+      console.log('❌ AuthenticatedRoute - Não autenticado, redirecionando para /login');
       return <Navigate to="/login" replace />;
     }
 
+    console.log('✅ AuthenticatedRoute - Renderizando Layout');
     return <Layout>{children}</Layout>;
   };
 
@@ -52,6 +57,7 @@ const PublicRoute = ({ children }) => {
 
 
 function AppRoutes() {
+  console.log('🔍 AppRoutes - URL atual:', window.location.href);
   return (
     <Routes>
       {/* Rota pública */}
