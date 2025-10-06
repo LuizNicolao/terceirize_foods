@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { FaSearch, FaWarehouse, FaBuilding } from 'react-icons/fa';
+import { FaSearch, FaSpinner } from 'react-icons/fa';
 import { Modal, Input, Button, MaskedFormInput } from '../ui';
 import FiliaisService from '../../services/filiais';
-import AlmoxarifadoContent from '../shared/AlmoxarifadoContent';
-import { PatrimoniosList } from '../patrimonios';
-import { usePermissions } from '../../contexts/PermissionsContext';
 import toast from 'react-hot-toast';
 
 const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm();
-  const [activeTab, setActiveTab] = useState('info'); // 'info', 'almoxarifados' ou 'patrimonios'
-  const { canView, canEdit, canDelete } = usePermissions();
+  const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
+  const [isLoadingCEP, setIsLoadingCEP] = useState(false);
 
   const cnpj = watch('cnpj');
   const cep = watch('cep');
@@ -28,8 +25,6 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
         // Limpar formulário para nova filial
         reset();
       }
-      // Resetar para aba de informações
-      setActiveTab('info');
     }
   }, [isOpen, filial, setValue, reset]);
 
@@ -39,13 +34,11 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
 
   const handleClose = () => {
     reset();
-    setActiveTab('info');
     onClose();
   };
 
   // Função para buscar CNPJ
   const handleBuscarCNPJ = async () => {
-    // Tentar pegar o valor do CNPJ de diferentes formas
     const cnpjValue = cnpj || '';
     
     if (!cnpjValue || cnpjValue.replace(/\D/g, '').length < 14) {
@@ -53,6 +46,11 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
       return;
     }
 
+    if (isLoadingCNPJ) {
+      return; // Evitar múltiplas chamadas
+    }
+
+    setIsLoadingCNPJ(true);
     const loadingToast = toast.loading('Buscando dados do CNPJ...');
 
     try {
@@ -65,13 +63,15 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
         const dados = response.data;
         // Preencher os campos com os dados retornados
         setValue('razao_social', dados.razao_social || '');
-        setValue('filial', dados.nome_fantasia || dados.razao_social || '');
+        setValue('nome_fantasia', dados.nome_fantasia || '');
         setValue('logradouro', dados.logradouro || '');
         setValue('numero', dados.numero || '');
         setValue('bairro', dados.bairro || '');
         setValue('cidade', dados.municipio || '');
         setValue('estado', dados.uf || '');
         setValue('cep', dados.cep || '');
+        setValue('telefone', dados.telefone || '');
+        setValue('email', dados.email || '');
         
         toast.success('Dados do CNPJ carregados com sucesso!');
       } else {
@@ -82,6 +82,8 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
       toast.dismiss(loadingToast);
       console.error('Erro ao buscar CNPJ:', error);
       toast.error('Erro ao buscar dados do CNPJ. Tente novamente.');
+    } finally {
+      setIsLoadingCNPJ(false);
     }
   };
 
@@ -94,6 +96,11 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
       return;
     }
 
+    if (isLoadingCEP) {
+      return; // Evitar múltiplas chamadas
+    }
+
+    setIsLoadingCEP(true);
     const loadingToast = toast.loading('Buscando dados do CEP...');
 
     try {
@@ -119,6 +126,8 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
       toast.dismiss(loadingToast);
       console.error('Erro ao buscar CEP:', error);
       toast.error('Erro ao buscar dados do CEP. Tente novamente.');
+    } finally {
+      setIsLoadingCEP(false);
     }
   };
 
@@ -129,284 +138,229 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
       title={isViewMode ? 'Visualizar Filial' : filial ? 'Editar Filial' : 'Nova Filial'}
       size="full"
     >
-      {/* Abas */}
-      <div className="border-b border-gray-200 mb-4">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('info')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'info'
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Informações
-          </button>
-          {filial && (
-            <button
-              onClick={() => setActiveTab('almoxarifados')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                activeTab === 'almoxarifados'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <FaWarehouse />
-              Almoxarifados
-            </button>
-          )}
-          {filial && (
-            <button
-              onClick={() => setActiveTab('patrimonios')}
-              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                activeTab === 'patrimonios'
-                  ? 'border-green-500 text-green-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              <FaBuilding />
-              Patrimônios
-            </button>
-          )}
-        </nav>
-      </div>
-
-      {/* Conteúdo das abas */}
-      {activeTab === 'info' && (
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* Primeira Linha - 2 Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Card 1: Informações Principais */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
-                Informações Principais
-              </h3>
-              <div className="space-y-3">
-                <Input
-                  label="Código da Filial"
-                  {...register('codigo_filial')}
-                  error={errors.codigo_filial?.message}
-                  disabled={isViewMode}
-                  placeholder="Código da filial"
-                />
-                
-                {/* CNPJ com botão de busca */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CNPJ
-                  </label>
-                  <div className="flex gap-2">
-                    <MaskedFormInput
-                      maskType="cnpj"
-                      register={register}
-                      fieldName="cnpj"
-                      error={errors.cnpj?.message}
-                      disabled={isViewMode}
-                      placeholder="00.000.000/0000-00"
-                    />
-                    {!isViewMode && (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleBuscarCNPJ}
-                        className="flex items-center gap-2 whitespace-nowrap"
-                      >
-                        <FaSearch className="text-sm" />
-                        Buscar
-                      </Button>
-                    )}
-                  </div>
+      <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 max-h-[75vh] overflow-y-auto">
+        {/* Primeira Linha - 2 Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Card 1: Informações Principais */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Informações Principais
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Código da Filial"
+                {...register('codigo_filial')}
+                error={errors.codigo_filial?.message}
+                disabled={isViewMode}
+                placeholder="Código da filial"
+              />
+              
+              {/* CNPJ com botão de busca */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  CNPJ
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    {...register('cnpj')}
+                    type="text"
+                    placeholder="00.000.000/0000-00"
+                    disabled={isViewMode}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    onChange={(e) => {
+                      // Aplicar máscara CNPJ
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 14) {
+                        value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+                        value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+                        value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+                        value = value.replace(/(\d{4})(\d)/, '$1-$2');
+                        e.target.value = value;
+                      }
+                      // Notificar o react-hook-form
+                      register('cnpj').onChange(e);
+                    }}
+                  />
+                  {!isViewMode && (
+                    <button
+                      type="button"
+                      onClick={handleBuscarCNPJ}
+                      disabled={isLoadingCNPJ}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoadingCNPJ ? (
+                        <FaSpinner className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FaSearch className="h-4 w-4" />
+                      )}
+                    </button>
+                  )}
                 </div>
-
-                <Input
-                  label="Nome da Filial"
-                  {...register('filial')}
-                  error={errors.filial?.message}
-                  disabled={isViewMode}
-                  placeholder="Nome da filial"
-                />
-                <Input
-                  label="Razão Social"
-                  {...register('razao_social')}
-                  error={errors.razao_social?.message}
-                  disabled={isViewMode}
-                  placeholder="Razão social"
-                />
-                <Input
-                  label="Status *"
-                  type="select"
-                  {...register('status')}
-                  error={errors.status?.message}
-                  disabled={isViewMode}
-                >
-                  <option value="">Selecione o status</option>
-                  <option value="1">Ativo</option>
-                  <option value="0">Inativo</option>
-                </Input>
               </div>
-            </div>
-
-            {/* Card 2: Endereço */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
-                Endereço
-              </h3>
-              <div className="space-y-3">
-                <Input
-                  label="Logradouro"
-                  {...register('logradouro')}
-                  error={errors.logradouro?.message}
-                  disabled={isViewMode}
-                  placeholder="Logradouro"
-                />
-                <Input
-                  label="Número"
-                  {...register('numero')}
-                  error={errors.numero?.message}
-                  disabled={isViewMode}
-                  placeholder="Número"
-                />
-                <Input
-                  label="Bairro"
-                  {...register('bairro')}
-                  error={errors.bairro?.message}
-                  disabled={isViewMode}
-                  placeholder="Bairro"
-                />
-                {/* CEP com botão de busca */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    CEP
-                  </label>
-                  <div className="flex gap-2">
-                    <MaskedFormInput
-                      maskType="cep"
-                      register={register}
-                      fieldName="cep"
-                      error={errors.cep?.message}
-                      disabled={isViewMode}
-                      placeholder="00000-000"
-                    />
-                    {!isViewMode && (
-                      <Button
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleBuscarCEP}
-                        className="flex items-center gap-2 whitespace-nowrap"
-                      >
-                        <FaSearch className="text-sm" />
-                        Buscar
-                      </Button>
-                    )}
-                  </div>
-                </div>
-                <Input
-                  label="Cidade"
-                  {...register('cidade')}
-                  error={errors.cidade?.message}
-                  disabled={isViewMode}
-                  placeholder="Cidade"
-                />
-                <Input
-                  label="Estado"
-                  type="select"
-                  {...register('estado')}
-                  error={errors.estado?.message}
-                  disabled={isViewMode}
-                >
-                  <option value="">Selecione...</option>
-                  <option value="AC">AC</option>
-                  <option value="AL">AL</option>
-                  <option value="AP">AP</option>
-                  <option value="AM">AM</option>
-                  <option value="BA">BA</option>
-                  <option value="CE">CE</option>
-                  <option value="DF">DF</option>
-                  <option value="ES">ES</option>
-                  <option value="GO">GO</option>
-                  <option value="MA">MA</option>
-                  <option value="MT">MT</option>
-                  <option value="MS">MS</option>
-                  <option value="MG">MG</option>
-                  <option value="PA">PA</option>
-                  <option value="PB">PB</option>
-                  <option value="PR">PR</option>
-                  <option value="PE">PE</option>
-                  <option value="PI">PI</option>
-                  <option value="RJ">RJ</option>
-                  <option value="RN">RN</option>
-                  <option value="RO">RO</option>
-                  <option value="RR">RR</option>
-                  <option value="SC">SC</option>
-                  <option value="SP">SP</option>
-                  <option value="SE">SE</option>
-                  <option value="TO">TO</option>
-                </Input>
-              </div>
+              
+              <Input
+                label="Nome da Filial *"
+                {...register('filial')}
+                error={errors.filial?.message}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Razão Social *"
+                {...register('razao_social')}
+                error={errors.razao_social?.message}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Status *"
+                type="select"
+                {...register('status')}
+                error={errors.status?.message}
+                disabled={isViewMode}
+              >
+                <option value="">Selecione o status</option>
+                <option value="1">Ativo</option>
+                <option value="0">Inativo</option>
+              </Input>
             </div>
           </div>
 
-          {/* Segunda Linha - 1 Card */}
-          <div className="grid grid-cols-1 gap-4">
-            {/* Card 3: Informações Adicionais */}
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-              <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
-                Informações Adicionais
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Input
-                  label="Supervisão"
-                  {...register('supervisao')}
-                  error={errors.supervisao?.message}
-                  disabled={isViewMode}
-                  placeholder="Supervisão"
-                />
-                <Input
-                  label="Coordenação"
-                  {...register('coordenacao')}
-                  error={errors.coordenacao?.message}
-                  disabled={isViewMode}
-                  placeholder="Coordenação"
-                />
-              </div>
+          {/* Card 2: Contato */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Contato
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Email"
+                type="email"
+                {...register('email')}
+                disabled={isViewMode}
+              />
+              <MaskedFormInput
+                label="Telefone"
+                maskType="telefone"
+                register={register}
+                fieldName="telefone"
+                disabled={isViewMode}
+              />
             </div>
           </div>
-
-          {!isViewMode && (
-            <div className="flex justify-end gap-2 sm:gap-3 pt-3 border-t">
-              <Button type="button" variant="secondary" size="sm" onClick={handleClose}>
-                Cancelar
-              </Button>
-              <Button type="submit" size="sm">
-                {filial ? 'Atualizar' : 'Criar'}
-              </Button>
-            </div>
-          )}
-        </form>
-      )}
-
-      {/* Aba de Almoxarifados */}
-      {activeTab === 'almoxarifados' && filial && (
-        <div className="max-h-[75vh] overflow-y-auto">
-          <AlmoxarifadoContent
-            filialId={filial.id}
-            viewMode={isViewMode}
-          />
         </div>
-      )}
 
-      {activeTab === 'patrimonios' && filial && (
-        <PatrimoniosList
-          tipoLocal="filial"
-          localId={filial.id}
-          localNome={filial.filial}
-          canView={canView('patrimonios')}
-          canEdit={canEdit('patrimonios')}
-          canDelete={canDelete('patrimonios')}
-        />
-      )}
+        {/* Segunda Linha - 1 Card */}
+        <div className="grid grid-cols-1 gap-4">
+          {/* Card 3: Endereço */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Endereço
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input
+                label="Logradouro"
+                {...register('logradouro')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Número"
+                {...register('numero')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Bairro"
+                {...register('bairro')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Cidade"
+                {...register('cidade')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Estado"
+                {...register('estado')}
+                disabled={isViewMode}
+              />
+              {/* CEP com botão de busca */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  CEP
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    {...register('cep')}
+                    type="text"
+                    placeholder="00000-000"
+                    disabled={isViewMode}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    onChange={(e) => {
+                      // Aplicar máscara CEP
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 8) {
+                        value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+                        e.target.value = value;
+                      }
+                      // Notificar o react-hook-form
+                      register('cep').onChange(e);
+                    }}
+                  />
+                  {!isViewMode && (
+                    <button
+                      type="button"
+                      onClick={handleBuscarCEP}
+                      disabled={isLoadingCEP}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoadingCEP ? (
+                        <FaSpinner className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FaSearch className="h-4 w-4" />
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Terceira Linha - 1 Card */}
+        <div className="grid grid-cols-1 gap-4">
+          {/* Card 4: Informações Adicionais */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Informações Adicionais
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input
+                label="Supervisão"
+                {...register('supervisao')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Coordenação"
+                {...register('coordenacao')}
+                disabled={isViewMode}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Botões */}
+        <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleClose}
+          >
+            Cancelar
+          </Button>
+          {!isViewMode && (
+            <Button type="submit">
+              {filial ? 'Atualizar' : 'Criar'} Filial
+            </Button>
+          )}
+        </div>
+      </form>
     </Modal>
   );
 };

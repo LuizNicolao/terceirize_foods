@@ -42,8 +42,11 @@ const clienteValidations = {
   // Validações para criação de cliente
   create: [
     body('cnpj')
-      .notEmpty().withMessage('CNPJ é obrigatório')
+      .optional()
       .custom((value) => {
+        if (value === null || value === undefined || value === '') {
+          return true; // Aceita valores vazios
+        }
         if (typeof value === 'string') {
           const cleanValue = value.replace(/\D/g, '');
           return cleanValue.length >= 14 && cleanValue.length <= 18;

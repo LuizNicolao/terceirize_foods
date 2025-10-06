@@ -151,7 +151,7 @@ const ClienteModal = ({ isOpen, onClose, onSubmit, cliente, isViewMode }) => {
               {/* CNPJ com botão de busca */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CNPJ *
+                  CNPJ
                 </label>
                 <div className="flex gap-2">
                   <input

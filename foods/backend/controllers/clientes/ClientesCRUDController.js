@@ -24,17 +24,18 @@ class ClientesCRUDController {
       municipio, uf, cep, email, telefone, status
     } = req.body;
 
-    // Limpar CNPJ
-    const cnpjLimpo = cnpj.replace(/\D/g, '');
+    // Verificar se CNPJ já existe (apenas se fornecido)
+    if (cnpj) {
+      const cnpjLimpo = cnpj.replace(/\D/g, '');
+      
+      const existingCliente = await executeQuery(
+        'SELECT id FROM clientes WHERE cnpj = ?',
+        [cnpjLimpo]
+      );
 
-    // Verificar se CNPJ já existe
-    const existingCliente = await executeQuery(
-      'SELECT id FROM clientes WHERE cnpj = ?',
-      [cnpjLimpo]
-    );
-
-    if (existingCliente.length > 0) {
-      return conflictResponse(res, 'CNPJ já cadastrado');
+      if (existingCliente.length > 0) {
+        return conflictResponse(res, 'CNPJ já cadastrado');
+      }
     }
 
     // Verificar se razão social já existe
@@ -53,7 +54,7 @@ class ClientesCRUDController {
                              municipio, uf, cep, email, telefone, status, criado_em)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
-        cnpjLimpo, 
+        cnpj ? cnpj.replace(/\D/g, '') : null, 
         razao_social, 
         nome_fantasia && nome_fantasia.trim() ? nome_fantasia.trim() : null,
         logradouro && logradouro.trim() ? logradouro.trim() : null,
