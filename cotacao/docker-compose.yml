@@ -23,7 +23,7 @@ services:
       - ./backend:/app
       - /app/node_modules
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/cotacao/api/health"]
       timeout: 10s
       retries: 5
       start_period: 30s
