@@ -40,7 +40,7 @@ services:
     container_name: cozinha_industrial_frontend
     restart: always
     ports:
-      - "3082:80"
+      - "3084:80"
     environment:
       REACT_APP_API_URL: https://foods.terceirizemais.com.br/cozinha_industrial/api
       REACT_APP_BASE_URL: https://foods.terceirizemais.com.br
