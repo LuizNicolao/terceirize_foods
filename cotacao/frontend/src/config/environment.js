@@ -6,7 +6,7 @@ const config = {
   development: {
     foodsUrl: 'http://localhost:3000/foods',
     cotacaoUrl: 'http://localhost:3002/cotacao',
-    apiUrl: 'http://localhost:3002/api',
+    apiUrl: 'http://localhost:3002/cotacao/api',
     baseUrl: 'http://localhost:3000'
   },
   production: {
