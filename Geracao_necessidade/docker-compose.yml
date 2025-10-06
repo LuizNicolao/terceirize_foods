@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: necessidades_backend
+    restart: always
+    ports:
+      - "3003:3001"
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DB_HOST: terceirize_mysql
+      DB_PORT: 3306
+      DB_NAME: geracao_necessidade_db
+      DB_USER: foods_user
+      DB_PASSWORD: foods123456
+      JWT_SECRET: necessidades_jwt_secret_key_2024
+    depends_on: []
+    networks:
+      - terceirize_network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/health"]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    build: ./frontend
+    container_name: necessidades_frontend
+    restart: always
+    ports:
+      - "3082:80"
+    environment:
+      REACT_APP_API_URL: http://82.29.57.43:3003/api
+    depends_on:
+      - backend
+    networks:
+      - terceirize_network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  terceirize_network:
+    external: true

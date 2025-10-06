@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import config from '../../config/environment';
 import { 
   FaHome, 
   FaUsers, 
@@ -348,6 +349,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         // Se for o item de cotação, abrir em nova aba com dados do usuário
                         if (item.path === '/cotacao') {
                           e.preventDefault();
+                          
                           const user = JSON.parse(localStorage.getItem('user') || '{}');
                           
                           const userData = {
@@ -357,11 +359,18 @@ const Sidebar = ({ collapsed, onToggle }) => {
                             role: user.tipo_de_acesso
                           };
                           
-                          // Salvar dados no sessionStorage (compartilhado entre abas do mesmo domínio)
-                          sessionStorage.setItem('foodsUser', JSON.stringify(userData));
+                          // Salvar dados no localStorage (compartilhado entre domínios locais)
+                          localStorage.setItem('foodsUser', JSON.stringify(userData));
+                          
+                          // Preparar URL com dados do usuário
+                          const userDataEncoded = encodeURIComponent(JSON.stringify(userData));
+                          const cotacaoUrlWithSSO = `${config.cotacaoUrl}?sso=${userDataEncoded}`;
                           
                           // Abrir cotação em nova aba
-                          window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
+                          const cotacaoWindow = window.open(cotacaoUrlWithSSO, '_blank');
+                          
+                          // Salvar referência da janela para possível fechamento
+                          window.cotacaoWindow = cotacaoWindow;
                         }
                         
                         // Fechar sidebar no mobile quando clicar em um item

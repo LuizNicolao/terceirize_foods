@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: mysql:3306
--- Tempo de geração: 28/08/2025 às 16:58
+-- Tempo de geração: 28/08/2025 às 19:14
 -- Versão do servidor: 8.0.43
 -- Versão do PHP: 8.2.27
 
@@ -724,7 +724,9 @@ INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`
 INSERT INTO `auditoria_acoes` (`id`, `usuario_id`, `acao`, `recurso`, `detalhes`, `ip_address`, `timestamp`) VALUES
 (715, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/15\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"15\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 0, \"pode_editar\": 0, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 0, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-28 16:09:44'),
 (716, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-28 16:32:51'),
-(717, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"intolerancias\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-28 16:35:33');
+(717, 4, 'update', 'permissoes', '{\"url\": \"/foods/api/permissoes/usuario/4\", \"method\": \"PUT\", \"changes\": {}, \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"resourceId\": \"4\", \"statusCode\": 200, \"requestBody\": {\"permissoes\": [{\"tela\": \"usuarios\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"fornecedores\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"clientes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"filiais\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"rotas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produtos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"grupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"subgrupos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"classes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_origem\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"unidades_escolares\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"marcas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"veiculos\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"motoristas\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"ajudantes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"cotacao\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"produto_generico\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"intolerancias\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}, {\"tela\": \"permissoes\", \"pode_criar\": 1, \"pode_editar\": 1, \"pode_excluir\": 1, \"pode_visualizar\": 1}]}}', '187.45.102.250', '2025-08-28 16:35:33'),
+(718, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-28 17:48:04'),
+(719, 4, 'login', 'auth', '{\"email\": \"luiz.nicolao@terceirizemais.com.br\", \"userAgent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36\", \"rememberMe\": false, \"tokenExpiration\": \"24h\"}', '187.45.102.250', '2025-08-28 19:09:48');
 
 -- --------------------------------------------------------
 
@@ -766,6 +768,31 @@ CREATE TABLE `clientes` (
   `atualizado_em` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `status` tinyint(1) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estrutura para tabela `efetivos`
+--
+
+CREATE TABLE `efetivos` (
+  `id` int NOT NULL,
+  `unidade_escolar_id` int NOT NULL,
+  `tipo_efetivo` enum('PADRAO','NAE') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PADRAO',
+  `quantidade` int NOT NULL DEFAULT '0',
+  `intolerancia_id` int DEFAULT NULL,
+  `criado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `atualizado_em` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Despejando dados para a tabela `efetivos`
+--
+
+INSERT INTO `efetivos` (`id`, `unidade_escolar_id`, `tipo_efetivo`, `quantidade`, `intolerancia_id`, `criado_em`, `atualizado_em`) VALUES
+(1, 17, 'NAE', 1, 2, '2025-08-28 18:55:28', '2025-08-28 18:55:28'),
+(2, 17, 'NAE', 2131231, 3, '2025-08-28 19:01:07', '2025-08-28 19:01:07'),
+(3, 17, 'NAE', 2131231, 3, '2025-08-28 19:01:18', '2025-08-28 19:01:18');
 
 -- --------------------------------------------------------
 
@@ -1894,6 +1921,15 @@ ALTER TABLE `clientes`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Índices de tabela `efetivos`
+--
+ALTER TABLE `efetivos`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_unidade_escolar` (`unidade_escolar_id`),
+  ADD KEY `idx_tipo_efetivo` (`tipo_efetivo`),
+  ADD KEY `idx_intolerancia` (`intolerancia_id`);
+
+--
 -- Índices de tabela `filiais`
 --
 ALTER TABLE `filiais`
@@ -2087,7 +2123,7 @@ ALTER TABLE `almoxarifado_itens`
 -- AUTO_INCREMENT de tabela `auditoria_acoes`
 --
 ALTER TABLE `auditoria_acoes`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=718;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=720;
 
 --
 -- AUTO_INCREMENT de tabela `classes`
@@ -2100,6 +2136,12 @@ ALTER TABLE `classes`
 --
 ALTER TABLE `clientes`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4132;
+
+--
+-- AUTO_INCREMENT de tabela `efetivos`
+--
+ALTER TABLE `efetivos`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT de tabela `filiais`
@@ -2207,6 +2249,13 @@ ALTER TABLE `almoxarifado_itens`
 --
 ALTER TABLE `auditoria_acoes`
   ADD CONSTRAINT `auditoria_acoes_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE CASCADE;
+
+--
+-- Restrições para tabelas `efetivos`
+--
+ALTER TABLE `efetivos`
+  ADD CONSTRAINT `efetivos_ibfk_1` FOREIGN KEY (`unidade_escolar_id`) REFERENCES `unidades_escolares` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `efetivos_ibfk_2` FOREIGN KEY (`intolerancia_id`) REFERENCES `intolerancias` (`id`) ON DELETE SET NULL;
 
 --
 -- Restrições para tabelas `permissoes_usuario`

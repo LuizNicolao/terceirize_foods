@@ -7,7 +7,7 @@ import { Layout, ProtectedRoute } from './components/layout';
 import { LoadingSpinner } from './components/ui';
 import './utils/axiosConfig'; // Importar configuração do axios
 import './design-system'; // Importar design system
-// import Login from './pages/auth'; // DESABILITADO - Autenticação centralizada no Foods
+import Login from './pages/auth';
 import Dashboard from './pages/dashboard';
 import Usuarios from './pages/usuarios';
 // import { EditarUsuario, VisualizarUsuario } from './components/usuarios'; // Removido - componentes não mais utilizados
@@ -21,46 +21,40 @@ import Saving from './pages/saving/Saving';
 import { Aprovacoes, VisualizarAprovacao } from './pages/aprovacoes';
 
 // Componente para rotas protegidas com autenticação
-// const AuthenticatedRoute = ({ children }) => {
-//   const { isAuthenticated, loading } = useAuth();
-
-//   if (loading) {
-//     return <LoadingSpinner />;
-//   }
-
-//   if (!isAuthenticated) {
-//     return <Navigate to="/login" replace />;
-//   }
-
-//   return <Layout>{children}</Layout>;
-// };
-
-// Componente para rotas públicas
-// const PublicRoute = ({ children }) => {
-//   const { isAuthenticated, loading } = useAuth();
-
-//   if (loading) {
-//     return <LoadingSpinner />;
-//   }
-
-//   if (isAuthenticated) {
-//     return <Navigate to="/dashboard" replace />;
-//   }
-
-//   return children;
-// };
-
-// DESABILITADO - Autenticação centralizada no Foods
-// Agora todas as rotas são acessíveis diretamente
 const AuthenticatedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
   return <Layout>{children}</Layout>;
 };
+
+// Componente para rotas públicas
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
 
 function AppRoutes() {
   return (
     <Routes>
       {/* Rota pública */}
-      {/* DESABILITADO - Autenticação centralizada no Foods
       <Route 
         path="/login" 
         element={
@@ -69,7 +63,6 @@ function AppRoutes() {
           </PublicRoute>
         } 
       />
-      */}
 
       {/* Rotas protegidas */}
       <Route 
@@ -242,7 +235,7 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router basename="/cotacao">
+    <Router>
       <AuthProvider>
         <PermissionsProvider>
           <AppRoutes />

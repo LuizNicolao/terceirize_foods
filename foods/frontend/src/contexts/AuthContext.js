@@ -81,6 +81,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // 1. Limpar dados locais
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('rememberMe');
@@ -88,6 +89,22 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     setRememberMe(false);
+    
+    // 2. Limpar dados compartilhados
+    localStorage.removeItem('foodsUser');
+    
+    // 3. Fechar abas abertas dos outros sistemas
+    // Notificar sistemas filhos sobre o logout
+    window.postMessage({ type: 'FOODS_LOGOUT' }, '*');
+    
+    // 4. Tentar fechar janela do cotação se estiver aberta
+    if (window.cotacaoWindow && !window.cotacaoWindow.closed) {
+      try {
+        window.cotacaoWindow.close();
+      } catch (e) {
+        // Não foi possível fechar janela do cotação
+      }
+    }
   };
 
   const changePassword = async (senhaAtual, novaSenha) => {

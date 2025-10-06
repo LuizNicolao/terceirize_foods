@@ -45,7 +45,7 @@ docker-compose logs -f
 - **Usuário:** `foods_user`
 - **Senha:** `foods123456`
 
-### Sistema de Cotações (cotacao_v2)
+### Sistema de Cotações (cotacao)
 - **Database:** `cotacao_db`
 - **Usuário:** `foods_user`
 - **Senha:** `foods123456`
