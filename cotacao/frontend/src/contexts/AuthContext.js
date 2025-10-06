@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('sso_debug_error', JSON.stringify(errorLog));
       
       // Mostrar erro e dar opção para o usuário
-      const shouldRedirect = confirm('Erro ao fazer login: ' + error.message + '\n\nClique "OK" para voltar ao Foods ou "Cancelar" para tentar novamente.');
+      const shouldRedirect = window.confirm('Erro ao fazer login: ' + error.message + '\n\nClique "OK" para voltar ao Foods ou "Cancelar" para tentar novamente.');
       
       if (shouldRedirect) {
         window.location.href = config.foodsUrl;
@@ -163,7 +163,7 @@ export const AuthProvider = ({ children }) => {
               console.log('❌ [COTACAO DEBUG] Nenhum dado SSO encontrado após retry');
               
               // Mostrar mensagem de erro e dar opção para o usuário
-              const shouldRedirect = confirm('Não foi possível conectar automaticamente com o sistema Foods.\n\nClique "OK" para voltar ao Foods ou "Cancelar" para tentar novamente.');
+              const shouldRedirect = window.confirm('Não foi possível conectar automaticamente com o sistema Foods.\n\nClique "OK" para voltar ao Foods ou "Cancelar" para tentar novamente.');
               
               if (shouldRedirect) {
                 window.location.href = config.foodsUrl;
