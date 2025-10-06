@@ -32,11 +32,7 @@ export const AuthProvider = ({ children }) => {
     const validateSSOAccess = async () => {
       try {
         // 1. Verificar se veio do Foods (dados na URL ou localStorage)
-        console.log('🔍 Verificando localStorage...');
-        console.log('🔍 localStorage completo:', localStorage);
         let foodsUserData = localStorage.getItem('foodsUser');
-        console.log('🔍 foodsUserData do localStorage:', foodsUserData);
-        console.log('🔍 Tipo do foodsUserData:', typeof foodsUserData);
         
         // Registrar log no localStorage para debug
         const debugLog = {
@@ -85,34 +81,26 @@ export const AuthProvider = ({ children }) => {
           };
           localStorage.setItem('sso_debug_error', JSON.stringify(errorLog));
           
-          // Delay temporário para debug
-          console.log('⏰ Aguardando 10 segundos antes de redirecionar...');
-          setTimeout(() => {
-            window.location.href = config.foodsUrl;
-          }, 10000);
+          // Redirecionar imediatamente
+          window.location.href = config.foodsUrl;
           return;
         }
 
         const foodsUser = JSON.parse(foodsUserData);
-        console.log('🔍 foodsUser parseado:', foodsUser);
 
         // 3. Fazer login SSO no cotação
         try {
-          console.log('🔍 Fazendo login SSO...');
           const ssoResponse = await api.post('/auth/sso-login', {
             userData: foodsUser
           });
-          console.log('🔍 Resposta SSO:', ssoResponse.data);
 
           if (ssoResponse.data.success) {
             // 4. Login SSO bem-sucedido
-            console.log('✅ Login SSO bem-sucedido!');
             setUser(ssoResponse.data.user);
             setToken(ssoResponse.data.token);
             
             // Definir token no cabeçalho Authorization do axios
             api.defaults.headers.common['Authorization'] = `Bearer ${ssoResponse.data.token}`;
-            console.log('✅ Token definido no axios');
             
             // 5. Buscar permissões do usuário usando rota pública
             try {
@@ -152,8 +140,7 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (ssoError) {
           // Se falhar o SSO, redirecionar para Foods
-          console.error('❌ Erro no SSO:', ssoError);
-          console.log('❌ Redirecionando para Foods devido ao erro');
+          console.error('Erro no SSO:', ssoError);
           window.location.href = config.foodsUrl;
           return;
         }
