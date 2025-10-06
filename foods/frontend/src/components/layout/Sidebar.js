@@ -366,6 +366,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           const userDataEncoded = encodeURIComponent(JSON.stringify(userData));
                           const cotacaoUrlWithSSO = `${config.cotacaoUrl}?sso=${userDataEncoded}`;
                           
+                          console.log('🔍 [DEBUG] Cotação URL:', cotacaoUrlWithSSO);
+                          console.log('🔍 [DEBUG] Config cotacaoUrl:', config.cotacaoUrl);
+                          
                           // Abrir cotação em nova aba
                           const cotacaoWindow = window.open(cotacaoUrlWithSSO, '_blank');
                           
