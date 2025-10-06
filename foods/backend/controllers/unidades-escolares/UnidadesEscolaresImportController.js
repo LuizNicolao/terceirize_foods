@@ -174,7 +174,10 @@ class UnidadesEscolaresImportController {
         'ordem_entrega': 'ordem_entrega',
         'status': 'status',
         'observacoes': 'observacoes',
-        'observações': 'observacoes'
+        'observações': 'observacoes',
+        'atendimento': 'atendimento',
+        'horario': 'horario',
+        'horário': 'horario'
       };
 
       if (directMappings[header]) {
@@ -282,6 +285,14 @@ class UnidadesEscolaresImportController {
 
     if (columnMapping.observacoes !== undefined) {
       unidade.observacoes = this.getCellValue(row, columnMapping.observacoes);
+    }
+
+    if (columnMapping.atendimento !== undefined) {
+      unidade.atendimento = this.getCellValue(row, columnMapping.atendimento);
+    }
+
+    if (columnMapping.horario !== undefined) {
+      unidade.horario = this.getCellValue(row, columnMapping.horario);
     }
 
     return unidade;
@@ -444,6 +455,8 @@ class UnidadesEscolaresImportController {
         'Abastecimento',
         'Ordem de Entrega',
         'Status',
+        'Atendimento',
+        'Horário',
         'Observações'
       ];
       
@@ -458,8 +471,8 @@ class UnidadesEscolaresImportController {
       
       // Adicionar algumas linhas de exemplo
       const exemplos = [
-        ['001', 'Escola Exemplo 1', 'São Paulo', 'SP', 'Brasil', 'Rua das Flores', '123', 'Centro', '01234-567', 'CD São Paulo', '1', 'São Paulo', 'LOTE 01', '001', '001001', 'SEMANAL', '1', 'ativo', 'Exemplo de unidade escolar'],
-        ['002', 'Escola Exemplo 2', 'Rio de Janeiro', 'RJ', 'Brasil', 'Av. Copacabana', '456', 'Copacabana', '22070-001', 'CD Rio de Janeiro', '2', 'Rio de Janeiro', 'LOTE 02', '002', '002002', 'MENSAL', '2', 'ativo', 'Outro exemplo']
+        ['001', 'Escola Exemplo 1', 'São Paulo', 'SP', 'Brasil', 'Rua das Flores', '123', 'Centro', '01234-567', 'CD São Paulo', '1', 'São Paulo', 'LOTE 01', '001', '001001', 'SEMANAL', '1', 'ativo', 'Integral', '07:00 às 17:00', 'Exemplo de unidade escolar'],
+        ['002', 'Escola Exemplo 2', 'Rio de Janeiro', 'RJ', 'Brasil', 'Av. Copacabana', '456', 'Copacabana', '22070-001', 'CD Rio de Janeiro', '2', 'Rio de Janeiro', 'LOTE 02', '002', '002002', 'MENSAL', '2', 'ativo', 'Manhã', '07:00 às 12:00', 'Outro exemplo']
       ];
       
       exemplos.forEach(exemplo => {
