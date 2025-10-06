@@ -32,14 +32,8 @@ const routes = [
   { path: '/auditoria', router: auditoriaRoute }
 ];
 
-// Aplicar rotas com prefixos para desenvolvimento e produção
-if (process.env.NODE_ENV === 'production') {
-  // Em produção, usar prefixo /implantacao/api
-  applyRoutePrefixes(app, routes, ['/implantacao/api']);
-} else {
-  // Em desenvolvimento, usar apenas /api
-  applyRoutePrefixes(app, routes, ['/api']);
-}
+// Aplicar rotas com prefixos automaticamente (desenvolvimento e produção)
+applyRoutePrefixes(app, routes, ['/api', '/implantacao/api']);
 
 // Rota padrão
 app.get('/', (req, res) => {
