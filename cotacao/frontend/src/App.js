@@ -138,27 +138,6 @@ function AppRoutes() {
       />
 
 
-      <Route 
-        path="/editar-usuario/:id" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="usuarios">
-              <EditarUsuario />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/visualizar-usuario/:id" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="usuarios">
-              <VisualizarUsuario />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
 
 
       <Route 
