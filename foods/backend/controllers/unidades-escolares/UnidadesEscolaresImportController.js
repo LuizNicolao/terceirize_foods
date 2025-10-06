@@ -152,8 +152,10 @@ class UnidadesEscolaresImportController {
         // Localização
         'cidade': 'cidade',
         'estado': 'estado',
+        'estado': 'estado',
         'pais': 'pais',
         'país': 'pais',
+        'brasil': 'pais',
         
         // Endereço
         'endereco': 'endereco',
@@ -174,6 +176,7 @@ class UnidadesEscolaresImportController {
         // Lote e Senior
         'lot': 'lot',
         'lote': 'lot',
+        'lote': 'lot',
         'cc senior': 'cc_senior',
         'cc_senior': 'cc_senior',
         'c.c. senior': 'cc_senior',
@@ -188,13 +191,22 @@ class UnidadesEscolaresImportController {
         
         // Status e Observações
         'status': 'status',
+        'status': 'status',
         'observacoes': 'observacoes',
         'observações': 'observacoes',
         
         // Novos campos
         'atendimento': 'atendimento',
         'horario': 'horario',
-        'horário': 'horario'
+        'horário': 'horario',
+        
+        // Campos adicionais
+        'supervisão': 'supervisao',
+        'supervisao': 'supervisao',
+        'coordenação': 'coordenacao',
+        'coordenacao': 'coordenacao',
+        'lat': 'lat',
+        'long': 'long'
       };
 
       if (directMappings[header]) {
@@ -312,6 +324,22 @@ class UnidadesEscolaresImportController {
       unidade.horario = this.getCellValue(row, columnMapping.horario);
     }
 
+    if (columnMapping.supervisao !== undefined) {
+      unidade.supervisao = this.getCellValue(row, columnMapping.supervisao);
+    }
+
+    if (columnMapping.coordenacao !== undefined) {
+      unidade.coordenacao = this.getCellValue(row, columnMapping.coordenacao);
+    }
+
+    if (columnMapping.lat !== undefined) {
+      unidade.lat = this.getCellValue(row, columnMapping.lat);
+    }
+
+    if (columnMapping.long !== undefined) {
+      unidade.long = this.getCellValue(row, columnMapping.long);
+    }
+
     return unidade;
   }
 
@@ -406,8 +434,8 @@ class UnidadesEscolaresImportController {
           INSERT INTO unidades_escolares (
             codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
             centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
-            ordem_entrega, status, observacoes, atendimento, horario
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ordem_entrega, status, observacoes, atendimento, horario, supervisao, coordenacao, lat, \`long\`
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const insertParams = [
@@ -431,7 +459,11 @@ class UnidadesEscolaresImportController {
           unidade.status || 'ativo',
           unidade.observacoes || null,
           unidade.atendimento || null,
-          unidade.horario || null
+          unidade.horario || null,
+          unidade.supervisao || null,
+          unidade.coordenacao || null,
+          unidade.lat || null,
+          unidade.long || null
         ];
 
         await executeQuery(insertQuery, insertParams);
@@ -452,29 +484,32 @@ class UnidadesEscolaresImportController {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Unidades Escolares');
       
-      // Definir cabeçalhos
+      // Definir cabeçalhos seguindo a ordem especificada (removendo 'Unidade' que não existe no banco)
       const headers = [
         'Código Teknisa',
-        'Nome da Escola',
         'Cidade',
-        'Estado',
-        'País',
+        'ESTADO',
+        'PAÍS',
+        'Nome da Escola',
         'Endereço',
         'Número',
         'Bairro',
         'CEP',
+        'Supervisão',
+        'Coordenação',
         'Centro de Distribuição',
-        'Rota ID',
+        'Rota',
         'Regional',
-        'Lote',
+        'LOTE',
         'C.C. Senior',
         'Código Senior',
         'Abastecimento',
+        'LAT',
+        'LONG',
+        'STATUS',
         'Ordem de Entrega',
-        'Status',
         'Atendimento',
-        'Horário',
-        'Observações'
+        'Horário'
       ];
       
       // Adicionar cabeçalhos
@@ -486,10 +521,10 @@ class UnidadesEscolaresImportController {
         fgColor: { argb: 'FFE0E0E0' }
       };
       
-      // Adicionar algumas linhas de exemplo
+      // Adicionar algumas linhas de exemplo seguindo a ordem dos cabeçalhos (sem campo 'Unidade')
       const exemplos = [
-        ['001', 'Escola Exemplo 1', 'São Paulo', 'SP', 'Brasil', 'Rua das Flores', '123', 'Centro', '01234-567', 'CD São Paulo', '1', 'São Paulo', 'LOTE 01', '001', '001001', 'SEMANAL', '1', 'ativo', 'Integral', '07:00 às 17:00', 'Exemplo de unidade escolar'],
-        ['002', 'Escola Exemplo 2', 'Rio de Janeiro', 'RJ', 'Brasil', 'Av. Copacabana', '456', 'Copacabana', '22070-001', 'CD Rio de Janeiro', '2', 'Rio de Janeiro', 'LOTE 02', '002', '002002', 'MENSAL', '2', 'ativo', 'Manhã', '07:00 às 12:00', 'Outro exemplo']
+        ['001', 'São Paulo', 'SP', 'BRASIL', 'Escola Exemplo 1', 'Rua das Flores', '123', 'Centro', '01234-567', 'João Silva', 'Maria Santos', 'CD São Paulo', '1', 'São Paulo', 'LOTE 01', '001', '001001', 'SEMANAL', '-23.5505', '-46.6333', 'ativo', '1', 'Integral', '07:00 às 17:00'],
+        ['002', 'Rio de Janeiro', 'RJ', 'BRASIL', 'Escola Exemplo 2', 'Av. Copacabana', '456', 'Copacabana', '22070-001', 'Pedro Costa', 'Ana Lima', 'CD Rio de Janeiro', '2', 'Rio de Janeiro', 'LOTE 02', '002', '002002', 'MENSAL', '-22.9068', '-43.1729', 'ativo', '2', 'Manhã', '07:00 às 12:00']
       ];
       
       exemplos.forEach(exemplo => {

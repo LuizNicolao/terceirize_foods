@@ -31,6 +31,10 @@ class UnidadesEscolaresCRUDController {
         observacoes,
         atendimento,
         horario,
+        supervisao,
+        coordenacao,
+        lat,
+        long,
         filial_id
       } = req.body;
 
@@ -85,8 +89,8 @@ class UnidadesEscolaresCRUDController {
         INSERT INTO unidades_escolares (
           codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
           centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
-          ordem_entrega, status, observacoes, atendimento, horario, filial_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ordem_entrega, status, observacoes, atendimento, horario, supervisao, coordenacao, lat, \`long\`, filial_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const insertParams = [
@@ -111,6 +115,10 @@ class UnidadesEscolaresCRUDController {
         observacoes || null,
         atendimento || null,
         horario || null,
+        supervisao || null,
+        coordenacao || null,
+        lat || null,
+        long || null,
         filial_id || null
       ];
 
@@ -165,6 +173,10 @@ class UnidadesEscolaresCRUDController {
         observacoes,
         atendimento,
         horario,
+        supervisao,
+        coordenacao,
+        lat,
+        long,
         filial_id
       } = req.body;
 
@@ -317,6 +329,22 @@ class UnidadesEscolaresCRUDController {
       if (horario !== undefined) {
         updateFields.push('horario = ?');
         updateParams.push(horario);
+      }
+      if (supervisao !== undefined) {
+        updateFields.push('supervisao = ?');
+        updateParams.push(supervisao);
+      }
+      if (coordenacao !== undefined) {
+        updateFields.push('coordenacao = ?');
+        updateParams.push(coordenacao);
+      }
+      if (lat !== undefined) {
+        updateFields.push('lat = ?');
+        updateParams.push(lat);
+      }
+      if (long !== undefined) {
+        updateFields.push('`long` = ?');
+        updateParams.push(long);
       }
       if (filial_id !== undefined) {
         updateFields.push('filial_id = ?');

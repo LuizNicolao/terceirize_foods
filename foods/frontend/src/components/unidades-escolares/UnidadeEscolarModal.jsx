@@ -200,6 +200,14 @@ const UnidadeEscolarModal = ({
                 {...register('estado')}
                 disabled={isViewMode}
               />
+
+              <Input
+                label="Número"
+                type="text"
+                placeholder="Número"
+                {...register('numero')}
+                disabled={isViewMode}
+              />
             </div>
           </div>
 
@@ -338,9 +346,110 @@ const UnidadeEscolarModal = ({
           </div>
         </div>
 
-        {/* Terceira Linha - 1 Card */}
+        {/* Terceira Linha - 2 Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Card 5: Informações Operacionais */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Informações Operacionais
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Regional"
+                type="text"
+                placeholder="Regional"
+                {...register('regional')}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="LOTE"
+                type="text"
+                placeholder="Lote"
+                {...register('lot')}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="C.C. Senior"
+                type="text"
+                placeholder="C.C. Senior"
+                {...register('cc_senior')}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="Código Senior"
+                type="text"
+                placeholder="Código Senior"
+                {...register('codigo_senior')}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="Abastecimento"
+                type="text"
+                placeholder="Tipo de abastecimento"
+                {...register('abastecimento')}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="Ordem de Entrega"
+                type="number"
+                placeholder="Ordem de entrega"
+                {...register('ordem_entrega')}
+                disabled={isViewMode}
+              />
+            </div>
+          </div>
+
+          {/* Card 6: Coordenação e Supervisão */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Coordenação e Supervisão
+            </h3>
+            <div className="space-y-3">
+              <Input
+                label="Supervisão"
+                type="text"
+                placeholder="Nome do supervisor"
+                {...register('supervisao')}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="Coordenação"
+                type="text"
+                placeholder="Nome do coordenador"
+                {...register('coordenacao')}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="LAT (Latitude)"
+                type="number"
+                step="any"
+                placeholder="Ex: -23.5505"
+                {...register('lat')}
+                disabled={isViewMode}
+              />
+
+              <Input
+                label="LONG (Longitude)"
+                type="number"
+                step="any"
+                placeholder="Ex: -46.6333"
+                {...register('long')}
+                disabled={isViewMode}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Quarta Linha - 1 Card */}
         <div className="grid grid-cols-1 gap-4">
-          {/* Card 5: Horários e Atendimento */}
+          {/* Card 7: Horários e Atendimento */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
               Horários e Atendimento
@@ -364,9 +473,9 @@ const UnidadeEscolarModal = ({
           </div>
         </div>
 
-        {/* Quarta Linha - 1 Card */}
+        {/* Quinta Linha - 1 Card */}
         <div className="grid grid-cols-1 gap-4">
-          {/* Card 6: Observações */}
+          {/* Card 8: Observações */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
               Observações
