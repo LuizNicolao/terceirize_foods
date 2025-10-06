@@ -85,8 +85,11 @@ export const AuthProvider = ({ children }) => {
           };
           localStorage.setItem('sso_debug_error', JSON.stringify(errorLog));
           
-          // Redirecionar imediatamente (sem delay)
-          window.location.href = config.foodsUrl;
+          // Delay temporário para debug
+          console.log('⏰ Aguardando 10 segundos antes de redirecionar...');
+          setTimeout(() => {
+            window.location.href = config.foodsUrl;
+          }, 10000);
           return;
         }
 
