@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
-import config from '../config/environment';
 
 const AuthContext = createContext({});
 
@@ -27,228 +26,61 @@ export const AuthProvider = ({ children }) => {
     aprovacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true }
   });
 
-  // Listener para mensagens do Foods
+    // Buscar usuário do sistema de cotação baseado no email do Foods
   useEffect(() => {
-    const handleMessage = (event) => {
-      if (event.data && event.data.type === 'FOODS_LOGOUT') {
-        console.log('🔄 [COTACAO] Recebida notificação de logout do Foods');
-        // Limpar dados e redirecionar
-        localStorage.removeItem('cotacao_token');
-        localStorage.removeItem('cotacao_user');
-        localStorage.removeItem('foodsUser');
-        setUser(null);
-        setToken(null);
-        setPermissions({});
-        window.location.href = config.foodsUrl;
-      }
-    };
-    
-    window.addEventListener('message', handleMessage);
-    
-    return () => {
-      window.removeEventListener('message', handleMessage);
-    };
-  }, []);
-
-  // Função para realizar login SSO
-  const performSSOLogin = async (foodsUser) => {
-    try {
-      console.log('🔄 [COTACAO DEBUG] Iniciando login SSO com dados:', foodsUser);
-      
-      const ssoResponse = await api.post('/auth/sso-login', {
-        userData: foodsUser
-      });
-
-      console.log('📡 [COTACAO DEBUG] Resposta do servidor SSO:', ssoResponse.data);
-
-      if (ssoResponse.data.success) {
-        // Login SSO bem-sucedido
-        setUser(ssoResponse.data.user);
-        setToken(ssoResponse.data.token);
-        
-        // Definir token no cabeçalho Authorization do axios
-        api.defaults.headers.common['Authorization'] = `Bearer ${ssoResponse.data.token}`;
-        
-        // Buscar permissões do usuário usando rota pública
-        try {
-          const userPermsResponse = await api.get(`/public/usuario/${ssoResponse.data.user.id}/permissions`);
-          if (userPermsResponse.data && Array.isArray(userPermsResponse.data)) {
-            const permissionsObj = {};
-            userPermsResponse.data.forEach(perm => {
-              permissionsObj[perm.screen] = {
-                can_view: perm.can_view === 1,
-                can_create: perm.can_create === 1,
-                can_edit: perm.can_edit === 1,
-                can_delete: perm.can_delete === 1
-              };
-            });
-            setPermissions(permissionsObj);
-          }
-        } catch (permError) {
-          console.error('Erro ao buscar permissões:', permError);
-          // Usar permissões padrão se não conseguir buscar
-          const defaultPerms = {
-            dashboard: { can_view: true, can_create: false, can_edit: false, can_delete: false },
-            usuarios: { can_view: false, can_create: false, can_edit: false, can_delete: false },
-            cotacoes: { can_view: true, can_create: true, can_edit: true, can_delete: false },
-            saving: { can_view: true, can_create: true, can_edit: true, can_delete: false },
-            supervisor: { can_view: false, can_create: false, can_edit: false, can_delete: false },
-            aprovacoes: { can_view: false, can_create: false, can_edit: false, can_delete: false }
-          };
-          setPermissions(defaultPerms);
-        }
-        
-        console.log('✅ [COTACAO DEBUG] Login SSO realizado com sucesso para usuário:', ssoResponse.data.user.name);
-      } else {
-        throw new Error(ssoResponse.data.error || 'Erro no login SSO');
-      }
-    } catch (error) {
-      console.error('❌ Erro no login SSO:', error);
-      
-      // Registrar log de erro
-      const errorLog = {
-        timestamp: new Date().toISOString(),
-        step: 'sso_login_error',
-        error: error.message,
-        foodsUser: foodsUser,
-        currentUrl: window.location.href
-      };
-      localStorage.setItem('sso_debug_error', JSON.stringify(errorLog));
-      
-      // Mostrar erro e dar opção para o usuário
-      const shouldRedirect = window.confirm('Erro ao fazer login: ' + error.message + '\n\nClique "OK" para voltar ao Foods ou "Cancelar" para tentar novamente.');
-      
-      if (shouldRedirect) {
-        window.location.href = config.foodsUrl;
-      } else {
-        // Tentar recarregar a página
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      }
-    }
-  };
-
-  // Implementação SSO real - só permite acesso via Foods
-  useEffect(() => {
-    const validateSSOAccess = async () => {
+    const findUserByEmail = async () => {
       try {
-        // 1. Verificar se veio do Foods (dados na URL ou localStorage)
-        let foodsUserData = localStorage.getItem('foodsUser');
+        // Tentar ler dados do sessionStorage primeiro
+        const foodsUserData = sessionStorage.getItem('foodsUser');
         
-        // Registrar log no localStorage para debug
-        const debugLog = {
-          timestamp: new Date().toISOString(),
-          step: 'check_foodsUserData',
-          foodsUserData: foodsUserData,
-          localStorageKeys: Object.keys(localStorage),
-          currentUrl: window.location.href,
-          userAgent: navigator.userAgent,
-          referrer: document.referrer
-        };
-        localStorage.setItem('sso_debug_log', JSON.stringify(debugLog));
-        console.log('🔍 [COTACAO DEBUG] Verificando dados SSO:', debugLog);
-        
-        // 2. Se não há dados no localStorage, verificar URL parameters
-        if (!foodsUserData) {
-          const urlParams = new URLSearchParams(window.location.search);
-          const ssoParam = urlParams.get('sso');
+        if (foodsUserData) {
+          const foodsUser = JSON.parse(foodsUserData);
           
-          if (ssoParam) {
-            try {
-              foodsUserData = decodeURIComponent(ssoParam);
-              console.log('✅ [COTACAO DEBUG] Dados SSO encontrados na URL:', foodsUserData);
-              
-              // Salvar no localStorage para futuras navegações
-              localStorage.setItem('foodsUser', foodsUserData);
-              console.log('✅ [COTACAO DEBUG] Dados salvos no localStorage');
-              
-              // Limpar URL parameters após ler
-              const newUrl = window.location.origin + window.location.pathname;
-              window.history.replaceState({}, document.title, newUrl);
-              console.log('✅ [COTACAO DEBUG] URL limpa:', newUrl);
-            } catch (urlError) {
-              console.error('❌ [COTACAO DEBUG] Erro ao decodificar parâmetros da URL:', urlError);
-            }
-          }
-        }
-        
-        // 3. Se não encontrou dados, aguardar um pouco e tentar novamente
-        if (!foodsUserData) {
-          console.log('⏳ Aguardando dados SSO...');
+          // Buscar usuário no sistema de cotação por email
+          const response = await api.get(`/users/by-email/${encodeURIComponent(foodsUser.email)}`);
           
-          // Aguardar 3 segundos e verificar novamente (tempo maior para garantir que os dados cheguem)
-          setTimeout(async () => {
-            const retryFoodsUserData = localStorage.getItem('foodsUser');
-            console.log('🔍 [COTACAO DEBUG] Retry - dados encontrados:', retryFoodsUserData);
+          if (response.data.data) {
+            // Usuário encontrado no sistema de cotação
+            setUser(response.data.data.data);
             
-            if (!retryFoodsUserData) {
-              console.log('❌ [COTACAO DEBUG] Nenhum dado SSO encontrado após retry');
-              
-              // Mostrar mensagem de erro e dar opção para o usuário
-              const shouldRedirect = window.confirm('Não foi possível conectar automaticamente com o sistema Foods.\n\nClique "OK" para voltar ao Foods ou "Cancelar" para tentar novamente.');
-              
-              if (shouldRedirect) {
-                window.location.href = config.foodsUrl;
-              } else {
-                // Tentar novamente após 2 segundos
-                setTimeout(() => {
-                  window.location.reload();
-                }, 2000);
-              }
+            // Usar permissões que já vêm na resposta do usuário
+            if (response.data.data.data.permissions) {
+              // Converter array de permissões para objeto
+              const permissionsObj = {};
+              response.data.data.data.permissions.forEach(perm => {
+                permissionsObj[perm.screen] = {
+                  can_view: perm.can_view === 1,
+                  can_create: perm.can_create === 1,
+                  can_edit: perm.can_edit === 1,
+                  can_delete: perm.can_delete === 1
+                };
+              });
+              setPermissions(permissionsObj);
             } else {
-              // Tentar fazer login com os dados encontrados no retry
-              try {
-                const retryFoodsUser = JSON.parse(retryFoodsUserData);
-                console.log('✅ [COTACAO DEBUG] Dados encontrados no retry, fazendo login:', retryFoodsUser);
-                await performSSOLogin(retryFoodsUser);
-              } catch (retryError) {
-                console.error('❌ [COTACAO DEBUG] Erro no retry SSO:', retryError);
-                window.location.href = config.foodsUrl;
-              }
+              setPermissions({});
             }
-          }, 3000);
-          return;
+          } else {
+            // Usuário não encontrado, usar dados do Foods
+            setUser(foodsUser);
+            setPermissions({});
+          }
+          
+          // Definir loading como false após processar
+          setLoading(false);
+          
+          // Limpar dados do sessionStorage APÓS definir o usuário
+          sessionStorage.removeItem('foodsUser');
+        } else {
+          setLoading(false);
         }
-
-        const foodsUser = JSON.parse(foodsUserData);
-
-        // 3. Fazer login SSO no cotação usando a função centralizada
-        await performSSOLogin(foodsUser);
-
       } catch (error) {
-        // Em caso de erro, redirecionar para Foods
-        window.location.href = config.foodsUrl;
-        return;
-      } finally {
+        console.error('Erro ao buscar usuário:', error);
+        // Em caso de erro, manter usuário padrão
         setLoading(false);
       }
     };
 
-        validateSSOAccess();
-
-    // 4. Verificar periodicamente se ainda está logado no Foods
-    const checkSSOStatus = setInterval(() => {
-      // Verificar se ainda há dados do Foods no localStorage
-      const foodsUser = localStorage.getItem('foodsUser');
-      if (!foodsUser && user) {
-        logout();
-      }
-    }, 30000); // Verificar a cada 30 segundos
-
-    // 5. Listener para logout do Foods
-    const handleFoodsLogout = (event) => {
-      if (event.data && event.data.type === 'FOODS_LOGOUT') {
-        logout();
-      }
-    };
-
-    window.addEventListener('message', handleFoodsLogout);
-
-    return () => {
-      clearInterval(checkSSOStatus);
-      window.removeEventListener('message', handleFoodsLogout);
-    };
+    findUserByEmail();
   }, []);
 
   // DESABILITADO - Login centralizado no Foods
@@ -256,32 +88,9 @@ export const AuthProvider = ({ children }) => {
     return { success: true };
   };
 
-  // Logout sincronizado com Foods
+  // DESABILITADO - Logout centralizado no Foods
   const logout = () => {
-    // 1. Limpar dados locais
-    setUser(null);
-    setToken(null);
-    setPermissions({});
-    
-    // 2. Limpar localStorage e sessionStorage
-    localStorage.removeItem('cotacao_token');
-    localStorage.removeItem('cotacao_user');
-    // localStorage.removeItem('foodsUser'); // NÃO limpar - necessário para SSO
-    sessionStorage.removeItem('cotacao_token');
-    
-    // 3. Verificar se está em modo SSO
-    const foodsUser = localStorage.getItem('foodsUser');
-    
-    if (foodsUser) {
-      // Em modo SSO, tentar re-autenticação
-      console.log('🔄 [COTACAO] Logout em modo SSO, tentando re-autenticação...');
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-    } else {
-      // Modo normal, redirecionar para Foods
-      window.location.href = config.foodsUrl;
-    }
+    // Não faz nada - logout controlado pelo Foods
   };
 
   // DESABILITADO - Permissões centralizadas no Foods

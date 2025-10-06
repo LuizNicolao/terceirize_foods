@@ -12,11 +12,6 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
-# Development files
-docker-compose.dev.yml
-start-dev.sh
-stop-dev.sh
-
 # Build outputs
 build/
 dist/
@@ -52,9 +47,6 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env
-
 # IDE files
 .vscode/
 .idea/
@@ -78,12 +70,20 @@ Thumbs.db
 tmp/
 temp/
 
-# Uploads directory (arquivos enviados pelos usuários)
+# Uploads
+uploads/
 backend/uploads/
 
-# Arquivos de banco de dados locais
-*.sql.backup
+# Database files
 *.db
+*.sqlite
+*.sqlite3
 
-# Arquivos de configuração local
-config/local.js
+# Python (se houver)
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+ENV/
+.venv/

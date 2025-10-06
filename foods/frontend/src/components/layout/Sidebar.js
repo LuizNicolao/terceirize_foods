@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import config from '../../config/environment';
 import { 
   FaHome, 
   FaUsers, 
@@ -103,7 +102,7 @@ const menuGroups = [
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const { canView, loading } = usePermissions();
   
   // Estado para controlar expansão dos grupos
@@ -349,45 +348,20 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         // Se for o item de cotação, abrir em nova aba com dados do usuário
                         if (item.path === '/cotacao') {
                           e.preventDefault();
-                          
-                          // Usar dados do contexto de autenticação
-                          const currentUser = user;
-                          console.log('🔍 [FOODS DEBUG] User do contexto:', currentUser);
-                          
-                          // Verificar se temos dados válidos do usuário
-                          if (!currentUser || !currentUser.id || !currentUser.nome || !currentUser.email) {
-                            console.error('❌ [FOODS DEBUG] Dados do usuário incompletos:', currentUser);
-                            alert('Erro: Dados do usuário não encontrados. Faça login novamente.');
-                            return;
-                          }
+                          const user = JSON.parse(localStorage.getItem('user') || '{}');
                           
                           const userData = {
-                            id: currentUser.id,
-                            name: currentUser.nome,
-                            email: currentUser.email,
-                            role: currentUser.tipo_de_acesso || 'usuario'
+                            id: user.id,
+                            name: user.nome,
+                            email: user.email,
+                            role: user.tipo_de_acesso
                           };
-                          console.log('🔍 [FOODS DEBUG] UserData criado:', userData);
                           
-                          // Salvar dados no localStorage ANTES de abrir a nova aba
-                          localStorage.setItem('foodsUser', JSON.stringify(userData));
-                          console.log('✅ [FOODS DEBUG] foodsUser salvo no localStorage:', localStorage.getItem('foodsUser'));
+                          // Salvar dados no sessionStorage (compartilhado entre abas do mesmo domínio)
+                          sessionStorage.setItem('foodsUser', JSON.stringify(userData));
                           
-                          // Preparar URL com dados do usuário como backup
-                          const userDataEncoded = encodeURIComponent(JSON.stringify(userData));
-                          const cotacaoUrlWithSSO = `${config.cotacaoUrl}?sso=${userDataEncoded}`;
-                          console.log('🔍 [FOODS DEBUG] URL de cotação:', cotacaoUrlWithSSO);
-                          
-                          // Aguardar um pouco para garantir que o localStorage foi salvo
-                          setTimeout(() => {
-                            // Abrir cotação em nova aba
-                            const cotacaoWindow = window.open(cotacaoUrlWithSSO, '_blank');
-                            
-                            // Salvar referência da janela para possível fechamento
-                            window.cotacaoWindow = cotacaoWindow;
-                            
-                            console.log('✅ [FOODS DEBUG] Nova aba de cotação aberta');
-                          }, 100);
+                          // Abrir cotação em nova aba
+                          window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
                         }
                         
                         // Fechar sidebar no mobile quando clicar em um item

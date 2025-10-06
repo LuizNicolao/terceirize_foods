@@ -12,22 +12,22 @@ export const menuGroups = [
   {
     title: 'Principal',
     items: [
-      { path: '/cotacao/dashboard', icon: FaHome, label: 'Dashboard', screen: 'dashboard' },
+      { path: '/dashboard', icon: FaHome, label: 'Dashboard', screen: 'dashboard' },
     ]
   },
   {
     title: 'Gestão',
     items: [
-      { path: '/cotacao/cotacoes', icon: FaClipboardList, label: 'Cotações', screen: 'cotacoes' },
-      { path: '/cotacao/supervisor', icon: FaSitemap, label: 'Supervisor', screen: 'supervisor' },
-      { path: '/cotacao/aprovacoes', icon: FaThumbsUp, label: 'Aprovações', screen: 'aprovacoes' },
-      { path: '/cotacao/saving', icon: FaChartLine, label: 'Saving', screen: 'saving' },
+      { path: '/cotacoes', icon: FaClipboardList, label: 'Cotações', screen: 'cotacoes' },
+      { path: '/supervisor', icon: FaSitemap, label: 'Supervisor', screen: 'supervisor' },
+      { path: '/aprovacoes', icon: FaThumbsUp, label: 'Aprovações', screen: 'aprovacoes' },
+      { path: '/saving', icon: FaChartLine, label: 'Saving', screen: 'saving' },
     ]
   },
   {
     title: 'Administração',
     items: [
-      { path: '/cotacao/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
+      { path: '/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
 
     ]
   }

@@ -81,7 +81,6 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    // 1. Limpar dados locais
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('rememberMe');
@@ -89,28 +88,6 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setUser(null);
     setRememberMe(false);
-    
-    // 2. Limpar dados compartilhados
-    localStorage.removeItem('foodsUser');
-    
-    // 3. Notificar sistemas filhos sobre o logout (mas não fechar janelas automaticamente)
-    window.postMessage({ type: 'FOODS_LOGOUT' }, '*');
-    
-    // 4. Tentar fechar janela do cotação se estiver aberta (apenas se for logout manual)
-    if (window.cotacaoWindow && !window.cotacaoWindow.closed) {
-      try {
-        // Notificar o cotacao sobre o logout antes de fechar
-        window.cotacaoWindow.postMessage({ type: 'FOODS_LOGOUT' }, '*');
-        setTimeout(() => {
-          if (!window.cotacaoWindow.closed) {
-            window.cotacaoWindow.close();
-          }
-        }, 1000);
-      } catch (e) {
-        // Não foi possível fechar janela do cotação
-        console.log('Não foi possível fechar janela do cotação:', e);
-      }
-    }
   };
 
   const changePassword = async (senhaAtual, novaSenha) => {

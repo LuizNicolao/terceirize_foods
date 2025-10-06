@@ -99,6 +99,13 @@ const ModalAprovacao = ({
 
     setSaving(true);
     try {
+      // Log para debug
+      console.log('Dados sendo enviados:', {
+        motivo_aprovacao: motivoAprovacao,
+        itens_aprovados: itensAprovados,
+        tipo_aprovacao: tipoAprovacao
+      });
+      
       await aprovacoesService.aprovarCotacao(cotacao.id, {
         motivo_aprovacao: motivoAprovacao,
         itens_aprovados: itensAprovados,

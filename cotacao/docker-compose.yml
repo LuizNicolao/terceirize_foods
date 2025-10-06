@@ -14,8 +14,7 @@ services:
       DB_NAME: cotacao_db
       DB_USER: foods_user
       DB_PASSWORD: foods123456
-      JWT_SECRET: terceirize_shared_secret_2024
-      SHARED_JWT_SECRET: terceirize_shared_secret_2024
+      JWT_SECRET: foods_jwt_secret_key_2024
     depends_on: []
     networks:
       - terceirize_network
@@ -23,7 +22,7 @@ services:
       - ./backend:/app
       - /app/node_modules
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:5000/cotacao/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
       timeout: 10s
       retries: 5
       start_period: 30s

@@ -4,7 +4,14 @@ require('dotenv').config();
 // Importar configurações da aplicação
 const { app, PORT, limiter, loginLimiter } = require('./config/app');
 
-// Variáveis de ambiente carregadas
+// Debug: verificar se as variáveis estão carregadas
+console.log('🔧 Variáveis de ambiente carregadas:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('JWT_SECRET:', process.env.JWT_SECRET ? '✅ Definida' : '❌ Não definida');
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_PORT:', process.env.DB_PORT);
+console.log('DB_NAME:', process.env.DB_NAME);
 
 // Importar middleware de prefixo de rotas
 const { applyRoutePrefixes } = require('./middleware/routePrefix');
@@ -55,6 +62,6 @@ app.use('*', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-  console.log(`Ambiente: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
+  console.log(`📱 Ambiente: ${process.env.NODE_ENV || 'development'}`);
 }); 

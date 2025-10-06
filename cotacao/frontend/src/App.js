@@ -7,7 +7,7 @@ import { Layout, ProtectedRoute } from './components/layout';
 import { LoadingSpinner } from './components/ui';
 import './utils/axiosConfig'; // Importar configuração do axios
 import './design-system'; // Importar design system
-import Login from './pages/auth';
+// import Login from './pages/auth'; // DESABILITADO - Autenticação centralizada no Foods
 import Dashboard from './pages/dashboard';
 import Usuarios from './pages/usuarios';
 // import { EditarUsuario, VisualizarUsuario } from './components/usuarios'; // Removido - componentes não mais utilizados
@@ -20,55 +20,56 @@ import EditarCotacao from './pages/cotacoes/EditarCotacao';
 import Saving from './pages/saving/Saving';
 import { Aprovacoes, VisualizarAprovacao } from './pages/aprovacoes';
 
-  // Componente para rotas protegidas com autenticação
-  const AuthenticatedRoute = ({ children }) => {
-    const { isAuthenticated, loading } = useAuth();
+// Componente para rotas protegidas com autenticação
+// const AuthenticatedRoute = ({ children }) => {
+//   const { isAuthenticated, loading } = useAuth();
 
-    console.log('🔍 AuthenticatedRoute - loading:', loading, 'isAuthenticated:', isAuthenticated);
+//   if (loading) {
+//     return <LoadingSpinner />;
+//   }
 
-    if (loading) {
-      console.log('🔍 AuthenticatedRoute - Mostrando LoadingSpinner');
-      return <LoadingSpinner />;
-    }
+//   if (!isAuthenticated) {
+//     return <Navigate to="/login" replace />;
+//   }
 
-    if (!isAuthenticated) {
-      console.log('❌ AuthenticatedRoute - Não autenticado, redirecionando para /cotacao/login');
-      return <Navigate to="/cotacao/login" replace />;
-    }
-
-    console.log('✅ AuthenticatedRoute - Renderizando Layout');
-    return <Layout>{children}</Layout>;
-  };
+//   return <Layout>{children}</Layout>;
+// };
 
 // Componente para rotas públicas
-const PublicRoute = ({ children }) => {
-  const { isAuthenticated, loading } = useAuth();
+// const PublicRoute = ({ children }) => {
+//   const { isAuthenticated, loading } = useAuth();
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
+//   if (loading) {
+//     return <LoadingSpinner />;
+//   }
 
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+//   if (isAuthenticated) {
+//     return <Navigate to="/dashboard" replace />;
+//   }
 
-  return children;
+//   return children;
+// };
+
+// DESABILITADO - Autenticação centralizada no Foods
+// Agora todas as rotas são acessíveis diretamente
+const AuthenticatedRoute = ({ children }) => {
+  return <Layout>{children}</Layout>;
 };
 
-
 function AppRoutes() {
-  console.log('🔍 AppRoutes - URL atual:', window.location.href);
   return (
     <Routes>
       {/* Rota pública */}
+      {/* DESABILITADO - Autenticação centralizada no Foods
       <Route 
-        path="/cotacao/login" 
+        path="/login" 
         element={
           <PublicRoute>
             <Login />
           </PublicRoute>
         } 
       />
+      */}
 
       {/* Rotas protegidas */}
       <Route 
@@ -137,8 +138,29 @@ function AppRoutes() {
         } 
       />
 
+      {/* Rotas removidas - componentes não mais utilizados
+      <Route 
+        path="/editar-usuario/:id" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="usuarios">
+              <EditarUsuario />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
 
-
+      <Route 
+        path="/visualizar-usuario/:id" 
+        element={
+          <AuthenticatedRoute>
+            <ProtectedRoute screen="usuarios">
+              <VisualizarUsuario />
+            </ProtectedRoute>
+          </AuthenticatedRoute>
+        } 
+      />
+      */}
 
       <Route 
         path="/supervisor" 
@@ -210,107 +232,6 @@ function AppRoutes() {
 
 
 
-      {/* Rota para /cotacao (compatibilidade com SSO) */}
-      <Route 
-        path="/cotacao" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="dashboard">
-              <Dashboard />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      {/* Rotas com prefixo /cotacao para navegação */}
-      <Route 
-        path="/cotacao/usuarios" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="usuarios">
-              <Usuarios />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/cotacao/cotacoes" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="cotacoes">
-              <Cotacoes />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/cotacao/cotacoes/:id" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="cotacoes">
-              <VisualizarCotacao />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/cotacao/cotacoes/:id/editar" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="cotacoes">
-              <EditarCotacao />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/cotacao/saving" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="saving">
-              <Saving />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/cotacao/supervisor" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="supervisor">
-              <Supervisor />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/cotacao/aprovacoes" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="aprovacoes">
-              <Aprovacoes />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
-      <Route 
-        path="/cotacao/aprovacoes/:id" 
-        element={
-          <AuthenticatedRoute>
-            <ProtectedRoute screen="aprovacoes">
-              <VisualizarAprovacao />
-            </ProtectedRoute>
-          </AuthenticatedRoute>
-        } 
-      />
-
       <Route 
         path="/" 
         element={<Navigate to="/dashboard" />} 
@@ -321,7 +242,7 @@ function AppRoutes() {
 
 function App() {
   return (
-    <Router>
+    <Router basename="/cotacao">
       <AuthProvider>
         <PermissionsProvider>
           <AppRoutes />
