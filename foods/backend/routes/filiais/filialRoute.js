@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateToken } = require('../../middleware/auth');
+const { authenticateToken, checkPermission } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const FiliaisController = require('../../controllers/filiais');
@@ -79,8 +79,9 @@ router.get('/coordenacoes/listar',
 );
 
 // Consultar CNPJ na API externa
-router.get('/consulta-cnpj/:cnpj', 
-  FiliaisController.consultarCNPJ
+router.get('/buscar-cnpj/:cnpj', 
+  checkPermission('visualizar'),
+  FiliaisController.buscarCNPJ
 );
 
 

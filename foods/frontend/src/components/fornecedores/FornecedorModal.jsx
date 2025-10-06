@@ -14,8 +14,10 @@ const FornecedorModal = ({
 }) => {
   const { register, handleSubmit, reset, setValue, watch, getValues } = useForm();
   const [isLoadingCNPJ, setIsLoadingCNPJ] = useState(false);
+  const [isLoadingCEP, setIsLoadingCEP] = useState(false);
 
   const cnpj = watch('cnpj');
+  const cep = watch('cep');
 
   // Resetar formulário quando modal abrir/fechar
   useEffect(() => {
@@ -89,6 +91,50 @@ const FornecedorModal = ({
       toast.error('Erro ao buscar dados do CNPJ. Tente novamente.');
     } finally {
       setIsLoadingCNPJ(false);
+    }
+  };
+
+  // Função para buscar CEP
+  const handleBuscarCEP = async () => {
+    const cepValue = cep || getValues('cep') || '';
+    
+    if (!cepValue || cepValue.replace(/\D/g, '').length < 8) {
+      toast.error('Digite um CEP válido para consultar');
+      return;
+    }
+
+    if (isLoadingCEP) {
+      return; // Evitar múltiplas chamadas
+    }
+
+    setIsLoadingCEP(true);
+    const loadingToast = toast.loading('Buscando dados do CEP...');
+
+    try {
+      const response = await FornecedoresService.consultarCEP(cepValue);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      if (response.success) {
+        const dados = response.data;
+        // Preencher os campos com os dados retornados
+        setValue('logradouro', dados.logradouro || '');
+        setValue('bairro', dados.bairro || '');
+        setValue('municipio', dados.localidade || '');
+        setValue('uf', dados.uf || '');
+        
+        toast.success('Dados do CEP carregados com sucesso!');
+      } else {
+        toast.error(response.error || 'Erro ao buscar dados do CEP');
+      }
+    } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      console.error('Erro ao buscar CEP:', error);
+      toast.error('Erro ao buscar dados do CEP. Tente novamente.');
+    } finally {
+      setIsLoadingCEP(false);
     }
   };
 
@@ -215,13 +261,45 @@ const FornecedorModal = ({
                 {...register('numero')}
                 disabled={viewMode}
               />
-              <MaskedFormInput
-                label="CEP"
-                maskType="cep"
-                register={register}
-                fieldName="cep"
-                disabled={viewMode}
-              />
+              {/* CEP com botão de busca */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  CEP
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    {...register('cep')}
+                    type="text"
+                    placeholder="00000-000"
+                    disabled={viewMode}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                    onChange={(e) => {
+                      // Aplicar máscara CEP
+                      let value = e.target.value.replace(/\D/g, '');
+                      if (value.length <= 8) {
+                        value = value.replace(/^(\d{5})(\d)/, '$1-$2');
+                        e.target.value = value;
+                      }
+                      // Notificar o react-hook-form
+                      register('cep').onChange(e);
+                    }}
+                  />
+                  {!viewMode && (
+                    <button
+                      type="button"
+                      onClick={handleBuscarCEP}
+                      disabled={isLoadingCEP}
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoadingCEP ? (
+                        <FaSpinner className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <FaSearch className="h-4 w-4" />
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
               <Input
                 label="Bairro"
                 {...register('bairro')}

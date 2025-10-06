@@ -1,4 +1,5 @@
 import api from './api';
+import CepService from './cepService';
 
 class FornecedoresService {
   async listar(params = {}) {
@@ -170,6 +171,10 @@ class FornecedoresService {
         error: error.response?.data?.message || 'Erro ao buscar dados do CNPJ'
       };
     }
+  }
+
+  async consultarCEP(cep) {
+    return await CepService.buscarCEP(cep);
   }
 
   async buscarEstatisticas() {

@@ -1,4 +1,5 @@
 import api from './api';
+import CepService from './cepService';
 
 class FiliaisService {
   async listar(params = {}) {
@@ -110,7 +111,7 @@ class FiliaisService {
   async consultarCNPJ(cnpj) {
     try {
       const cnpjLimpo = cnpj.replace(/\D/g, '');
-      const response = await api.get(`/filiais/consulta-cnpj/${cnpjLimpo}`);
+      const response = await api.get(`/filiais/buscar-cnpj/${cnpjLimpo}`);
       
       // Extrair dados da estrutura HATEOAS
       let dados = null;
@@ -131,6 +132,10 @@ class FiliaisService {
         error: error.response?.data?.message || 'Erro ao consultar CNPJ'
       };
     }
+  }
+
+  async consultarCEP(cep) {
+    return await CepService.buscarCEP(cep);
   }
 
   async listarAlmoxarifados(filialId) {

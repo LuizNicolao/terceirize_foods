@@ -1,4 +1,5 @@
 import api from './api';
+import CepService from './cepService';
 
 class ClientesService {
   async listar(params = {}) {
@@ -236,6 +237,10 @@ class ClientesService {
         error: error.response?.data?.message || 'Erro ao buscar dados do CNPJ'
       };
     }
+  }
+
+  async consultarCEP(cep) {
+    return await CepService.buscarCEP(cep);
   }
 }
 

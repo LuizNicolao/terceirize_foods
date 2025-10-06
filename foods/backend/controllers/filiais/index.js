@@ -27,6 +27,7 @@ module.exports = {
   listarSupervisoes: FiliaisSearchController.listarSupervisoes,
   listarCoordenacoes: FiliaisSearchController.listarCoordenacoes,
   consultarCNPJ: FiliaisSearchController.consultarCNPJ,
+  buscarCNPJ: FiliaisSearchController.consultarCNPJ,
   
   // Métodos de Estatísticas
   buscarEstatisticas: FiliaisStatsController.buscarEstatisticas,

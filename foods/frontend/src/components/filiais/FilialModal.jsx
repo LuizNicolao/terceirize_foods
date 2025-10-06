@@ -14,6 +14,7 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
   const { canView, canEdit, canDelete } = usePermissions();
 
   const cnpj = watch('cnpj');
+  const cep = watch('cep');
 
   // Resetar formulário quando modal abrir/fechar
   useEffect(() => {
@@ -44,13 +45,22 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
 
   // Função para buscar CNPJ
   const handleBuscarCNPJ = async () => {
-    if (!cnpj) {
-      toast.error('Digite um CNPJ para consultar');
+    // Tentar pegar o valor do CNPJ de diferentes formas
+    const cnpjValue = cnpj || '';
+    
+    if (!cnpjValue || cnpjValue.replace(/\D/g, '').length < 14) {
+      toast.error('Digite um CNPJ válido para consultar');
       return;
     }
 
+    const loadingToast = toast.loading('Buscando dados do CNPJ...');
+
     try {
-      const response = await FiliaisService.consultarCNPJ(cnpj);
+      const response = await FiliaisService.consultarCNPJ(cnpjValue);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
       if (response.success) {
         const dados = response.data;
         // Preencher os campos com os dados retornados
@@ -65,11 +75,50 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
         
         toast.success('Dados do CNPJ carregados com sucesso!');
       } else {
-        toast.error(response.error);
+        toast.error(response.error || 'Erro ao buscar dados do CNPJ');
       }
     } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
       console.error('Erro ao buscar CNPJ:', error);
-      toast.error('Erro ao buscar dados do CNPJ');
+      toast.error('Erro ao buscar dados do CNPJ. Tente novamente.');
+    }
+  };
+
+  // Função para buscar CEP
+  const handleBuscarCEP = async () => {
+    const cepValue = cep || '';
+    
+    if (!cepValue || cepValue.replace(/\D/g, '').length < 8) {
+      toast.error('Digite um CEP válido para consultar');
+      return;
+    }
+
+    const loadingToast = toast.loading('Buscando dados do CEP...');
+
+    try {
+      const response = await FiliaisService.consultarCEP(cepValue);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      
+      if (response.success) {
+        const dados = response.data;
+        // Preencher os campos com os dados retornados
+        setValue('logradouro', dados.logradouro || '');
+        setValue('bairro', dados.bairro || '');
+        setValue('cidade', dados.localidade || '');
+        setValue('estado', dados.uf || '');
+        
+        toast.success('Dados do CEP carregados com sucesso!');
+      } else {
+        toast.error(response.error || 'Erro ao buscar dados do CEP');
+      }
+    } catch (error) {
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+      console.error('Erro ao buscar CEP:', error);
+      toast.error('Erro ao buscar dados do CEP. Tente novamente.');
     }
   };
 
@@ -225,15 +274,34 @@ const FilialModal = ({ isOpen, onClose, onSubmit, filial, isViewMode }) => {
                   disabled={isViewMode}
                   placeholder="Bairro"
                 />
-                <MaskedFormInput
-                  label="CEP"
-                  maskType="cep"
-                  register={register}
-                  fieldName="cep"
-                  error={errors.cep?.message}
-                  disabled={isViewMode}
-                  placeholder="00000-000"
-                />
+                {/* CEP com botão de busca */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    CEP
+                  </label>
+                  <div className="flex gap-2">
+                    <MaskedFormInput
+                      maskType="cep"
+                      register={register}
+                      fieldName="cep"
+                      error={errors.cep?.message}
+                      disabled={isViewMode}
+                      placeholder="00000-000"
+                    />
+                    {!isViewMode && (
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleBuscarCEP}
+                        className="flex items-center gap-2 whitespace-nowrap"
+                      >
+                        <FaSearch className="text-sm" />
+                        Buscar
+                      </Button>
+                    )}
+                  </div>
+                </div>
                 <Input
                   label="Cidade"
                   {...register('cidade')}
