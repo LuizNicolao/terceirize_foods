@@ -171,6 +171,7 @@ const validationConfigs = {
       locationInfo: ['cidade', 'estado', 'pais', 'endereco', 'numero', 'bairro', 'cep'],
       operationalInfo: ['centro_distribuicao', 'rota_id', 'regional', 'abastecimento', 'ordem_entrega'],
       seniorInfo: ['cc_senior', 'codigo_senior', 'lot'],
+      scheduleInfo: ['atendimento', 'horario'],
       additionalInfo: ['observacoes']
     },
     categoryNames: {
@@ -178,6 +179,7 @@ const validationConfigs = {
       locationInfo: 'Localização',
       operationalInfo: 'Informações Operacionais',
       seniorInfo: 'Informações Senior',
+      scheduleInfo: 'Horários e Atendimento',
       additionalInfo: 'Informações Adicionais'
     },
     defaultCategory: 'basicInfo'

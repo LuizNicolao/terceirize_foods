@@ -340,7 +340,33 @@ const UnidadeEscolarModal = ({
 
         {/* Terceira Linha - 1 Card */}
         <div className="grid grid-cols-1 gap-4">
-          {/* Card 5: Observações */}
+          {/* Card 5: Horários e Atendimento */}
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
+              Horários e Atendimento
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input
+                label="Atendimento"
+                type="text"
+                placeholder="Ex: Manhã, Tarde, Integral"
+                {...register('atendimento')}
+                disabled={isViewMode}
+              />
+              <Input
+                label="Horário"
+                type="text"
+                placeholder="Ex: 07:00 às 17:00"
+                {...register('horario')}
+                disabled={isViewMode}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Quarta Linha - 1 Card */}
+        <div className="grid grid-cols-1 gap-4">
+          {/* Card 6: Observações */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
               Observações

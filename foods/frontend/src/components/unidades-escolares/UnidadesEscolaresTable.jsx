@@ -38,6 +38,8 @@ const UnidadesEscolaresTable = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Centro</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Atendimento</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horário</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -54,6 +56,8 @@ const UnidadesEscolaresTable = ({
                   {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.centro_distribuicao || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.atendimento || '-'}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.horario || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                     unidade.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -119,6 +123,16 @@ const UnidadesEscolaresTable = ({
               <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Centro:</span>
                 <span className="text-gray-900">{unidade.centro_distribuicao || '-'}</span>
+              </div>
+              
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Atendimento:</span>
+                <span className="text-gray-900">{unidade.atendimento || '-'}</span>
+              </div>
+              
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Horário:</span>
+                <span className="text-gray-900">{unidade.horario || '-'}</span>
               </div>
               
               <div className="flex justify-between text-sm">

@@ -378,8 +378,8 @@ class UnidadesEscolaresImportController {
           INSERT INTO unidades_escolares (
             codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
             centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
-            ordem_entrega, status, observacoes
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ordem_entrega, status, observacoes, atendimento, horario
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         const insertParams = [
@@ -401,7 +401,9 @@ class UnidadesEscolaresImportController {
           unidade.abastecimento || null,
           unidade.ordem_entrega || 0,
           unidade.status || 'ativo',
-          unidade.observacoes || null
+          unidade.observacoes || null,
+          unidade.atendimento || null,
+          unidade.horario || null
         ];
 
         await executeQuery(insertQuery, insertParams);

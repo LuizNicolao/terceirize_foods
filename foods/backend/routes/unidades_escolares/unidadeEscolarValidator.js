@@ -200,6 +200,14 @@ const unidadeEscolarValidations = {
       .optional()
       .isString().trim().isLength({ max: 500 }).withMessage('Observações devem ter no máximo 500 caracteres'),
     
+    body('atendimento')
+      .optional()
+      .isString().trim().isLength({ max: 100 }).withMessage('Atendimento deve ter no máximo 100 caracteres'),
+    
+    body('horario')
+      .optional()
+      .isString().trim().isLength({ max: 50 }).withMessage('Horário deve ter no máximo 50 caracteres'),
+    
     handleValidationErrors
   ]
 };

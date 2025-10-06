@@ -29,6 +29,8 @@ class UnidadesEscolaresCRUDController {
         ordem_entrega = 0,
         status = 'ativo',
         observacoes,
+        atendimento,
+        horario,
         filial_id
       } = req.body;
 
@@ -83,8 +85,8 @@ class UnidadesEscolaresCRUDController {
         INSERT INTO unidades_escolares (
           codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
           centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
-          ordem_entrega, status, observacoes, filial_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ordem_entrega, status, observacoes, atendimento, horario, filial_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const insertParams = [
@@ -107,6 +109,8 @@ class UnidadesEscolaresCRUDController {
         ordem_entrega,
         status,
         observacoes || null,
+        atendimento || null,
+        horario || null,
         filial_id || null
       ];
 
@@ -159,6 +163,8 @@ class UnidadesEscolaresCRUDController {
         ordem_entrega,
         status,
         observacoes,
+        atendimento,
+        horario,
         filial_id
       } = req.body;
 
@@ -303,6 +309,14 @@ class UnidadesEscolaresCRUDController {
       if (observacoes !== undefined) {
         updateFields.push('observacoes = ?');
         updateParams.push(observacoes);
+      }
+      if (atendimento !== undefined) {
+        updateFields.push('atendimento = ?');
+        updateParams.push(atendimento);
+      }
+      if (horario !== undefined) {
+        updateFields.push('horario = ?');
+        updateParams.push(horario);
       }
       if (filial_id !== undefined) {
         updateFields.push('filial_id = ?');
