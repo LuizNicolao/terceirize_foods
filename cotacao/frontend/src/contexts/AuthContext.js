@@ -33,6 +33,7 @@ export const AuthProvider = ({ children }) => {
       try {
         // 1. Verificar se veio do Foods (dados na URL ou localStorage)
         let foodsUserData = localStorage.getItem('foodsUser');
+        console.log('🔍 foodsUserData do localStorage:', foodsUserData);
         
         // 2. Se não há dados no localStorage, verificar URL parameters
         if (!foodsUserData) {
@@ -54,6 +55,8 @@ export const AuthProvider = ({ children }) => {
         
         if (!foodsUserData) {
           // 3. Se não veio do Foods, bloquear acesso
+          console.log('❌ Nenhum dado SSO encontrado, redirecionando para Foods');
+          console.log('🔍 localStorage keys:', Object.keys(localStorage));
           window.location.href = config.foodsUrl;
           return;
         }
