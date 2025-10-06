@@ -122,7 +122,11 @@ class UnidadesEscolaresService {
           success: false,
           error: error.response?.data?.error || 'Erro na validação',
           message: error.response?.data?.message || 'Erro na validação da planilha',
-          validationErrors: error.response?.data?.validationErrors || []
+          details: error.response?.data?.details || null,
+          errorsByRow: error.response?.data?.errorsByRow || null,
+          validationErrors: error.response?.data?.validationErrors || [],
+          totalErrors: error.response?.data?.totalErrors || 0,
+          affectedRows: error.response?.data?.affectedRows || 0
         };
       }
       

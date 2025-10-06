@@ -10,6 +10,10 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState(null);
   const [errors, setErrors] = useState([]);
+  const [errorDetails, setErrorDetails] = useState('');
+  const [errorsByRow, setErrorsByRow] = useState(null);
+  const [totalErrors, setTotalErrors] = useState(0);
+  const [affectedRows, setAffectedRows] = useState(0);
   const fileInputRef = useRef(null);
 
   const handleFileSelect = (event) => {
@@ -35,6 +39,10 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
       setFile(selectedFile);
       setFileName(selectedFile.name);
       setErrors([]);
+      setErrorDetails('');
+      setErrorsByRow(null);
+      setTotalErrors(0);
+      setAffectedRows(0);
       setPreview(null);
     }
   };
@@ -47,6 +55,10 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
 
     setUploading(true);
     setErrors([]);
+    setErrorDetails('');
+    setErrorsByRow(null);
+    setTotalErrors(0);
+    setAffectedRows(0);
 
     try {
       const formData = new FormData();
@@ -63,6 +75,10 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
         }
       } else {
         setErrors(response.validationErrors || []);
+        setErrorDetails(response.details || '');
+        setErrorsByRow(response.errorsByRow || null);
+        setTotalErrors(response.totalErrors || 0);
+        setAffectedRows(response.affectedRows || 0);
         toast.error(response.message || 'Erro na importação');
       }
     } catch (error) {
@@ -98,6 +114,10 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
     setFile(null);
     setFileName('');
     setErrors([]);
+    setErrorDetails('');
+    setErrorsByRow(null);
+    setTotalErrors(0);
+    setAffectedRows(0);
     setPreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -206,24 +226,54 @@ const ImportarUnidadesEscolares = ({ isOpen, onClose, onImportSuccess }) => {
             <h3 className="text-lg font-semibold text-red-800 mb-3 flex items-center gap-2">
               <FaExclamationTriangle /> Erros de Validação
             </h3>
-            <p className="text-red-700 mb-3">
-              Encontrados {errors.length} erro(s) na planilha. Corrija antes de importar novamente.
-            </p>
-            <div className="space-y-2 max-h-60 overflow-y-auto">
-              {errors.map((error, index) => (
-                <div key={index} className="bg-white border border-red-200 rounded p-3">
-                  <p className="font-semibold text-red-800">
-                    Linha {error.row}: {error.field}
-                  </p>
-                  <p className="text-red-700 text-sm">
-                    Valor: {error.value || 'N/A'}
-                  </p>
-                  <p className="text-red-600 text-sm">
-                    {error.error}
-                  </p>
-                </div>
-              ))}
+            
+            {/* Resumo dos Erros */}
+            <div className="bg-red-100 border border-red-300 rounded p-3 mb-4">
+              <p className="text-red-800 font-medium">
+                Encontrados {totalErrors} erro(s) em {affectedRows} linha(s) da planilha.
+              </p>
+              <p className="text-red-700 text-sm mt-1">
+                Corrija os erros antes de tentar importar novamente.
+              </p>
             </div>
+
+            {/* Detalhes dos Erros */}
+            {errorDetails && (
+              <div className="bg-white border border-red-200 rounded p-4 mb-4">
+                <h4 className="font-semibold text-red-800 mb-2">Detalhes dos Erros:</h4>
+                <pre className="text-red-700 text-sm whitespace-pre-wrap font-mono">
+                  {errorDetails}
+                </pre>
+              </div>
+            )}
+
+            {/* Erros por Linha */}
+            {errorsByRow && (
+              <div className="space-y-3 max-h-80 overflow-y-auto">
+                {Object.keys(errorsByRow).map(row => (
+                  <div key={row} className="bg-white border border-red-200 rounded p-3">
+                    <h4 className="font-semibold text-red-800 mb-2">
+                      Linha {row}:
+                    </h4>
+                    <div className="space-y-2">
+                      {errorsByRow[row].map((error, index) => (
+                        <div key={index} className="bg-red-50 border border-red-100 rounded p-2">
+                          <p className="font-medium text-red-800">
+                            {error.field}
+                          </p>
+                          <p className="text-red-700 text-sm">
+                            Valor: "{error.value || 'vazio'}"
+                          </p>
+                          <p className="text-red-600 text-sm">
+                            {error.error}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

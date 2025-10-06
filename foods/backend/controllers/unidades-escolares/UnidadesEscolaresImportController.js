@@ -98,11 +98,35 @@ class UnidadesEscolaresImportController {
       // Validar dados antes de inserir
       const validationErrors = await UnidadesEscolaresImportController.validarUnidades(unidades);
       if (validationErrors.length > 0) {
+        // Agrupar erros por linha para melhor visualização
+        const errorsByRow = {};
+        validationErrors.forEach(error => {
+          if (!errorsByRow[error.row]) {
+            errorsByRow[error.row] = [];
+          }
+          errorsByRow[error.row].push({
+            field: error.field,
+            value: error.value,
+            error: error.error
+          });
+        });
+
+        // Criar mensagem detalhada
+        const errorDetails = Object.keys(errorsByRow).map(row => {
+          const rowErrors = errorsByRow[row];
+          const errorList = rowErrors.map(e => `• ${e.field}: ${e.error} (valor: "${e.value || 'vazio'}")`).join('\n');
+          return `Linha ${row}:\n${errorList}`;
+        }).join('\n\n');
+
         return res.status(400).json({
           success: false,
           error: 'Erros de validação',
-          message: `Encontrados ${validationErrors.length} erros de validação`,
-          validationErrors
+          message: `Encontrados ${validationErrors.length} erros de validação em ${Object.keys(errorsByRow).length} linha(s)`,
+          details: errorDetails,
+          errorsByRow,
+          validationErrors,
+          totalErrors: validationErrors.length,
+          affectedRows: Object.keys(errorsByRow).length
         });
       }
 
