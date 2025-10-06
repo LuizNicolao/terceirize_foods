@@ -35,6 +35,16 @@ export const AuthProvider = ({ children }) => {
         let foodsUserData = localStorage.getItem('foodsUser');
         console.log('🔍 foodsUserData do localStorage:', foodsUserData);
         
+        // Registrar log no localStorage para debug
+        const debugLog = {
+          timestamp: new Date().toISOString(),
+          step: 'check_foodsUserData',
+          foodsUserData: foodsUserData,
+          localStorageKeys: Object.keys(localStorage),
+          currentUrl: window.location.href
+        };
+        localStorage.setItem('sso_debug_log', JSON.stringify(debugLog));
+        
         // 2. Se não há dados no localStorage, verificar URL parameters
         if (!foodsUserData) {
           const urlParams = new URLSearchParams(window.location.search);
@@ -59,6 +69,18 @@ export const AuthProvider = ({ children }) => {
           console.log('🔍 localStorage keys:', Object.keys(localStorage));
           console.log('🔍 URL atual:', window.location.href);
           console.log('🔍 Config foodsUrl:', config.foodsUrl);
+          
+          // Registrar log de erro no localStorage
+          const errorLog = {
+            timestamp: new Date().toISOString(),
+            step: 'no_foodsUserData_found',
+            foodsUserData: foodsUserData,
+            localStorageKeys: Object.keys(localStorage),
+            currentUrl: window.location.href,
+            configFoodsUrl: config.foodsUrl,
+            error: 'Nenhum dado SSO encontrado'
+          };
+          localStorage.setItem('sso_debug_error', JSON.stringify(errorLog));
           
           // Delay para conseguir ver os logs
           setTimeout(() => {
