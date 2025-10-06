@@ -88,6 +88,12 @@ const authenticateToken = async (req, res, next) => {
 const checkPermission = (permission) => {
   return async (req, res, next) => {
     try {
+      // Verificar se req.user existe e tem id
+      if (!req.user || !req.user.id) {
+        console.error('❌ req.user ou req.user.id está undefined:', req.user);
+        return res.status(401).json({ message: 'Usuário não autenticado' });
+      }
+
       // Se o usuário é administrador, permitir tudo
       if (req.user.role === 'administrador') {
         return next();
