@@ -96,22 +96,27 @@ export const AuthProvider = ({ children }) => {
                     can_delete: perm.can_delete === 1
                   };
                 });
+                console.log('✅ [SUCCESS] Permissões carregadas:', permissionsObj);
                 setPermissions(permissionsObj);
               }
             } catch (permError) {
+              console.error('❌ [ERROR] Erro ao buscar permissões:', permError);
               // Usar permissões padrão se não conseguir buscar
-              setPermissions({
+              const defaultPerms = {
                 dashboard: { can_view: true, can_create: false, can_edit: false, can_delete: false },
                 usuarios: { can_view: false, can_create: false, can_edit: false, can_delete: false },
                 cotacoes: { can_view: true, can_create: true, can_edit: true, can_delete: false },
                 saving: { can_view: true, can_create: true, can_edit: true, can_delete: false },
                 supervisor: { can_view: false, can_create: false, can_edit: false, can_delete: false },
                 aprovacoes: { can_view: false, can_create: false, can_edit: false, can_delete: false }
-              });
+              };
+              console.log('🔍 [DEBUG] Usando permissões padrão:', defaultPerms);
+              setPermissions(defaultPerms);
             }
 
             // 6. Limpar dados do localStorage APÓS login bem-sucedido
             localStorage.removeItem('foodsUser');
+            console.log('✅ [SUCCESS] Validação SSO concluída com sucesso');
             
           } else {
             throw new Error('Falha no login SSO');
@@ -131,7 +136,9 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
+    console.log('🔍 [DEBUG] Iniciando useEffect do AuthContext');
     validateSSOAccess();
+    console.log('🔍 [DEBUG] useEffect do AuthContext finalizado');
 
     // 4. Verificar periodicamente se ainda está logado no Foods
     const checkSSOStatus = setInterval(() => {
