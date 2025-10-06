@@ -42,7 +42,7 @@ const unidadeEscolarValidations = {
   // Validações para criação de unidade escolar
   create: [
     body('codigo_teknisa')
-      .notEmpty().withMessage('Código Teknisa é obrigatório')
+      .optional()
       .isString().trim().isLength({ min: 1, max: 50 }).withMessage('Código deve ter entre 1 e 50 caracteres'),
     
     body('nome_escola')

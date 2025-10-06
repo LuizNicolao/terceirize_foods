@@ -70,18 +70,20 @@ class UnidadesEscolaresCRUDController {
         }
       }
 
-      // Verificar se código teknisa já existe
-      const existingUnidade = await executeQuery(
-        'SELECT id FROM unidades_escolares WHERE codigo_teknisa = ?',
-        [codigo_teknisa.trim()]
-      );
+      // Verificar se código teknisa já existe (apenas se fornecido)
+      if (codigo_teknisa) {
+        const existingUnidade = await executeQuery(
+          'SELECT id FROM unidades_escolares WHERE codigo_teknisa = ?',
+          [codigo_teknisa.trim()]
+        );
 
-      if (existingUnidade.length > 0) {
-        return res.status(400).json({
-          success: false,
-          error: 'Código Teknisa já existe',
-          message: 'Já existe uma unidade escolar com este código Teknisa'
-        });
+        if (existingUnidade.length > 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Código Teknisa já existe',
+            message: 'Já existe uma unidade escolar com este código Teknisa'
+          });
+        }
       }
 
       // Inserir unidade escolar
@@ -94,7 +96,7 @@ class UnidadesEscolaresCRUDController {
       `;
 
       const insertParams = [
-        codigo_teknisa.trim(),
+        codigo_teknisa ? codigo_teknisa.trim() : null,
         nome_escola.trim(),
         cidade.trim(),
         estado.trim(),
@@ -226,8 +228,8 @@ class UnidadesEscolaresCRUDController {
         }
       }
 
-      // Verificar se código teknisa já existe (se estiver sendo alterado)
-      if (codigo_teknisa) {
+      // Verificar se código teknisa já existe (se estiver sendo alterado e não for vazio)
+      if (codigo_teknisa && codigo_teknisa.trim() !== '') {
         const codigoCheck = await executeQuery(
           'SELECT id FROM unidades_escolares WHERE codigo_teknisa = ? AND id != ?',
           [codigo_teknisa.trim(), id]

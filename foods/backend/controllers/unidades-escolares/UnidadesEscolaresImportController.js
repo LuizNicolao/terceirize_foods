@@ -42,7 +42,7 @@ class UnidadesEscolaresImportController {
       const columnMapping = UnidadesEscolaresImportController.mapColumns(headers);
       
       // Validar se as colunas obrigatórias estão presentes
-      const requiredColumns = ['codigo_teknisa', 'nome_escola', 'cidade', 'estado'];
+      const requiredColumns = ['nome_escola', 'cidade', 'estado'];
       const missingColumns = requiredColumns.filter(col => !columnMapping[col]);
       
       if (missingColumns.length > 0) {
@@ -360,23 +360,25 @@ class UnidadesEscolaresImportController {
       const unidade = unidades[i];
       const rowNumber = i + 2; // +2 porque começamos da linha 2
       
-      // Verificar se código teknisa já existe
-      try {
-        const existingUnidade = await executeQuery(
-          'SELECT id FROM unidades_escolares WHERE codigo_teknisa = ?',
-          [unidade.codigo_teknisa]
-        );
-        
-        if (existingUnidade.length > 0) {
-          errors.push({
-            row: rowNumber,
-            field: 'codigo_teknisa',
-            value: unidade.codigo_teknisa,
-            error: 'Código Teknisa já existe no sistema'
-          });
+      // Verificar se código teknisa já existe (apenas se fornecido)
+      if (unidade.codigo_teknisa && unidade.codigo_teknisa.trim() !== '') {
+        try {
+          const existingUnidade = await executeQuery(
+            'SELECT id FROM unidades_escolares WHERE codigo_teknisa = ?',
+            [unidade.codigo_teknisa]
+          );
+          
+          if (existingUnidade.length > 0) {
+            errors.push({
+              row: rowNumber,
+              field: 'codigo_teknisa',
+              value: unidade.codigo_teknisa,
+              error: 'Código Teknisa já existe no sistema'
+            });
+          }
+        } catch (error) {
+          console.error('Erro ao verificar código teknisa:', error);
         }
-      } catch (error) {
-        console.error('Erro ao verificar código teknisa:', error);
       }
 
       // Verificar se rota existe (se fornecida)
