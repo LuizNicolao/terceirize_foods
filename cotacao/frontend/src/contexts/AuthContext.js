@@ -92,8 +92,17 @@ export const AuthProvider = ({ children }) => {
       };
       localStorage.setItem('sso_debug_error', JSON.stringify(errorLog));
       
-      // Redirecionar para Foods em caso de erro
-      window.location.href = config.foodsUrl;
+      // Mostrar erro e dar opção para o usuário
+      const shouldRedirect = confirm('Erro ao fazer login: ' + error.message + '\n\nClique "OK" para voltar ao Foods ou "Cancelar" para tentar novamente.');
+      
+      if (shouldRedirect) {
+        window.location.href = config.foodsUrl;
+      } else {
+        // Tentar recarregar a página
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
     }
   };
 
@@ -151,10 +160,19 @@ export const AuthProvider = ({ children }) => {
             console.log('🔍 [COTACAO DEBUG] Retry - dados encontrados:', retryFoodsUserData);
             
             if (!retryFoodsUserData) {
-              console.log('❌ [COTACAO DEBUG] Nenhum dado SSO encontrado após retry, redirecionando para Foods');
+              console.log('❌ [COTACAO DEBUG] Nenhum dado SSO encontrado após retry');
               
-              // Redirecionar para Foods
-              window.location.href = config.foodsUrl;
+              // Mostrar mensagem de erro e dar opção para o usuário
+              const shouldRedirect = confirm('Não foi possível conectar automaticamente com o sistema Foods.\n\nClique "OK" para voltar ao Foods ou "Cancelar" para tentar novamente.');
+              
+              if (shouldRedirect) {
+                window.location.href = config.foodsUrl;
+              } else {
+                // Tentar novamente após 2 segundos
+                setTimeout(() => {
+                  window.location.reload();
+                }, 2000);
+              }
             } else {
               // Tentar fazer login com os dados encontrados no retry
               try {
