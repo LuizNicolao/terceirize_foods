@@ -76,7 +76,9 @@ const authenticateToken = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('🔍 [DEBUG] Token decodificado:', decoded);
     req.user = decoded;
+    console.log('🔍 [DEBUG] req.user definido:', req.user);
     next();
   } catch (error) {
     console.error('❌ Erro na autenticação:', error.message);
@@ -93,6 +95,9 @@ const checkPermission = (permission) => {
         return next();
       }
 
+      console.log('🔍 [DEBUG] Verificando permissões para user_id:', req.user.id);
+      console.log('🔍 [DEBUG] req.user completo:', req.user);
+      
       const permissions = await executeQuery(`
         SELECT screen, can_view, can_create, can_edit, can_delete
         FROM user_permissions WHERE user_id = ?
