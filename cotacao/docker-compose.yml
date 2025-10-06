@@ -14,7 +14,7 @@ services:
       DB_NAME: cotacao_db
       DB_USER: foods_user
       DB_PASSWORD: foods123456
-      JWT_SECRET: cotacao_jwt_secret_key_2024
+      JWT_SECRET: terceirize_shared_secret_2024
       SHARED_JWT_SECRET: terceirize_shared_secret_2024
     depends_on: []
     networks:
