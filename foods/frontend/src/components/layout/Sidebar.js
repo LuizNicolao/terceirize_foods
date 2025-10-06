@@ -103,7 +103,7 @@ const menuGroups = [
 
 const Sidebar = ({ collapsed, onToggle }) => {
   const location = useLocation();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const { canView, loading } = usePermissions();
   
   // Estado para controlar expansão dos grupos
