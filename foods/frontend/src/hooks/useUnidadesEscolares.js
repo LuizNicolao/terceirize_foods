@@ -113,6 +113,17 @@ export const useUnidadesEscolares = () => {
   }, [baseEntity, customFilters.filters.rotaFilter]);
 
   /**
+   * Override da função loadData para incluir filtro de rota
+   */
+  const loadDataWithRotaFilter = useCallback(async () => {
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
+    };
+    await baseEntity.loadData(params);
+  }, [baseEntity, customFilters.filters.rotaFilter]);
+
+  /**
    * Submissão customizada que recarrega estatísticas
    */
   const onSubmitCustom = useCallback(async (formData) => {
@@ -161,19 +172,15 @@ export const useUnidadesEscolares = () => {
     loadEstatisticasUnidades();
   }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
 
-  // Carregar dados apenas quando rotaFilter muda (sem resetar paginação)
-  useEffect(() => {
-    console.log('🎯 useEffect rotaFilter executado');
-    console.log('🔍 Rota filter mudou para:', customFilters.filters.rotaFilter);
-    console.log('📄 Página atual antes do loadDataWithFilters:', baseEntity.currentPage);
-    
-    if (customFilters.filters.rotaFilter !== 'todos') {
-      console.log('✅ Chamando loadDataWithFilters porque rotaFilter não é "todos"');
-      loadDataWithFilters();
-    } else {
-      console.log('⏭️ Não chamando loadDataWithFilters porque rotaFilter é "todos"');
-    }
-  }, [customFilters.filters.rotaFilter, loadDataWithFilters]);
+  // Override da função loadData para incluir filtro de rota
+  const originalLoadData = baseEntity.loadData;
+  baseEntity.loadData = useCallback(async (customParams = {}) => {
+    const params = {
+      ...customParams,
+      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
+    };
+    return originalLoadData(params);
+  }, [originalLoadData, customFilters.filters.rotaFilter]);
 
   return {
     // Estados principais (do hook base)
