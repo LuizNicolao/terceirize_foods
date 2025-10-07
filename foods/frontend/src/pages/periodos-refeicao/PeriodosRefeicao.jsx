@@ -48,6 +48,7 @@ const PeriodosRefeicao = () => {
     handleCloseModal,
     onSubmit,
     handleSearch,
+    handleKeyPress,
     handleStatusFilter,
     handleFilialFilter,
     handlePageChange,
@@ -120,6 +121,7 @@ const PeriodosRefeicao = () => {
         <CadastroFilterBar
           searchTerm={searchTerm}
           onSearchChange={handleSearch}
+          onKeyPress={handleKeyPress}
           statusFilter={statusFilter}
           onStatusFilterChange={handleStatusFilter}
           additionalFilters={[

@@ -45,6 +45,7 @@ const Periodicidade = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     formatDate
   } = usePeriodicidade();
@@ -107,6 +108,7 @@ const Periodicidade = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         additionalFilters={[]}

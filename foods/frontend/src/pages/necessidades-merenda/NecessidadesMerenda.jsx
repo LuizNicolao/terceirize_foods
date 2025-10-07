@@ -59,6 +59,7 @@ const NecessidadesMerenda = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
+    handleKeyPress,
     handleFiltroChange,
     clearFiltros,
     formatDate,
@@ -144,6 +145,7 @@ const NecessidadesMerenda = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         filtros={filtros}
         onFiltroChange={handleFiltroChange}
         onClearFiltros={clearFiltros}

@@ -46,6 +46,7 @@ const FaturamentoPage = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
+    handleKeyPress,
     handleFiltroChange,
     clearFiltros,
     formatDate,
@@ -115,6 +116,7 @@ const FaturamentoPage = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         onClear={() => setSearchTerm('')}
         placeholder="Buscar por unidade escolar..."
       />

@@ -46,6 +46,7 @@ const Grupos = () => {
     handleCloseValidationModal,
     handlePageChange,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     setItemsPerPage,
     handleClearFilters,
@@ -111,6 +112,7 @@ const Grupos = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}

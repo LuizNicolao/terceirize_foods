@@ -54,6 +54,7 @@ const Produtos = () => {
     handlePageChange,
     handleClearFilters,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     setItemsPerPage,
     getGrupoName,
@@ -117,6 +118,7 @@ const Produtos = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}

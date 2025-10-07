@@ -56,6 +56,7 @@ const Subgrupos = () => {
 
     // Funções de filtros
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     setGrupoFilter,
     handleClearFilters,
@@ -124,6 +125,7 @@ const Subgrupos = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}

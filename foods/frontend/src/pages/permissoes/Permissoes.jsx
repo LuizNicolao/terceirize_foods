@@ -36,6 +36,7 @@ const Permissoes = () => {
     handlePermissionChange,
     handleExpandGroup,
     handleSearchChange,
+    handleKeyPress,
     setIsSelectOpen,
     setShowPermissionsModal,
     getStatusLabel
@@ -92,6 +93,7 @@ const Permissoes = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
+        onKeyPress={handleKeyPress}
         onClear={() => handleSearchChange('')}
         placeholder="Buscar por nome ou email..."
         statusFilter="todos"

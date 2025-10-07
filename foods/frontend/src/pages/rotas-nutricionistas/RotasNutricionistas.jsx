@@ -47,6 +47,7 @@ const RotasNutricionistas = () => {
     handlePageChange,
     handleLimitChange,
     handleSearch,
+    handleKeyPress,
     handleStatusFilter,
     handleUsuarioFilter,
     handleSupervisorFilter,
@@ -118,6 +119,7 @@ const RotasNutricionistas = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={handleSearch}
+        onKeyPress={handleKeyPress}
         onClear={() => clearFilters()}
         placeholder="Buscar por código, usuário, supervisor ou coordenador..."
       />

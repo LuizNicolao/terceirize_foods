@@ -54,6 +54,7 @@ const ProdutoOrigem = () => {
     handlePageChange,
     handleClearFilters,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     setGrupoFilter,
     setSubgrupoFilter,
@@ -124,6 +125,7 @@ const ProdutoOrigem = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}
