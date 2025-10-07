@@ -100,15 +100,22 @@ export const useUnidadesEscolares = () => {
    */
   const loadDataWithFilters = useCallback(async () => {
     const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
+      page: baseEntity.currentPage,
+      limit: baseEntity.itemsPerPage,
       search: customFilters.searchTerm || undefined,
       status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
       rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
     };
 
     await baseEntity.loadData(params);
-  }, [baseEntity, customFilters]);
+  }, [
+    baseEntity.currentPage, 
+    baseEntity.itemsPerPage, 
+    baseEntity.loadData,
+    customFilters.searchTerm, 
+    customFilters.statusFilter, 
+    customFilters.filters.rotaFilter
+  ]);
 
   /**
    * Submissão customizada que recarrega estatísticas
@@ -162,12 +169,12 @@ export const useUnidadesEscolares = () => {
   // Carregar dados quando filtros mudam
   useEffect(() => {
     loadDataWithFilters();
-  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters, loadDataWithFilters]);
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
 
   // Carregar dados quando paginação muda
   useEffect(() => {
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, loadDataWithFilters]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 
   return {
     // Estados principais (do hook base)
