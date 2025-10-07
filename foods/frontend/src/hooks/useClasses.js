@@ -4,6 +4,7 @@ import ClassesService from '../services/classes';
 import SubgruposService from '../services/subgrupos';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useClasses = () => {
   // Hook base para funcionalidades CRUD
@@ -16,6 +17,9 @@ export const useClasses = () => {
 
   // Hook de filtros customizados para classes
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados de dados auxiliares
   const [subgrupos, setSubgrupos] = useState([]);
@@ -165,6 +169,10 @@ export const useClasses = () => {
     // Estados principais (do hook base)
     classes: baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasClasses, // Usar estatísticas específicas das classes
     
     // Estados de modal (do hook base)
@@ -206,7 +214,8 @@ export const useClasses = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setSubgrupoFilter: customFilters.setSubgrupoFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade

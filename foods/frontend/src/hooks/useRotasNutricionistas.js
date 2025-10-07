@@ -3,8 +3,12 @@ import toast from 'react-hot-toast';
 import RotasNutricionistasService from '../services/rotasNutricionistas';
 import { useAuditoria } from './common/useAuditoria';
 import { useExport } from './common/useExport';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useRotasNutricionistas = () => {
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Estados principais
   const [rotas, setRotas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,7 +22,6 @@ export const useRotasNutricionistas = () => {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Estados de filtro
-  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [usuarioFilter, setUsuarioFilter] = useState('');
   const [supervisorFilter, setSupervisorFilter] = useState('');
@@ -64,7 +67,7 @@ export const useRotasNutricionistas = () => {
       const params = {
         page,
         limit: itemsPerPage,
-        search: searchTerm || undefined,
+        search: debouncedSearch.debouncedSearchTerm || undefined,
         status: statusFilter || undefined,
         usuario_id: usuarioFilter || undefined,
         supervisor_id: supervisorFilter || undefined,
@@ -105,7 +108,7 @@ export const useRotasNutricionistas = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, searchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
+  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
 
   // Carregar usuários, supervisores e coordenadores
   const loadUsuarios = useCallback(async () => {
@@ -298,7 +301,7 @@ export const useRotasNutricionistas = () => {
 
   // Funções de filtro
   const handleSearch = (term) => {
-    setSearchTerm(term);
+    debouncedSearch.updateSearchTerm(term);
     setCurrentPage(1);
   };
 
@@ -323,7 +326,7 @@ export const useRotasNutricionistas = () => {
   };
 
   const clearFilters = () => {
-    setSearchTerm('');
+    debouncedSearch.clearSearch();
     setStatusFilter('');
     setUsuarioFilter('');
     setSupervisorFilter('');
@@ -335,7 +338,7 @@ export const useRotasNutricionistas = () => {
   const handleExportXLSX = async () => {
     try {
       const params = {
-        search: searchTerm || undefined,
+        search: debouncedSearch.debouncedSearchTerm || undefined,
         status: statusFilter || undefined,
         usuario_id: usuarioFilter || undefined,
         supervisor_id: supervisorFilter || undefined,
@@ -352,7 +355,7 @@ export const useRotasNutricionistas = () => {
   const handleExportPDF = async () => {
     try {
       const params = {
-        search: searchTerm || undefined,
+        search: debouncedSearch.debouncedSearchTerm || undefined,
         status: statusFilter || undefined,
         usuario_id: usuarioFilter || undefined,
         supervisor_id: supervisorFilter || undefined,
@@ -380,7 +383,8 @@ export const useRotasNutricionistas = () => {
     itemsPerPage,
 
     // Estados de filtro
-    searchTerm,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     statusFilter,
     usuarioFilter,
     supervisorFilter,
@@ -433,6 +437,8 @@ export const useRotasNutricionistas = () => {
 
     // Funções de filtro
     handleSearch,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     handleStatusFilter,
     handleUsuarioFilter,
     handleSupervisorFilter,

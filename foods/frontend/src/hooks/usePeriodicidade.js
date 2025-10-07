@@ -16,6 +16,9 @@ export const usePeriodicidade = () => {
   // Hook de filtros customizados para periodicidade
   const customFilters = useFilters({});
 
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Estados de estatísticas específicas da periodicidade
   const [estatisticasPeriodicidade, setEstatisticasPeriodicidade] = useState({
     total_agrupamentos: 0,
@@ -155,6 +158,10 @@ export const usePeriodicidade = () => {
     // Estados principais (do hook base)
     agrupamentos: baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasPeriodicidade, // Usar estatísticas específicas da periodicidade
     
     // Estados de modal (do hook base)
@@ -191,7 +198,8 @@ export const usePeriodicidade = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     
     // Ações de CRUD (customizadas)

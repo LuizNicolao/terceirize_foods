@@ -21,6 +21,9 @@ export const useProdutoOrigem = () => {
 
   // Hook de filtros customizados para produto origem
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
   
   // Estados locais
   const [loading, setLoading] = useState(false);
@@ -232,6 +235,10 @@ export const useProdutoOrigem = () => {
     // Estados principais
     produtosOrigem: baseEntity.items,
     loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasProdutoOrigem,
     
     // Estados de modal (compatibilidade com modal existente)
@@ -278,7 +285,8 @@ export const useProdutoOrigem = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setGrupoFilter: customFilters.setGrupoFilter,
     setSubgrupoFilter: customFilters.setSubgrupoFilter,

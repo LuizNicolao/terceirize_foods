@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import GruposService from '../services/grupos';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useGrupos = () => {
   // Hook base para funcionalidades CRUD
@@ -15,6 +16,9 @@ export const useGrupos = () => {
 
   // Hook de filtros customizados para grupos
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados de estatísticas específicas dos grupos
   const [estatisticasGrupos, setEstatisticasGrupos] = useState({
@@ -120,6 +124,10 @@ export const useGrupos = () => {
     // Estados principais (do hook base)
     grupos: baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasGrupos, // Usar estatísticas específicas dos grupos
     
     // Estados de modal (do hook base)
@@ -156,7 +164,8 @@ export const useGrupos = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,

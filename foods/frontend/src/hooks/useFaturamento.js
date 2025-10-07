@@ -3,8 +3,12 @@ import { useValidation } from './common/useValidation';
 import { useExport } from './common/useExport';
 import FaturamentoService from '../services/faturamento';
 import toast from 'react-hot-toast';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useFaturamento = () => {
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Estados principais
   const [faturamentos, setFaturamentos] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -24,7 +28,6 @@ export const useFaturamento = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
-  const [searchTerm, setSearchTerm] = useState('');
   const [filtros, setFiltros] = useState({
     mes: '',
     ano: new Date().getFullYear(),
@@ -118,9 +121,9 @@ export const useFaturamento = () => {
 
   // Filtrar faturamentos (client-side)
   const filteredFaturamentos = faturamentos.filter(faturamento => {
-    const matchesSearch = !searchTerm || 
-      (faturamento.nome_escola && faturamento.nome_escola.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (faturamento.codigo_teknisa && faturamento.codigo_teknisa.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = !debouncedSearch.debouncedSearchTerm || 
+      (faturamento.nome_escola && faturamento.nome_escola.toLowerCase().includes(debouncedSearch.debouncedSearchTerm.toLowerCase())) ||
+      (faturamento.codigo_teknisa && faturamento.codigo_teknisa.toLowerCase().includes(debouncedSearch.debouncedSearchTerm.toLowerCase()));
     
     return matchesSearch;
   });
@@ -261,7 +264,7 @@ export const useFaturamento = () => {
       ano: new Date().getFullYear(),
       unidade_escolar_id: ''
     });
-    setSearchTerm('');
+    debouncedSearch.clearSearch();
     setCurrentPage(1);
   };
 
@@ -310,7 +313,8 @@ export const useFaturamento = () => {
     totalPages,
     totalItems,
     itemsPerPage,
-    searchTerm,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     filtros,
     showDeleteConfirmModal,
     setShowDeleteConfirmModal,
@@ -331,7 +335,8 @@ export const useFaturamento = () => {
     handleCloseModal,
     handlePageChange,
     handleItemsPerPageChange,
-    setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     handleFiltroChange,
     clearFiltros,
     formatDate,

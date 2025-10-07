@@ -21,6 +21,9 @@ export const useProdutoGenerico = () => {
 
   // Hook de filtros customizados para produto genérico
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
   
   // Estados locais
   const [loading, setLoading] = useState(false);
@@ -272,6 +275,10 @@ export const useProdutoGenerico = () => {
     // Estados principais
     produtosGenericos: baseEntity.items,
     loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasProdutoGenerico,
     
     // Estados de modal (compatibilidade com modal existente)
@@ -320,7 +327,8 @@ export const useProdutoGenerico = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setGrupoFilter: customFilters.setGrupoFilter,
     setSubgrupoFilter: customFilters.setSubgrupoFilter,

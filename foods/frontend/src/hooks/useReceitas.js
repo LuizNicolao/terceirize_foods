@@ -3,8 +3,12 @@ import { useValidation } from './common/useValidation';
 import { useExport } from './common/useExport';
 import ReceitasService from '../services/receitas';
 import toast from 'react-hot-toast';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useReceitas = () => {
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Estados principais
   const [receitas, setReceitas] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -26,7 +30,6 @@ export const useReceitas = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
-  const [searchTerm, setSearchTerm] = useState('');
   const [filtros, setFiltros] = useState({
     mes: '',
     ano: new Date().getFullYear(),
@@ -82,7 +85,7 @@ export const useReceitas = () => {
       const params = {
         page: currentPage,
         limit: itemsPerPage,
-        search: searchTerm,
+        search: debouncedSearch.debouncedSearchTerm,
         ...filtros
       };
 
@@ -103,7 +106,7 @@ export const useReceitas = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, searchTerm, filtros]);
+  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm, filtros]);
 
   // Carregar dados quando os parâmetros mudarem
   useEffect(() => {
@@ -335,7 +338,8 @@ export const useReceitas = () => {
     totalPages,
     totalItems,
     itemsPerPage,
-    searchTerm,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     filtros,
     showDeleteConfirmModal,
     setShowDeleteConfirmModal,
@@ -359,7 +363,8 @@ export const useReceitas = () => {
     handleClosePreviewModal,
     handlePageChange,
     handleItemsPerPageChange,
-    setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     handleFiltroChange,
     clearFiltros,
     formatDate,

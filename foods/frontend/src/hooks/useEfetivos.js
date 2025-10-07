@@ -2,15 +2,18 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import EfetivosService from '../services/efetivos';
 import { useValidation } from './common/useValidation';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useEfetivos = (unidadeEscolarId) => {
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Estados principais
   const [efetivos, setEfetivos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [viewMode, setViewMode] = useState(false);
   const [editingEfetivo, setEditingEfetivo] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
 
   // Estados de paginação
@@ -74,9 +77,9 @@ export const useEfetivos = (unidadeEscolarId) => {
 
   // Filtrar efetivos (client-side)
   const filteredEfetivos = efetivos.filter(efetivo => {
-    const matchesSearch = !searchTerm || 
-      (efetivo.tipo_efetivo && efetivo.tipo_efetivo.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (efetivo.intolerancia_nome && efetivo.intolerancia_nome.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = !debouncedSearch.debouncedSearchTerm || 
+      (efetivo.tipo_efetivo && efetivo.tipo_efetivo.toLowerCase().includes(debouncedSearch.debouncedSearchTerm.toLowerCase())) ||
+      (efetivo.intolerancia_nome && efetivo.intolerancia_nome.toLowerCase().includes(debouncedSearch.debouncedSearchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'todos' || efetivo.tipo_efetivo === statusFilter;
     
@@ -187,7 +190,8 @@ export const useEfetivos = (unidadeEscolarId) => {
     showModal,
     viewMode,
     editingEfetivo,
-    searchTerm,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     statusFilter,
     currentPage,
     totalPages,
@@ -215,7 +219,8 @@ export const useEfetivos = (unidadeEscolarId) => {
     handleItemsPerPageChange,
 
     // Funções de filtros
-    setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter,
 
     // Funções utilitárias

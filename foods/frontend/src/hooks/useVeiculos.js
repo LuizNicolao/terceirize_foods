@@ -16,6 +16,9 @@ export const useVeiculos = () => {
   // Hook de filtros customizados para veículos
   const customFilters = useFilters({ tipoFilter: 'todos' });
 
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Estados de estatísticas específicas dos veículos
   const [estatisticasVeiculos, setEstatisticasVeiculos] = useState({
     total_veiculos: 0,
@@ -143,6 +146,10 @@ export const useVeiculos = () => {
     // Estados principais (do hook base)
     veiculos: baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasVeiculos, // Usar estatísticas específicas dos veículos
     
     // Estados de modal (do hook base)
@@ -180,7 +187,8 @@ export const useVeiculos = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setTipoFilter: (value) => customFilters.updateFilter('tipoFilter', value),
     

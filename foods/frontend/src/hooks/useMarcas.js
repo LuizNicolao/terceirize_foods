@@ -14,6 +14,9 @@ export const useMarcas = () => {
   });
 
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
   
   const [loading, setLoading] = useState(false);
   
@@ -110,6 +113,10 @@ export const useMarcas = () => {
   return {
     marcas: baseEntity.items,
     loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasMarcas,
     showModal: baseEntity.showModal,
     viewMode: baseEntity.viewMode,
@@ -131,7 +138,8 @@ export const useMarcas = () => {
     handleCloseModal: baseEntity.handleCloseModal,
     handlePageChange: baseEntity.handlePageChange,
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange,
     handleClearFilters,

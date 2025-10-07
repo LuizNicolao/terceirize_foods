@@ -4,6 +4,7 @@ import AjudantesService from '../services/ajudantes';
 import FiliaisService from '../services/filiais';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useAjudantes = () => {
   // Hook base para funcionalidades CRUD
@@ -16,6 +17,9 @@ export const useAjudantes = () => {
 
   // Hook de filtros customizados para ajudantes
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados específicos dos ajudantes
   const [filiais, setFiliais] = useState([]);
@@ -154,6 +158,10 @@ export const useAjudantes = () => {
     // Estados principais (do hook base)
     ajudantes: baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasAjudantes, // Usar estatísticas específicas dos ajudantes
     
     // Estados de modal (do hook base)
@@ -193,7 +201,8 @@ export const useAjudantes = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     

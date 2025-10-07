@@ -4,6 +4,7 @@ import MotoristasService from '../services/motoristas';
 import FiliaisService from '../services/filiais';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useMotoristas = () => {
   // Hook base para funcionalidades CRUD
@@ -16,6 +17,9 @@ export const useMotoristas = () => {
 
   // Hook de filtros customizados para motoristas
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados específicos dos motoristas
   const [filiais, setFiliais] = useState([]);
@@ -148,6 +152,10 @@ export const useMotoristas = () => {
     // Estados principais (do hook base)
     motoristas: baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasMotoristas, // Usar estatísticas específicas dos motoristas
     
     // Estados de modal (do hook base)
@@ -187,7 +195,8 @@ export const useMotoristas = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     
     // Ações de CRUD (customizadas)

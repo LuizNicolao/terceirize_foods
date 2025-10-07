@@ -3,9 +3,13 @@ import PatrimoniosService from '../services/patrimonios';
 import FiliaisService from '../services/filiais';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const usePatrimonios = () => {
   const { user } = useAuth();
+  
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
   
   // Estados principais
   const [patrimonios, setPatrimonios] = useState([]);
@@ -18,7 +22,6 @@ export const usePatrimonios = () => {
   const [viewMode, setViewMode] = useState(false);
 
   // Estados de filtros e busca
-  const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     status: 'todos',
     escola_id: 'todos',
@@ -111,7 +114,7 @@ export const usePatrimonios = () => {
       const queryParams = {
         page: pagination.page,
         limit: pagination.limit,
-        search: searchTerm,
+        search: debouncedSearch.debouncedSearchTerm,
         ...filters,
         ...params
       };
@@ -151,7 +154,7 @@ export const usePatrimonios = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.page, pagination.limit, searchTerm, filters]);
+  }, [pagination.page, pagination.limit, debouncedSearch.debouncedSearchTerm, filters]);
 
   // Carregar estatísticas
   const loadEstatisticas = useCallback(async () => {
@@ -487,9 +490,11 @@ export const usePatrimonios = () => {
     viewMode,
     
     // Estados de filtros e busca
-    searchTerm,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     filters,
-    setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setFilters,
     
     // Estados de paginação

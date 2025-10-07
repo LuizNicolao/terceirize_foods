@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import FiliaisService from '../services/filiais';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useFiliais = () => {
   // Hook base para funcionalidades CRUD
@@ -15,6 +16,9 @@ export const useFiliais = () => {
 
   // Hook de filtros customizados para filiais
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados de estatísticas específicas das filiais
   const [estatisticasFiliais, setEstatisticasFiliais] = useState({
@@ -117,10 +121,19 @@ export const useFiliais = () => {
     calculateEstatisticas(baseEntity.items);
   }, [baseEntity.items, calculateEstatisticas]);
 
+  // Recarregar dados quando busca mudar
+  useEffect(() => {
+    baseEntity.loadData();
+  }, [debouncedSearch.debouncedSearchTerm]);
+
   return {
     // Estados principais (do hook base)
     filiais: baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasFiliais, // Usar estatísticas específicas das filiais
     
     // Estados de modal (do hook base)
@@ -157,7 +170,8 @@ export const useFiliais = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     
     // Ações de CRUD (customizadas)

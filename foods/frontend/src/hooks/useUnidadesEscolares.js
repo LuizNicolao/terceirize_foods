@@ -18,12 +18,12 @@ export const useUnidadesEscolares = () => {
   // Hook de filtros customizados para unidades escolares
   const customFilters = useFilters({ rotaFilter: 'todos', filialFilter: 'todos' });
 
+
   // Estados específicos das unidades escolares
   const [rotas, setRotas] = useState([]);
   const [filiais, setFiliais] = useState([]);
   const [loadingRotas, setLoadingRotas] = useState(false);
   const [loadingFiliais, setLoadingFiliais] = useState(false);
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
   // Estados de estatísticas específicas das unidades escolares
   const [estatisticasUnidades, setEstatisticasUnidades] = useState({
@@ -168,27 +168,18 @@ export const useUnidadesEscolares = () => {
     loadEstatisticasUnidades();
   }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
 
-  // Debounce para pesquisa (500ms)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(customFilters.searchTerm);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [customFilters.searchTerm]);
-
   // Recarregar dados quando filtros mudarem (sem incluir loadData nas dependências para evitar loop)
   useEffect(() => {
     baseEntity.loadData();
-  }, [debouncedSearchTerm, customFilters.filters.rotaFilter, customFilters.filters.filialFilter, customFilters.statusFilter]);
+  }, [customFilters.filters.rotaFilter, customFilters.filters.filialFilter, customFilters.statusFilter]);
 
   // Override da função loadData para incluir filtros customizados
   const originalLoadData = baseEntity.loadData;
   baseEntity.loadData = useCallback(async (customParams = {}) => {
     const params = {
       ...customParams,
-      // Usar debouncedSearchTerm em vez do searchTerm do useFilters
-      search: debouncedSearchTerm || undefined,
+      // Usar searchTerm do baseEntity (que já tem debounce integrado)
+      search: baseEntity.searchTerm || undefined,
       // Status filter
       status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
       // Filtros customizados
@@ -196,12 +187,13 @@ export const useUnidadesEscolares = () => {
       filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
     };
     return originalLoadData(params);
-  }, [originalLoadData, debouncedSearchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
+  }, [originalLoadData, baseEntity.searchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
 
   return {
     // Estados principais (do hook base)
     unidades: baseEntity.items,
     loading: baseEntity.loading,
+    
     estatisticas: estatisticasUnidades, // Usar estatísticas específicas das unidades escolares
     
     // Estados de modal (do hook base)
@@ -246,7 +238,8 @@ export const useUnidadesEscolares = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setRotaFilter: (value) => customFilters.updateFilter('rotaFilter', value),
     setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),

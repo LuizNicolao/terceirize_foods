@@ -9,13 +9,15 @@ import { useValidation } from './useValidation';
 import { usePagination } from './usePagination';
 import { useModal } from './useModal';
 import { useFilters } from './useFilters';
+import { useDebouncedSearch } from './useDebouncedSearch';
 
 export const useBaseEntity = (entityName, service, options = {}) => {
   const {
     initialItemsPerPage = 20,
     initialFilters = {},
     enableStats = true,
-    enableDelete = true
+    enableDelete = true,
+    enableDebouncedSearch = true
   } = options;
 
   // Hooks base
@@ -23,6 +25,9 @@ export const useBaseEntity = (entityName, service, options = {}) => {
   const pagination = usePagination(initialItemsPerPage);
   const modal = useModal();
   const filters = useFilters(initialFilters);
+  
+  // Hook de busca com debounce (opcional)
+  const debouncedSearch = enableDebouncedSearch ? useDebouncedSearch(500) : null;
 
   // Estados específicos da entidade
   const [items, setItems] = useState([]);
@@ -42,6 +47,8 @@ export const useBaseEntity = (entityName, service, options = {}) => {
       const params = {
         ...pagination.getPaginationParams(),
         ...filters.getFilterParams(),
+        // Usar debouncedSearch se disponível, senão usar o searchTerm do filters
+        search: debouncedSearch?.debouncedSearchTerm || filters.searchTerm || undefined,
         ...customParams
       };
 
@@ -72,7 +79,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     } finally {
       setLoading(false);
     }
-  }, [entityName, service, pagination, filters, enableStats]);
+  }, [entityName, service, pagination, filters, enableStats, debouncedSearch?.debouncedSearchTerm]);
 
   /**
    * Submete formulário (criar/editar)
@@ -188,7 +195,8 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     itemsPerPage: pagination.itemsPerPage,
     
     // Estados de filtros
-    searchTerm: filters.searchTerm,
+    searchTerm: debouncedSearch?.searchTerm || filters.searchTerm,
+    isSearching: debouncedSearch?.isSearching || false,
     statusFilter: filters.statusFilter,
     filters: filters.filters,
     
@@ -208,7 +216,8 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     handleItemsPerPageChange: pagination.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: filters.setSearchTerm,
+    setSearchTerm: debouncedSearch?.updateSearchTerm || filters.setSearchTerm,
+    clearSearch: debouncedSearch?.clearSearch || (() => filters.setSearchTerm('')),
     setStatusFilter: filters.setStatusFilter,
     updateFilter: filters.updateFilter,
     updateFilters: filters.updateFilters,

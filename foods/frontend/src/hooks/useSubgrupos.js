@@ -4,6 +4,7 @@ import SubgruposService from '../services/subgrupos';
 import GruposService from '../services/grupos';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useSubgrupos = () => {
   // Hook base para funcionalidades CRUD
@@ -16,6 +17,9 @@ export const useSubgrupos = () => {
 
   // Hook de filtros customizados para subgrupos
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);
@@ -163,6 +167,10 @@ export const useSubgrupos = () => {
     // Estados principais (do hook base)
     subgrupos: baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasSubgrupos, // Usar estatísticas específicas dos subgrupos
     
     // Estados de modal (do hook base)
@@ -204,7 +212,8 @@ export const useSubgrupos = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setGrupoFilter: customFilters.setGrupoFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade

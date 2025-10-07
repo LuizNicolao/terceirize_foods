@@ -3,8 +3,12 @@ import toast from 'react-hot-toast';
 import PeriodosRefeicaoService from '../services/periodosRefeicao';
 import FiliaisService from '../services/filiais';
 import { useValidation } from './common/useValidation';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const usePeriodosRefeicao = () => {
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Hook de validação universal
   const {
     validationErrors,
@@ -27,7 +31,6 @@ export const usePeriodosRefeicao = () => {
   const [periodoToDelete, setPeriodoToDelete] = useState(null);
 
   // Estados de filtros e paginação
-  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -49,7 +52,7 @@ export const usePeriodosRefeicao = () => {
       const paginationParams = {
         page: currentPage,
         limit: itemsPerPage,
-        search: searchTerm,
+        search: debouncedSearch.debouncedSearchTerm,
         ...params
       };
 
@@ -253,7 +256,7 @@ export const usePeriodosRefeicao = () => {
   // Carregar dados iniciais
   useEffect(() => {
     loadPeriodos();
-  }, [currentPage, itemsPerPage, searchTerm]);
+  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm]);
 
   return {
     // Estados
@@ -264,7 +267,8 @@ export const usePeriodosRefeicao = () => {
     editingPeriodo,
     showDeleteConfirmModal,
     periodoToDelete,
-    searchTerm,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     currentPage,
     totalPages,
     totalItems,
@@ -284,7 +288,8 @@ export const usePeriodosRefeicao = () => {
     handleEditPeriodo,
     handleCloseModal,
     handlePageChange,
-    setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setItemsPerPage,
     formatDate,
     getStatusLabel

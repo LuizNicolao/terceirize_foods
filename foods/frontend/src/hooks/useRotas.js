@@ -4,6 +4,7 @@ import RotasService from '../services/rotas';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useRotas = () => {
   // Hook base para funcionalidades CRUD
@@ -16,6 +17,9 @@ export const useRotas = () => {
 
   // Hook de filtros customizados para rotas
   const customFilters = useFilters({ filialFilter: 'todos' });
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados específicos das rotas
   const [filiais, setFiliais] = useState([]);
@@ -242,10 +246,19 @@ export const useRotas = () => {
     loadDataWithFilters();
   }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 
+  // Recarregar dados quando busca mudar
+  useEffect(() => {
+    baseEntity.loadData();
+  }, [debouncedSearch.debouncedSearchTerm]);
+
   return {
     // Estados principais (do hook base)
     rotas: baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasRotas, // Usar estatísticas específicas das rotas
     
     // Estados de modal (do hook base)
@@ -297,7 +310,8 @@ export const useRotas = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
     

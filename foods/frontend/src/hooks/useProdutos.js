@@ -4,6 +4,7 @@ import ProdutosService from '../services/produtos';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useProdutos = () => {
   // Hook base para funcionalidades CRUD
@@ -16,6 +17,9 @@ export const useProdutos = () => {
 
   // Hook de filtros customizados para produtos
   const customFilters = useFilters({});
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
   
   // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);
@@ -170,6 +174,10 @@ export const useProdutos = () => {
     // Estados principais (do hook base)
     produtos: baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de busca
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasProdutos, // Usar estatísticas específicas dos produtos
     
     // Estados de modal (do hook base)
@@ -215,7 +223,8 @@ export const useProdutos = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: customFilters.setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,

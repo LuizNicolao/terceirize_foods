@@ -3,8 +3,12 @@ import toast from 'react-hot-toast';
 import TiposCardapioService from '../services/tiposCardapio';
 import FiliaisService from '../services/filiais';
 import { useValidation } from './common/useValidation';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useTiposCardapio = () => {
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Hook de validação universal
   const {
     validationErrors,
@@ -27,7 +31,6 @@ export const useTiposCardapio = () => {
   const [tipoToDelete, setTipoToDelete] = useState(null);
 
   // Estados de filtros e paginação
-  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -49,7 +52,7 @@ export const useTiposCardapio = () => {
       const paginationParams = {
         page: currentPage,
         limit: itemsPerPage,
-        search: searchTerm,
+        search: debouncedSearch.debouncedSearchTerm,
         ...params
       };
 
@@ -253,7 +256,7 @@ export const useTiposCardapio = () => {
   // Carregar dados iniciais
   useEffect(() => {
     loadTipos();
-  }, [currentPage, itemsPerPage, searchTerm]);
+  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm]);
 
   return {
     // Estados
@@ -264,7 +267,8 @@ export const useTiposCardapio = () => {
     editingTipo,
     showDeleteConfirmModal,
     tipoToDelete,
-    searchTerm,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     currentPage,
     totalPages,
     totalItems,
@@ -284,7 +288,8 @@ export const useTiposCardapio = () => {
     handleEditTipo,
     handleCloseModal,
     handlePageChange,
-    setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setItemsPerPage,
     formatDate,
     getStatusLabel

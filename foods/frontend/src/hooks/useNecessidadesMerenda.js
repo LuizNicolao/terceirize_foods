@@ -3,8 +3,12 @@ import { useValidation } from './common/useValidation';
 import { useExport } from './common/useExport';
 import NecessidadesMerendaService from '../services/necessidadesMerenda';
 import toast from 'react-hot-toast';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useNecessidadesMerenda = () => {
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Estados principais
   const [necessidades, setNecessidades] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -27,7 +31,6 @@ export const useNecessidadesMerenda = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
-  const [searchTerm, setSearchTerm] = useState('');
   const [filtros, setFiltros] = useState({
     status: '',
     unidade_escolar_id: '',
@@ -58,7 +61,7 @@ export const useNecessidadesMerenda = () => {
       const params = {
         page: currentPage,
         limit: itemsPerPage,
-        search: searchTerm,
+        search: debouncedSearch.debouncedSearchTerm,
         ...filtros
       };
 
@@ -78,7 +81,7 @@ export const useNecessidadesMerenda = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, searchTerm, filtros]);
+  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm, filtros]);
 
   // Carregar dados quando os parâmetros mudarem
   useEffect(() => {
@@ -226,7 +229,7 @@ export const useNecessidadesMerenda = () => {
       data_inicio: '',
       data_fim: ''
     });
-    setSearchTerm('');
+    debouncedSearch.clearSearch();
     setCurrentPage(1);
   };
 
@@ -383,7 +386,8 @@ export const useNecessidadesMerenda = () => {
     totalPages,
     totalItems,
     itemsPerPage,
-    searchTerm,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     filtros,
     showDeleteConfirmModal,
     setShowDeleteConfirmModal,
@@ -407,7 +411,8 @@ export const useNecessidadesMerenda = () => {
     handleClosePreviewModal,
     handlePageChange,
     handleItemsPerPageChange,
-    setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     handleFiltroChange,
     clearFiltros,
     formatDate,

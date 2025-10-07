@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import NomeGenericoProdutoService from '../services/nomeGenericoProduto';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useNomeGenericoProduto = () => {
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Estados principais
   const [nomesGenericos, setNomesGenericos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +17,6 @@ export const useNomeGenericoProduto = () => {
   const [nomeGenericoToDelete, setNomeGenericoToDelete] = useState(null);
 
   // Estados de filtros e paginação
-  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
@@ -82,11 +85,11 @@ export const useNomeGenericoProduto = () => {
 
   // Filtrar nomes genéricos (client-side)
   const filteredNomesGenericos = (Array.isArray(nomesGenericos) ? nomesGenericos : []).filter(nomeGenerico => {
-    const matchesSearch = !searchTerm || 
-      (nomeGenerico.nome && nomeGenerico.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (nomeGenerico.grupo_nome && nomeGenerico.grupo_nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (nomeGenerico.subgrupo_nome && nomeGenerico.subgrupo_nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (nomeGenerico.classe_nome && nomeGenerico.classe_nome.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = !debouncedSearch.debouncedSearchTerm || 
+      (nomeGenerico.nome && nomeGenerico.nome.toLowerCase().includes(debouncedSearch.debouncedSearchTerm.toLowerCase())) ||
+      (nomeGenerico.grupo_nome && nomeGenerico.grupo_nome.toLowerCase().includes(debouncedSearch.debouncedSearchTerm.toLowerCase())) ||
+      (nomeGenerico.subgrupo_nome && nomeGenerico.subgrupo_nome.toLowerCase().includes(debouncedSearch.debouncedSearchTerm.toLowerCase())) ||
+      (nomeGenerico.classe_nome && nomeGenerico.classe_nome.toLowerCase().includes(debouncedSearch.debouncedSearchTerm.toLowerCase()));
     
     return matchesSearch;
   });
@@ -217,7 +220,8 @@ export const useNomeGenericoProduto = () => {
     editingNomeGenerico,
     showDeleteConfirmModal,
     nomeGenericoToDelete,
-    searchTerm,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     currentPage,
     totalPages,
     totalItems,
@@ -240,7 +244,8 @@ export const useNomeGenericoProduto = () => {
     handlePageChange,
 
     // Funções de filtros
-    setSearchTerm,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     setItemsPerPage,
 
     // Funções utilitárias

@@ -40,7 +40,6 @@ export const useFornecedores = () => {
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   // Estados específicos dos fornecedores
-  const [searching, setSearching] = useState(false);
   const [estatisticasFornecedores, setEstatisticasFornecedores] = useState({
     total_fornecedores: 0,
     fornecedores_ativos: 0,
@@ -179,21 +178,12 @@ export const useFornecedores = () => {
     loadEstatisticas();
   }, [loadEstatisticas]);
 
-  // Mostrar loading quando buscar
-  useEffect(() => {
-    if (customFilters.searchTerm) {
-      setSearching(true);
-      const timer = setTimeout(() => setSearching(false), 500);
-      return () => clearTimeout(timer);
-    } else {
-      setSearching(false);
-    }
-  }, [customFilters.searchTerm]);
 
   return {
     // Estados principais (do hook base)
     fornecedores: baseEntity.items,
     loading: baseEntity.loading,
+    
     estatisticas: estatisticasFornecedores, // Usar estatísticas específicas dos fornecedores
     
     // Estados de modal (do hook base)
@@ -240,8 +230,9 @@ export const useFornecedores = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    handleSearch: customFilters.setSearchTerm,
-    setSearchTerm: customFilters.setSearchTerm,
+    handleSearch: baseEntity.setSearchTerm,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     
     // Ações de CRUD (customizadas)

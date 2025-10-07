@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import PermissoesService from '../services/permissoes';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const usePermissoes = () => {
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
   // Estados principais
   const [usuarios, setUsuarios] = useState([]);
   const [filteredUsuarios, setFilteredUsuarios] = useState([]);
@@ -12,7 +16,6 @@ export const usePermissoes = () => {
   const [userPermissions, setUserPermissions] = useState({});
   const [editingPermissions, setEditingPermissions] = useState({});
   const [saving, setSaving] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isSelectOpen, setIsSelectOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({});
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
@@ -111,9 +114,9 @@ export const usePermissoes = () => {
 
   // Filtrar usuários (client-side)
   const filteredUsuariosData = (Array.isArray(usuarios) ? usuarios : []).filter(usuario => {
-    const matchesSearch = !searchTerm || 
-      (usuario.nome && usuario.nome.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (usuario.email && usuario.email.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesSearch = !debouncedSearch.debouncedSearchTerm || 
+      (usuario.nome && usuario.nome.toLowerCase().includes(debouncedSearch.debouncedSearchTerm.toLowerCase())) ||
+      (usuario.email && usuario.email.toLowerCase().includes(debouncedSearch.debouncedSearchTerm.toLowerCase()));
     
     return matchesSearch;
   });
@@ -193,7 +196,7 @@ export const usePermissoes = () => {
 
   // Funções de busca
   const handleSearchChange = (value) => {
-    setSearchTerm(value);
+    debouncedSearch.updateSearchTerm(value);
   };
 
   // Funções utilitárias
@@ -215,7 +218,8 @@ export const usePermissoes = () => {
     userPermissions,
     editingPermissions,
     saving,
-    searchTerm,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     isSelectOpen,
     expandedGroups,
     showPermissionsModal,
@@ -233,6 +237,8 @@ export const usePermissoes = () => {
 
     // Funções de busca
     handleSearchChange,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
 
     // Funções de estado
     setIsSelectOpen,
