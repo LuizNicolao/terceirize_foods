@@ -128,6 +128,8 @@ const ProdutosPerCapita = () => {
       <ProdutosPerCapitaActions 
         onExportXLSX={handleExportXLSX}
         onExportPDF={handleExportPDF}
+        totalItems={totalItems}
+        loading={loading}
       />
 
       {/* Tabela */}

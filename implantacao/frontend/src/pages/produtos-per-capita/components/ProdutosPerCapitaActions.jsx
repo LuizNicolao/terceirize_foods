@@ -1,17 +1,14 @@
 import React from 'react';
-import { ExportButtons } from '../../../components/shared';
+import { ConsultaActions } from '../../../components/shared';
 
-const ProdutosPerCapitaActions = ({ onExportXLSX, onExportPDF }) => {
+const ProdutosPerCapitaActions = ({ onExportXLSX, onExportPDF, totalItems = 0, loading = false }) => {
   return (
-    <div className="mb-4">
-      <ExportButtons
-        onExportXLSX={onExportXLSX}
-        onExportPDF={onExportPDF}
-        size="sm"
-        variant="outline"
-        showLabels={true}
-      />
-    </div>
+    <ConsultaActions
+      onExportXLSX={onExportXLSX}
+      onExportPDF={onExportPDF}
+      totalItems={totalItems}
+      loading={loading}
+    />
   );
 };
 

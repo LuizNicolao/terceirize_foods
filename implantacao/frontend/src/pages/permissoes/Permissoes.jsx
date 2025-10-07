@@ -5,7 +5,7 @@ import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import PermissoesService from '../../services/permissoes';
 import { PermissoesStats } from '../../components/permissoes';
-import PermissoesActions from '../../components/permissoes/PermissoesActions';
+import { ConsultaActions } from '../../components/shared';
 import PermissoesTable from '../../components/permissoes/PermissoesTable';
 import PermissoesForm from '../../components/permissoes/PermissoesForm';
 import UserSelector from '../../components/permissoes/UserSelector';
@@ -86,9 +86,11 @@ const Permissoes = () => {
       />
 
       {/* Ações */}
-      <PermissoesActions 
+      <ConsultaActions 
         onExportXLSX={handleExportXLSX}
         onExportPDF={handleExportPDF}
+        totalItems={usuarios.length}
+        loading={loading}
       />
 
       {/* Seletor de Usuário */}

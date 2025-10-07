@@ -6,7 +6,6 @@ import useRecebimentosEscolas from '../../hooks/useRecebimentosEscolas';
 import { useRecebimentosFilters } from '../../hooks/useRecebimentosFilters';
 import { 
   RecebimentosLayout,
-  RecebimentosActions,
   RecebimentosLoading,
   RecebimentosStats,
   RecebimentosFilters,
@@ -15,6 +14,7 @@ import {
   RecebimentosTabs,
   RelatoriosRecebimentos
 } from '../../components/recebimentos-escolas';
+import { ConsultaActions } from '../../components/shared';
 import { RecebimentosEscolasHeader } from './components';
 import ActionButtons from '../../components/ui/ActionButtons';
 import Modal from '../../components/ui/Modal';
@@ -175,12 +175,10 @@ const RecebimentosEscolas = () => {
         />
 
         {/* Ações de Exportação - sempre visíveis */}
-        <RecebimentosActions 
-          canCreate={false}
-          canExport={recebimentos && recebimentos.length > 0}
-          onAdd={handleCriarRecebimento}
+        <ConsultaActions 
           onExportXLSX={exportarXLSX}
           onExportPDF={exportarPDF}
+          totalItems={recebimentos.length}
           loading={loading}
         />
 
