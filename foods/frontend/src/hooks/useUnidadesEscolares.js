@@ -198,7 +198,7 @@ export const useUnidadesEscolares = () => {
     });
     
     loadDataWithFilters();
-  }, [debouncedSearchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter, loadDataWithFilters]);
+  }, [debouncedSearchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
 
   // Carregar dados quando paginação muda (igual aos fornecedores)
   useEffect(() => {
@@ -208,7 +208,7 @@ export const useUnidadesEscolares = () => {
     });
     
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, loadDataWithFilters]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 
   return {
     // Estados principais (do hook base)
