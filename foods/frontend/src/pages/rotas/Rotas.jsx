@@ -39,6 +39,7 @@ const Rotas = () => {
     unidadesDisponiveis,
     loadingUnidadesDisponiveis,
     loadUnidadesDisponiveisPorFilial,
+    loadTodasUnidadesPorFilial,
     showValidationModal,
     showDeleteConfirmModal,
     rotaToDelete,
