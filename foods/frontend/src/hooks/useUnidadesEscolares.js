@@ -177,17 +177,26 @@ export const useUnidadesEscolares = () => {
     return () => clearTimeout(timer);
   }, [customFilters.searchTerm]);
 
+  // Recarregar dados quando filtros mudarem
+  useEffect(() => {
+    baseEntity.loadData();
+  }, [debouncedSearchTerm, customFilters.filters.rotaFilter, customFilters.filters.filialFilter, customFilters.statusFilter, baseEntity.loadData]);
+
   // Override da função loadData para incluir filtros customizados
   const originalLoadData = baseEntity.loadData;
   baseEntity.loadData = useCallback(async (customParams = {}) => {
     const params = {
       ...customParams,
+      // Usar debouncedSearchTerm em vez do searchTerm do useFilters
       search: debouncedSearchTerm || undefined,
-      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
-      filial: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
+      // Status filter
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
+      // Filtros customizados
+      rota_id: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
+      filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
     };
     return originalLoadData(params);
-  }, [originalLoadData, debouncedSearchTerm, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
+  }, [originalLoadData, debouncedSearchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
 
   return {
     // Estados principais (do hook base)
