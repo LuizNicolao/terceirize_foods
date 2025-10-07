@@ -259,7 +259,7 @@ const RotaModal = ({
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
                 {unidadesFiltradas.map((unidade) => {
                   const isSelected = unidadesSelecionadas.some(u => u.id === unidade.id);
                   return (
