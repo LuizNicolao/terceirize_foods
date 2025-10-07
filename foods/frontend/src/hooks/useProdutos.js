@@ -18,7 +18,6 @@ export const useProdutos = () => {
   const customFilters = useFilters({});
 
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
   
   // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);

@@ -6,7 +6,6 @@ import { useValidation } from './common/useValidation';
 
 export const useTiposCardapio = () => {
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Hook de validação universal
   const {

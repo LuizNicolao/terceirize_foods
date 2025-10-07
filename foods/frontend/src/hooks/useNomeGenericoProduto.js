@@ -4,7 +4,6 @@ import NomeGenericoProdutoService from '../services/nomeGenericoProduto';
 
 export const useNomeGenericoProduto = () => {
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados principais
   const [nomesGenericos, setNomesGenericos] = useState([]);

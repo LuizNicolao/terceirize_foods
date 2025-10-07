@@ -17,8 +17,6 @@ export const useRotas = () => {
   // Hook de filtros customizados para rotas
   const customFilters = useFilters({ filialFilter: 'todos' });
 
-  // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados específicos das rotas
   const [filiais, setFiliais] = useState([]);

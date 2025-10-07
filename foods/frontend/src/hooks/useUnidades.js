@@ -16,7 +16,6 @@ export const useUnidades = () => {
   const customFilters = useFilters({});
 
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
   
   const [loading, setLoading] = useState(false);
   

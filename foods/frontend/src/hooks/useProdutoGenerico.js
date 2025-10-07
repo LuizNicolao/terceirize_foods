@@ -23,7 +23,6 @@ export const useProdutoGenerico = () => {
   const customFilters = useFilters({});
 
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
   
   // Estados locais
   const [loading, setLoading] = useState(false);

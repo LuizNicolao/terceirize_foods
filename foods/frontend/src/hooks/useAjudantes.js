@@ -17,9 +17,6 @@ export const useAjudantes = () => {
   // Hook de filtros customizados para ajudantes
   const customFilters = useFilters({});
 
-  // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
-
   // Estados específicos dos ajudantes
   const [filiais, setFiliais] = useState([]);
 

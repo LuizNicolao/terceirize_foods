@@ -18,7 +18,6 @@ export const useMotoristas = () => {
   const customFilters = useFilters({});
 
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados específicos dos motoristas
   const [filiais, setFiliais] = useState([]);

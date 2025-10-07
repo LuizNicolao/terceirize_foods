@@ -17,7 +17,6 @@ export const useGrupos = () => {
   const customFilters = useFilters({});
 
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados de estatísticas específicas dos grupos
   const [estatisticasGrupos, setEstatisticasGrupos] = useState({

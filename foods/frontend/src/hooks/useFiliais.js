@@ -17,7 +17,6 @@ export const useFiliais = () => {
   const customFilters = useFilters({});
 
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados de estatísticas específicas das filiais
   const [estatisticasFiliais, setEstatisticasFiliais] = useState({

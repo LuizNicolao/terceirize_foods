@@ -6,7 +6,6 @@ import toast from 'react-hot-toast';
 
 export const useFaturamento = () => {
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados principais
   const [faturamentos, setFaturamentos] = useState([]);

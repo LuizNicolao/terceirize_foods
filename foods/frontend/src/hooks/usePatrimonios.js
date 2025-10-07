@@ -8,7 +8,6 @@ export const usePatrimonios = () => {
   const { user } = useAuth();
   
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
   
   // Estados principais
   const [patrimonios, setPatrimonios] = useState([]);

@@ -6,7 +6,6 @@ import { useExport } from './common/useExport';
 
 export const useRotasNutricionistas = () => {
   // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados principais
   const [rotas, setRotas] = useState([]);
