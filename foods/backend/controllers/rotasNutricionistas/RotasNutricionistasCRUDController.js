@@ -79,8 +79,6 @@ class RotasNutricionistasCRUDController {
       const countQuery = `SELECT COUNT(*) as total FROM rotas_nutricionistas rn LEFT JOIN usuarios u ON rn.usuario_id = u.id WHERE 1=1${search ? ' AND (rn.codigo LIKE ? OR rn.observacoes LIKE ?)' : ''}${status ? ' AND rn.status = ?' : ''}${usuario_id ? ' AND rn.usuario_id = ?' : ''}${supervisor_id ? ' AND rn.supervisor_id = ?' : ''}${coordenador_id ? ' AND rn.coordenador_id = ?' : ''}${email ? ' AND u.email = ?' : ''}`;
       const countParams = [];
       
-      console.log('🔍 Query de contagem:', countQuery);
-      console.log('🔍 Parâmetros de contagem:', countParams);
       
       // Aplicar os mesmos filtros na query de contagem
       if (search) {
@@ -118,14 +116,8 @@ class RotasNutricionistasCRUDController {
       const offset = pagination.offset;
       const paginatedQuery = `${query} LIMIT ${limit} OFFSET ${offset}`;
       
-      console.log('🔍 Query principal:', paginatedQuery);
-      console.log('🔍 Parâmetros principais:', queryParams);
-      
             // Executar query principal
     const rotas = await executeQuery(paginatedQuery, queryParams);
-    
-    console.log('🔍 Rotas encontradas:', rotas.length);
-    console.log('🔍 Total de registros:', totalItems);
       
       // Calcular informações de paginação usando o middleware
       const totalPages = Math.ceil(totalItems / pagination.limit);
@@ -150,12 +142,14 @@ class RotasNutricionistasCRUDController {
       
       const response = {
         success: true,
-        data: rotas,
-        pagination: {
-          currentPage: pagination.page,
-          totalPages,
-          totalItems,
-          itemsPerPage: pagination.limit
+        data: {
+          rotas: rotas,
+          pagination: {
+            currentPage: pagination.page,
+            totalPages,
+            totalItems,
+            itemsPerPage: pagination.limit
+          }
         }
       };
       
