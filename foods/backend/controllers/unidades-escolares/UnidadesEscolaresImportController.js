@@ -462,32 +462,37 @@ class UnidadesEscolaresImportController {
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
+        // Função helper para converter undefined para null
+        const nullIfUndefined = (value, defaultValue = null) => {
+          return value !== undefined ? value : defaultValue;
+        };
+
         const insertParams = [
-          unidade.codigo_teknisa,
-          unidade.nome_escola,
-          unidade.cidade,
-          unidade.estado,
-          unidade.pais || 'Brasil',
-          unidade.endereco || '',
-          unidade.numero || null,
-          unidade.bairro || null,
-          unidade.cep || null,
-          unidade.centro_distribuicao || null,
-          unidade.rota_id || null,
-          unidade.regional || null,
-          unidade.lot || null,
-          unidade.cc_senior || null,
-          unidade.codigo_senior || null,
-          unidade.abastecimento || null,
-          unidade.ordem_entrega || 0,
-          unidade.status || 'ativo',
-          unidade.observacoes || null,
-          unidade.atendimento || null,
-          unidade.horario || null,
-          unidade.supervisao || null,
-          unidade.coordenacao || null,
-          unidade.lat || null,
-          unidade.long || null
+          nullIfUndefined(unidade.codigo_teknisa),
+          nullIfUndefined(unidade.nome_escola),
+          nullIfUndefined(unidade.cidade),
+          nullIfUndefined(unidade.estado),
+          nullIfUndefined(unidade.pais, 'Brasil'),
+          nullIfUndefined(unidade.endereco, ''),
+          nullIfUndefined(unidade.numero),
+          nullIfUndefined(unidade.bairro),
+          nullIfUndefined(unidade.cep),
+          nullIfUndefined(unidade.centro_distribuicao),
+          nullIfUndefined(unidade.rota_id),
+          nullIfUndefined(unidade.regional),
+          nullIfUndefined(unidade.lot),
+          nullIfUndefined(unidade.cc_senior),
+          nullIfUndefined(unidade.codigo_senior),
+          nullIfUndefined(unidade.abastecimento),
+          nullIfUndefined(unidade.ordem_entrega, 0),
+          nullIfUndefined(unidade.status, 'ativo'),
+          nullIfUndefined(unidade.observacoes),
+          nullIfUndefined(unidade.atendimento),
+          nullIfUndefined(unidade.horario),
+          nullIfUndefined(unidade.supervisao),
+          nullIfUndefined(unidade.coordenacao),
+          nullIfUndefined(unidade.lat),
+          nullIfUndefined(unidade.long)
         ];
 
         await executeQuery(insertQuery, insertParams);
