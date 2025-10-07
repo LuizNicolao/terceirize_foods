@@ -273,10 +273,8 @@ export const useRotas = () => {
     loadDataWithFilters();
   }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 
-  // Recarregar dados quando busca mudar
-  useEffect(() => {
-    baseEntity.loadData();
-  }, [baseEntity.searchTerm]);
+  // Removido useEffect problemático que causava busca automática letra por letra
+  // O useBaseEntity já gerencia a busca com Enter através do debouncedSearch
 
   return {
     // Estados principais (do hook base)
