@@ -46,21 +46,6 @@ const useRecebimentosEscolas = () => {
       if (response.success) {
         const todosRecebimentosData = response.data || [];
         setTodosRecebimentos(todosRecebimentosData);
-        
-        // Aplicar paginação no frontend
-        const totalItems = todosRecebimentosData.length;
-        const totalPages = Math.ceil(totalItems / pagination.itemsPerPage) || 1;
-        const currentPage = Math.min(pagination.currentPage, totalPages);
-        
-        const paginatedData = applyFrontendPagination(todosRecebimentosData, currentPage, pagination.itemsPerPage);
-        setRecebimentos(paginatedData);
-        
-        setPagination(prev => ({
-          ...prev,
-          totalItems,
-          totalPages,
-          currentPage
-        }));
       } else {
         setError(response.error || 'Erro ao carregar recebimentos');
       }
@@ -70,7 +55,7 @@ const useRecebimentosEscolas = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.currentPage, pagination.itemsPerPage, applyFrontendPagination]);
+  }, []);
 
   /**
    * Carregar escolas
@@ -106,18 +91,11 @@ const useRecebimentosEscolas = () => {
    * Atualizar paginação
    */
   const atualizarPaginacao = useCallback((novaPaginacao) => {
-    setPagination(prev => {
-      const updatedPagination = { ...prev, ...novaPaginacao };
-      
-      // Se mudou a página ou itens por página, aplicar paginação no frontend
-      if (novaPaginacao.currentPage || novaPaginacao.itemsPerPage) {
-        const paginatedData = applyFrontendPagination(todosRecebimentos, updatedPagination.currentPage, updatedPagination.itemsPerPage);
-        setRecebimentos(paginatedData);
-      }
-      
-      return updatedPagination;
-    });
-  }, [todosRecebimentos, applyFrontendPagination]);
+    setPagination(prev => ({
+      ...prev,
+      ...novaPaginacao
+    }));
+  }, []);
 
   /**
    * Criar recebimento
@@ -185,11 +163,30 @@ const useRecebimentosEscolas = () => {
   // Carregar dados iniciais
   // useEffect removido - carregarEscolas será chamado pela página com parâmetros corretos
 
-  // Aplicar paginação quando todosRecebimentos mudar
+  // Aplicar paginação quando todosRecebimentos ou paginação mudar
   useEffect(() => {
     if (todosRecebimentos.length > 0) {
-      const paginatedData = applyFrontendPagination(todosRecebimentos, pagination.currentPage, pagination.itemsPerPage);
+      const totalItems = todosRecebimentos.length;
+      const totalPages = Math.ceil(totalItems / pagination.itemsPerPage) || 1;
+      const currentPage = Math.min(pagination.currentPage, totalPages);
+      
+      const paginatedData = applyFrontendPagination(todosRecebimentos, currentPage, pagination.itemsPerPage);
       setRecebimentos(paginatedData);
+      
+      // Atualizar paginação apenas se os valores mudaram
+      setPagination(prev => {
+        if (prev.totalItems !== totalItems || prev.totalPages !== totalPages || prev.currentPage !== currentPage) {
+          return {
+            ...prev,
+            totalItems,
+            totalPages,
+            currentPage
+          };
+        }
+        return prev;
+      });
+    } else {
+      setRecebimentos([]);
     }
   }, [todosRecebimentos, pagination.currentPage, pagination.itemsPerPage, applyFrontendPagination]);
 
