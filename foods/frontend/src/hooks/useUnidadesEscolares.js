@@ -195,7 +195,6 @@ export const useUnidadesEscolares = () => {
       rota_id: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
       filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
     };
-    console.log('🔍 Parâmetros enviados para API:', params);
     return originalLoadData(params);
   }, [originalLoadData, debouncedSearchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
 
