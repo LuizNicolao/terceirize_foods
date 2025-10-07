@@ -1,16 +1,11 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import PermissoesService from '../services/permissoes';
-import { useBaseEntity } from './common/useBaseEntity';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const usePermissoes = () => {
-  // Hook base para funcionalidades CRUD (desabilitado para usar lógica customizada)
-  const baseEntity = useBaseEntity('permissoes', PermissoesService, {
-    initialItemsPerPage: 20,
-    enableStats: false,
-    enableDelete: false,
-    enableDebouncedSearch: true
-  });
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados específicos das permissões
   const [usuarios, setUsuarios] = useState([]);
@@ -223,8 +218,8 @@ export const usePermissoes = () => {
     userPermissions,
     editingPermissions,
     saving,
-    searchTerm: baseEntity.searchTerm,
-    isSearching: baseEntity.isSearching,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     isSelectOpen,
     expandedGroups,
     showPermissionsModal,
@@ -242,8 +237,8 @@ export const usePermissoes = () => {
 
     // Funções de busca
     handleSearchChange,
-    setSearchTerm: baseEntity.setSearchTerm,
-    clearSearch: baseEntity.clearSearch,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
 
     // Funções de estado
     setIsSelectOpen,
