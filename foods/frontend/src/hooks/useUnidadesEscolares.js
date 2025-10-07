@@ -164,10 +164,7 @@ export const useUnidadesEscolares = () => {
     loadDataWithFilters();
   }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
 
-  // Carregar dados quando paginação muda
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+  // Carregar dados quando paginação muda - removido pois useBaseEntity já faz isso
 
   return {
     // Estados principais (do hook base)
