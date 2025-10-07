@@ -37,10 +37,6 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados da entidade
    */
   const loadData = useCallback(async (customParams = {}) => {
-    console.log('🔄 loadData chamado');
-    console.log('📋 Parâmetros customizados:', customParams);
-    console.log('📄 Página atual antes do loadData:', pagination.currentPage);
-    
     setLoading(true);
     try {
       const params = {
@@ -49,12 +45,9 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         ...customParams
       };
 
-      console.log('📋 Parâmetros finais enviados para API:', params);
-
       const response = await service.listar(params);
 
       if (response.success) {
-        console.log('📊 Resposta da API:', response.pagination);
         setItems(response.data);
         pagination.updatePagination(response.pagination);
         
@@ -160,11 +153,6 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados quando filtros ou paginação mudam
    */
   useEffect(() => {
-    console.log('📄 useBaseEntity: useEffect paginação/filtros executado');
-    console.log('📄 Página atual:', pagination.currentPage);
-    console.log('🔢 Itens por página:', pagination.itemsPerPage);
-    console.log('🔍 Termo de busca:', filters.searchTerm);
-    console.log('📊 Status filter:', filters.statusFilter);
     loadData();
   }, [pagination.currentPage, pagination.itemsPerPage, filters.searchTerm, filters.statusFilter]);
 
@@ -172,13 +160,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados quando filtros customizados mudam
    */
   useEffect(() => {
-    console.log('🚨 useBaseEntity: useEffect filtros customizados executado');
-    console.log('🔍 Filtros customizados:', filters.filters);
-    console.log('📄 Página atual antes do reset:', pagination.currentPage);
-    console.log('🎯 Tem filtros ativos?', filters.hasActiveFilters());
-    
     if (filters.hasActiveFilters()) {
-      console.log('⚠️ RESETANDO PAGINAÇÃO PARA PÁGINA 1!');
       pagination.resetPagination();
       loadData();
     }

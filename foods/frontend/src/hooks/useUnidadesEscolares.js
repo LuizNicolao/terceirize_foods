@@ -99,16 +99,11 @@ export const useUnidadesEscolares = () => {
    * Carrega dados com filtros customizados
    */
   const loadDataWithFilters = useCallback(async () => {
-    console.log('🔄 loadDataWithFilters chamado');
-    console.log('📄 Página atual:', baseEntity.currentPage);
-    console.log('🔍 Rota filter:', customFilters.filters.rotaFilter);
-    
     const params = {
       ...baseEntity.getPaginationParams(),
       rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
     };
 
-    console.log('📋 Parâmetros enviados:', params);
     await baseEntity.loadData(params);
   }, [baseEntity, customFilters.filters.rotaFilter]);
 
