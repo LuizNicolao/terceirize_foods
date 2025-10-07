@@ -3,7 +3,6 @@ import { useValidation } from './common/useValidation';
 import { useExport } from './common/useExport';
 import NecessidadesMerendaService from '../services/necessidadesMerenda';
 import toast from 'react-hot-toast';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useNecessidadesMerenda = () => {
   // Hook de busca com debounce

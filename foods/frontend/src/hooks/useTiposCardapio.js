@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import TiposCardapioService from '../services/tiposCardapio';
 import FiliaisService from '../services/filiais';
 import { useValidation } from './common/useValidation';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useTiposCardapio = () => {
   // Hook de busca com debounce

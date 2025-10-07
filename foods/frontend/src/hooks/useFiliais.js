@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import FiliaisService from '../services/filiais';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useFiliais = () => {
   // Hook base para funcionalidades CRUD

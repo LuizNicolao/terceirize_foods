@@ -3,7 +3,6 @@ import { useValidation } from './common/useValidation';
 import { useExport } from './common/useExport';
 import FaturamentoService from '../services/faturamento';
 import toast from 'react-hot-toast';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useFaturamento = () => {
   // Hook de busca com debounce

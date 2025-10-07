@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import RotasNutricionistasService from '../services/rotasNutricionistas';
 import { useAuditoria } from './common/useAuditoria';
 import { useExport } from './common/useExport';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useRotasNutricionistas = () => {
   // Hook de busca com debounce

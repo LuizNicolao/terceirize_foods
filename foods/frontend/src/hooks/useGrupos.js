@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import GruposService from '../services/grupos';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useGrupos = () => {
   // Hook base para funcionalidades CRUD

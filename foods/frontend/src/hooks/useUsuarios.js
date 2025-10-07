@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import UsuariosService from '../services/usuarios';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useUsuarios = () => {
   // Hook base para funcionalidades CRUD

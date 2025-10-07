@@ -4,7 +4,6 @@ import ClassesService from '../services/classes';
 import SubgruposService from '../services/subgrupos';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useClasses = () => {
   // Hook base para funcionalidades CRUD

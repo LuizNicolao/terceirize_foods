@@ -2,11 +2,8 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import EfetivosService from '../services/efetivos';
 import { useValidation } from './common/useValidation';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useEfetivos = (unidadeEscolarId) => {
-  // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados principais
   const [efetivos, setEfetivos] = useState([]);

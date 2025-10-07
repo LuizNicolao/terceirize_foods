@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import NomeGenericoProdutoService from '../services/nomeGenericoProduto';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useNomeGenericoProduto = () => {
   // Hook de busca com debounce

@@ -16,8 +16,6 @@ export const useClientes = () => {
   // Hook de filtros customizados para clientes
   const customFilters = useFilters({ ufFilter: 'todos' });
 
-  // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados de estatísticas específicas dos clientes
   const [estatisticasClientes, setEstatisticasClientes] = useState({
@@ -125,9 +123,6 @@ export const useClientes = () => {
     clientes: baseEntity.items,
     loading: baseEntity.loading,
     
-    // Estados de busca
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasClientes, // Usar estatísticas específicas dos clientes
     
     // Estados de modal (do hook base)
@@ -165,8 +160,8 @@ export const useClientes = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setUfFilter: (value) => customFilters.setFilters(prev => ({ ...prev, ufFilter: value })),
     

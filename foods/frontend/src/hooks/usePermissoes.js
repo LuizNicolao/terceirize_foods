@@ -1,11 +1,8 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import PermissoesService from '../services/permissoes';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const usePermissoes = () => {
-  // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados principais
   const [usuarios, setUsuarios] = useState([]);

@@ -3,7 +3,6 @@ import PatrimoniosService from '../services/patrimonios';
 import FiliaisService from '../services/filiais';
 import { useAuth } from '../contexts/AuthContext';
 import toast from 'react-hot-toast';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const usePatrimonios = () => {
   const { user } = useAuth();

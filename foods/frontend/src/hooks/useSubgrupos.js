@@ -4,7 +4,6 @@ import SubgruposService from '../services/subgrupos';
 import GruposService from '../services/grupos';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useSubgrupos = () => {
   // Hook base para funcionalidades CRUD

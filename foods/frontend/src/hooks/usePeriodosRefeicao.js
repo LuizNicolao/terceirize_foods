@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import PeriodosRefeicaoService from '../services/periodosRefeicao';
 import FiliaisService from '../services/filiais';
 import { useValidation } from './common/useValidation';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const usePeriodosRefeicao = () => {
   // Hook de busca com debounce

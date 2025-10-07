@@ -4,7 +4,6 @@ import RotasService from '../services/rotas';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
-import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useRotas = () => {
   // Hook base para funcionalidades CRUD
