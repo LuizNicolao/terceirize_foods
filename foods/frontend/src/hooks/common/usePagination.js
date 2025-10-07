@@ -26,8 +26,13 @@ export const usePagination = (initialItemsPerPage = 20) => {
    * Muda para uma página específica
    */
   const handlePageChange = useCallback((page) => {
+    console.log('📄 PAGINAÇÃO - handlePageChange chamado:', {
+      from: currentPage,
+      to: page
+    });
+    
     setCurrentPage(page);
-  }, []);
+  }, [currentPage]);
 
   /**
    * Muda a quantidade de itens por página

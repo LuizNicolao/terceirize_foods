@@ -128,6 +128,13 @@ export const useUnidadesEscolares = () => {
       filial: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
     };
 
+    console.log('🔍 UNIDADES ESCOLARES - loadDataWithFilters chamado com params:', params);
+    console.log('🔍 UNIDADES ESCOLARES - Paginação atual:', {
+      currentPage: baseEntity.currentPage,
+      totalPages: baseEntity.totalPages,
+      itemsPerPage: baseEntity.itemsPerPage
+    });
+
     await baseEntity.loadData(params);
   }, [baseEntity, customFilters, debouncedSearchTerm]);
 
@@ -182,6 +189,12 @@ export const useUnidadesEscolares = () => {
 
   // Carregar dados quando filtros mudam (usando debounce para busca)
   useEffect(() => {
+    console.log('🔄 UNIDADES ESCOLARES - useEffect filtros disparado:', {
+      debouncedSearchTerm,
+      statusFilter: customFilters.statusFilter,
+      filters: customFilters.filters
+    });
+    
     loadDataWithFilters();
   }, [debouncedSearchTerm, customFilters.statusFilter, customFilters.filters, loadDataWithFilters]);
 

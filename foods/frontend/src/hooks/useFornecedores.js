@@ -80,6 +80,13 @@ export const useFornecedores = () => {
       status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined
     };
 
+    console.log('🔍 FORNECEDORES - loadDataWithFilters chamado com params:', params);
+    console.log('🔍 FORNECEDORES - Paginação atual:', {
+      currentPage: baseEntity.currentPage,
+      totalPages: baseEntity.totalPages,
+      itemsPerPage: baseEntity.itemsPerPage
+    });
+
     await baseEntity.loadData(params);
   }, [baseEntity, customFilters]);
 
@@ -166,11 +173,22 @@ export const useFornecedores = () => {
 
   // Carregar dados quando filtros mudam
   useEffect(() => {
+    console.log('🔄 FORNECEDORES - useEffect filtros disparado:', {
+      searchTerm: customFilters.searchTerm,
+      statusFilter: customFilters.statusFilter,
+      filters: customFilters.filters
+    });
+    
     loadDataWithFilters();
   }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
 
   // Carregar dados quando paginação muda
   useEffect(() => {
+    console.log('🔄 FORNECEDORES - useEffect paginação disparado:', {
+      currentPage: baseEntity.currentPage,
+      itemsPerPage: baseEntity.itemsPerPage
+    });
+    
     loadDataWithFilters();
   }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 

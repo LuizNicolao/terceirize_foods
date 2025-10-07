@@ -37,6 +37,13 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados da entidade
    */
   const loadData = useCallback(async (customParams = {}) => {
+    console.log('🔍 BASE ENTITY - loadData chamado:', {
+      customParams,
+      paginationParams: pagination.getPaginationParams(),
+      filterParams: filters.getFilterParams(),
+      entityName
+    });
+    
     setLoading(true);
     try {
       const params = {
@@ -44,6 +51,8 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         ...filters.getFilterParams(),
         ...customParams
       };
+
+      console.log('🔍 BASE ENTITY - Parâmetros finais para API:', params);
 
       const response = await service.listar(params);
 
@@ -153,6 +162,14 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados quando filtros ou paginação mudam
    */
   useEffect(() => {
+    console.log('🔄 BASE ENTITY - useEffect paginação/filtros disparado:', {
+      currentPage: pagination.currentPage,
+      itemsPerPage: pagination.itemsPerPage,
+      searchTerm: filters.searchTerm,
+      statusFilter: filters.statusFilter,
+      entityName
+    });
+    
     loadData();
   }, [pagination.currentPage, pagination.itemsPerPage, filters.searchTerm, filters.statusFilter]);
 
