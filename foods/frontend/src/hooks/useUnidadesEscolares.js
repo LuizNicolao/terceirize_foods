@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
@@ -52,8 +52,6 @@ export const useUnidadesEscolares = () => {
     total_cidades: 0
   });
 
-  // Ref para controlar se é mudança de filtros ou paginação
-  const isFilterChange = useRef(false);
 
   /**
    * Carrega rotas ativas
@@ -190,7 +188,8 @@ export const useUnidadesEscolares = () => {
     loadEstatisticasUnidades();
   }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
 
-  // Carregar dados quando filtros mudam (usando debounce para busca)
+
+  // Carregar dados quando filtros mudam (igual aos fornecedores)
   useEffect(() => {
     console.log('🔄 UNIDADES ESCOLARES - useEffect filtros disparado:', {
       debouncedSearchTerm,
@@ -198,55 +197,18 @@ export const useUnidadesEscolares = () => {
       filters: customFilters.filters
     });
     
-    // Marcar que é mudança de filtros
-    isFilterChange.current = true;
-    
-    // Reset paginação quando filtros mudam
-    baseEntity.resetPagination();
-    
-    // Carregar dados diretamente sem usar loadDataWithFilters para evitar loop
-    const params = {
-      page: 1, // Sempre página 1 quando filtros mudam
-      limit: baseEntity.itemsPerPage,
-      ...customFilters.getFilterParams(),
-      search: debouncedSearchTerm || undefined,
-      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
-      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
-      filial: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
-    };
+    loadDataWithFilters();
+  }, [debouncedSearchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter, loadDataWithFilters]);
 
-    console.log('🔍 UNIDADES ESCOLARES - Carregando dados com params:', params);
-    baseEntity.loadData(params);
-  }, [debouncedSearchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
-
-  // Carregar dados quando paginação muda
+  // Carregar dados quando paginação muda (igual aos fornecedores)
   useEffect(() => {
     console.log('🔄 UNIDADES ESCOLARES - useEffect paginação disparado:', {
       currentPage: baseEntity.currentPage,
-      itemsPerPage: baseEntity.itemsPerPage,
-      isFilterChange: isFilterChange.current
+      itemsPerPage: baseEntity.itemsPerPage
     });
     
-    // Se é mudança de filtros, não executar este useEffect
-    if (isFilterChange.current) {
-      console.log('🔄 UNIDADES ESCOLARES - Mudança de filtros detectada, ignorando paginação');
-      isFilterChange.current = false;
-      return;
-    }
-    
-    // Carregar dados diretamente sem usar loadDataWithFilters para evitar loop
-    const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
-      search: debouncedSearchTerm || undefined,
-      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
-      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
-      filial: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
-    };
-
-    console.log('🔍 UNIDADES ESCOLARES - Carregando dados (paginação) com params:', params);
-    baseEntity.loadData(params);
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+    loadDataWithFilters();
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, loadDataWithFilters]);
 
   return {
     // Estados principais (do hook base)
@@ -307,6 +269,9 @@ export const useUnidadesEscolares = () => {
     handleConfirmDelete: handleDeleteCustom,
     handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
     reloadData,
+    
+    // Ações de dados
+    loadUnidades: loadDataWithFilters,
     
     // Ações de validação (do hook base)
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
