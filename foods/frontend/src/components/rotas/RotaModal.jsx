@@ -23,6 +23,7 @@ const RotaModal = ({
 }) => {
   const { register, handleSubmit, reset, setValue, watch } = useForm();
   const [unidadesSelecionadas, setUnidadesSelecionadas] = React.useState([]);
+  const [buscaUnidades, setBuscaUnidades] = React.useState('');
   
   const filialId = watch('filial_id');
 
@@ -49,6 +50,8 @@ const RotaModal = ({
     } else if (!filialId) {
       setUnidadesSelecionadas([]);
     }
+    // Limpar busca quando filial mudar
+    setBuscaUnidades('');
   }, [filialId, isViewMode, rota, onFilialChange]);
 
   const handleFormSubmit = (data) => {
@@ -69,12 +72,32 @@ const RotaModal = ({
   };
 
   const handleSelecionarTodas = () => {
-    setUnidadesSelecionadas([...unidadesDisponiveis]);
+    // Selecionar todas as unidades filtradas que ainda não estão selecionadas
+    const novasSelecoes = unidadesFiltradas.filter(unidade => 
+      !unidadesSelecionadas.some(selecionada => selecionada.id === unidade.id)
+    );
+    setUnidadesSelecionadas(prev => [...prev, ...novasSelecoes]);
   };
 
   const handleDesselecionarTodas = () => {
     setUnidadesSelecionadas([]);
   };
+
+  // Filtrar unidades baseado na busca
+  const unidadesFiltradas = React.useMemo(() => {
+    if (!buscaUnidades.trim()) {
+      return unidadesDisponiveis;
+    }
+
+    const termoBusca = buscaUnidades.toLowerCase().trim();
+    return unidadesDisponiveis.filter(unidade => 
+      unidade.nome_escola?.toLowerCase().includes(termoBusca) ||
+      unidade.codigo_teknisa?.toLowerCase().includes(termoBusca) ||
+      unidade.cidade?.toLowerCase().includes(termoBusca) ||
+      unidade.estado?.toLowerCase().includes(termoBusca) ||
+      unidade.endereco?.toLowerCase().includes(termoBusca)
+    );
+  }, [unidadesDisponiveis, buscaUnidades]);
 
   if (!isOpen) return null;
 
@@ -214,7 +237,7 @@ const RotaModal = ({
                   size="sm"
                   onClick={handleSelecionarTodas}
                   className="text-xs"
-                  disabled={loadingUnidadesDisponiveis || unidadesDisponiveis.length === 0}
+                  disabled={loadingUnidadesDisponiveis || unidadesFiltradas.length === 0}
                 >
                   Selecionar Todas
                 </Button>
@@ -231,19 +254,42 @@ const RotaModal = ({
               </div>
             </div>
             
+            {/* Campo de busca */}
+            <div className="mb-3">
+              <input
+                type="text"
+                placeholder="Buscar por nome, código, cidade ou endereço..."
+                value={buscaUnidades}
+                onChange={(e) => setBuscaUnidades(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+              />
+            </div>
+            
             {loadingUnidadesDisponiveis ? (
               <div className="text-center py-4">
                 <div className="text-gray-500">Carregando unidades disponíveis...</div>
               </div>
-            ) : unidadesDisponiveis.length === 0 ? (
+            ) : unidadesFiltradas.length === 0 ? (
               <div className="text-center py-4">
                 <div className="text-gray-500">
-                  Nenhuma unidade escolar disponível para esta filial
+                  {buscaUnidades.trim() 
+                    ? `Nenhuma unidade encontrada para "${buscaUnidades}"`
+                    : 'Nenhuma unidade escolar disponível para esta filial'
+                  }
                 </div>
+                {buscaUnidades.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setBuscaUnidades('')}
+                    className="text-green-600 hover:text-green-700 text-sm mt-2"
+                  >
+                    Limpar busca
+                  </button>
+                )}
               </div>
             ) : (
               <div className="space-y-2 max-h-60 overflow-y-auto">
-                {unidadesDisponiveis.map((unidade) => {
+                {unidadesFiltradas.map((unidade) => {
                   const isSelected = unidadesSelecionadas.some(u => u.id === unidade.id);
                   return (
                     <div
