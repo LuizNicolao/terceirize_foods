@@ -154,7 +154,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    */
   useEffect(() => {
     loadData();
-  }, [pagination.currentPage, pagination.itemsPerPage, filters.searchTerm, filters.statusFilter, loadData]);
+  }, [pagination.currentPage, pagination.itemsPerPage, filters.searchTerm, filters.statusFilter]);
 
   /**
    * Carrega dados quando filtros customizados mudam
@@ -164,7 +164,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
       pagination.resetPagination();
       loadData();
     }
-  }, [filters.filters, pagination.resetPagination, loadData]);
+  }, [filters.filters]);
 
   return {
     // Estados principais
