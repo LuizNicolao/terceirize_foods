@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import toast from 'react-hot-toast';
 import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
@@ -51,6 +51,9 @@ export const useUnidadesEscolares = () => {
     total_estados: 0,
     total_cidades: 0
   });
+
+  // Ref para controlar se é mudança de filtros ou paginação
+  const isFilterChange = useRef(false);
 
   /**
    * Carrega rotas ativas
@@ -195,6 +198,9 @@ export const useUnidadesEscolares = () => {
       filters: customFilters.filters
     });
     
+    // Marcar que é mudança de filtros
+    isFilterChange.current = true;
+    
     // Reset paginação quando filtros mudam
     baseEntity.resetPagination();
     
@@ -217,8 +223,16 @@ export const useUnidadesEscolares = () => {
   useEffect(() => {
     console.log('🔄 UNIDADES ESCOLARES - useEffect paginação disparado:', {
       currentPage: baseEntity.currentPage,
-      itemsPerPage: baseEntity.itemsPerPage
+      itemsPerPage: baseEntity.itemsPerPage,
+      isFilterChange: isFilterChange.current
     });
+    
+    // Se é mudança de filtros, não executar este useEffect
+    if (isFilterChange.current) {
+      console.log('🔄 UNIDADES ESCOLARES - Mudança de filtros detectada, ignorando paginação');
+      isFilterChange.current = false;
+      return;
+    }
     
     // Carregar dados diretamente sem usar loadDataWithFilters para evitar loop
     const params = {
