@@ -130,7 +130,8 @@ class RotasCRUDController {
         codigo,
         nome,
         status,
-        tipo_rota
+        tipo_rota,
+        unidades_selecionadas = []
       } = req.body;
 
       // Verificar se a rota existe
@@ -237,6 +238,36 @@ class RotasCRUDController {
         `UPDATE rotas SET ${updateFields.join(', ')} WHERE id = ?`,
         updateParams
       );
+
+      // Atualizar unidades escolares vinculadas se fornecidas
+      if (unidades_selecionadas !== undefined) {
+        // Primeiro, remover todas as vinculações existentes desta rota
+        await executeQuery(
+          'UPDATE unidades_escolares SET rota_id = NULL WHERE rota_id = ?',
+          [id]
+        );
+
+        // Depois, vincular as novas unidades selecionadas
+        if (unidades_selecionadas && unidades_selecionadas.length > 0) {
+          for (const unidade of unidades_selecionadas) {
+            if (unidade.id) {
+              // Verificar se a unidade existe e não está vinculada a outra rota
+              const unidadeExistente = await executeQuery(
+                'SELECT id, rota_id FROM unidades_escolares WHERE id = ?',
+                [unidade.id]
+              );
+
+              if (unidadeExistente.length > 0 && (!unidadeExistente[0].rota_id || unidadeExistente[0].rota_id == id)) {
+                // Vincular a unidade à rota
+                await executeQuery(
+                  'UPDATE unidades_escolares SET rota_id = ? WHERE id = ?',
+                  [id, unidade.id]
+                );
+              }
+            }
+          }
+        }
+      }
 
       // Buscar rota atualizada
       const updatedRota = await executeQuery(

@@ -45,14 +45,23 @@ const RotaModal = ({
 
   // Carregar unidades disponíveis quando a filial mudar
   React.useEffect(() => {
-    if (filialId && !isViewMode && !rota) {
+    if (filialId && !isViewMode) {
       onFilialChange && onFilialChange(filialId);
     } else if (!filialId) {
       setUnidadesSelecionadas([]);
     }
     // Limpar busca quando filial mudar
     setBuscaUnidades('');
-  }, [filialId, isViewMode, rota, onFilialChange]);
+  }, [filialId, isViewMode, onFilialChange]);
+
+  // No modo de edição, marcar unidades já vinculadas como selecionadas
+  React.useEffect(() => {
+    if (rota && isOpen && unidadesEscolares.length > 0) {
+      setUnidadesSelecionadas(unidadesEscolares);
+    } else if (!rota && isOpen) {
+      setUnidadesSelecionadas([]);
+    }
+  }, [rota, isOpen, unidadesEscolares]);
 
   const handleFormSubmit = (data) => {
     // Incluir unidades selecionadas nos dados
@@ -185,12 +194,12 @@ const RotaModal = ({
         </div>
 
 
-        {/* Seção de Seleção de Unidades Escolares (apenas para criação) */}
-        {!rota && filialId && (
+        {/* Seção de Seleção de Unidades Escolares (para criação e edição) */}
+        {!isViewMode && filialId && (
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <div className="flex justify-between items-center mb-3 pb-2 border-b-2 border-green-500">
               <h3 className="text-sm font-semibold text-gray-700">
-                Selecionar Unidades Escolares
+                {rota ? 'Editar Unidades Escolares' : 'Selecionar Unidades Escolares'}
               </h3>
               <div className="flex gap-2">
                 <Button
