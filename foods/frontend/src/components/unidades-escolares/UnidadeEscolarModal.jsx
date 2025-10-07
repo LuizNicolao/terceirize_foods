@@ -18,6 +18,8 @@ const UnidadeEscolarModal = ({
   isViewMode = false,
   rotas = [],
   loadingRotas = false,
+  rotasNutricionistas = [],
+  loadingRotasNutricionistas = false,
   filiais = [],
   loadingFiliais = false
 }) => {
@@ -314,6 +316,22 @@ const UnidadeEscolarModal = ({
                 {rotas.map(rota => (
                   <option key={rota.id} value={rota.id}>
                     {rota.nome} ({rota.codigo})
+                  </option>
+                ))}
+              </Input>
+
+              <Input
+                label="Rota Nutricionista"
+                type="select"
+                {...register('rota_nutricionista_id')}
+                disabled={isViewMode || loadingRotasNutricionistas}
+              >
+                <option value="">
+                  {loadingRotasNutricionistas ? 'Carregando rotas nutricionistas...' : 'Selecione uma rota nutricionista'}
+                </option>
+                {rotasNutricionistas.map(rota => (
+                  <option key={rota.id} value={rota.id}>
+                    {rota.codigo} - {rota.usuario_nome}
                   </option>
                 ))}
               </Input>

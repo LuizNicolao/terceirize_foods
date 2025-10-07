@@ -21,6 +21,7 @@ class UnidadesEscolaresCRUDController {
         cep,
         centro_distribuicao,
         rota_id,
+        rota_nutricionista_id,
         regional,
         lot,
         cc_senior,
@@ -90,9 +91,9 @@ class UnidadesEscolaresCRUDController {
       const insertQuery = `
         INSERT INTO unidades_escolares (
           codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
-          centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
+          centro_distribuicao, rota_id, rota_nutricionista_id, regional, lot, cc_senior, codigo_senior, abastecimento,
           ordem_entrega, status, observacoes, atendimento, horario, supervisao, coordenacao, lat, \`long\`, filial_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const insertParams = [
@@ -107,6 +108,7 @@ class UnidadesEscolaresCRUDController {
         cep || null,
         centro_distribuicao || null,
         rota_id || null,
+        rota_nutricionista_id || null,
         regional || null,
         lot || null,
         cc_senior || null,
@@ -165,6 +167,7 @@ class UnidadesEscolaresCRUDController {
         cep,
         centro_distribuicao,
         rota_id,
+        rota_nutricionista_id,
         regional,
         lot,
         cc_senior,
@@ -208,6 +211,22 @@ class UnidadesEscolaresCRUDController {
             success: false,
             error: 'Rota não encontrada',
             message: 'A rota especificada não foi encontrada'
+          });
+        }
+      }
+
+      // Verificar se a rota nutricionista existe (se fornecida)
+      if (rota_nutricionista_id) {
+        const rotaNutricionista = await executeQuery(
+          'SELECT id FROM rotas_nutricionistas WHERE id = ?',
+          [rota_nutricionista_id]
+        );
+
+        if (rotaNutricionista.length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Rota nutricionista não encontrada',
+            message: 'A rota nutricionista especificada não foi encontrada'
           });
         }
       }
@@ -291,6 +310,10 @@ class UnidadesEscolaresCRUDController {
       if (rota_id !== undefined) {
         updateFields.push('rota_id = ?');
         updateParams.push(rota_id);
+      }
+      if (rota_nutricionista_id !== undefined) {
+        updateFields.push('rota_nutricionista_id = ?');
+        updateParams.push(rota_nutricionista_id);
       }
       if (regional !== undefined) {
         updateFields.push('regional = ?');

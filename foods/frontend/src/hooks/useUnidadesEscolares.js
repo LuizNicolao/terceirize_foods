@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
+import RotasNutricionistasService from '../services/rotasNutricionistas';
 import FiliaisService from '../services/filiais';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
@@ -20,8 +21,10 @@ export const useUnidadesEscolares = () => {
 
   // Estados específicos das unidades escolares
   const [rotas, setRotas] = useState([]);
+  const [rotasNutricionistas, setRotasNutricionistas] = useState([]);
   const [filiais, setFiliais] = useState([]);
   const [loadingRotas, setLoadingRotas] = useState(false);
+  const [loadingRotasNutricionistas, setLoadingRotasNutricionistas] = useState(false);
   const [loadingFiliais, setLoadingFiliais] = useState(false);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
@@ -51,6 +54,27 @@ export const useUnidadesEscolares = () => {
       toast.error('Erro ao carregar rotas');
     } finally {
       setLoadingRotas(false);
+    }
+  }, []);
+
+  /**
+   * Carrega rotas nutricionistas
+   */
+  const loadRotasNutricionistas = useCallback(async () => {
+    try {
+      setLoadingRotasNutricionistas(true);
+      const result = await RotasNutricionistasService.listar({ limit: 1000 });
+      if (result.success) {
+        setRotasNutricionistas(result.data || []);
+      } else {
+        toast.error(result.error);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar rotas nutricionistas:', error);
+      setRotasNutricionistas([]);
+      toast.error('Erro ao carregar rotas nutricionistas');
+    } finally {
+      setLoadingRotasNutricionistas(false);
     }
   }, []);
 
@@ -164,9 +188,10 @@ export const useUnidadesEscolares = () => {
   // Carregar dados iniciais
   useEffect(() => {
     loadRotas();
+    loadRotasNutricionistas();
     loadFiliais();
     loadEstatisticasUnidades();
-  }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
+  }, [loadRotas, loadRotasNutricionistas, loadFiliais, loadEstatisticasUnidades]);
 
   // Debounce para pesquisa (500ms)
   useEffect(() => {
@@ -231,8 +256,10 @@ export const useUnidadesEscolares = () => {
     
     // Estados específicos das unidades escolares
     rotas,
+    rotasNutricionistas,
     filiais,
     loadingRotas,
+    loadingRotasNutricionistas,
     loadingFiliais,
     
     // Ações de modal (do hook base)

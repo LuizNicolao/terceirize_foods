@@ -85,6 +85,10 @@ const unidadeEscolarValidations = {
       .optional()
       .isInt({ min: 1 }).withMessage('ID da rota deve ser um número inteiro positivo'),
     
+    body('rota_nutricionista_id')
+      .optional()
+      .isInt({ min: 1 }).withMessage('ID da rota nutricionista deve ser um número inteiro positivo'),
+    
     body('regional')
       .optional()
       .isString().trim().isLength({ max: 100 }).withMessage('Regional deve ter no máximo 100 caracteres'),
@@ -167,6 +171,10 @@ const unidadeEscolarValidations = {
     body('rota_id')
       .optional()
       .isInt({ min: 1 }).withMessage('ID da rota deve ser um número inteiro positivo'),
+    
+    body('rota_nutricionista_id')
+      .optional()
+      .isInt({ min: 1 }).withMessage('ID da rota nutricionista deve ser um número inteiro positivo'),
     
     body('regional')
       .optional()
