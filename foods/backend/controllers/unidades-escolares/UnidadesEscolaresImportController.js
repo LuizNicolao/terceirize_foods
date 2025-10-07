@@ -458,8 +458,8 @@ class UnidadesEscolaresImportController {
           INSERT INTO unidades_escolares (
             codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
             centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
-            ordem_entrega, status, observacoes, atendimento, horario, supervisao, coordenacao, lat, \`long\`
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ordem_entrega, status, observacoes, filial_id, atendimento, horario, supervisao, coordenacao, lat, \`long\`
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         // Função helper para converter undefined para null
@@ -487,6 +487,7 @@ class UnidadesEscolaresImportController {
           nullIfUndefined(unidade.ordem_entrega, 0),
           nullIfUndefined(unidade.status, 'ativo'),
           nullIfUndefined(unidade.observacoes),
+          nullIfUndefined(unidade.filial_id),
           nullIfUndefined(unidade.atendimento),
           nullIfUndefined(unidade.horario),
           nullIfUndefined(unidade.supervisao),
