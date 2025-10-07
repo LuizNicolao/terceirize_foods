@@ -161,7 +161,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    */
   useEffect(() => {
     loadData();
-  }, [pagination.currentPage, pagination.itemsPerPage, filters.searchTerm, filters.statusFilter]);
+  }, [pagination.currentPage, pagination.itemsPerPage, debouncedSearch?.debouncedSearchTerm || filters.searchTerm, filters.statusFilter]);
 
   /**
    * Carrega dados quando filtros customizados mudam
