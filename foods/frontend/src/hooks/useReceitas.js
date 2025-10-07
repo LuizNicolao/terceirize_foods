@@ -344,6 +344,7 @@ export const useReceitas = () => {
     handleItemsPerPageChange,
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
+    handleKeyPress: baseEntity.handleKeyPress,
     handleFiltroChange,
     clearFiltros,
     formatDate,

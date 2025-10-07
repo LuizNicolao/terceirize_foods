@@ -212,6 +212,7 @@ export const useClasses = () => {
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
+    handleKeyPress: baseEntity.handleKeyPress,
     setStatusFilter: customFilters.setStatusFilter,
     setSubgrupoFilter: customFilters.setSubgrupoFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade

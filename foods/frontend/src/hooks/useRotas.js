@@ -336,6 +336,7 @@ export const useRotas = () => {
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
+    handleKeyPress: baseEntity.handleKeyPress,
     setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
     
     // Ações de CRUD (customizadas)

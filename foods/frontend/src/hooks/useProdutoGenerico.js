@@ -326,6 +326,7 @@ export const useProdutoGenerico = () => {
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
+    handleKeyPress: baseEntity.handleKeyPress,
     setStatusFilter: customFilters.setStatusFilter,
     setGrupoFilter: customFilters.setGrupoFilter,
     setSubgrupoFilter: customFilters.setSubgrupoFilter,
