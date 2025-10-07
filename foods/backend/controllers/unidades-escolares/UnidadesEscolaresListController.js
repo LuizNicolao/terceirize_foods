@@ -124,6 +124,7 @@ class UnidadesEscolaresListController {
           ue.centro_distribuicao, ue.rota_id, ue.regional, ue.lot, 
           ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
           ue.status, ue.observacoes, ue.created_at, ue.updated_at, ue.filial_id,
+          ue.atendimento, ue.horario, ue.supervisao, ue.coordenacao, ue.lat, ue.\`long\`,
           r.nome as rota_nome,
           f.filial as filial_nome,
           f.codigo_filial as filial_codigo
@@ -225,6 +226,7 @@ class UnidadesEscolaresListController {
           ue.centro_distribuicao, ue.rota_id, ue.regional, ue.lot, 
           ue.cc_senior, ue.codigo_senior, ue.abastecimento, ue.ordem_entrega, 
           ue.status, ue.observacoes, ue.created_at, ue.updated_at, ue.filial_id,
+          ue.atendimento, ue.horario, ue.supervisao, ue.coordenacao, ue.lat, ue.\`long\`,
           r.nome as rota_nome,
           f.filial as filial_nome,
           f.codigo_filial as filial_codigo
