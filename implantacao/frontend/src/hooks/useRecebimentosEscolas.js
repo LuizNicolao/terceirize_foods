@@ -37,17 +37,14 @@ const useRecebimentosEscolas = () => {
    * Carregar recebimentos
    */
   const carregarRecebimentos = useCallback(async (filtros = {}) => {
-    console.log('DEBUG - carregarRecebimentos chamado com filtros:', filtros);
     setLoading(true);
     setError(null);
     
     try {
       // Carregar todos os recebimentos (sem paginação)
       const response = await recebimentosEscolasService.listarTodas(filtros);
-      console.log('DEBUG - resposta do servidor:', response);
       if (response.success) {
         const todosRecebimentosData = response.data || [];
-        console.log('DEBUG - dados recebidos:', todosRecebimentosData.length, 'recebimentos');
         setTodosRecebimentos(todosRecebimentosData);
       } else {
         setError(response.error || 'Erro ao carregar recebimentos');
