@@ -1,34 +1,26 @@
 /**
- * Hook para busca com debounce
- * Implementa busca com delay para otimizar performance e evitar muitas requisições
+ * Hook para busca com Enter
+ * Implementa busca apenas quando Enter é pressionado, ao invés de debounce automático
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 export const useDebouncedSearch = (delay = 500) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
 
-  // Debounce effect
-  useEffect(() => {
-    setIsSearching(true);
-    
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-      setIsSearching(false);
-    }, delay);
-
-    return () => {
-      clearTimeout(timer);
-      setIsSearching(false);
-    };
-  }, [searchTerm, delay]);
-
-  // Função para atualizar o termo de busca
+  // Função para atualizar o termo de busca (apenas visual)
   const updateSearchTerm = useCallback((term) => {
     setSearchTerm(term);
   }, []);
+
+  // Função para executar a busca (chamada quando Enter é pressionado)
+  const executeSearch = useCallback(() => {
+    setIsSearching(true);
+    setDebouncedSearchTerm(searchTerm);
+    setIsSearching(false);
+  }, [searchTerm]);
 
   // Função para limpar a busca
   const clearSearch = useCallback(() => {
@@ -44,13 +36,22 @@ export const useDebouncedSearch = (delay = 500) => {
     };
   }, [debouncedSearchTerm, isSearching]);
 
+  // Função para lidar com teclas pressionadas
+  const handleKeyPress = useCallback((event) => {
+    if (event.key === 'Enter') {
+      executeSearch();
+    }
+  }, [executeSearch]);
+
   return {
     searchTerm,
     debouncedSearchTerm,
     isSearching,
     updateSearchTerm,
+    executeSearch,
     clearSearch,
-    getSearchParams
+    getSearchParams,
+    handleKeyPress
   };
 };
 

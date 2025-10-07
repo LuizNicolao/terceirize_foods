@@ -218,6 +218,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     // Ações de filtros
     setSearchTerm: debouncedSearch?.updateSearchTerm || filters.setSearchTerm,
     clearSearch: debouncedSearch?.clearSearch || (() => filters.setSearchTerm('')),
+    handleKeyPress: debouncedSearch?.handleKeyPress || (() => {}),
     setStatusFilter: filters.setStatusFilter,
     updateFilter: filters.updateFilter,
     updateFilters: filters.updateFilters,

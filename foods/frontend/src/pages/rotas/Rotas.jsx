@@ -119,6 +119,7 @@ const Rotas = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         additionalFilters={[
           {
             label: 'Filial',
