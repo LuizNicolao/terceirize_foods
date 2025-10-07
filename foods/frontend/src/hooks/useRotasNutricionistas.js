@@ -64,6 +64,8 @@ export const useRotasNutricionistas = () => {
       setLoading(true);
       setError(null);
 
+      console.log('🔍 loadRotas chamado com searchTerm:', debouncedSearch.debouncedSearchTerm);
+
       const params = {
         page,
         limit: itemsPerPage,
@@ -73,6 +75,8 @@ export const useRotasNutricionistas = () => {
         supervisor_id: supervisorFilter || undefined,
         coordenador_id: coordenadorFilter || undefined
       };
+
+      console.log('📤 Parâmetros enviados para API:', params);
 
       const result = await RotasNutricionistasService.listar(params);
 
@@ -108,7 +112,7 @@ export const useRotasNutricionistas = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
+  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
 
   // Carregar usuários, supervisores e coordenadores
   const loadUsuarios = useCallback(async () => {
@@ -196,13 +200,6 @@ export const useRotasNutricionistas = () => {
     loadRotas();
     loadUsuarios();
   }, [loadRotas, loadUsuarios]);
-
-  // Efeito para reagir ao searchTerm com debounce
-  useEffect(() => {
-    if (debouncedSearch.debouncedSearchTerm !== undefined) {
-      loadRotas();
-    }
-  }, [debouncedSearch.debouncedSearchTerm, loadRotas]);
 
   // Funções de modal
   const openCreateModal = () => {
@@ -308,6 +305,7 @@ export const useRotasNutricionistas = () => {
 
   // Funções de filtro
   const handleSearch = (term) => {
+    console.log('🔎 handleSearch chamado com term:', term);
     debouncedSearch.updateSearchTerm(term);
     setCurrentPage(1);
   };
