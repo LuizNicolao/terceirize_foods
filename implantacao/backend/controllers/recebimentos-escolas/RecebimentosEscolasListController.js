@@ -358,6 +358,15 @@ const listarTodas = async (req, res) => {
         
         console.log('DEBUG - Data início:', dataInicio, 'Data fim:', dataFim);
         
+        // Verificar algumas datas no banco para debug
+        const sampleDates = await executeQuery(`
+          SELECT DISTINCT DATE(re.data_recebimento) as data_recebimento 
+          FROM recebimentos_escolas re 
+          ORDER BY re.data_recebimento DESC 
+          LIMIT 10
+        `);
+        console.log('DEBUG - Amostra de datas no banco:', sampleDates);
+        
         whereClause += ' AND re.data_recebimento >= ? AND re.data_recebimento <= ?';
         params.push(dataInicio, dataFim);
         
