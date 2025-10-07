@@ -162,12 +162,12 @@ export const useUnidadesEscolares = () => {
   // Carregar dados quando filtros mudam
   useEffect(() => {
     loadDataWithFilters();
-  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters, loadDataWithFilters]);
 
   // Carregar dados quando paginação muda
   useEffect(() => {
     loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, loadDataWithFilters]);
 
   return {
     // Estados principais (do hook base)
