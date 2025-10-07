@@ -28,6 +28,7 @@ const UnidadeEscolarModal = ({
   React.useEffect(() => {
     if (isOpen) {
       if (unidade) {
+        console.log('📊 Dados da unidade recebidos:', unidade);
         // Resetar formulário primeiro
         reset();
         
@@ -37,6 +38,7 @@ const UnidadeEscolarModal = ({
           Object.keys(unidade).forEach(key => {
             // Definir valor mesmo se for null/undefined (para limpar campos)
             const value = unidade[key] !== null && unidade[key] !== undefined ? unidade[key] : '';
+            console.log(`📝 Campo ${key}:`, unidade[key], '→', value);
             setValue(key, value, { shouldValidate: false, shouldDirty: false });
           });
           
