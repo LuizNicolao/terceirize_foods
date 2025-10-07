@@ -6,9 +6,14 @@ import { useExport } from './common/useExport';
 import { useBaseEntity } from './common/useBaseEntity';
 
 export const useRotasNutricionistas = () => {
-  // Hook de busca com debounce
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('rotas nutricionistas', RotasNutricionistasService, {
+    initialItemsPerPage: 10,
+    enableStats: true,
+    enableDelete: true
+  });
 
-  // Estados principais
+  // Estados específicos das rotas nutricionistas
   const [rotas, setRotas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -107,7 +112,7 @@ export const useRotasNutricionistas = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
+  }, [currentPage, itemsPerPage, baseEntity.searchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
 
   // Carregar usuários, supervisores e coordenadores
   const loadUsuarios = useCallback(async () => {
@@ -382,8 +387,8 @@ export const useRotasNutricionistas = () => {
     itemsPerPage,
 
     // Estados de filtro
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
+    searchTerm: baseEntity.searchTerm,
+    isSearching: baseEntity.isSearching,
     statusFilter,
     usuarioFilter,
     supervisorFilter,
@@ -436,8 +441,8 @@ export const useRotasNutricionistas = () => {
 
     // Funções de filtro
     handleSearch,
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     handleStatusFilter,
     handleUsuarioFilter,
     handleSupervisorFilter,
