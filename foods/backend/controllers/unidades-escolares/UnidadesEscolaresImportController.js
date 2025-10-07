@@ -478,7 +478,7 @@ class UnidadesEscolaresImportController {
           nullIfUndefined(unidade.bairro),
           nullIfUndefined(unidade.cep),
           nullIfUndefined(unidade.centro_distribuicao),
-          nullIfUndefined(unidade.rota_id),
+          null, // rota_id sempre NULL na importação - será relacionado depois na tela de rotas
           nullIfUndefined(unidade.regional),
           nullIfUndefined(unidade.lot),
           nullIfUndefined(unidade.cc_senior),
