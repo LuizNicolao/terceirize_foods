@@ -3,16 +3,11 @@ import toast from 'react-hot-toast';
 import RotasNutricionistasService from '../services/rotasNutricionistas';
 import { useAuditoria } from './common/useAuditoria';
 import { useExport } from './common/useExport';
-import { useBaseEntity } from './common/useBaseEntity';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 
 export const useRotasNutricionistas = () => {
-  // Hook base para funcionalidades CRUD (desabilitado para usar lógica customizada)
-  const baseEntity = useBaseEntity('rotas nutricionistas', RotasNutricionistasService, {
-    initialItemsPerPage: 10,
-    enableStats: false,
-    enableDelete: false,
-    enableDebouncedSearch: true
-  });
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados específicos das rotas nutricionistas
   const [rotas, setRotas] = useState([]);
@@ -72,7 +67,7 @@ export const useRotasNutricionistas = () => {
       const params = {
         page,
         limit: itemsPerPage,
-        search: baseEntity.searchTerm || undefined,
+        search: debouncedSearch.debouncedSearchTerm || undefined,
         status: statusFilter || undefined,
         usuario_id: usuarioFilter || undefined,
         supervisor_id: supervisorFilter || undefined,
@@ -113,7 +108,7 @@ export const useRotasNutricionistas = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, baseEntity.searchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
+  }, [currentPage, itemsPerPage, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
 
   // Carregar usuários, supervisores e coordenadores
   const loadUsuarios = useCallback(async () => {
@@ -201,6 +196,13 @@ export const useRotasNutricionistas = () => {
     loadRotas();
     loadUsuarios();
   }, [loadRotas, loadUsuarios]);
+
+  // Efeito para reagir ao searchTerm com debounce
+  useEffect(() => {
+    if (debouncedSearch.debouncedSearchTerm !== undefined) {
+      loadRotas();
+    }
+  }, [debouncedSearch.debouncedSearchTerm, loadRotas]);
 
   // Funções de modal
   const openCreateModal = () => {
@@ -306,7 +308,7 @@ export const useRotasNutricionistas = () => {
 
   // Funções de filtro
   const handleSearch = (term) => {
-    baseEntity.setSearchTerm(term);
+    debouncedSearch.updateSearchTerm(term);
     setCurrentPage(1);
   };
 
@@ -331,7 +333,7 @@ export const useRotasNutricionistas = () => {
   };
 
   const clearFilters = () => {
-    baseEntity.clearSearch();
+    debouncedSearch.clearSearch();
     setStatusFilter('');
     setUsuarioFilter('');
     setSupervisorFilter('');
@@ -343,7 +345,7 @@ export const useRotasNutricionistas = () => {
   const handleExportXLSX = async () => {
     try {
       const params = {
-        search: baseEntity.searchTerm || undefined,
+        search: debouncedSearch.debouncedSearchTerm || undefined,
         status: statusFilter || undefined,
         usuario_id: usuarioFilter || undefined,
         supervisor_id: supervisorFilter || undefined,
@@ -360,7 +362,7 @@ export const useRotasNutricionistas = () => {
   const handleExportPDF = async () => {
     try {
       const params = {
-        search: baseEntity.searchTerm || undefined,
+        search: debouncedSearch.debouncedSearchTerm || undefined,
         status: statusFilter || undefined,
         usuario_id: usuarioFilter || undefined,
         supervisor_id: supervisorFilter || undefined,
@@ -388,8 +390,8 @@ export const useRotasNutricionistas = () => {
     itemsPerPage,
 
     // Estados de filtro
-    searchTerm: baseEntity.searchTerm,
-    isSearching: baseEntity.isSearching,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     statusFilter,
     usuarioFilter,
     supervisorFilter,
@@ -442,8 +444,8 @@ export const useRotasNutricionistas = () => {
 
     // Funções de filtro
     handleSearch,
-    setSearchTerm: baseEntity.setSearchTerm,
-    clearSearch: baseEntity.clearSearch,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     handleStatusFilter,
     handleUsuarioFilter,
     handleSupervisorFilter,
