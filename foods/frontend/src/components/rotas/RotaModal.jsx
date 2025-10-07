@@ -259,13 +259,13 @@ const RotaModal = ({
                 )}
               </div>
             ) : (
-              <div className="space-y-2 max-h-60 overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-80 overflow-y-auto">
                 {unidadesFiltradas.map((unidade) => {
                   const isSelected = unidadesSelecionadas.some(u => u.id === unidade.id);
                   return (
                     <div
                       key={unidade.id}
-                      className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${
+                      className={`flex items-start p-3 rounded-lg border cursor-pointer transition-colors ${
                         isSelected
                           ? 'bg-green-50 border-green-200'
                           : 'bg-white border-gray-200 hover:bg-gray-50'
@@ -276,20 +276,16 @@ const RotaModal = ({
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleSelecionarUnidade(unidade, !isSelected)}
-                        className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                        className="mr-3 mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                       />
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-900 text-sm truncate" title={unidade.nome_escola}>
                           {unidade.nome_escola}
                         </div>
-                        <div className="text-sm text-gray-500">
+                        <div className="text-xs text-gray-500 truncate">
                           {unidade.codigo_teknisa} • {unidade.cidade}, {unidade.estado}
+                          {unidade.endereco && ` • ${unidade.endereco}`}
                         </div>
-                        {unidade.endereco && (
-                          <div className="text-xs text-gray-400">
-                            {unidade.endereco}{unidade.numero ? `, ${unidade.numero}` : ''}
-                          </div>
-                        )}
                       </div>
                     </div>
                   );
