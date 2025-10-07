@@ -67,12 +67,17 @@ const menuGroups = [
     ]
   },
   {
-    title: 'Cadastros',
+    title: 'Cadastros Básicos',
     items: [
       { path: '/foods/usuarios', icon: FaUsers, label: 'Usuários', screen: 'usuarios' },
       { path: '/foods/fornecedores', icon: FaTruck, label: 'Fornecedores', screen: 'fornecedores' },
       { path: '/foods/clientes', icon: FaBuilding, label: 'Clientes', screen: 'clientes' },
       { path: '/foods/filiais', icon: FaStore, label: 'Filiais', screen: 'filiais' },
+    ]
+  },
+  {
+    title: 'Produtos & Categorias',
+    items: [
       { path: '/foods/produtos', icon: FaBox, label: 'Produtos', screen: 'produtos' },
       { path: '/foods/grupos', icon: FaLayerGroup, label: 'Grupos', screen: 'grupos' },
       { path: '/foods/subgrupos', icon: FaSitemap, label: 'Subgrupos', screen: 'subgrupos' },
@@ -82,6 +87,11 @@ const menuGroups = [
       { path: '/foods/intolerancias', icon: FaAllergies, label: 'Intolerâncias', screen: 'intolerancias' },
       { path: '/foods/unidades', icon: FaRulerCombined, label: 'Unidades', screen: 'unidades' },
       { path: '/foods/marcas', icon: FaTag, label: 'Marcas', screen: 'marcas' },
+    ]
+  },
+  {
+    title: 'Gestão & Operações',
+    items: [
       { path: '/foods/patrimonios', icon: FaBuilding, label: 'Patrimônios', screen: 'patrimonios' },
       { path: '/foods/rotas-nutricionistas', icon: FaBuilding, label: 'Rotas Nutricionistas', screen: 'rotas_nutricionistas' },
       { path: '/foods/tipos-cardapio', icon: FaClipboardList, label: 'Tipos de Cardápio', screen: 'tipos_cardapio' },
@@ -111,7 +121,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
     'Suprimentos': true,
     'Logística': true,
     'Frotas': true,
-    'Cadastros': true,
+    'Cadastros Básicos': true,
+    'Produtos & Categorias': true,
+    'Gestão & Operações': true,
     'Configurações': true
   });
 
@@ -298,7 +310,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
         )}
         
         {/* Navegação */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-0">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-0 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400">
           {getFilteredGroups().map((group, groupIndex) => (
             <div key={groupIndex} className="my-2">
               <div 
