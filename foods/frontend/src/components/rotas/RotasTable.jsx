@@ -37,8 +37,6 @@ const RotasTable = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distância</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Custo</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -62,8 +60,6 @@ const RotasTable = ({
                     {formatTipoRota(rota.tipo_rota)}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.distancia_km} km</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(rota.custo_diario)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                     rota.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -117,11 +113,6 @@ const RotasTable = ({
               </div>
               
               <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Distância:</span>
-                <span className="text-gray-900">{rota.distancia_km} km</span>
-              </div>
-              
-              <div className="flex justify-between text-sm">
                 <span className="text-gray-500">Tipo:</span>
                 <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                   rota.tipo_rota === 'semanal' ? 'bg-blue-100 text-blue-800' :
@@ -132,11 +123,6 @@ const RotasTable = ({
                 }`}>
                   {formatTipoRota(rota.tipo_rota)}
                 </span>
-              </div>
-              
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Custo:</span>
-                <span className="text-gray-900">{formatCurrency(rota.custo_diario)}</span>
               </div>
               
               <div className="flex justify-between text-sm">

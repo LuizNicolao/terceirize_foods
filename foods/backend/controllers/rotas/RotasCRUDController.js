@@ -13,11 +13,8 @@ class RotasCRUDController {
         filial_id,
         codigo,
         nome,
-        distancia_km = 0.00,
         status = 'ativo',
         tipo_rota = 'semanal',
-        custo_diario = 0.00,
-        observacoes,
         unidades_selecionadas = []
       } = req.body;
 
@@ -69,20 +66,16 @@ class RotasCRUDController {
       // Inserir rota
       const insertQuery = `
         INSERT INTO rotas (
-          filial_id, codigo, nome, distancia_km, status, 
-          tipo_rota, custo_diario, observacoes
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          filial_id, codigo, nome, status, tipo_rota
+        ) VALUES (?, ?, ?, ?, ?)
       `;
 
       const result = await executeQuery(insertQuery, [
         filial_id,
         codigo.trim(),
         nome.trim(),
-        distancia_km,
         status,
-        tipo_rota,
-        custo_diario,
-        observacoes ? observacoes.trim() : null
+        tipo_rota
       ]);
 
       // Vincular unidades escolares selecionadas à rota
@@ -136,11 +129,8 @@ class RotasCRUDController {
         filial_id,
         codigo,
         nome,
-        distancia_km,
         status,
-        tipo_rota,
-        custo_diario,
-        observacoes
+        tipo_rota
       } = req.body;
 
       // Verificar se a rota existe
@@ -222,10 +212,6 @@ class RotasCRUDController {
         updateFields.push('nome = ?');
         updateParams.push(nome.trim());
       }
-      if (distancia_km !== undefined) {
-        updateFields.push('distancia_km = ?');
-        updateParams.push(distancia_km);
-      }
       if (status !== undefined) {
         updateFields.push('status = ?');
         updateParams.push(status);
@@ -233,14 +219,6 @@ class RotasCRUDController {
       if (tipo_rota !== undefined) {
         updateFields.push('tipo_rota = ?');
         updateParams.push(tipo_rota);
-      }
-      if (custo_diario !== undefined) {
-        updateFields.push('custo_diario = ?');
-        updateParams.push(custo_diario);
-      }
-      if (observacoes !== undefined) {
-        updateFields.push('observacoes = ?');
-        updateParams.push(observacoes ? observacoes.trim() : null);
       }
 
       // Sempre atualizar o timestamp

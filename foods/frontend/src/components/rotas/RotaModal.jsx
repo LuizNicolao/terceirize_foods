@@ -158,16 +158,6 @@ const RotaModal = ({
             </h3>
             <div className="space-y-3">
               <Input
-                label="Distância (km) *"
-                type="number"
-                step="0.01"
-                min="0.1"
-                placeholder="0.00"
-                {...register('distancia_km', { valueAsNumber: true })}
-                disabled={isViewMode}
-              />
-
-              <Input
                 label="Tipo de Rota *"
                 type="select"
                 {...register('tipo_rota')}
@@ -179,16 +169,6 @@ const RotaModal = ({
                 <option value="mensal">Mensal</option>
                 <option value="transferencia">Transferência</option>
               </Input>
-
-              <Input
-                label="Custo Diário (R$) *"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="0.00"
-                {...register('custo_diario', { valueAsNumber: true })}
-                disabled={isViewMode}
-              />
 
               <Input
                 label="Status"
@@ -204,24 +184,6 @@ const RotaModal = ({
           </div>
         </div>
 
-        {/* Segunda Linha - 1 Card */}
-        <div className="grid grid-cols-1 gap-4">
-          {/* Card 3: Observações */}
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
-              Observações
-            </h3>
-            <div className="space-y-3">
-              <Input
-                label="Observações"
-                type="textarea"
-                placeholder="Observações sobre a rota"
-                {...register('observacoes')}
-                disabled={isViewMode}
-              />
-            </div>
-          </div>
-        </div>
 
         {/* Seção de Seleção de Unidades Escolares (apenas para criação) */}
         {!rota && filialId && (
