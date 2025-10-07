@@ -31,16 +31,19 @@ const UnidadeEscolarModal = ({
         // Resetar formulário primeiro
         reset();
         
-        // Preencher formulário com dados da unidade escolar
-        Object.keys(unidade).forEach(key => {
-          // Definir valor mesmo se for null/undefined (para limpar campos)
-          const value = unidade[key] !== null && unidade[key] !== undefined ? unidade[key] : '';
-          setValue(key, value);
-        });
-        
-        // Garantir que campos padrão sejam definidos se não existirem
-        if (!unidade.status) setValue('status', 'ativo');
-        if (!unidade.pais) setValue('pais', 'Brasil');
+        // Aguardar um tick para garantir que o reset foi aplicado
+        setTimeout(() => {
+          // Preencher formulário com dados da unidade escolar
+          Object.keys(unidade).forEach(key => {
+            // Definir valor mesmo se for null/undefined (para limpar campos)
+            const value = unidade[key] !== null && unidade[key] !== undefined ? unidade[key] : '';
+            setValue(key, value, { shouldValidate: false, shouldDirty: false });
+          });
+          
+          // Garantir que campos padrão sejam definidos se não existirem
+          if (!unidade.status) setValue('status', 'ativo', { shouldValidate: false, shouldDirty: false });
+          if (!unidade.pais) setValue('pais', 'Brasil', { shouldValidate: false, shouldDirty: false });
+        }, 0);
       } else {
         // Resetar formulário para nova unidade escolar
         reset();
