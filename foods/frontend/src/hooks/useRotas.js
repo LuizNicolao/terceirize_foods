@@ -272,7 +272,7 @@ export const useRotas = () => {
     itemsPerPage: baseEntity.itemsPerPage,
     
     // Estados de filtros
-    searchTerm: customFilters.searchTerm,
+    searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.statusFilter,
     filialFilter: customFilters.filters.filialFilter,
     

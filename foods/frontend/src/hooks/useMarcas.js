@@ -123,7 +123,7 @@ export const useMarcas = () => {
     totalPages: baseEntity.totalPages,
     totalItems: baseEntity.totalItems,
     itemsPerPage: baseEntity.itemsPerPage,
-    searchTerm: customFilters.searchTerm,
+    searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.statusFilter,
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,

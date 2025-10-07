@@ -212,7 +212,7 @@ export const useUnidadesEscolares = () => {
     itemsPerPage: baseEntity.itemsPerPage,
     
     // Estados de filtros
-    searchTerm: customFilters.searchTerm,
+    searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.statusFilter,
     rotaFilter: customFilters.filters.rotaFilter,
     filialFilter: customFilters.filters.filialFilter,

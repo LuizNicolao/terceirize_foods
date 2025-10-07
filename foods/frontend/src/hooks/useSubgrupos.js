@@ -185,7 +185,7 @@ export const useSubgrupos = () => {
     itemsPerPage: baseEntity.itemsPerPage,
     
     // Estados de filtros
-    searchTerm: customFilters.searchTerm,
+    searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.statusFilter,
     grupoFilter: customFilters.grupoFilter,
     

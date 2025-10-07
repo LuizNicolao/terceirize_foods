@@ -141,7 +141,7 @@ export const useClientes = () => {
     itemsPerPage: baseEntity.itemsPerPage,
     
     // Estados de filtros
-    searchTerm: customFilters.searchTerm,
+    searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.statusFilter,
     ufFilter: customFilters.filters.ufFilter,
     

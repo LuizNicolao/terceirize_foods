@@ -170,7 +170,7 @@ export const useMotoristas = () => {
     itemsPerPage: baseEntity.itemsPerPage,
     
     // Estados de filtros
-    searchTerm: customFilters.searchTerm,
+    searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.statusFilter,
     
     // Estados de validação (do hook base)

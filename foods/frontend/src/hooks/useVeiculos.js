@@ -163,7 +163,7 @@ export const useVeiculos = () => {
     itemsPerPage: baseEntity.itemsPerPage,
     
     // Estados de filtros
-    searchTerm: customFilters.searchTerm,
+    searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.statusFilter,
     tipoFilter: customFilters.filters.tipoFilter,
     

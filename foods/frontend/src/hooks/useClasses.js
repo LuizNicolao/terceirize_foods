@@ -187,7 +187,7 @@ export const useClasses = () => {
     itemsPerPage: baseEntity.itemsPerPage,
     
     // Estados de filtros
-    searchTerm: customFilters.searchTerm,
+    searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.statusFilter,
     subgrupoFilter: customFilters.subgrupoFilter,
     

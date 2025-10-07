@@ -295,7 +295,7 @@ export const useProdutoGenerico = () => {
     itemsPerPage: baseEntity.itemsPerPage,
     
     // Estados de filtros
-    searchTerm: customFilters.searchTerm,
+    searchTerm: baseEntity.searchTerm,
     statusFilter: customFilters.statusFilter,
     grupoFilter: customFilters.grupoFilter,
     subgrupoFilter: customFilters.subgrupoFilter,
