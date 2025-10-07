@@ -177,10 +177,10 @@ export const useUnidadesEscolares = () => {
     return () => clearTimeout(timer);
   }, [customFilters.searchTerm]);
 
-  // Recarregar dados quando filtros mudarem
+  // Recarregar dados quando filtros mudarem (sem incluir loadData nas dependências para evitar loop)
   useEffect(() => {
     baseEntity.loadData();
-  }, [debouncedSearchTerm, customFilters.filters.rotaFilter, customFilters.filters.filialFilter, customFilters.statusFilter, baseEntity.loadData]);
+  }, [debouncedSearchTerm, customFilters.filters.rotaFilter, customFilters.filters.filialFilter, customFilters.statusFilter]);
 
   // Override da função loadData para incluir filtros customizados
   const originalLoadData = baseEntity.loadData;
