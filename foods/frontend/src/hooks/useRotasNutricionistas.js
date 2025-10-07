@@ -306,7 +306,7 @@ export const useRotasNutricionistas = () => {
 
   // Funções de filtro
   const handleSearch = (term) => {
-    debouncedSearch.updateSearchTerm(term);
+    baseEntity.setSearchTerm(term);
     setCurrentPage(1);
   };
 
@@ -331,7 +331,7 @@ export const useRotasNutricionistas = () => {
   };
 
   const clearFilters = () => {
-    debouncedSearch.clearSearch();
+    baseEntity.clearSearch();
     setStatusFilter('');
     setUsuarioFilter('');
     setSupervisorFilter('');
