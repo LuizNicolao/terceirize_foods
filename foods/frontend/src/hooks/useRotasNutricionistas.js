@@ -6,11 +6,12 @@ import { useExport } from './common/useExport';
 import { useBaseEntity } from './common/useBaseEntity';
 
 export const useRotasNutricionistas = () => {
-  // Hook base para funcionalidades CRUD
+  // Hook base para funcionalidades CRUD (desabilitado para usar lógica customizada)
   const baseEntity = useBaseEntity('rotas nutricionistas', RotasNutricionistasService, {
     initialItemsPerPage: 10,
-    enableStats: true,
-    enableDelete: true
+    enableStats: false,
+    enableDelete: false,
+    enableDebouncedSearch: true
   });
 
   // Estados específicos das rotas nutricionistas
@@ -71,7 +72,7 @@ export const useRotasNutricionistas = () => {
       const params = {
         page,
         limit: itemsPerPage,
-        search: debouncedSearch.debouncedSearchTerm || undefined,
+        search: baseEntity.searchTerm || undefined,
         status: statusFilter || undefined,
         usuario_id: usuarioFilter || undefined,
         supervisor_id: supervisorFilter || undefined,
@@ -342,7 +343,7 @@ export const useRotasNutricionistas = () => {
   const handleExportXLSX = async () => {
     try {
       const params = {
-        search: debouncedSearch.debouncedSearchTerm || undefined,
+        search: baseEntity.searchTerm || undefined,
         status: statusFilter || undefined,
         usuario_id: usuarioFilter || undefined,
         supervisor_id: supervisorFilter || undefined,
@@ -359,7 +360,7 @@ export const useRotasNutricionistas = () => {
   const handleExportPDF = async () => {
     try {
       const params = {
-        search: debouncedSearch.debouncedSearchTerm || undefined,
+        search: baseEntity.searchTerm || undefined,
         status: statusFilter || undefined,
         usuario_id: usuarioFilter || undefined,
         supervisor_id: supervisorFilter || undefined,
