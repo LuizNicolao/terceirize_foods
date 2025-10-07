@@ -18,8 +18,6 @@ const UnidadeEscolarModal = ({
   isViewMode = false,
   rotas = [],
   loadingRotas = false,
-  rotasNutricionistas = [],
-  loadingRotasNutricionistas = false,
   filiais = [],
   loadingFiliais = false
 }) => {
@@ -321,22 +319,6 @@ const UnidadeEscolarModal = ({
               </Input>
 
               <Input
-                label="Rota Nutricionista"
-                type="select"
-                {...register('rota_nutricionista_id')}
-                disabled={isViewMode || loadingRotasNutricionistas}
-              >
-                <option value="">
-                  {loadingRotasNutricionistas ? 'Carregando rotas nutricionistas...' : 'Selecione uma rota nutricionista'}
-                </option>
-                {rotasNutricionistas.map(rota => (
-                  <option key={rota.id} value={rota.id}>
-                    {rota.codigo} - {rota.usuario_nome}
-                  </option>
-                ))}
-              </Input>
-
-              <Input
                 label="Centro de Distribuição"
                 type="text"
                 placeholder="Centro de distribuição"
@@ -357,6 +339,59 @@ const UnidadeEscolarModal = ({
             </div>
           </div>
         </div>
+
+        {/* Seção de Informações de Responsáveis (apenas para visualização) */}
+        {isViewMode && unidade && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Card: Informações da Rota */}
+            {unidade.rota_nome && (
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h3 className="text-sm font-semibold text-blue-700 mb-3 pb-2 border-b-2 border-blue-500">
+                  Informações da Rota
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Nome da Rota:</span>
+                    <span className="text-sm font-medium text-gray-900">{unidade.rota_nome}</span>
+                  </div>
+                  {unidade.rota_codigo && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Código:</span>
+                      <span className="text-sm font-medium text-gray-900">{unidade.rota_codigo}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Card: Informações da Nutricionista */}
+            {unidade.nutricionista_nome && (
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h3 className="text-sm font-semibold text-green-700 mb-3 pb-2 border-b-2 border-green-500">
+                  Informações da Nutricionista
+                </h3>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-600">Nome:</span>
+                    <span className="text-sm font-medium text-gray-900">{unidade.nutricionista_nome}</span>
+                  </div>
+                  {unidade.rota_nutricionista_codigo && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Código da Rota:</span>
+                      <span className="text-sm font-medium text-gray-900">{unidade.rota_nutricionista_codigo}</span>
+                    </div>
+                  )}
+                  {unidade.nutricionista_email && (
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-600">Email:</span>
+                      <span className="text-sm font-medium text-gray-900">{unidade.nutricionista_email}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Terceira Linha - 2 Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

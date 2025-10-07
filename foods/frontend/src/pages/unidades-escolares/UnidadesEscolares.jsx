@@ -21,11 +21,9 @@ const UnidadesEscolares = () => {
   const {
     unidades,
     rotas,
-    rotasNutricionistas,
     filiais,
     loading,
     loadingRotas,
-    loadingRotasNutricionistas,
     loadingFiliais,
     showModal,
     viewMode,
@@ -202,10 +200,8 @@ const UnidadesEscolares = () => {
         unidade={editingUnidade}
         isViewMode={viewMode}
         rotas={rotas}
-        rotasNutricionistas={rotasNutricionistas}
         filiais={filiais}
         loadingRotas={loadingRotas}
-        loadingRotasNutricionistas={loadingRotasNutricionistas}
         loadingFiliais={loadingFiliais}
       />
 

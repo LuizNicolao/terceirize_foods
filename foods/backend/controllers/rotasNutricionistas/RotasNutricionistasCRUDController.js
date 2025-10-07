@@ -253,6 +253,29 @@ class RotasNutricionistasCRUDController {
 
       const novaRotaId = result.insertId;
 
+      // Vincular unidades escolares à rota nutricionista
+      if (escolas_responsaveis && escolas_responsaveis.trim()) {
+        const escolasIds = escolas_responsaveis.split(',').map(id => id.trim()).filter(id => id);
+        
+        for (const escolaId of escolasIds) {
+          if (escolaId) {
+            // Verificar se a unidade escolar existe
+            const unidadeExistente = await executeQuery(
+              'SELECT id, rota_nutricionista_id FROM unidades_escolares WHERE id = ?',
+              [escolaId]
+            );
+
+            if (unidadeExistente.length > 0) {
+              // Vincular a unidade à rota nutricionista
+              await executeQuery(
+                'UPDATE unidades_escolares SET rota_nutricionista_id = ? WHERE id = ?',
+                [novaRotaId, escolaId]
+              );
+            }
+          }
+        }
+      }
+
       // Buscar a rota criada
       const rotas = await executeQuery(
         'SELECT * FROM rotas_nutricionistas WHERE id = ?',
@@ -377,6 +400,38 @@ class RotasNutricionistasCRUDController {
 
       const updateQuery = `UPDATE rotas_nutricionistas SET ${updateFields.join(', ')} WHERE id = ?`;
       await executeQuery(updateQuery, updateValues);
+
+      // Atualizar vínculos das unidades escolares se escolas_responsaveis foi alterado
+      if (escolas_responsaveis !== undefined) {
+        // Primeiro, remover vínculos antigos desta rota nutricionista
+        await executeQuery(
+          'UPDATE unidades_escolares SET rota_nutricionista_id = NULL WHERE rota_nutricionista_id = ?',
+          [id]
+        );
+
+        // Depois, adicionar novos vínculos
+        if (escolas_responsaveis && escolas_responsaveis.trim()) {
+          const escolasIds = escolas_responsaveis.split(',').map(id => id.trim()).filter(id => id);
+          
+          for (const escolaId of escolasIds) {
+            if (escolaId) {
+              // Verificar se a unidade escolar existe
+              const unidadeExistente = await executeQuery(
+                'SELECT id FROM unidades_escolares WHERE id = ?',
+                [escolaId]
+              );
+
+              if (unidadeExistente.length > 0) {
+                // Vincular a unidade à rota nutricionista
+                await executeQuery(
+                  'UPDATE unidades_escolares SET rota_nutricionista_id = ? WHERE id = ?',
+                  [id, escolaId]
+                );
+              }
+            }
+          }
+        }
+      }
 
       // Buscar a rota atualizada
       const rotas = await executeQuery(
