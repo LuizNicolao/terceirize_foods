@@ -107,7 +107,7 @@ export const useRotasNutricionistas = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, baseEntity.searchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
+  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
 
   // Carregar usuários, supervisores e coordenadores
   const loadUsuarios = useCallback(async () => {
@@ -382,8 +382,8 @@ export const useRotasNutricionistas = () => {
     itemsPerPage,
 
     // Estados de filtro
-    searchTerm: baseEntity.searchTerm,
-    isSearching: baseEntity.isSearching,
+    searchTerm: debouncedSearch.searchTerm,
+    isSearching: debouncedSearch.isSearching,
     statusFilter,
     usuarioFilter,
     supervisorFilter,
@@ -436,8 +436,8 @@ export const useRotasNutricionistas = () => {
 
     // Funções de filtro
     handleSearch,
-    setSearchTerm: baseEntity.setSearchTerm,
-    clearSearch: baseEntity.clearSearch,
+    setSearchTerm: debouncedSearch.updateSearchTerm,
+    clearSearch: debouncedSearch.clearSearch,
     handleStatusFilter,
     handleUsuarioFilter,
     handleSupervisorFilter,
