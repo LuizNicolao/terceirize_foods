@@ -169,8 +169,6 @@ export const useClasses = () => {
     loading: baseEntity.loading,
     
     // Estados de busca
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasClasses, // Usar estatísticas específicas das classes
     
     // Estados de modal (do hook base)
@@ -212,8 +210,8 @@ export const useClasses = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setSubgrupoFilter: customFilters.setSubgrupoFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade

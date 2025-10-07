@@ -156,8 +156,6 @@ export const useAjudantes = () => {
     loading: baseEntity.loading,
     
     // Estados de busca
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasAjudantes, // Usar estatísticas específicas dos ajudantes
     
     // Estados de modal (do hook base)
@@ -197,8 +195,8 @@ export const useAjudantes = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     

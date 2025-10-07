@@ -124,8 +124,6 @@ export const useGrupos = () => {
     loading: baseEntity.loading,
     
     // Estados de busca
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasGrupos, // Usar estatísticas específicas dos grupos
     
     // Estados de modal (do hook base)
@@ -162,8 +160,8 @@ export const useGrupos = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,

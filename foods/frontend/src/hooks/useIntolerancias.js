@@ -112,8 +112,6 @@ export const useIntolerancias = () => {
     loading,
     
     // Estados de busca
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasIntolerancias,
     showModal: baseEntity.showModal,
     viewMode: baseEntity.viewMode,
@@ -135,8 +133,8 @@ export const useIntolerancias = () => {
     handleCloseModal: baseEntity.handleCloseModal,
     handlePageChange: baseEntity.handlePageChange,
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange,
     handleClearFilters,

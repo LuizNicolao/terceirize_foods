@@ -276,8 +276,6 @@ export const useProdutoGenerico = () => {
     loading,
     
     // Estados de busca
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasProdutoGenerico,
     
     // Estados de modal (compatibilidade com modal existente)
@@ -326,8 +324,8 @@ export const useProdutoGenerico = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setGrupoFilter: customFilters.setGrupoFilter,
     setSubgrupoFilter: customFilters.setSubgrupoFilter,

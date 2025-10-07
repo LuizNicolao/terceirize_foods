@@ -254,8 +254,6 @@ export const useRotas = () => {
     loading: baseEntity.loading,
     
     // Estados de busca
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasRotas, // Usar estatísticas específicas das rotas
     
     // Estados de modal (do hook base)
@@ -307,8 +305,8 @@ export const useRotas = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
     

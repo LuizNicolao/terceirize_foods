@@ -173,9 +173,6 @@ export const useProdutos = () => {
     produtos: baseEntity.items,
     loading: baseEntity.loading,
     
-    // Estados de busca
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
     estatisticas: estatisticasProdutos, // Usar estatísticas específicas dos produtos
     
     // Estados de modal (do hook base)
@@ -221,8 +218,8 @@ export const useProdutos = () => {
     handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
     
     // Ações de filtros
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,
