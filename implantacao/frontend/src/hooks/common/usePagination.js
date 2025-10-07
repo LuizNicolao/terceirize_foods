@@ -49,8 +49,8 @@ export const usePagination = (initialItemsPerPage = 20) => {
    */
   const getPaginationParams = useCallback(() => {
     return {
-      page: currentPage,
-      limit: itemsPerPage
+      page: itemsPerPage >= 999999 ? 1 : currentPage,
+      limit: itemsPerPage >= 999999 ? 10000 : itemsPerPage
     };
   }, [currentPage, itemsPerPage]);
 

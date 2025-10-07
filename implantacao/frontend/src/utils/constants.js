@@ -63,8 +63,8 @@ export const PERIODOS_LABELS = {
 // Opções de paginação
 export const PAGINATION_OPTIONS = {
   DEFAULT_PAGE_SIZE: 20,
-  PAGE_SIZES: [10, 20, 50, 100],
-  MAX_PAGE_SIZE: 1000
+  PAGE_SIZES: [10, 20, 50, 100, 999999], // 999999 = Todos
+  MAX_PAGE_SIZE: 10000
 };
 
 // Configurações de validação
