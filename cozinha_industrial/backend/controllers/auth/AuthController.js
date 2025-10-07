@@ -67,10 +67,9 @@ class AuthController {
         loginAttempts[email].count++;
         loginAttempts[email].lastAttempt = now;
         if (loginAttempts[email].count >= MAX_ATTEMPTS) {
-          // Bloquear usuário no banco
-          await executeQuery('UPDATE usuarios SET status = ? WHERE id = ?', ['bloqueado', usuario.id]);
+          // Bloquear apenas temporariamente em memória (não no banco)
           loginAttempts[email].blockedUntil = now + BLOCK_TIME_MINUTES * 60 * 1000;
-          return res.status(403).json({ error: 'Usuário bloqueado por tentativas inválidas. Procure o administrador.' });
+          return res.status(403).json({ error: 'Usuário temporariamente bloqueado por tentativas inválidas. Tente novamente em alguns minutos.' });
         }
         return res.status(401).json({ error: 'Email ou senha incorretos' });
       }
