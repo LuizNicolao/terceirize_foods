@@ -246,7 +246,7 @@ export const useRotas = () => {
   // Recarregar dados quando busca mudar
   useEffect(() => {
     baseEntity.loadData();
-  }, [debouncedSearch.debouncedSearchTerm]);
+  }, [baseEntity.searchTerm]);
 
   return {
     // Estados principais (do hook base)

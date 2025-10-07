@@ -210,7 +210,7 @@ export const useFornecedores = () => {
     showValidationModal: baseEntity.showValidationModal,
     
     // Estados específicos dos fornecedores
-    searching,
+    searching: baseEntity.isSearching,
     
     // Estados de auditoria (do hook auditoria)
     showAuditModal,

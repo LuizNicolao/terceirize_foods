@@ -2,12 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import PatrimoniosService from '../services/patrimonios';
 import FiliaisService from '../services/filiais';
 import { useAuth } from '../contexts/AuthContext';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 import toast from 'react-hot-toast';
 
 export const usePatrimonios = () => {
   const { user } = useAuth();
   
   // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
   
   // Estados principais
   const [patrimonios, setPatrimonios] = useState([]);

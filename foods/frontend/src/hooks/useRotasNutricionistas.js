@@ -107,7 +107,7 @@ export const useRotasNutricionistas = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
+  }, [currentPage, itemsPerPage, baseEntity.searchTerm, statusFilter, usuarioFilter, supervisorFilter, coordenadorFilter]);
 
   // Carregar usuários, supervisores e coordenadores
   const loadUsuarios = useCallback(async () => {

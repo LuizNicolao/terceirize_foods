@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useValidation } from './common/useValidation';
 import { useExport } from './common/useExport';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 import FaturamentoService from '../services/faturamento';
 import toast from 'react-hot-toast';
 
 export const useFaturamento = () => {
   // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados principais
   const [faturamentos, setFaturamentos] = useState([]);
