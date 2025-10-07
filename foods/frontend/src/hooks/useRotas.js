@@ -181,8 +181,7 @@ export const useRotas = () => {
       ...baseEntity.getPaginationParams(),
       ...customFilters.getFilterParams(),
       search: customFilters.searchTerm || undefined,
-      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
-      filial: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
+      filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
     };
 
     await baseEntity.loadData(params);
@@ -267,7 +266,7 @@ export const useRotas = () => {
   // Carregar dados quando filtros mudam
   useEffect(() => {
     loadDataWithFilters();
-  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.filters]);
+  }, [customFilters.searchTerm, customFilters.filters]);
 
   // Carregar dados quando paginação muda
   useEffect(() => {
@@ -304,7 +303,6 @@ export const useRotas = () => {
     
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
-    statusFilter: customFilters.statusFilter,
     filialFilter: customFilters.filters.filialFilter,
     
     // Estados de validação (do hook base)
@@ -338,7 +336,6 @@ export const useRotas = () => {
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
-    setStatusFilter: customFilters.setStatusFilter,
     setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
     
     // Ações de CRUD (customizadas)

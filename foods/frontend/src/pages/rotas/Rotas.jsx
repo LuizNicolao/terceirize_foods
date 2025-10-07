@@ -24,7 +24,6 @@ const Rotas = () => {
     viewMode,
     editingRota,
     searchTerm,
-    statusFilter,
     filialFilter,
     currentPage,
     totalPages,
@@ -54,7 +53,6 @@ const Rotas = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
-    setStatusFilter,
     setFilialFilter,
     toggleUnidades,
     getFilialName,
@@ -121,8 +119,20 @@ const Rotas = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
+        additionalFilters={[
+          {
+            label: 'Filial',
+            value: filialFilter,
+            onChange: setFilialFilter,
+            options: [
+              { value: 'todos', label: loadingFiliais ? 'Carregando...' : 'Todas as filiais' },
+              ...filiais.map(filial => ({
+                value: filial.id.toString(),
+                label: `${filial.filial} (${filial.codigo_filial})`
+              }))
+            ]
+          }
+        ]}
         placeholder="Buscar por nome ou código..."
       />
 
