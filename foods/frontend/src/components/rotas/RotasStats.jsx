@@ -1,20 +1,8 @@
 import React from 'react';
-import { FaRoute, FaMapMarkedAlt, FaTruck, FaMoneyBillWave } from 'react-icons/fa';
+import { FaRoute, FaMapMarkedAlt, FaBuilding, FaChartBar } from 'react-icons/fa';
 import { StatCard } from '../ui';
 
-const RotasStats = ({ estatisticas, formatCurrency }) => {
-  // Garantir que formatCurrency seja uma função
-  const safeFormatCurrency = (value) => {
-    if (typeof formatCurrency === 'function') {
-      return formatCurrency(value);
-    }
-    // Fallback se formatCurrency não for uma função
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value || 0);
-  };
-
+const RotasStats = ({ estatisticas }) => {
   // Garantir que estatisticas seja um objeto válido
   const safeEstatisticas = estatisticas || {};
 
@@ -33,15 +21,15 @@ const RotasStats = ({ estatisticas, formatCurrency }) => {
         color="green"
       />
       <StatCard
-        title="Distância Total"
-        value={`${(safeEstatisticas.distancia_total || 0).toFixed(1)} km`}
-        icon={FaTruck}
+        title="Rotas por Filial"
+        value={safeEstatisticas.total_filiais || 0}
+        icon={FaBuilding}
         color="purple"
       />
       <StatCard
-        title="Custo Total Diário"
-        value={safeFormatCurrency(safeEstatisticas.custo_total_diario || 0)}
-        icon={FaMoneyBillWave}
+        title="Tipos de Rota"
+        value={`${safeEstatisticas.rotas_semanais || 0}S / ${safeEstatisticas.rotas_mensais || 0}M`}
+        icon={FaChartBar}
         color="orange"
       />
     </div>

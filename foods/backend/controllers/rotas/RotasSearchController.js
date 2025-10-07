@@ -11,8 +11,7 @@ class RotasSearchController {
     try {
       const query = `
         SELECT 
-          r.id, r.codigo, r.nome, r.distancia_km, r.tipo_rota, 
-          r.custo_diario, r.filial_id,
+          r.id, r.codigo, r.nome, r.tipo_rota, r.status, r.filial_id,
           f.filial as filial_nome
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
@@ -68,8 +67,7 @@ class RotasSearchController {
 
       const query = `
         SELECT 
-          r.id, r.codigo, r.nome, r.distancia_km, r.tipo_rota, 
-          r.custo_diario, r.filial_id,
+          r.id, r.codigo, r.nome, r.tipo_rota, r.status, r.filial_id,
           f.filial as filial_nome
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
@@ -125,8 +123,7 @@ class RotasSearchController {
 
       const query = `
         SELECT 
-          r.id, r.codigo, r.nome, r.distancia_km, r.tipo_rota, 
-          r.custo_diario, r.filial_id,
+          r.id, r.codigo, r.nome, r.tipo_rota, r.status, r.filial_id,
           f.filial as filial_nome
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id

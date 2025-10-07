@@ -18,8 +18,7 @@ class RotasStatsController {
           COUNT(CASE WHEN tipo_rota = 'quinzenal' THEN 1 END) as rotas_quinzenais,
           COUNT(CASE WHEN tipo_rota = 'mensal' THEN 1 END) as rotas_mensais,
           COUNT(CASE WHEN tipo_rota = 'transferencia' THEN 1 END) as rotas_transferencia,
-          SUM(distancia_km) as distancia_total,
-          SUM(custo_diario) as custo_total_diario
+          COUNT(DISTINCT filial_id) as total_filiais
         FROM rotas
       `;
 

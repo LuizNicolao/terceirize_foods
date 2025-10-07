@@ -115,7 +115,7 @@ const Rotas = () => {
       </div>
 
       {/* Estatísticas */}
-      <RotasStats estatisticas={estatisticas} formatCurrency={formatCurrency} />
+      <RotasStats estatisticas={estatisticas} />
 
       {/* Filtros */}
       <CadastroFilterBar
