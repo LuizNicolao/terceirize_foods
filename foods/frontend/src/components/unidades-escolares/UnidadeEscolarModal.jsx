@@ -349,11 +349,6 @@ const UnidadeEscolarModal = ({
                         <div className="text-sm font-medium text-gray-900">
                           {unidade.nutricionista_nome}
                         </div>
-                        {unidade.rota_nutricionista_codigo && (
-                          <div className="text-xs text-gray-500">
-                            Rota: {unidade.rota_nutricionista_codigo}
-                          </div>
-                        )}
                       </div>
                       {unidade.nutricionista_email && (
                         <div className="text-xs text-gray-500">
