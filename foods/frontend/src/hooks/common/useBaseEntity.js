@@ -230,6 +230,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     // Ações de paginação
     handlePageChange: pagination.handlePageChange,
     handleItemsPerPageChange: pagination.handleItemsPerPageChange,
+    resetPagination: pagination.resetPagination,
     
     // Ações de filtros
     setSearchTerm: filters.setSearchTerm,

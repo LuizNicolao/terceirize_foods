@@ -196,7 +196,7 @@ export const useUnidadesEscolares = () => {
     });
     
     // Reset paginação quando filtros mudam
-    baseEntity.pagination.resetPagination();
+    baseEntity.resetPagination();
     
     // Carregar dados diretamente sem usar loadDataWithFilters para evitar loop
     const params = {
