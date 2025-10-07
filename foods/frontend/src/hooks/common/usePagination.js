@@ -20,7 +20,8 @@ export const usePagination = (initialItemsPerPage = 20) => {
     console.log('📄 Página atual antes da atualização:', currentPage);
     
     if (paginationData) {
-      const newPage = paginationData.currentPage || 1;
+      // A API retorna 'page' não 'currentPage'
+      const newPage = paginationData.page || paginationData.currentPage || 1;
       console.log('📄 Nova página a ser definida:', newPage);
       
       setTotalPages(paginationData.totalPages || 1);
