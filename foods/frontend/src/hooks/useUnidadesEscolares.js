@@ -100,22 +100,15 @@ export const useUnidadesEscolares = () => {
    */
   const loadDataWithFilters = useCallback(async () => {
     const params = {
-      page: baseEntity.currentPage,
-      limit: baseEntity.itemsPerPage,
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
       search: customFilters.searchTerm || undefined,
       status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
       rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
     };
 
     await baseEntity.loadData(params);
-  }, [
-    baseEntity.currentPage, 
-    baseEntity.itemsPerPage, 
-    baseEntity.loadData,
-    customFilters.searchTerm, 
-    customFilters.statusFilter, 
-    customFilters.filters.rotaFilter
-  ]);
+  }, [baseEntity, customFilters]);
 
   /**
    * Submissão customizada que recarrega estatísticas
