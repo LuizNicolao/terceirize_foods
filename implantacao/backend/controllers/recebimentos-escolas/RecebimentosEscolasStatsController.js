@@ -29,7 +29,8 @@ const obterEstatisticas = async (req, res) => {
         const response = await axios.get(`${foodsApiUrl}/rotas-nutricionistas?email=${encodeURIComponent(userEmail)}&status=ativo`, {
           headers: {
             'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
-          }
+          },
+          timeout: 5000 // Timeout de 5 segundos
         });
 
         if (response.data && response.data.success) {

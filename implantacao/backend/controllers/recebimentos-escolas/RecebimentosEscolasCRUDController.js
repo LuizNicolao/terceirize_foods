@@ -64,7 +64,8 @@ const criar = async (req, res) => {
       const response = await axios.get(`${foodsApiUrl}/unidades-escolares/${escola_id}`, {
         headers: {
           'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
-        }
+        },
+        timeout: 5000 // Timeout de 5 segundos
       });
       
       if (response.data && response.data.success) {
