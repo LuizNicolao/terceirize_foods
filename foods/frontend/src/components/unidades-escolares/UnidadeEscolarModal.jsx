@@ -338,6 +338,18 @@ const UnidadeEscolarModal = ({
               </Input>
 
               {/* Campo da Nutricionista (apenas para visualização) */}
+              {/* Debug: Log dos dados da unidade */}
+              {console.log('DEBUG - Dados da unidade:', {
+                isViewMode,
+                unidade: unidade ? {
+                  id: unidade.id,
+                  nome_escola: unidade.nome_escola,
+                  nutricionista_nome: unidade.nutricionista_nome,
+                  rota_nutricionista_id: unidade.rota_nutricionista_id,
+                  rota_nutricionista_codigo: unidade.rota_nutricionista_codigo,
+                  nutricionista_email: unidade.nutricionista_email
+                } : null
+              })}
               {isViewMode && unidade && unidade.nutricionista_nome && (
                 <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">
@@ -360,6 +372,24 @@ const UnidadeEscolarModal = ({
                           {unidade.nutricionista_email}
                         </div>
                       )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Debug: Mostrar informações da nutricionista sempre */}
+              {isViewMode && unidade && (
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Debug - Dados Nutricionista
+                  </label>
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="text-xs text-gray-600">
+                      <div>ID da unidade: {unidade.id}</div>
+                      <div>rota_nutricionista_id: {unidade.rota_nutricionista_id || 'NULL'}</div>
+                      <div>nutricionista_nome: {unidade.nutricionista_nome || 'NULL'}</div>
+                      <div>rota_nutricionista_codigo: {unidade.rota_nutricionista_codigo || 'NULL'}</div>
+                      <div>nutricionista_email: {unidade.nutricionista_email || 'NULL'}</div>
                     </div>
                   </div>
                 </div>
