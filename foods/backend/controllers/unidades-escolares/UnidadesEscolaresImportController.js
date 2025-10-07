@@ -487,7 +487,7 @@ class UnidadesEscolaresImportController {
           nullIfUndefined(unidade.ordem_entrega, 0),
           nullIfUndefined(unidade.status, 'ativo'),
           nullIfUndefined(unidade.observacoes),
-          nullIfUndefined(unidade.filial_id),
+          null, // filial_id sempre NULL na importação - será relacionado depois na tela de filiais
           nullIfUndefined(unidade.atendimento),
           nullIfUndefined(unidade.horario),
           nullIfUndefined(unidade.supervisao),
