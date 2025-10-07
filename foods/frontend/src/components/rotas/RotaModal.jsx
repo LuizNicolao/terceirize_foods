@@ -45,13 +45,6 @@ const RotaModal = ({
 
   // Carregar unidades disponíveis quando a filial mudar
   React.useEffect(() => {
-    console.log('DEBUG - useEffect filial mudou:', {
-      filialId,
-      isViewMode,
-      rota: rota?.id,
-      unidadesDisponiveis: unidadesDisponiveis?.length
-    });
-    
     if (filialId && !isViewMode) {
       onFilialChange && onFilialChange(filialId);
     } else if (!filialId) {
@@ -63,15 +56,7 @@ const RotaModal = ({
 
   // No modo de edição, marcar unidades já vinculadas como selecionadas
   React.useEffect(() => {
-    console.log('DEBUG - useEffect pré-seleção:', {
-      rota: rota?.id,
-      isOpen,
-      unidadesEscolares: unidadesEscolares?.length,
-      unidadesDisponiveis: unidadesDisponiveis?.length
-    });
-    
     if (rota && isOpen && unidadesEscolares.length > 0) {
-      console.log('DEBUG - Pré-selecionando unidades:', unidadesEscolares);
       setUnidadesSelecionadas(unidadesEscolares);
     } else if (!rota && isOpen) {
       setUnidadesSelecionadas([]);
