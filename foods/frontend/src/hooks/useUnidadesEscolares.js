@@ -16,13 +16,14 @@ export const useUnidadesEscolares = () => {
   });
 
   // Hook de filtros customizados para unidades escolares
-  const customFilters = useFilters({ rotaFilter: 'todos' });
+  const customFilters = useFilters({ rotaFilter: 'todos', filialFilter: 'todos' });
 
   // Estados específicos das unidades escolares
   const [rotas, setRotas] = useState([]);
   const [filiais, setFiliais] = useState([]);
   const [loadingRotas, setLoadingRotas] = useState(false);
   const [loadingFiliais, setLoadingFiliais] = useState(false);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
   // Estados de estatísticas específicas das unidades escolares
   const [estatisticasUnidades, setEstatisticasUnidades] = useState({
@@ -167,15 +168,26 @@ export const useUnidadesEscolares = () => {
     loadEstatisticasUnidades();
   }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
 
-  // Override da função loadData para incluir filtro de rota
+  // Debounce para pesquisa (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(customFilters.searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [customFilters.searchTerm]);
+
+  // Override da função loadData para incluir filtros customizados
   const originalLoadData = baseEntity.loadData;
   baseEntity.loadData = useCallback(async (customParams = {}) => {
     const params = {
       ...customParams,
-      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
+      search: debouncedSearchTerm || undefined,
+      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
+      filial: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
     };
     return originalLoadData(params);
-  }, [originalLoadData, customFilters.filters.rotaFilter]);
+  }, [originalLoadData, debouncedSearchTerm, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
 
   return {
     // Estados principais (do hook base)
@@ -202,6 +214,7 @@ export const useUnidadesEscolares = () => {
     searchTerm: customFilters.searchTerm,
     statusFilter: customFilters.statusFilter,
     rotaFilter: customFilters.filters.rotaFilter,
+    filialFilter: customFilters.filters.filialFilter,
     
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
@@ -227,6 +240,7 @@ export const useUnidadesEscolares = () => {
     setSearchTerm: customFilters.setSearchTerm,
     setStatusFilter: customFilters.setStatusFilter,
     setRotaFilter: (value) => customFilters.updateFilter('rotaFilter', value),
+    setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
     
     // Ações de CRUD (customizadas)
     onSubmit: onSubmitCustom,
