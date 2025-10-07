@@ -510,15 +510,13 @@ class UnidadesEscolaresImportController {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Unidades Escolares');
       
-      // Definir cabeçalhos seguindo a ordem especificada (removendo 'Unidade' que não existe no banco)
+      // Definir cabeçalhos seguindo a ordem exata especificada pelo usuário
       const headers = [
-        'Código Teknisa',
+        'Codigo Teknisa',
         'Cidade',
-        'ESTADO',
-        'PAÍS',
         'Nome da Escola',
         'Endereço',
-        'Número',
+        'Numero',
         'Bairro',
         'CEP',
         'Supervisão',
@@ -528,14 +526,14 @@ class UnidadesEscolaresImportController {
         'Regional',
         'LOTE',
         'C.C. Senior',
-        'Código Senior',
+        'Codigo Senior',
         'Abastecimento',
         'LAT',
         'LONG',
         'STATUS',
         'Ordem de Entrega',
         'Atendimento',
-        'Horário'
+        'Horario'
       ];
       
       // Adicionar cabeçalhos
@@ -547,10 +545,10 @@ class UnidadesEscolaresImportController {
         fgColor: { argb: 'FFE0E0E0' }
       };
       
-      // Adicionar algumas linhas de exemplo seguindo a ordem dos cabeçalhos (sem campo 'Unidade')
+      // Adicionar algumas linhas de exemplo seguindo a ordem exata dos cabeçalhos
       const exemplos = [
-        ['001', 'São Paulo', 'SP', 'BRASIL', 'Escola Exemplo 1', 'Rua das Flores', '123', 'Centro', '01234-567', 'João Silva', 'Maria Santos', 'CD São Paulo', '1', 'São Paulo', 'LOTE 01', '001', '001001', 'SEMANAL', '-23.5505', '-46.6333', 'ativo', '1', 'Integral', '07:00 às 17:00'],
-        ['002', 'Rio de Janeiro', 'RJ', 'BRASIL', 'Escola Exemplo 2', 'Av. Copacabana', '456', 'Copacabana', '22070-001', 'Pedro Costa', 'Ana Lima', 'CD Rio de Janeiro', '2', 'Rio de Janeiro', 'LOTE 02', '002', '002002', 'MENSAL', '-22.9068', '-43.1729', 'ativo', '2', 'Manhã', '07:00 às 12:00']
+        ['001', 'São Paulo', 'Escola Exemplo 1', 'Rua das Flores', '123', 'Centro', '01234-567', 'João Silva', 'Maria Santos', 'CD São Paulo', '1', 'São Paulo', 'LOTE 01', '001', '001001', 'SEMANAL', '-23.5505', '-46.6333', 'ativo', '1', 'Integral', '07:00 às 17:00'],
+        ['002', 'Rio de Janeiro', 'Escola Exemplo 2', 'Av. Copacabana', '456', 'Copacabana', '22070-001', 'Pedro Costa', 'Ana Lima', 'CD Rio de Janeiro', '2', 'Rio de Janeiro', 'LOTE 02', '002', '002002', 'MENSAL', '-22.9068', '-43.1729', 'ativo', '2', 'Manhã', '07:00 às 12:00']
       ];
       
       exemplos.forEach(exemplo => {
