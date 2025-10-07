@@ -200,7 +200,8 @@ export const useUnidadesEscolares = () => {
     
     // Carregar dados diretamente sem usar loadDataWithFilters para evitar loop
     const params = {
-      ...baseEntity.getPaginationParams(),
+      page: 1, // Sempre página 1 quando filtros mudam
+      limit: baseEntity.itemsPerPage,
       ...customFilters.getFilterParams(),
       search: debouncedSearchTerm || undefined,
       status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
