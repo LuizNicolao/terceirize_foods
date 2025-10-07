@@ -37,6 +37,10 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados da entidade
    */
   const loadData = useCallback(async (customParams = {}) => {
+    console.log('🔄 loadData chamado');
+    console.log('📋 Parâmetros customizados:', customParams);
+    console.log('📄 Página atual antes do loadData:', pagination.currentPage);
+    
     setLoading(true);
     try {
       const params = {
@@ -45,9 +49,12 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         ...customParams
       };
 
+      console.log('📋 Parâmetros finais enviados para API:', params);
+
       const response = await service.listar(params);
 
       if (response.success) {
+        console.log('📊 Resposta da API:', response.pagination);
         setItems(response.data);
         pagination.updatePagination(response.pagination);
         

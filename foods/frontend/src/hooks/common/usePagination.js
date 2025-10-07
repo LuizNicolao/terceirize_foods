@@ -15,12 +15,21 @@ export const usePagination = (initialItemsPerPage = 20) => {
    * Atualiza informações de paginação
    */
   const updatePagination = useCallback((paginationData) => {
+    console.log('📊 updatePagination chamado');
+    console.log('📋 Dados recebidos:', paginationData);
+    console.log('📄 Página atual antes da atualização:', currentPage);
+    
     if (paginationData) {
+      const newPage = paginationData.currentPage || 1;
+      console.log('📄 Nova página a ser definida:', newPage);
+      
       setTotalPages(paginationData.totalPages || 1);
       setTotalItems(paginationData.totalItems || 0);
-      setCurrentPage(paginationData.currentPage || 1);
+      setCurrentPage(newPage);
+      
+      console.log('✅ Paginação atualizada');
     }
-  }, []);
+  }, [currentPage]);
 
   /**
    * Muda para uma página específica
