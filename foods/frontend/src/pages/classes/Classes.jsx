@@ -56,6 +56,7 @@ const Classes = () => {
 
     // Funções de filtros
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     setSubgrupoFilter,
     handleClearFilters,

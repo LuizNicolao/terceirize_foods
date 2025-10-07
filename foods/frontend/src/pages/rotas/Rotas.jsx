@@ -53,6 +53,7 @@ const Rotas = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
+    handleKeyPress,
     setFilialFilter,
     toggleUnidades,
     getFilialName,

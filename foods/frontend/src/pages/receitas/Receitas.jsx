@@ -56,6 +56,7 @@ const Receitas = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
+    handleKeyPress,
     handleFiltroChange,
     clearFiltros,
     formatDate,

@@ -61,6 +61,7 @@ const ProdutoGenerico = () => {
     handlePageChange,
     handleClearFilters,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     setGrupoFilter,
     setSubgrupoFilter,
