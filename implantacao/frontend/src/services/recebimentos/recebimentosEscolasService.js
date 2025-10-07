@@ -36,6 +36,7 @@ const recebimentosEscolasService = {
 
   // Listar todos os recebimentos (sem paginação)
   listarTodas: async (filtros = {}) => {
+    console.log('DEBUG - listarTodas chamado com filtros:', filtros);
     const params = new URLSearchParams();
     
     // Mapear filtros do frontend para parâmetros do backend
@@ -63,7 +64,10 @@ const recebimentosEscolasService = {
       }
     });
 
-    const response = await api.get(`/recebimentos-escolas/todas?${params.toString()}`);
+    const url = `/recebimentos-escolas/todas?${params.toString()}`;
+    console.log('DEBUG - URL da requisição:', url);
+    const response = await api.get(url);
+    console.log('DEBUG - resposta da API:', response.data);
     return response.data;
   },
 
