@@ -28,12 +28,19 @@ const UnidadeEscolarModal = ({
   React.useEffect(() => {
     if (isOpen) {
       if (unidade) {
+        // Resetar formulário primeiro
+        reset();
+        
         // Preencher formulário com dados da unidade escolar
         Object.keys(unidade).forEach(key => {
-          if (unidade[key] !== null && unidade[key] !== undefined) {
-            setValue(key, unidade[key]);
-          }
+          // Definir valor mesmo se for null/undefined (para limpar campos)
+          const value = unidade[key] !== null && unidade[key] !== undefined ? unidade[key] : '';
+          setValue(key, value);
         });
+        
+        // Garantir que campos padrão sejam definidos se não existirem
+        if (!unidade.status) setValue('status', 'ativo');
+        if (!unidade.pais) setValue('pais', 'Brasil');
       } else {
         // Resetar formulário para nova unidade escolar
         reset();
@@ -254,39 +261,23 @@ const UnidadeEscolarModal = ({
 
         {/* Segunda Linha - 2 Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Card 3: Contato */}
+          {/* Card 3: Informações Adicionais */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
-              Contato
+              Informações Adicionais
             </h3>
             <div className="space-y-3">
-              <MaskedFormInput
-                label="Telefone"
-                maskType="telefone"
-                register={register}
-                fieldName="telefone"
-                disabled={isViewMode}
-              />
-
               <Input
-                label="Email"
-                type="email"
-                placeholder="email@escola.com"
-                {...register('email')}
-                disabled={isViewMode}
-              />
-
-              <Input
-                label="Diretor"
-                type="text"
-                placeholder="Nome do diretor"
-                {...register('diretor')}
+                label="Observações"
+                type="textarea"
+                placeholder="Observações sobre a unidade escolar"
+                {...register('observacoes')}
                 disabled={isViewMode}
               />
             </div>
           </div>
 
-          {/* Card 4: Configurações */}
+          {/* Card 3: Configurações */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
               Configurações
@@ -348,7 +339,7 @@ const UnidadeEscolarModal = ({
 
         {/* Terceira Linha - 2 Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Card 5: Informações Operacionais */}
+          {/* Card 4: Informações Operacionais */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
               Informações Operacionais
@@ -404,7 +395,7 @@ const UnidadeEscolarModal = ({
             </div>
           </div>
 
-          {/* Card 6: Coordenação e Supervisão */}
+          {/* Card 5: Coordenação e Supervisão */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
               Coordenação e Supervisão
@@ -449,7 +440,7 @@ const UnidadeEscolarModal = ({
 
         {/* Quarta Linha - 1 Card */}
         <div className="grid grid-cols-1 gap-4">
-          {/* Card 7: Horários e Atendimento */}
+          {/* Card 6: Horários e Atendimento */}
           <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
             <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
               Horários e Atendimento
@@ -473,24 +464,6 @@ const UnidadeEscolarModal = ({
           </div>
         </div>
 
-        {/* Quinta Linha - 1 Card */}
-        <div className="grid grid-cols-1 gap-4">
-          {/* Card 8: Observações */}
-          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3 pb-2 border-b-2 border-green-500">
-              Observações
-            </h3>
-            <div className="space-y-3">
-              <Input
-                label="Observações"
-                type="textarea"
-                placeholder="Observações sobre a unidade escolar"
-                {...register('observacoes')}
-                disabled={isViewMode}
-              />
-            </div>
-          </div>
-        </div>
 
         {/* Botões de Ação */}
         {!isViewMode && (
