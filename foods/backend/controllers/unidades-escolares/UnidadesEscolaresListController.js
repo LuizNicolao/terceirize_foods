@@ -65,6 +65,7 @@ class UnidadesEscolaresListController {
 
       // Filtro de busca
       if (search) {
+        console.log('🔍 Busca recebida:', search);
         whereConditions.push('(ue.nome_escola LIKE ? OR ue.cidade LIKE ? OR ue.estado LIKE ? OR ue.codigo_teknisa LIKE ? OR ue.centro_distribuicao LIKE ?)');
         const searchParam = `%${search}%`;
         params.push(searchParam, searchParam, searchParam, searchParam, searchParam);
