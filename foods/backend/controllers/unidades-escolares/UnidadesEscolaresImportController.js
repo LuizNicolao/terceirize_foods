@@ -42,7 +42,7 @@ class UnidadesEscolaresImportController {
       const columnMapping = UnidadesEscolaresImportController.mapColumns(headers);
       
       // Validar se as colunas obrigatórias estão presentes
-      const requiredColumns = ['nome_escola', 'cidade', 'estado'];
+      const requiredColumns = ['nome_escola', 'cidade'];
       const missingColumns = requiredColumns.filter(col => !columnMapping[col]);
       
       if (missingColumns.length > 0) {
@@ -269,9 +269,7 @@ class UnidadesEscolaresImportController {
 
     if (columnMapping.estado !== undefined) {
       unidade.estado = UnidadesEscolaresImportController.getCellValue(row, columnMapping.estado);
-      if (!unidade.estado) {
-        throw new Error(`Estado é obrigatório na linha ${rowIndex}`);
-      }
+      // Estado é opcional agora
     }
 
     // Campos opcionais
