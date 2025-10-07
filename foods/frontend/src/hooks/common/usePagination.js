@@ -26,8 +26,11 @@ export const usePagination = (initialItemsPerPage = 20) => {
    * Muda para uma página específica
    */
   const handlePageChange = useCallback((page) => {
+    console.log('🔄 handlePageChange chamado');
+    console.log('📄 Página atual:', currentPage);
+    console.log('📄 Nova página:', page);
     setCurrentPage(page);
-  }, []);
+  }, [currentPage]);
 
   /**
    * Muda a quantidade de itens por página
@@ -41,8 +44,10 @@ export const usePagination = (initialItemsPerPage = 20) => {
    * Reseta paginação para primeira página
    */
   const resetPagination = useCallback(() => {
+    console.log('⚠️ resetPagination chamado - RESETANDO PARA PÁGINA 1!');
+    console.log('📄 Página atual antes do reset:', currentPage);
     setCurrentPage(1);
-  }, []);
+  }, [currentPage]);
 
   /**
    * Calcula parâmetros de paginação para API

@@ -99,11 +99,16 @@ export const useUnidadesEscolares = () => {
    * Carrega dados com filtros customizados
    */
   const loadDataWithFilters = useCallback(async () => {
+    console.log('🔄 loadDataWithFilters chamado');
+    console.log('📄 Página atual:', baseEntity.currentPage);
+    console.log('🔍 Rota filter:', customFilters.filters.rotaFilter);
+    
     const params = {
       ...baseEntity.getPaginationParams(),
       rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
     };
 
+    console.log('📋 Parâmetros enviados:', params);
     await baseEntity.loadData(params);
   }, [baseEntity, customFilters.filters.rotaFilter]);
 
@@ -158,8 +163,15 @@ export const useUnidadesEscolares = () => {
 
   // Carregar dados apenas quando rotaFilter muda (sem resetar paginação)
   useEffect(() => {
+    console.log('🎯 useEffect rotaFilter executado');
+    console.log('🔍 Rota filter mudou para:', customFilters.filters.rotaFilter);
+    console.log('📄 Página atual antes do loadDataWithFilters:', baseEntity.currentPage);
+    
     if (customFilters.filters.rotaFilter !== 'todos') {
+      console.log('✅ Chamando loadDataWithFilters porque rotaFilter não é "todos"');
       loadDataWithFilters();
+    } else {
+      console.log('⏭️ Não chamando loadDataWithFilters porque rotaFilter é "todos"');
     }
   }, [customFilters.filters.rotaFilter, loadDataWithFilters]);
 

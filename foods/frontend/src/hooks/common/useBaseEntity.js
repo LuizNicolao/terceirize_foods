@@ -153,6 +153,11 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados quando filtros ou paginação mudam
    */
   useEffect(() => {
+    console.log('📄 useBaseEntity: useEffect paginação/filtros executado');
+    console.log('📄 Página atual:', pagination.currentPage);
+    console.log('🔢 Itens por página:', pagination.itemsPerPage);
+    console.log('🔍 Termo de busca:', filters.searchTerm);
+    console.log('📊 Status filter:', filters.statusFilter);
     loadData();
   }, [pagination.currentPage, pagination.itemsPerPage, filters.searchTerm, filters.statusFilter]);
 
@@ -160,7 +165,13 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados quando filtros customizados mudam
    */
   useEffect(() => {
+    console.log('🚨 useBaseEntity: useEffect filtros customizados executado');
+    console.log('🔍 Filtros customizados:', filters.filters);
+    console.log('📄 Página atual antes do reset:', pagination.currentPage);
+    console.log('🎯 Tem filtros ativos?', filters.hasActiveFilters());
+    
     if (filters.hasActiveFilters()) {
+      console.log('⚠️ RESETANDO PAGINAÇÃO PARA PÁGINA 1!');
       pagination.resetPagination();
       loadData();
     }
