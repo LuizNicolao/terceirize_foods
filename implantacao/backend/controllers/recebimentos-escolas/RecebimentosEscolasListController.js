@@ -362,7 +362,7 @@ const listarTodas = async (req, res) => {
         const sampleDates = await executeQuery(`
           SELECT DISTINCT DATE(re.data_recebimento) as data_recebimento 
           FROM recebimentos_escolas re 
-          ORDER BY re.data_recebimento DESC 
+          ORDER BY DATE(re.data_recebimento) DESC 
           LIMIT 10
         `);
         console.log('DEBUG - Amostra de datas no banco:', sampleDates);
