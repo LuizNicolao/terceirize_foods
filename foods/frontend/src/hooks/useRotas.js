@@ -24,6 +24,11 @@ export const useRotas = () => {
   const [loadingUnidades, setLoadingUnidades] = useState(false);
   const [showUnidades, setShowUnidades] = useState(false);
   const [totalUnidades, setTotalUnidades] = useState(0);
+  
+  // Estados para unidades disponíveis por filial
+  const [unidadesDisponiveis, setUnidadesDisponiveis] = useState([]);
+  const [loadingUnidadesDisponiveis, setLoadingUnidadesDisponiveis] = useState(false);
+  const [filialSelecionada, setFilialSelecionada] = useState(null);
 
   // Estados de estatísticas específicas das rotas
   const [estatisticasRotas, setEstatisticasRotas] = useState({
@@ -102,6 +107,37 @@ export const useRotas = () => {
       setTotalUnidades(0);
     } finally {
       setLoadingUnidades(false);
+    }
+  }, []);
+
+  /**
+   * Carrega unidades escolares disponíveis por filial (não vinculadas a rota)
+   */
+  const loadUnidadesDisponiveisPorFilial = useCallback(async (filialId) => {
+    if (!filialId) {
+      setUnidadesDisponiveis([]);
+      setFilialSelecionada(null);
+      return;
+    }
+
+    try {
+      setLoadingUnidadesDisponiveis(true);
+      setFilialSelecionada(filialId);
+      
+      const result = await api.get(`/unidades-escolares/disponiveis/filial/${filialId}`);
+      
+      if (result.data.success) {
+        setUnidadesDisponiveis(result.data.data || []);
+      } else {
+        setUnidadesDisponiveis([]);
+        toast.error('Erro ao carregar unidades disponíveis');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar unidades disponíveis:', error);
+      setUnidadesDisponiveis([]);
+      toast.error('Erro ao carregar unidades disponíveis');
+    } finally {
+      setLoadingUnidadesDisponiveis(false);
     }
   }, []);
 
@@ -245,6 +281,11 @@ export const useRotas = () => {
     totalUnidades,
     estatisticasRotas,
     
+    // Estados para unidades disponíveis por filial
+    unidadesDisponiveis,
+    loadingUnidadesDisponiveis,
+    filialSelecionada,
+    
     // Ações de modal (customizadas)
     handleAddRota: baseEntity.handleAdd,
     handleViewRota,
@@ -272,6 +313,7 @@ export const useRotas = () => {
     // Ações específicas das rotas
     toggleUnidades,
     loadUnidadesEscolares,
+    loadUnidadesDisponiveisPorFilial,
     
     // Funções utilitárias
     getFilialName,

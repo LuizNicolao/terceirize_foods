@@ -102,6 +102,23 @@ class UnidadesEscolaresService {
     }
   }
 
+  // Métodos de Busca
+  static async buscarDisponiveisPorFilial(filialId) {
+    try {
+      const response = await api.get(`/unidades-escolares/disponiveis/filial/${filialId}`);
+      return {
+        success: true,
+        data: response.data.data || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao buscar unidades disponíveis por filial',
+        data: []
+      };
+    }
+  }
+
   // Métodos de Importação
   static async importarPlanilha(formData) {
     try {

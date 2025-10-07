@@ -36,6 +36,9 @@ const Rotas = () => {
     showUnidades,
     totalUnidades,
     validationErrors,
+    unidadesDisponiveis,
+    loadingUnidadesDisponiveis,
+    loadUnidadesDisponiveisPorFilial,
     showValidationModal,
     showDeleteConfirmModal,
     rotaToDelete,
@@ -161,6 +164,9 @@ const Rotas = () => {
         showUnidades={showUnidades}
         totalUnidades={totalUnidades}
         onToggleUnidades={toggleUnidades}
+        unidadesDisponiveis={unidadesDisponiveis}
+        loadingUnidadesDisponiveis={loadingUnidadesDisponiveis}
+        onFilialChange={loadUnidadesDisponiveisPorFilial}
       />
 
       {/* Modal de Auditoria */}

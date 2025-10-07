@@ -17,7 +17,8 @@ class RotasCRUDController {
         status = 'ativo',
         tipo_rota = 'semanal',
         custo_diario = 0.00,
-        observacoes
+        observacoes,
+        unidades_selecionadas = []
       } = req.body;
 
       // Validações específicas
@@ -83,6 +84,27 @@ class RotasCRUDController {
         custo_diario,
         observacoes ? observacoes.trim() : null
       ]);
+
+      // Vincular unidades escolares selecionadas à rota
+      if (unidades_selecionadas && unidades_selecionadas.length > 0) {
+        for (const unidade of unidades_selecionadas) {
+          if (unidade.id) {
+            // Verificar se a unidade existe e não está vinculada a outra rota
+            const unidadeExistente = await executeQuery(
+              'SELECT id, rota_id FROM unidades_escolares WHERE id = ?',
+              [unidade.id]
+            );
+
+            if (unidadeExistente.length > 0 && !unidadeExistente[0].rota_id) {
+              // Vincular a unidade à rota
+              await executeQuery(
+                'UPDATE unidades_escolares SET rota_id = ? WHERE id = ?',
+                [result.insertId, unidade.id]
+              );
+            }
+          }
+        }
+      }
 
       // Buscar rota criada
       const newRota = await executeQuery(

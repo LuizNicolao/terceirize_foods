@@ -157,6 +157,64 @@ class UnidadesEscolaresSearchController {
     }
   }
 
+  // Buscar unidades escolares por filial que não estão vinculadas a nenhuma rota
+  static async buscarUnidadesEscolaresDisponiveisPorFilial(req, res) {
+    try {
+      const { filialId } = req.params;
+
+      // Verificar se é um usuário nutricionista para aplicar filtros específicos
+      const isNutricionista = req.user.tipo_de_acesso === 'nutricionista';
+      
+      let whereConditions = [
+        'ue.filial_id = ?', 
+        "ue.status = 'ativo'",
+        'ue.rota_id IS NULL'  // Apenas unidades não vinculadas a nenhuma rota
+      ];
+      let params = [filialId];
+
+      if (isNutricionista) {
+        // Filtro 1: Verificar se o nutricionista tem acesso a esta filial
+        whereConditions.push(`
+          ue.filial_id IN (
+            SELECT uf.filial_id 
+            FROM usuarios_filiais uf 
+            WHERE uf.usuario_id = ?
+          )
+        `);
+        params.push(req.user.id);
+      }
+
+      const query = `
+        SELECT 
+          ue.id,
+          ue.codigo_teknisa,
+          ue.nome_escola,
+          ue.cidade,
+          ue.estado,
+          ue.endereco,
+          ue.numero,
+          ue.bairro,
+          ue.centro_distribuicao
+        FROM unidades_escolares ue
+        WHERE ${whereConditions.join(' AND ')}
+        ORDER BY ue.nome_escola ASC
+      `;
+
+      const unidades = await executeQuery(query, params);
+
+      res.json({
+        success: true,
+        data: unidades
+      });
+    } catch (error) {
+      console.error('Erro ao buscar unidades escolares disponíveis por filial:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro interno do servidor'
+      });
+    }
+  }
+
   // Listar estados disponíveis
   static async listarEstados(req, res) {
     try {

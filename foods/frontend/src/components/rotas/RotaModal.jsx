@@ -15,9 +15,16 @@ const RotaModal = ({
   loadingUnidades = false,
   showUnidades = false,
   totalUnidades = 0,
-  onToggleUnidades
+  onToggleUnidades,
+  unidadesDisponiveis = [],
+  loadingUnidadesDisponiveis = false,
+  onFilialChange,
+  onSelecionarUnidades
 }) => {
-  const { register, handleSubmit, reset, setValue } = useForm();
+  const { register, handleSubmit, reset, setValue, watch } = useForm();
+  const [unidadesSelecionadas, setUnidadesSelecionadas] = React.useState([]);
+  
+  const filialId = watch('filial_id');
 
   React.useEffect(() => {
     if (rota && isOpen) {
@@ -35,8 +42,38 @@ const RotaModal = ({
     }
   }, [rota, isOpen, setValue, reset]);
 
+  // Carregar unidades disponíveis quando a filial mudar
+  React.useEffect(() => {
+    if (filialId && !isViewMode && !rota) {
+      onFilialChange && onFilialChange(filialId);
+    } else if (!filialId) {
+      setUnidadesSelecionadas([]);
+    }
+  }, [filialId, isViewMode, rota, onFilialChange]);
+
   const handleFormSubmit = (data) => {
-    onSubmit(data);
+    // Incluir unidades selecionadas nos dados
+    const dataComUnidades = {
+      ...data,
+      unidades_selecionadas: unidadesSelecionadas
+    };
+    onSubmit(dataComUnidades);
+  };
+
+  const handleSelecionarUnidade = (unidade, isSelected) => {
+    if (isSelected) {
+      setUnidadesSelecionadas(prev => [...prev, unidade]);
+    } else {
+      setUnidadesSelecionadas(prev => prev.filter(u => u.id !== unidade.id));
+    }
+  };
+
+  const handleSelecionarTodas = () => {
+    setUnidadesSelecionadas([...unidadesDisponiveis]);
+  };
+
+  const handleDesselecionarTodas = () => {
+    setUnidadesSelecionadas([]);
   };
 
   if (!isOpen) return null;
@@ -162,6 +199,96 @@ const RotaModal = ({
             </div>
           </div>
         </div>
+
+        {/* Seção de Seleção de Unidades Escolares (apenas para criação) */}
+        {!rota && filialId && (
+          <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <div className="flex justify-between items-center mb-3 pb-2 border-b-2 border-green-500">
+              <h3 className="text-sm font-semibold text-gray-700">
+                Selecionar Unidades Escolares
+              </h3>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSelecionarTodas}
+                  className="text-xs"
+                  disabled={loadingUnidadesDisponiveis || unidadesDisponiveis.length === 0}
+                >
+                  Selecionar Todas
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDesselecionarTodas}
+                  className="text-xs"
+                  disabled={unidadesSelecionadas.length === 0}
+                >
+                  Desselecionar Todas
+                </Button>
+              </div>
+            </div>
+            
+            {loadingUnidadesDisponiveis ? (
+              <div className="text-center py-4">
+                <div className="text-gray-500">Carregando unidades disponíveis...</div>
+              </div>
+            ) : unidadesDisponiveis.length === 0 ? (
+              <div className="text-center py-4">
+                <div className="text-gray-500">
+                  Nenhuma unidade escolar disponível para esta filial
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {unidadesDisponiveis.map((unidade) => {
+                  const isSelected = unidadesSelecionadas.some(u => u.id === unidade.id);
+                  return (
+                    <div
+                      key={unidade.id}
+                      className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${
+                        isSelected
+                          ? 'bg-green-50 border-green-200'
+                          : 'bg-white border-gray-200 hover:bg-gray-50'
+                      }`}
+                      onClick={() => handleSelecionarUnidade(unidade, !isSelected)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleSelecionarUnidade(unidade, !isSelected)}
+                        className="mr-3 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-900">
+                          {unidade.nome_escola}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {unidade.codigo_teknisa} • {unidade.cidade}, {unidade.estado}
+                        </div>
+                        {unidade.endereco && (
+                          <div className="text-xs text-gray-400">
+                            {unidade.endereco}{unidade.numero ? `, ${unidade.numero}` : ''}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            
+            {unidadesSelecionadas.length > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-200">
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium">{unidadesSelecionadas.length}</span> unidade(s) selecionada(s)
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Seção de Unidades Escolares (apenas para visualização/edição) */}
         {rota && (

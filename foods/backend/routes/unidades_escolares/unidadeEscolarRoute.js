@@ -55,6 +55,12 @@ router.get('/filial/:filialId',
   unidadesEscolaresController.buscarUnidadesEscolaresPorFilial
 );
 
+// Buscar unidades escolares disponíveis por filial (não vinculadas a rota)
+router.get('/disponiveis/filial/:filialId', 
+  checkScreenPermission('unidades_escolares', 'visualizar'),
+  unidadesEscolaresController.buscarUnidadesEscolaresDisponiveisPorFilial
+);
+
 // Listar estados disponíveis
 router.get('/estados/listar', 
   checkScreenPermission('unidades_escolares', 'visualizar'),
