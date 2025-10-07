@@ -195,10 +195,43 @@ export const useUnidadesEscolares = () => {
       filters: customFilters.filters
     });
     
-    loadDataWithFilters();
-  }, [debouncedSearchTerm, customFilters.statusFilter, customFilters.filters, loadDataWithFilters]);
+    // Reset paginação quando filtros mudam
+    baseEntity.pagination.resetPagination();
+    
+    // Carregar dados diretamente sem usar loadDataWithFilters para evitar loop
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: debouncedSearchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
+      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
+      filial: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
+    };
 
-  // Carregar dados quando paginação muda - removido pois useBaseEntity já faz isso
+    console.log('🔍 UNIDADES ESCOLARES - Carregando dados com params:', params);
+    baseEntity.loadData(params);
+  }, [debouncedSearchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
+
+  // Carregar dados quando paginação muda
+  useEffect(() => {
+    console.log('🔄 UNIDADES ESCOLARES - useEffect paginação disparado:', {
+      currentPage: baseEntity.currentPage,
+      itemsPerPage: baseEntity.itemsPerPage
+    });
+    
+    // Carregar dados diretamente sem usar loadDataWithFilters para evitar loop
+    const params = {
+      ...baseEntity.getPaginationParams(),
+      ...customFilters.getFilterParams(),
+      search: debouncedSearchTerm || undefined,
+      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
+      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
+      filial: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
+    };
+
+    console.log('🔍 UNIDADES ESCOLARES - Carregando dados (paginação) com params:', params);
+    baseEntity.loadData(params);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 
   return {
     // Estados principais (do hook base)

@@ -160,8 +160,15 @@ export const useBaseEntity = (entityName, service, options = {}) => {
 
   /**
    * Carrega dados quando filtros ou paginação mudam
+   * Desabilitado para unidades escolares que gerencia sua própria paginação
    */
   useEffect(() => {
+    // Não executar para unidades escolares que tem sua própria lógica
+    if (entityName === 'unidades escolares') {
+      console.log('🔄 BASE ENTITY - useEffect desabilitado para unidades escolares');
+      return;
+    }
+    
     console.log('🔄 BASE ENTITY - useEffect paginação/filtros disparado:', {
       currentPage: pagination.currentPage,
       itemsPerPage: pagination.itemsPerPage,
@@ -171,7 +178,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     });
     
     loadData();
-  }, [pagination.currentPage, pagination.itemsPerPage, filters.searchTerm, filters.statusFilter]);
+  }, [pagination.currentPage, pagination.itemsPerPage, filters.searchTerm, filters.statusFilter, entityName]);
 
   /**
    * Carrega dados quando filtros customizados mudam
