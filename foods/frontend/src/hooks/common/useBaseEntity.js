@@ -37,13 +37,6 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados da entidade
    */
   const loadData = useCallback(async (customParams = {}) => {
-    console.log('🔍 BASE ENTITY - loadData chamado:', {
-      customParams,
-      paginationParams: pagination.getPaginationParams(),
-      filterParams: filters.getFilterParams(),
-      entityName
-    });
-    
     setLoading(true);
     try {
       const params = {
@@ -51,8 +44,6 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         ...filters.getFilterParams(),
         ...customParams
       };
-
-      console.log('🔍 BASE ENTITY - Parâmetros finais para API:', params);
 
       const response = await service.listar(params);
 
@@ -160,25 +151,10 @@ export const useBaseEntity = (entityName, service, options = {}) => {
 
   /**
    * Carrega dados quando filtros ou paginação mudam
-   * Desabilitado para unidades escolares que gerencia sua própria paginação
    */
   useEffect(() => {
-    // Não executar para unidades escolares que tem sua própria lógica
-    if (entityName === 'unidades escolares') {
-      console.log('🔄 BASE ENTITY - useEffect desabilitado para unidades escolares');
-      return;
-    }
-    
-    console.log('🔄 BASE ENTITY - useEffect paginação/filtros disparado:', {
-      currentPage: pagination.currentPage,
-      itemsPerPage: pagination.itemsPerPage,
-      searchTerm: filters.searchTerm,
-      statusFilter: filters.statusFilter,
-      entityName
-    });
-    
     loadData();
-  }, [pagination.currentPage, pagination.itemsPerPage, filters.searchTerm, filters.statusFilter, entityName]);
+  }, [pagination.currentPage, pagination.itemsPerPage, filters.searchTerm, filters.statusFilter]);
 
   /**
    * Carrega dados quando filtros customizados mudam
@@ -230,7 +206,6 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     // Ações de paginação
     handlePageChange: pagination.handlePageChange,
     handleItemsPerPageChange: pagination.handleItemsPerPageChange,
-    resetPagination: pagination.resetPagination,
     
     // Ações de filtros
     setSearchTerm: filters.setSearchTerm,

@@ -31,7 +31,6 @@ const UnidadesEscolares = () => {
     searchTerm,
     statusFilter,
     rotaFilter,
-    filialFilter,
     currentPage,
     totalPages,
     totalItems,
@@ -55,7 +54,6 @@ const UnidadesEscolares = () => {
     setSearchTerm,
     setStatusFilter,
     setRotaFilter,
-    setFilialFilter,
     getRotaName,
     formatCurrency
   } = useUnidadesEscolares();
@@ -140,18 +138,6 @@ const UnidadesEscolares = () => {
               ...rotas.map(rota => ({
                 value: rota.id.toString(),
                 label: rota.nome
-              }))
-            ]
-          },
-          {
-            label: 'Filial',
-            value: filialFilter,
-            onChange: setFilialFilter,
-            options: [
-              { value: 'todos', label: loadingFiliais ? 'Carregando...' : 'Todas as filiais' },
-              ...filiais.map(filial => ({
-                value: filial.id.toString(),
-                label: `${filial.filial} (${filial.codigo_filial})`
               }))
             ]
           }

@@ -6,23 +6,6 @@ import FiliaisService from '../services/filiais';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
 
-// Hook para debounce
-const useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-};
-
 export const useUnidadesEscolares = () => {
   // Hook base para funcionalidades CRUD
   const baseEntity = useBaseEntity('unidades escolares', UnidadesEscolaresService, {
@@ -33,10 +16,7 @@ export const useUnidadesEscolares = () => {
   });
 
   // Hook de filtros customizados para unidades escolares
-  const customFilters = useFilters({ rotaFilter: 'todos', filialFilter: 'todos' });
-  
-  // Debounce para busca (500ms de delay)
-  const debouncedSearchTerm = useDebounce(customFilters.searchTerm, 500);
+  const customFilters = useFilters({ rotaFilter: 'todos' });
 
   // Estados específicos das unidades escolares
   const [rotas, setRotas] = useState([]);
@@ -51,7 +31,6 @@ export const useUnidadesEscolares = () => {
     total_estados: 0,
     total_cidades: 0
   });
-
 
   /**
    * Carrega rotas ativas
@@ -123,21 +102,13 @@ export const useUnidadesEscolares = () => {
     const params = {
       ...baseEntity.getPaginationParams(),
       ...customFilters.getFilterParams(),
-      search: debouncedSearchTerm || undefined,
+      search: customFilters.searchTerm || undefined,
       status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
-      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
-      filial: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
+      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
     };
 
-    console.log('🔍 UNIDADES ESCOLARES - loadDataWithFilters chamado com params:', params);
-    console.log('🔍 UNIDADES ESCOLARES - Paginação atual:', {
-      currentPage: baseEntity.currentPage,
-      totalPages: baseEntity.totalPages,
-      itemsPerPage: baseEntity.itemsPerPage
-    });
-
     await baseEntity.loadData(params);
-  }, [baseEntity, customFilters, debouncedSearchTerm]);
+  }, [baseEntity, customFilters]);
 
   /**
    * Submissão customizada que recarrega estatísticas
@@ -188,27 +159,10 @@ export const useUnidadesEscolares = () => {
     loadEstatisticasUnidades();
   }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
 
-
-  // Carregar dados quando filtros mudam (igual aos fornecedores)
+  // Carregar dados quando filtros mudam (rotaFilter específico)
   useEffect(() => {
-    console.log('🔄 UNIDADES ESCOLARES - useEffect filtros disparado:', {
-      debouncedSearchTerm,
-      statusFilter: customFilters.statusFilter,
-      filters: customFilters.filters
-    });
-    
     loadDataWithFilters();
-  }, [debouncedSearchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
-
-  // Carregar dados quando paginação muda (igual aos fornecedores)
-  useEffect(() => {
-    console.log('🔄 UNIDADES ESCOLARES - useEffect paginação disparado:', {
-      currentPage: baseEntity.currentPage,
-      itemsPerPage: baseEntity.itemsPerPage
-    });
-    
-    loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+  }, [customFilters.filters.rotaFilter]);
 
   return {
     // Estados principais (do hook base)
@@ -235,7 +189,6 @@ export const useUnidadesEscolares = () => {
     searchTerm: customFilters.searchTerm,
     statusFilter: customFilters.statusFilter,
     rotaFilter: customFilters.filters.rotaFilter,
-    filialFilter: customFilters.filters.filialFilter,
     
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
@@ -261,7 +214,6 @@ export const useUnidadesEscolares = () => {
     setSearchTerm: customFilters.setSearchTerm,
     setStatusFilter: customFilters.setStatusFilter,
     setRotaFilter: (value) => customFilters.updateFilter('rotaFilter', value),
-    setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
     
     // Ações de CRUD (customizadas)
     onSubmit: onSubmitCustom,
@@ -269,9 +221,6 @@ export const useUnidadesEscolares = () => {
     handleConfirmDelete: handleDeleteCustom,
     handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
     reloadData,
-    
-    // Ações de dados
-    loadUnidades: loadDataWithFilters,
     
     // Ações de validação (do hook base)
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
