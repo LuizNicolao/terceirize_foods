@@ -52,7 +52,7 @@ const RotaModal = ({
     }
     // Limpar busca quando filial mudar
     setBuscaUnidades('');
-  }, [filialId, isViewMode, onFilialChange]);
+  }, [filialId, isViewMode]);
 
   // No modo de edição, marcar unidades já vinculadas como selecionadas
   React.useEffect(() => {
