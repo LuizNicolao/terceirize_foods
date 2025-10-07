@@ -46,6 +46,7 @@ const Marcas = () => {
     handleCloseValidationModal,
     handlePageChange,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     setItemsPerPage,
     getStatusLabel
@@ -109,6 +110,7 @@ const Marcas = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         onClear={() => {

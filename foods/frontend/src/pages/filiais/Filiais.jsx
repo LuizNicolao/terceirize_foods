@@ -45,6 +45,7 @@ const Filiais = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     formatDate
   } = useFiliais();
@@ -107,6 +108,7 @@ const Filiais = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         placeholder="Buscar por nome, cidade ou código..."

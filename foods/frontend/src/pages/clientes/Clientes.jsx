@@ -46,6 +46,7 @@ const Clientes = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     setUfFilter,
     formatDate
@@ -109,6 +110,7 @@ const Clientes = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         additionalFilters={[

@@ -54,6 +54,7 @@ const Patrimonios = () => {
     handleDeletePatrimonio,
     handleMovimentarPatrimonio,
     handleSearchChange,
+    handleKeyPress,
     handleFilterChange,
     handleClearFilters,
     handlePageChange,
@@ -138,6 +139,7 @@ const Patrimonios = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
+        onKeyPress={handleKeyPress}
         onClear={handleClearFilters}
         placeholder="Buscar por produto, número do patrimônio..."
       />

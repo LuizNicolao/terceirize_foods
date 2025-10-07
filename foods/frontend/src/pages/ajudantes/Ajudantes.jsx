@@ -40,6 +40,7 @@ const Ajudantes = () => {
     handleCloseModal,
     handlePageChange,
     setSearchTerm,
+    handleKeyPress,
     setItemsPerPage,
     formatDate,
     getStatusLabel,
@@ -112,6 +113,7 @@ const Ajudantes = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         onClear={() => setSearchTerm('')}
         placeholder="Buscar por nome, CPF, telefone ou email..."
       />

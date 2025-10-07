@@ -45,6 +45,7 @@ const Veiculos = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     setTipoFilter,
     getStatusLabel,
@@ -111,6 +112,7 @@ const Veiculos = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         additionalFilters={[

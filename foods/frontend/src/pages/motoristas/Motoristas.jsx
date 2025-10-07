@@ -35,6 +35,7 @@ const Motoristas = () => {
     itemsPerPage,
     estatisticas,
     setSearchTerm,
+    handleKeyPress,
 
     // Estados de validação
     validationErrors,
@@ -114,6 +115,7 @@ const Motoristas = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         onClear={() => setSearchTerm('')}
         placeholder="Buscar por nome, CPF ou CNH..."
       />

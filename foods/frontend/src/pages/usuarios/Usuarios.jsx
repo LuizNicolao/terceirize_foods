@@ -46,6 +46,7 @@ const Usuarios = () => {
     handleCloseModal,
     handlePageChange,
     setSearchTerm,
+    handleKeyPress,
     setItemsPerPage,
     formatDate,
     getStatusLabel,
@@ -111,6 +112,7 @@ const Usuarios = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         onClear={() => setSearchTerm('')}
         placeholder="Buscar por nome ou email..."
       />

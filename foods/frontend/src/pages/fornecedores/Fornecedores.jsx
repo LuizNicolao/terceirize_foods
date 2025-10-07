@@ -44,6 +44,7 @@ const Fornecedores = () => {
     handlePageChange,
     handleItemsPerPageChange,
     handleSearch,
+    handleKeyPress,
     handleOpenModal,
     handleCloseModal,
     onSubmit,
@@ -124,6 +125,7 @@ const Fornecedores = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={handleSearch}
+        onKeyPress={handleKeyPress}
         placeholder="Buscar por razão social, nome fantasia ou CNPJ..."
       />
 

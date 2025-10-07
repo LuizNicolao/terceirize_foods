@@ -44,6 +44,7 @@ const Intolerancias = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     formatDate
   } = useIntolerancias();
@@ -106,6 +107,7 @@ const Intolerancias = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         placeholder="Buscar por nome..."

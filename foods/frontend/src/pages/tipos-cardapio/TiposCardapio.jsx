@@ -47,6 +47,7 @@ const TiposCardapio = () => {
     handleCloseModal,
     handlePageChange,
     setSearchTerm,
+    handleKeyPress,
     setItemsPerPage,
     formatDate,
     getStatusLabel
@@ -110,6 +111,7 @@ const TiposCardapio = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         onClear={() => setSearchTerm('')}
         placeholder="Buscar por nome ou código..."
       />

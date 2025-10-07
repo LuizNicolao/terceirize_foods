@@ -53,6 +53,7 @@ const UnidadesEscolares = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm,
+    handleKeyPress,
     setStatusFilter,
     setRotaFilter,
     setFilialFilter,
@@ -128,6 +129,7 @@ const UnidadesEscolares = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onKeyPress={handleKeyPress}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         additionalFilters={[
