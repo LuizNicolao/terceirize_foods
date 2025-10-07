@@ -112,7 +112,7 @@ export const useRotas = () => {
   }, []);
 
   /**
-   * Carrega unidades escolares disponíveis por filial (não vinculadas a rota)
+   * Carrega unidades escolares disponíveis por filial (não vinculadas a rota) - para criação
    */
   const loadUnidadesDisponiveisPorFilial = useCallback(async (filialId) => {
     if (!filialId) {
@@ -137,6 +137,37 @@ export const useRotas = () => {
       console.error('Erro ao carregar unidades disponíveis:', error);
       setUnidadesDisponiveis([]);
       toast.error('Erro ao carregar unidades disponíveis');
+    } finally {
+      setLoadingUnidadesDisponiveis(false);
+    }
+  }, []);
+
+  /**
+   * Carrega todas as unidades escolares por filial (incluindo as já vinculadas) - para edição
+   */
+  const loadTodasUnidadesPorFilial = useCallback(async (filialId) => {
+    if (!filialId) {
+      setUnidadesDisponiveis([]);
+      setFilialSelecionada(null);
+      return;
+    }
+
+    try {
+      setLoadingUnidadesDisponiveis(true);
+      setFilialSelecionada(filialId);
+      
+      const result = await api.get(`/unidades-escolares/filial/${filialId}`);
+      
+      if (result.data.success) {
+        setUnidadesDisponiveis(result.data.data || []);
+      } else {
+        setUnidadesDisponiveis([]);
+        toast.error('Erro ao carregar unidades da filial');
+      }
+    } catch (error) {
+      console.error('Erro ao carregar unidades da filial:', error);
+      setUnidadesDisponiveis([]);
+      toast.error('Erro ao carregar unidades da filial');
     } finally {
       setLoadingUnidadesDisponiveis(false);
     }
@@ -323,6 +354,7 @@ export const useRotas = () => {
     toggleUnidades,
     loadUnidadesEscolares,
     loadUnidadesDisponiveisPorFilial,
+    loadTodasUnidadesPorFilial,
     
     // Funções utilitárias
     getFilialName,

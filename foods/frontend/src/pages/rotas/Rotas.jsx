@@ -166,7 +166,15 @@ const Rotas = () => {
         onToggleUnidades={toggleUnidades}
         unidadesDisponiveis={unidadesDisponiveis}
         loadingUnidadesDisponiveis={loadingUnidadesDisponiveis}
-        onFilialChange={loadUnidadesDisponiveisPorFilial}
+        onFilialChange={(filialId) => {
+          // Se está editando uma rota, carregar todas as unidades (incluindo as já vinculadas)
+          // Se está criando, carregar apenas as disponíveis
+          if (editingRota) {
+            loadTodasUnidadesPorFilial(filialId);
+          } else {
+            loadUnidadesDisponiveisPorFilial(filialId);
+          }
+        }}
       />
 
       {/* Modal de Auditoria */}
