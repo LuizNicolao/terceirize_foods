@@ -1,42 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useValidation } from './common/useValidation';
 import { useExport } from './common/useExport';
+import { useBaseEntity } from './common/useBaseEntity';
 import ReceitasService from '../services/receitas';
 import toast from 'react-hot-toast';
 
 export const useReceitas = () => {
-  // Hook de busca com debounce
-
-  // Estados principais
-  const [receitas, setReceitas] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [editingReceita, setEditingReceita] = useState(null);
-  const [viewMode, setViewMode] = useState(false);
-  const [estatisticas, setEstatisticas] = useState({
-    total_receitas: 0,
-    receitas_pendentes: 0,
-    receitas_aprovadas: 0,
-    receitas_rejeitadas: 0,
-    receitas_ativas: 0
+  // Hook base para funcionalidades CRUD
+  const baseEntity = useBaseEntity('receitas', ReceitasService, {
+    initialItemsPerPage: 20,
+    enableStats: true,
+    enableDelete: true
   });
 
-  // Estados de paginação e filtros
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
+  // Estados específicos das receitas
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [filtros, setFiltros] = useState({
     mes: '',
     ano: new Date().getFullYear(),
     unidade_escolar_id: ''
   });
-
-  // Estados para modais de confirmação
-  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [receitaToDelete, setReceitaToDelete] = useState(null);
 
   // Hook de validação
   const {
@@ -336,8 +319,6 @@ export const useReceitas = () => {
     totalPages,
     totalItems,
     itemsPerPage,
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
     filtros,
     showDeleteConfirmModal,
     setShowDeleteConfirmModal,
@@ -361,8 +342,8 @@ export const useReceitas = () => {
     handleClosePreviewModal,
     handlePageChange,
     handleItemsPerPageChange,
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     handleFiltroChange,
     clearFiltros,
     formatDate,

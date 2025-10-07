@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import RotasNutricionistasService from '../services/rotasNutricionistas';
 import { useAuditoria } from './common/useAuditoria';
 import { useExport } from './common/useExport';
+import { useBaseEntity } from './common/useBaseEntity';
 
 export const useRotasNutricionistas = () => {
   // Hook de busca com debounce
@@ -381,8 +382,8 @@ export const useRotasNutricionistas = () => {
     itemsPerPage,
 
     // Estados de filtro
-    searchTerm: debouncedSearch.searchTerm,
-    isSearching: debouncedSearch.isSearching,
+    searchTerm: baseEntity.searchTerm,
+    isSearching: baseEntity.isSearching,
     statusFilter,
     usuarioFilter,
     supervisorFilter,
@@ -435,8 +436,8 @@ export const useRotasNutricionistas = () => {
 
     // Funções de filtro
     handleSearch,
-    setSearchTerm: debouncedSearch.updateSearchTerm,
-    clearSearch: debouncedSearch.clearSearch,
+    setSearchTerm: baseEntity.setSearchTerm,
+    clearSearch: baseEntity.clearSearch,
     handleStatusFilter,
     handleUsuarioFilter,
     handleSupervisorFilter,
