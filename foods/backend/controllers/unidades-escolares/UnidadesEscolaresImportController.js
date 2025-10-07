@@ -459,7 +459,7 @@ class UnidadesEscolaresImportController {
             codigo_teknisa, nome_escola, cidade, estado, pais, endereco, numero, bairro, cep,
             centro_distribuicao, rota_id, regional, lot, cc_senior, codigo_senior, abastecimento,
             ordem_entrega, status, observacoes, filial_id, atendimento, horario, supervisao, coordenacao, lat, \`long\`
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
 
         // Função helper para converter undefined para null
