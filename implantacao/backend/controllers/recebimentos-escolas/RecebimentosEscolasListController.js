@@ -344,6 +344,7 @@ const listarTodas = async (req, res) => {
     // Filtro por semana de abastecimento
     if (semana_abastecimento && semana_abastecimento !== 'todas') {
       try {
+        console.log('DEBUG - Processando filtro de semana:', semana_abastecimento);
         // Parse da semana no formato "DD/MM a DD/MM"
         const [inicioStr, fimStr] = semana_abastecimento.split(' a ');
         const [diaInicio, mesInicio] = inicioStr.split('/');
@@ -355,8 +356,13 @@ const listarTodas = async (req, res) => {
         const dataInicio = `${anoRef}-${mesInicio.padStart(2, '0')}-${diaInicio.padStart(2, '0')}`;
         const dataFim = `${anoRef}-${mesFim.padStart(2, '0')}-${diaFim.padStart(2, '0')}`;
         
+        console.log('DEBUG - Data início:', dataInicio, 'Data fim:', dataFim);
+        
         whereClause += ' AND re.data_recebimento >= ? AND re.data_recebimento <= ?';
         params.push(dataInicio, dataFim);
+        
+        console.log('DEBUG - Where clause final:', whereClause);
+        console.log('DEBUG - Params finais:', params);
       } catch (error) {
         console.error('Erro ao processar filtro de semana:', error);
         // Se houver erro no parsing, ignora o filtro
