@@ -199,8 +199,10 @@ export const useFiliaisConsulta = () => {
       const result = await FoodsApiService.getFilialById(id);
       console.log('buscarFilialPorId - result completo:', result); // Debug log
       if (result.success && result.data) {
-        console.log('buscarFilialPorId - retornando result.data:', result.data); // Debug log
-        return result.data;
+        // Verificar se result.data tem estrutura aninhada
+        const filialData = result.data.data || result.data;
+        console.log('buscarFilialPorId - retornando filialData:', filialData); // Debug log
+        return filialData;
       }
       throw new Error(result.message || 'Filial não encontrada');
     } catch (error) {
