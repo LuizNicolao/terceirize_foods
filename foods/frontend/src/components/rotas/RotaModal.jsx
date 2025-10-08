@@ -105,6 +105,22 @@ const RotaModal = ({
     );
   };
 
+  // Gerar opções disponíveis de ordem para um select
+  const getOpcoesOrdemDisponiveis = (unidadeAtualId) => {
+    const totalEscolas = unidadesSelecionadas.length;
+    const ordensUsadas = unidadesSelecionadas
+      .filter(u => u.id !== unidadeAtualId && u.ordem_entrega > 0)
+      .map(u => u.ordem_entrega);
+    
+    const opcoesDisponiveis = [];
+    for (let i = 1; i <= totalEscolas; i++) {
+      if (!ordensUsadas.includes(i)) {
+        opcoesDisponiveis.push(i);
+      }
+    }
+    return opcoesDisponiveis;
+  };
+
   // Filtrar unidades baseado na busca
   const unidadesFiltradas = React.useMemo(() => {
     if (!buscaUnidades.trim()) {
@@ -325,39 +341,49 @@ const RotaModal = ({
                     ) : (
                       unidadesSelecionadas
                         .sort((a, b) => (a.ordem_entrega || 0) - (b.ordem_entrega || 0))
-                        .map((unidade) => (
-                          <div
-                            key={unidade.id}
-                            className="flex items-center gap-2 p-2 bg-white rounded border border-green-200"
-                          >
-                            <div className="flex-shrink-0 w-14">
-                              <input
-                                type="number"
-                                value={unidade.ordem_entrega || 0}
-                                onChange={(e) => handleUpdateOrdem(unidade.id, e.target.value)}
-                                min="0"
-                                className="w-full px-2 py-1 text-sm text-center font-semibold border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                                placeholder="0"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-gray-900 text-xs truncate" title={unidade.nome_escola}>
-                                {unidade.nome_escola}
-                              </div>
-                              <div className="text-xs text-gray-500 truncate">
-                                {unidade.cidade}, {unidade.estado}
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleSelecionarUnidade(unidade, false)}
-                              className="flex-shrink-0 text-red-500 hover:text-red-700 p-1"
-                              title="Remover"
+                        .map((unidade) => {
+                          const opcoesDisponiveis = getOpcoesOrdemDisponiveis(unidade.id);
+                          const ordemAtual = unidade.ordem_entrega || 0;
+                          
+                          return (
+                            <div
+                              key={unidade.id}
+                              className="flex items-center gap-2 p-2 bg-white rounded border border-green-200"
                             >
-                              ✕
-                            </button>
-                          </div>
-                        ))
+                              <div className="flex-shrink-0 w-14">
+                                <select
+                                  value={ordemAtual}
+                                  onChange={(e) => handleUpdateOrdem(unidade.id, e.target.value)}
+                                  className="w-full px-1 py-1 text-sm text-center font-semibold border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
+                                >
+                                  <option value="0">-</option>
+                                  {ordemAtual > 0 && !opcoesDisponiveis.includes(ordemAtual) && (
+                                    <option value={ordemAtual}>{ordemAtual}</option>
+                                  )}
+                                  {opcoesDisponiveis.map(num => (
+                                    <option key={num} value={num}>{num}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-gray-900 text-xs truncate" title={unidade.nome_escola}>
+                                  {unidade.nome_escola}
+                                </div>
+                                <div className="text-xs text-gray-500 truncate">
+                                  {unidade.cidade}, {unidade.estado}
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleSelecionarUnidade(unidade, false)}
+                                className="flex-shrink-0 text-red-500 hover:text-red-700 p-1"
+                                title="Remover"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          );
+                        })
                     )}
                   </div>
                 </div>
