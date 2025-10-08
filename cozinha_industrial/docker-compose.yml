@@ -36,7 +36,9 @@ services:
         max-file: "3"
 
   frontend:
-    build: ./frontend
+    build:
+      context: ..
+      dockerfile: cozinha_industrial/frontend/Dockerfile
     container_name: cozinha_industrial_frontend
     restart: always
     ports:
