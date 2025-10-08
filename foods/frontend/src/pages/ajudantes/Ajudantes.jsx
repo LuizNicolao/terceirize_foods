@@ -10,9 +10,8 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { AjudanteModal } from '../../components/ajudantes';
 import AjudantesStats from '../../components/ajudantes/AjudantesStats';
-import AjudantesActions from '../../components/ajudantes/AjudantesActions';
 import AjudantesTable from '../../components/ajudantes/AjudantesTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Ajudantes = () => {
@@ -118,11 +117,14 @@ const Ajudantes = () => {
         placeholder="Buscar por nome, CPF, telefone ou email..."
       />
 
-      {/* Ações */}
-      <AjudantesActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('ajudantes')}
+        />
+      </div>
 
       {/* Tabela */}
       <AjudantesTable

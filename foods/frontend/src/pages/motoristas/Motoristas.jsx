@@ -9,12 +9,11 @@ import { Button, ConfirmModal } from '../../components/ui';
 import { 
   MotoristaModal, 
   MotoristasTable, 
-  MotoristasStats,
-  MotoristasActions
+  MotoristasStats
 } from '../../components/motoristas';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Motoristas = () => {
@@ -120,11 +119,14 @@ const Motoristas = () => {
         placeholder="Buscar por nome, CPF ou CNH..."
       />
 
-      {/* Ações */}
-      <MotoristasActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('motoristas')}
+        />
+      </div>
 
       {/* Tabela */}
       <MotoristasTable
