@@ -289,6 +289,7 @@ export const useTiposCardapio = () => {
     handleCloseModal,
     handlePageChange,
     setSearchTerm: debouncedSearch.updateSearchTerm,
+    handleKeyPress: debouncedSearch.handleKeyPress,
     clearSearch: debouncedSearch.clearSearch,
     setItemsPerPage,
     formatDate,

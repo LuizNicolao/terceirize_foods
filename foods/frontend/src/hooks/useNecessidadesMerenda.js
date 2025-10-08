@@ -410,6 +410,7 @@ export const useNecessidadesMerenda = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm: debouncedSearch.updateSearchTerm,
+    handleKeyPress: debouncedSearch.handleKeyPress,
     clearSearch: debouncedSearch.clearSearch,
     handleFiltroChange,
     clearFiltros,

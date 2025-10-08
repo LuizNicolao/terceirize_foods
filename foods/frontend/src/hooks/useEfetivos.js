@@ -217,6 +217,7 @@ export const useEfetivos = (unidadeEscolarId) => {
 
     // Funções de filtros
     setSearchTerm: debouncedSearch.updateSearchTerm,
+    handleKeyPress: debouncedSearch.handleKeyPress,
     clearSearch: debouncedSearch.clearSearch,
     setStatusFilter,
 

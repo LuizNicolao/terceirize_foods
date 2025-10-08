@@ -494,6 +494,7 @@ export const usePatrimonios = () => {
     isSearching: debouncedSearch.isSearching,
     filters,
     setSearchTerm: debouncedSearch.updateSearchTerm,
+    handleKeyPress: debouncedSearch.handleKeyPress,
     clearSearch: debouncedSearch.clearSearch,
     setFilters,
     

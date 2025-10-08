@@ -243,6 +243,7 @@ export const useNomeGenericoProduto = () => {
 
     // Funções de filtros
     setSearchTerm: debouncedSearch.updateSearchTerm,
+    handleKeyPress: debouncedSearch.handleKeyPress,
     clearSearch: debouncedSearch.clearSearch,
     setItemsPerPage,
 

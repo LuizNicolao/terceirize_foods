@@ -336,6 +336,7 @@ export const useFaturamento = () => {
     handlePageChange,
     handleItemsPerPageChange,
     setSearchTerm: debouncedSearch.updateSearchTerm,
+    handleKeyPress: debouncedSearch.handleKeyPress,
     clearSearch: debouncedSearch.clearSearch,
     handleFiltroChange,
     clearFiltros,

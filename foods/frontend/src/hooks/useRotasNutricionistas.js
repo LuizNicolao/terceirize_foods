@@ -438,6 +438,7 @@ export const useRotasNutricionistas = () => {
     // Funções de filtro
     handleSearch,
     setSearchTerm: debouncedSearch.updateSearchTerm,
+    handleKeyPress: debouncedSearch.handleKeyPress,
     clearSearch: debouncedSearch.clearSearch,
     handleStatusFilter,
     handleUsuarioFilter,

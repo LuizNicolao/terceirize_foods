@@ -238,6 +238,7 @@ export const usePermissoes = () => {
     // Funções de busca
     handleSearchChange,
     setSearchTerm: debouncedSearch.updateSearchTerm,
+    handleKeyPress: debouncedSearch.handleKeyPress,
     clearSearch: debouncedSearch.clearSearch,
 
     // Funções de estado
