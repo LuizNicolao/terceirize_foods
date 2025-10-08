@@ -1,21 +1,13 @@
-export { default as Button } from './Button';
-export { default as Input } from './Input';
-export { default as Modal } from './Modal';
-export { default as Table } from './Table';
-export { default as StatCard } from './StatCard';
-export { default as ChartCard } from './ChartCard';
-export { default as ValidationErrorModal } from './ValidationErrorModal';
-export { default as ActionButtons } from './ActionButtons';
-export { default as LoadingSpinner } from './LoadingSpinner';
-export { default as Pagination } from './Pagination';
-export { default as ErrorModal } from './ErrorModal';
-export { default as CadastroFilterBar } from './CadastroFilterBar';
-export { default as Logo } from './Logo';
-export { default as EmptyState } from './EmptyState';
-export { default as ConfirmModal } from './ConfirmModal';
-export { default as CaptchaCheckbox } from './CaptchaCheckbox';
-export { FormInput } from './FormInput';
-export { MaskedInput } from './MaskedInput';
-export { MaskedFormInput } from './MaskedFormInput'; 
-export { default as SearchableSelect } from './SearchableSelect';
+/**
+ * Componentes UI - Re-exportação do Foods + Específicos do Implantação
+ * 
+ * Este arquivo centraliza todos os componentes UI:
+ * - Componentes genéricos: importados do Foods (fonte única)
+ * - Componentes específicos: mantidos localmente
+ */
+
+// Re-exportar TODOS os componentes UI do Foods
+export * from 'foods-frontend/src/components/ui';
+
+// Componentes específicos do Implantação (manter locais)
 export { default as SemanaAbastecimentoFilter } from './SemanaAbastecimentoFilter';
