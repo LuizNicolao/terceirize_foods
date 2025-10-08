@@ -114,8 +114,6 @@ export const useFiliaisConsulta = () => {
           limit
         });
 
-        console.log('Filiais API Response:', result); // Debug log
-
         if (result.success && result.data) {
           // Verificar se é uma resposta HATEOAS ou direta
           let items = [];
@@ -128,7 +126,6 @@ export const useFiliaisConsulta = () => {
           }
 
           allFiliaisData = [...allFiliaisData, ...items];
-          console.log('Items found:', items.length, 'Total so far:', allFiliaisData.length); // Debug log
 
           // Verificar se há mais páginas
           if (items.length < limit) {
@@ -141,8 +138,6 @@ export const useFiliaisConsulta = () => {
         }
       }
 
-      console.log('Final allFiliaisData:', allFiliaisData.length, allFiliaisData); // Debug log
-      console.log('First filial structure:', allFiliaisData[0]); // Debug log - ver estrutura dos dados
 
       // Aplicar paginação no frontend
       const paginatedData = applyFrontendPagination(
@@ -153,13 +148,10 @@ export const useFiliaisConsulta = () => {
 
       // Calcular estatísticas baseadas em todos os dados
       const estatisticas = calcularEstatisticas(allFiliaisData);
-      console.log('Estatísticas calculadas:', estatisticas); // Debug log
 
       setAllFiliais(allFiliaisData);
       setFiliais(paginatedData);
       setStats(estatisticas);
-      
-      console.log('State updated - filiais:', paginatedData.length, 'stats:', estatisticas); // Debug log
       setPagination(prev => ({
         ...prev,
         totalItems: allFiliaisData.length,
@@ -180,15 +172,22 @@ export const useFiliaisConsulta = () => {
    * Carregar estatísticas
    */
   const carregarEstatisticas = useCallback(async () => {
+    // Se temos dados locais, usar estatísticas calculadas localmente
+    if (allFiliais.length > 0) {
+      const estatisticas = calcularEstatisticas(allFiliais);
+      setStats(estatisticas);
+      return;
+    }
+
+    // Senão, tentar buscar do backend
     try {
       const result = await FoodsApiService.getFiliaisStats();
       if (result.success && result.data) {
         setStats(result.data);
       }
     } catch (error) {
-      // Se falhar, usar estatísticas calculadas localmente
-      const estatisticas = calcularEstatisticas(allFiliais);
-      setStats(estatisticas);
+      // Se falhar, usar estatísticas vazias
+      setStats({ total_filiais: 0, filiais_ativas: 0, filiais_inativas: 0, com_cnpj: 0 });
     }
   }, [allFiliais, calcularEstatisticas]);
 
