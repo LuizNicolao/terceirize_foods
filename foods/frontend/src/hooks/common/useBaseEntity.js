@@ -158,20 +158,11 @@ export const useBaseEntity = (entityName, service, options = {}) => {
 
   /**
    * Carrega dados quando filtros ou paginação mudam
+   * Monitora também filters.filters para capturar filtros customizados
    */
   useEffect(() => {
     loadData();
-  }, [pagination.currentPage, pagination.itemsPerPage, debouncedSearch?.debouncedSearchTerm || filters.searchTerm, filters.statusFilter]);
-
-  /**
-   * Carrega dados quando filtros customizados mudam
-   */
-  useEffect(() => {
-    if (filters.hasActiveFilters()) {
-      pagination.resetPagination();
-      loadData();
-    }
-  }, [filters.filters]);
+  }, [pagination.currentPage, pagination.itemsPerPage, debouncedSearch?.debouncedSearchTerm || filters.searchTerm, filters.statusFilter, filters.filters]);
 
   return {
     // Estados principais

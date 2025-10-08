@@ -168,16 +168,16 @@ export const useUnidadesEscolares = () => {
     loadEstatisticasUnidades();
   }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
 
-  // Recarregar dados quando filtros mudarem
+  // Recarregar dados quando filtros customizados mudarem
   useEffect(() => {
     const params = {
       rota_id: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
       filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
     };
     baseEntity.loadData(params);
-  }, [customFilters.filters.rotaFilter, customFilters.filters.filialFilter, customFilters.statusFilter]);
+  }, [customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
   
-  // Recarregar dados quando a página mudar, mantendo os filtros
+  // Recarregar dados quando a página mudar, mantendo os filtros customizados
   useEffect(() => {
     const params = {
       rota_id: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
