@@ -1,6 +1,6 @@
 /**
  * Componentes de Rotas Nutricionistas
- * Importa componentes compartilhados do Foods e mantém adaptadores locais
+ * Importa componentes do Foods e mantém adaptadores locais
  */
 
 // Componentes importados direto do Foods (sem adaptação necessária)

@@ -9,18 +9,13 @@ const RotasNutricionistasTable = ({
   canDelete, 
   onView, 
   onEdit, 
-  onDelete,
-  getUsuarioName,
-  getSupervisorName,
-  getCoordenadorName,
-  loadingUsuarios,
-  mode // Adicionar prop mode para controlar modo consulta
+  onDelete, 
+  loading
 }) => {
   // Adapt the boolean props to functions that the FoodsRotasNutricionistasTable expects
   const canViewFn = () => canView;
-  // Em modo consulta, não permite editar ou deletar
-  const canEditFn = () => mode === 'consulta' ? false : (canEdit || false);
-  const canDeleteFn = () => mode === 'consulta' ? false : (canDelete || false);
+  const canEditFn = () => canEdit;
+  const canDeleteFn = () => canDelete;
 
   return (
     <FoodsRotasNutricionistasTable
@@ -29,12 +24,9 @@ const RotasNutricionistasTable = ({
       canEdit={canEditFn}
       canDelete={canDeleteFn}
       onView={onView}
-      onEdit={onEdit || (() => {})} // Passar função vazia se não fornecida
-      onDelete={onDelete || (() => {})} // Passar função vazia se não fornecida
-      getUsuarioName={getUsuarioName}
-      getSupervisorName={getSupervisorName}
-      getCoordenadorName={getCoordenadorName}
-      loadingUsuarios={loadingUsuarios}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      loading={loading}
       // Pass the local RotasNutricionistasActions adaptor
       RotasNutricionistasActionsComponent={RotasNutricionistasActions}
     />
