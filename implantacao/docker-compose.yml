@@ -36,9 +36,7 @@ services:
         max-file: "3"
 
   frontend:
-    build:
-      context: ..
-      dockerfile: implantacao/frontend/Dockerfile
+    build: ./frontend
     container_name: implantacao_frontend
     restart: always
     ports:

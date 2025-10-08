@@ -3,12 +3,11 @@ import { FaQuestionCircle, FaEye, FaExclamationTriangle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useUnidadesEscolaresConsulta } from '../../hooks/useUnidadesEscolaresConsulta';
 import { Button } from '../../components/ui';
-// Componentes compartilhados do Foods
 import { 
   UnidadesEscolaresTable, 
   UnidadesEscolaresStats,
   UnidadeEscolarModal
-} from 'foods-shared';
+} from '../../components/unidades-escolares';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { Modal } from '../../components/ui';

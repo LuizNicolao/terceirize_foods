@@ -3,17 +3,14 @@ FROM node:18 as build
 
 WORKDIR /app
 
-# Copiar foods-shared (dependência local)
-COPY foods/frontend /foods-shared
+# Copiar package.json
+COPY package.json ./
 
-# Copiar package.json do cozinha_industrial
-COPY cozinha_industrial/frontend/package.json ./
-
-# Instalar dependências (incluindo foods-shared local)
+# Instalar dependências
 RUN npm install
 
-# Copiar o resto dos arquivos do cozinha_industrial
-COPY cozinha_industrial/frontend .
+# Copiar o resto dos arquivos
+COPY . .
 
 # Build da aplicação
 RUN npm run build
@@ -22,7 +19,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copiar a configuração do nginx
-COPY cozinha_industrial/frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copiar os arquivos buildados
 COPY --from=build /app/build /usr/share/nginx/html

@@ -5,7 +5,6 @@
   "private": true,
   "homepage": "/implantacao",
   "dependencies": {
-    "foods-shared": "file:../../foods/frontend",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.5.2",

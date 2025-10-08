@@ -2,7 +2,6 @@
 module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
-    "../../foods/frontend/src/**/*.{js,jsx,ts,tsx}", // Componentes compartilhados do Foods
   ],
   theme: {
     extend: {
