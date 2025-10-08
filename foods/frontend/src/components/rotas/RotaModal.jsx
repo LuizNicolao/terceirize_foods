@@ -272,26 +272,45 @@ const RotaModal = ({
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
                 {unidadesFiltradas.map((unidade) => {
                   const isSelected = unidadesSelecionadas.some(u => u.id === unidade.id);
+                  const unidadeSelecionada = unidadesSelecionadas.find(u => u.id === unidade.id);
                   return (
                     <div
                       key={unidade.id}
-                      className={`flex items-start p-3 rounded-lg border cursor-pointer transition-colors ${
+                      className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
                         isSelected
                           ? 'bg-green-50 border-green-200'
                           : 'bg-white border-gray-200 hover:bg-gray-50'
                       }`}
-                      onClick={() => handleSelecionarUnidade(unidade, !isSelected)}
                     >
                       <input
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => handleSelecionarUnidade(unidade, !isSelected)}
-                        className="mr-3 mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded flex-shrink-0"
                       />
-                      <div className="flex-1 min-w-0">
+                      
+                      {isSelected && (
+                        <div className="flex-shrink-0 w-16">
+                          <input
+                            type="number"
+                            value={unidadeSelecionada?.ordem_entrega || 0}
+                            onChange={(e) => handleUpdateOrdem(unidade.id, e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            min="0"
+                            className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            placeholder="Ordem"
+                            title="Ordem de entrega"
+                          />
+                        </div>
+                      )}
+                      
+                      <div 
+                        className="flex-1 min-w-0 cursor-pointer"
+                        onClick={() => handleSelecionarUnidade(unidade, !isSelected)}
+                      >
                         <div className="font-medium text-gray-900 text-sm truncate" title={unidade.nome_escola}>
                           {unidade.nome_escola}
                         </div>
@@ -308,41 +327,8 @@ const RotaModal = ({
             
             {unidadesSelecionadas.length > 0 && (
               <div className="mt-3 pt-3 border-t border-gray-200">
-                <div className="text-sm font-medium text-gray-700 mb-3">
-                  Escolas Selecionadas ({unidadesSelecionadas.length}) - Defina a Ordem de Entrega:
-                </div>
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {unidadesSelecionadas
-                    .sort((a, b) => (a.ordem_entrega || 0) - (b.ordem_entrega || 0))
-                    .map((unidade) => (
-                    <div key={unidade.id} className="flex items-center gap-3 p-2 bg-green-50 rounded border border-green-200">
-                      <div className="flex-shrink-0 w-20">
-                        <input
-                          type="number"
-                          value={unidade.ordem_entrega || 0}
-                          onChange={(e) => handleUpdateOrdem(unidade.id, e.target.value)}
-                          min="0"
-                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                          placeholder="Ordem"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900 text-sm truncate" title={unidade.nome_escola}>
-                          {unidade.nome_escola}
-                        </div>
-                        <div className="text-xs text-gray-500 truncate">
-                          {unidade.codigo_teknisa} • {unidade.cidade}, {unidade.estado}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleSelecionarUnidade(unidade, false)}
-                        className="flex-shrink-0 text-red-600 hover:text-red-700 text-sm"
-                      >
-                        Remover
-                      </button>
-                    </div>
-                  ))}
+                <div className="text-sm text-gray-600">
+                  <span className="font-medium">{unidadesSelecionadas.length}</span> unidade(s) selecionada(s)
                 </div>
               </div>
             )}
