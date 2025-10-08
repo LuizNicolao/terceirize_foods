@@ -190,3 +190,5 @@ const RotasNutricionistasTable = ({
     </>
   );
 };
+
+export default RotasNutricionistasTable;
