@@ -507,15 +507,8 @@ class FoodsApiService {
     try {
       const response = await foodsApi.get('/rotas-nutricionistas', { params });
       
-      // A API de rotas nutricionistas retorna os dados em response.data.data.rotas
       let rotasData = response.data.data || response.data;
-      
-      // Verificar se os dados estão em .rotas (estrutura específica desta API)
-      if (rotasData && rotasData.rotas && Array.isArray(rotasData.rotas)) {
-        rotasData = rotasData.rotas;
-      }
-      // Fallback para .items (padrão de outras APIs)
-      else if (rotasData && rotasData.items && Array.isArray(rotasData.items)) {
+      if (rotasData && rotasData.items && Array.isArray(rotasData.items)) {
         rotasData = rotasData.items;
       }
       
@@ -524,7 +517,7 @@ class FoodsApiService {
       return {
         success: true,
         data: arrayData,
-        pagination: response.data.data?.pagination || response.data.pagination || null,
+        pagination: response.data.pagination || null,
         message: 'Rotas nutricionistas consultadas com sucesso'
       };
     } catch (error) {
