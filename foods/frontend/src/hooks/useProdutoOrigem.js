@@ -95,7 +95,7 @@ export const useProdutoOrigem = () => {
   // Carregar dados quando filtros mudam
   useEffect(() => {
     loadDataWithFilters();
-  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.grupoFilter, customFilters.subgrupoFilter, customFilters.classeFilter, customFilters.filters]);
+  }, [baseEntity.searchTerm, baseEntity.statusFilter, baseEntity.filters.grupoFilter, baseEntity.filters.subgrupoFilter, baseEntity.filters.classeFilter]);
 
   // Carregar dados quando paginação muda
   useEffect(() => {
@@ -111,13 +111,13 @@ export const useProdutoOrigem = () => {
    * Funções auxiliares
    */
   const handleClearFilters = useCallback(() => {
-    customFilters.setSearchTerm('');
-    customFilters.setStatusFilter('todos');
-    customFilters.setGrupoFilter('');
-    customFilters.setSubgrupoFilter('');
-    customFilters.setClasseFilter('');
+    baseEntity.setSearchTerm('');
+    baseEntity.setStatusFilter('todos');
+    baseEntity.updateFilter('grupoFilter', '');
+    baseEntity.updateFilter('subgrupoFilter', '');
+    baseEntity.updateFilter('classeFilter', '');
     baseEntity.setCurrentPage(1);
-  }, [customFilters, baseEntity]);
+  }, [baseEntity]);
 
   /**
    * Visualizar produto origem (busca dados completos)
@@ -208,10 +208,10 @@ export const useProdutoOrigem = () => {
     
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
-    statusFilter: customFilters.statusFilter,
-    grupoFilter: customFilters.grupoFilter,
-    subgrupoFilter: customFilters.subgrupoFilter,
-    classeFilter: customFilters.classeFilter,
+    statusFilter: baseEntity.statusFilter,
+    grupoFilter: baseEntity.filters.grupoFilter,
+    subgrupoFilter: baseEntity.filters.subgrupoFilter,
+    classeFilter: baseEntity.filters.classeFilter,
     
     // Estados de validação
     validationErrors: baseEntity.validationErrors,
@@ -236,10 +236,10 @@ export const useProdutoOrigem = () => {
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
-    setStatusFilter: customFilters.setStatusFilter,
-    setGrupoFilter: customFilters.setGrupoFilter,
-    setSubgrupoFilter: customFilters.setSubgrupoFilter,
-    setClasseFilter: customFilters.setClasseFilter,
+    setStatusFilter: baseEntity.setStatusFilter,
+    setGrupoFilter: (value) => baseEntity.updateFilter('grupoFilter', value),
+    setSubgrupoFilter: (value) => baseEntity.updateFilter('subgrupoFilter', value),
+    setClasseFilter: (value) => baseEntity.updateFilter('classeFilter', value),
     setItemsPerPage: baseEntity.handleItemsPerPageChange,
     handleClearFilters,
     
