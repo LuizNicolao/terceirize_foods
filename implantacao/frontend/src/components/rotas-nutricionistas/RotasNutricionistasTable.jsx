@@ -16,9 +16,10 @@ const RotasNutricionistasTable = ({
   loadingUsuarios
 }) => {
   // Adapt the boolean props to functions that the FoodsRotasNutricionistasTable expects
-  const canViewFn = () => canView;
-  const canEditFn = () => canEdit;
-  const canDeleteFn = () => canDelete;
+  // Only pass the function if the permission is true
+  const canViewFn = canView ? () => canView : undefined;
+  const canEditFn = canEdit ? () => canEdit : undefined;
+  const canDeleteFn = canDelete ? () => canDelete : undefined;
 
   return (
     <FoodsRotasNutricionistasTable

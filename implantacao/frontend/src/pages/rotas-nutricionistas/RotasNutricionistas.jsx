@@ -152,11 +152,7 @@ const RotasNutricionistas = () => {
       <RotasNutricionistasTable
         rotasNutricionistas={rotasNutricionistas}
         canView={canView('rotas_nutricionistas')}
-        canEdit={false}
-        canDelete={false}
         onView={handleView}
-        onEdit={() => {}}
-        onDelete={() => {}}
         getUsuarioName={(id) => rotasNutricionistas.find(r => r.usuario_id === id)?.usuario_nome || '-'}
         getSupervisorName={(id) => rotasNutricionistas.find(r => r.supervisor_id === id)?.supervisor_nome || '-'}
         getCoordenadorName={(id) => rotasNutricionistas.find(r => r.coordenador_id === id)?.coordenador_nome || '-'}

@@ -118,11 +118,8 @@ export const useRotasNutricionistasConsulta = () => {
           limit
         });
 
-        console.log('🔍 RotasNutricionistas API Response:', result); // Debug log
-
         if (result.success && result.data.length > 0) {
           allRotasData = [...allRotasData, ...result.data];
-          console.log('✅ Items found:', result.data.length, 'Total so far:', allRotasData.length); // Debug log
           
           // Se retornou menos que o limite, não há mais dados
           if (result.data.length < limit) {
@@ -131,7 +128,6 @@ export const useRotasNutricionistasConsulta = () => {
             page++;
           }
         } else {
-          console.log('❌ No data or error:', result.message); // Debug log
           hasMoreData = false;
         }
 
@@ -140,8 +136,6 @@ export const useRotasNutricionistasConsulta = () => {
           hasMoreData = false;
         }
       }
-
-      console.log('📊 Final allRotasData:', allRotasData.length); // Debug log
 
       // Simular resultado como se fosse uma única requisição
       const result = {
