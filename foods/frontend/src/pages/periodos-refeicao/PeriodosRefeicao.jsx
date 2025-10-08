@@ -11,9 +11,8 @@ import { Pagination } from '../../components/ui';
 import { ConfirmModal } from '../../components/ui';
 import PeriodoRefeicaoModal from '../../components/periodos-refeicao/PeriodoRefeicaoModal';
 import PeriodosRefeicaoStats from '../../components/periodos-refeicao/PeriodosRefeicaoStats';
-import PeriodosRefeicaoActions from '../../components/periodos-refeicao/PeriodosRefeicaoActions';
 import PeriodosRefeicaoTable from '../../components/periodos-refeicao/PeriodosRefeicaoTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const PeriodosRefeicao = () => {
@@ -140,11 +139,14 @@ const PeriodosRefeicao = () => {
         />
       </div>
 
-      {/* Ações */}
-      <PeriodosRefeicaoActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('periodos_refeicao')}
+        />
+      </div>
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
