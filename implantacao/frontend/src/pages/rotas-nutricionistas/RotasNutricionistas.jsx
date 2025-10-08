@@ -128,10 +128,7 @@ const RotasNutricionistas = () => {
       </div>
 
       {/* Estatísticas */}
-      <RotasNutricionistasStats 
-        rotasNutricionistas={rotasNutricionistas}
-        unidadesEscolares={[]}
-      />
+      <RotasNutricionistasStats stats={stats} />
 
       {/* Filtros */}
       <CadastroFilterBar

@@ -1,38 +1,34 @@
 import React from 'react';
-import { FaBuilding, FaSchool } from 'react-icons/fa';
+import { FaRoute, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import { StatCard } from '../ui';
 
-const RotasNutricionistasStats = ({ rotasNutricionistas = [], unidadesEscolares = [] }) => {
-  const totalRotas = rotasNutricionistas?.length || 0;
-  const rotasAtivas = rotasNutricionistas?.filter(rota => rota.status === 'ativo' || rota.status === 1)?.length || 0;
-  const rotasInativas = rotasNutricionistas?.filter(rota => rota.status === 'inativo' || rota.status === 0)?.length || 0;
-  const totalUnidadesEscolares = unidadesEscolares?.length || 0;
+const RotasNutricionistasStats = ({ stats = {} }) => {
+  const totalRotas = stats.total || 0;
+  const rotasAtivas = stats.ativos || 0;
+  const rotasInativas = stats.inativos || 0;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
       <StatCard
         title="Total de Rotas"
         value={totalRotas}
-        icon={FaBuilding}
+        icon={FaRoute}
         color="blue"
+        description="Total de rotas cadastradas"
       />
       <StatCard
         title="Rotas Ativas"
         value={rotasAtivas}
-        icon={FaBuilding}
+        icon={FaCheckCircle}
         color="green"
+        description="Rotas em atividade"
       />
       <StatCard
         title="Rotas Inativas"
         value={rotasInativas}
-        icon={FaBuilding}
+        icon={FaTimesCircle}
         color="red"
-      />
-      <StatCard
-        title="Unidades Escolares"
-        value={totalUnidadesEscolares}
-        icon={FaSchool}
-        color="orange"
+        description="Rotas desativadas"
       />
     </div>
   );
