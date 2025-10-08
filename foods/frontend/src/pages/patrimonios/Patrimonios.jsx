@@ -10,12 +10,11 @@ import { Button } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { PatrimoniosStats } from '../../components/patrimonios';
-import PatrimoniosActions from '../../components/patrimonios/PatrimoniosActions';
 import PatrimoniosTable from '../../components/patrimonios/PatrimoniosTable';
 import PatrimoniosForm from '../../components/patrimonios/PatrimoniosForm';
 import PatrimoniosMovimentacaoForm from '../../components/patrimonios/PatrimoniosMovimentacaoForm';
 import PatrimoniosMovimentacoesModal from '../../components/patrimonios/PatrimoniosMovimentacoesModal';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import { ConfirmModal } from '../../components/ui';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
@@ -144,11 +143,14 @@ const Patrimonios = () => {
         placeholder="Buscar por produto, número do patrimônio..."
       />
 
-      {/* Ações */}
-      <PatrimoniosActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('patrimonios')}
+        />
+      </div>
 
       {/* Tabela de Patrimônios */}
       <PatrimoniosTable

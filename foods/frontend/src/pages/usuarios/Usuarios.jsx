@@ -10,9 +10,8 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { UsuarioModal } from '../../components/usuarios';
 import UsuariosStats from '../../components/usuarios/UsuariosStats';
-import UsuariosActions from '../../components/usuarios/UsuariosActions';
 import UsuariosTable from '../../components/usuarios/UsuariosTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Usuarios = () => {
@@ -117,11 +116,14 @@ const Usuarios = () => {
         placeholder="Buscar por nome ou email..."
       />
 
-      {/* Ações */}
-      <UsuariosActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('usuarios')}
+        />
+      </div>
 
       {/* Tabela */}
       <UsuariosTable
