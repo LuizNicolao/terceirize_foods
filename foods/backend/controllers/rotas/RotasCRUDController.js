@@ -317,10 +317,11 @@ class RotasCRUDController {
       );
 
       if (unidadesVinculadas[0].total > 0) {
+        const totalUnidades = unidadesVinculadas[0].total;
         return res.status(400).json({
           success: false,
           error: 'Rota em uso',
-          message: 'Não é possível excluir a rota pois existem unidades escolares vinculadas a ela'
+          message: `Não é possível excluir esta rota. Existem ${totalUnidades} unidade(s) escolar(es) vinculada(s) a ela. Para excluir esta rota, primeiro desvincule todas as unidades escolares editando a rota e desmarcando as escolas selecionadas.`
         });
       }
 
