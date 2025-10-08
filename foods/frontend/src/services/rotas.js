@@ -206,6 +206,44 @@ class RotasService {
       };
     }
   }
+
+  // Exportar rotas para XLSX
+  static async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/rotas/export/xlsx', { 
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao exportar dados'
+      };
+    }
+  }
+
+  // Exportar rotas para PDF
+  static async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/rotas/export/pdf', { 
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Erro ao exportar dados'
+      };
+    }
+  }
 }
 
 export default RotasService; 

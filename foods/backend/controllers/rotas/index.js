@@ -7,6 +7,7 @@ const RotasListController = require('./RotasListController');
 const RotasCRUDController = require('./RotasCRUDController');
 const RotasSearchController = require('./RotasSearchController');
 const RotasStatsController = require('./RotasStatsController');
+const RotasExportController = require('./RotasExportController');
 
 module.exports = {
   // Métodos de Listagem
@@ -26,5 +27,9 @@ module.exports = {
   buscarUnidadesEscolaresRota: RotasSearchController.buscarUnidadesEscolaresRota,
   
   // Métodos de Estatísticas
-  buscarEstatisticasRotas: RotasStatsController.buscarEstatisticasRotas
+  buscarEstatisticasRotas: RotasStatsController.buscarEstatisticasRotas,
+  
+  // Métodos de Exportação
+  exportarXLSX: RotasExportController.exportarXLSX,
+  exportarPDF: RotasExportController.exportarPDF
 };

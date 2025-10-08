@@ -96,4 +96,18 @@ router.delete('/:id', [
   commonValidations.id
 ], rotasController.excluirRota);
 
+// ===== ROTAS DE EXPORTAÇÃO =====
+
+// GET /api/rotas/export/xlsx - Exportar para XLSX
+router.get('/export/xlsx',
+  checkScreenPermission('rotas', 'visualizar'),
+  rotasController.exportarXLSX
+);
+
+// GET /api/rotas/export/pdf - Exportar para PDF
+router.get('/export/pdf',
+  checkScreenPermission('rotas', 'visualizar'),
+  rotasController.exportarPDF
+);
+
 module.exports = router;
