@@ -61,7 +61,7 @@ class UnidadesEscolaresSearchController {
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
         WHERE ${whereConditions.join(' AND ')}
-        ORDER BY ue.nome_escola ASC
+        ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
       `;
 
       const unidades = await executeQuery(query, params);
@@ -99,7 +99,7 @@ class UnidadesEscolaresSearchController {
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
         WHERE ue.estado = ? AND ue.status = 'ativo'
-        ORDER BY ue.nome_escola ASC
+        ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
       `;
 
       const unidades = await executeQuery(query, [estado]);
@@ -197,7 +197,7 @@ class UnidadesEscolaresSearchController {
           ue.centro_distribuicao
         FROM unidades_escolares ue
         WHERE ${whereConditions.join(' AND ')}
-        ORDER BY ue.nome_escola ASC
+        ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
       `;
 
       const unidades = await executeQuery(query, params);
@@ -326,7 +326,7 @@ class UnidadesEscolaresSearchController {
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
         WHERE ${whereConditions.join(' AND ')}
-        ORDER BY ue.nome_escola ASC
+        ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
       `;
 
       const unidades = await executeQuery(query, params);
@@ -425,7 +425,7 @@ class UnidadesEscolaresSearchController {
         LEFT JOIN rotas r ON ue.rota_id = r.id
         LEFT JOIN filiais f ON ue.filial_id = f.id
         WHERE ${whereConditions.join(' AND ')}
-        ORDER BY ue.nome_escola ASC
+        ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
       `;
 
       const unidades = await executeQuery(query, params);

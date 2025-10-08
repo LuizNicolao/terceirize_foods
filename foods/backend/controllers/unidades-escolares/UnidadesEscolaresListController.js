@@ -139,7 +139,7 @@ class UnidadesEscolaresListController {
         LEFT JOIN rotas_nutricionistas rn ON ue.rota_nutricionista_id = rn.id
         LEFT JOIN usuarios u ON rn.usuario_id = u.id
         WHERE ${whereConditions.join(' AND ')}
-        ORDER BY ue.nome_escola ASC
+        ORDER BY ue.ordem_entrega ASC, ue.nome_escola ASC
         LIMIT ${limitNum} OFFSET ${offset}
       `;
 
