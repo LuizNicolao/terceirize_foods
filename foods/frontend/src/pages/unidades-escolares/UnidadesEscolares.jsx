@@ -130,8 +130,6 @@ const UnidadesEscolares = () => {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
         additionalFilters={[
           {
             label: 'Rota',
