@@ -431,6 +431,72 @@ class FoodsApiService {
   }
 
   /**
+   * ==================== ROTAS ====================
+   */
+  
+  /**
+   * Consultar rotas do sistema Foods
+   */
+  static async getRotas(params = {}) {
+    try {
+      const response = await foodsApi.get('/rotas', { params });
+      
+      let rotasData = response.data.data || response.data;
+      if (rotasData && rotasData.items && Array.isArray(rotasData.items)) {
+        rotasData = rotasData.items;
+      }
+      
+      const arrayData = Array.isArray(rotasData) ? rotasData : [];
+      
+      return {
+        success: true,
+        data: arrayData,
+        pagination: response.data.pagination || null,
+        message: 'Rotas consultadas com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        pagination: null,
+        message: error.response?.data?.message || 'Erro ao consultar rotas',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
+   * Buscar rotas ativas (para dropdowns)
+   */
+  static async getRotasAtivas() {
+    try {
+      const response = await foodsApi.get('/rotas', { 
+        params: { status: 'ativo', limit: 1000 } 
+      });
+      
+      let rotasData = response.data.data || response.data;
+      if (rotasData && rotasData.items && Array.isArray(rotasData.items)) {
+        rotasData = rotasData.items;
+      }
+      
+      const arrayData = Array.isArray(rotasData) ? rotasData : [];
+      
+      return {
+        success: true,
+        data: arrayData,
+        message: 'Rotas ativas consultadas com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        message: error.response?.data?.message || 'Erro ao consultar rotas ativas',
+        error: error.response?.data || error.message
+      };
+    }
+  }
+
+  /**
    * ==================== ROTAS NUTRICIONISTAS ====================
    */
   

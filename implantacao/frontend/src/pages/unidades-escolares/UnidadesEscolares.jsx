@@ -25,6 +25,10 @@ const UnidadesEscolares = () => {
     error,
     pagination,
     filters,
+    rotas,
+    filiais,
+    loadingRotas,
+    loadingFiliais,
     carregarUnidadesEscolares,
     buscarUnidadeEscolarPorId,
     atualizarFiltros,
@@ -52,6 +56,14 @@ const UnidadesEscolares = () => {
 
   const handleSearch = (searchTerm) => {
     atualizarFiltros({ search: searchTerm });
+  };
+
+  const handleRotaFilter = (rotaFilter) => {
+    atualizarFiltros({ rotaFilter });
+  };
+
+  const handleFilialFilter = (filialFilter) => {
+    atualizarFiltros({ filialFilter });
   };
 
   const handlePageChange = (page) => {
@@ -136,6 +148,32 @@ const UnidadesEscolares = () => {
         searchTerm={filters.search}
         onSearchChange={handleSearch}
         placeholder="Buscar por código, nome da escola, cidade ou estado..."
+        additionalFilters={[
+          {
+            label: 'Rota',
+            value: filters.rotaFilter,
+            onChange: handleRotaFilter,
+            options: [
+              { value: 'todos', label: loadingRotas ? 'Carregando...' : 'Todas as rotas' },
+              ...rotas.map(rota => ({
+                value: rota.id.toString(),
+                label: rota.nome
+              }))
+            ]
+          },
+          {
+            label: 'Filial',
+            value: filters.filialFilter,
+            onChange: handleFilialFilter,
+            options: [
+              { value: 'todos', label: loadingFiliais ? 'Carregando...' : 'Todas as filiais' },
+              ...filiais.map(filial => ({
+                value: filial.id.toString(),
+                label: `${filial.filial} (${filial.codigo_filial})`
+              }))
+            ]
+          }
+        ]}
       />
 
       {/* Ações */}
@@ -168,8 +206,11 @@ const UnidadesEscolares = () => {
         canDelete={false}
         onEdit={() => {}}
         onDelete={() => {}}
-        getRotaName={() => 'N/A'}
-        loadingRotas={false}
+        getRotaName={(rotaId) => {
+          const rota = rotas.find(r => r.id.toString() === rotaId.toString());
+          return rota ? rota.nome : 'N/A';
+        }}
+        loadingRotas={loadingRotas}
         mode="consulta"
       />
 

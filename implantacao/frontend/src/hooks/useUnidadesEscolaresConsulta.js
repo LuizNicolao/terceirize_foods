@@ -25,14 +25,17 @@ export const useUnidadesEscolaresConsulta = () => {
     search: '',
     status: 'todos', // todos, ativo, inativo
     cidade: '',
-    estado: ''
+    estado: '',
+    rotaFilter: 'todos',
+    filialFilter: 'todos'
   });
 
   // Estados de estatísticas
   const [stats, setStats] = useState({
-    total: 0,
-    ativos: 0,
-    inativos: 0
+    total_unidades: 0,
+    unidades_ativas: 0,
+    total_estados: 0,
+    total_cidades: 0
   });
 
   // Estados de conexão
@@ -41,6 +44,12 @@ export const useUnidadesEscolaresConsulta = () => {
     message: 'Verificando conexão...',
     success: false,
   });
+
+  // Estados para filtros
+  const [rotas, setRotas] = useState([]);
+  const [filiais, setFiliais] = useState([]);
+  const [loadingRotas, setLoadingRotas] = useState(false);
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
 
   /**
    * Aplicar paginação no frontend
@@ -71,14 +80,62 @@ export const useUnidadesEscolaresConsulta = () => {
   }, []);
 
   /**
+   * Carregar rotas ativas
+   */
+  const carregarRotas = useCallback(async () => {
+    try {
+      setLoadingRotas(true);
+      const result = await FoodsApiService.getRotasAtivas();
+      if (result.success) {
+        setRotas(result.data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar rotas:', error);
+      setRotas([]);
+    } finally {
+      setLoadingRotas(false);
+    }
+  }, []);
+
+  /**
+   * Carregar filiais ativas
+   */
+  const carregarFiliais = useCallback(async () => {
+    try {
+      setLoadingFiliais(true);
+      const result = await FoodsApiService.getFiliaisAtivas();
+      if (result.success) {
+        setFiliais(result.data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar filiais:', error);
+      setFiliais([]);
+    } finally {
+      setLoadingFiliais(false);
+    }
+  }, []);
+
+  /**
    * Calcular estatísticas localmente
    */
   const calcularEstatisticas = useCallback((unidadesData) => {
-    const total = unidadesData.length;
-    const ativos = unidadesData.filter(u => u.status === 'ativo' || u.status === 1).length;
-    const inativos = unidadesData.filter(u => u.status === 'inativo' || u.status === 0).length;
+    const total_unidades = unidadesData.length;
+    const unidades_ativas = unidadesData.filter(u => u.status === 'ativo' || u.status === 1).length;
     
-    return { total, ativos, inativos };
+    // Calcular estados únicos
+    const estadosUnicos = new Set(unidadesData.map(u => u.estado).filter(Boolean));
+    const total_estados = estadosUnicos.size;
+    
+    // Calcular cidades únicas
+    const cidadesUnicas = new Set(unidadesData.map(u => u.cidade).filter(Boolean));
+    const total_cidades = cidadesUnicas.size;
+    
+    return { 
+      total_unidades, 
+      unidades_ativas, 
+      total_estados, 
+      total_cidades 
+    };
   }, []);
 
   /**
@@ -201,7 +258,12 @@ export const useUnidadesEscolaresConsulta = () => {
       const result = await FoodsApiService.getUnidadesEscolaresStats();
       
       if (result.success) {
-        setStats(result.data || { total: 0, ativos: 0, inativos: 0 });
+        setStats(result.data || { 
+          total_unidades: 0, 
+          unidades_ativas: 0, 
+          total_estados: 0, 
+          total_cidades: 0 
+        });
       }
     } catch (err) {
       // Não definir erro aqui pois não é crítico
@@ -262,7 +324,7 @@ export const useUnidadesEscolaresConsulta = () => {
    * Recarregar dados
    */
   const recarregar = useCallback(() => {
-    setFilters({ search: '', status: 'todos', cidade: '', estado: '' });
+    setFilters({ search: '', status: 'todos', cidade: '', estado: '', rotaFilter: 'todos', filialFilter: 'todos' });
     setPagination({ currentPage: 1, totalPages: 1, totalItems: 0, itemsPerPage: 20 });
     setAllUnidadesEscolares([]);
     setUnidadesEscolares([]);
@@ -271,7 +333,9 @@ export const useUnidadesEscolaresConsulta = () => {
     checkConnection();
     carregarUnidadesEscolares();
     carregarEstatisticas();
-  }, [checkConnection, carregarUnidadesEscolares, carregarEstatisticas]);
+    carregarRotas();
+    carregarFiliais();
+  }, [checkConnection, carregarUnidadesEscolares, carregarEstatisticas, carregarRotas, carregarFiliais]);
 
   // Efeitos
   useEffect(() => {
@@ -282,18 +346,30 @@ export const useUnidadesEscolaresConsulta = () => {
     carregarEstatisticas();
   }, [carregarEstatisticas]);
 
+  useEffect(() => {
+    carregarRotas();
+  }, [carregarRotas]);
+
+  useEffect(() => {
+    carregarFiliais();
+  }, [carregarFiliais]);
+
   // Retornar interface do hook
   return {
     // Dados
     unidadesEscolares,
     stats,
     connectionStatus,
+    rotas,
+    filiais,
     
     // Estados
     loading,
     error,
     pagination,
     filters,
+    loadingRotas,
+    loadingFiliais,
     
     // Funções
     carregarUnidadesEscolares,
