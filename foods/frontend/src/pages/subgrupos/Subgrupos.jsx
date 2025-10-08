@@ -10,9 +10,8 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { SubgrupoModal } from '../../components/subgrupos';
 import SubgruposStats from '../../components/subgrupos/SubgruposStats';
-import SubgruposActions from '../../components/subgrupos/SubgruposActions';
 import SubgruposTable from '../../components/subgrupos/SubgruposTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Subgrupos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -146,11 +145,14 @@ const Subgrupos = () => {
         ]}
       />
 
-      {/* Ações */}
-      <SubgruposActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('subgrupos')}
+        />
+      </div>
 
       {/* Tabela */}
       <SubgruposTable

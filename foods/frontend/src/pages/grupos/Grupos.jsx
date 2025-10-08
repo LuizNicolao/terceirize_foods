@@ -10,9 +10,8 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { GrupoModal } from '../../components/grupos';
 import GruposStats from '../../components/grupos/GruposStats';
-import GruposActions from '../../components/grupos/GruposActions';
 import GruposTable from '../../components/grupos/GruposTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Grupos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -119,11 +118,14 @@ const Grupos = () => {
         placeholder="Buscar por nome, código ou descrição..."
       />
 
-      {/* Ações */}
-      <GruposActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('grupos')}
+        />
+      </div>
 
       {/* Tabela */}
       <GruposTable

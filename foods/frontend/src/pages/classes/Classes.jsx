@@ -10,9 +10,8 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ClasseModal } from '../../components/classes';
 import ClassesStats from '../../components/classes/ClassesStats';
-import ClassesActions from '../../components/classes/ClassesActions';
 import ClassesTable from '../../components/classes/ClassesTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Classes = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -146,11 +145,14 @@ const Classes = () => {
         ]}
       />
 
-      {/* Ações */}
-      <ClassesActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('classes')}
+        />
+      </div>
 
       {/* Tabela */}
       <ClassesTable

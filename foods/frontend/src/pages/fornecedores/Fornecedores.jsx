@@ -7,10 +7,9 @@ import { Button, ConfirmModal } from '../../components/ui';
 import { 
   FornecedorModal, 
   FornecedoresTable, 
-  FornecedoresStats, 
-  FornecedoresActions 
+  FornecedoresStats
 } from '../../components/fornecedores';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
@@ -129,11 +128,14 @@ const Fornecedores = () => {
         placeholder="Buscar por razão social, nome fantasia ou CNPJ..."
       />
 
-      {/* Ações */}
-      <FornecedoresActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('fornecedores')}
+        />
+      </div>
 
       {/* Tabela */}
       <FornecedoresTable
