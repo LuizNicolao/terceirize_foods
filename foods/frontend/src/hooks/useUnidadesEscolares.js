@@ -168,10 +168,23 @@ export const useUnidadesEscolares = () => {
     loadEstatisticasUnidades();
   }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
 
-  // Recarregar dados quando filtros mudarem (sem incluir loadData nas dependências para evitar loop)
+  // Recarregar dados quando filtros mudarem
   useEffect(() => {
-    baseEntity.loadData();
+    const params = {
+      rota_id: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
+      filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
+    };
+    baseEntity.loadData(params);
   }, [customFilters.filters.rotaFilter, customFilters.filters.filialFilter, customFilters.statusFilter]);
+  
+  // Recarregar dados quando a página mudar, mantendo os filtros
+  useEffect(() => {
+    const params = {
+      rota_id: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
+      filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
+    };
+    baseEntity.loadData(params);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 
   // Override da função loadData para incluir filtros customizados
   const originalLoadData = baseEntity.loadData;
