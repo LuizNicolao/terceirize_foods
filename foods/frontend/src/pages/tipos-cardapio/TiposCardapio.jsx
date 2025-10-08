@@ -11,9 +11,8 @@ import { Pagination } from '../../components/ui';
 import { ConfirmModal } from '../../components/ui';
 import { TipoCardapioModal } from '../../components/tipos-cardapio';
 import TiposCardapioStats from '../../components/tipos-cardapio/TiposCardapioStats';
-import TiposCardapioActions from '../../components/tipos-cardapio/TiposCardapioActions';
 import TiposCardapioTable from '../../components/tipos-cardapio/TiposCardapioTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const TiposCardapio = () => {
@@ -116,11 +115,14 @@ const TiposCardapio = () => {
         placeholder="Buscar por nome ou código..."
       />
 
-      {/* Ações */}
-      <TiposCardapioActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('tipos_cardapio')}
+        />
+      </div>
 
       {/* Tabela */}
       <TiposCardapioTable

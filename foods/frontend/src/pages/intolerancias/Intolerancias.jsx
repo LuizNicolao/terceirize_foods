@@ -8,8 +8,8 @@ import IntoleranciasService from '../../services/intolerancias';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { IntoleranciaModal, IntoleranciasTable, IntoleranciasStats, IntoleranciasActions } from '../../components/intolerancias';
-import { AuditModal } from '../../components/shared';
+import { IntoleranciaModal, IntoleranciasTable, IntoleranciasStats } from '../../components/intolerancias';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Intolerancias = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -113,12 +113,14 @@ const Intolerancias = () => {
         placeholder="Buscar por nome..."
       />
 
-      {/* Ações */}
-      <IntoleranciasActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={totalItems}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('intolerancias')}
+        />
+      </div>
 
       {/* Tabela */}
       <IntoleranciasTable
