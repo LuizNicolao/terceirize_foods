@@ -11,11 +11,10 @@ import { Pagination } from '../../components/ui';
 import { 
   ReceitaModal, 
   ReceitaTable, 
-  ReceitaStats, 
-  ReceitaActions,
+  ReceitaStats,
   ReceitaPreviewModal
 } from '../../components/receitas';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Receitas = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -135,12 +134,13 @@ const Receitas = () => {
       </div>
 
       {/* Ações */}
-      <ReceitaActions 
-        onExportXLSX={exportXLSX}
-        onExportPDF={exportPDF}
-        totalItems={totalItems}
-        selectedItems={[]}
-      />
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={exportXLSX}
+          onExportPDF={exportPDF}
+          disabled={!canView('receitas')}
+        />
+      </div>
 
       {/* Tabela */}
       <ReceitaTable

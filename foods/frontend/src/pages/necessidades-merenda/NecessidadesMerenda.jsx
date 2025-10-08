@@ -11,12 +11,11 @@ import { Pagination } from '../../components/ui';
 import { 
   NecessidadeModal, 
   NecessidadeTable, 
-  NecessidadeStats, 
-  NecessidadeActions,
+  NecessidadeStats,
   NecessidadeUploadModal,
   NecessidadePreviewModal
 } from '../../components/necessidades-merenda';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const NecessidadesMerenda = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -172,13 +171,13 @@ const NecessidadesMerenda = () => {
       />
 
       {/* Ações de Exportação */}
-      <NecessidadeActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        onExportListaCompras={handleExportListaCompras}
-        totalItems={totalItems}
-        selectedItems={[]}
-      />
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('necessidades_merenda')}
+        />
+      </div>
 
       {/* Tabela */}
       <NecessidadeTable
