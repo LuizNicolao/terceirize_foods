@@ -82,4 +82,18 @@ router.delete('/:id',
   ClassesController.excluirClasse
 );
 
+// ===== ROTAS DE EXPORTAÇÃO =====
+
+// GET /api/classes/export/xlsx - Exportar para XLSX
+router.get('/export/xlsx',
+  checkScreenPermission('classes', 'visualizar'),
+  ClassesController.exportarXLSX
+);
+
+// GET /api/classes/export/pdf - Exportar para PDF
+router.get('/export/pdf',
+  checkScreenPermission('classes', 'visualizar'),
+  ClassesController.exportarPDF
+);
+
 module.exports = router;

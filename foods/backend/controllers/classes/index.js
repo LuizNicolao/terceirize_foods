@@ -7,6 +7,7 @@ const ClassesListController = require('./ClassesListController');
 const ClassesCRUDController = require('./ClassesCRUDController');
 const ClassesSearchController = require('./ClassesSearchController');
 const ClassesStatsController = require('./ClassesStatsController');
+const ClassesExportController = require('./ClassesExportController');
 
 module.exports = {
   // Métodos de Listagem
@@ -25,5 +26,9 @@ module.exports = {
   listarSubgrupos: ClassesSearchController.listarSubgrupos,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: ClassesStatsController.buscarEstatisticas
+  buscarEstatisticas: ClassesStatsController.buscarEstatisticas,
+  
+  // Métodos de Exportação
+  exportarXLSX: ClassesExportController.exportarXLSX,
+  exportarPDF: ClassesExportController.exportarPDF
 };

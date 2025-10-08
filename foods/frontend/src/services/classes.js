@@ -251,6 +251,27 @@ class ClassesService {
   }
 
   /**
+   * Exportar classes para XLSX
+   */
+  static async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/classes/export/xlsx', { 
+        params,
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Erro ao exportar XLSX'
+      };
+    }
+  }
+
+  /**
    * Exportar classes para PDF
    */
   static async exportarPDF(params = {}) {
