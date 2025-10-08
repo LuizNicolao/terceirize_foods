@@ -9,7 +9,7 @@ import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui'
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { UnidadeEscolarModal, UnidadesEscolaresTable, UnidadesEscolaresStats, ImportarUnidadesEscolares } from '../../components/unidades-escolares';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const UnidadesEscolares = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -159,24 +159,13 @@ const UnidadesEscolares = () => {
         placeholder="Buscar por código, nome, cidade ou estado..."
       />
 
-      {/* Ações */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
-        <Button
-          onClick={handleExportXLSX}
-          variant="outline"
-          size="sm"
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
           disabled={!canView('unidades_escolares')}
-        >
-          Exportar XLSX
-        </Button>
-        <Button
-          onClick={handleExportPDF}
-          variant="outline"
-          size="sm"
-          disabled={!canView('unidades_escolares')}
-        >
-          Exportar PDF
-        </Button>
+        />
       </div>
 
       {/* Tabela */}

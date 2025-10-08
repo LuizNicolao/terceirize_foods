@@ -9,7 +9,7 @@ import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui'
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { RotaModal, RotasTable, RotasStats } from '../../components/rotas';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Rotas = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -139,23 +139,12 @@ const Rotas = () => {
       />
 
       {/* Ações de Exportação */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
-        <Button
-          onClick={handleExportXLSX}
-          variant="outline"
-          size="sm"
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
           disabled={!canView('rotas')}
-        >
-          Exportar XLSX
-        </Button>
-        <Button
-          onClick={handleExportPDF}
-          variant="outline"
-          size="sm"
-          disabled={!canView('rotas')}
-        >
-          Exportar PDF
-        </Button>
+        />
       </div>
 
       {/* Tabela */}
