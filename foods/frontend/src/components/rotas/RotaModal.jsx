@@ -278,7 +278,7 @@ const RotaModal = ({
                   <div className="text-xs font-medium text-gray-600 mb-2">
                     Escolas Disponíveis ({unidadesFiltradas.length})
                   </div>
-                  <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto p-1">
+                  <div className="grid grid-cols-3 gap-3 max-h-[600px] overflow-y-auto p-1">
                     {unidadesFiltradas.map((unidade) => {
                       const isSelected = unidadesSelecionadas.some(u => u.id === unidade.id);
                       return (
@@ -317,7 +317,7 @@ const RotaModal = ({
                   <div className="text-xs font-medium text-gray-600 mb-2">
                     Escolas Selecionadas ({unidadesSelecionadas.length}) - Ordem de Entrega
                   </div>
-                  <div className="space-y-2 max-h-96 overflow-y-auto p-1 bg-gray-50 rounded-lg border-2 border-green-200">
+                  <div className="space-y-2 max-h-[600px] overflow-y-auto p-1 bg-gray-50 rounded-lg border-2 border-green-200">
                     {unidadesSelecionadas.length === 0 ? (
                       <div className="text-center py-8 text-gray-400 text-sm">
                         Selecione escolas ao lado<br/>para definir ordem de entrega
