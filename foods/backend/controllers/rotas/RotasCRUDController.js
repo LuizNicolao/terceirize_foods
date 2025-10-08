@@ -15,6 +15,7 @@ class RotasCRUDController {
         nome,
         status = 'ativo',
         tipo_rota = 'semanal',
+        ordem_entrega = 0,
         unidades_selecionadas = []
       } = req.body;
 
@@ -89,10 +90,10 @@ class RotasCRUDController {
             );
 
             if (unidadeExistente.length > 0 && !unidadeExistente[0].rota_id) {
-              // Vincular a unidade à rota
+              // Vincular a unidade à rota e definir ordem de entrega
               await executeQuery(
-                'UPDATE unidades_escolares SET rota_id = ? WHERE id = ?',
-                [result.insertId, unidade.id]
+                'UPDATE unidades_escolares SET rota_id = ?, ordem_entrega = ? WHERE id = ?',
+                [result.insertId, ordem_entrega, unidade.id]
               );
             }
           }
@@ -131,6 +132,7 @@ class RotasCRUDController {
         nome,
         status,
         tipo_rota,
+        ordem_entrega = 0,
         unidades_selecionadas = []
       } = req.body;
 
@@ -243,7 +245,7 @@ class RotasCRUDController {
       if (unidades_selecionadas !== undefined) {
         // Primeiro, remover todas as vinculações existentes desta rota
         await executeQuery(
-          'UPDATE unidades_escolares SET rota_id = NULL WHERE rota_id = ?',
+          'UPDATE unidades_escolares SET rota_id = NULL, ordem_entrega = 0 WHERE rota_id = ?',
           [id]
         );
 
@@ -258,10 +260,10 @@ class RotasCRUDController {
               );
 
               if (unidadeExistente.length > 0 && (!unidadeExistente[0].rota_id || unidadeExistente[0].rota_id == id)) {
-                // Vincular a unidade à rota
+                // Vincular a unidade à rota e definir ordem de entrega
                 await executeQuery(
-                  'UPDATE unidades_escolares SET rota_id = ? WHERE id = ?',
-                  [id, unidade.id]
+                  'UPDATE unidades_escolares SET rota_id = ?, ordem_entrega = ? WHERE id = ?',
+                  [id, ordem_entrega, unidade.id]
                 );
               }
             }

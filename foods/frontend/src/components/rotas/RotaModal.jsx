@@ -189,6 +189,18 @@ const RotaModal = ({
                 <option value="ativo">Ativo</option>
                 <option value="inativo">Inativo</option>
               </Input>
+
+              <Input
+                label="Ordem de Entrega"
+                type="number"
+                placeholder="Ex: 1, 2, 3..."
+                {...register('ordem_entrega')}
+                disabled={isViewMode}
+                min="0"
+              />
+              <p className="text-xs text-gray-500 -mt-2">
+                Todas as escolas vinculadas a esta rota receberão este número de ordem
+              </p>
             </div>
           </div>
         </div>
