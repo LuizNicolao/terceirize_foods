@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import { FaQuestionCircle, FaEye, FaExclamationTriangle } from 'react-icons/fa';
+import { FaQuestionCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useUnidadesEscolaresConsulta } from '../../hooks/useUnidadesEscolaresConsulta';
-import { Button } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
+import { CadastroFilterBar } from '../../components/ui';
+import { Pagination } from '../../components/ui';
 import { 
   UnidadesEscolaresTable, 
   UnidadesEscolaresStats,
   UnidadeEscolarModal
 } from '../../components/unidades-escolares';
-import { CadastroFilterBar } from '../../components/ui';
-import { Pagination } from '../../components/ui';
-import { Modal } from '../../components/ui';
-import { ConsultaActions } from '../../components/shared';
 
 const UnidadesEscolares = () => {
   const { canView } = usePermissions();
@@ -112,9 +110,9 @@ const UnidadesEscolares = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Unidades Escolares</h1>
         <div className="flex gap-2 sm:gap-3">
           <Button
@@ -141,29 +139,39 @@ const UnidadesEscolares = () => {
       />
 
       {/* Ações */}
-      <ConsultaActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={unidadesEscolares.length}
-        loading={loading}
-      />
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
+        <Button
+          onClick={handleExportXLSX}
+          variant="outline"
+          size="sm"
+          disabled={!canView('unidades_escolares')}
+        >
+          Exportar XLSX
+        </Button>
+        <Button
+          onClick={handleExportPDF}
+          variant="outline"
+          size="sm"
+          disabled={!canView('unidades_escolares')}
+        >
+          Exportar PDF
+        </Button>
+      </div>
 
       {/* Tabela */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
       <UnidadesEscolaresTable
-          unidades={unidadesEscolares}
-          loading={loading}
-          onView={handleView}
-          canView={canView('unidades_escolares')}
-          canEdit={false}
-          canDelete={false}
-          onEdit={() => {}}
-          onDelete={() => {}}
-          getRotaName={() => 'N/A'}
-          loadingRotas={false}
-          mode="consulta"
-        />
-      </div>
+        unidades={unidadesEscolares}
+        loading={loading}
+        onView={handleView}
+        canView={canView('unidades_escolares')}
+        canEdit={false}
+        canDelete={false}
+        onEdit={() => {}}
+        onDelete={() => {}}
+        getRotaName={() => 'N/A'}
+        loadingRotas={false}
+        mode="consulta"
+      />
 
       {/* Modal de Visualização */}
       <UnidadeEscolarModal
@@ -180,16 +188,14 @@ const UnidadesEscolares = () => {
 
       {/* Paginação */}
       {pagination.totalPages > 1 && (
-        <div className="mt-6">
         <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
           onPageChange={handlePageChange}
-            totalItems={pagination.totalItems}
-            itemsPerPage={pagination.itemsPerPage}
+          totalItems={pagination.totalItems}
+          itemsPerPage={pagination.itemsPerPage}
           onItemsPerPageChange={handleItemsPerPageChange}
         />
-        </div>
       )}
     </div>
   );
