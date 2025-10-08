@@ -92,15 +92,8 @@ export const useProdutoOrigem = () => {
     carregarDadosAuxiliares();
   }, [carregarDadosAuxiliares]);
 
-  // Carregar dados quando filtros mudam
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [baseEntity.searchTerm, baseEntity.statusFilter, baseEntity.filters.grupoFilter, baseEntity.filters.subgrupoFilter, baseEntity.filters.classeFilter]);
-
-  // Carregar dados quando paginação muda
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+  // useBaseEntity já gerencia recarregamento automático quando filtros ou paginação mudam
+  // Não é necessário adicionar useEffect extras para loadData
 
   // Atualizar estatísticas quando os dados mudam
   useEffect(() => {
