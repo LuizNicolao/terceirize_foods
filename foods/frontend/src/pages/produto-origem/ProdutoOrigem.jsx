@@ -10,9 +10,8 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ProdutoOrigemModal } from '../../components/produto-origem';
 import ProdutoOrigemStats from '../../components/produto-origem/ProdutoOrigemStats';
-import ProdutoOrigemActions from '../../components/produto-origem/ProdutoOrigemActions';
 import ProdutoOrigemTable from '../../components/produto-origem/ProdutoOrigemTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const ProdutoOrigem = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -155,12 +154,14 @@ const ProdutoOrigem = () => {
         ]}
       />
 
-      {/* Ações */}
-      <ProdutoOrigemActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={totalItems}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('produto_origem')}
+        />
+      </div>
 
       {/* Tabela */}
       <ProdutoOrigemTable
