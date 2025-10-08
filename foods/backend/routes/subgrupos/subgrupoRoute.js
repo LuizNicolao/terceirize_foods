@@ -82,4 +82,7 @@ router.delete('/:id',
   SubgruposController.excluirSubgrupo
 );
 
+router.get('/export/xlsx', checkScreenPermission('subgrupos', 'visualizar'), SubgruposController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('subgrupos', 'visualizar'), SubgruposController.exportarPDF);
+
 module.exports = router;

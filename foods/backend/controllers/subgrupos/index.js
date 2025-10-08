@@ -7,6 +7,7 @@ const SubgruposListController = require('./SubgruposListController');
 const SubgruposCRUDController = require('./SubgruposCRUDController');
 const SubgruposSearchController = require('./SubgruposSearchController');
 const SubgruposStatsController = require('./SubgruposStatsController');
+const SubgruposExportController = require('./SubgruposExportController');
 
 module.exports = {
   // Métodos de Listagem
@@ -24,5 +25,9 @@ module.exports = {
   buscarSubgruposPorCodigo: SubgruposSearchController.buscarSubgruposPorCodigo,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: SubgruposStatsController.buscarEstatisticas
+  buscarEstatisticas: SubgruposStatsController.buscarEstatisticas,
+  
+  // Métodos de Exportação
+  exportarXLSX: SubgruposExportController.exportarXLSX,
+  exportarPDF: SubgruposExportController.exportarPDF
 };
