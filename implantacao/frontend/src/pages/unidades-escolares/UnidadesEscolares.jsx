@@ -207,7 +207,8 @@ const UnidadesEscolares = () => {
         onEdit={() => {}}
         onDelete={() => {}}
         getRotaName={(rotaId) => {
-          const rota = rotas.find(r => r.id.toString() === rotaId.toString());
+          if (!rotaId) return 'N/A';
+          const rota = rotas.find(r => r.id && r.id.toString() === rotaId.toString());
           return rota ? rota.nome : 'N/A';
         }}
         loadingRotas={loadingRotas}
