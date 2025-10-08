@@ -52,9 +52,7 @@ const Filiais = () => {
   // Funções de manipulação
   const handleView = async (filial) => {
     try {
-      console.log('handleView - filial recebida:', filial); // Debug log
       const filialCompleta = await buscarFilialPorId(filial.id);
-      console.log('handleView - filial completa:', filialCompleta); // Debug log
       setSelectedFilial(filialCompleta);
       setShowViewModal(true);
     } catch (err) {
@@ -185,7 +183,6 @@ const Filiais = () => {
       />
 
       {/* Modal de Visualização */}
-      {console.log('Modal props - showViewModal:', showViewModal, 'selectedFilial:', selectedFilial)} {/* Debug log */}
       <FilialModal
         isOpen={showViewModal}
         onClose={handleCloseViewModal}
