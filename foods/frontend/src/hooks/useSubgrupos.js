@@ -3,21 +3,15 @@ import toast from 'react-hot-toast';
 import SubgruposService from '../services/subgrupos';
 import GruposService from '../services/grupos';
 import { useBaseEntity } from './common/useBaseEntity';
-import { useFilters } from './common/useFilters';
 
 export const useSubgrupos = () => {
   // Hook base para funcionalidades CRUD
   const baseEntity = useBaseEntity('subgrupos', SubgruposService, {
     initialItemsPerPage: 20,
-    initialFilters: {},
+    initialFilters: { grupoFilter: 'todos' },
     enableStats: true,
     enableDelete: true
   });
-
-  // Hook de filtros customizados para subgrupos
-  const customFilters = useFilters({});
-
-  // Hook de busca com debounce
 
   // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);

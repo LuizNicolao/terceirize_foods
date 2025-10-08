@@ -76,64 +76,7 @@ export const useProdutoGenerico = () => {
     }
   }, []);
 
-  /**
-   * Carrega dados com filtros customizados
-   */
-  const loadDataWithFilters = useCallback(async () => {
-    const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
-      search: customFilters.searchTerm || undefined,
-      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
-      grupo_id: customFilters.grupoFilter || undefined,
-      subgrupo_id: customFilters.subgrupoFilter || undefined,
-      classe_id: customFilters.classeFilter || undefined,
-      produto_origem_id: customFilters.produtoOrigemFilter || undefined
-    };
-
-    setLoading(true);
-    try {
-      const response = await produtoGenericoService.listar(params);
-      
-      if (response.success) {
-        // Usar o método loadData do baseEntity que já gerencia tudo
-        await baseEntity.loadData(params);
-        
-        // Usar estatísticas do backend se disponíveis
-        if (response.statistics) {
-          setEstatisticasProdutoGenerico({
-            total_produtos_genericos: response.statistics.total || 0,
-            produtos_ativos: response.statistics.ativos || 0,
-            produtos_inativos: response.statistics.inativos || 0,
-            produtos_padrao: response.statistics.produtos_padrao || 0,
-            com_produto_origem: response.statistics.com_produto_origem || 0,
-            total_produtos_vinculados: response.statistics.total_produtos_vinculados || 0
-          });
-        } else {
-          // Fallback: calcular com dados da página
-          const total = response.pagination?.total || response.data?.length || 0;
-          const ativos = response.data?.filter(item => item.status === 1).length || 0;
-          const inativos = response.data?.filter(item => item.status === 0).length || 0;
-          
-          setEstatisticasProdutoGenerico({
-            total_produtos_genericos: total,
-            produtos_ativos: ativos,
-            produtos_inativos: inativos,
-            produtos_padrao: 0,
-            com_produto_origem: 0,
-            total_produtos_vinculados: 0
-          });
-        }
-      } else {
-        toast.error(response.message || 'Erro ao carregar produtos genéricos');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar produtos genéricos:', error);
-      toast.error('Erro ao carregar produtos genéricos');
-    } finally {
-      setLoading(false);
-    }
-  }, [baseEntity, customFilters]);
+  // Função loadDataWithFilters removida - useBaseEntity gerencia automaticamente
 
   /**
    * Submissão customizada
@@ -164,15 +107,7 @@ export const useProdutoGenerico = () => {
     carregarDadosAuxiliares();
   }, [carregarDadosAuxiliares]);
 
-  // Carregar dados quando filtros mudam
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.grupoFilter, customFilters.subgrupoFilter, customFilters.classeFilter, customFilters.produtoOrigemFilter, customFilters.filters]);
-
-  // Carregar dados quando paginação muda
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+  // useEffect removidos - useBaseEntity já gerencia filtros e paginação automaticamente
 
   // Atualizar estatísticas quando os dados mudam
   useEffect(() => {
@@ -183,14 +118,14 @@ export const useProdutoGenerico = () => {
    * Funções auxiliares
    */
   const handleClearFilters = useCallback(() => {
-    customFilters.setSearchTerm('');
-    customFilters.setStatusFilter('todos');
-    customFilters.setGrupoFilter('');
-    customFilters.setSubgrupoFilter('');
-    customFilters.setClasseFilter('');
-    customFilters.setProdutoOrigemFilter('');
+    baseEntity.clearSearch();
+    baseEntity.setStatusFilter('todos');
+    baseEntity.updateFilter('grupoFilter', 'todos');
+    baseEntity.updateFilter('subgrupoFilter', 'todos');
+    baseEntity.updateFilter('classeFilter', 'todos');
+    baseEntity.updateFilter('produtoOrigemFilter', 'todos');
     baseEntity.setCurrentPage(1);
-  }, [customFilters, baseEntity]);
+  }, [baseEntity]);
 
   /**
    * Visualizar produto genérico (busca dados completos)
@@ -297,11 +232,11 @@ export const useProdutoGenerico = () => {
     
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
-    statusFilter: customFilters.statusFilter,
-    grupoFilter: customFilters.grupoFilter,
-    subgrupoFilter: customFilters.subgrupoFilter,
-    classeFilter: customFilters.classeFilter,
-    produtoOrigemFilter: customFilters.produtoOrigemFilter,
+    statusFilter: baseEntity.statusFilter,
+    grupoFilter: baseEntity.filters.grupoFilter,
+    subgrupoFilter: baseEntity.filters.subgrupoFilter,
+    classeFilter: baseEntity.filters.classeFilter,
+    produtoOrigemFilter: baseEntity.filters.produtoOrigemFilter,
     
     // Estados de validação
     validationErrors: baseEntity.validationErrors,
@@ -328,11 +263,11 @@ export const useProdutoGenerico = () => {
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
     handleKeyPress: baseEntity.handleKeyPress,
-    setStatusFilter: customFilters.setStatusFilter,
-    setGrupoFilter: customFilters.setGrupoFilter,
-    setSubgrupoFilter: customFilters.setSubgrupoFilter,
-    setClasseFilter: customFilters.setClasseFilter,
-    setProdutoOrigemFilter: customFilters.setProdutoOrigemFilter,
+    setStatusFilter: baseEntity.setStatusFilter,
+    setGrupoFilter: (value) => baseEntity.updateFilter('grupoFilter', value),
+    setSubgrupoFilter: (value) => baseEntity.updateFilter('subgrupoFilter', value),
+    setClasseFilter: (value) => baseEntity.updateFilter('classeFilter', value),
+    setProdutoOrigemFilter: (value) => baseEntity.updateFilter('produtoOrigemFilter', value),
     setItemsPerPage: baseEntity.handleItemsPerPageChange,
     handleClearFilters,
     
