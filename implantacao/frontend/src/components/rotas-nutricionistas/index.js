@@ -1,17 +1,14 @@
 /**
  * Componentes de Rotas Nutricionistas
- * Importa componentes do Foods e mantém adaptadores locais
+ * Centraliza a exportação de todos os componentes relacionados a rotas nutricionistas
  */
 
-// Componentes importados direto do Foods (sem adaptação necessária)
-export { 
-  RotasNutricionistasModal,
-  RotasNutricionistasStats,
-  RotasNutricionistasInfoBasicas,
-  RotasNutricionistasUsuarios,
-  RotasNutricionistasEscolasSelector,
-  RotasNutricionistasObservacoes
-} from 'foods-frontend/src/components/rotas-nutricionistas';
-
-// Export local adaptor (apenas para passar props adicionais)
 export { default as RotasNutricionistasTable } from './RotasNutricionistasTable';
+export { default as RotasNutricionistasModal } from './RotasNutricionistasModal';
+export { default as RotasNutricionistasStats } from './RotasNutricionistasStats';
+
+// Componentes de conteúdo do modal
+export { default as RotasNutricionistasInfoBasicas } from './RotasNutricionistasInfoBasicas';
+export { default as RotasNutricionistasUsuarios } from './RotasNutricionistasUsuarios';
+export { default as RotasNutricionistasEscolasSelector } from './RotasNutricionistasEscolasSelector';
+export { default as RotasNutricionistasObservacoes } from './RotasNutricionistasObservacoes';
