@@ -153,15 +153,19 @@ export const useUnidadesEscolaresConsulta = () => {
         throw new Error('Não foi possível conectar ao sistema Foods');
       }
 
-      // Preparar parâmetros da consulta
+      // Preparar parâmetros da consulta com mapeamento correto
       const queryParams = {
-        ...filters,
+        search: filters.search || undefined,
+        status: filters.status === 'ativo' ? 1 : filters.status === 'inativo' ? 0 : undefined,
+        // Mapear filtros para nomes corretos da API
+        rota_id: filters.rotaFilter && filters.rotaFilter !== 'todos' ? filters.rotaFilter : undefined,
+        filial_id: filters.filialFilter && filters.filialFilter !== 'todos' ? filters.filialFilter : undefined,
         ...params
       };
 
-      // Remover parâmetros vazios
+      // Remover parâmetros undefined
       Object.keys(queryParams).forEach(key => {
-        if (queryParams[key] === '' || queryParams[key] === 'todos') {
+        if (queryParams[key] === undefined) {
           delete queryParams[key];
         }
       });
