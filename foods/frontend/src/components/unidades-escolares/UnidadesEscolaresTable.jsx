@@ -37,6 +37,7 @@ const UnidadesEscolaresTable = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ordem</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
@@ -51,6 +52,15 @@ const UnidadesEscolaresTable = ({
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.filial_nome || '-'}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                  {unidade.ordem_entrega > 0 ? (
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-semibold">
+                      {unidade.ordem_entrega}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
@@ -111,6 +121,19 @@ const UnidadesEscolaresTable = ({
                 <span className="text-gray-500">Rota:</span>
                 <span className="text-gray-900">
                   {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
+                </span>
+              </div>
+              
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Ordem de Entrega:</span>
+                <span className="text-gray-900">
+                  {unidade.ordem_entrega > 0 ? (
+                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-800 font-semibold text-xs">
+                      {unidade.ordem_entrega}
+                    </span>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
                 </span>
               </div>
               
