@@ -1,8 +1,9 @@
 {
-  "name": "foods-frontend",
+  "name": "foods-shared",
   "version": "1.0.0",
   "description": "Frontend do sistema de cadastro de informações Foods",
-  "private": true,
+  "private": false,
+  "main": "src/exports.js",
   "homepage": "/foods",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
