@@ -146,7 +146,7 @@ const Fornecedores = () => {
       </div>
 
       {/* Estatísticas */}
-      <FornecedoresStats stats={stats} />
+      <FornecedoresStats estatisticas={stats} />
 
       {/* Filtros */}
       <CadastroFilterBar

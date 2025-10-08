@@ -1,169 +1,35 @@
 import React from 'react';
-import { ActionButtons, EmptyState } from '../ui';
-import { usePermissions } from '../../contexts/PermissionsContext';
+import { FornecedoresTable as FoodsFornecedoresTable } from 'foods-frontend/src/components/fornecedores';
+import FornecedoresActions from './FornecedoresActions'; // Local adaptor
 
 const FornecedoresTable = ({ 
   fornecedores, 
-  loading, 
+  canView, 
+  canEdit, 
+  canDelete, 
   onView, 
   onEdit, 
   onDelete, 
-  canView,
-  canEdit,
-  canDelete
+  loading
 }) => {
-  const getStatusLabel = (status) => {
-    return status === 1 ? 'Ativo' : 'Inativo';
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center py-8">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto mb-2"></div>
-          <p className="text-gray-600 text-sm">Carregando...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (fornecedores.length === 0) {
-    return (
-      <EmptyState
-        title="Nenhum fornecedor encontrado"
-        description="Tente ajustar os filtros de busca ou adicionar um novo fornecedor"
-        icon="fornecedores"
-      />
-    );
-  }
+  // Adapt the boolean props to functions that the FoodsFornecedoresTable expects
+  const canViewFn = () => canView;
+  const canEditFn = () => canEdit;
+  const canDeleteFn = () => canDelete;
 
   return (
-    <>
-      {/* Versão Desktop - Tabela completa */}
-      <div className="hidden xl:block bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  CNPJ
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Razão Social
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Município/UF
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Contato
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {fornecedores.map((fornecedor) => (
-                <tr key={fornecedor.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {fornecedor.cnpj}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {fornecedor.razao_social}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : '-'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div>
-                      {fornecedor.email && <div>{fornecedor.email}</div>}
-                      {fornecedor.telefone && <div>{fornecedor.telefone}</div>}
-                      {!fornecedor.email && !fornecedor.telefone && '-'}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      fornecedor.status === 1 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {getStatusLabel(fornecedor.status)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <ActionButtons
-                      canView={canView}
-                      canEdit={canEdit}
-                      canDelete={canDelete}
-                      onView={onView}
-                      onEdit={onEdit}
-                      onDelete={onDelete}
-                      item={fornecedor}
-                      size="xs"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Versão Mobile e Tablet - Cards */}
-      <div className="xl:hidden space-y-3">
-        {fornecedores.map((fornecedor) => (
-          <div key={fornecedor.id} className="bg-white rounded-lg shadow-sm p-4 border">
-            <div className="flex justify-between items-start mb-3">
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 text-sm">{fornecedor.razao_social}</h3>
-                <p className="text-gray-600 text-xs">CNPJ: {fornecedor.cnpj}</p>
-              </div>
-              <ActionButtons
-                canView={canView}
-                canEdit={canEdit}
-                canDelete={canDelete}
-                onView={onView}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                item={fornecedor}
-                size="xs"
-                className="p-2"
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div>
-                <span className="text-gray-500">Município/UF:</span>
-                <p className="font-medium">{fornecedor.municipio && fornecedor.uf ? `${fornecedor.municipio}/${fornecedor.uf}` : 'N/A'}</p>
-              </div>
-              <div>
-                <span className="text-gray-500">Email:</span>
-                <p className="font-medium">{fornecedor.email || 'N/A'}</p>
-              </div>
-              <div>
-                <span className="text-gray-500">Telefone:</span>
-                <p className="font-medium">{fornecedor.telefone || 'N/A'}</p>
-              </div>
-              <div className="col-span-2">
-                <span className="text-gray-500">Status:</span>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
-                  fornecedor.status === 1 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {getStatusLabel(fornecedor.status)}
-                </span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </>
+    <FoodsFornecedoresTable
+      fornecedores={fornecedores}
+      canView={canViewFn}
+      canEdit={canEditFn}
+      canDelete={canDeleteFn}
+      onView={onView}
+      onEdit={onEdit}
+      onDelete={onDelete}
+      loading={loading}
+      // Pass the local FornecedoresActions adaptor
+      FornecedoresActionsComponent={FornecedoresActions}
+    />
   );
 };
 

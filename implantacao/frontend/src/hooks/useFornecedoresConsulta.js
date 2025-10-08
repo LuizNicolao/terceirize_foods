@@ -30,9 +30,11 @@ export const useFornecedoresConsulta = () => {
 
   // Estados de estatísticas
   const [stats, setStats] = useState({
-    total: 0,
-    ativos: 0,
-    inativos: 0
+    total_fornecedores: 0,
+    fornecedores_ativos: 0,
+    fornecedores_inativos: 0,
+    com_email: 0,
+    com_telefone: 0
   });
 
   /**
@@ -190,11 +192,19 @@ export const useFornecedoresConsulta = () => {
    * Calcular estatísticas localmente
    */
   const calcularEstatisticas = useCallback((fornecedoresData) => {
-    const total = fornecedoresData.length;
-    const ativos = fornecedoresData.filter(f => f.status === 1).length;
-    const inativos = fornecedoresData.filter(f => f.status === 0).length;
+    const total_fornecedores = fornecedoresData.length;
+    const fornecedores_ativos = fornecedoresData.filter(f => f.status === 1).length;
+    const fornecedores_inativos = fornecedoresData.filter(f => f.status === 0).length;
+    const com_email = fornecedoresData.filter(f => f.email && f.email.trim() !== '').length;
+    const com_telefone = fornecedoresData.filter(f => f.telefone && f.telefone.trim() !== '').length;
     
-    return { total, ativos, inativos };
+    return { 
+      total_fornecedores, 
+      fornecedores_ativos, 
+      fornecedores_inativos,
+      com_email,
+      com_telefone
+    };
   }, []);
 
   /**
@@ -213,7 +223,13 @@ export const useFornecedoresConsulta = () => {
       const result = await FoodsApiService.getFornecedoresStats();
       
       if (result.success) {
-        setStats(result.data || { total: 0, ativos: 0, inativos: 0 });
+        setStats(result.data || { 
+          total_fornecedores: 0, 
+          fornecedores_ativos: 0, 
+          fornecedores_inativos: 0,
+          com_email: 0,
+          com_telefone: 0
+        });
       }
     } catch (err) {
       // Não definir erro aqui pois não é crítico
