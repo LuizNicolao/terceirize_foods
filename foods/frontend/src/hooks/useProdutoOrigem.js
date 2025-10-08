@@ -8,21 +8,19 @@ import toast from 'react-hot-toast';
 import ProdutoOrigemService from '../services/produtoOrigem';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
-import { useFilters } from './common/useFilters';
 
 export const useProdutoOrigem = () => {
   // Hook base para funcionalidades CRUD
   const baseEntity = useBaseEntity('produto-origem', ProdutoOrigemService, {
     initialItemsPerPage: 10,
-    initialFilters: {},
+    initialFilters: { 
+      grupoFilter: 'todos', 
+      subgrupoFilter: 'todos', 
+      classeFilter: 'todos' 
+    },
     enableStats: true,
     enableDelete: true
   });
-
-  // Hook de filtros customizados para produto origem
-  const customFilters = useFilters({});
-
-  // Hook de busca com debounce
   
   // Estados locais
   const [loading, setLoading] = useState(false);
@@ -69,53 +67,7 @@ export const useProdutoOrigem = () => {
     }
   }, []);
 
-  /**
-   * Carrega dados com filtros customizados
-   */
-  const loadDataWithFilters = useCallback(async () => {
-    const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
-      search: customFilters.searchTerm || undefined,
-      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
-      grupo_id: customFilters.grupoFilter || undefined,
-      subgrupo_id: customFilters.subgrupoFilter || undefined,
-      classe_id: customFilters.classeFilter || undefined
-    };
-
-    setLoading(true);
-    try {
-      const response = await ProdutoOrigemService.listar(params);
-      
-      if (response.success) {
-        // Usar o método loadData do baseEntity que já gerencia tudo
-        await baseEntity.loadData(params);
-        
-        // Usar estatísticas do backend se disponíveis
-        if (response.statistics) {
-          setEstatisticasProdutoOrigem({
-            total: response.statistics.total || 0,
-            ativos: response.statistics.ativos || 0,
-            inativos: response.statistics.inativos || 0
-          });
-        } else {
-          // Fallback: calcular com dados da página
-          const total = response.pagination?.total || response.data?.length || 0;
-          const ativos = response.data?.filter(item => item.status === 1).length || 0;
-          const inativos = response.data?.filter(item => item.status === 0).length || 0;
-          
-          setEstatisticasProdutoOrigem({ total, ativos, inativos });
-        }
-      } else {
-        toast.error(response.message || 'Erro ao carregar produtos origem');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar produtos origem:', error);
-      toast.error('Erro ao carregar produtos origem');
-    } finally {
-      setLoading(false);
-    }
-  }, [baseEntity, customFilters]);
+  // Função loadDataWithFilters removida - useBaseEntity gerencia automaticamente
 
   /**
    * Submissão customizada

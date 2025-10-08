@@ -69,20 +69,7 @@ export const useSubgrupos = () => {
     }
   }, []);
 
-  /**
-   * Carrega dados com filtros customizados
-   */
-  const loadDataWithFilters = useCallback(async () => {
-    const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
-      search: customFilters.searchTerm || undefined,
-      status: customFilters.statusFilter === 'ativo' ? 'ativo' : customFilters.statusFilter === 'inativo' ? 'inativo' : undefined,
-      grupo_id: customFilters.grupoFilter === 'todos' ? undefined : customFilters.grupoFilter
-    };
-
-    await baseEntity.loadData(params);
-  }, [baseEntity, customFilters]);
+  // Função loadDataWithFilters removida - useBaseEntity gerencia automaticamente
 
   /**
    * Submissão customizada
@@ -115,11 +102,11 @@ export const useSubgrupos = () => {
    * Funções auxiliares
    */
   const handleClearFilters = useCallback(() => {
-    customFilters.setSearchTerm('');
-    customFilters.setStatusFilter('todos');
-    customFilters.setGrupoFilter('todos');
+    baseEntity.clearSearch();
+    baseEntity.setStatusFilter('todos');
+    baseEntity.updateFilter('grupoFilter', 'todos');
     baseEntity.setCurrentPage(1);
-  }, [customFilters, baseEntity]);
+  }, [baseEntity]);
 
   const getStatusLabel = useCallback((status) => {
     return status === 'ativo' ? 'Ativo' : 'Inativo';
@@ -140,15 +127,7 @@ export const useSubgrupos = () => {
     loadAuxiliaryData();
   }, [loadAuxiliaryData]);
 
-  // Carregar dados quando filtros mudam
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.grupoFilter, customFilters.filters]);
-
-  // Carregar dados quando paginação muda
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+  // useEffect removidos - useBaseEntity já gerencia filtros e paginação automaticamente
 
   // Recalcular estatísticas quando os dados mudam
   useEffect(() => {
@@ -180,8 +159,8 @@ export const useSubgrupos = () => {
     
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
-    statusFilter: customFilters.statusFilter,
-    grupoFilter: customFilters.grupoFilter,
+    statusFilter: baseEntity.statusFilter,
+    grupoFilter: baseEntity.filters.grupoFilter,
     
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
@@ -204,8 +183,9 @@ export const useSubgrupos = () => {
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
-    setStatusFilter: customFilters.setStatusFilter,
-    setGrupoFilter: customFilters.setGrupoFilter,
+    handleKeyPress: baseEntity.handleKeyPress,
+    setStatusFilter: baseEntity.setStatusFilter,
+    setGrupoFilter: (value) => baseEntity.updateFilter('grupoFilter', value),
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,
     
