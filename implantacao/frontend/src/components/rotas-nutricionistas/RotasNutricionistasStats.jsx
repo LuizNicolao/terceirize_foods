@@ -3,14 +3,10 @@ import { FaBuilding, FaSchool } from 'react-icons/fa';
 import { StatCard } from '../ui';
 
 const RotasNutricionistasStats = ({ rotasNutricionistas = [], unidadesEscolares = [] }) => {
-  // Garantir que rotasNutricionistas seja sempre um array
-  const rotasArray = Array.isArray(rotasNutricionistas) ? rotasNutricionistas : [];
-  const escolasArray = Array.isArray(unidadesEscolares) ? unidadesEscolares : [];
-  
-  const totalRotas = rotasArray.length;
-  const rotasAtivas = rotasArray.filter(rota => rota.status === 'ativo' || rota.status === 1).length;
-  const rotasInativas = rotasArray.filter(rota => rota.status === 'inativo' || rota.status === 0).length;
-  const totalUnidadesEscolares = escolasArray.length;
+  const totalRotas = rotasNutricionistas?.length || 0;
+  const rotasAtivas = rotasNutricionistas?.filter(rota => rota.status === 'ativo' || rota.status === 1)?.length || 0;
+  const rotasInativas = rotasNutricionistas?.filter(rota => rota.status === 'inativo' || rota.status === 0)?.length || 0;
+  const totalUnidadesEscolares = unidadesEscolares?.length || 0;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
