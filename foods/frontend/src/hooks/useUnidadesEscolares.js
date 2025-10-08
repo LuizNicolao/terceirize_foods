@@ -30,12 +30,21 @@ export const useUnidadesEscolares = () => {
   });
 
   /**
-   * Carrega rotas ativas
+   * Carrega rotas ativas (opcionalmente filtradas por filial)
    */
-  const loadRotas = useCallback(async () => {
+  const loadRotas = useCallback(async (filialId = null) => {
     try {
       setLoadingRotas(true);
-      const result = await RotasService.buscarAtivas();
+      let result;
+      
+      if (filialId && filialId !== 'todos') {
+        // Buscar rotas de uma filial específica
+        result = await RotasService.buscarPorFilial(filialId);
+      } else {
+        // Buscar todas as rotas ativas
+        result = await RotasService.buscarAtivas();
+      }
+      
       if (result.success) {
         setRotas(result.data || []);
       } else {
@@ -201,7 +210,13 @@ export const useUnidadesEscolares = () => {
     clearSearch: baseEntity.clearSearch,
     setStatusFilter: baseEntity.setStatusFilter,
     setRotaFilter: (value) => baseEntity.updateFilter('rotaFilter', value),
-    setFilialFilter: (value) => baseEntity.updateFilter('filialFilter', value),
+    setFilialFilter: (value) => {
+      baseEntity.updateFilter('filialFilter', value);
+      // Quando a filial muda, recarregar rotas filtradas por essa filial
+      loadRotas(value);
+      // Resetar filtro de rota para 'todos' quando mudar a filial
+      baseEntity.updateFilter('rotaFilter', 'todos');
+    },
     
     // Ações de CRUD (customizadas)
     onSubmit: onSubmitCustom,
