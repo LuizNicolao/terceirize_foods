@@ -214,167 +214,155 @@ const RotaModal = ({
               <h3 className="text-sm font-semibold text-gray-700">
                 {rota ? 'Editar Unidades Escolares' : 'Selecionar Unidades Escolares'}
               </h3>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleSelecionarTodas}
+                  className="text-xs"
+                  disabled={loadingUnidadesDisponiveis || unidadesFiltradas.length === 0}
+                >
+                  Selecionar Todas
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleDesselecionarTodas}
+                  className="text-xs"
+                  disabled={unidadesSelecionadas.length === 0}
+                >
+                  Desselecionar Todas
+                </Button>
+              </div>
             </div>
             
-            <div className="grid grid-cols-4 gap-4 h-96">
-              {/* LADO ESQUERDO: 3 colunas de escolas disponíveis */}
-              <div className="col-span-3 flex flex-col">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm font-medium text-gray-700">Escolas Disponíveis</span>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleSelecionarTodas}
-                      className="text-xs"
-                      disabled={loadingUnidadesDisponiveis || unidadesFiltradas.length === 0}
-                    >
-                      Selecionar Todas
-                    </Button>
-                  </div>
+            {/* Campo de busca */}
+            <div className="mb-3">
+              <input
+                type="text"
+                placeholder="Buscar por nome, código, cidade ou endereço..."
+                value={buscaUnidades}
+                onChange={(e) => setBuscaUnidades(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors"
+              />
+            </div>
+            
+            {loadingUnidadesDisponiveis ? (
+              <div className="text-center py-4">
+                <div className="text-gray-500">Carregando unidades disponíveis...</div>
+              </div>
+            ) : unidadesFiltradas.length === 0 ? (
+              <div className="text-center py-4">
+                <div className="text-gray-500">
+                  {buscaUnidades.trim() 
+                    ? `Nenhuma unidade encontrada para "${buscaUnidades}"`
+                    : 'Nenhuma unidade escolar disponível para esta filial'
+                  }
                 </div>
-
-                {/* Campo de busca */}
-                <div className="mb-3">
-                  <input
-                    type="text"
-                    placeholder="Buscar por nome, código, cidade..."
-                    value={buscaUnidades}
-                    onChange={(e) => setBuscaUnidades(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                  />
-                </div>
-
-                {/* Grid de 3 colunas com scroll único */}
-                {loadingUnidadesDisponiveis ? (
-                  <div className="flex items-center justify-center flex-1">
-                    <div className="text-gray-500 text-sm">Carregando unidades...</div>
+                {buscaUnidades.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => setBuscaUnidades('')}
+                    className="text-green-600 hover:text-green-700 text-sm mt-2"
+                  >
+                    Limpar busca
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex gap-4">
+                {/* Lado Esquerdo: 3 colunas de escolas disponíveis */}
+                <div className="flex-1">
+                  <div className="text-xs font-medium text-gray-600 mb-2">
+                    Escolas Disponíveis ({unidadesFiltradas.length})
                   </div>
-                ) : unidadesFiltradas.length === 0 ? (
-                  <div className="flex items-center justify-center flex-1">
-                    <div className="text-center">
-                      <div className="text-gray-500 text-sm">
-                        {buscaUnidades.trim() 
-                          ? `Nenhuma unidade encontrada`
-                          : 'Nenhuma unidade disponível'}
-                      </div>
-                      {buscaUnidades.trim() && (
-                        <button
-                          type="button"
-                          onClick={() => setBuscaUnidades('')}
-                          className="text-green-600 hover:text-green-700 text-xs mt-2"
+                  <div className="grid grid-cols-3 gap-3 max-h-96 overflow-y-auto p-1">
+                    {unidadesFiltradas.map((unidade) => {
+                      const isSelected = unidadesSelecionadas.some(u => u.id === unidade.id);
+                      return (
+                        <div
+                          key={unidade.id}
+                          className={`flex items-start gap-2 p-2 rounded-lg border transition-colors cursor-pointer ${
+                            isSelected
+                              ? 'bg-green-50 border-green-300'
+                              : 'bg-white border-gray-200 hover:bg-gray-50'
+                          }`}
+                          onClick={() => handleSelecionarUnidade(unidade, !isSelected)}
                         >
-                          Limpar busca
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="overflow-y-auto flex-1">
-                    <div className="grid grid-cols-3 gap-2">
-                      {unidadesFiltradas.map((unidade) => {
-                        const isSelected = unidadesSelecionadas.some(u => u.id === unidade.id);
-                        return (
-                          <div
-                            key={unidade.id}
-                            className={`p-2 rounded-lg border cursor-pointer transition-colors ${
-                              isSelected
-                                ? 'bg-green-50 border-green-300'
-                                : 'bg-white border-gray-200 hover:bg-gray-50'
-                            }`}
-                            onClick={() => handleSelecionarUnidade(unidade, !isSelected)}
-                          >
-                            <div className="flex items-start gap-2">
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={() => handleSelecionarUnidade(unidade, !isSelected)}
-                                className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded flex-shrink-0"
-                                onClick={(e) => e.stopPropagation()}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="font-medium text-gray-900 text-xs truncate" title={unidade.nome_escola}>
-                                  {unidade.nome_escola}
-                                </div>
-                                <div className="text-xs text-gray-500 truncate">
-                                  {unidade.cidade}, {unidade.estado}
-                                </div>
-                              </div>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleSelecionarUnidade(unidade, !isSelected)}
+                            className="mt-0.5 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded flex-shrink-0"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-gray-900 text-xs truncate" title={unidade.nome_escola}>
+                              {unidade.nome_escola}
+                            </div>
+                            <div className="text-xs text-gray-500 truncate">
+                              {unidade.cidade}, {unidade.estado}
                             </div>
                           </div>
-                        );
-                      })}
-                    </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
-              </div>
-
-              {/* LADO DIREITO: 1 coluna de escolas selecionadas com ordem */}
-              <div className="col-span-1 flex flex-col border-l border-gray-300 pl-4 min-h-0">
-                <div className="flex justify-between items-center mb-3 flex-shrink-0">
-                  <span className="text-sm font-medium text-gray-700">
-                    Selecionadas ({unidadesSelecionadas.length})
-                  </span>
-                  {unidadesSelecionadas.length > 0 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleDesselecionarTodas}
-                      className="text-xs"
-                    >
-                      Limpar
-                    </Button>
-                  )}
                 </div>
 
-                {unidadesSelecionadas.length === 0 ? (
-                  <div className="flex items-center justify-center flex-1">
-                    <div className="text-center text-xs text-gray-400">
-                      Nenhuma escola<br/>selecionada
-                    </div>
+                {/* Lado Direito: Escolas selecionadas com ordem */}
+                <div className="w-80 flex-shrink-0">
+                  <div className="text-xs font-medium text-gray-600 mb-2">
+                    Escolas Selecionadas ({unidadesSelecionadas.length}) - Ordem de Entrega
                   </div>
-                ) : (
-                  <div className="overflow-y-auto flex-1 space-y-2 min-h-0">
-                    {unidadesSelecionadas
-                      .sort((a, b) => (a.ordem_entrega || 0) - (b.ordem_entrega || 0))
-                      .map((unidade) => (
-                      <div
-                        key={unidade.id}
-                        className="p-2 bg-green-50 rounded-lg border border-green-200 flex-shrink-0"
-                      >
-                        <div className="flex items-start gap-2 mb-2">
-                          <input
-                            type="number"
-                            value={unidade.ordem_entrega || 0}
-                            onChange={(e) => handleUpdateOrdem(unidade.id, e.target.value)}
-                            min="0"
-                            className="w-12 px-1 py-1 text-sm text-center border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                            placeholder="#"
-                            title="Ordem de entrega"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleSelecionarUnidade(unidade, false)}
-                            className="text-red-500 hover:text-red-700 text-xs flex-shrink-0"
-                            title="Remover"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                        <div className="text-xs font-medium text-gray-900 truncate" title={unidade.nome_escola}>
-                          {unidade.nome_escola}
-                        </div>
-                        <div className="text-xs text-gray-500 truncate">
-                          {unidade.cidade}, {unidade.estado}
-                        </div>
+                  <div className="space-y-2 max-h-96 overflow-y-auto p-1 bg-gray-50 rounded-lg border-2 border-green-200">
+                    {unidadesSelecionadas.length === 0 ? (
+                      <div className="text-center py-8 text-gray-400 text-sm">
+                        Selecione escolas ao lado<br/>para definir ordem de entrega
                       </div>
-                    ))}
+                    ) : (
+                      unidadesSelecionadas
+                        .sort((a, b) => (a.ordem_entrega || 0) - (b.ordem_entrega || 0))
+                        .map((unidade) => (
+                          <div
+                            key={unidade.id}
+                            className="flex items-center gap-2 p-2 bg-white rounded border border-green-200"
+                          >
+                            <div className="flex-shrink-0 w-14">
+                              <input
+                                type="number"
+                                value={unidade.ordem_entrega || 0}
+                                onChange={(e) => handleUpdateOrdem(unidade.id, e.target.value)}
+                                min="0"
+                                className="w-full px-2 py-1 text-sm text-center font-semibold border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900 text-xs truncate" title={unidade.nome_escola}>
+                                {unidade.nome_escola}
+                              </div>
+                              <div className="text-xs text-gray-500 truncate">
+                                {unidade.cidade}, {unidade.estado}
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleSelecionarUnidade(unidade, false)}
+                              className="flex-shrink-0 text-red-500 hover:text-red-700 p-1"
+                              title="Remover"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))
+                    )}
                   </div>
-                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
