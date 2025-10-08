@@ -10,7 +10,11 @@ const RotasNutricionistasTable = ({
   onView, 
   onEdit, 
   onDelete, 
-  loading
+  loading,
+  getUsuarioName,
+  getSupervisorName,
+  getCoordenadorName,
+  loadingUsuarios
 }) => {
   // Adapt the boolean props to functions that the FoodsRotasNutricionistasTable expects
   const canViewFn = () => canView;
@@ -27,6 +31,10 @@ const RotasNutricionistasTable = ({
       onEdit={onEdit}
       onDelete={onDelete}
       loading={loading}
+      getUsuarioName={getUsuarioName}
+      getSupervisorName={getSupervisorName}
+      getCoordenadorName={getCoordenadorName}
+      loadingUsuarios={loadingUsuarios}
       // Pass the local RotasNutricionistasActions adaptor
       RotasNutricionistasActionsComponent={RotasNutricionistasActions}
     />
