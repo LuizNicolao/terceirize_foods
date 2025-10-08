@@ -4,19 +4,15 @@ import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
 import FiliaisService from '../services/filiais';
 import { useBaseEntity } from './common/useBaseEntity';
-import { useFilters } from './common/useFilters';
 
 export const useUnidadesEscolares = () => {
   // Hook base para funcionalidades CRUD
   const baseEntity = useBaseEntity('unidades escolares', UnidadesEscolaresService, {
     initialItemsPerPage: 20,
-    initialFilters: { rotaFilter: 'todos' },
+    initialFilters: { rotaFilter: 'todos', filialFilter: 'todos' },
     enableStats: true,
     enableDelete: true
   });
-
-  // Hook de filtros customizados para unidades escolares
-  const customFilters = useFilters({ rotaFilter: 'todos', filialFilter: 'todos' });
 
 
   // Estados específicos das unidades escolares
@@ -168,39 +164,8 @@ export const useUnidadesEscolares = () => {
     loadEstatisticasUnidades();
   }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
 
-  // Recarregar dados quando filtros customizados mudarem
-  useEffect(() => {
-    const params = {
-      rota_id: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
-      filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
-    };
-    baseEntity.loadData(params);
-  }, [customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
-  
-  // Recarregar dados quando a página mudar, mantendo os filtros customizados
-  useEffect(() => {
-    const params = {
-      rota_id: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
-      filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
-    };
-    baseEntity.loadData(params);
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
-
-  // Override da função loadData para incluir filtros customizados
-  const originalLoadData = baseEntity.loadData;
-  baseEntity.loadData = useCallback(async (customParams = {}) => {
-    const params = {
-      ...customParams,
-      // Usar searchTerm do baseEntity (que já tem debounce integrado)
-      search: baseEntity.searchTerm || undefined,
-      // Status filter
-      status: customFilters.statusFilter === 'ativo' ? 1 : customFilters.statusFilter === 'inativo' ? 0 : undefined,
-      // Filtros customizados
-      rota_id: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined,
-      filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
-    };
-    return originalLoadData(params);
-  }, [originalLoadData, baseEntity.searchTerm, customFilters.statusFilter, customFilters.filters.rotaFilter, customFilters.filters.filialFilter]);
+  // useBaseEntity agora gerencia automaticamente os filtros customizados
+  // Não é mais necessário useEffect ou override de loadData
 
   return {
     // Estados principais (do hook base)
@@ -226,9 +191,9 @@ export const useUnidadesEscolares = () => {
     
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
-    statusFilter: customFilters.statusFilter,
-    rotaFilter: customFilters.filters.rotaFilter,
-    filialFilter: customFilters.filters.filialFilter,
+    statusFilter: baseEntity.statusFilter,
+    rotaFilter: baseEntity.filters.rotaFilter,
+    filialFilter: baseEntity.filters.filialFilter,
     
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
@@ -252,10 +217,11 @@ export const useUnidadesEscolares = () => {
     
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
+    handleKeyPress: baseEntity.handleKeyPress,
     clearSearch: baseEntity.clearSearch,
-    setStatusFilter: customFilters.setStatusFilter,
-    setRotaFilter: (value) => customFilters.updateFilter('rotaFilter', value),
-    setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
+    setStatusFilter: baseEntity.setStatusFilter,
+    setRotaFilter: (value) => baseEntity.updateFilter('rotaFilter', value),
+    setFilialFilter: (value) => baseEntity.updateFilter('filialFilter', value),
     
     // Ações de CRUD (customizadas)
     onSubmit: onSubmitCustom,

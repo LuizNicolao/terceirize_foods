@@ -48,6 +48,7 @@ export const useFilters = (initialFilters = {}) => {
 
   /**
    * Gera parâmetros de filtro para API
+   * Mapeia nomes de filtros para nomes de parâmetros da API
    */
   const getFilterParams = useCallback(() => {
     const params = {
@@ -55,10 +56,23 @@ export const useFilters = (initialFilters = {}) => {
       status: statusFilter === 'ativo' ? 1 : statusFilter === 'inativo' ? 0 : undefined
     };
 
-    // Adiciona filtros customizados
+    // Mapeamento de nomes de filtros para nomes de parâmetros da API
+    const filterMapping = {
+      'rotaFilter': 'rota_id',
+      'filialFilter': 'filial_id',
+      'grupoFilter': 'grupo_id',
+      'subgrupoFilter': 'subgrupo_id',
+      'classeFilter': 'classe_id',
+      'produtoOrigemFilter': 'produto_origem_id',
+      'ufFilter': 'uf',
+      'tipoFilter': 'tipo'
+    };
+
+    // Adiciona filtros customizados com mapeamento
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value !== 'todos' && value !== '') {
-        params[key] = value;
+        const apiKey = filterMapping[key] || key;
+        params[apiKey] = value;
       }
     });
 
