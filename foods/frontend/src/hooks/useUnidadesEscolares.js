@@ -92,28 +92,8 @@ export const useUnidadesEscolares = () => {
     }
   }, []);
 
-  /**
-   * Carrega dados com filtros customizados
-   */
-  const loadDataWithFilters = useCallback(async () => {
-    const params = {
-      ...baseEntity.getPaginationParams(),
-      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
-    };
-
-    await baseEntity.loadData(params);
-  }, [baseEntity, customFilters.filters.rotaFilter]);
-
-  /**
-   * Override da função loadData para incluir filtro de rota
-   */
-  const loadDataWithRotaFilter = useCallback(async () => {
-    const params = {
-      ...baseEntity.getPaginationParams(),
-      rota: customFilters.filters.rotaFilter !== 'todos' ? customFilters.filters.rotaFilter : undefined
-    };
-    await baseEntity.loadData(params);
-  }, [baseEntity, customFilters.filters.rotaFilter]);
+  // Funções loadDataWithFilters e loadDataWithRotaFilter removidas
+  // useBaseEntity agora gerencia automaticamente os filtros através do getFilterParams
 
   /**
    * Submissão customizada que recarrega estatísticas
@@ -137,9 +117,9 @@ export const useUnidadesEscolares = () => {
    * Função para recarregar dados
    */
   const reloadData = useCallback(async () => {
-    await loadDataWithFilters();
+    await baseEntity.loadData();
     await loadEstatisticasUnidades();
-  }, [loadDataWithFilters, loadEstatisticasUnidades]);
+  }, [baseEntity, loadEstatisticasUnidades]);
 
   /**
    * Funções utilitárias
