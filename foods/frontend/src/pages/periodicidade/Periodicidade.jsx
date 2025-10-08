@@ -8,8 +8,8 @@ import PeriodicidadeService from '../../services/periodicidade';
 import { Button, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { PeriodicidadeModal, PeriodicidadeTable, PeriodicidadeStats, PeriodicidadeActions } from '../../components/periodicidade';
-import { AuditModal } from '../../components/shared';
+import { PeriodicidadeModal, PeriodicidadeTable, PeriodicidadeStats } from '../../components/periodicidade';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Periodicidade = () => {
@@ -115,11 +115,14 @@ const Periodicidade = () => {
         placeholder="Buscar por nome ou descrição..."
       />
 
-      {/* Ações */}
-      <PeriodicidadeActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('periodicidade')}
+        />
+      </div>
 
       {/* Tabela */}
       <PeriodicidadeTable

@@ -8,8 +8,8 @@ import PermissoesService from '../../services/permissoes';
 import { Button } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { PermissoesStats } from '../../components/permissoes';
-import PermissoesActions from '../../components/permissoes/PermissoesActions';
 import PermissoesTable from '../../components/permissoes/PermissoesTable';
+import { ExportButtons } from '../../components/shared';
 import PermissoesForm from '../../components/permissoes/PermissoesForm';
 import UserSelector from '../../components/permissoes/UserSelector';
 import { AuditModal } from '../../components/shared';
@@ -130,11 +130,14 @@ const Permissoes = () => {
         ]}
       />
 
-      {/* Ações */}
-      <PermissoesActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('permissoes')}
+        />
+      </div>
 
       {/* Seletor de Usuário */}
       <UserSelector

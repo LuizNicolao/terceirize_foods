@@ -8,8 +8,8 @@ import FaturamentoService from '../../services/faturamento';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { FaturamentoTable, FaturamentoModal, FaturamentoStats, FaturamentoActions } from '../../components/faturamento';
-import { AuditModal } from '../../components/shared';
+import { FaturamentoTable, FaturamentoModal, FaturamentoStats } from '../../components/faturamento';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const FaturamentoPage = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -174,12 +174,13 @@ const FaturamentoPage = () => {
       </div>
 
       {/* Ações */}
-      <FaturamentoActions 
-        onExportXLSX={exportXLSX}
-        onExportPDF={exportPDF}
-        totalItems={totalItems}
-        selectedItems={[]}
-      />
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={exportXLSX}
+          onExportPDF={exportPDF}
+          disabled={!canView('faturamento')}
+        />
+      </div>
 
       {/* Tabela */}
       <FaturamentoTable
