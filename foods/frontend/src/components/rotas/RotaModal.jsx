@@ -295,37 +295,37 @@ const RotaModal = ({
                     Escolas Disponíveis ({unidadesFiltradas.length})
                   </div>
                   <div className="grid grid-cols-3 gap-3 max-h-[600px] overflow-y-auto p-1">
-                    {unidadesFiltradas.map((unidade) => {
-                      const isSelected = unidadesSelecionadas.some(u => u.id === unidade.id);
-                      return (
-                        <div
-                          key={unidade.id}
+                {unidadesFiltradas.map((unidade) => {
+                  const isSelected = unidadesSelecionadas.some(u => u.id === unidade.id);
+                  return (
+                    <div
+                      key={unidade.id}
                           className={`flex items-start gap-2 p-2 rounded-lg border transition-colors cursor-pointer ${
-                            isSelected
+                        isSelected
                               ? 'bg-green-50 border-green-300'
-                              : 'bg-white border-gray-200 hover:bg-gray-50'
-                          }`}
-                          onClick={() => handleSelecionarUnidade(unidade, !isSelected)}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => handleSelecionarUnidade(unidade, !isSelected)}
+                          : 'bg-white border-gray-200 hover:bg-gray-50'
+                      }`}
+                      onClick={() => handleSelecionarUnidade(unidade, !isSelected)}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => handleSelecionarUnidade(unidade, !isSelected)}
                             className="mt-0.5 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded flex-shrink-0"
                             onClick={(e) => e.stopPropagation()}
-                          />
-                          <div className="flex-1 min-w-0">
+                      />
+                      <div className="flex-1 min-w-0">
                             <div className="font-medium text-gray-900 text-xs truncate" title={unidade.nome_escola}>
-                              {unidade.nome_escola}
-                            </div>
-                            <div className="text-xs text-gray-500 truncate">
-                              {unidade.cidade}, {unidade.estado}
-                            </div>
-                          </div>
+                          {unidade.nome_escola}
                         </div>
-                      );
-                    })}
-                  </div>
+                        <div className="text-xs text-gray-500 truncate">
+                              {unidade.cidade}, {unidade.estado}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
                 </div>
 
                 {/* Lado Direito: Escolas selecionadas com ordem */}
