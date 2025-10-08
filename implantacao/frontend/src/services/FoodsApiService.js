@@ -507,7 +507,8 @@ class FoodsApiService {
     try {
       const response = await foodsApi.get('/rotas-nutricionistas', { params });
       
-      let rotasData = response.data.data || response.data;
+      // Extrair dados: pode estar em data.rotas, data.data ou data
+      let rotasData = response.data.data?.rotas || response.data.rotas || response.data.data || response.data;
       if (rotasData && rotasData.items && Array.isArray(rotasData.items)) {
         rotasData = rotasData.items;
       }
@@ -517,7 +518,7 @@ class FoodsApiService {
       return {
         success: true,
         data: arrayData,
-        pagination: response.data.pagination || null,
+        pagination: response.data.data?.pagination || response.data.pagination || null,
         message: 'Rotas nutricionistas consultadas com sucesso'
       };
     } catch (error) {
