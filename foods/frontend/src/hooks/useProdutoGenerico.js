@@ -8,21 +8,22 @@ import toast from 'react-hot-toast';
 import produtoGenericoService from '../services/produtoGenerico';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
-import { useFilters } from './common/useFilters';
 
 export const useProdutoGenerico = () => {
   // Hook base para funcionalidades CRUD
   const baseEntity = useBaseEntity('produto-generico', produtoGenericoService, {
     initialItemsPerPage: 20,
-    initialFilters: {},
+    initialFilters: { 
+      grupoFilter: 'todos', 
+      subgrupoFilter: 'todos', 
+      classeFilter: 'todos', 
+      produtoOrigemFilter: 'todos' 
+    },
     enableStats: true,
     enableDelete: true
   });
 
-  // Hook de filtros customizados para produto genérico
-  const customFilters = useFilters({});
-
-  // Hook de busca com debounce
+  // Hook de busca com debounce removido - useBaseEntity já gerencia
   
   // Estados locais
   const [loading, setLoading] = useState(false);

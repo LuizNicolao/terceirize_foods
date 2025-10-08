@@ -3,21 +3,15 @@ import toast from 'react-hot-toast';
 import ClassesService from '../services/classes';
 import SubgruposService from '../services/subgrupos';
 import { useBaseEntity } from './common/useBaseEntity';
-import { useFilters } from './common/useFilters';
 
 export const useClasses = () => {
   // Hook base para funcionalidades CRUD
   const baseEntity = useBaseEntity('classes', ClassesService, {
     initialItemsPerPage: 20,
-    initialFilters: {},
+    initialFilters: { subgrupoFilter: 'todos' },
     enableStats: true,
     enableDelete: true
   });
-
-  // Hook de filtros customizados para classes
-  const customFilters = useFilters({});
-
-  // Hook de busca com debounce
 
   // Estados de dados auxiliares
   const [subgrupos, setSubgrupos] = useState([]);
@@ -77,20 +71,7 @@ export const useClasses = () => {
     }
   }, []);
 
-  /**
-   * Carrega dados com filtros customizados
-   */
-  const loadDataWithFilters = useCallback(async () => {
-    const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
-      search: customFilters.searchTerm || undefined,
-      status: customFilters.statusFilter === 'ativo' ? 'ativo' : customFilters.statusFilter === 'inativo' ? 'inativo' : undefined,
-      subgrupo_id: customFilters.subgrupoFilter === 'todos' ? undefined : customFilters.subgrupoFilter
-    };
-
-    await baseEntity.loadData(params);
-  }, [baseEntity, customFilters]);
+  // Função loadDataWithFilters removida - useBaseEntity gerencia automaticamente
 
   /**
    * Submissão customizada
@@ -123,11 +104,11 @@ export const useClasses = () => {
    * Funções auxiliares
    */
   const handleClearFilters = useCallback(() => {
-    customFilters.setSearchTerm('');
-    customFilters.setStatusFilter('todos');
-    customFilters.setSubgrupoFilter('todos');
+    baseEntity.clearSearch();
+    baseEntity.setStatusFilter('todos');
+    baseEntity.updateFilter('subgrupoFilter', 'todos');
     baseEntity.setCurrentPage(1);
-  }, [customFilters, baseEntity]);
+  }, [baseEntity]);
 
   const getStatusLabel = useCallback((status) => {
     return status === 'ativo' ? 'Ativo' : 'Inativo';
@@ -148,15 +129,7 @@ export const useClasses = () => {
     loadAuxiliaryData();
   }, [loadAuxiliaryData]);
 
-  // Carregar dados quando filtros mudam
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [customFilters.searchTerm, customFilters.statusFilter, customFilters.subgrupoFilter, customFilters.filters]);
-
-  // Carregar dados quando paginação muda
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
+  // useEffect removidos - useBaseEntity já gerencia filtros e paginação automaticamente
 
   // Recalcular estatísticas quando os dados mudam
   useEffect(() => {
@@ -188,8 +161,8 @@ export const useClasses = () => {
     
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
-    statusFilter: customFilters.statusFilter,
-    subgrupoFilter: customFilters.subgrupoFilter,
+    statusFilter: baseEntity.statusFilter,
+    subgrupoFilter: baseEntity.filters.subgrupoFilter,
     
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
@@ -213,8 +186,8 @@ export const useClasses = () => {
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
     handleKeyPress: baseEntity.handleKeyPress,
-    setStatusFilter: customFilters.setStatusFilter,
-    setSubgrupoFilter: customFilters.setSubgrupoFilter,
+    setStatusFilter: baseEntity.setStatusFilter,
+    setSubgrupoFilter: (value) => baseEntity.updateFilter('subgrupoFilter', value),
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,
     

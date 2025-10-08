@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import RotasService from '../services/rotas';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
-import { useFilters } from './common/useFilters';
 
 export const useRotas = () => {
   // Hook base para funcionalidades CRUD
@@ -13,9 +12,6 @@ export const useRotas = () => {
     enableStats: true,
     enableDelete: true
   });
-
-  // Hook de filtros customizados para rotas
-  const customFilters = useFilters({ filialFilter: 'todos' });
 
 
   // Estados específicos das rotas
@@ -173,19 +169,7 @@ export const useRotas = () => {
     }
   }, []);
 
-  /**
-   * Carrega dados com filtros customizados
-   */
-  const loadDataWithFilters = useCallback(async () => {
-    const params = {
-      ...baseEntity.getPaginationParams(),
-      ...customFilters.getFilterParams(),
-      search: customFilters.searchTerm || undefined,
-      filial_id: customFilters.filters.filialFilter !== 'todos' ? customFilters.filters.filialFilter : undefined
-    };
-
-    await baseEntity.loadData(params);
-  }, [baseEntity, customFilters]);
+  // Função loadDataWithFilters removida - useBaseEntity gerencia automaticamente
 
   /**
    * Submissão customizada que recarrega estatísticas
@@ -263,18 +247,7 @@ export const useRotas = () => {
     loadEstatisticasRotas();
   }, [loadFiliais, loadEstatisticasRotas]);
 
-  // Carregar dados quando filtros mudam
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [customFilters.searchTerm, customFilters.filters]);
-
-  // Carregar dados quando paginação muda
-  useEffect(() => {
-    loadDataWithFilters();
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
-
-  // Removido useEffect problemático que causava busca automática letra por letra
-  // O useBaseEntity já gerencia a busca com Enter através do debouncedSearch
+  // useEffect removidos - useBaseEntity já gerencia filtros e paginação automaticamente
 
   return {
     // Estados principais (do hook base)
@@ -301,7 +274,7 @@ export const useRotas = () => {
     
     // Estados de filtros
     searchTerm: baseEntity.searchTerm,
-    filialFilter: customFilters.filters.filialFilter,
+    filialFilter: baseEntity.filters.filialFilter,
     
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
@@ -335,7 +308,7 @@ export const useRotas = () => {
     setSearchTerm: baseEntity.setSearchTerm,
     clearSearch: baseEntity.clearSearch,
     handleKeyPress: baseEntity.handleKeyPress,
-    setFilialFilter: (value) => customFilters.updateFilter('filialFilter', value),
+    setFilialFilter: (value) => baseEntity.updateFilter('filialFilter', value),
     
     // Ações de CRUD (customizadas)
     onSubmit: onSubmitCustom,
