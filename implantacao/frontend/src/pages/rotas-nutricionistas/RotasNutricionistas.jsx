@@ -168,7 +168,7 @@ const RotasNutricionistas = () => {
         isOpen={showViewModal}
         onClose={handleCloseViewModal}
         onSubmit={() => {}} // Não usado no modo visualização
-        isViewMode={true}
+        viewMode={true}
         rota={selectedRotaNutricionista}
         usuarios={[]}
         supervisores={[]}
