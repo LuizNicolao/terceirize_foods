@@ -8,6 +8,7 @@ const UnidadesEscolaresCRUDController = require('./UnidadesEscolaresCRUDControll
 const UnidadesEscolaresSearchController = require('./UnidadesEscolaresSearchController');
 const UnidadesEscolaresStatsController = require('./UnidadesEscolaresStatsController');
 const UnidadesEscolaresImportController = require('./UnidadesEscolaresImportController');
+const UnidadesEscolaresExportController = require('./UnidadesEscolaresExportController');
 
 module.exports = {
   // Métodos de Listagem
@@ -35,6 +36,10 @@ module.exports = {
   // Métodos de Importação
   importarUnidadesEscolares: UnidadesEscolaresImportController.importarUnidadesEscolares,
   gerarTemplate: UnidadesEscolaresImportController.gerarTemplate,
+
+  // Métodos de Exportação
+  exportarXLSX: UnidadesEscolaresExportController.exportarXLSX,
+  exportarPDF: UnidadesEscolaresExportController.exportarPDF,
 
   // Métodos de Tipos de Cardápio
   getTiposCardapioUnidade: UnidadesEscolaresCRUDController.getTiposCardapioUnidade,

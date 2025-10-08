@@ -176,4 +176,18 @@ router.delete('/:id/periodos-refeicao/:periodoId', [
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'unidades_escolares'),
 ], unidadesEscolaresController.desvincularPeriodoRefeicao);
 
+// ===== ROTAS DE EXPORTAÇÃO =====
+
+// GET /api/unidades-escolares/export/xlsx - Exportar para XLSX
+router.get('/export/xlsx',
+  checkScreenPermission('unidades_escolares', 'visualizar'),
+  unidadesEscolaresController.exportarXLSX
+);
+
+// GET /api/unidades-escolares/export/pdf - Exportar para PDF
+router.get('/export/pdf',
+  checkScreenPermission('unidades_escolares', 'visualizar'),
+  unidadesEscolaresController.exportarPDF
+);
+
 module.exports = router;
