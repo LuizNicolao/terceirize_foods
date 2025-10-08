@@ -10,9 +10,8 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { MarcaModal } from '../../components/marcas';
 import MarcasStats from '../../components/marcas/MarcasStats';
-import MarcasActions from '../../components/marcas/MarcasActions';
 import MarcasTable from '../../components/marcas/MarcasTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Marcas = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -120,11 +119,14 @@ const Marcas = () => {
         placeholder="Buscar por marca ou fabricante..."
       />
 
-      {/* Ações */}
-      <MarcasActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('marcas')}
+        />
+      </div>
 
       {/* Tabela */}
       <MarcasTable
