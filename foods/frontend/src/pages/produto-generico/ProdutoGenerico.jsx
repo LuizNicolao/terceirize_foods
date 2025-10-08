@@ -15,9 +15,8 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ProdutoGenericoModal } from '../../components/produto-generico';
 import ProdutosGenericosStats from '../../components/produto-generico/ProdutosGenericosStats';
-import ProdutosGenericosActions from '../../components/produto-generico/ProdutosGenericosActions';
 import ProdutosGenericosTable from '../../components/produto-generico/ProdutosGenericosTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const ProdutoGenerico = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -186,12 +185,14 @@ const ProdutoGenerico = () => {
         ]}
       />
 
-      {/* Ações */}
-      <ProdutosGenericosActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={totalItems}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('produto_generico')}
+        />
+      </div>
 
       {/* Tabela */}
       <ProdutosGenericosTable

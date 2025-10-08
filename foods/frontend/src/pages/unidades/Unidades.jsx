@@ -10,9 +10,8 @@ import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { UnidadeModal } from '../../components/unidades';
 import UnidadesStats from '../../components/unidades/UnidadesStats';
-import UnidadesActions from '../../components/unidades/UnidadesActions';
 import UnidadesTable from '../../components/unidades/UnidadesTable';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Unidades = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -120,11 +119,14 @@ const Unidades = () => {
         placeholder="Buscar por nome ou sigla..."
       />
 
-      {/* Ações */}
-      <UnidadesActions 
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-      />
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('unidades')}
+        />
+      </div>
 
       {/* Tabela */}
       <UnidadesTable
