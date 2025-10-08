@@ -74,7 +74,9 @@ const RotaModal = ({
 
   const handleSelecionarUnidade = (unidade, isSelected) => {
     if (isSelected) {
-      setUnidadesSelecionadas(prev => [...prev, unidade]);
+      // Adicionar unidade com ordem_entrega padrão (próximo número disponível)
+      const proximaOrdem = unidadesSelecionadas.length + 1;
+      setUnidadesSelecionadas(prev => [...prev, { ...unidade, ordem_entrega: proximaOrdem }]);
     } else {
       setUnidadesSelecionadas(prev => prev.filter(u => u.id !== unidade.id));
     }
@@ -85,11 +87,22 @@ const RotaModal = ({
     const novasSelecoes = unidadesFiltradas.filter(unidade => 
       !unidadesSelecionadas.some(selecionada => selecionada.id === unidade.id)
     );
-    setUnidadesSelecionadas(prev => [...prev, ...novasSelecoes]);
+    // Adicionar ordem_entrega automática para cada nova seleção
+    const comOrdem = novasSelecoes.map((unidade, index) => ({
+      ...unidade,
+      ordem_entrega: unidadesSelecionadas.length + index + 1
+    }));
+    setUnidadesSelecionadas(prev => [...prev, ...comOrdem]);
   };
 
   const handleDesselecionarTodas = () => {
     setUnidadesSelecionadas([]);
+  };
+
+  const handleUpdateOrdem = (unidadeId, novaOrdem) => {
+    setUnidadesSelecionadas(prev => 
+      prev.map(u => u.id === unidadeId ? { ...u, ordem_entrega: Number(novaOrdem) || 0 } : u)
+    );
   };
 
   // Filtrar unidades baseado na busca
@@ -189,18 +202,6 @@ const RotaModal = ({
                 <option value="ativo">Ativo</option>
                 <option value="inativo">Inativo</option>
               </Input>
-
-              <Input
-                label="Ordem de Entrega"
-                type="number"
-                placeholder="Ex: 1, 2, 3..."
-                {...register('ordem_entrega')}
-                disabled={isViewMode}
-                min="0"
-              />
-              <p className="text-xs text-gray-500 -mt-2">
-                Todas as escolas vinculadas a esta rota receberão este número de ordem
-              </p>
             </div>
           </div>
         </div>
@@ -307,8 +308,41 @@ const RotaModal = ({
             
             {unidadesSelecionadas.length > 0 && (
               <div className="mt-3 pt-3 border-t border-gray-200">
-                <div className="text-sm text-gray-600">
-                  <span className="font-medium">{unidadesSelecionadas.length}</span> unidade(s) selecionada(s)
+                <div className="text-sm font-medium text-gray-700 mb-3">
+                  Escolas Selecionadas ({unidadesSelecionadas.length}) - Defina a Ordem de Entrega:
+                </div>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {unidadesSelecionadas
+                    .sort((a, b) => (a.ordem_entrega || 0) - (b.ordem_entrega || 0))
+                    .map((unidade) => (
+                    <div key={unidade.id} className="flex items-center gap-3 p-2 bg-green-50 rounded border border-green-200">
+                      <div className="flex-shrink-0 w-20">
+                        <input
+                          type="number"
+                          value={unidade.ordem_entrega || 0}
+                          onChange={(e) => handleUpdateOrdem(unidade.id, e.target.value)}
+                          min="0"
+                          className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                          placeholder="Ordem"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-900 text-sm truncate" title={unidade.nome_escola}>
+                          {unidade.nome_escola}
+                        </div>
+                        <div className="text-xs text-gray-500 truncate">
+                          {unidade.codigo_teknisa} • {unidade.cidade}, {unidade.estado}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleSelecionarUnidade(unidade, false)}
+                        className="flex-shrink-0 text-red-600 hover:text-red-700 text-sm"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

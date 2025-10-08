@@ -15,7 +15,6 @@ class RotasCRUDController {
         nome,
         status = 'ativo',
         tipo_rota = 'semanal',
-        ordem_entrega = 0,
         unidades_selecionadas = []
       } = req.body;
 
@@ -90,10 +89,11 @@ class RotasCRUDController {
             );
 
             if (unidadeExistente.length > 0 && !unidadeExistente[0].rota_id) {
-              // Vincular a unidade à rota e definir ordem de entrega
+              // Vincular a unidade à rota e definir ordem de entrega individual
+              const ordemEntrega = unidade.ordem_entrega || 0;
               await executeQuery(
                 'UPDATE unidades_escolares SET rota_id = ?, ordem_entrega = ? WHERE id = ?',
-                [result.insertId, ordem_entrega, unidade.id]
+                [result.insertId, ordemEntrega, unidade.id]
               );
             }
           }
@@ -132,7 +132,6 @@ class RotasCRUDController {
         nome,
         status,
         tipo_rota,
-        ordem_entrega = 0,
         unidades_selecionadas = []
       } = req.body;
 
@@ -260,10 +259,11 @@ class RotasCRUDController {
               );
 
               if (unidadeExistente.length > 0 && (!unidadeExistente[0].rota_id || unidadeExistente[0].rota_id == id)) {
-                // Vincular a unidade à rota e definir ordem de entrega
+                // Vincular a unidade à rota e definir ordem de entrega individual
+                const ordemEntrega = unidade.ordem_entrega || 0;
                 await executeQuery(
                   'UPDATE unidades_escolares SET rota_id = ?, ordem_entrega = ? WHERE id = ?',
-                  [id, ordem_entrega, unidade.id]
+                  [id, ordemEntrega, unidade.id]
                 );
               }
             }
