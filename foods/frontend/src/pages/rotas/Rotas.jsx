@@ -138,6 +138,26 @@ const Rotas = () => {
         placeholder="Buscar por nome ou código..."
       />
 
+      {/* Ações de Exportação */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
+        <Button
+          onClick={handleExportXLSX}
+          variant="outline"
+          size="sm"
+          disabled={!canView('rotas')}
+        >
+          Exportar XLSX
+        </Button>
+        <Button
+          onClick={handleExportPDF}
+          variant="outline"
+          size="sm"
+          disabled={!canView('rotas')}
+        >
+          Exportar PDF
+        </Button>
+      </div>
+
       {/* Tabela */}
       <RotasTable
         rotas={rotas}
