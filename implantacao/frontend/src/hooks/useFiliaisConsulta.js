@@ -142,6 +142,7 @@ export const useFiliaisConsulta = () => {
       }
 
       console.log('Final allFiliaisData:', allFiliaisData.length, allFiliaisData); // Debug log
+      console.log('First filial structure:', allFiliaisData[0]); // Debug log - ver estrutura dos dados
 
       // Aplicar paginação no frontend
       const paginatedData = applyFrontendPagination(
@@ -157,6 +158,8 @@ export const useFiliaisConsulta = () => {
       setAllFiliais(allFiliaisData);
       setFiliais(paginatedData);
       setStats(estatisticas);
+      
+      console.log('State updated - filiais:', paginatedData.length, 'stats:', estatisticas); // Debug log
       setPagination(prev => ({
         ...prev,
         totalItems: allFiliaisData.length,

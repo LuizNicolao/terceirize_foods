@@ -49,6 +49,9 @@ const Filiais = () => {
     isEmpty
   } = useFiliaisConsulta();
 
+  // Debug log
+  console.log('Filiais page - filiais:', filiais.length, 'stats:', stats);
+
   // Funções de manipulação
   const handleView = async (filial) => {
     try {
