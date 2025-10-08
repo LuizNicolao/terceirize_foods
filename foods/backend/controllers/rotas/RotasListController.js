@@ -62,7 +62,8 @@ class RotasListController {
         SELECT 
           r.*,
           f.filial as filial_nome,
-          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id AND ue.status = 'ativo') as total_unidades
+          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id AND ue.status = 'ativo') as total_unidades,
+          (SELECT ordem_entrega FROM unidades_escolares ue WHERE ue.rota_id = r.id LIMIT 1) as ordem_entrega
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
         WHERE ${whereConditions.join(' AND ')}
@@ -115,7 +116,8 @@ class RotasListController {
         SELECT 
           r.*,
           f.filial as filial_nome,
-          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id AND ue.status = 'ativo') as total_unidades
+          (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.rota_id = r.id AND ue.status = 'ativo') as total_unidades,
+          (SELECT ordem_entrega FROM unidades_escolares ue WHERE ue.rota_id = r.id LIMIT 1) as ordem_entrega
         FROM rotas r
         LEFT JOIN filiais f ON r.filial_id = f.id
         WHERE r.id = ?
