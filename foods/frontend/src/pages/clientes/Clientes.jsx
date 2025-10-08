@@ -9,7 +9,7 @@ import { Button, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ClienteModal, ClientesTable, ClientesStats } from '../../components/clientes';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Clientes = () => {
@@ -152,6 +152,15 @@ const Clientes = () => {
         ]}
         placeholder="Buscar por razão social, nome fantasia ou CNPJ..."
       />
+
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('clientes')}
+        />
+      </div>
 
       {/* Tabela */}
       <ClientesTable

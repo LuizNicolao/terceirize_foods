@@ -9,7 +9,7 @@ import { Button, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { FilialModal, FiliaisTable, FiliaisStats } from '../../components/filiais';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 
 const Filiais = () => {
@@ -113,6 +113,15 @@ const Filiais = () => {
         onStatusFilterChange={setStatusFilter}
         placeholder="Buscar por nome, cidade ou código..."
       />
+
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('filiais')}
+        />
+      </div>
 
       {/* Tabela */}
       <FiliaisTable

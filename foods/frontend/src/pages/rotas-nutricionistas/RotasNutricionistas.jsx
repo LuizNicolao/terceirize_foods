@@ -9,7 +9,7 @@ import { Button, ValidationErrorModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { RotasNutricionistasStats, RotasNutricionistasTable, RotasNutricionistasModal } from '../../components/rotas-nutricionistas';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 import { ConfirmModal } from '../../components/ui';
 
 const RotasNutricionistas = () => {
@@ -124,24 +124,13 @@ const RotasNutricionistas = () => {
         placeholder="Buscar por código, usuário, supervisor ou coordenador..."
       />
 
-      {/* Ações */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
-        <Button
-          onClick={handleExportXLSX}
-          variant="outline"
-          size="sm"
+      {/* Ações de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
           disabled={!canView('rotas_nutricionistas')}
-        >
-          Exportar XLSX
-        </Button>
-        <Button
-          onClick={handleExportPDF}
-          variant="outline"
-          size="sm"
-          disabled={!canView('rotas_nutricionistas')}
-        >
-          Exportar PDF
-        </Button>
+        />
       </div>
 
       {/* Tabela */}
