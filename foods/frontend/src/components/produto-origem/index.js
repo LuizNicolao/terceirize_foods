@@ -6,4 +6,3 @@
 export { default as ProdutoOrigemModal } from './ProdutoOrigemModal';
 export { default as ProdutoOrigemTable } from './ProdutoOrigemTable';
 export { default as ProdutoOrigemStats } from './ProdutoOrigemStats';
-export { default as ProdutoOrigemActions } from './ProdutoOrigemActions';
