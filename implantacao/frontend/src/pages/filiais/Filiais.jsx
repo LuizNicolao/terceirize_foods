@@ -125,9 +125,9 @@ const Filiais = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Filiais</h1>
         <div className="flex gap-2 sm:gap-3">
           <Button
@@ -144,7 +144,7 @@ const Filiais = () => {
       </div>
 
       {/* Estatísticas */}
-      <FiliaisStats stats={stats} />
+      <FiliaisStats estatisticas={stats} />
 
       {/* Filtros */}
       <CadastroFilterBar
@@ -154,12 +154,24 @@ const Filiais = () => {
       />
 
       {/* Ações */}
-      <ConsultaActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={filiais.length}
-        loading={loading}
-      />
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
+        <Button
+          onClick={handleExportXLSX}
+          variant="outline"
+          size="sm"
+          disabled={!canView('filiais')}
+        >
+          Exportar XLSX
+        </Button>
+        <Button
+          onClick={handleExportPDF}
+          variant="outline"
+          size="sm"
+          disabled={!canView('filiais')}
+        >
+          Exportar PDF
+        </Button>
+      </div>
 
       {/* Tabela */}
       <FiliaisTable
@@ -181,16 +193,14 @@ const Filiais = () => {
 
       {/* Paginação */}
       {pagination.totalPages > 1 && (
-        <div className="mt-6">
         <Pagination
-            currentPage={pagination.currentPage}
-            totalPages={pagination.totalPages}
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
           onPageChange={handlePageChange}
-            totalItems={pagination.totalItems}
-            itemsPerPage={pagination.itemsPerPage}
+          totalItems={pagination.totalItems}
+          itemsPerPage={pagination.itemsPerPage}
           onItemsPerPageChange={handleItemsPerPageChange}
         />
-        </div>
       )}
     </div>
   );

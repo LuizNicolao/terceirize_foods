@@ -1,3 +1,6 @@
-export { default as FilialModal } from './FilialModal';
-export { default as FiliaisTable } from './FiliaisTable';
-export { default as FiliaisStats } from './FiliaisStats';
+// Componentes importados direto do Foods (sem adaptação necessária)
+export { 
+  FilialModal,
+  FiliaisTable,
+  FiliaisStats
+} from 'foods-frontend/src/components/filiais';

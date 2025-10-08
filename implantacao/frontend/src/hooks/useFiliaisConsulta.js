@@ -25,9 +25,10 @@ export const useFiliaisConsulta = () => {
 
   // Estados de estatísticas
   const [stats, setStats] = useState({
-    total: 0,
-    ativos: 0,
-    inativos: 0
+    total_filiais: 0,
+    filiais_ativas: 0,
+    filiais_inativas: 0,
+    com_cnpj: 0
   });
 
   // Utilitários
@@ -67,12 +68,15 @@ export const useFiliaisConsulta = () => {
    */
   const calcularEstatisticas = useCallback((data) => {
     return {
-      total: data.length,
-      ativos: data.filter(item => 
+      total_filiais: data.length,
+      filiais_ativas: data.filter(item => 
         item.status === 'ativo' || item.status === 'Ativa' || item.status === 1
       ).length,
-      inativos: data.filter(item => 
+      filiais_inativas: data.filter(item => 
         item.status === 'inativo' || item.status === 'Inativa' || item.status === 0
+      ).length,
+      com_cnpj: data.filter(item => 
+        item.cnpj && item.cnpj.trim() !== ''
       ).length
     };
   }, []);
@@ -157,7 +161,7 @@ export const useFiliaisConsulta = () => {
       setError(error.message);
       setFiliais([]);
       setAllFiliais([]);
-      setStats({ total: 0, ativos: 0, inativos: 0 });
+      setStats({ total_filiais: 0, filiais_ativas: 0, filiais_inativas: 0, com_cnpj: 0 });
     } finally {
       setLoading(false);
     }
