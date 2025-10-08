@@ -177,7 +177,7 @@ const Fornecedores = () => {
         isOpen={showViewModal}
         onClose={handleCloseViewModal}
         onSubmit={() => {}} // Não usado no modo visualização
-        isViewMode={true}
+        viewMode={true}
         editingFornecedor={selectedFornecedor}
       />
 
