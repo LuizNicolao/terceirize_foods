@@ -7,6 +7,7 @@ const GruposListController = require('./GruposListController');
 const GruposCRUDController = require('./GruposCRUDController');
 const GruposSearchController = require('./GruposSearchController');
 const GruposStatsController = require('./GruposStatsController');
+const GruposExportController = require('./GruposExportController');
 
 module.exports = {
   // Métodos de Listagem
@@ -24,5 +25,9 @@ module.exports = {
   buscarSubgruposPorGrupo: GruposSearchController.buscarSubgruposPorGrupo,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: GruposStatsController.buscarEstatisticas
+  buscarEstatisticas: GruposStatsController.buscarEstatisticas,
+  
+  // Métodos de Exportação
+  exportarXLSX: GruposExportController.exportarXLSX,
+  exportarPDF: GruposExportController.exportarPDF
 };

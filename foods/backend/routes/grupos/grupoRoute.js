@@ -82,4 +82,10 @@ router.delete('/:id',
   GruposController.excluirGrupo
 );
 
+// GET /api/grupos/export/xlsx
+router.get('/export/xlsx', checkScreenPermission('grupos', 'visualizar'), GruposController.exportarXLSX);
+
+// GET /api/grupos/export/pdf
+router.get('/export/pdf', checkScreenPermission('grupos', 'visualizar'), GruposController.exportarPDF);
+
 module.exports = router;
