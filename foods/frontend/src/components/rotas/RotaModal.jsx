@@ -311,8 +311,8 @@ const RotaModal = ({
               </div>
 
               {/* LADO DIREITO: 1 coluna de escolas selecionadas com ordem */}
-              <div className="col-span-1 flex flex-col border-l border-gray-300 pl-4">
-                <div className="flex justify-between items-center mb-3">
+              <div className="col-span-1 flex flex-col border-l border-gray-300 pl-4 min-h-0">
+                <div className="flex justify-between items-center mb-3 flex-shrink-0">
                   <span className="text-sm font-medium text-gray-700">
                     Selecionadas ({unidadesSelecionadas.length})
                   </span>
@@ -336,13 +336,13 @@ const RotaModal = ({
                     </div>
                   </div>
                 ) : (
-                  <div className="overflow-y-auto flex-1 space-y-2">
+                  <div className="overflow-y-auto flex-1 space-y-2 min-h-0">
                     {unidadesSelecionadas
                       .sort((a, b) => (a.ordem_entrega || 0) - (b.ordem_entrega || 0))
                       .map((unidade) => (
                       <div
                         key={unidade.id}
-                        className="p-2 bg-green-50 rounded-lg border border-green-200"
+                        className="p-2 bg-green-50 rounded-lg border border-green-200 flex-shrink-0"
                       >
                         <div className="flex items-start gap-2 mb-2">
                           <input
