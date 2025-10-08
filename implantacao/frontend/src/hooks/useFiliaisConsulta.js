@@ -114,6 +114,8 @@ export const useFiliaisConsulta = () => {
           limit
         });
 
+        console.log('Filiais API Response:', result); // Debug log
+
         if (result.success && result.data) {
           // Verificar se é uma resposta HATEOAS ou direta
           let items = [];
@@ -126,6 +128,7 @@ export const useFiliaisConsulta = () => {
           }
 
           allFiliaisData = [...allFiliaisData, ...items];
+          console.log('Items found:', items.length, 'Total so far:', allFiliaisData.length); // Debug log
 
           // Verificar se há mais páginas
           if (items.length < limit) {
@@ -138,6 +141,8 @@ export const useFiliaisConsulta = () => {
         }
       }
 
+      console.log('Final allFiliaisData:', allFiliaisData.length, allFiliaisData); // Debug log
+
       // Aplicar paginação no frontend
       const paginatedData = applyFrontendPagination(
         allFiliaisData,
@@ -147,6 +152,7 @@ export const useFiliaisConsulta = () => {
 
       // Calcular estatísticas baseadas em todos os dados
       const estatisticas = calcularEstatisticas(allFiliaisData);
+      console.log('Estatísticas calculadas:', estatisticas); // Debug log
 
       setAllFiliais(allFiliaisData);
       setFiliais(paginatedData);
