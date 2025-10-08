@@ -505,29 +505,29 @@ class FoodsApiService {
    */
   static async getRotasNutricionistas(params = {}) {
     try {
-      console.log('🔍 getRotasNutricionistas - params:', params);
       const response = await foodsApi.get('/rotas-nutricionistas', { params });
-      console.log('📦 getRotasNutricionistas - response.data:', response.data);
       
+      // A API de rotas nutricionistas retorna os dados em response.data.data.rotas
       let rotasData = response.data.data || response.data;
-      console.log('📦 getRotasNutricionistas - rotasData (após response.data.data || response.data):', rotasData);
       
-      if (rotasData && rotasData.items && Array.isArray(rotasData.items)) {
+      // Verificar se os dados estão em .rotas (estrutura específica desta API)
+      if (rotasData && rotasData.rotas && Array.isArray(rotasData.rotas)) {
+        rotasData = rotasData.rotas;
+      }
+      // Fallback para .items (padrão de outras APIs)
+      else if (rotasData && rotasData.items && Array.isArray(rotasData.items)) {
         rotasData = rotasData.items;
-        console.log('📦 getRotasNutricionistas - rotasData (após extrair items):', rotasData);
       }
       
       const arrayData = Array.isArray(rotasData) ? rotasData : [];
-      console.log('✅ getRotasNutricionistas - arrayData final:', arrayData.length, 'itens');
       
       return {
         success: true,
         data: arrayData,
-        pagination: response.data.pagination || null,
+        pagination: response.data.data?.pagination || response.data.pagination || null,
         message: 'Rotas nutricionistas consultadas com sucesso'
       };
     } catch (error) {
-      console.error('❌ getRotasNutricionistas - erro:', error);
       return {
         success: false,
         data: [],
