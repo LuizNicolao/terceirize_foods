@@ -1,5 +1,11 @@
-export { default as UnidadeEscolarModal } from './UnidadeEscolarModal';
+// Componentes adaptadores para usar Foods em Implantação
 export { default as UnidadesEscolaresTable } from './UnidadesEscolaresTable';
-export { default as UnidadesEscolaresStats } from './UnidadesEscolaresStats';
 export { default as UnidadesEscolaresActions } from './UnidadesEscolaresActions';
-export { default as ImportarUnidadesEscolares } from './ImportarUnidadesEscolares';
+
+// Componentes importados direto do Foods (sem adaptação necessária)
+export { 
+  UnidadesEscolaresStats,
+  UnidadeEscolarModal,
+  ImportarUnidadesEscolares,
+  AlmoxarifadoContent
+} from 'foods-frontend/src/components/unidades-escolares';

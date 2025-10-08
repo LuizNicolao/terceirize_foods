@@ -7,7 +7,7 @@ import {
   UnidadesEscolaresTable, 
   UnidadesEscolaresStats,
   UnidadeEscolarModal
-} from 'foods-frontend/src/components/unidades-escolares';
+} from '../../components/unidades-escolares';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { Modal } from '../../components/ui';
