@@ -100,7 +100,7 @@ class RotasService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Erro ao excluir rota'
+        message: error.response?.data?.message || error.response?.data?.error || 'Erro ao excluir rota'
       };
     }
   }
