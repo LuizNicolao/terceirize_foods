@@ -1,6 +1,5 @@
 import React from 'react';
 import { RotasNutricionistasTable as FoodsRotasNutricionistasTable } from 'foods-frontend/src/components/rotas-nutricionistas';
-import RotasNutricionistasActions from './RotasNutricionistasActions'; // Local adaptor
 
 const RotasNutricionistasTable = ({ 
   rotasNutricionistas, 
@@ -16,17 +15,14 @@ const RotasNutricionistasTable = ({
   getCoordenadorName,
   loadingUsuarios
 }) => {
-  // Adapt the boolean props to functions that the FoodsRotasNutricionistasTable expects
-  const canViewFn = () => canView;
-  const canEditFn = () => canEdit;
-  const canDeleteFn = () => canDelete;
-
+  // A tabela de RotasNutricionistas do Foods usa boolean direto (não funções)
+  // Diferente de outras tabelas que usam ActionButtons
   return (
     <FoodsRotasNutricionistasTable
       rotasNutricionistas={rotasNutricionistas}
-      canView={canViewFn}
-      canEdit={canEditFn}
-      canDelete={canDeleteFn}
+      canView={canView}
+      canEdit={canEdit}
+      canDelete={canDelete}
       onView={onView}
       onEdit={onEdit}
       onDelete={onDelete}
@@ -35,8 +31,6 @@ const RotasNutricionistasTable = ({
       getSupervisorName={getSupervisorName}
       getCoordenadorName={getCoordenadorName}
       loadingUsuarios={loadingUsuarios}
-      // Pass the local RotasNutricionistasActions adaptor
-      RotasNutricionistasActionsComponent={RotasNutricionistasActions}
     />
   );
 };

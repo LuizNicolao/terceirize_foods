@@ -13,6 +13,5 @@ export {
   RotasNutricionistasObservacoes
 } from 'foods-frontend/src/components/rotas-nutricionistas';
 
-// Export local adaptors
+// Export local adaptor (apenas para passar props adicionais)
 export { default as RotasNutricionistasTable } from './RotasNutricionistasTable';
-export { default as RotasNutricionistasActions } from './RotasNutricionistasActions';
