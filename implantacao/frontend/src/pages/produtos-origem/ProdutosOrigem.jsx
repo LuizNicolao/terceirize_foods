@@ -4,9 +4,7 @@ import { useProdutosOrigemConsulta } from '../../hooks/useProdutosOrigemConsulta
 import ProdutosOrigemStats from '../../components/produtos-origem/ProdutosOrigemStats';
 import ProdutoOrigemTable from '../../components/produtos-origem/ProdutoOrigemTable';
 import ProdutoOrigemModal from '../../components/produtos-origem/ProdutoOrigemModal';
-import Pagination from '../../components/ui/Pagination';
-import { Button } from '../../components/ui';
-import { CadastroFilterBar } from '../../components/ui';
+import { Pagination, Button, CadastroFilterBar } from '../../components/ui';
 import { ConsultaActions } from '../../components/shared';
 
 /**

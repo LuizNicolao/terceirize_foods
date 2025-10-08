@@ -4,12 +4,11 @@ import { useUsuarios } from '../../hooks/useUsuarios';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import UsuariosService from '../../services/usuarios';
-import { ConfirmModal, Pagination } from '../../components/ui';
+import { ConfirmModal, Pagination, ValidationErrorModal } from '../../components/ui';
 import { UsuarioModal } from '../../components/usuarios';
 import UsuariosStats from '../../components/usuarios/UsuariosStats';
 import UsuariosActions from '../../components/usuarios/UsuariosActions';
 import UsuariosTable from '../../components/usuarios/UsuariosTable';
-import ValidationErrorModal from '../../components/ui/ValidationErrorModal';
 import { AuditModal } from '../../components/shared';
 import { UsuariosHeader, UsuariosFilters } from './components';
 

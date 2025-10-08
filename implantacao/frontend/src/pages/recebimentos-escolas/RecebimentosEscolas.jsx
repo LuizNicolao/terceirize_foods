@@ -16,9 +16,7 @@ import {
 } from '../../components/recebimentos-escolas';
 import { ConsultaActions } from '../../components/shared';
 import { RecebimentosEscolasHeader } from './components';
-import ActionButtons from '../../components/ui/ActionButtons';
-import Modal from '../../components/ui/Modal';
-import { Pagination } from '../../components/ui';
+import { ActionButtons, Modal, Pagination } from '../../components/ui';
 // import { formatarDataParaExibicao } from '../../utils/recebimentosUtils';
 import toast from 'react-hot-toast';
 

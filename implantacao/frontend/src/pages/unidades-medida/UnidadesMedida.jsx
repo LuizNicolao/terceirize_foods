@@ -3,9 +3,7 @@ import { FaQuestionCircle } from 'react-icons/fa';
 import useUnidadesMedidaConsulta from '../../hooks/useUnidadesMedidaConsulta';
 import { UnidadesMedidaStats, UnidadesMedidaTable, UnidadeModal } from '../../components/unidades-medida';
 import { ConsultaActions } from '../../components/shared';
-import { Button } from '../../components/ui';
-import { CadastroFilterBar } from '../../components/ui';
-import Pagination from '../../components/ui/Pagination';
+import { Button, CadastroFilterBar, Pagination } from '../../components/ui';
 
 /**
  * Página de consulta de Unidades de Medida
