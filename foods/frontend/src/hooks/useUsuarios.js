@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import UsuariosService from '../services/usuarios';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useUsuarios = () => {
   // Hook base para funcionalidades CRUD
@@ -17,6 +18,21 @@ export const useUsuarios = () => {
   const customFilters = useFilters({});
 
   // Hook de busca com debounce
+
+  // Hook de ordenação híbrida
+  const {
+    sortedData: usuariosOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    defaultField: null,
+    defaultDirection: null,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
 
   // Estados de estatísticas específicas dos usuários
   const [estatisticasUsuarios, setEstatisticasUsuarios] = useState({
@@ -182,8 +198,8 @@ export const useUsuarios = () => {
   }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    // Estados principais (do hook base)
-    usuarios: baseEntity.items,
+    // Estados principais (usa dados ordenados se ordenação local)
+    usuarios: isSortingLocally ? usuariosOrdenados : baseEntity.items,
     loading: baseEntity.loading,
     
     estatisticas: estatisticasUsuarios, // Usar estatísticas específicas dos usuários
@@ -211,6 +227,11 @@ export const useUsuarios = () => {
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,
     
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
+    
     // Ações de modal (customizadas)
     handleAddUser: baseEntity.handleAdd,
     handleViewUser: handleViewCustom,
@@ -226,6 +247,9 @@ export const useUsuarios = () => {
     clearSearch: baseEntity.clearSearch,
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
+    
+    // Ações de ordenação
+    handleSort,
     
     // Ações de CRUD (customizadas)
     onSubmit: onSubmitCustom,

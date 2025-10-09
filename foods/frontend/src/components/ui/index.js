@@ -19,3 +19,4 @@ export { FormInput } from './FormInput';
 export { MaskedInput } from './MaskedInput';
 export { MaskedFormInput } from './MaskedFormInput'; 
 export { default as SearchableSelect } from './SearchableSelect';
+export { default as SortableTableHeader } from './SortableTableHeader';

@@ -50,7 +50,11 @@ const Usuarios = () => {
     formatDate,
     getStatusLabel,
     getNivelAcessoLabel,
-    getTipoAcessoLabel
+    getTipoAcessoLabel,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
   } = useUsuarios();
 
   const {
@@ -138,6 +142,9 @@ const Usuarios = () => {
         getNivelAcessoLabel={getNivelAcessoLabel}
         getStatusLabel={getStatusLabel}
         formatDate={formatDate}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Usuário */}
