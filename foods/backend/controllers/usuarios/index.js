@@ -28,7 +28,7 @@ module.exports = {
   
   // Métodos para Gerenciar Filiais
   buscarFiliaisUsuario: UsuariosListController.buscarFiliaisUsuario,
-  atualizarFiliaisUsuario: UsuariosCRUDController.atualizarFiliaisUsuario
+  atualizarFiliaisUsuario: UsuariosCRUDController.atualizarFiliaisUsuario,
   
   // Métodos de Exportação
   exportarXLSX: UsuariosExportController.exportarXLSX,

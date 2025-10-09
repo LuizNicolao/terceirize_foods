@@ -1,6 +1,6 @@
 /**
- * Índice dos Controllers de Motoristas
- * Centraliza a exportação de todos os controllers organizados
+ * Índice dos Controllers de Motoristas,
+ * Centraliza a exportação de todos os controllers organizados,
  */
 
 const MotoristasListController = require('./MotoristasListController');
@@ -26,7 +26,7 @@ module.exports = {
   listarCategoriasCnh: MotoristasSearchController.listarCategoriasCnh,
   
   // Métodos de Estatísticas
-  buscarMotoristasCnhVencendo: MotoristasStatsController.buscarMotoristasCnhVencendo
+  buscarMotoristasCnhVencendo: MotoristasStatsController.buscarMotoristasCnhVencendo,
   
   // Métodos de Exportação
   exportarXLSX: MotoristasExportController.exportarXLSX,

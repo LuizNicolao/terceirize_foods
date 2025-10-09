@@ -1,6 +1,6 @@
 /**
- * Índice dos Controllers de Ajudantes
- * Centraliza a exportação de todos os controllers organizados
+ * Índice dos Controllers de Ajudantes,
+ * Centraliza a exportação de todos os controllers organizados,
  */
 
 const AjudantesListController = require('./AjudantesListController');
@@ -26,7 +26,7 @@ module.exports = {
   listarStatus: AjudantesSearchController.listarStatus,
   
   // Métodos de Estatísticas
-  buscarAjudantesDisponiveis: AjudantesStatsController.buscarAjudantesDisponiveis
+  buscarAjudantesDisponiveis: AjudantesStatsController.buscarAjudantesDisponiveis,
   
   // Métodos de Exportação
   exportarXLSX: AjudantesExportController.exportarXLSX,

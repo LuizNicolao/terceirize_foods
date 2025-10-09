@@ -1,6 +1,6 @@
 /**
- * Índice dos Controllers de Permissões
- * Centraliza a exportação de todos os controllers organizados
+ * Índice dos Controllers de Permissões,
+ * Centraliza a exportação de todos os controllers organizados,
  */
 
 const PermissoesController = require('./PermissoesController');
@@ -19,7 +19,7 @@ module.exports = {
   
   // Métodos de atualização
   atualizarPermissoes: PermissoesController.atualizarPermissoes,
-  sincronizarPermissoes: PermissoesController.sincronizarPermissoes
+  sincronizarPermissoes: PermissoesController.sincronizarPermissoes,
   
   // Métodos de Exportação
   exportarXLSX: PermissoesExportController.exportarXLSX,

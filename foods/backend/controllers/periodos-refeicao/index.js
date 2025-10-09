@@ -1,5 +1,5 @@
 /**
- * Controllers para Períodos de Refeição
+ * Controllers para Períodos de Refeição,
  */
 
 const PeriodosRefeicaoCRUDController = require('./PeriodosRefeicaoCRUDController');
@@ -23,7 +23,7 @@ module.exports = {
   buscarAtivos: PeriodosRefeicaoSearchController.buscarAtivos,
   buscarPorFilial: PeriodosRefeicaoSearchController.buscarPorFilial,
   buscarDisponiveisParaUnidade: PeriodosRefeicaoSearchController.buscarDisponiveisParaUnidade,
-  buscarPorIds: PeriodosRefeicaoSearchController.buscarPorIds
+  buscarPorIds: PeriodosRefeicaoSearchController.buscarPorIds,
   
   // Métodos de Exportação
   exportarXLSX: PeriodosRefeicaoExportController.exportarXLSX,

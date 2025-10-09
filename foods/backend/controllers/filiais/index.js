@@ -1,6 +1,6 @@
 /**
- * Índice dos Controllers de Filiais
- * Centraliza a exportação de todos os controllers organizados
+ * Índice dos Controllers de Filiais,
+ * Centraliza a exportação de todos os controllers organizados,
  */
 
 const FiliaisListController = require('./FiliaisListController');
@@ -40,7 +40,7 @@ module.exports = {
   excluirAlmoxarifado: FiliaisCRUDController.excluirAlmoxarifado,
   listarItensAlmoxarifado: FiliaisListController.listarItensAlmoxarifado,
   adicionarItemAlmoxarifado: FiliaisCRUDController.adicionarItemAlmoxarifado,
-  removerItemAlmoxarifado: FiliaisCRUDController.removerItemAlmoxarifado
+  removerItemAlmoxarifado: FiliaisCRUDController.removerItemAlmoxarifado,
   
   // Métodos de Exportação
   exportarXLSX: FiliaisExportController.exportarXLSX,

@@ -1,6 +1,6 @@
 /**
- * Índice dos Controllers de Veículos
- * Centraliza a exportação de todos os controllers organizados
+ * Índice dos Controllers de Veículos,
+ * Centraliza a exportação de todos os controllers organizados,
  */
 
 const VeiculosListController = require('./VeiculosListController');
@@ -27,7 +27,7 @@ module.exports = {
   listarCategoriasVeiculos: VeiculosSearchController.listarCategoriasVeiculos,
   
   // Métodos de Estatísticas
-  buscarVeiculosDocumentacaoVencendo: VeiculosStatsController.buscarVeiculosDocumentacaoVencendo
+  buscarVeiculosDocumentacaoVencendo: VeiculosStatsController.buscarVeiculosDocumentacaoVencendo,
   
   // Métodos de Exportação
   exportarXLSX: VeiculosExportController.exportarXLSX,

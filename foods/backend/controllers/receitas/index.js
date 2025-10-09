@@ -1,6 +1,6 @@
 /**
- * Índice dos controllers de Receitas
- * Centraliza a exportação dos controllers organizados
+ * Índice dos controllers de Receitas,
+ * Centraliza a exportação dos controllers organizados,
  */
 
 const ReceitasListController = require('./ReceitasListController');
@@ -11,7 +11,7 @@ const ReceitasExportController = require('./ReceitasExportController');
 module.exports = {
   ReceitasListController,
   ReceitasCRUDController,
-  ReceitasExportController
+  ReceitasExportController,
   
   // Métodos de Exportação
   exportarXLSX: ReceitasExportController.exportarXLSX,

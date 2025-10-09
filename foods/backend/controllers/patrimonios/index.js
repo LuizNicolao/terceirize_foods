@@ -1,6 +1,6 @@
 /**
- * Índice dos Controllers de Patrimônios
- * Centraliza a exportação de todos os controllers organizados
+ * Índice dos Controllers de Patrimônios,
+ * Centraliza a exportação de todos os controllers organizados,
  */
 
 const PatrimoniosListController = require('./PatrimoniosListController');
@@ -25,7 +25,7 @@ module.exports = {
   listarMovimentacoesPatrimonio: PatrimoniosMovimentacaoController.listarMovimentacoesPatrimonio,
   
   // Métodos de Produtos
-  listarProdutosEquipamentos: PatrimoniosProdutosController.listarProdutosEquipamentos
+  listarProdutosEquipamentos: PatrimoniosProdutosController.listarProdutosEquipamentos,
   
   // Métodos de Exportação
   exportarXLSX: PatrimoniosExportController.exportarXLSX,

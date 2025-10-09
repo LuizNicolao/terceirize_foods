@@ -1,6 +1,6 @@
 /**
- * Índice dos Controllers de Clientes
- * Centraliza a exportação de todos os controllers organizados
+ * Índice dos Controllers de Clientes,
+ * Centraliza a exportação de todos os controllers organizados,
  */
 
 const ClientesListController = require('./ClientesListController');
@@ -25,7 +25,7 @@ module.exports = {
   buscarAtivos: ClientesSearchController.buscarAtivos,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: ClientesStatsController.buscarEstatisticas
+  buscarEstatisticas: ClientesStatsController.buscarEstatisticas,
   
   // Métodos de Exportação
   exportarXLSX: ClientesExportController.exportarXLSX,

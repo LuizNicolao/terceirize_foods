@@ -1,6 +1,6 @@
 /**
- * Índice dos Controllers de Necessidades da Merenda
- * Centraliza a exportação de todos os controllers organizados
+ * Índice dos Controllers de Necessidades da Merenda,
+ * Centraliza a exportação de todos os controllers organizados,
  */
 
 const NecessidadesMerendaListController = require('./NecessidadesMerendaListController');
@@ -29,7 +29,7 @@ module.exports = {
   // Métodos de Exportação
   exportarParaExcel: NecessidadesMerendaExportController.exportarParaExcel,
   exportarListaCompras: NecessidadesMerendaExportController.exportarListaCompras,
-  exportarRelatorioCustos: NecessidadesMerendaExportController.exportarRelatorioCustos
+  exportarRelatorioCustos: NecessidadesMerendaExportController.exportarRelatorioCustos,
   
   // Métodos de Exportação
   exportarXLSX: NecessidadesMerendaExportController.exportarXLSX,
