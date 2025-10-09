@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaPlus, FaQuestionCircle, FaFileExcel, FaFilePdf } from 'react-icons/fa';
+import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useVeiculos } from '../../hooks/useVeiculos';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
@@ -9,7 +9,7 @@ import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui'
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { VeiculoModal, VeiculosTable, VeiculosStats } from '../../components/veiculos';
-import { AuditModal } from '../../components/shared';
+import { AuditModal, ExportButtons } from '../../components/shared';
 
 const Veiculos = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -134,18 +134,10 @@ const Veiculos = () => {
       />
 
       {/* Ações de Exportação */}
-      <div className="flex gap-2 sm:gap-3 mb-4">
-        <Button onClick={handleExportXLSX} variant="outline" size="sm">
-          <FaFileExcel className="mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Exportar XLSX</span>
-          <span className="sm:hidden">XLSX</span>
-        </Button>
-        <Button onClick={handleExportPDF} variant="outline" size="sm">
-          <FaFilePdf className="mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Exportar PDF</span>
-          <span className="sm:hidden">PDF</span>
-        </Button>
-      </div>
+      <ExportButtons 
+        onExportXLSX={handleExportXLSX}
+        onExportPDF={handleExportPDF}
+      />
 
       {/* Tabela */}
       <VeiculosTable
