@@ -77,4 +77,7 @@ router.get('/:id/exportar/:formato',
   ReceitasExportController.exportar
 );
 
+router.get('/export/xlsx', checkScreenPermission('receitas', 'visualizar'), ReceitasController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('receitas', 'visualizar'), ReceitasController.exportarPDF);
+
 module.exports = router;

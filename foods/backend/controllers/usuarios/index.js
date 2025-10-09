@@ -8,6 +8,7 @@ const UsuariosCRUDController = require('./UsuariosCRUDController');
 const UsuariosSearchController = require('./UsuariosSearchController');
 const UsuariosAuthController = require('./UsuariosAuthController');
 
+const UsuariosExportController = require('./UsuariosExportController');
 module.exports = {
   // Métodos de Listagem
   listarUsuarios: UsuariosListController.listarUsuarios,
@@ -28,4 +29,8 @@ module.exports = {
   // Métodos para Gerenciar Filiais
   buscarFiliaisUsuario: UsuariosListController.buscarFiliaisUsuario,
   atualizarFiliaisUsuario: UsuariosCRUDController.atualizarFiliaisUsuario
+  
+  // Métodos de Exportação
+  exportarXLSX: UsuariosExportController.exportarXLSX,
+  exportarPDF: UsuariosExportController.exportarPDF
 };

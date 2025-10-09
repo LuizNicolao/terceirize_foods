@@ -8,6 +8,7 @@ const MotoristasCRUDController = require('./MotoristasCRUDController');
 const MotoristasSearchController = require('./MotoristasSearchController');
 const MotoristasStatsController = require('./MotoristasStatsController');
 
+const MotoristasExportController = require('./MotoristasExportController');
 module.exports = {
   // Métodos de Listagem
   listarMotoristas: MotoristasListController.listarMotoristas,
@@ -26,4 +27,8 @@ module.exports = {
   
   // Métodos de Estatísticas
   buscarMotoristasCnhVencendo: MotoristasStatsController.buscarMotoristasCnhVencendo
+  
+  // Métodos de Exportação
+  exportarXLSX: MotoristasExportController.exportarXLSX,
+  exportarPDF: MotoristasExportController.exportarPDF
 };

@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkPermission, checkScreenPermission } = require('../../middleware/auth');
 const { clienteValidations, commonValidations } = require('./clienteValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
@@ -74,5 +74,8 @@ router.get('/ativos',
   checkPermission('visualizar'),
   ClientesController.buscarAtivos
 );
+
+router.get('/export/xlsx', checkScreenPermission('clientes', 'visualizar'), ClientesController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('clientes', 'visualizar'), ClientesController.exportarPDF);
 
 module.exports = router;

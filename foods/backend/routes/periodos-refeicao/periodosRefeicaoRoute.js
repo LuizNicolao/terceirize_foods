@@ -127,4 +127,7 @@ router.post('/buscar-por-ids',
   periodosRefeicaoController.buscarPorIds
 );
 
+router.get('/export/xlsx', checkScreenPermission('periodos_refeicao', 'visualizar'), PeriodosRefeicaoController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('periodos_refeicao', 'visualizar'), PeriodosRefeicaoController.exportarPDF);
+
 module.exports = router;

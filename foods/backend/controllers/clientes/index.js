@@ -8,6 +8,7 @@ const ClientesCRUDController = require('./ClientesCRUDController');
 const ClientesSearchController = require('./ClientesSearchController');
 const ClientesStatsController = require('./ClientesStatsController');
 
+const ClientesExportController = require('./ClientesExportController');
 module.exports = {
   // Métodos de Listagem
   listarClientes: ClientesListController.listarClientes,
@@ -25,4 +26,8 @@ module.exports = {
   
   // Métodos de Estatísticas
   buscarEstatisticas: ClientesStatsController.buscarEstatisticas
+  
+  // Métodos de Exportação
+  exportarXLSX: ClientesExportController.exportarXLSX,
+  exportarPDF: ClientesExportController.exportarPDF
 };

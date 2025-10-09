@@ -8,6 +8,7 @@ const PatrimoniosCRUDController = require('./PatrimoniosCRUDController');
 const PatrimoniosMovimentacaoController = require('./PatrimoniosMovimentacaoController');
 const PatrimoniosProdutosController = require('./PatrimoniosProdutosController');
 
+const PatrimoniosExportController = require('./PatrimoniosExportController');
 module.exports = {
   // Métodos de Listagem
   listarPatrimonios: PatrimoniosListController.listarPatrimonios,
@@ -25,4 +26,8 @@ module.exports = {
   
   // Métodos de Produtos
   listarProdutosEquipamentos: PatrimoniosProdutosController.listarProdutosEquipamentos
+  
+  // Métodos de Exportação
+  exportarXLSX: PatrimoniosExportController.exportarXLSX,
+  exportarPDF: PatrimoniosExportController.exportarPDF
 };

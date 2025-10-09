@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkPermission, checkScreenPermission } = require('../../middleware/auth');
 const { motoristaValidations, commonValidations } = require('./motoristaValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
@@ -58,5 +58,8 @@ router.delete('/:id',
 );
 
 
+
+router.get('/export/xlsx', checkScreenPermission('motoristas', 'visualizar'), MotoristasController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('motoristas', 'visualizar'), MotoristasController.exportarPDF);
 
 module.exports = router;

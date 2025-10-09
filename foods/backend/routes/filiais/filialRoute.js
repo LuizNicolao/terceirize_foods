@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkPermission, checkScreenPermission } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const FiliaisController = require('../../controllers/filiais');
@@ -128,5 +128,8 @@ router.delete('/almoxarifados/:almoxarifadoId/itens/:itemId',
   commonValidations.id,
   FiliaisController.removerItemAlmoxarifado
 );
+
+router.get('/export/xlsx', checkScreenPermission('filiais', 'visualizar'), FiliaisController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('filiais', 'visualizar'), FiliaisController.exportarPDF);
 
 module.exports = router;

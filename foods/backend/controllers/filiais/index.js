@@ -8,6 +8,7 @@ const FiliaisCRUDController = require('./FiliaisCRUDController');
 const FiliaisSearchController = require('./FiliaisSearchController');
 const FiliaisStatsController = require('./FiliaisStatsController');
 
+const FiliaisExportController = require('./FiliaisExportController');
 module.exports = {
   // Métodos de Listagem
   listarFiliais: FiliaisListController.listarFiliais,
@@ -40,4 +41,8 @@ module.exports = {
   listarItensAlmoxarifado: FiliaisListController.listarItensAlmoxarifado,
   adicionarItemAlmoxarifado: FiliaisCRUDController.adicionarItemAlmoxarifado,
   removerItemAlmoxarifado: FiliaisCRUDController.removerItemAlmoxarifado
+  
+  // Métodos de Exportação
+  exportarXLSX: FiliaisExportController.exportarXLSX,
+  exportarPDF: FiliaisExportController.exportarPDF
 };

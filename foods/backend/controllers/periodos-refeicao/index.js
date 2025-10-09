@@ -6,6 +6,7 @@ const PeriodosRefeicaoCRUDController = require('./PeriodosRefeicaoCRUDController
 const PeriodosRefeicaoListController = require('./PeriodosRefeicaoListController');
 const PeriodosRefeicaoSearchController = require('./PeriodosRefeicaoSearchController');
 
+const PeriodosRefeicaoExportController = require('./PeriodosRefeicaoExportController');
 module.exports = {
   // CRUD Operations
   listar: PeriodosRefeicaoCRUDController.listar,
@@ -23,4 +24,8 @@ module.exports = {
   buscarPorFilial: PeriodosRefeicaoSearchController.buscarPorFilial,
   buscarDisponiveisParaUnidade: PeriodosRefeicaoSearchController.buscarDisponiveisParaUnidade,
   buscarPorIds: PeriodosRefeicaoSearchController.buscarPorIds
+  
+  // Métodos de Exportação
+  exportarXLSX: PeriodosRefeicaoExportController.exportarXLSX,
+  exportarPDF: PeriodosRefeicaoExportController.exportarPDF
 };

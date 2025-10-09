@@ -8,6 +8,7 @@ const VeiculosCRUDController = require('./VeiculosCRUDController');
 const VeiculosSearchController = require('./VeiculosSearchController');
 const VeiculosStatsController = require('./VeiculosStatsController');
 
+const VeiculosExportController = require('./VeiculosExportController');
 module.exports = {
   // Métodos de Listagem
   listarVeiculos: VeiculosListController.listarVeiculos,
@@ -27,4 +28,8 @@ module.exports = {
   
   // Métodos de Estatísticas
   buscarVeiculosDocumentacaoVencendo: VeiculosStatsController.buscarVeiculosDocumentacaoVencendo
+  
+  // Métodos de Exportação
+  exportarXLSX: VeiculosExportController.exportarXLSX,
+  exportarPDF: VeiculosExportController.exportarPDF
 };

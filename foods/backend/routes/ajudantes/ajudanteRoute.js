@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkPermission, checkScreenPermission } = require('../../middleware/auth');
 const { ajudanteValidations, commonValidations } = require('./ajudanteValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
@@ -86,5 +86,8 @@ router.get('/disponiveis/listar',
   checkPermission('visualizar'),
   AjudantesController.buscarAjudantesDisponiveis
 );
+
+router.get('/export/xlsx', checkScreenPermission('ajudantes', 'visualizar'), AjudantesController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('ajudantes', 'visualizar'), AjudantesController.exportarPDF);
 
 module.exports = router;

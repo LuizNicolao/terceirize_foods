@@ -8,6 +8,7 @@ const AjudantesCRUDController = require('./AjudantesCRUDController');
 const AjudantesSearchController = require('./AjudantesSearchController');
 const AjudantesStatsController = require('./AjudantesStatsController');
 
+const AjudantesExportController = require('./AjudantesExportController');
 module.exports = {
   // Métodos de Listagem
   listarAjudantes: AjudantesListController.listarAjudantes,
@@ -26,4 +27,8 @@ module.exports = {
   
   // Métodos de Estatísticas
   buscarAjudantesDisponiveis: AjudantesStatsController.buscarAjudantesDisponiveis
+  
+  // Métodos de Exportação
+  exportarXLSX: AjudantesExportController.exportarXLSX,
+  exportarPDF: AjudantesExportController.exportarPDF
 };

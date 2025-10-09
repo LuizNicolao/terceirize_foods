@@ -217,4 +217,7 @@ router.patch('/alterar-status',
   atualizarStatusMultiplas
 );
 
+router.get('/export/xlsx', checkScreenPermission('necessidades_merenda', 'visualizar'), NecessidadesMerendaController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('necessidades_merenda', 'visualizar'), NecessidadesMerendaController.exportarPDF);
+
 module.exports = router;

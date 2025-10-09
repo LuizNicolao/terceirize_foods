@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkPermission, checkScreenPermission } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
@@ -87,5 +87,8 @@ router.get('/produtos/equipamentos',
   commonValidations.pagination,
   PatrimoniosController.listarProdutosEquipamentos
 );
+
+router.get('/export/xlsx', checkScreenPermission('patrimonios', 'visualizar'), PatrimoniosController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('patrimonios', 'visualizar'), PatrimoniosController.exportarPDF);
 
 module.exports = router;

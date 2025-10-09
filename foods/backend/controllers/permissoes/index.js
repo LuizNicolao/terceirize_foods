@@ -5,6 +5,7 @@
 
 const PermissoesController = require('./PermissoesController');
 
+const PermissoesExportController = require('./PermissoesExportController');
 module.exports = {
   // Métodos de listagem
   listarUsuarios: PermissoesController.listarUsuarios,
@@ -19,4 +20,8 @@ module.exports = {
   // Métodos de atualização
   atualizarPermissoes: PermissoesController.atualizarPermissoes,
   sincronizarPermissoes: PermissoesController.sincronizarPermissoes
+  
+  // Métodos de Exportação
+  exportarXLSX: PermissoesExportController.exportarXLSX,
+  exportarPDF: PermissoesExportController.exportarPDF
 };
