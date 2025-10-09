@@ -42,7 +42,7 @@ class UnidadesEscolaresExportController {
       const params = [];
       
       if (search) {
-        whereClause += ' AND (ue.codigo_escola LIKE ? OR ue.nome_escola LIKE ? OR ue.cidade LIKE ? OR ue.estado LIKE ?)';
+        whereClause += ' AND (ue.codigo_teknisa LIKE ? OR ue.nome_escola LIKE ? OR ue.cidade LIKE ? OR ue.estado LIKE ?)';
         const searchTerm = `%${search}%`;
         params.push(searchTerm, searchTerm, searchTerm, searchTerm);
       }
@@ -65,13 +65,13 @@ class UnidadesEscolaresExportController {
       const query = `
         SELECT 
           ue.id,
-          ue.codigo_escola,
+          ue.codigo_teknisa,
           ue.nome_escola,
           ue.cidade,
           ue.estado,
           ue.ordem_entrega,
           ue.status,
-          ue.criado_em,
+          ue.created_at,
           r.nome as rota_nome
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
@@ -86,14 +86,14 @@ class UnidadesEscolaresExportController {
       unidades.forEach(unidade => {
         worksheet.addRow({
           id: unidade.id,
-          codigo_escola: unidade.codigo_escola,
+          codigo_escola: unidade.codigo_teknisa,
           nome_escola: unidade.nome_escola,
           cidade: unidade.cidade,
           estado: unidade.estado,
           rota_nome: unidade.rota_nome || 'Sem rota',
           ordem_entrega: unidade.ordem_entrega || 0,
           status: unidade.status === 'ativo' ? 'Ativo' : 'Inativo',
-          criado_em: unidade.criado_em ? new Date(unidade.criado_em).toLocaleDateString('pt-BR') : ''
+          criado_em: unidade.created_at ? new Date(unidade.created_at).toLocaleDateString('pt-BR') : ''
         });
       });
 
@@ -140,7 +140,7 @@ class UnidadesEscolaresExportController {
       const params = [];
       
       if (search) {
-        whereClause += ' AND (ue.codigo_escola LIKE ? OR ue.nome_escola LIKE ? OR ue.cidade LIKE ? OR ue.estado LIKE ?)';
+        whereClause += ' AND (ue.codigo_teknisa LIKE ? OR ue.nome_escola LIKE ? OR ue.cidade LIKE ? OR ue.estado LIKE ?)';
         const searchTerm = `%${search}%`;
         params.push(searchTerm, searchTerm, searchTerm, searchTerm);
       }
@@ -163,13 +163,13 @@ class UnidadesEscolaresExportController {
       const query = `
         SELECT 
           ue.id,
-          ue.codigo_escola,
+          ue.codigo_teknisa,
           ue.nome_escola,
           ue.cidade,
           ue.estado,
           ue.ordem_entrega,
           ue.status,
-          ue.criado_em,
+          ue.created_at,
           r.nome as rota_nome
         FROM unidades_escolares ue
         LEFT JOIN rotas r ON ue.rota_id = r.id
@@ -187,8 +187,8 @@ class UnidadesEscolaresExportController {
         doc.fontSize(14).font('Helvetica-Bold').text(`${unidade.nome_escola}`);
         doc.fontSize(10).font('Helvetica');
         
-        if (unidade.codigo_escola) {
-          doc.text(`Código: ${unidade.codigo_escola}`);
+        if (unidade.codigo_teknisa) {
+          doc.text(`Código: ${unidade.codigo_teknisa}`);
         }
         
         doc.text(`Cidade/Estado: ${unidade.cidade} - ${unidade.estado}`);
@@ -203,8 +203,8 @@ class UnidadesEscolaresExportController {
         
         doc.text(`Status: ${unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}`);
         
-        if (unidade.criado_em) {
-          doc.text(`Data Cadastro: ${new Date(unidade.criado_em).toLocaleDateString('pt-BR')}`);
+        if (unidade.created_at) {
+          doc.text(`Data Cadastro: ${new Date(unidade.created_at).toLocaleDateString('pt-BR')}`);
         }
         
         // Linha separadora
