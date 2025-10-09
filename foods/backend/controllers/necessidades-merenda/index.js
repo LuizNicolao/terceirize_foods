@@ -26,12 +26,6 @@ module.exports = {
   gerarNecessidadesDeCardapioExistente: NecessidadesMerendaGeracaoController.gerarNecessidadesDeCardapioExistente,
   
   // Métodos de Exportação
-  exportarParaExcel: NecessidadesMerendaExportController.exportarParaExcel,
-  exportarListaCompras: NecessidadesMerendaExportController.exportarListaCompras,
-  exportarRelatorioCustos: NecessidadesMerendaExportController.exportarRelatorioCustos,
-  
-
-  // Métodos de Exportação
   exportarXLSX: NecessidadesMerendaExportController.exportarXLSX,
   exportarPDF: NecessidadesMerendaExportController.exportarPDF
 };

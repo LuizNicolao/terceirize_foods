@@ -8,21 +8,7 @@ const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { uploadPDF, handleUploadError } = require('../../middleware/uploadPDF');
 
 // Importar controllers
-const {
-  listarNecessidades,
-  buscarNecessidadePorId,
-  criarNecessidade,
-  atualizarNecessidade,
-  excluirNecessidade,
-  atualizarStatusMultiplas,
-  processarPDFEGerarNecessidades,
-  gerarNecessidadesDeCardapioExistente,
-  exportarParaExcel,
-  exportarListaCompras,
-  exportarRelatorioCustos,
-  exportarXLSX,
-  exportarPDF
-} = require('../../controllers/necessidades-merenda');
+const NecessidadesMerendaController = require('../../controllers/necessidades-merenda');
 
 // Middleware de validação
 const necessidadesValidations = require('./necessidadesMerendaValidator');
@@ -101,7 +87,7 @@ router.use(hateoasMiddleware('necessidades_merenda'));
 router.get('/',
   checkScreenPermission('necessidades_merenda', 'visualizar'),
   necessidadesValidations.listar,
-  listarNecessidades
+  NecessidadesMerendaController.listarNecessidades
 );
 
 /**
@@ -112,7 +98,7 @@ router.get('/:id',
   checkScreenPermission('necessidades_merenda', 'visualizar'),
   necessidadesValidations.buscarPorId,
   auditMiddleware(AUDIT_ACTIONS.READ, 'necessidades_merenda'),
-  buscarNecessidadePorId
+  NecessidadesMerendaController.buscarNecessidadePorId
 );
 
 /**
@@ -123,7 +109,7 @@ router.post('/',
   checkScreenPermission('necessidades_merenda', 'criar'),
   necessidadesValidations.criar,
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'necessidades_merenda'),
-  criarNecessidade
+  NecessidadesMerendaController.criarNecessidade
 );
 
 /**
@@ -134,7 +120,7 @@ router.put('/:id',
   checkScreenPermission('necessidades_merenda', 'editar'),
   necessidadesValidations.atualizar,
   auditMiddleware(AUDIT_ACTIONS.UPDATE, 'necessidades_merenda'),
-  atualizarNecessidade
+  NecessidadesMerendaController.atualizarNecessidade
 );
 
 /**
@@ -145,7 +131,7 @@ router.delete('/:id',
   checkScreenPermission('necessidades_merenda', 'excluir'),
   necessidadesValidations.excluir,
   auditMiddleware(AUDIT_ACTIONS.DELETE, 'necessidades_merenda'),
-  excluirNecessidade
+  NecessidadesMerendaController.excluirNecessidade
 );
 
 // ===== ROTAS DE GERAÇÃO =====
@@ -160,7 +146,7 @@ router.post('/gerar-de-pdf',
   checkScreenPermission('necessidades_merenda', 'criar'),
   necessidadesValidations.gerarDePDF,
   auditMiddleware('necessidades_merenda', 'CREATE'),
-  processarPDFEGerarNecessidades
+  NecessidadesMerendaController.processarPDFEGerarNecessidades
 );
 
 /**
@@ -171,7 +157,7 @@ router.post('/gerar-de-cardapio/:cardapio_id',
   checkScreenPermission('necessidades_merenda', 'visualizar'),
   necessidadesValidations.gerarDeCardapio,
   auditMiddleware(AUDIT_ACTIONS.CREATE, 'necessidades_merenda'),
-  gerarNecessidadesDeCardapioExistente
+  NecessidadesMerendaController.gerarNecessidadesDeCardapioExistente
 );
 
 // ===== ROTAS DE EXPORTAÇÃO =====
@@ -183,7 +169,7 @@ router.post('/gerar-de-cardapio/:cardapio_id',
 router.get('/exportar/excel',
   checkScreenPermission('necessidades_merenda', 'visualizar'),
   necessidadesValidations.exportar,
-  exportarParaExcel
+  NecessidadesMerendaController.NecessidadesMerendaController.exportarXLSX
 );
 
 /**
@@ -193,7 +179,7 @@ router.get('/exportar/excel',
 router.get('/exportar/pdf',
   checkScreenPermission('necessidades_merenda', 'visualizar'),
   necessidadesValidations.exportar,
-  exportarRelatorioCustos
+  NecessidadesMerendaController.NecessidadesMerendaController.exportarPDF
 );
 
 /**
@@ -203,7 +189,7 @@ router.get('/exportar/pdf',
 router.get('/exportar/lista-compras',
   checkScreenPermission('necessidades_merenda', 'visualizar'),
   necessidadesValidations.exportar,
-  exportarListaCompras
+  NecessidadesMerendaController.NecessidadesMerendaController.exportarPDF
 );
 
 // ===== ROTAS DE STATUS =====
@@ -216,10 +202,10 @@ router.patch('/alterar-status',
   checkScreenPermission('necessidades_merenda', 'visualizar'),
   necessidadesValidations.alterarStatus,
   auditMiddleware(AUDIT_ACTIONS.UPDATE, 'necessidades_merenda'),
-  atualizarStatusMultiplas
+  NecessidadesMerendaController.atualizarStatusMultiplas
 );
 
-router.get('/export/xlsx', checkScreenPermission('necessidades_merenda', 'visualizar'), exportarXLSX);
-router.get('/export/pdf', checkScreenPermission('necessidades_merenda', 'visualizar'), exportarPDF);
+router.get('/export/xlsx', checkScreenPermission('necessidades_merenda', 'visualizar'), NecessidadesMerendaController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('necessidades_merenda', 'visualizar'), NecessidadesMerendaController.exportarPDF);
 
 module.exports = router;
