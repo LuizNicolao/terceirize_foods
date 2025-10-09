@@ -20,6 +20,19 @@ export const useFornecedores = () => {
   // Hook de filtros customizados para fornecedores
   const customFilters = useFilters({});
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: fornecedoresOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   // Hook de exportação
   const { handleExportXLSX: exportXLSX, handleExportPDF: exportPDF } = useExport(FornecedoresService);
 
@@ -181,8 +194,8 @@ export const useFornecedores = () => {
 
 
   return {
-    // Estados principais (do hook base)
-    fornecedores: baseEntity.items,
+    // Estados principais (usa dados ordenados se ordenação local)
+    fornecedores: isSortingLocally ? fornecedoresOrdenados : baseEntity.items,
     loading: baseEntity.loading,
     
     estatisticas: estatisticasFornecedores, // Usar estatísticas específicas dos fornecedores
@@ -209,6 +222,11 @@ export const useFornecedores = () => {
     // Estados de validação (do hook base)
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     // Estados específicos dos fornecedores
     searching: baseEntity.isSearching,
@@ -264,6 +282,9 @@ export const useFornecedores = () => {
     
     // Ações de exportação (customizadas)
     handleExportXLSX: handleExportXLSXCustom,
-    handleExportPDF: handleExportPDFCustom
+    handleExportPDF: handleExportPDFCustom,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

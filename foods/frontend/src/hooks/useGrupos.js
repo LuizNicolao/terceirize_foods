@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import GruposService from '../services/grupos';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useGrupos = () => {
   // Hook base para funcionalidades CRUD

@@ -4,6 +4,7 @@ import MarcasService from '../services/marcas';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useMarcas = () => {
   const baseEntity = useBaseEntity('marcas', MarcasService, {

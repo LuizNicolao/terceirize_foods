@@ -4,6 +4,7 @@ import MotoristasService from '../services/motoristas';
 import FiliaisService from '../services/filiais';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useMotoristas = () => {
   // Hook base para funcionalidades CRUD

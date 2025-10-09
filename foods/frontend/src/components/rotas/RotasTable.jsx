@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button, Table, EmptyState } from '../ui';
+import { Button, Table, EmptyState, SortableTableHeader } from '../ui';
 import RotasActions from './RotasActions';
 
 const RotasTable = ({ 
@@ -14,7 +14,10 @@ const RotasTable = ({
   getFilialName,
   formatCurrency,
   formatTipoRota,
-  loadingFiliais
+  loadingFiliais,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (rotas.length === 0) {
     return (
@@ -33,11 +36,11 @@ const RotasTable = ({
         <Table>
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <SortableTableHeader label="Código" field="codigo" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Nome" field="nome" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Filial" field="filial_id" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Tipo" field="tipo_rota" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Status" field="status" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>

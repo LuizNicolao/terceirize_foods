@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import ClientesService from '../services/clientes';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useClientes = () => {
   // Hook base para funcionalidades CRUD

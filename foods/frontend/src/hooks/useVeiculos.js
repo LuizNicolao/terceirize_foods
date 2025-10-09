@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import VeiculosService from '../services/veiculos';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useVeiculos = () => {
   // Hook base para funcionalidades CRUD

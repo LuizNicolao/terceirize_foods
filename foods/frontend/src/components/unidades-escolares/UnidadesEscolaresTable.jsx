@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button, Table, EmptyState } from '../ui';
+import { Button, Table, EmptyState, SortableTableHeader } from '../ui';
 import UnidadesEscolaresActions from './UnidadesEscolaresActions';
 
 const UnidadesEscolaresTable = ({ 
@@ -12,7 +12,10 @@ const UnidadesEscolaresTable = ({
   onEdit, 
   onDelete, 
   getRotaName,
-  loadingRotas
+  loadingRotas,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (unidades.length === 0) {
     return (
@@ -31,14 +34,14 @@ const UnidadesEscolaresTable = ({
         <Table>
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome da Escola</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cidade</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+              <SortableTableHeader label="Código" field="codigo_teknisa" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Nome da Escola" field="nome_escola" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Cidade" field="cidade" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Estado" field="estado" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Filial</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ordem</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <SortableTableHeader label="Rota" field="rota_id" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Ordem" field="ordem_entrega" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
+              <SortableTableHeader label="Status" field="status" currentSort={sortField} currentDirection={sortDirection} onSort={onSort} />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>

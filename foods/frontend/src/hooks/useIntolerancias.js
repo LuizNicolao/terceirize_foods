@@ -4,6 +4,7 @@ import IntoleranciasService from '../services/intolerancias';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useIntolerancias = () => {
   const baseEntity = useBaseEntity('intolerancias', IntoleranciasService, {

@@ -4,6 +4,7 @@ import AjudantesService from '../services/ajudantes';
 import FiliaisService from '../services/filiais';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useAjudantes = () => {
   // Hook base para funcionalidades CRUD
