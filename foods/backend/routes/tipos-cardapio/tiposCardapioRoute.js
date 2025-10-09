@@ -94,7 +94,7 @@ router.get('/filial/:filialId',
   tiposCardapioController.listarPorFilial
 );
 
-router.get('/export/xlsx', checkScreenPermission('tipos_cardapio', 'visualizar'), Tipos-cardapioController.exportarXLSX);
-router.get('/export/pdf', checkScreenPermission('tipos_cardapio', 'visualizar'), Tipos-cardapioController.exportarPDF);
+router.get('/export/xlsx', checkScreenPermission('tipos_cardapio', 'visualizar'), tiposCardapioController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('tipos_cardapio', 'visualizar'), tiposCardapioController.exportarPDF);
 
 module.exports = router;
