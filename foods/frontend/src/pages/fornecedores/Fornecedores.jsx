@@ -54,6 +54,10 @@ const Fornecedores = () => {
     handleAuditFilterChange,
     handleExportXLSX,
     handleExportPDF
+  ,
+    sortField,
+    sortDirection,
+    handleSort
   } = useFornecedores();
 
   const {
@@ -147,6 +151,10 @@ const Fornecedores = () => {
         canView={canView('fornecedores')}
         canEdit={canEdit('fornecedores')}
         canDelete={canDelete('fornecedores')}
+      
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Fornecedor */}

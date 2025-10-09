@@ -48,6 +48,10 @@ const Filiais = () => {
     handleKeyPress,
     setStatusFilter,
     formatDate
+  ,
+    sortField,
+    sortDirection,
+    handleSort
   } = useFiliais();
 
   const {
@@ -133,6 +137,10 @@ const Filiais = () => {
         onEdit={handleEditFilial}
         onDelete={handleDeleteFilial}
         formatDate={formatDate}
+      
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Filial */}

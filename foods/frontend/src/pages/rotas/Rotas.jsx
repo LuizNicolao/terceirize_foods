@@ -60,6 +60,10 @@ const Rotas = () => {
     formatCurrency,
     formatTipoRota,
     handleCloseValidationModal
+  ,
+    sortField,
+    sortDirection,
+    handleSort
   } = useRotas();
 
   const {
@@ -160,6 +164,10 @@ const Rotas = () => {
         formatCurrency={formatCurrency}
         formatTipoRota={formatTipoRota}
         loadingFiliais={loadingFiliais}
+      
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Paginação */}

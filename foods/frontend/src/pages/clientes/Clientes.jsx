@@ -50,6 +50,10 @@ const Clientes = () => {
     setStatusFilter,
     setUfFilter,
     formatDate
+  ,
+    sortField,
+    sortDirection,
+    handleSort
   } = useClientes();
 
   const {
@@ -172,6 +176,10 @@ const Clientes = () => {
         onEdit={handleEditCliente}
         onDelete={handleDeleteCliente}
         formatDate={formatDate}
+      
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Cliente */}

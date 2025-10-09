@@ -59,6 +59,10 @@ const UnidadesEscolares = () => {
     setFilialFilter,
     getRotaName,
     formatCurrency
+  ,
+    sortField,
+    sortDirection,
+    handleSort
   } = useUnidadesEscolares();
 
   const {
@@ -179,6 +183,10 @@ const UnidadesEscolares = () => {
         onDelete={handleDeleteUnidade}
         getRotaName={getRotaName}
         loadingRotas={loadingRotas}
+      
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Unidade Escolar */}
