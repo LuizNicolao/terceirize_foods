@@ -51,6 +51,10 @@ const Grupos = () => {
     handleClearFilters,
     formatDate,
     getStatusLabel
+  ,
+    sortField,
+    sortDirection,
+    handleSort
   } = useGrupos();
 
   const {
@@ -138,6 +142,10 @@ const Grupos = () => {
         onDelete={handleDeleteGrupo}
         getStatusLabel={getStatusLabel}
         formatDate={formatDate}
+      
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Grupo */}

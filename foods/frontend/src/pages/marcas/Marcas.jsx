@@ -49,6 +49,10 @@ const Marcas = () => {
     setStatusFilter,
     setItemsPerPage,
     getStatusLabel
+  ,
+    sortField,
+    sortDirection,
+    handleSort
   } = useMarcas();
 
   const {
@@ -138,6 +142,10 @@ const Marcas = () => {
         onEdit={handleEditMarca}
         onDelete={handleDeleteMarca}
         getStatusLabel={getStatusLabel}
+      
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Marca */}

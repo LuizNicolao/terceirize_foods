@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaUser, FaIdCard, FaPhone, FaEnvelope, FaMapMarkerAlt, FaCar, FaCalendarAlt } from 'react-icons/fa';
-import { Table, ActionButtons, EmptyState } from '../ui';
+import { Table, ActionButtons, EmptyState , SortableTableHeader } from '../ui';
 
 // Componente interno para ações da tabela
 const TableActions = ({ 
@@ -34,6 +34,10 @@ const MotoristasTable = ({
   onView, 
   onEdit, 
   onDelete 
+,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   const formatDate = (dateString) => {
     if (!dateString) return '-';

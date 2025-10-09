@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons, EmptyState } from '../ui';
+import { ActionButtons, EmptyState , SortableTableHeader } from '../ui';
 
 const FiliaisTable = ({
   filiais,
@@ -10,6 +10,10 @@ const FiliaisTable = ({
   onEdit,
   onDelete,
   formatDate
+,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   const getStatusBadge = (status) => {
     const statusConfig = {

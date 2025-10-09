@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons, EmptyState } from '../ui';
+import { ActionButtons, EmptyState , SortableTableHeader } from '../ui';
 
 const GruposTable = ({ 
   grupos, 
@@ -11,6 +11,10 @@ const GruposTable = ({
   onDelete, 
   getStatusLabel,
   formatDate
+,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (grupos.length === 0) {
     return (

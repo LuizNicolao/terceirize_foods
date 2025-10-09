@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons, EmptyState } from '../ui';
+import { ActionButtons, EmptyState , SortableTableHeader } from '../ui';
 
 const ClientesTable = ({
   clientes,
@@ -10,6 +10,10 @@ const ClientesTable = ({
   onEdit,
   onDelete,
   formatDate
+,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   const getStatusBadge = (status) => {
     const statusConfig = {

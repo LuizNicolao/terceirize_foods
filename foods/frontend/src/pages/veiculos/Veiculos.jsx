@@ -52,6 +52,10 @@ const Veiculos = () => {
     getTipoVeiculoLabel,
     getCategoriaLabel,
     formatCurrency
+  ,
+    sortField,
+    sortDirection,
+    handleSort
   } = useVeiculos();
 
   const {
@@ -152,6 +156,10 @@ const Veiculos = () => {
         getTipoVeiculoLabel={getTipoVeiculoLabel}
         getCategoriaLabel={getCategoriaLabel}
         formatCurrency={formatCurrency}
+      
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Veículo */}

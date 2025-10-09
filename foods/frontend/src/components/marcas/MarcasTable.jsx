@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionButtons, Table, EmptyState } from '../ui';
+import { ActionButtons, Table, EmptyState , SortableTableHeader } from '../ui';
 
 const MarcasTable = ({ 
   marcas, 
@@ -10,6 +10,10 @@ const MarcasTable = ({
   onEdit, 
   onDelete, 
   getStatusLabel
+,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (marcas.length === 0) {
     return (

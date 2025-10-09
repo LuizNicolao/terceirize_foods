@@ -56,6 +56,10 @@ const Motoristas = () => {
     handleExportXLSX,
     handleExportPDF,
     handleCloseValidationModal
+  ,
+    sortField,
+    sortDirection,
+    handleSort
   } = useMotoristas();
 
   const {
@@ -137,6 +141,10 @@ const Motoristas = () => {
         onView={handleViewMotorista}
         onEdit={handleEditMotorista}
         onDelete={handleDelete}
+      
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Motorista */}

@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
-import { Button, Table, EmptyState } from '../ui';
+import { Button, Table, EmptyState , SortableTableHeader } from '../ui';
 import VeiculosActions from './VeiculosActions';
 
 const VeiculosTable = ({ 
@@ -15,6 +15,10 @@ const VeiculosTable = ({
   getTipoVeiculoLabel,
   getCategoriaLabel,
   formatCurrency
+,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (veiculos.length === 0) {
     return (
