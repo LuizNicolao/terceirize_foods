@@ -59,7 +59,7 @@ router.delete('/:id',
 
 
 
-router.get('/export/xlsx', checkScreenPermission('motoristas', 'visualizar'), MotoristasController.exportarXLSX);
-router.get('/export/pdf', checkScreenPermission('motoristas', 'visualizar'), MotoristasController.exportarPDF);
+router.get('/export/xlsx', checkScreenPermission('motoristas', 'visualizar'), motoristasController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('motoristas', 'visualizar'), motoristasController.exportarPDF);
 
 module.exports = router;
