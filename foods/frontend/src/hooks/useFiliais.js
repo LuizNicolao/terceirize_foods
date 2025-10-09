@@ -17,6 +17,19 @@ export const useFiliais = () => {
   // Hook de filtros customizados para filiais
   const customFilters = useFilters({});
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: filiaisOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   // Hook de busca com debounce
 
   // Estados de estatísticas específicas das filiais

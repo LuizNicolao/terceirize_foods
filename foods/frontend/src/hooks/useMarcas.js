@@ -16,6 +16,19 @@ export const useMarcas = () => {
 
   const customFilters = useFilters({});
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: marcasOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   
   const [loading, setLoading] = useState(false);
   

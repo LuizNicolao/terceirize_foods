@@ -18,6 +18,19 @@ export const useMotoristas = () => {
   // Hook de filtros customizados para motoristas
   const customFilters = useFilters({});
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: motoristasOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   // Hook de busca com debounce
 
   // Estados específicos dos motoristas

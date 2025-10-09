@@ -13,6 +13,18 @@ export const useRotas = () => {
     enableDelete: true
   });
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: rotasOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
 
   // Estados específicos das rotas
   const [filiais, setFiliais] = useState([]);

@@ -4,6 +4,7 @@ import UnidadesEscolaresService from '../services/unidadesEscolares';
 import RotasService from '../services/rotas';
 import FiliaisService from '../services/filiais';
 import { useBaseEntity } from './common/useBaseEntity';
+import useTableSort from './common/useTableSort';
 
 export const useUnidadesEscolares = () => {
   // Hook base para funcionalidades CRUD
@@ -14,6 +15,19 @@ export const useUnidadesEscolares = () => {
     enableDelete: true
   });
 
+
+  // Hook de ordenação híbrida
+  const {
+    sortedData: unidadesOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
 
   // Estados específicos das unidades escolares
   const [rotas, setRotas] = useState([]);
@@ -157,8 +171,8 @@ export const useUnidadesEscolares = () => {
   // Não é mais necessário useEffect ou override de loadData
 
   return {
-    // Estados principais (do hook base)
-    unidades: baseEntity.items,
+    // Estados principais (usa dados ordenados se ordenação local)
+    unidades: isSortingLocally ? unidadesOrdenadas : baseEntity.items,
     loading: baseEntity.loading,
     
     estatisticas: estatisticasUnidades, // Usar estatísticas específicas das unidades escolares
@@ -167,6 +181,11 @@ export const useUnidadesEscolares = () => {
     showModal: baseEntity.showModal,
     viewMode: baseEntity.viewMode,
     editingUnidade: baseEntity.editingItem,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     // Estados de exclusão (do hook base)
     showDeleteConfirmModal: baseEntity.showDeleteConfirmModal,
@@ -230,6 +249,9 @@ export const useUnidadesEscolares = () => {
     
     // Funções utilitárias
     getRotaName,
-    formatCurrency
+    formatCurrency,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

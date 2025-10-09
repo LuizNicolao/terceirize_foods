@@ -17,6 +17,19 @@ export const useVeiculos = () => {
   // Hook de filtros customizados para veículos
   const customFilters = useFilters({ tipoFilter: 'todos' });
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: veiculosOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
 
   // Estados de estatísticas específicas dos veículos
   const [estatisticasVeiculos, setEstatisticasVeiculos] = useState({

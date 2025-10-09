@@ -17,6 +17,19 @@ export const useGrupos = () => {
   // Hook de filtros customizados para grupos
   const customFilters = useFilters({});
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: gruposOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   // Hook de busca com debounce
 
   // Estados de estatísticas específicas dos grupos

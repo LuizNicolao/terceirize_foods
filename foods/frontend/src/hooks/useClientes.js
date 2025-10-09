@@ -17,6 +17,19 @@ export const useClientes = () => {
   // Hook de filtros customizados para clientes
   const customFilters = useFilters({ ufFilter: 'todos' });
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: clientesOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
 
   // Estados de estatísticas específicas dos clientes
   const [estatisticasClientes, setEstatisticasClientes] = useState({
