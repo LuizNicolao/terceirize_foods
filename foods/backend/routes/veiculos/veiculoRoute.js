@@ -96,7 +96,7 @@ router.delete('/:id', [
   commonValidations.id
 ], veiculosController.excluirVeiculo);
 
-router.get('/export/xlsx', checkScreenPermission('veiculos', 'visualizar'), VeiculosController.exportarXLSX);
-router.get('/export/pdf', checkScreenPermission('veiculos', 'visualizar'), VeiculosController.exportarPDF);
+router.get('/export/xlsx', checkScreenPermission('veiculos', 'visualizar'), veiculosController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('veiculos', 'visualizar'), veiculosController.exportarPDF);
 
 module.exports = router;
