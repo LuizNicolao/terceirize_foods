@@ -169,7 +169,7 @@ router.post('/gerar-de-cardapio/:cardapio_id',
 router.get('/exportar/excel',
   checkScreenPermission('necessidades_merenda', 'visualizar'),
   necessidadesValidations.exportar,
-  NecessidadesMerendaController.NecessidadesMerendaController.exportarXLSX
+  NecessidadesMerendaController.exportarXLSX
 );
 
 /**
@@ -179,7 +179,7 @@ router.get('/exportar/excel',
 router.get('/exportar/pdf',
   checkScreenPermission('necessidades_merenda', 'visualizar'),
   necessidadesValidations.exportar,
-  NecessidadesMerendaController.NecessidadesMerendaController.exportarPDF
+  NecessidadesMerendaController.exportarPDF
 );
 
 /**
@@ -189,7 +189,7 @@ router.get('/exportar/pdf',
 router.get('/exportar/lista-compras',
   checkScreenPermission('necessidades_merenda', 'visualizar'),
   necessidadesValidations.exportar,
-  NecessidadesMerendaController.NecessidadesMerendaController.exportarPDF
+  NecessidadesMerendaController.exportarPDF
 );
 
 // ===== ROTAS DE STATUS =====
