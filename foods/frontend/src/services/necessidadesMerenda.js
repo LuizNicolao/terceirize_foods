@@ -258,6 +258,24 @@ class NecessidadesMerendaService {
       };
     }
   }
+
+  static async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/necessidades-merenda/export/xlsx', { params, responseType: 'blob' });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return { success: false, error: error.response?.data?.error || 'Erro ao exportar dados' };
+    }
+  }
+
+  static async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/necessidades-merenda/export/pdf', { params, responseType: 'blob' });
+      return { success: true, data: response.data };
+    } catch (error) {
+      return { success: false, error: error.response?.data?.error || 'Erro ao exportar dados' };
+    }
+  }
 }
 
 export default NecessidadesMerendaService;
