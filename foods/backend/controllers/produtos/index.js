@@ -7,6 +7,7 @@ const ProdutosListController = require('./ProdutosListController');
 const ProdutosCRUDController = require('./ProdutosCRUDController');
 const ProdutosSearchController = require('./ProdutosSearchController');
 const ProdutosStatsController = require('./ProdutosStatsController');
+const ProdutosExportController = require('./ProdutosExportController');
 
 module.exports = {
   // Métodos de Listagem
@@ -29,5 +30,9 @@ module.exports = {
   listarMarcas: ProdutosSearchController.listarMarcas,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: ProdutosStatsController.buscarEstatisticas
+  buscarEstatisticas: ProdutosStatsController.buscarEstatisticas,
+  
+  // Métodos de Exportação
+  exportarXLSX: ProdutosExportController.exportarXLSX,
+  exportarPDF: ProdutosExportController.exportarPDF
 };

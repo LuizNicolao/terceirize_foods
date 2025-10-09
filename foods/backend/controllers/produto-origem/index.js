@@ -7,6 +7,7 @@ const ProdutoOrigemCRUDController = require('./ProdutoOrigemCRUDController');
 const ProdutoOrigemListController = require('./ProdutoOrigemListController');
 const ProdutoOrigemSearchController = require('./ProdutoOrigemSearchController');
 const ProdutoOrigemStatsController = require('./ProdutoOrigemStatsController');
+const ProdutoOrigemExportController = require('./ProdutoOrigemExportController');
 
 module.exports = {
   // Operações CRUD
@@ -46,5 +47,9 @@ module.exports = {
   produtosMaisAtualizados: ProdutoOrigemStatsController.produtosMaisAtualizados,
   relatorioSemClassificacao: ProdutoOrigemStatsController.relatorioSemClassificacao,
   distribuicaoFatorConversao: ProdutoOrigemStatsController.distribuicaoFatorConversao,
-  distribuicaoPesoLiquido: ProdutoOrigemStatsController.distribuicaoPesoLiquido
+  distribuicaoPesoLiquido: ProdutoOrigemStatsController.distribuicaoPesoLiquido,
+  
+  // Métodos de Exportação
+  exportarXLSX: ProdutoOrigemExportController.exportarXLSX,
+  exportarPDF: ProdutoOrigemExportController.exportarPDF
 };

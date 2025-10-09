@@ -4,7 +4,7 @@
  */
 
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkPermission, checkScreenPermission } = require('../../middleware/auth');
 const { produtoOrigemValidations, commonValidations } = require('./produtoOrigemValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
@@ -204,5 +204,8 @@ router.get('/stats/peso-liquido',
   checkPermission('visualizar'),
   ProdutoOrigemController.distribuicaoPesoLiquido
 );
+
+router.get('/export/xlsx', checkScreenPermission('produto_origem', 'visualizar'), ProdutoOrigemController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('produto_origem', 'visualizar'), ProdutoOrigemController.exportarPDF);
 
 module.exports = router;

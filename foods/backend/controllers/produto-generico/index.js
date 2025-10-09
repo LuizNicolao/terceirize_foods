@@ -7,6 +7,7 @@ const ProdutoGenericoListController = require('./ProdutoGenericoListController')
 const ProdutoGenericoCRUDController = require('./ProdutoGenericoCRUDController');
 const ProdutoGenericoSearchController = require('./ProdutoGenericoSearchController');
 const ProdutoGenericoStatsController = require('./ProdutoGenericoStatsController');
+const ProdutoGenericoExportController = require('./ProdutoGenericoExportController');
 
 const ProdutoGenericoController = {
   // Operações de Listagem
@@ -29,7 +30,11 @@ const ProdutoGenericoController = {
   buscarProdutosGenericosSimilares: ProdutoGenericoSearchController.buscarProdutosGenericosSimilares,
 
   // Operações de Estatísticas
-  buscarEstatisticas: ProdutoGenericoStatsController.buscarEstatisticas
+  buscarEstatisticas: ProdutoGenericoStatsController.buscarEstatisticas,
+  
+  // Métodos de Exportação
+  exportarXLSX: ProdutoGenericoExportController.exportarXLSX,
+  exportarPDF: ProdutoGenericoExportController.exportarPDF
 };
 
 module.exports = ProdutoGenericoController;
