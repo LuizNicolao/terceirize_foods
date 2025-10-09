@@ -4,6 +4,7 @@ import UnidadesService from '../services/unidades';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useUnidades = () => {
   const baseEntity = useBaseEntity('unidades', UnidadesService, {
@@ -14,6 +15,19 @@ export const useUnidades = () => {
   });
 
   const customFilters = useFilters({});
+
+  // Hook de ordenação híbrida
+  const {
+    sortedData: unidadesOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
 
   // Hook de busca com debounce
   
@@ -110,7 +124,7 @@ export const useUnidades = () => {
   }, []);
 
   return {
-    unidades: baseEntity.items,
+    unidades: isSortingLocally ? unidadesOrdenadas : baseEntity.items,
     loading,
     
     // Estados de busca

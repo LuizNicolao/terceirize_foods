@@ -177,7 +177,7 @@ export const useProdutoOrigem = () => {
 
   return {
     // Estados principais
-    produtosOrigem: baseEntity.items,
+    produtosOrigem: isSortingLocally ? produtosOrigemOrdenados : baseEntity.items,
     loading,
     
     // Estados de busca
@@ -249,6 +249,9 @@ export const useProdutoOrigem = () => {
     getGrupoName,
     getSubgrupoName,
     getClasseName,
-    getUnidadeMedidaName
+    getUnidadeMedidaName,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

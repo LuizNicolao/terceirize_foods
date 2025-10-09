@@ -31,7 +31,21 @@ export const useTiposCardapio = () => {
   const [tipoToDelete, setTipoToDelete] = useState(null);
 
   // Estados de filtros e paginação
-  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Hook de ordenação híbrida
+  const {
+    sortedData: tiposCardapioOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: tiposCardapio,
+    threshold: 100,
+    totalItems: totalItems || 0
+  });
+
+const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -293,6 +307,9 @@ export const useTiposCardapio = () => {
     clearSearch: debouncedSearch.clearSearch,
     setItemsPerPage,
     formatDate,
-    getStatusLabel
+    getStatusLabel,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

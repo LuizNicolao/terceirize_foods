@@ -16,7 +16,21 @@ export const useRotasNutricionistas = () => {
   const [error, setError] = useState(null);
 
   // Estados de paginação
-  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Hook de ordenação híbrida
+  const {
+    sortedData: rotasOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: rotas,
+    threshold: 100,
+    totalItems: totalItems || 0
+  });
+
+const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -371,7 +385,12 @@ export const useRotasNutricionistas = () => {
 
   return {
     // Estados principais
-    rotas,
+    rotas: isSortingLocally ? rotasOrdenadas : rotas,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     loading,
     saving,
     error,
@@ -456,6 +475,9 @@ export const useRotasNutricionistas = () => {
 
     // Filtros inteligentes
     filtrarUsuariosPorFilial,
-    filtrarUnidadesEscolaresPorFilial
+    filtrarUnidadesEscolaresPorFilial,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

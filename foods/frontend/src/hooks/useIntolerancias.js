@@ -16,6 +16,19 @@ export const useIntolerancias = () => {
 
   const customFilters = useFilters({});
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: intoleranciasOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   // Hook de busca com debounce
   
   const [loading, setLoading] = useState(false);
@@ -109,7 +122,7 @@ export const useIntolerancias = () => {
   }, []);
 
   return {
-    intolerancias: baseEntity.items,
+    intolerancias: isSortingLocally ? intoleranciasOrdenadas : baseEntity.items,
     loading,
     
     // Estados de busca
@@ -145,6 +158,9 @@ export const useIntolerancias = () => {
     handleConfirmDelete: handleDeleteCustom,
     handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
-    formatDate
+    formatDate,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

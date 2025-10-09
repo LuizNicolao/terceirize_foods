@@ -23,6 +23,19 @@ export const useProdutoGenerico = () => {
     enableDelete: true
   });
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: produtosGenericosOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   // Hook de busca com debounce removido - useBaseEntity já gerencia
   
   // Estados locais
@@ -208,7 +221,7 @@ export const useProdutoGenerico = () => {
 
   return {
     // Estados principais
-    produtosGenericos: baseEntity.items,
+    produtosGenericos: isSortingLocally ? produtosGenericosOrdenados : baseEntity.items,
     loading,
     
     // Estados de busca
@@ -288,6 +301,9 @@ export const useProdutoGenerico = () => {
     getSubgrupoName,
     getClasseName,
     getProdutoOrigemName,
-    getUnidadeMedidaName
+    getUnidadeMedidaName,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

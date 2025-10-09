@@ -13,6 +13,19 @@ export const useClasses = () => {
     enableDelete: true
   });
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: classesOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   // Estados de dados auxiliares
   const [subgrupos, setSubgrupos] = useState([]);
   const [loadingSubgrupos, setLoadingSubgrupos] = useState(false);
@@ -138,8 +151,13 @@ export const useClasses = () => {
 
   return {
     // Estados principais (do hook base)
-    classes: baseEntity.items,
+    classes: isSortingLocally ? classesOrdenadas : baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     // Estados de busca
     estatisticas: estatisticasClasses, // Usar estatísticas específicas das classes
@@ -203,6 +221,9 @@ export const useClasses = () => {
     // Funções utilitárias
     getStatusLabel,
     formatDate,
-    getSubgrupoNome
+    getSubgrupoNome,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

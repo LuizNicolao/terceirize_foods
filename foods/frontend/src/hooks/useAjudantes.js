@@ -18,6 +18,19 @@ export const useAjudantes = () => {
   // Hook de filtros customizados para ajudantes
   const customFilters = useFilters({});
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: ajudantesOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   // Estados específicos dos ajudantes
   const [filiais, setFiliais] = useState([]);
 
@@ -153,8 +166,13 @@ export const useAjudantes = () => {
 
   return {
     // Estados principais (do hook base)
-    ajudantes: baseEntity.items,
+    ajudantes: isSortingLocally ? ajudantesOrdenados : baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     // Estados de busca
     estatisticas: estatisticasAjudantes, // Usar estatísticas específicas dos ajudantes
@@ -212,6 +230,9 @@ export const useAjudantes = () => {
     
     // Funções utilitárias
     formatDate,
-    getStatusLabel
+    getStatusLabel,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

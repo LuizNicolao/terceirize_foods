@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useValidation } from './common/useValidation';
 import { useExport } from './common/useExport';
+import useTableSort from './common/useTableSort';
 import NecessidadesMerendaService from '../services/necessidadesMerenda';
 import toast from 'react-hot-toast';
 
@@ -22,6 +23,19 @@ export const useNecessidadesMerenda = () => {
     necessidades_aprovadas: 0,
     necessidades_rejeitadas: 0,
     necessidades_ativas: 0
+  });
+
+  // Hook de ordenação híbrida
+  const {
+    sortedData: necessidadesOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: necessidades,
+    threshold: 100,
+    totalItems: totalItems
   });
 
   // Estados de paginação e filtros
@@ -372,10 +386,15 @@ export const useNecessidadesMerenda = () => {
 
   return {
     // Estados
-    necessidades,
+    necessidades: isSortingLocally ? necessidadesOrdenadas : necessidades,
     loading,
     saving,
     showModal,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     showUploadModal,
     showPreviewModal,
     editingNecessidade,
@@ -423,6 +442,9 @@ export const useNecessidadesMerenda = () => {
     handleExportListaCompras,
     handleIntegrarFaturamento,
     handleAprovarNecessidade,
+    
+    // Ações de ordenação
+    handleSort,
     handleRejeitarNecessidade
   };
 };

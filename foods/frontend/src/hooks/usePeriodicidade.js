@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import PeriodicidadeService from '../services/periodicidade';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const usePeriodicidade = () => {
   // Hook base para funcionalidades CRUD
@@ -15,6 +16,19 @@ export const usePeriodicidade = () => {
 
   // Hook de filtros customizados para periodicidade
   const customFilters = useFilters({});
+
+  // Hook de ordenação híbrida
+  const {
+    sortedData: periodicidadesOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
 
 
   // Estados de estatísticas específicas da periodicidade
@@ -154,8 +168,13 @@ export const usePeriodicidade = () => {
 
   return {
     // Estados principais (do hook base)
-    agrupamentos: baseEntity.items,
+    agrupamentos: isSortingLocally ? periodicidadesOrdenadas : baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     estatisticas: estatisticasPeriodicidade, // Usar estatísticas específicas da periodicidade
     
@@ -208,6 +227,9 @@ export const usePeriodicidade = () => {
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
     
     // Funções utilitárias
-    formatDate
+    formatDate,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

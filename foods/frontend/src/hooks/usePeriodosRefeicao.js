@@ -31,7 +31,21 @@ export const usePeriodosRefeicao = () => {
   const [periodoToDelete, setPeriodoToDelete] = useState(null);
 
   // Estados de filtros e paginação
-  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Hook de ordenação híbrida
+  const {
+    sortedData: periodosOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: periodos,
+    threshold: 100,
+    totalItems: totalItems || 0
+  });
+
+const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -260,7 +274,12 @@ export const usePeriodosRefeicao = () => {
 
   return {
     // Estados
-    periodos,
+    periodos: isSortingLocally ? periodosOrdenados : periodos,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     loading,
     showModal,
     viewMode,
@@ -293,6 +312,9 @@ export const usePeriodosRefeicao = () => {
     clearSearch: debouncedSearch.clearSearch,
     setItemsPerPage,
     formatDate,
-    getStatusLabel
+    getStatusLabel,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

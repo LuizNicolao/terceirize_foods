@@ -13,6 +13,19 @@ export const useSubgrupos = () => {
     enableDelete: true
   });
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: subgruposOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);
   const [loadingGrupos, setLoadingGrupos] = useState(false);
@@ -136,8 +149,13 @@ export const useSubgrupos = () => {
 
   return {
     // Estados principais (do hook base)
-    subgrupos: baseEntity.items,
+    subgrupos: isSortingLocally ? subgruposOrdenados : baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     // Estados de busca
     estatisticas: estatisticasSubgrupos, // Usar estatísticas específicas dos subgrupos
@@ -201,6 +219,9 @@ export const useSubgrupos = () => {
     // Funções utilitárias
     getStatusLabel,
     formatDate,
-    getGrupoNome
+    getGrupoNome,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

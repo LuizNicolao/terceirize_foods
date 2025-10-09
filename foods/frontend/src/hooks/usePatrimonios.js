@@ -480,7 +480,12 @@ export const usePatrimonios = () => {
 
   return {
     // Estados principais
-    patrimonios,
+    patrimonios: isSortingLocally ? patrimoniosOrdenados : patrimonios,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     loading,
     saving,
     selectedPatrimonio,
@@ -569,6 +574,9 @@ export const usePatrimonios = () => {
     setShowFormModal,
     setShowMovimentacaoModal,
     setShowMovimentacoesModal,
-    setSelectedPatrimonio
+    setSelectedPatrimonio,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

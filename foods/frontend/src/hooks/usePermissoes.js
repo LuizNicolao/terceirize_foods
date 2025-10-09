@@ -247,6 +247,9 @@ export const usePermissoes = () => {
 
     // Funções utilitárias
     formatDate,
-    getStatusLabel
+    getStatusLabel,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

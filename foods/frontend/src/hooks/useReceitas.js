@@ -13,6 +13,19 @@ export const useReceitas = () => {
     enableDelete: true
   });
 
+  // Hook de ordenação híbrida
+  const {
+    sortedData: receitasOrdenadas,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
+
   // Estados específicos das receitas
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [filtros, setFiltros] = useState({
@@ -308,10 +321,15 @@ export const useReceitas = () => {
 
   return {
     // Estados
-    receitas,
+    receitas: isSortingLocally ? receitasOrdenadas : receitas,
     loading,
     saving,
     showModal,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     showPreviewModal,
     editingReceita,
     viewMode,
@@ -353,6 +371,9 @@ export const useReceitas = () => {
     clearFieldError,
     handleCloseValidationModal,
     handleExportXLSX,
-    handleExportPDF
+    handleExportPDF,
+    
+    // Ações de ordenação
+    handleSort
   };
 };
