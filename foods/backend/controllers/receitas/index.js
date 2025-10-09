@@ -13,6 +13,7 @@ module.exports = {
   ReceitasCRUDController,
   ReceitasExportController,
   
+,
   // Métodos de Exportação
   exportarXLSX: ReceitasExportController.exportarXLSX,
   exportarPDF: ReceitasExportController.exportarPDF

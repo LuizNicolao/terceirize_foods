@@ -22,6 +22,7 @@ module.exports = {
   // Métodos de Estatísticas
   buscarEstatisticas: IntoleranciasStatsController.buscarEstatisticas
   
+,
   // Métodos de Exportação
   exportarXLSX: IntoleranciasExportController.exportarXLSX,
   exportarPDF: IntoleranciasExportController.exportarPDF
