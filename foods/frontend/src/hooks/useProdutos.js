@@ -4,6 +4,7 @@ import ProdutosService from '../services/produtos';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 
 export const useProdutos = () => {
   // Hook base para funcionalidades CRUD
@@ -18,6 +19,19 @@ export const useProdutos = () => {
   const customFilters = useFilters({});
 
   // Hook de busca com debounce
+  
+  // Hook de ordenação híbrida
+  const {
+    sortedData: produtosOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
+  });
   
   // Estados de dados auxiliares
   const [grupos, setGrupos] = useState([]);
@@ -169,8 +183,8 @@ export const useProdutos = () => {
   }, [baseEntity.items, calculateEstatisticas]);
 
   return {
-    // Estados principais (do hook base)
-    produtos: baseEntity.items,
+    // Estados principais (usa dados ordenados se ordenação local)
+    produtos: isSortingLocally ? produtosOrdenados : baseEntity.items,
     loading: baseEntity.loading,
     
     estatisticas: estatisticasProdutos, // Usar estatísticas específicas dos produtos
@@ -198,6 +212,11 @@ export const useProdutos = () => {
     validationErrors: baseEntity.validationErrors,
     showValidationModal: baseEntity.showValidationModal,
     
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
+    
     // Estados de dados auxiliares
     grupos,
     subgrupos,
@@ -223,6 +242,9 @@ export const useProdutos = () => {
     setStatusFilter: customFilters.setStatusFilter,
     setItemsPerPage: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     handleClearFilters,
+    
+    // Ações de ordenação
+    handleSort,
     
     // Ações de CRUD (customizadas)
     handleSubmitProduto: onSubmitCustom,

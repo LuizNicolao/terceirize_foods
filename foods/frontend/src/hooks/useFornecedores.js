@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import FornecedoresService from '../services/fornecedores';
 import { useBaseEntity } from './common/useBaseEntity';
 import { useFilters } from './common/useFilters';
+import useTableSort from './common/useTableSort';
 import { useExport } from './common/useExport';
 import { useAuditoria } from './common/useAuditoria';
 

@@ -57,7 +57,10 @@ const Produtos = () => {
     setStatusFilter,
     setItemsPerPage,
     getGrupoName,
-    getUnidadeName
+    getUnidadeName,
+    sortField,
+    sortDirection,
+    handleSort
   } = useProdutos();
 
   const {
@@ -141,6 +144,9 @@ const Produtos = () => {
         onDelete={canDelete('produtos') ? handleDeleteProduto : null}
         getGrupoName={getGrupoName}
         getUnidadeName={getUnidadeName}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Paginação */}
