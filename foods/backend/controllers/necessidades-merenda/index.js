@@ -8,7 +8,6 @@ const NecessidadesMerendaCRUDController = require('./NecessidadesMerendaCRUDCont
 const NecessidadesMerendaGeracaoController = require('./NecessidadesMerendaGeracaoController');
 const NecessidadesMerendaExportController = require('./NecessidadesMerendaExportController');
 
-const NecessidadesMerendaExportController = require('./NecessidadesMerendaExportController');
 module.exports = {
   // Métodos de Listagem
   listarNecessidades: NecessidadesMerendaListController.listarNecessidades,
@@ -26,13 +25,12 @@ module.exports = {
   processarPDFEGerarNecessidades: NecessidadesMerendaGeracaoController.processarPDFEGerarNecessidades,
   gerarNecessidadesDeCardapioExistente: NecessidadesMerendaGeracaoController.gerarNecessidadesDeCardapioExistente,
   
-,
   // Métodos de Exportação
   exportarParaExcel: NecessidadesMerendaExportController.exportarParaExcel,
   exportarListaCompras: NecessidadesMerendaExportController.exportarListaCompras,
   exportarRelatorioCustos: NecessidadesMerendaExportController.exportarRelatorioCustos,
   
-,
+
   // Métodos de Exportação
   exportarXLSX: NecessidadesMerendaExportController.exportarXLSX,
   exportarPDF: NecessidadesMerendaExportController.exportarPDF

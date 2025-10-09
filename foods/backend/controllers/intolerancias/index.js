@@ -20,9 +20,8 @@ module.exports = {
   excluirIntolerancia: IntoleranciasCRUDController.excluirIntolerancia,
   
   // Métodos de Estatísticas
-  buscarEstatisticas: IntoleranciasStatsController.buscarEstatisticas
+  buscarEstatisticas: IntoleranciasStatsController.buscarEstatisticas,
   
-,
   // Métodos de Exportação
   exportarXLSX: IntoleranciasExportController.exportarXLSX,
   exportarPDF: IntoleranciasExportController.exportarPDF
