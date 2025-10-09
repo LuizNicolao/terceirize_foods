@@ -136,7 +136,7 @@ export const useUnidadesEscolares = () => {
   const getRotaName = useCallback((rotaId) => {
     if (!rotaId) return 'N/A';
     const rota = rotas.find(r => r.id === parseInt(rotaId));
-    return rota ? rota.nome : 'Rota não encontrada';
+    return rota && rota.nome ? rota.nome : 'Rota não encontrada';
   }, [rotas]);
 
   const formatCurrency = useCallback((value) => {
