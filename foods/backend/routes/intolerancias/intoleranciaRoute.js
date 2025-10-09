@@ -58,4 +58,7 @@ router.get('/stats/geral',
   IntoleranciasController.buscarEstatisticas
 );
 
+router.get('/export/xlsx', checkScreenPermission('intolerancias', 'visualizar'), IntoleranciasController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('intolerancias', 'visualizar'), IntoleranciasController.exportarPDF);
+
 module.exports = router;

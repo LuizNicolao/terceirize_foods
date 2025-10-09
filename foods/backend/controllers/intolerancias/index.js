@@ -6,6 +6,7 @@
 const IntoleranciasListController = require('./IntoleranciasListController');
 const IntoleranciasCRUDController = require('./IntoleranciasCRUDController');
 const IntoleranciasStatsController = require('./IntoleranciasStatsController');
+const IntoleranciasExportController = require('./IntoleranciasExportController');
 
 module.exports = {
   // Métodos de Listagem
@@ -20,4 +21,8 @@ module.exports = {
   
   // Métodos de Estatísticas
   buscarEstatisticas: IntoleranciasStatsController.buscarEstatisticas
+  
+  // Métodos de Exportação
+  exportarXLSX: IntoleranciasExportController.exportarXLSX,
+  exportarPDF: IntoleranciasExportController.exportarPDF
 };

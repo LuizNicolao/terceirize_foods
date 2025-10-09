@@ -7,6 +7,7 @@ const UnidadesListController = require('./UnidadesListController');
 const UnidadesCRUDController = require('./UnidadesCRUDController');
 const UnidadesSearchController = require('./UnidadesSearchController');
 const UnidadesStatsController = require('./UnidadesStatsController');
+const UnidadesExportController = require('./UnidadesExportController');
 
 module.exports = {
   // Métodos de Listagem
