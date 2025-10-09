@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateToken } = require('../../middleware/auth');
+const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const IntoleranciasController = require('../../controllers/intolerancias');
