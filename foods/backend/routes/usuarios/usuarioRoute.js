@@ -92,4 +92,8 @@ router.put('/:id/filiais',
   UsuariosController.atualizarFiliaisUsuario
 );
 
+// ===== ROTAS DE EXPORTAÇÃO =====
+router.get('/export/xlsx', checkScreenPermission('usuarios', 'visualizar'), UsuariosController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('usuarios', 'visualizar'), UsuariosController.exportarPDF);
+
 module.exports = router; 
