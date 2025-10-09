@@ -63,4 +63,4 @@ class FiliaisExportController {
   }
 }
 
-module.exports = ClientesExportController;
+module.exports = FiliaisExportController;
