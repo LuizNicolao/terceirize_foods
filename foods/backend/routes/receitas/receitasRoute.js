@@ -10,11 +10,7 @@ const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const { uploadPDF, handleUploadError } = require('../../middleware/uploadPDF');
-const { 
-  ReceitasListController, 
-  ReceitasCRUDController, 
-  ReceitasExportController 
-} = require('../../controllers/receitas');
+const receitasController = require('../../controllers/receitas');
 
 const router = express.Router();
 
@@ -31,14 +27,14 @@ router.get('/',
   commonValidations.search,
   ...commonValidations.pagination,
   receitasValidations.filtros,
-  ReceitasListController.listar
+  receitasController.listar
 );
 
 // Buscar receita por ID
 router.get('/:id',
   checkScreenPermission('receitas', 'visualizar'),
   commonValidations.id,
-  ReceitasListController.buscarPorId
+  receitasController.buscarPorId
 );
 
 // Criar nova receita
@@ -46,7 +42,7 @@ router.post('/',
   checkScreenPermission('receitas', 'criar'),
   receitasValidations.criar,
   auditMiddleware('receitas', AUDIT_ACTIONS.CREATE),
-  ReceitasCRUDController.criar
+  receitasController.criar
 );
 
 // Atualizar receita
@@ -55,7 +51,7 @@ router.put('/:id',
   commonValidations.id,
   receitasValidations.atualizar,
   auditChangesMiddleware('receitas', AUDIT_ACTIONS.UPDATE),
-  ReceitasCRUDController.atualizar
+  receitasController.atualizar
 );
 
 // Excluir receita
@@ -63,21 +59,12 @@ router.delete('/:id',
   checkScreenPermission('receitas', 'excluir'),
   commonValidations.id,
   auditMiddleware('receitas', AUDIT_ACTIONS.DELETE),
-  ReceitasCRUDController.excluir
+  receitasController.excluir
 );
 
-// ===== ROTAS ESPECÍFICAS =====
+// ===== ROTAS DE EXPORTAÇÃO =====
 
-
-// Exportar receita
-router.get('/:id/exportar/:formato',
-  checkScreenPermission('receitas', 'visualizar'),
-  commonValidations.id,
-  receitasValidations.formatoExportacao,
-  ReceitasExportController.exportar
-);
-
-router.get('/export/xlsx', checkScreenPermission('receitas', 'visualizar'), ReceitasController.exportarXLSX);
-router.get('/export/pdf', checkScreenPermission('receitas', 'visualizar'), ReceitasController.exportarPDF);
+router.get('/export/xlsx', checkScreenPermission('receitas', 'visualizar'), receitasController.exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('receitas', 'visualizar'), receitasController.exportarPDF);
 
 module.exports = router;
