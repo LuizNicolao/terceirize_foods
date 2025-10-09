@@ -134,8 +134,13 @@ export const useGrupos = () => {
 
   return {
     // Estados principais (do hook base)
-    grupos: baseEntity.items,
+    grupos: isSortingLocally ? gruposOrdenados : baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     // Estados de busca
     estatisticas: estatisticasGrupos, // Usar estatísticas específicas dos grupos
@@ -191,6 +196,9 @@ export const useGrupos = () => {
 
     // Funções utilitárias
     getStatusLabel,
-    formatDate
+    formatDate,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

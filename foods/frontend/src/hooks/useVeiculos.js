@@ -156,8 +156,13 @@ export const useVeiculos = () => {
 
   return {
     // Estados principais (do hook base)
-    veiculos: baseEntity.items,
+    veiculos: isSortingLocally ? veiculosOrdenados : baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     estatisticas: estatisticasVeiculos, // Usar estatísticas específicas dos veículos
     
@@ -214,6 +219,9 @@ export const useVeiculos = () => {
     getStatusLabel,
     getTipoVeiculoLabel,
     getCategoriaLabel,
-    formatCurrency
+    formatCurrency,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

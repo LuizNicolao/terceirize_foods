@@ -262,9 +262,14 @@ export const useRotas = () => {
   // useEffect removidos - useBaseEntity já gerencia filtros e paginação automaticamente
 
   return {
-    // Estados principais (do hook base)
-    rotas: baseEntity.items,
+    // Estados principais (usa dados ordenados se ordenação local)
+    rotas: isSortingLocally ? rotasOrdenadas : baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     // Estados de busca
     estatisticas: estatisticasRotas, // Usar estatísticas específicas das rotas
@@ -340,6 +345,9 @@ export const useRotas = () => {
     // Funções utilitárias
     getFilialName,
     formatCurrency,
-    formatTipoRota
+    formatTipoRota,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

@@ -140,8 +140,13 @@ export const useFiliais = () => {
 
   return {
     // Estados principais (do hook base)
-    filiais: baseEntity.items,
+    filiais: isSortingLocally ? filiaisOrdenadas : baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     // Estados de busca
     estatisticas: estatisticasFiliais, // Usar estatísticas específicas das filiais
@@ -194,6 +199,9 @@ export const useFiliais = () => {
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
     
     // Funções utilitárias
-    formatDate
+    formatDate,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

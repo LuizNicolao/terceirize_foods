@@ -162,8 +162,13 @@ export const useMotoristas = () => {
 
   return {
     // Estados principais (do hook base)
-    motoristas: baseEntity.items,
+    motoristas: isSortingLocally ? motoristasOrdenados : baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     // Estados de busca
     estatisticas: estatisticasMotoristas, // Usar estatísticas específicas dos motoristas
@@ -220,6 +225,9 @@ export const useMotoristas = () => {
     
     // Ações de exportação
     handleExportXLSX,
-    handleExportPDF
+    handleExportPDF,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

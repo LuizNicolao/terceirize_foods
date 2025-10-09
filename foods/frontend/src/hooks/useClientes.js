@@ -134,8 +134,13 @@ export const useClientes = () => {
 
   return {
     // Estados principais (do hook base)
-    clientes: baseEntity.items,
+    clientes: isSortingLocally ? clientesOrdenados : baseEntity.items,
     loading: baseEntity.loading,
+    
+    // Estados de ordenação
+    sortField,
+    sortDirection,
+    isSortingLocally,
     
     estatisticas: estatisticasClientes, // Usar estatísticas específicas dos clientes
     
@@ -189,6 +194,9 @@ export const useClientes = () => {
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
     
     // Funções utilitárias
-    formatDate
+    formatDate,
+    
+    // Ações de ordenação
+    handleSort
   };
 };

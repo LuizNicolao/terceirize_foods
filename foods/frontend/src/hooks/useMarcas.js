@@ -123,7 +123,7 @@ export const useMarcas = () => {
   }, []);
 
   return {
-    marcas: baseEntity.items,
+    marcas: isSortingLocally ? marcasOrdenadas : baseEntity.items,
     loading,
     
     estatisticas: estatisticasMarcas,
@@ -159,6 +159,9 @@ export const useMarcas = () => {
     handleCloseDeleteModal: baseEntity.handleCloseDeleteModal,
     handleCloseValidationModal: baseEntity.handleCloseValidationModal,
     formatDate,
-    getStatusLabel
+    getStatusLabel,
+    
+    // Ações de ordenação
+    handleSort
   };
 };
