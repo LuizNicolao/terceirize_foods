@@ -6,6 +6,7 @@
 const TiposCardapioCRUDController = require('./TiposCardapioCRUDController');
 const TiposCardapioListController = require('./TiposCardapioListController');
 const TiposCardapioSearchController = require('./TiposCardapioSearchController');
+const TiposCardapioExportController = require('./TiposCardapioExportController');
 
 module.exports = {
   // Controller principal com operações CRUD
@@ -24,5 +25,9 @@ module.exports = {
   buscarAtivos: TiposCardapioSearchController.buscarAtivos,
   buscarPorFilial: TiposCardapioSearchController.buscarPorFilial,
   buscarDisponiveisParaUnidade: TiposCardapioSearchController.buscarDisponiveisParaUnidade,
-  buscarPorIds: TiposCardapioSearchController.buscarPorIds
+  buscarPorIds: TiposCardapioSearchController.buscarPorIds,
+
+  // Métodos de Exportação
+  exportarXLSX: TiposCardapioExportController.exportarXLSX,
+  exportarPDF: TiposCardapioExportController.exportarPDF
 };
