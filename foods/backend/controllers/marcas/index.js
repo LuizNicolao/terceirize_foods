@@ -6,6 +6,7 @@
 const MarcasListController = require('./MarcasListController');
 const MarcasCRUDController = require('./MarcasCRUDController');
 const MarcasSearchController = require('./MarcasSearchController');
+const MarcasExportController = require('./MarcasExportController');
 
 module.exports = {
   // Métodos de Listagem
@@ -19,5 +20,9 @@ module.exports = {
   
   // Métodos de Busca
   buscarAtivas: MarcasSearchController.buscarAtivas,
-  buscarPorFabricante: MarcasSearchController.buscarPorFabricante
+  buscarPorFabricante: MarcasSearchController.buscarPorFabricante,
+  
+  // Métodos de Exportação
+  exportarXLSX: MarcasExportController.exportarXLSX,
+  exportarPDF: MarcasExportController.exportarPDF
 };
