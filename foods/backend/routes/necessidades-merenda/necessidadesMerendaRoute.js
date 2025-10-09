@@ -19,7 +19,9 @@ const {
   gerarNecessidadesDeCardapioExistente,
   exportarParaExcel,
   exportarListaCompras,
-  exportarRelatorioCustos
+  exportarRelatorioCustos,
+  exportarXLSX,
+  exportarPDF
 } = require('../../controllers/necessidades-merenda');
 
 // Middleware de validação
@@ -217,7 +219,7 @@ router.patch('/alterar-status',
   atualizarStatusMultiplas
 );
 
-router.get('/export/xlsx', checkScreenPermission('necessidades_merenda', 'visualizar'), NecessidadesMerendaController.exportarXLSX);
-router.get('/export/pdf', checkScreenPermission('necessidades_merenda', 'visualizar'), NecessidadesMerendaController.exportarPDF);
+router.get('/export/xlsx', checkScreenPermission('necessidades_merenda', 'visualizar'), exportarXLSX);
+router.get('/export/pdf', checkScreenPermission('necessidades_merenda', 'visualizar'), exportarPDF);
 
 module.exports = router;
