@@ -25,5 +25,9 @@ module.exports = {
   listarTiposUnidades: UnidadesSearchController.listarTiposUnidades,
   
   // Métodos de Estatísticas
-  buscarUnidadesMaisUtilizadas: UnidadesStatsController.buscarUnidadesMaisUtilizadas
+  buscarUnidadesMaisUtilizadas: UnidadesStatsController.buscarUnidadesMaisUtilizadas,
+  
+  // Métodos de Exportação
+  exportarXLSX: UnidadesExportController.exportarXLSX,
+  exportarPDF: UnidadesExportController.exportarPDF
 };
