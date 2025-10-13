@@ -123,7 +123,7 @@ export const useProdutoOrigem = () => {
     baseEntity.updateFilter('grupoFilter', '');
     baseEntity.updateFilter('subgrupoFilter', '');
     baseEntity.updateFilter('classeFilter', '');
-    baseEntity.setCurrentPage(1);
+    baseEntity.handlePageChange(1);
   }, [baseEntity]);
 
   /**
