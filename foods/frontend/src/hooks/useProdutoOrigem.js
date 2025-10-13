@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import ProdutoOrigemService from '../services/produtoOrigem';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
+import useTableSort from './common/useTableSort';
 
 export const useProdutoOrigem = () => {
   // Hook base para funcionalidades CRUD
@@ -20,6 +21,19 @@ export const useProdutoOrigem = () => {
     },
     enableStats: true,
     enableDelete: true
+  });
+
+  // Hook de ordenação híbrida
+  const {
+    sortedData: produtosOrigemOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: baseEntity.items,
+    threshold: 100,
+    totalItems: baseEntity.totalItems
   });
   
   // Estados locais
