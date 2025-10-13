@@ -248,6 +248,7 @@ export const useProdutoOrigem = () => {
     
     // Ações de filtros
     setSearchTerm: baseEntity.setSearchTerm,
+    handleKeyPress: baseEntity.handleKeyPress,
     clearSearch: baseEntity.clearSearch,
     setStatusFilter: baseEntity.setStatusFilter,
     setGrupoFilter: (value) => baseEntity.updateFilter('grupoFilter', value),
