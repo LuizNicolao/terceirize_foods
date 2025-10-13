@@ -58,17 +58,27 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         setItems(response.data);
         pagination.updatePagination(response.pagination);
         
-        // Calcular estatísticas se habilitado
-        if (enableStats && response.data) {
-          const total = response.pagination?.totalItems || response.data.length;
-          const ativos = response.data.filter(item => item.status === 1).length;
-          const inativos = response.data.filter(item => item.status === 0).length;
-          
-          setEstatisticas({
-            total,
-            ativos,
-            inativos
-          });
+        // Atualizar estatísticas se habilitado
+        if (enableStats) {
+          // Priorizar estatísticas do backend se disponíveis
+          if (response.statistics) {
+            setEstatisticas({
+              total: response.statistics.total || 0,
+              ativos: response.statistics.ativos || 0,
+              inativos: response.statistics.inativos || 0
+            });
+          } else if (response.data) {
+            // Fallback: calcular localmente apenas se backend não enviar
+            const total = response.pagination?.totalItems || response.data.length;
+            const ativos = response.data.filter(item => item.status === 1).length;
+            const inativos = response.data.filter(item => item.status === 0).length;
+            
+            setEstatisticas({
+              total,
+              ativos,
+              inativos
+            });
+          }
         }
       } else {
         toast.error(response.message || `Erro ao carregar ${entityName}`);

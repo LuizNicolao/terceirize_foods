@@ -45,12 +45,7 @@ export const useProdutoOrigem = () => {
   const [classes, setClasses] = useState([]);
   const [unidadesMedida, setUnidadesMedida] = useState([]);
   
-  // Estatísticas específicas
-  const [estatisticasProdutoOrigem, setEstatisticasProdutoOrigem] = useState({
-    total: 0,
-    ativos: 0,
-    inativos: 0
-  });
+  // Estatísticas vêm do baseEntity (não precisa de estado local)
 
   /**
    * Carrega dados auxiliares
@@ -97,8 +92,7 @@ export const useProdutoOrigem = () => {
    */
   const handleDeleteCustom = useCallback(async () => {
     await baseEntity.handleConfirmDelete();
-    // Recalcular estatísticas após excluir
-    setEstatisticasProdutoOrigem(baseEntity.statistics || { total: 0, ativos: 0, inativos: 0 });
+    // Estatísticas são atualizadas automaticamente pelo baseEntity após delete
   }, [baseEntity]);
 
   // Carregar dados auxiliares na inicialização
@@ -108,11 +102,7 @@ export const useProdutoOrigem = () => {
 
   // useBaseEntity já gerencia recarregamento automático quando filtros ou paginação mudam
   // Não é necessário adicionar useEffect extras para loadData
-
-  // Atualizar estatísticas quando os dados mudam
-  useEffect(() => {
-    setEstatisticasProdutoOrigem(baseEntity.statistics || { total: 0, ativos: 0, inativos: 0 });
-  }, [baseEntity.statistics]);
+  // Estatísticas também são gerenciadas automaticamente pelo baseEntity
 
   /**
    * Funções auxiliares
@@ -201,7 +191,7 @@ export const useProdutoOrigem = () => {
     loading,
     
     // Estados de busca
-    estatisticas: estatisticasProdutoOrigem,
+    estatisticas: baseEntity.estatisticas,
     
     // Estados de modal (compatibilidade com modal existente)
     showModal: baseEntity.showModal,
