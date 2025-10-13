@@ -21,10 +21,6 @@ class ClassesCRUDController {
    */
   static criarClasse = asyncHandler(async (req, res) => {
     const { nome, descricao, subgrupo_id, status } = req.body;
-    
-    // 🔍 DEBUG TEMPORÁRIO
-    console.log('🔍 DEBUG CLASSE - req.body completo:', req.body);
-    console.log('🔍 DEBUG CLASSE - status recebido:', { status, type: typeof status });
 
     // Verificar se subgrupo existe
     const subgrupo = await executeQuery(
@@ -47,12 +43,9 @@ class ClassesCRUDController {
     }
 
     // Inserir classe (com código temporário)
-    const statusConvertido = status === 1 || status === '1' ? 'ativo' : 'inativo';
-    console.log('🔍 DEBUG CLASSE - status convertido:', statusConvertido);
-    
     const result = await executeQuery(
       'INSERT INTO classes (nome, codigo, descricao, subgrupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
-      [nome && nome.trim() ? nome.trim() : null, 'TEMP', descricao && descricao.trim() ? descricao.trim() : null, subgrupo_id || null, statusConvertido]
+      [nome && nome.trim() ? nome.trim() : null, 'TEMP', descricao && descricao.trim() ? descricao.trim() : null, subgrupo_id || null, status === 1 || status === '1' ? 'ativo' : 'inativo']
     );
 
     // Gerar código de vitrine baseado no ID inserido

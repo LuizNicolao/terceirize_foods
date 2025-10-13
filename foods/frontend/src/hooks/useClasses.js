@@ -97,7 +97,7 @@ export const useClasses = () => {
         nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
         descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null,
         subgrupo_id: data.subgrupo_id ? parseInt(data.subgrupo_id) : null,
-      status: data.status === '1' || data.status === 'Ativo' ? 'ativo' : 'inativo'
+      status: data.status
     };
 
     await baseEntity.onSubmit(cleanData);

@@ -45,10 +45,6 @@ const classeValidations = {
       .withMessage('ID do subgrupo é obrigatório e deve ser um número válido'),
     body('status')
       .optional()
-      .custom((value) => {
-        console.log('🔍 DEBUG VALIDADOR - status recebido:', { value, type: typeof value });
-        return true; // Temporário para debug
-      })
       .isIn([0, 1, '0', '1'])
       .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
     handleValidationErrors
@@ -70,10 +66,6 @@ const classeValidations = {
       .withMessage('ID do subgrupo deve ser um número válido'),
     body('status')
       .optional()
-      .custom((value) => {
-        console.log('🔍 DEBUG VALIDADOR - status recebido:', { value, type: typeof value });
-        return true; // Temporário para debug
-      })
       .isIn([0, 1, '0', '1'])
       .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
     handleValidationErrors
