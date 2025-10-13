@@ -210,6 +210,7 @@ export const useProdutoOrigem = () => {
   }, [unidadesMedida]);
 
   const getUnidadeMedidaSigla = useCallback((unidadeId) => {
+    if (!unidadesMedida || unidadesMedida.length === 0) return '-';
     const unidade = unidadesMedida.find(um => um.id === unidadeId);
     return unidade ? unidade.sigla : '-';
   }, [unidadesMedida]);

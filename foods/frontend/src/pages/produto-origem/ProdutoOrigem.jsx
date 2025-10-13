@@ -62,7 +62,8 @@ const ProdutoOrigem = () => {
     getGrupoName,
     getSubgrupoName,
     getClasseName,
-    getUnidadeMedidaName
+    getUnidadeMedidaName,
+    getUnidadeMedidaSigla
   } = useProdutoOrigem();
 
   const {
