@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import produtoGenericoService from '../services/produtoGenerico';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
+import useTableSort from './common/useTableSort';
 
 export const useProdutoGenerico = () => {
   // Hook base para funcionalidades CRUD
