@@ -68,7 +68,7 @@ const ProdutoOrigemTable = ({
               {produtosOrigem.map((produto) => (
                 <tr key={produto.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {produto.codigo}
+                    {produto.codigo ? produto.codigo.replace('ORIG-', '') : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     <div className="font-medium">{produto.nome}</div>
@@ -126,7 +126,7 @@ const ProdutoOrigemTable = ({
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 text-sm">{produto.nome}</h3>
                 <p className="text-gray-600 text-xs">
-                  Código: {produto.codigo || '-'}
+                  Código: {produto.codigo ? produto.codigo.replace('ORIG-', '') : '-'}
                 </p>
                 {produto.referencia_mercado && (
                   <p className="text-gray-500 text-xs">Ref: {produto.referencia_mercado}</p>
