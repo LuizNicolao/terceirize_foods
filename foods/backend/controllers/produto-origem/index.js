@@ -14,6 +14,7 @@ module.exports = {
   criarProdutoOrigem: ProdutoOrigemCRUDController.criarProdutoOrigem,
   atualizarProdutoOrigem: ProdutoOrigemCRUDController.atualizarProdutoOrigem,
   excluirProdutoOrigem: ProdutoOrigemCRUDController.excluirProdutoOrigem,
+  obterProximoCodigo: ProdutoOrigemCRUDController.obterProximoCodigo,
 
   // Operações de listagem e busca
   listarProdutosOrigem: ProdutoOrigemListController.listarProdutosOrigem,

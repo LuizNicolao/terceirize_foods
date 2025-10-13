@@ -18,6 +18,7 @@ module.exports = {
   criarSubgrupo: SubgruposCRUDController.criarSubgrupo,
   atualizarSubgrupo: SubgruposCRUDController.atualizarSubgrupo,
   excluirSubgrupo: SubgruposCRUDController.excluirSubgrupo,
+  obterProximoCodigo: SubgruposCRUDController.obterProximoCodigo,
   
   // Métodos de Busca
   buscarSubgruposAtivos: SubgruposSearchController.buscarSubgruposAtivos,

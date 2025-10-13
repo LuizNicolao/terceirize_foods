@@ -38,6 +38,12 @@ router.get('/estatisticas',
   SubgruposController.buscarEstatisticas
 );
 
+// GET /api/subgrupos/proximo-codigo - Obter próximo código disponível
+router.get('/proximo-codigo',
+  checkPermission('visualizar'),
+  SubgruposController.obterProximoCodigo
+);
+
 // GET /api/subgrupos/codigo/:codigo - Buscar subgrupo por código
 router.get('/codigo/:codigo',
   checkPermission('visualizar'),

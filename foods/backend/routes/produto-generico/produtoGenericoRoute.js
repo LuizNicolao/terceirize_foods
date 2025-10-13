@@ -28,6 +28,12 @@ router.get('/',
   ProdutoGenericoController.listarProdutosGenericos
 );
 
+// GET /api/produto-generico/proximo-codigo - Obter próximo código disponível
+router.get('/proximo-codigo',
+  checkPermission('visualizar'),
+  ProdutoGenericoController.obterProximoCodigo
+);
+
 // GET /api/produto-generico/:id - Buscar produto genérico por ID
 router.get('/:id', 
   checkPermission('visualizar'),
