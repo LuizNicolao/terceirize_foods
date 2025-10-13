@@ -345,25 +345,6 @@ class ProdutoGenericoCRUDController {
   });
 
   /**
-   * Obter próximo código disponível
-   */
-  static obterProximoCodigo = asyncHandler(async (req, res) => {
-    // Buscar o maior ID atual e adicionar 1
-    const maxIdResult = await executeQuery(
-      'SELECT MAX(id) as maxId FROM produto_generico'
-    );
-    
-    const maxId = maxIdResult[0]?.maxId || 0;
-    const proximoId = maxId + 1;
-    const proximoCodigo = gerarCodigoProdutoGenerico(proximoId);
-
-    return successResponse(res, {
-      proximoId,
-      proximoCodigo
-    }, 'Próximo código obtido com sucesso', STATUS_CODES.OK);
-  });
-
-  /**
    * Excluir produto genérico (soft delete)
    */
   static excluirProdutoGenerico = asyncHandler(async (req, res) => {

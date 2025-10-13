@@ -216,25 +216,6 @@ class ClassesCRUDController {
   });
 
   /**
-   * Obter próximo código disponível
-   */
-  static obterProximoCodigo = asyncHandler(async (req, res) => {
-    // Buscar o maior ID atual e adicionar 1
-    const maxIdResult = await executeQuery(
-      'SELECT MAX(id) as maxId FROM classes'
-    );
-    
-    const maxId = maxIdResult[0]?.maxId || 0;
-    const proximoId = maxId + 1;
-    const proximoCodigo = gerarCodigoClasse(proximoId);
-
-    return successResponse(res, {
-      proximoId,
-      proximoCodigo
-    }, 'Próximo código obtido com sucesso', STATUS_CODES.OK);
-  });
-
-  /**
    * Excluir classe
    */
   static excluirClasse = asyncHandler(async (req, res) => {

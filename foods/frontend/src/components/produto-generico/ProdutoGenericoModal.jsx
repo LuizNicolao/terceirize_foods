@@ -7,7 +7,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
-import produtoGenericoService from '../../services/produtoGenerico';
+import { gerarCodigoProdutoGenerico, gerarCodigoTemporario } from '../../utils/codigoGenerator';
 
 const ProdutoGenericoModal = ({
   isOpen,
@@ -70,37 +70,23 @@ const ProdutoGenericoModal = ({
 
   // Carregar dados quando o modal abrir
   useEffect(() => {
-    const carregarDados = async () => {
-      if (produtoGenerico && isOpen) {
-        // Preencher formulário com dados do produto genérico
-        Object.keys(produtoGenerico).forEach(key => {
-          if (produtoGenerico[key] !== null && produtoGenerico[key] !== undefined) {
-            setValue(key, produtoGenerico[key]);
-          }
-        });
-      } else if (!produtoGenerico && isOpen) {
-        // Resetar formulário para novo produto genérico
-        reset();
-        setValue('status', 1);
-        setValue('fator_conversao', 1.000);
-        setValue('produto_padrao', 'Não');
-        
-        // Buscar próximo código disponível do backend
-        try {
-          const response = await produtoGenericoService.obterProximoCodigo();
-          if (response.success) {
-            setValue('codigo', response.data.proximoCodigo);
-          } else {
-            setValue('codigo', 'Erro ao gerar código');
-          }
-        } catch (error) {
-          console.error('Erro ao obter próximo código:', error);
-          setValue('codigo', 'Erro ao gerar código');
+    if (produtoGenerico && isOpen) {
+      // Preencher formulário com dados do produto genérico
+      Object.keys(produtoGenerico).forEach(key => {
+        if (produtoGenerico[key] !== null && produtoGenerico[key] !== undefined) {
+          setValue(key, produtoGenerico[key]);
         }
-      }
-    };
-
-    carregarDados();
+      });
+    } else if (!produtoGenerico && isOpen) {
+      // Resetar formulário para novo produto genérico
+      reset();
+      setValue('status', 1);
+      setValue('fator_conversao', 1.000);
+      setValue('produto_padrao', 'Não');
+      // Gerar código de vitrine temporário para mostrar ao usuário
+      const codigoGerado = gerarCodigoTemporario('PRODUTO_GENERICO');
+      setValue('codigo', codigoGerado);
+    }
   }, [produtoGenerico, isOpen, setValue, reset]);
 
   // Processar envio do formulário

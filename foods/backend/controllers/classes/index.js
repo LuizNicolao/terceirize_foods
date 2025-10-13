@@ -18,7 +18,6 @@ module.exports = {
   criarClasse: ClassesCRUDController.criarClasse,
   atualizarClasse: ClassesCRUDController.atualizarClasse,
   excluirClasse: ClassesCRUDController.excluirClasse,
-  obterProximoCodigo: ClassesCRUDController.obterProximoCodigo,
   
   // Métodos de Busca
   buscarClassesAtivas: ClassesSearchController.buscarClassesAtivas,

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
-import classesService from '../../services/classes';
+import { gerarCodigoClasse, gerarCodigoTemporario } from '../../utils/codigoGenerator';
 
 const ClasseModal = ({ 
   isOpen, 
@@ -11,32 +11,15 @@ const ClasseModal = ({
   subgrupos = []
 }) => {
   const [codigoGerado, setCodigoGerado] = useState('');
-  const [carregandoCodigo, setCarregandoCodigo] = useState(false);
 
   useEffect(() => {
-    const carregarProximoCodigo = async () => {
-      if (!classe && isOpen) {
-        setCarregandoCodigo(true);
-        try {
-          // Buscar próximo código disponível do backend
-          const response = await classesService.obterProximoCodigo();
-          if (response.success) {
-            setCodigoGerado(response.data.proximoCodigo);
-          } else {
-            setCodigoGerado('Erro ao gerar código');
-          }
-        } catch (error) {
-          console.error('Erro ao obter próximo código:', error);
-          setCodigoGerado('Erro ao gerar código');
-        } finally {
-          setCarregandoCodigo(false);
-        }
-      } else if (classe) {
-        setCodigoGerado(classe.codigo || '');
-      }
-    };
-
-    carregarProximoCodigo();
+    if (!classe && isOpen) {
+      // Gerar código de vitrine temporário para mostrar ao usuário
+      const codigo = gerarCodigoTemporario('CLASSE');
+      setCodigoGerado(codigo);
+    } else if (classe) {
+      setCodigoGerado(classe.codigo || '');
+    }
   }, [classe, isOpen]);
 
   return (
@@ -72,7 +55,7 @@ const ClasseModal = ({
             value={codigoGerado}
             disabled={true}
             required
-            placeholder={carregandoCodigo ? "Carregando..." : "Código gerado automaticamente"}
+            placeholder="Código gerado automaticamente"
           />
         </div>
 
@@ -96,7 +79,7 @@ const ClasseModal = ({
             label="Status"
             name="status"
             type="select"
-            defaultValue={classe ? (classe.status === 'ativo' ? '1' : '0') : '1'}
+            defaultValue={classe?.status === 'ativo' ? '1' : '0'}
             disabled={isViewMode}
           >
             <option value="1">Ativo</option>

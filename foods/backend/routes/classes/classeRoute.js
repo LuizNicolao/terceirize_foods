@@ -38,12 +38,6 @@ router.get('/estatisticas',
   ClassesController.buscarEstatisticas
 );
 
-// GET /api/classes/proximo-codigo - Obter próximo código disponível
-router.get('/proximo-codigo',
-  checkPermission('visualizar'),
-  ClassesController.obterProximoCodigo
-);
-
 // GET /api/classes/codigo/:codigo - Buscar classe por código
 router.get('/codigo/:codigo',
   checkPermission('visualizar'),

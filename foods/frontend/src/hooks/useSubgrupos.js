@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import SubgruposService from '../services/subgrupos';
 import GruposService from '../services/grupos';
 import { useBaseEntity } from './common/useBaseEntity';
-import { useTableSort } from './common/useTableSort';
 
 export const useSubgrupos = () => {
   // Hook base para funcionalidades CRUD

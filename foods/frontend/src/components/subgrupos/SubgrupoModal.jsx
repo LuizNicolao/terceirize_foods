@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
-import subgruposService from '../../services/subgrupos';
+import SubgruposService from '../../services/subgrupos';
 
 const SubgrupoModal = ({ 
   isOpen, 
@@ -19,7 +19,7 @@ const SubgrupoModal = ({
         setCarregandoCodigo(true);
         try {
           // Buscar próximo código disponível do backend
-          const response = await subgruposService.obterProximoCodigo();
+          const response = await SubgruposService.obterProximoCodigo();
           if (response.success) {
             setCodigoGerado(response.data.proximoCodigo);
           } else {

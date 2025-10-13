@@ -26,12 +26,6 @@ router.get('/',
   ProdutoOrigemController.listarProdutosOrigem
 );
 
-// GET /api/produto-origem/proximo-codigo - Obter próximo código disponível
-router.get('/proximo-codigo',
-  checkPermission('visualizar'),
-  ProdutoOrigemController.obterProximoCodigo
-);
-
 // GET /api/produto-origem/:id - Buscar produto origem por ID
 router.get('/:id', 
   checkPermission('visualizar'),
