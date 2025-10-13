@@ -18,6 +18,7 @@ module.exports = {
   criarGrupo: GruposCRUDController.criarGrupo,
   atualizarGrupo: GruposCRUDController.atualizarGrupo,
   excluirGrupo: GruposCRUDController.excluirGrupo,
+  obterProximoCodigo: GruposCRUDController.obterProximoCodigo,
   
   // Métodos de Busca
   buscarGruposAtivos: GruposSearchController.buscarGruposAtivos,

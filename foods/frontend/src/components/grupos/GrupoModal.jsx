@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
-import { gerarCodigoGrupo, gerarCodigoTemporario } from '../../utils/codigoGenerator';
+import gruposService from '../../services/grupos';
 
 const GrupoModal = ({ 
   isOpen, 
@@ -10,15 +10,32 @@ const GrupoModal = ({
   isViewMode 
 }) => {
   const [codigoGerado, setCodigoGerado] = useState('');
+  const [carregandoCodigo, setCarregandoCodigo] = useState(false);
 
   useEffect(() => {
-    if (!grupo && isOpen) {
-      // Gerar código de vitrine temporário para mostrar ao usuário
-      const codigo = gerarCodigoTemporario('GRUPO');
-      setCodigoGerado(codigo);
-    } else if (grupo) {
-      setCodigoGerado(grupo.codigo || '');
-    }
+    const carregarProximoCodigo = async () => {
+      if (!grupo && isOpen) {
+        setCarregandoCodigo(true);
+        try {
+          // Buscar próximo código disponível do backend
+          const response = await gruposService.obterProximoCodigo();
+          if (response.success) {
+            setCodigoGerado(response.data.proximoCodigo);
+          } else {
+            setCodigoGerado('Erro ao gerar código');
+          }
+        } catch (error) {
+          console.error('Erro ao obter próximo código:', error);
+          setCodigoGerado('Erro ao gerar código');
+        } finally {
+          setCarregandoCodigo(false);
+        }
+      } else if (grupo) {
+        setCodigoGerado(grupo.codigo || '');
+      }
+    };
+
+    carregarProximoCodigo();
   }, [grupo, isOpen]);
 
   return (
@@ -53,7 +70,7 @@ const GrupoModal = ({
             value={codigoGerado}
             disabled={true}
             required
-            placeholder="Código gerado automaticamente"
+            placeholder={carregandoCodigo ? "Carregando..." : "Código gerado automaticamente"}
           />
         </div>
 
