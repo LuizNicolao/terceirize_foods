@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaPrint, FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
-import { gerarCodigoProduto, gerarCodigoTemporario } from '../../utils/codigoGenerator';
+import produtosService from '../../services/produtos';
 
 const ProdutoModal = ({ 
   isOpen, 
@@ -20,6 +20,7 @@ const ProdutoModal = ({
   onPrint
 }) => {
   const { register, handleSubmit, reset, setValue, watch } = useForm();
+  const [carregandoCodigo, setCarregandoCodigo] = useState(false);
 
   // Observar mudanças nos campos para filtros dependentes
   const grupoId = watch('grupo_id');
@@ -71,23 +72,40 @@ const ProdutoModal = ({
   }, [nomeGenericoId, produtoGenerico, setValue]);
 
   useEffect(() => {
-    if (produto && isOpen) {
-      // Preencher formulário com dados do produto
-      Object.keys(produto).forEach(key => {
-        if (produto[key] !== null && produto[key] !== undefined) {
-          setValue(key, produto[key]);
+    const carregarProximoCodigo = async () => {
+      if (produto && isOpen) {
+        // Preencher formulário com dados do produto
+        Object.keys(produto).forEach(key => {
+          if (produto[key] !== null && produto[key] !== undefined) {
+            setValue(key, produto[key]);
+          }
+        });
+      } else if (!produto && isOpen) {
+        // Resetar formulário para novo produto
+        reset();
+        setValue('status', 1);
+        setValue('fator_conversao', 1.000);
+        setValue('fator_conversao_embalagem', 1);
+        
+        // Buscar próximo código disponível do backend
+        setCarregandoCodigo(true);
+        try {
+          const response = await produtosService.obterProximoCodigo();
+          if (response.success) {
+            setValue('codigo_produto', response.data.proximoCodigo);
+          } else {
+            setValue('codigo_produto', 'Erro ao gerar código');
+          }
+        } catch (error) {
+          console.error('Erro ao obter próximo código:', error);
+          setValue('codigo_produto', 'Erro ao gerar código');
+        } finally {
+          setCarregandoCodigo(false);
         }
-      });
-    } else if (!produto && isOpen) {
-      // Resetar formulário para novo produto
-      reset();
-      setValue('status', 1);
-      setValue('fator_conversao', 1.000);
-      setValue('fator_conversao_embalagem', 1);
-      // Gerar código de vitrine temporário para mostrar ao usuário
-      const codigoGerado = gerarCodigoTemporario('PRODUTO');
-      setValue('codigo_produto', codigoGerado);
-    }
+      }
+    };
+
+    carregarProximoCodigo();
   }, [produto, isOpen, setValue, reset]);
 
   const handleFormSubmit = (data) => {
