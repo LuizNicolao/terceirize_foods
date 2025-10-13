@@ -57,12 +57,20 @@ export const useProdutoOrigem = () => {
    */
   const carregarDadosAuxiliares = useCallback(async () => {
     try {
+      console.log('🔍 Carregando dados auxiliares...');
       const [gruposRes, subgruposRes, classesRes, unidadesRes] = await Promise.all([
         api.get('/grupos?limit=1000'),
         api.get('/subgrupos?limit=1000'),
         api.get('/classes?limit=1000'),
         api.get('/unidades?limit=1000')
       ]);
+
+      console.log('📊 Respostas recebidas:', {
+        grupos: gruposRes.data,
+        subgrupos: subgruposRes.data,
+        classes: classesRes.data,
+        unidades: unidadesRes.data
+      });
 
       // Processar dados auxiliares
       const processData = (response) => {
@@ -71,12 +79,24 @@ export const useProdutoOrigem = () => {
         return response.data || [];
       };
 
-      setGrupos(processData(gruposRes));
-      setSubgrupos(processData(subgruposRes));
-      setClasses(processData(classesRes));
-      setUnidadesMedida(processData(unidadesRes));
+      const gruposData = processData(gruposRes);
+      const subgruposData = processData(subgruposRes);
+      const classesData = processData(classesRes);
+      const unidadesData = processData(unidadesRes);
+
+      console.log('✅ Dados processados:', {
+        grupos: gruposData.length,
+        subgrupos: subgruposData.length,
+        classes: classesData.length,
+        unidades: unidadesData.length
+      });
+
+      setGrupos(gruposData);
+      setSubgrupos(subgruposData);
+      setClasses(classesData);
+      setUnidadesMedida(unidadesData);
     } catch (error) {
-      console.error('Erro ao carregar dados auxiliares:', error);
+      console.error('❌ Erro ao carregar dados auxiliares:', error);
       toast.error('Erro ao carregar dados auxiliares');
     }
   }, []);
