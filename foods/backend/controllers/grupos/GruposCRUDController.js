@@ -39,7 +39,7 @@ class GruposCRUDController {
       [
         nome && nome.trim() ? nome.trim() : null, 
         descricao && descricao.trim() ? descricao.trim() : null,
-        status === 1 ? 'ativo' : 'inativo',
+        status === 1 || status === '1' ? 'ativo' : 'inativo',
         codigoTemporario
       ]
     );

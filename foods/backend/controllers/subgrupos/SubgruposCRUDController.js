@@ -50,7 +50,7 @@ class SubgruposCRUDController {
         nome && nome.trim() ? nome.trim() : null, 
         req.body.descricao && req.body.descricao.trim() ? req.body.descricao.trim() : null,
         grupo_id || null, 
-        status === 1 ? 'ativo' : 'inativo',
+        status === 1 || status === '1' ? 'ativo' : 'inativo',
         codigoTemporario
       ]
     );

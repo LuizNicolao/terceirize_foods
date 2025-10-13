@@ -54,7 +54,7 @@ class SubgruposListController {
 
     if (status !== undefined) {
       baseQuery += ' AND sg.status = ?';
-      params.push(status === 1 ? 'ativo' : 'inativo');
+      params.push(status === 1 || status === '1' ? 'ativo' : 'inativo');
     }
 
     baseQuery += ' GROUP BY sg.id, sg.nome, sg.codigo, sg.descricao, sg.grupo_id, sg.status, sg.data_cadastro, sg.data_atualizacao, g.nome ORDER BY sg.nome ASC';
@@ -74,7 +74,7 @@ class SubgruposListController {
       countParams.push(grupo_id);
     }
     if (status !== undefined) {
-      countParams.push(status === 1 ? 'ativo' : 'inativo');
+      countParams.push(status === 1 || status === '1' ? 'ativo' : 'inativo');
     }
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;

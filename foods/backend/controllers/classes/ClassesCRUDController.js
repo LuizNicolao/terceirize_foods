@@ -45,7 +45,7 @@ class ClassesCRUDController {
     // Inserir classe (com código temporário)
     const result = await executeQuery(
       'INSERT INTO classes (nome, codigo, descricao, subgrupo_id, status, data_cadastro) VALUES (?, ?, ?, ?, ?, NOW())',
-      [nome && nome.trim() ? nome.trim() : null, 'TEMP', descricao && descricao.trim() ? descricao.trim() : null, subgrupo_id || null, status || 'ativo']
+      [nome && nome.trim() ? nome.trim() : null, 'TEMP', descricao && descricao.trim() ? descricao.trim() : null, subgrupo_id || null, status === 1 || status === '1' ? 'ativo' : 'inativo']
     );
 
     // Gerar código de vitrine baseado no ID inserido

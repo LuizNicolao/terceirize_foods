@@ -46,7 +46,7 @@ class GruposListController {
 
     if (status !== undefined) {
       baseQuery += ' AND g.status = ?';
-      params.push(status === 1 ? 'ativo' : 'inativo');
+      params.push(status === 1 || status === '1' ? 'ativo' : 'inativo');
     }
 
     baseQuery += ' GROUP BY g.id, g.nome, g.codigo, g.descricao, g.status, g.data_cadastro, g.data_atualizacao ORDER BY g.nome ASC';
@@ -63,7 +63,7 @@ class GruposListController {
     const countQuery = `SELECT COUNT(DISTINCT g.id) as total FROM grupos g WHERE 1=1${search ? ' AND (g.nome LIKE ? OR g.codigo LIKE ? OR g.descricao LIKE ?)' : ''}${status !== undefined ? ' AND g.status = ?' : ''}`;
     const countParams = search ? [`%${search}%`, `%${search}%`, `%${search}%`] : [];
     if (status !== undefined) {
-      countParams.push(status === 1 ? 'ativo' : 'inativo');
+      countParams.push(status === 1 || status === '1' ? 'ativo' : 'inativo');
     }
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
