@@ -176,6 +176,7 @@ const ProdutoOrigem = () => {
         getSubgrupoName={getSubgrupoName}
         getClasseName={getClasseName}
         getUnidadeMedidaName={getUnidadeMedidaName}
+        getUnidadeMedidaSigla={getUnidadeMedidaSigla}
       />
 
       {/* Paginação */}

@@ -14,6 +14,7 @@ const ProdutoOrigemTable = ({
   getSubgrupoName,
   getClasseName,
   getUnidadeMedidaName,
+  getUnidadeMedidaSigla,
   getProdutoGenericoPadraoName
 }) => {
   if (!produtosOrigem || produtosOrigem.length === 0) {
@@ -64,6 +65,9 @@ const ProdutoOrigemTable = ({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ref. Mercado
+                </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
@@ -76,17 +80,10 @@ const ProdutoOrigemTable = ({
                     {produto.codigo}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <div>
-                      <div className="font-medium">{produto.nome}</div>
-                      {produto.referencia_mercado && (
-                        <div className="text-xs text-gray-500">
-                          Ref: {produto.referencia_mercado}
-                        </div>
-                      )}
-                    </div>
+                    <div className="font-medium">{produto.nome}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {getUnidadeMedidaName(produto.unidade_medida_id)}
+                    {getUnidadeMedidaSigla(produto.unidade_medida_id)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {getGrupoName(produto.grupo_id)}
@@ -104,10 +101,10 @@ const ProdutoOrigemTable = ({
                     }
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {produto.fator_conversao ? parseFloat(produto.fator_conversao).toFixed(3) : '1.000'}
+                    {produto.fator_conversao ? parseFloat(produto.fator_conversao).toFixed(3).replace('.', ',') : '1,000'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {produto.peso_liquido ? `${parseFloat(produto.peso_liquido).toFixed(3)} kg` : '-'}
+                    {produto.peso_liquido ? `${parseFloat(produto.peso_liquido).toFixed(3).replace('.', ',')} kg` : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -117,6 +114,9 @@ const ProdutoOrigemTable = ({
                     }`}>
                       {produto.status === 1 ? 'Ativo' : 'Inativo'}
                     </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {produto.referencia_mercado || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end">
@@ -169,7 +169,7 @@ const ProdutoOrigemTable = ({
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
                 <span className="text-gray-500">Unidade:</span>
-                <p className="font-medium">{getUnidadeMedidaName(produto.unidade_medida_id)}</p>
+                <p className="font-medium">{getUnidadeMedidaSigla(produto.unidade_medida_id)}</p>
               </div>
               <div>
                 <span className="text-gray-500">Grupo:</span>
@@ -194,11 +194,11 @@ const ProdutoOrigemTable = ({
               </div>
               <div>
                 <span className="text-gray-500">Fator Conversão:</span>
-                <p className="font-medium">{produto.fator_conversao ? parseFloat(produto.fator_conversao).toFixed(3) : '1.000'}</p>
+                <p className="font-medium">{produto.fator_conversao ? parseFloat(produto.fator_conversao).toFixed(3).replace('.', ',') : '1,000'}</p>
               </div>
               <div>
                 <span className="text-gray-500">Peso Líquido:</span>
-                <p className="font-medium">{produto.peso_liquido ? `${parseFloat(produto.peso_liquido).toFixed(3)} kg` : '-'}</p>
+                <p className="font-medium">{produto.peso_liquido ? `${parseFloat(produto.peso_liquido).toFixed(3).replace('.', ',')} kg` : '-'}</p>
               </div>
               <div className="col-span-2">
                 <span className="text-gray-500">Status:</span>

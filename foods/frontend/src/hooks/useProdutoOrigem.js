@@ -189,6 +189,11 @@ export const useProdutoOrigem = () => {
     return unidade ? unidade.nome : '-';
   }, [unidadesMedida]);
 
+  const getUnidadeMedidaSigla = useCallback((unidadeId) => {
+    const unidade = unidadesMedida.find(um => um.id === unidadeId);
+    return unidade ? unidade.sigla : '-';
+  }, [unidadesMedida]);
+
   return {
     // Estados principais
     produtosOrigem: isSortingLocally ? produtosOrigemOrdenados : baseEntity.items,
@@ -264,6 +269,7 @@ export const useProdutoOrigem = () => {
     getSubgrupoName,
     getClasseName,
     getUnidadeMedidaName,
+    getUnidadeMedidaSigla,
     
     // Ações de ordenação
     handleSort
