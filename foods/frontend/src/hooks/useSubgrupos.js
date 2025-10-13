@@ -95,7 +95,7 @@ export const useSubgrupos = () => {
       nome: data.nome && data.nome.trim() !== '' ? data.nome.trim() : null,
       descricao: data.descricao && data.descricao.trim() !== '' ? data.descricao.trim() : null,
       grupo_id: data.grupo_id ? parseInt(data.grupo_id) : null,
-      status: data.status === '1' || data.status === 'Ativo' ? 'ativo' : 'inativo'
+      status: data.status
     };
 
     await baseEntity.onSubmit(cleanData);
