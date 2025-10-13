@@ -1,8 +1,17 @@
-const { body, param, query } = require('express-validator');
-const { createEntityValidationHandler } = require('../../middleware/validationHandler');
+const { body, param, query, validationResult } = require('express-validator');
 
-// Criar handler de validação específico para classes
-const handleValidationErrors = createEntityValidationHandler('classes');
+// Handler de validação simples
+const handleValidationErrors = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(422).json({
+      success: false,
+      message: 'Dados inválidos',
+      errors: errors.array()
+    });
+  }
+  next();
+};
 
 const commonValidations = {
   id: [
