@@ -194,15 +194,13 @@ class GruposCRUDController {
    * Obter próximo código disponível
    */
   static obterProximoCodigo = asyncHandler(async (req, res) => {
-    // Buscar o próximo auto_increment
-    const result = await executeQuery(
-      `SELECT AUTO_INCREMENT 
-       FROM information_schema.TABLES 
-       WHERE TABLE_SCHEMA = DATABASE() 
-       AND TABLE_NAME = 'grupos'`
+    // Buscar o maior ID atual e adicionar 1
+    const maxIdResult = await executeQuery(
+      'SELECT MAX(id) as maxId FROM grupos'
     );
-
-    const proximoId = result[0]?.AUTO_INCREMENT || 1;
+    
+    const maxId = maxIdResult[0]?.maxId || 0;
+    const proximoId = maxId + 1;
     const proximoCodigo = gerarCodigoGrupo(proximoId);
 
     return successResponse(res, {
