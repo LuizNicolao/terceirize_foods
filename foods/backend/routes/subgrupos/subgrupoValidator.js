@@ -49,14 +49,8 @@ const subgrupoValidations = {
       .withMessage('ID do grupo é obrigatório e deve ser um número válido'),
     body('status')
       .optional()
-      .customSanitizer(value => {
-        // Converter '1' ou 1 para 'ativo', '0' ou 0 para 'inativo'
-        if (value === 1 || value === '1') return 'ativo';
-        if (value === 0 || value === '0') return 'inativo';
-        return value;
-      })
-      .isIn(['ativo', 'inativo'])
-      .withMessage('Status deve ser ativo ou inativo'),
+      .isIn([0, 1, '0', '1'])
+      .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
     handleValidationErrors
   ],
 
@@ -78,14 +72,8 @@ const subgrupoValidations = {
       .withMessage('ID do grupo deve ser um número válido'),
     body('status')
       .optional()
-      .customSanitizer(value => {
-        // Converter '1' ou 1 para 'ativo', '0' ou 0 para 'inativo'
-        if (value === 1 || value === '1') return 'ativo';
-        if (value === 0 || value === '0') return 'inativo';
-        return value;
-      })
-      .isIn(['ativo', 'inativo'])
-      .withMessage('Status deve ser ativo ou inativo'),
+      .isIn([0, 1, '0', '1'])
+      .withMessage('Status deve ser 0 (inativo) ou 1 (ativo)'),
     handleValidationErrors
   ]
 };
