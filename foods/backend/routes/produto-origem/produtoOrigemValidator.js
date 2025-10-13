@@ -133,8 +133,15 @@ const produtoOrigemValidations = {
     
     body('referencia_mercado')
       .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Referência de mercado deve ter entre 1 e 200 caracteres'),
+      .custom((value) => {
+        if (value && value.trim() !== '') {
+          if (value.length > 200) {
+            throw new Error('Referência de mercado deve ter no máximo 200 caracteres');
+          }
+        }
+        return true;
+      })
+      .withMessage('Referência de mercado deve ter no máximo 200 caracteres'),
     
     body('produto_generico_padrao_id')
       .optional()
@@ -197,8 +204,15 @@ const produtoOrigemValidations = {
     
     body('referencia_mercado')
       .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Referência de mercado deve ter entre 1 e 200 caracteres'),
+      .custom((value) => {
+        if (value && value.trim() !== '') {
+          if (value.length > 200) {
+            throw new Error('Referência de mercado deve ter no máximo 200 caracteres');
+          }
+        }
+        return true;
+      })
+      .withMessage('Referência de mercado deve ter no máximo 200 caracteres'),
     
     body('produto_generico_padrao_id')
       .optional()
