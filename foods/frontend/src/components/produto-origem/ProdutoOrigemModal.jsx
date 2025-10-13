@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
-import { gerarCodigoProdutoOrigem, gerarCodigoTemporario } from '../../utils/codigoGenerator';
+import produtoOrigemService from '../../services/produtoOrigem';
 
 const ProdutoOrigemModal = ({
   isOpen,
@@ -37,22 +37,36 @@ const ProdutoOrigemModal = ({
       : [];
 
   useEffect(() => {
-    if (produtoOrigem && isOpen) {
-      // Preencher formulário com dados do produto origem
-      Object.keys(produtoOrigem).forEach(key => {
-        if (produtoOrigem[key] !== null && produtoOrigem[key] !== undefined) {
-          setValue(key, produtoOrigem[key]);
+    const carregarDados = async () => {
+      if (produtoOrigem && isOpen) {
+        // Preencher formulário com dados do produto origem
+        Object.keys(produtoOrigem).forEach(key => {
+          if (produtoOrigem[key] !== null && produtoOrigem[key] !== undefined) {
+            setValue(key, produtoOrigem[key]);
+          }
+        });
+      } else if (!produtoOrigem && isOpen) {
+        // Resetar formulário para novo produto origem
+        reset();
+        setValue('status', 1);
+        setValue('fator_conversao', 1.000);
+        
+        // Buscar próximo código disponível do backend
+        try {
+          const response = await produtoOrigemService.obterProximoCodigo();
+          if (response.success) {
+            setValue('codigo', response.data.proximoCodigo);
+          } else {
+            setValue('codigo', 'Erro ao gerar código');
+          }
+        } catch (error) {
+          console.error('Erro ao obter próximo código:', error);
+          setValue('codigo', 'Erro ao gerar código');
         }
-      });
-    } else if (!produtoOrigem && isOpen) {
-      // Resetar formulário para novo produto origem
-      reset();
-      setValue('status', 1);
-      setValue('fator_conversao', 1.000);
-      // Gerar código de vitrine temporário para mostrar ao usuário
-      const codigoGerado = gerarCodigoTemporario('PRODUTO_ORIGEM');
-      setValue('codigo', codigoGerado);
-    }
+      }
+    };
+
+    carregarDados();
   }, [produtoOrigem, isOpen, setValue, reset]);
 
   const handleFormSubmit = (data) => {

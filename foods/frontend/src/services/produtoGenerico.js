@@ -77,6 +77,31 @@ class ProdutoGenericoService {
     }
   }
 
+  async obterProximoCodigo() {
+    try {
+      const response = await api.get('/produto-generico/proximo-codigo');
+      
+      // Extrair dados da estrutura HATEOAS
+      let data = null;
+      
+      if (response.data.data) {
+        data = response.data.data;
+      } else {
+        data = response.data;
+      }
+      
+      return {
+        success: true,
+        data: data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao obter próximo código'
+      };
+    }
+  }
+
   async criar(data) {
     try {
       const response = await api.post('/produto-generico', data);

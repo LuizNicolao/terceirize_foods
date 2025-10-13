@@ -68,6 +68,34 @@ class SubgruposService {
   }
 
   /**
+   * Obter próximo código disponível
+   */
+  static async obterProximoCodigo() {
+    try {
+      const response = await api.get('/subgrupos/proximo-codigo');
+      
+      // Extrair dados da estrutura HATEOAS
+      let data = null;
+      
+      if (response.data.data) {
+        data = response.data.data;
+      } else {
+        data = response.data;
+      }
+      
+      return {
+        success: true,
+        data: data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao obter próximo código'
+      };
+    }
+  }
+
+  /**
    * Criar novo subgrupo
    */
   static async criar(data) {

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
-import { gerarCodigoSubgrupo, gerarCodigoTemporario } from '../../utils/codigoGenerator';
+import subgruposService from '../../services/subgrupos';
 
 const SubgrupoModal = ({ 
   isOpen, 
@@ -11,15 +11,32 @@ const SubgrupoModal = ({
   grupos = []
 }) => {
   const [codigoGerado, setCodigoGerado] = useState('');
+  const [carregandoCodigo, setCarregandoCodigo] = useState(false);
 
   useEffect(() => {
-    if (!subgrupo && isOpen) {
-      // Gerar código de vitrine temporário para mostrar ao usuário
-      const codigo = gerarCodigoTemporario('SUBGRUPO');
-      setCodigoGerado(codigo);
-    } else if (subgrupo) {
-      setCodigoGerado(subgrupo.codigo || '');
-    }
+    const carregarProximoCodigo = async () => {
+      if (!subgrupo && isOpen) {
+        setCarregandoCodigo(true);
+        try {
+          // Buscar próximo código disponível do backend
+          const response = await subgruposService.obterProximoCodigo();
+          if (response.success) {
+            setCodigoGerado(response.data.proximoCodigo);
+          } else {
+            setCodigoGerado('Erro ao gerar código');
+          }
+        } catch (error) {
+          console.error('Erro ao obter próximo código:', error);
+          setCodigoGerado('Erro ao gerar código');
+        } finally {
+          setCarregandoCodigo(false);
+        }
+      } else if (subgrupo) {
+        setCodigoGerado(subgrupo.codigo || '');
+      }
+    };
+
+    carregarProximoCodigo();
   }, [subgrupo, isOpen]);
 
   return (
@@ -55,7 +72,7 @@ const SubgrupoModal = ({
             value={codigoGerado}
             disabled={true}
             required
-            placeholder="Código gerado automaticamente"
+            placeholder={carregandoCodigo ? "Carregando..." : "Código gerado automaticamente"}
           />
         </div>
 
@@ -79,7 +96,7 @@ const SubgrupoModal = ({
             label="Status"
             name="status"
             type="select"
-            defaultValue={subgrupo?.status === 'ativo' ? '1' : '0'}
+            defaultValue={subgrupo ? (subgrupo.status === 'ativo' ? '1' : '0') : '1'}
             disabled={isViewMode}
           >
             <option value="1">Ativo</option>
