@@ -108,7 +108,7 @@ export const useProdutoOrigem = () => {
    * Funções auxiliares
    */
   const handleClearFilters = useCallback(() => {
-    baseEntity.setSearchTerm('');
+    baseEntity.clearSearch(); // Limpa campo de busca E executa a busca vazia
     baseEntity.setStatusFilter('todos');
     baseEntity.updateFilter('grupoFilter', '');
     baseEntity.updateFilter('subgrupoFilter', '');
