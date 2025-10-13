@@ -12,6 +12,7 @@ const {
   STATUS_CODES 
 } = require('../../middleware/responseHandler');
 const { asyncHandler } = require('../../middleware/responseHandler');
+const { gerarCodigoProduto } = require('../../utils/codigoGenerator');
 
 class ProdutosCRUDController {
   
@@ -504,6 +505,25 @@ class ProdutosCRUDController {
     return successResponse(res, data, 'Produto atualizado com sucesso', STATUS_CODES.OK, {
       actions
     });
+  });
+
+  /**
+   * Obter próximo código disponível
+   */
+  static obterProximoCodigo = asyncHandler(async (req, res) => {
+    // Buscar o maior ID atual e adicionar 1
+    const maxIdResult = await executeQuery(
+      'SELECT MAX(id) as maxId FROM produtos'
+    );
+    
+    const maxId = maxIdResult[0]?.maxId || 0;
+    const proximoId = maxId + 1;
+    const proximoCodigo = gerarCodigoProduto(proximoId);
+
+    return successResponse(res, {
+      proximoId,
+      proximoCodigo
+    }, 'Próximo código obtido com sucesso', STATUS_CODES.OK);
   });
 
   /**

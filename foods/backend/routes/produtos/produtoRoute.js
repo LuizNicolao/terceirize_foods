@@ -26,6 +26,12 @@ router.get('/',
   ProdutosController.listarProdutos
 );
 
+// GET /api/produtos/proximo-codigo - Obter próximo código disponível
+router.get('/proximo-codigo',
+  checkPermission('visualizar'),
+  ProdutosController.obterProximoCodigo
+);
+
 // GET /api/produtos/:id - Buscar produto por ID
 router.get('/:id', 
   checkPermission('visualizar'),

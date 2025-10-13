@@ -18,6 +18,7 @@ module.exports = {
   criarProduto: ProdutosCRUDController.criarProduto,
   atualizarProduto: ProdutosCRUDController.atualizarProduto,
   excluirProduto: ProdutosCRUDController.excluirProduto,
+  obterProximoCodigo: ProdutosCRUDController.obterProximoCodigo,
   
   // Métodos de Busca
   buscarProdutosAtivos: ProdutosSearchController.buscarProdutosAtivos,

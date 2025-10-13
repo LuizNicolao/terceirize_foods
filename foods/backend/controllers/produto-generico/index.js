@@ -25,6 +25,7 @@ const ProdutoGenericoController = {
   criarProdutoGenerico: ProdutoGenericoCRUDController.criarProdutoGenerico,
   atualizarProdutoGenerico: ProdutoGenericoCRUDController.atualizarProdutoGenerico,
   excluirProdutoGenerico: ProdutoGenericoCRUDController.excluirProdutoGenerico,
+  obterProximoCodigo: ProdutoGenericoCRUDController.obterProximoCodigo,
 
   // Operações de Busca
   buscarProdutosGenericosSimilares: ProdutoGenericoSearchController.buscarProdutosGenericosSimilares,
