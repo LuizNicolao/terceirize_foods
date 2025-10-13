@@ -75,8 +75,11 @@ class ProdutoOrigemExportController {
       const produtos = await executeQuery(query, params);
 
       produtos.forEach(produto => {
+        // Remover prefixo ORIG- do código (igual à grid)
+        const codigoFormatado = produto.codigo ? produto.codigo.replace('ORIG-', '') : '-';
+        
         worksheet.addRow({
-          codigo: produto.codigo,
+          codigo: codigoFormatado,
           nome: produto.nome,
           unidade_sigla: produto.unidade_sigla || '-',
           grupo_nome: produto.grupo_nome || '-',
@@ -100,16 +103,20 @@ class ProdutoOrigemExportController {
   static async exportarPDF(req, res) {
     try {
       const PDFDocument = require('pdfkit');
-      const doc = new PDFDocument({ margin: 50 });
+      const doc = new PDFDocument({ 
+        margin: 30,
+        size: 'A4',
+        layout: 'landscape' // Modo paisagem para caber mais colunas
+      });
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename=produto_origem_${new Date().toISOString().split('T')[0]}.pdf`);
       doc.pipe(res);
 
-      doc.fontSize(20).text('Relatório de Produtos Origem', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(12).text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
-      doc.moveDown(2);
+      doc.fontSize(16).font('Helvetica-Bold').text('Relatório de Produtos Origem', { align: 'center' });
+      doc.moveDown(0.5);
+      doc.fontSize(10).font('Helvetica').text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, { align: 'center' });
+      doc.moveDown(1.5);
 
       const { search, status, grupo_id, subgrupo_id, classe_id, limit = 1000 } = req.query;
       let whereClause = 'WHERE 1=1';
@@ -163,48 +170,87 @@ class ProdutoOrigemExportController {
 
       const produtos = await executeQuery(query, params);
 
+      // Definir posições das colunas (modo paisagem A4 = ~842 pontos de largura)
+      const cols = {
+        codigo: 30,
+        nome: 75,
+        unidade: 250,
+        grupo: 305,
+        subgrupo: 430,
+        classe: 555,
+        status: 680,
+        ref: 740
+      };
+
       // Cabeçalho da tabela
-      doc.fontSize(10).font('Helvetica-Bold');
+      doc.fontSize(9).font('Helvetica-Bold');
       const headerY = doc.y;
-      doc.text('Código', 50, headerY);
-      doc.text('Nome', 100, headerY);
-      doc.text('Unidade', 250, headerY);
-      doc.text('Grupo', 300, headerY);
-      doc.text('Subgrupo', 380, headerY);
-      doc.text('Classe', 460, headerY);
-      doc.text('Status', 520, headerY);
+      doc.text('Código', cols.codigo, headerY, { width: 40 });
+      doc.text('Nome', cols.nome, headerY, { width: 170 });
+      doc.text('Unid.', cols.unidade, headerY, { width: 50 });
+      doc.text('Grupo', cols.grupo, headerY, { width: 120 });
+      doc.text('Subgrupo', cols.subgrupo, headerY, { width: 120 });
+      doc.text('Classe', cols.classe, headerY, { width: 120 });
+      doc.text('Status', cols.status, headerY, { width: 55 });
+      doc.text('Ref.', cols.ref, headerY, { width: 50 });
       
       // Linha separadora do cabeçalho
-      doc.moveTo(50, headerY + 15).lineTo(570, headerY + 15).stroke();
-      doc.y = headerY + 20;
+      doc.moveTo(30, headerY + 12).lineTo(810, headerY + 12).stroke();
+      doc.y = headerY + 16;
 
-      // Dados em formato de tabela (linha por linha)
-      produtos.forEach((produto, index) => {
-        if (doc.y > 700) { // Nova página se necessário
+      // Dados em formato de tabela
+      produtos.forEach((produto) => {
+        // Nova página se necessário (modo paisagem A4 = ~595 pontos de altura)
+        if (doc.y > 530) {
           doc.addPage();
-          doc.y = 50;
+          doc.y = 30;
+          
+          // Repetir cabeçalho na nova página
+          doc.fontSize(9).font('Helvetica-Bold');
+          const newHeaderY = doc.y;
+          doc.text('Código', cols.codigo, newHeaderY, { width: 40 });
+          doc.text('Nome', cols.nome, newHeaderY, { width: 170 });
+          doc.text('Unid.', cols.unidade, newHeaderY, { width: 50 });
+          doc.text('Grupo', cols.grupo, newHeaderY, { width: 120 });
+          doc.text('Subgrupo', cols.subgrupo, newHeaderY, { width: 120 });
+          doc.text('Classe', cols.classe, newHeaderY, { width: 120 });
+          doc.text('Status', cols.status, newHeaderY, { width: 55 });
+          doc.text('Ref.', cols.ref, newHeaderY, { width: 50 });
+          doc.moveTo(30, newHeaderY + 12).lineTo(810, newHeaderY + 12).stroke();
+          doc.y = newHeaderY + 16;
         }
 
-        doc.fontSize(9).font('Helvetica');
+        doc.fontSize(8).font('Helvetica');
+        const currentY = doc.y;
         
-        // Truncar textos longos para caber na página
-        const nome = produto.nome.length > 20 ? produto.nome.substring(0, 17) + '...' : produto.nome;
-        const grupo = (produto.grupo_nome || '-').length > 15 ? (produto.grupo_nome || '-').substring(0, 12) + '...' : (produto.grupo_nome || '-');
-        const subgrupo = (produto.subgrupo_nome || '-').length > 15 ? (produto.subgrupo_nome || '-').substring(0, 12) + '...' : (produto.subgrupo_nome || '-');
-        const classe = (produto.classe_nome || '-').length > 15 ? (produto.classe_nome || '-').substring(0, 12) + '...' : (produto.classe_nome || '-');
+        // Remover prefixo ORIG- do código (igual à grid)
+        const codigoFormatado = produto.codigo ? produto.codigo.replace('ORIG-', '') : '-';
+        
+        // Truncar textos longos
+        const nome = produto.nome.length > 30 ? produto.nome.substring(0, 27) + '...' : produto.nome;
+        const grupo = (produto.grupo_nome || '-').length > 20 ? (produto.grupo_nome || '-').substring(0, 17) + '...' : (produto.grupo_nome || '-');
+        const subgrupo = (produto.subgrupo_nome || '-').length > 20 ? (produto.subgrupo_nome || '-').substring(0, 17) + '...' : (produto.subgrupo_nome || '-');
+        const classe = (produto.classe_nome || '-').length > 20 ? (produto.classe_nome || '-').substring(0, 17) + '...' : (produto.classe_nome || '-');
+        const ref = (produto.referencia_mercado || '-').length > 12 ? (produto.referencia_mercado || '-').substring(0, 9) + '...' : (produto.referencia_mercado || '-');
 
-        doc.text(produto.codigo, 50, doc.y);
-        doc.text(nome, 100, doc.y);
-        doc.text(produto.unidade_sigla || '-', 250, doc.y);
-        doc.text(grupo, 300, doc.y);
-        doc.text(subgrupo, 380, doc.y);
-        doc.text(classe, 460, doc.y);
-        doc.text(produto.status === 1 ? 'Ativo' : 'Inativo', 520, doc.y);
+        doc.text(codigoFormatado, cols.codigo, currentY, { width: 40 });
+        doc.text(nome, cols.nome, currentY, { width: 170 });
+        doc.text(produto.unidade_sigla || '-', cols.unidade, currentY, { width: 50 });
+        doc.text(grupo, cols.grupo, currentY, { width: 120 });
+        doc.text(subgrupo, cols.subgrupo, currentY, { width: 120 });
+        doc.text(classe, cols.classe, currentY, { width: 120 });
+        doc.text(produto.status === 1 ? 'Ativo' : 'Inativo', cols.status, currentY, { width: 55 });
+        doc.text(ref, cols.ref, currentY, { width: 50 });
 
-        // Linha separadora entre registros
-        doc.moveTo(50, doc.y + 12).lineTo(570, doc.y + 12).stroke();
-        doc.y += 15;
+        // Linha separadora entre registros (mais sutil)
+        doc.strokeColor('#CCCCCC').moveTo(30, currentY + 10).lineTo(810, currentY + 10).stroke();
+        doc.strokeColor('#000000'); // Voltar cor padrão
+        doc.y = currentY + 13;
       });
+
+      // Rodapé com total de registros
+      doc.fontSize(8).font('Helvetica-Oblique');
+      doc.text(`Total de registros: ${produtos.length}`, 30, doc.page.height - 40, { align: 'right' });
 
       doc.end();
     } catch (error) {
