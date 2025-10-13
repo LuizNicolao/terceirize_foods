@@ -134,23 +134,32 @@ const ProdutoOrigem = () => {
             label: 'Grupo',
             value: grupoFilter,
             onChange: setGrupoFilter,
-            options: grupos.map(g => ({ value: g.id, label: g.nome }))
+            options: [
+              { value: '', label: 'Todos os grupos' },
+              ...grupos.map(g => ({ value: g.id, label: g.nome }))
+            ]
           },
           {
             label: 'Subgrupo',
             value: subgrupoFilter,
             onChange: setSubgrupoFilter,
-            options: subgrupos
-              .filter(sg => !grupoFilter || sg.grupo_id === parseInt(grupoFilter))
-              .map(sg => ({ value: sg.id, label: sg.nome }))
+            options: [
+              { value: '', label: 'Todos os subgrupos' },
+              ...subgrupos
+                .filter(sg => !grupoFilter || sg.grupo_id === parseInt(grupoFilter))
+                .map(sg => ({ value: sg.id, label: sg.nome }))
+            ]
           },
           {
             label: 'Classe',
             value: classeFilter,
             onChange: setClasseFilter,
-            options: classes
-              .filter(c => !subgrupoFilter || c.subgrupo_id === parseInt(subgrupoFilter))
-              .map(c => ({ value: c.id, label: c.nome }))
+            options: [
+              { value: '', label: 'Todas as classes' },
+              ...classes
+                .filter(c => !subgrupoFilter || c.subgrupo_id === parseInt(subgrupoFilter))
+                .map(c => ({ value: c.id, label: c.nome }))
+            ]
           }
         ]}
       />
