@@ -23,33 +23,41 @@ const RotasNutricionistasEscolasSelector = ({
   // Carregar escolas específicas por IDs (para modo de visualização)
   const carregarEscolasEspecificas = useCallback(async (escolasIds) => {
     if (!escolasIds || escolasIds.length === 0) {
+      console.log('🔍 Nenhuma escola para carregar');
       setTodasEscolas([]);
       return;
     }
+
+    console.log('🔍 Carregando escolas específicas:', escolasIds);
 
     try {
       setEscolasLoading(true);
       const result = await UnidadesEscolaresService.buscarPorIds(escolasIds);
       
+      console.log('📦 Resultado buscarPorIds:', result);
+      
       if (result.success) {
+        console.log('✅ Escolas carregadas:', result.data?.length || 0);
         setTodasEscolas(result.data || []);
         setEscolasTotalPages(1);
         setEscolasTotalItems(result.data?.length || 0);
       }
     } catch (error) {
-      console.error('Erro ao carregar escolas específicas:', error);
+      console.error('❌ Erro ao carregar escolas específicas:', error);
       // Fallback: tentar carregar uma por uma se o método buscarPorIds não existir
+      console.log('🔄 Tentando fallback: carregar uma por uma');
       try {
         const escolasPromises = escolasIds.map(id => UnidadesEscolaresService.buscarPorId(id));
         const resultados = await Promise.all(escolasPromises);
         const escolasEncontradas = resultados
           .filter(result => result.success)
           .map(result => result.data);
+        console.log('✅ Escolas encontradas no fallback:', escolasEncontradas.length);
         setTodasEscolas(escolasEncontradas);
         setEscolasTotalPages(1);
         setEscolasTotalItems(escolasEncontradas.length);
       } catch (fallbackError) {
-        console.error('Erro no fallback ao carregar escolas:', fallbackError);
+        console.error('❌ Erro no fallback ao carregar escolas:', fallbackError);
         setTodasEscolas([]);
       }
     } finally {
