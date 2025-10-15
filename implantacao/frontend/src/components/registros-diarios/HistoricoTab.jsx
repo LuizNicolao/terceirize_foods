@@ -125,54 +125,29 @@ const HistoricoTab = ({ historico, loading }) => {
                     {item.valores && (
                       <div className="md:col-span-2">
                         <div className="flex flex-wrap gap-2 mt-2">
-                          {item.valores.lanche_manha !== undefined && item.valores.lanche_manha !== null && (
+                          {item.valores.lanche_manha > 0 && (
                             <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded text-xs">
-                              Lanche Manhã: 
-                              {item.acao === 'edicao' && item.valores_anteriores?.lanche_manha !== undefined ? (
-                                <span> {item.valores_anteriores.lanche_manha} → <strong>{item.valores.lanche_manha}</strong></span>
-                              ) : (
-                                <strong> {item.valores.lanche_manha}</strong>
-                              )}
+                              Lanche Manhã: {item.valores.lanche_manha}
                             </span>
                           )}
-                          {item.valores.almoco !== undefined && item.valores.almoco !== null && (
+                          {item.valores.almoco > 0 && (
                             <span className="px-2 py-1 bg-green-50 text-green-700 rounded text-xs">
-                              Almoço: 
-                              {item.acao === 'edicao' && item.valores_anteriores?.almoco !== undefined ? (
-                                <span> {item.valores_anteriores.almoco} → <strong>{item.valores.almoco}</strong></span>
-                              ) : (
-                                <strong> {item.valores.almoco}</strong>
-                              )}
+                              Almoço: {item.valores.almoco}
                             </span>
                           )}
-                          {item.valores.lanche_tarde !== undefined && item.valores.lanche_tarde !== null && (
+                          {item.valores.lanche_tarde > 0 && (
                             <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded text-xs">
-                              Lanche Tarde: 
-                              {item.acao === 'edicao' && item.valores_anteriores?.lanche_tarde !== undefined ? (
-                                <span> {item.valores_anteriores.lanche_tarde} → <strong>{item.valores.lanche_tarde}</strong></span>
-                              ) : (
-                                <strong> {item.valores.lanche_tarde}</strong>
-                              )}
+                              Lanche Tarde: {item.valores.lanche_tarde}
                             </span>
                           )}
-                          {item.valores.parcial !== undefined && item.valores.parcial !== null && (
+                          {item.valores.parcial > 0 && (
                             <span className="px-2 py-1 bg-orange-50 text-orange-700 rounded text-xs">
-                              Parcial: 
-                              {item.acao === 'edicao' && item.valores_anteriores?.parcial !== undefined ? (
-                                <span> {item.valores_anteriores.parcial} → <strong>{item.valores.parcial}</strong></span>
-                              ) : (
-                                <strong> {item.valores.parcial}</strong>
-                              )}
+                              Parcial: {item.valores.parcial}
                             </span>
                           )}
-                          {item.valores.eja !== undefined && item.valores.eja !== null && (
+                          {item.valores.eja > 0 && (
                             <span className="px-2 py-1 bg-yellow-50 text-yellow-700 rounded text-xs">
-                              EJA: 
-                              {item.acao === 'edicao' && item.valores_anteriores?.eja !== undefined ? (
-                                <span> {item.valores_anteriores.eja} → <strong>{item.valores.eja}</strong></span>
-                              ) : (
-                                <strong> {item.valores.eja}</strong>
-                              )}
+                              EJA: {item.valores.eja}
                             </span>
                           )}
                         </div>

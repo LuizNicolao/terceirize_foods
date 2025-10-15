@@ -124,44 +124,6 @@ class RegistrosDiariosService {
       };
     }
   }
-  
-  /**
-   * Buscar histórico de uma escola
-   */
-  static async buscarHistoricoPorEscola(escolaId) {
-    try {
-      const response = await api.get(`/registros-diarios/historico/${escolaId}`);
-      return {
-        success: true,
-        data: response.data.data || []
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Erro ao buscar histórico',
-        data: []
-      };
-    }
-  }
-  
-  /**
-   * Buscar histórico de uma escola em uma data
-   */
-  static async buscarHistoricoPorEscolaData(escolaId, data) {
-    try {
-      const response = await api.get(`/registros-diarios/historico/${escolaId}/${data}`);
-      return {
-        success: true,
-        data: response.data.data || []
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Erro ao buscar histórico',
-        data: []
-      };
-    }
-  }
 }
 
 export default RegistrosDiariosService;

@@ -164,52 +164,34 @@ const RegistrosDiariosModal = ({
     carregarMedias();
   }, [abaAtiva, formData.escola_id, isViewMode]);
   
-  // Carregar histórico REAL quando aba de histórico for ativada (apenas em modo visualização)
+  // Carregar histórico quando aba de histórico for ativada (apenas em modo visualização)
   useEffect(() => {
     const carregarHistorico = async () => {
-      if (isViewMode && abaAtiva === 'historico' && formData.escola_id && formData.data) {
+      if (isViewMode && abaAtiva === 'historico' && formData.escola_id) {
         setLoadingHistorico(true);
         
-        // Buscar histórico real do backend
-        const result = await RegistrosDiariosService.buscarHistoricoPorEscolaData(
-          formData.escola_id,
-          formData.data
-        );
+        // Buscar nome da escola
+        const escolaSelecionada = unidadesEscolares.find(e => e.id === formData.escola_id);
+        const escola_nome = escolaSelecionada ? escolaSelecionada.nome_escola : `ID ${formData.escola_id}`;
         
-        if (result.success) {
-          // Transformar dados para o formato esperado pelo HistoricoTab
-          const historicoFormatado = result.data.map(item => ({
-            acao: item.acao,
-            data_acao: item.data_acao,
-            escola_id: item.escola_id,
-            escola_nome: item.escola_nome,
-            data: item.data,
-            nutricionista_id: item.nutricionista_id,
-            usuario_nome: user?.nome,
-            valores: {
-              lanche_manha: item.lanche_manha,
-              almoco: item.almoco,
-              lanche_tarde: item.lanche_tarde,
-              parcial: item.parcial,
-              eja: item.eja
-            },
-            valores_anteriores: {
-              lanche_manha: item.lanche_manha_anterior,
-              almoco: item.almoco_anterior,
-              lanche_tarde: item.lanche_tarde_anterior,
-              parcial: item.parcial_anterior,
-              eja: item.eja_anterior
-            }
-          }));
-          setHistorico(historicoFormatado);
-        }
-        
+        // Simular histórico baseado no registro atual
+        const historicoSimulado = [{
+          acao: 'criacao',
+          data_acao: registro?.data_cadastro || new Date(),
+          escola_id: formData.escola_id,
+          escola_nome: escola_nome,
+          data: formData.data,
+          nutricionista_id: formData.nutricionista_id,
+          usuario_nome: user?.nome,
+          valores: formData.quantidades
+        }];
+        setHistorico(historicoSimulado);
         setLoadingHistorico(false);
       }
     };
     
     carregarHistorico();
-  }, [abaAtiva, formData.escola_id, formData.data, isViewMode, user]);
+  }, [abaAtiva, formData, isViewMode, registro, user, unidadesEscolares]);
   
   // Resetar aba ao abrir/fechar modal
   useEffect(() => {

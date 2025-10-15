@@ -52,17 +52,5 @@ router.delete('/',
   RegistrosDiariosController.excluir
 );
 
-// GET /api/registros-diarios/historico/:escola_id - Buscar histórico de uma escola
-router.get('/historico/:escola_id',
-  checkScreenPermission('registros_diarios', 'visualizar'),
-  RegistrosDiariosController.buscarHistoricoPorEscola
-);
-
-// GET /api/registros-diarios/historico/:escola_id/:data - Buscar histórico de uma escola em uma data
-router.get('/historico/:escola_id/:data',
-  checkScreenPermission('registros_diarios', 'visualizar'),
-  RegistrosDiariosController.buscarHistoricoPorEscolaData
-);
-
 module.exports = router;
 
