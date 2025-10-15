@@ -117,7 +117,7 @@ const RegistrosDiariosModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isViewMode ? 'Visualizar Registro' : registro ? 'Editar Registro' : 'Novo Registro Diário'}
+      title={isViewMode ? 'Visualizar Quantidade Servida' : registro ? 'Editar Quantidade Servida' : 'Nova Quantidade Servida'}
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
