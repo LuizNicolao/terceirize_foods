@@ -510,7 +510,10 @@ class FoodsApiService {
       
       console.log('📦 [FoodsApiService] Response completo:', response.data);
       
-      let rotasData = response.data.data || response.data;
+      // Formato do Foods: { success: true, data: { rotas: [...], pagination: {...} } }
+      let rotasData = response.data.data?.rotas || response.data.rotas || response.data.data || response.data;
+      
+      // Se ainda vier com items (formato antigo)
       if (rotasData && rotasData.items && Array.isArray(rotasData.items)) {
         rotasData = rotasData.items;
       }
@@ -520,13 +523,13 @@ class FoodsApiService {
       console.log('✅ [FoodsApiService] Dados processados:', {
         totalRotas: arrayData.length,
         primeiraRota: arrayData[0],
-        pagination: response.data.pagination
+        pagination: response.data.data?.pagination || response.data.pagination
       });
       
       return {
         success: true,
         data: arrayData,
-        pagination: response.data.pagination || null,
+        pagination: response.data.data?.pagination || response.data.pagination || null,
         message: 'Rotas nutricionistas consultadas com sucesso'
       };
     } catch (error) {
