@@ -54,10 +54,10 @@ const StatusEntregaTab = () => {
   const tiposEntrega = [
     { value: '', label: 'Selecione um tipo...' },
     { value: 'HORTI', label: 'Hortifruti' },
-    { value: 'PAO', label: 'Pão' },
-    { value: 'PERECIVEL', label: 'Perecível' },
-    { value: 'BASE SECA', label: 'Base Seca' },
-    { value: 'LIMPEZA', label: 'Limpeza' }
+    { value: 'PAO', label: 'Padaria e Confeitaria' },
+    { value: 'PERECIVEL', label: 'Frios' },
+    { value: 'BASE SECA', label: 'Secos' },
+    { value: 'LIMPEZA', label: 'Uso e Consumo' }
   ];
 
   const tiposRecebimento = [
@@ -76,10 +76,10 @@ const StatusEntregaTab = () => {
   const getTipoEntregaLabel = (tipo) => {
     const tipos = {
       'HORTI': 'Hortifruti',
-      'PAO': 'Pão',
-      'PERECIVEL': 'Perecível',
-      'BASE SECA': 'Base Seca',
-      'LIMPEZA': 'Limpeza'
+      'PAO': 'Padaria e Confeitaria',
+      'PERECIVEL': 'Frios',
+      'BASE SECA': 'Secos',
+      'LIMPEZA': 'Uso e Consumo'
     };
     return tipos[tipo] || tipo;
   };

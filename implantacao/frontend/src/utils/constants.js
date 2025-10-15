@@ -36,10 +36,10 @@ export const TIPOS_RECEBIMENTO = {
 // Tipos de entrega
 export const TIPOS_ENTREGA = {
   HORTI: 'HORTI',
-  PAO: 'PAO',
-  PERECIVEL: 'PERECIVEL',
-  BASE_SECA: 'BASE SECA',
-  LIMPEZA: 'LIMPEZA'
+  PAO: 'PADARIA E CONFEITARIA',
+  PERECIVEL: 'FRIOS',
+  BASE_SECA: 'SECOS',
+  LIMPEZA: 'USO E CONSUMO'
 };
 
 // Períodos de refeição

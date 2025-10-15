@@ -34,10 +34,10 @@ const RecebimentoModal = ({
 
   const tiposEntrega = [
     { value: 'HORTI', label: 'HORTI' },
-    { value: 'PAO', label: 'PÃO' },
-    { value: 'PERECIVEL', label: 'PERECÍVEL' },
-    { value: 'BASE SECA', label: 'BASE SECA' },
-    { value: 'LIMPEZA', label: 'LIMPEZA' }
+    { value: 'PAO', label: 'PADARIA E CONFEITARIA' },
+    { value: 'PERECIVEL', label: 'FRIOS' },
+    { value: 'BASE SECA', label: 'SECOS' },
+    { value: 'LIMPEZA', label: 'USO E CONSUMO' }
   ];
 
 
