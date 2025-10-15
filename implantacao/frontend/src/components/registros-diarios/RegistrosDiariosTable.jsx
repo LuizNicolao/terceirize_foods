@@ -52,7 +52,7 @@ const RegistrosDiariosTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {registros.map((registro) => (
                 <tr key={`${registro.escola_id}-${registro.data}`} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 text-sm text-gray-900">Escola ID {registro.escola_id}</td>
+                  <td className="px-6 py-4 text-sm text-gray-900">{registro.escola_nome || `Escola ID ${registro.escola_id}`}</td>
                   <td className="px-6 py-4 text-sm text-gray-900 text-center">
                     {formatarDataParaExibicao(registro.data)}
                   </td>
@@ -106,7 +106,7 @@ const RegistrosDiariosTable = ({
           <div key={`${registro.escola_id}-${registro.data}`} className="bg-white rounded-lg shadow-sm p-4 border">
             <div className="flex justify-between items-start mb-3">
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 text-sm">Escola ID {registro.escola_id}</h3>
+                <h3 className="font-semibold text-gray-900 text-sm">{registro.escola_nome || `Escola ID ${registro.escola_id}`}</h3>
                 <p className="text-gray-600 text-xs">{formatarDataParaExibicao(registro.data)}</p>
               </div>
               <ActionButtons
