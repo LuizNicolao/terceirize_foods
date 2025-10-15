@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaPlus } from 'react-icons/fa';
 import { ActionButtons, EmptyState, Pagination } from '../ui';
+import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
 
 const RecebimentosTable = ({ 
   recebimentos, 
@@ -104,10 +105,7 @@ const RecebimentosTable = ({
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {recebimento.data_recebimento ? 
-                      new Date(recebimento.data_recebimento).toLocaleDateString('pt-BR') : 
-                      'N/A'
-                    }
+                    {formatarDataParaExibicao(recebimento.data_recebimento) || 'N/A'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {recebimento.tipo_entrega || 'N/A'}
@@ -167,10 +165,7 @@ const RecebimentosTable = ({
               <div>
                 <span className="text-gray-500">Data:</span>
                 <p className="font-medium">
-                  {recebimento.data_recebimento ? 
-                    new Date(recebimento.data_recebimento).toLocaleDateString('pt-BR') : 
-                    'N/A'
-                  }
+                  {formatarDataParaExibicao(recebimento.data_recebimento) || 'N/A'}
                 </p>
               </div>
               <div>
