@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import RotasService from '../services/rotas';
 import api from '../services/api';
 import { useBaseEntity } from './common/useBaseEntity';
+import useTableSort from './common/useTableSort';
 
 export const useRotas = () => {
   // Hook base para funcionalidades CRUD
