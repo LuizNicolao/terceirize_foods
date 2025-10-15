@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticateToken, checkPermission } = require('../../middleware/auth');
+const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const { registrosDiariosValidations, handleValidationErrors } = require('./registrosDiariosValidator');
 const RegistrosDiariosController = require('../../controllers/registros-diarios');
 
@@ -10,7 +10,7 @@ router.use(authenticateToken);
 
 // GET /api/registros-diarios - Listar registros diários com paginação
 router.get('/',
-  checkPermission('visualizar'),
+  checkScreenPermission('registros_diarios', 'visualizar'),
   registrosDiariosValidations.listar,
   handleValidationErrors,
   RegistrosDiariosController.listar
@@ -18,19 +18,19 @@ router.get('/',
 
 // GET /api/registros-diarios/medias - Listar médias por escola
 router.get('/medias',
-  checkPermission('visualizar'),
+  checkScreenPermission('registros_diarios', 'visualizar'),
   RegistrosDiariosController.listarMedias
 );
 
 // GET /api/registros-diarios/estatisticas - Obter estatísticas
 router.get('/estatisticas',
-  checkPermission('visualizar'),
+  checkScreenPermission('registros_diarios', 'visualizar'),
   RegistrosDiariosController.obterEstatisticas
 );
 
 // GET /api/registros-diarios/buscar - Buscar registros de uma escola em uma data
 router.get('/buscar',
-  checkPermission('visualizar'),
+  checkScreenPermission('registros_diarios', 'visualizar'),
   registrosDiariosValidations.buscarPorEscolaData,
   handleValidationErrors,
   RegistrosDiariosController.buscarPorEscolaData
@@ -38,7 +38,7 @@ router.get('/buscar',
 
 // POST /api/registros-diarios - Criar/atualizar registros diários
 router.post('/',
-  checkPermission('criar'),
+  checkScreenPermission('registros_diarios', 'criar'),
   registrosDiariosValidations.criar,
   handleValidationErrors,
   RegistrosDiariosController.criar
@@ -46,7 +46,7 @@ router.post('/',
 
 // DELETE /api/registros-diarios - Excluir registros de uma data
 router.delete('/',
-  checkPermission('excluir'),
+  checkScreenPermission('registros_diarios', 'excluir'),
   registrosDiariosValidations.excluir,
   handleValidationErrors,
   RegistrosDiariosController.excluir
