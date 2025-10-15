@@ -43,8 +43,14 @@ const ClassesTable = ({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Produtos
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Prod. Origem
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Prod. Genéricos
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Prod. Finais
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -79,8 +85,20 @@ const ClassesTable = ({
                       {getStatusLabel(classe.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {classe.total_produtos || 0}
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                    <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                      {classe.total_produtos_origem || 0}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                    <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                      {classe.total_produtos_genericos || 0}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                    <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                      {classe.total_produtos_finais || 0}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <ActionButtons
@@ -123,12 +141,12 @@ const ClassesTable = ({
               />
             </div>
             
-            <div className="grid grid-cols-3 gap-3 text-xs">
-              <div>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
                 <span className="text-gray-500">Subgrupo:</span>
                 <p className="font-medium">{getSubgrupoNome(classe.subgrupo_id)}</p>
               </div>
-              <div>
+              <div className="flex justify-between">
                 <span className="text-gray-500">Status:</span>
                 <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                   classe.status === 'ativo'
@@ -138,11 +156,26 @@ const ClassesTable = ({
                   {getStatusLabel(classe.status)}
                 </span>
               </div>
-              <div>
-                <span className="text-gray-500">Produtos:</span>
-                <p className="font-medium">{classe.total_produtos || 0}</p>
+              <div className="pt-2 border-t border-gray-200">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-gray-500">Prod. Origem:</span>
+                  <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                    {classe.total_produtos_origem || 0}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-gray-500">Prod. Genéricos:</span>
+                  <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                    {classe.total_produtos_genericos || 0}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Prod. Finais:</span>
+                  <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                    {classe.total_produtos_finais || 0}
+                  </span>
+                </div>
               </div>
-
             </div>
             
             {classe.descricao && (

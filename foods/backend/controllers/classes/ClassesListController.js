@@ -33,10 +33,14 @@ class ClassesListController {
         c.data_atualizacao as atualizado_em,
         s.nome as subgrupo_nome,
         g.nome as grupo_nome,
-        COUNT(p.id) as total_produtos
+        COUNT(DISTINCT po.id) as total_produtos_origem,
+        COUNT(DISTINCT pg.id) as total_produtos_genericos,
+        COUNT(DISTINCT p.id) as total_produtos_finais
       FROM classes c
       LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
       LEFT JOIN grupos g ON s.grupo_id = g.id
+      LEFT JOIN produto_origem po ON c.id = po.classe_id
+      LEFT JOIN produto_generico pg ON c.id = pg.classe_id
       LEFT JOIN produtos p ON c.id = p.classe_id
       WHERE 1=1
     `;
