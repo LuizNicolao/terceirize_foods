@@ -44,19 +44,22 @@ const RecebimentoModal = ({
   // Carregar produtos quando tipo de entrega mudar
   useEffect(() => {
     if (formData.tipo_entrega && grupos.length > 0) {
-      // Mapear tipos de entrega para grupos (usando códigos para evitar problemas de codificação)
+      // Mapear tipos de entrega para nomes de grupos
       const mapeamentoGrupos = {
         'HORTI': 'HORTI',
-        'PAO': 'PAO', 
-        'PERECIVEL': 'PEREC',
-        'BASE SECA': 'BASE',
-        'LIMPEZA': 'LIMP'
+        'PAO': 'PADARIA', 
+        'PERECIVEL': 'FRIOS',
+        'BASE SECA': 'SECOS',
+        'LIMPEZA': 'USO E CONSUMO'
       };
       
-      const codigoGrupo = mapeamentoGrupos[formData.tipo_entrega];
+      const nomeGrupo = mapeamentoGrupos[formData.tipo_entrega];
       
-      if (codigoGrupo) {
-        const grupo = grupos.find(g => g.codigo === codigoGrupo);
+      if (nomeGrupo) {
+        // Buscar grupo pelo nome (case insensitive e parcial)
+        const grupo = grupos.find(g => 
+          g.nome && g.nome.toUpperCase().includes(nomeGrupo.toUpperCase())
+        );
         
         if (grupo) {
           carregarProdutosPorGrupo(grupo.id);
