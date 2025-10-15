@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FaPlus, FaList, FaChartLine, FaHistory } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaPlus } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRegistrosDiarios } from '../../hooks/useRegistrosDiarios';
 import { Button, ConfirmModal } from '../../components/ui';
@@ -9,13 +9,9 @@ import {
   RegistrosDiariosTable, 
   RegistrosDiariosStats 
 } from '../../components/registros-diarios';
-import MediasCalculadasTab from '../../components/registros-diarios/MediasCalculadasTab';
-import HistoricoTab from '../../components/registros-diarios/HistoricoTab';
-import RegistrosDiariosService from '../../services/registrosDiarios';
 
 const RegistrosDiarios = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
-  const [abaAtiva, setAbaAtiva] = useState('registros');
   
   const {
     registros,
@@ -41,10 +37,6 @@ const RegistrosDiarios = () => {
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingRegistro, setDeletingRegistro] = useState(null);
-  const [medias, setMedias] = useState([]);
-  const [loadingMedias, setLoadingMedias] = useState(false);
-  const [historico, setHistorico] = useState([]);
-  const [loadingHistorico, setLoadingHistorico] = useState(false);
   
   const handleDeleteClick = (escolaId, data) => {
     setDeletingRegistro({ escolaId, data });
@@ -58,57 +50,6 @@ const RegistrosDiarios = () => {
       setDeletingRegistro(null);
     }
   };
-  
-  // Carregar médias quando aba de médias for ativada
-  useEffect(() => {
-    const carregarMedias = async () => {
-      if (abaAtiva === 'medias') {
-        setLoadingMedias(true);
-        const result = await RegistrosDiariosService.listarMedias();
-        if (result.success) {
-          setMedias(result.data);
-        }
-        setLoadingMedias(false);
-      }
-    };
-    
-    carregarMedias();
-  }, [abaAtiva]);
-  
-  // Carregar histórico quando aba de histórico for ativada
-  useEffect(() => {
-    const carregarHistorico = async () => {
-      if (abaAtiva === 'historico') {
-        setLoadingHistorico(true);
-        // Simular histórico baseado nos registros existentes
-        // TODO: Criar endpoint específico de histórico se necessário
-        const historicoSimulado = registros.map(reg => ({
-          acao: 'criacao',
-          data_acao: reg.data_cadastro || new Date(),
-          escola_id: reg.escola_id,
-          data: reg.data,
-          nutricionista_id: reg.nutricionista_id,
-          valores: {
-            lanche_manha: reg.lanche_manha,
-            almoco: reg.almoco,
-            lanche_tarde: reg.lanche_tarde,
-            parcial: reg.parcial,
-            eja: reg.eja
-          }
-        }));
-        setHistorico(historicoSimulado);
-        setLoadingHistorico(false);
-      }
-    };
-    
-    carregarHistorico();
-  }, [abaAtiva, registros]);
-  
-  const abas = [
-    { id: 'registros', label: 'Registros Diários', icon: FaList },
-    { id: 'medias', label: 'Médias Calculadas', icon: FaChartLine },
-    { id: 'historico', label: 'Histórico', icon: FaHistory }
-  ];
   
   return (
     <div className="p-6">
@@ -135,83 +76,30 @@ const RegistrosDiarios = () => {
       {/* Estatísticas */}
       <RegistrosDiariosStats estatisticas={estatisticas} />
       
-      {/* Abas de Navegação */}
-      <div className="mb-6">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8">
-            {abas.map((aba) => {
-              const Icon = aba.icon;
-              const isActive = abaAtiva === aba.id;
-              
-              return (
-                <button
-                  key={aba.id}
-                  onClick={() => setAbaAtiva(aba.id)}
-                  className={`
-                    group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm
-                    ${isActive
-                      ? 'border-green-500 text-green-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }
-                  `}
-                >
-                  <Icon
-                    className={`
-                      -ml-0.5 mr-2 h-5 w-5
-                      ${isActive ? 'text-green-500' : 'text-gray-400 group-hover:text-gray-500'}
-                    `}
-                  />
-                  {aba.label}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-      </div>
+      {/* Tabela de Registros */}
+      <RegistrosDiariosTable
+        registros={registros}
+        canView={canView('registros_diarios')}
+        canEdit={canEdit('registros_diarios')}
+        canDelete={canDelete('registros_diarios')}
+        onView={handleViewRegistro}
+        onEdit={handleEditRegistro}
+        onDelete={handleDeleteClick}
+        loading={loading}
+      />
       
-      {/* Conteúdo das Abas */}
-      {abaAtiva === 'registros' && (
-        <>
-          {/* Tabela de Registros */}
-          <RegistrosDiariosTable
-            registros={registros}
-            canView={canView('registros_diarios')}
-            canEdit={canEdit('registros_diarios')}
-            canDelete={canDelete('registros_diarios')}
-            onView={handleViewRegistro}
-            onEdit={handleEditRegistro}
-            onDelete={handleDeleteClick}
-            loading={loading}
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
           />
-          
-          {/* Paginação */}
-          {totalPages > 1 && (
-            <div className="mt-6">
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                totalItems={totalItems}
-                itemsPerPage={itemsPerPage}
-                onPageChange={handlePageChange}
-                onItemsPerPageChange={handleItemsPerPageChange}
-              />
-            </div>
-          )}
-        </>
-      )}
-      
-      {abaAtiva === 'medias' && (
-        <MediasCalculadasTab
-          medias={medias}
-          loading={loadingMedias}
-        />
-      )}
-      
-      {abaAtiva === 'historico' && (
-        <HistoricoTab
-          historico={historico}
-          loading={loadingHistorico}
-        />
+        </div>
       )}
       
       {/* Modal de Cadastro/Edição */}
