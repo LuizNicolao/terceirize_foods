@@ -99,25 +99,26 @@ const RotasNutricionistasEscolasSelector = ({
 
   // Carregar escolas quando nutricionista for selecionada
   useEffect(() => {
-    if (watchedUsuarioId) {
+    if (watchedUsuarioId && !isViewMode) {
       // Resetar para página 1 quando nutricionista mudar
       setEscolasPage(1);
       setTodasEscolas([]);
-      
-      // Em modo de visualização, se há escolas selecionadas, carregar apenas essas
-      if (isViewMode && escolasSelecionadas.length > 0) {
-        carregarEscolasEspecificas(escolasSelecionadas);
-      } else {
-        carregarEscolas(1);
-      }
-    } else {
+      carregarEscolas(1);
+    } else if (!watchedUsuarioId) {
       // Limpar escolas quando não há nutricionista
       setTodasEscolas([]);
       setEscolasTotalPages(1);
       setEscolasTotalItems(0);
       setEscolasPage(1);
     }
-  }, [watchedUsuarioId, carregarEscolas, carregarEscolasEspecificas, isViewMode, escolasSelecionadas]);
+  }, [watchedUsuarioId, carregarEscolas, isViewMode]);
+
+  // Carregar escolas específicas em modo de visualização
+  useEffect(() => {
+    if (isViewMode && escolasSelecionadas.length > 0 && watchedUsuarioId) {
+      carregarEscolasEspecificas(escolasSelecionadas);
+    }
+  }, [isViewMode, escolasSelecionadas.length, watchedUsuarioId, carregarEscolasEspecificas]);
 
   // Busca em tempo real para escolas
   useEffect(() => {
