@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, SearchableSelect } from '../ui';
+import { FaList, FaChartLine, FaHistory } from 'react-icons/fa';
 import FoodsApiService from '../../services/FoodsApiService';
 import { useAuth } from '../../contexts/AuthContext';
 import RegistrosDiariosService from '../../services/registrosDiarios';
+import MediasCalculadasTab from './MediasCalculadasTab';
+import HistoricoTab from './HistoricoTab';
 
 const RegistrosDiariosModal = ({ 
   isOpen, 
@@ -14,6 +17,11 @@ const RegistrosDiariosModal = ({
   const { user } = useAuth();
   const [unidadesEscolares, setUnidadesEscolares] = useState([]);
   const [loadingEscolas, setLoadingEscolas] = useState(false);
+  const [abaAtiva, setAbaAtiva] = useState('detalhes');
+  const [medias, setMedias] = useState([]);
+  const [loadingMedias, setLoadingMedias] = useState(false);
+  const [historico, setHistorico] = useState([]);
+  const [loadingHistorico, setLoadingHistorico] = useState(false);
   
   const [formData, setFormData] = useState({
     escola_id: '',
@@ -131,6 +139,52 @@ const RegistrosDiariosModal = ({
     carregarRegistrosExistentes();
   }, [formData.escola_id, formData.data, registro]);
   
+  // Carregar médias quando aba de médias for ativada (apenas em modo visualização)
+  useEffect(() => {
+    const carregarMedias = async () => {
+      if (isViewMode && abaAtiva === 'medias' && formData.escola_id) {
+        setLoadingMedias(true);
+        const result = await RegistrosDiariosService.listarMedias(formData.escola_id);
+        if (result.success) {
+          setMedias(result.data);
+        }
+        setLoadingMedias(false);
+      }
+    };
+    
+    carregarMedias();
+  }, [abaAtiva, formData.escola_id, isViewMode]);
+  
+  // Carregar histórico quando aba de histórico for ativada (apenas em modo visualização)
+  useEffect(() => {
+    const carregarHistorico = async () => {
+      if (isViewMode && abaAtiva === 'historico' && formData.escola_id) {
+        setLoadingHistorico(true);
+        // Simular histórico baseado no registro atual
+        const historicoSimulado = [{
+          acao: 'criacao',
+          data_acao: registro?.data_cadastro || new Date(),
+          escola_id: formData.escola_id,
+          data: formData.data,
+          nutricionista_id: formData.nutricionista_id,
+          usuario_nome: user?.nome,
+          valores: formData.quantidades
+        }];
+        setHistorico(historicoSimulado);
+        setLoadingHistorico(false);
+      }
+    };
+    
+    carregarHistorico();
+  }, [abaAtiva, formData, isViewMode, registro, user]);
+  
+  // Resetar aba ao abrir/fechar modal
+  useEffect(() => {
+    if (isOpen) {
+      setAbaAtiva('detalhes');
+    }
+  }, [isOpen]);
+  
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -164,14 +218,71 @@ const RegistrosDiariosModal = ({
   
   if (!isOpen) return null;
   
+  const abas = [
+    { id: 'detalhes', label: 'Registros Diários', icon: FaList },
+    { id: 'medias', label: 'Médias Calculadas', icon: FaChartLine },
+    { id: 'historico', label: 'Histórico', icon: FaHistory }
+  ];
+  
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={isViewMode ? 'Visualizar Quantidade Servida' : registro ? 'Editar Quantidade Servida' : 'Nova Quantidade Servida'}
-      size="lg"
+      size="xl"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      {isViewMode && (
+        <div className="mb-4">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              {abas.map((aba) => {
+                const Icon = aba.icon;
+                const isActive = abaAtiva === aba.id;
+                
+                return (
+                  <button
+                    key={aba.id}
+                    type="button"
+                    onClick={() => setAbaAtiva(aba.id)}
+                    className={`
+                      group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm
+                      ${isActive
+                        ? 'border-green-500 text-green-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }
+                    `}
+                  >
+                    <Icon
+                      className={`
+                        -ml-0.5 mr-2 h-5 w-5
+                        ${isActive ? 'text-green-500' : 'text-gray-400 group-hover:text-gray-500'}
+                      `}
+                    />
+                    {aba.label}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      )}
+      
+      {/* Conteúdo das abas em modo visualização */}
+      {isViewMode && abaAtiva === 'medias' && (
+        <div className="max-h-96 overflow-y-auto">
+          <MediasCalculadasTab medias={medias} loading={loadingMedias} />
+        </div>
+      )}
+      
+      {isViewMode && abaAtiva === 'historico' && (
+        <div className="max-h-96 overflow-y-auto">
+          <HistoricoTab historico={historico} loading={loadingHistorico} />
+        </div>
+      )}
+      
+      {/* Formulário (modo criar/editar ou aba detalhes em visualização) */}
+      {(!isViewMode || abaAtiva === 'detalhes') && (
+        <form onSubmit={handleSubmit} className="space-y-4">
         {/* Seleção de Escola e Data */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -260,7 +371,9 @@ const RegistrosDiariosModal = ({
             </Button>
           </div>
         )}
-        
+        </form>
+      )}
+      
         {isViewMode && (
           <div className="flex justify-end pt-4 border-t">
             <Button
