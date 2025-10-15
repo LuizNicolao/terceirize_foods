@@ -41,10 +41,16 @@ const SubgruposTable = ({
                   Grupo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Produtos
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Prod. Origem
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Prod. Genéricos
+                </th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Prod. Finais
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -70,9 +76,6 @@ const SubgruposTable = ({
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {getGrupoNome(subgrupo.grupo_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {subgrupo.total_produtos || 0}
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                       subgrupo.status === 'ativo' 
@@ -80,6 +83,21 @@ const SubgruposTable = ({
                         : 'bg-red-100 text-red-800'
                     }`}>
                       {getStatusLabel(subgrupo.status)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                    <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                      {subgrupo.total_produtos_origem || 0}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                    <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                      {subgrupo.total_produtos_genericos || 0}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                    <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                      {subgrupo.total_produtos_finais || 0}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -125,24 +143,40 @@ const SubgruposTable = ({
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
                 <span className="text-gray-500">Grupo:</span>
                 <p className="font-medium">{getGrupoNome(subgrupo.grupo_id)}</p>
               </div>
-              <div>
-                <span className="text-gray-500">Produtos:</span>
-                <p className="font-medium">{subgrupo.total_produtos || 0}</p>
-              </div>
-              <div>
+              <div className="flex justify-between">
                 <span className="text-gray-500">Status:</span>
-                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                   subgrupo.status === 'ativo' 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-red-100 text-red-800'
                 }`}>
                   {getStatusLabel(subgrupo.status)}
                 </span>
+              </div>
+              <div className="pt-2 border-t border-gray-200">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-gray-500">Prod. Origem:</span>
+                  <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                    {subgrupo.total_produtos_origem || 0}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-gray-500">Prod. Genéricos:</span>
+                  <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                    {subgrupo.total_produtos_genericos || 0}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-500">Prod. Finais:</span>
+                  <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                    {subgrupo.total_produtos_finais || 0}
+                  </span>
+                </div>
               </div>
             </div>
             

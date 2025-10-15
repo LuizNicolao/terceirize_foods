@@ -32,9 +32,13 @@ class SubgruposListController {
         sg.data_cadastro as criado_em,
         sg.data_atualizacao as atualizado_em,
         g.nome as grupo_nome,
-        COUNT(p.id) as total_produtos
+        COUNT(DISTINCT po.id) as total_produtos_origem,
+        COUNT(DISTINCT pg.id) as total_produtos_genericos,
+        COUNT(DISTINCT p.id) as total_produtos_finais
       FROM subgrupos sg
       LEFT JOIN grupos g ON sg.grupo_id = g.id
+      LEFT JOIN produto_origem po ON sg.id = po.subgrupo_id
+      LEFT JOIN produto_generico pg ON sg.id = pg.subgrupo_id
       LEFT JOIN produtos p ON sg.id = p.subgrupo_id
       WHERE 1=1
     `;
