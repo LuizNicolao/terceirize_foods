@@ -160,11 +160,17 @@ const RegistrosDiariosModal = ({
     const carregarHistorico = async () => {
       if (isViewMode && abaAtiva === 'historico' && formData.escola_id) {
         setLoadingHistorico(true);
+        
+        // Buscar nome da escola
+        const escolaSelecionada = unidadesEscolares.find(e => e.id === formData.escola_id);
+        const escola_nome = escolaSelecionada ? escolaSelecionada.nome_escola : `ID ${formData.escola_id}`;
+        
         // Simular histórico baseado no registro atual
         const historicoSimulado = [{
           acao: 'criacao',
           data_acao: registro?.data_cadastro || new Date(),
           escola_id: formData.escola_id,
+          escola_nome: escola_nome,
           data: formData.data,
           nutricionista_id: formData.nutricionista_id,
           usuario_nome: user?.nome,
@@ -176,7 +182,7 @@ const RegistrosDiariosModal = ({
     };
     
     carregarHistorico();
-  }, [abaAtiva, formData, isViewMode, registro, user]);
+  }, [abaAtiva, formData, isViewMode, registro, user, unidadesEscolares]);
   
   // Resetar aba ao abrir/fechar modal
   useEffect(() => {

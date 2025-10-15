@@ -47,7 +47,7 @@ const MediasCalculadasTab = ({ medias, loading }) => {
                     <div className="flex items-center">
                       <FaSchool className="text-green-600 mr-2" />
                       <span className="text-sm font-medium text-gray-900">
-                        Escola ID {media.escola_id}
+                        {media.escola_nome || `Escola ID ${media.escola_id}`}
                       </span>
                     </div>
                   </td>
@@ -98,7 +98,7 @@ const MediasCalculadasTab = ({ medias, loading }) => {
           <div key={media.escola_id} className="bg-white rounded-lg shadow-sm p-4 border">
             <div className="flex items-center mb-3">
               <FaSchool className="text-green-600 mr-2" />
-              <h3 className="font-semibold text-gray-900 text-sm">Escola ID {media.escola_id}</h3>
+              <h3 className="font-semibold text-gray-900 text-sm">{media.escola_nome || `Escola ID ${media.escola_id}`}</h3>
             </div>
             
             <div className="grid grid-cols-2 gap-2 text-xs mb-3">

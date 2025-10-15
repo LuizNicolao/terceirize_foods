@@ -105,7 +105,7 @@ const HistoricoTab = ({ historico, loading }) => {
                     <div className="flex items-center text-gray-600">
                       <FaSchool className="mr-2 text-green-600" />
                       <span className="font-medium">Escola:</span>
-                      <span className="ml-2">ID {item.escola_id}</span>
+                      <span className="ml-2">{item.escola_nome || `ID ${item.escola_id}`}</span>
                     </div>
                     
                     <div className="flex items-center text-gray-600">
