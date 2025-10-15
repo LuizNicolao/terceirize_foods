@@ -68,7 +68,7 @@ class RegistrosDiariosListController {
       `;
       
       const offset = (parseInt(page) - 1) * parseInt(limit);
-      const registros = await executeQuery(query, [...params, parseInt(limit), offset]);
+      const registros = await executeQuery(query, [...params, parseInt(limit), parseInt(offset)]);
       
       // Contar total
       const countQuery = `
