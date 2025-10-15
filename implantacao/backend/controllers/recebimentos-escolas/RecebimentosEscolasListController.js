@@ -19,22 +19,15 @@ const listar = async (req, res) => {
     let whereClause = 'WHERE 1=1';
     let params = [];
 
-    console.log('🔍 [RECEBIMENTOS] User:', { id: userId, email: req.user.email, tipo: userType });
-
     // Filtro baseado no tipo de usuário
     if (userType === 'nutricionista') {
-      console.log('🔍 [FILTRO NUTRICIONISTA] Iniciando filtro por rotas');
-      
       // Para nutricionista, filtrar apenas escolas das rotas nutricionistas
       try {
         const axios = require('axios');
         const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
         
-        // Buscar rotas da nutricionista
         // Buscar email do usuário logado
         const userEmail = req.user.email;
-        
-        console.log('🔍 [FILTRO NUTRICIONISTA] Buscando rotas para email:', userEmail);
         
         // Buscar rotas da nutricionista por email
         const response = await axios.get(`${foodsApiUrl}/rotas-nutricionistas?email=${encodeURIComponent(userEmail)}&status=ativo`, {
@@ -44,11 +37,6 @@ const listar = async (req, res) => {
           timeout: 5000 // Timeout de 5 segundos
         });
 
-        console.log('📦 [FILTRO NUTRICIONISTA] Response Foods:', {
-          success: response.data?.success,
-          data: response.data?.data
-        });
-
         if (response.data && response.data.success) {
           // Extrair array de rotas corretamente
           let rotas = response.data.data?.rotas || response.data.data || response.data || [];
@@ -56,43 +44,34 @@ const listar = async (req, res) => {
           if (!Array.isArray(rotas)) {
             rotas = rotas.rotas || [];
           }
-          console.log('📋 [FILTRO NUTRICIONISTA] Rotas encontradas:', rotas.length);
           
           const escolasIds = [];
           
           // Extrair IDs das escolas das rotas
           rotas.forEach(rota => {
-            console.log('🏫 [FILTRO NUTRICIONISTA] Rota:', rota.codigo, '- Escolas:', rota.escolas_responsaveis);
             if (rota.escolas_responsaveis) {
               const ids = rota.escolas_responsaveis.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
               escolasIds.push(...ids);
             }
           });
 
-          console.log('✅ [FILTRO NUTRICIONISTA] Total escolas permitidas:', escolasIds);
-
           // Se a nutricionista tem escolas vinculadas, filtrar por elas
           if (escolasIds.length > 0) {
             whereClause += ` AND re.escola_id IN (${escolasIds.map(() => '?').join(',')})`;
             params.push(...escolasIds);
-            console.log('✅ [FILTRO NUTRICIONISTA] Filtro SQL aplicado para escolas:', escolasIds);
           } else {
             // Se não tem escolas vinculadas, não mostrar nenhum recebimento
             whereClause += ' AND 1=0';
-            console.log('⚠️ [FILTRO NUTRICIONISTA] Nenhuma escola - bloqueando todos');
           }
         } else {
           // Se não conseguir buscar as rotas, não mostrar nenhum recebimento
           whereClause += ' AND 1=0';
-          console.log('❌ [FILTRO NUTRICIONISTA] API retornou falha - bloqueando todos');
         }
       } catch (apiError) {
-        console.error('❌ [FILTRO NUTRICIONISTA] Erro ao buscar rotas:', apiError.message);
+        console.error('Erro ao buscar rotas do foods:', apiError);
         // Se houver erro na API, não mostrar nenhum recebimento
         whereClause += ' AND 1=0';
       }
-    } else {
-      console.log('👤 [FILTRO] Usuário', userType, '- SEM filtro de escolas (vê todos)');
     }
     // Para Admin, Supervisor, Coordenador, Gerente: mostrar todos
 
