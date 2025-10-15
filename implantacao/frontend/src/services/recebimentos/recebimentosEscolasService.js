@@ -91,6 +91,12 @@ const recebimentosEscolasService = {
     return response.data;
   },
 
+  // Alias para excluir (mantém compatibilidade)
+  excluir: async (id) => {
+    const response = await api.delete(`/recebimentos-escolas/${id}`);
+    return response.data;
+  },
+
   // Listar escolas disponíveis
   listarEscolas: async (tipoUsuario = null, usuarioId = null) => {
     try {
