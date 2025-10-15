@@ -88,16 +88,16 @@ const ProdutoOrigemTable = ({
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {getUnidadeMedidaName(produto.unidade_medida_id)}
+                    {getUnidadeMedidaName(produto)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {getGrupoName(produto.grupo_id)}
+                    {getGrupoName(produto)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {getSubgrupoName(produto.subgrupo_id)}
+                    {getSubgrupoName(produto)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {getClasseName(produto.classe_id)}
+                    {getClasseName(produto)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {produto.produto_generico_padrao_nome ? 
@@ -171,19 +171,19 @@ const ProdutoOrigemTable = ({
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
                 <span className="text-gray-500">Unidade:</span>
-                <p className="font-medium">{getUnidadeMedidaName(produto.unidade_medida_id)}</p>
+                <p className="font-medium">{getUnidadeMedidaName(produto)}</p>
               </div>
               <div>
                 <span className="text-gray-500">Grupo:</span>
-                <p className="font-medium">{getGrupoName(produto.grupo_id)}</p>
+                <p className="font-medium">{getGrupoName(produto)}</p>
               </div>
               <div>
                 <span className="text-gray-500">Subgrupo:</span>
-                <p className="font-medium">{getSubgrupoName(produto.subgrupo_id)}</p>
+                <p className="font-medium">{getSubgrupoName(produto)}</p>
               </div>
               <div>
                 <span className="text-gray-500">Classe:</span>
-                <p className="font-medium">{getClasseName(produto.classe_id)}</p>
+                <p className="font-medium">{getClasseName(produto)}</p>
               </div>
               <div className="col-span-2">
                 <span className="text-gray-500">Produto Genérico Padrão:</span>

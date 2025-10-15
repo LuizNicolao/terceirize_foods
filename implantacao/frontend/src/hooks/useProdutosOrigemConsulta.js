@@ -318,23 +318,22 @@ export const useProdutosOrigemConsulta = () => {
     recarregar,
     checkConnection,
 
-    // Funções auxiliares para obter nomes (retornam os dados que já vêm do Foods)
-    getGrupoName: (grupoId) => {
-      if (!grupoId) return '-';
-      // Os dados já vêm com nomes do Foods
-      return 'Grupo'; // Placeholder - os dados já vêm com nomes
+    // Funções auxiliares para obter nomes (os dados já vêm do Foods com os nomes)
+    getGrupoName: (produto) => {
+      if (!produto) return '-';
+      return produto.grupo_nome || '-';
     },
-    getSubgrupoName: (subgrupoId) => {
-      if (!subgrupoId) return '-';
-      return 'Subgrupo'; // Placeholder - os dados já vêm com nomes
+    getSubgrupoName: (produto) => {
+      if (!produto) return '-';
+      return produto.subgrupo_nome || '-';
     },
-    getClasseName: (classeId) => {
-      if (!classeId) return '-';
-      return 'Classe'; // Placeholder - os dados já vêm com nomes
+    getClasseName: (produto) => {
+      if (!produto) return '-';
+      return produto.classe_nome || '-';
     },
-    getUnidadeMedidaName: (unidadeId) => {
-      if (!unidadeId) return '-';
-      return 'Unidade'; // Placeholder - os dados já vêm com nomes
+    getUnidadeMedidaName: (produto) => {
+      if (!produto) return '-';
+      return produto.unidade_medida_nome || '-';
     }
   };
 };
