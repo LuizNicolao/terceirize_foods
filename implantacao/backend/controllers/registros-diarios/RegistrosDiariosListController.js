@@ -57,6 +57,7 @@ class RegistrosDiariosListController {
       const query = `
         SELECT 
           rd.escola_id,
+          MAX(rd.escola_nome) as escola_nome,
           rd.data,
           rd.nutricionista_id,
           MAX(CASE WHEN rd.tipo_refeicao = 'lanche_manha' THEN rd.valor ELSE 0 END) as lanche_manha,
@@ -74,36 +75,6 @@ class RegistrosDiariosListController {
       `;
       
       const registros = await executeQuery(query, params);
-      
-      // Buscar nomes das escolas do Foods
-      if (registros.length > 0) {
-        const escolaIds = [...new Set(registros.map(r => r.escola_id))];
-        const axios = require('axios');
-        
-        try {
-          const escolasResponse = await axios.get(`${process.env.FOODS_API_URL}/api/unidades-escolares`, {
-            params: { limit: 1000 }
-          });
-          
-          const escolasMap = {};
-          if (escolasResponse.data && escolasResponse.data.data) {
-            escolasResponse.data.data.forEach(escola => {
-              escolasMap[escola.id] = escola.nome_escola;
-            });
-          }
-          
-          // Adicionar nome da escola aos registros
-          registros.forEach(registro => {
-            registro.escola_nome = escolasMap[registro.escola_id] || `Escola ID ${registro.escola_id}`;
-          });
-        } catch (error) {
-          console.error('Erro ao buscar nomes das escolas:', error.message);
-          // Se falhar, mantém apenas o ID
-          registros.forEach(registro => {
-            registro.escola_nome = `Escola ID ${registro.escola_id}`;
-          });
-        }
-      }
       
       // Contar total
       const countQuery = `

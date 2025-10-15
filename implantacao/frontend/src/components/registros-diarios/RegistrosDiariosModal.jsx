@@ -213,7 +213,15 @@ const RegistrosDiariosModal = ({
       return;
     }
     
-    onSave(formData);
+    // Buscar nome da escola selecionada
+    const escolaSelecionada = unidadesEscolares.find(e => e.id === formData.escola_id);
+    const escola_nome = escolaSelecionada ? escolaSelecionada.nome_escola : `Escola ID ${formData.escola_id}`;
+    
+    // Adicionar nome da escola aos dados
+    onSave({
+      ...formData,
+      escola_nome
+    });
   };
   
   if (!isOpen) return null;

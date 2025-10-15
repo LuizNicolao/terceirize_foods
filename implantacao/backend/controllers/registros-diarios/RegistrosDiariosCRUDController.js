@@ -10,7 +10,7 @@ class RegistrosDiariosCRUDController {
    */
   static async criar(req, res) {
     try {
-      const { escola_id, nutricionista_id, data, quantidades } = req.body;
+      const { escola_id, nutricionista_id, data, quantidades, escola_nome } = req.body;
       
       // quantidades = { lanche_manha: 80, almoco: 250, lanche_tarde: 75, parcial: 30, eja: 20 }
       
@@ -27,17 +27,17 @@ class RegistrosDiariosCRUDController {
         );
         
         if (existente.length > 0) {
-          // Atualizar existente
+          // Atualizar existente (incluindo nome da escola)
           await executeQuery(
-            'UPDATE registros_diarios SET valor = ?, nutricionista_id = ?, data_atualizacao = NOW() WHERE id = ?',
-            [valor, nutricionista_id, existente[0].id]
+            'UPDATE registros_diarios SET valor = ?, nutricionista_id = ?, escola_nome = ?, data_atualizacao = NOW() WHERE id = ?',
+            [valor, nutricionista_id, escola_nome, existente[0].id]
           );
           registrosInseridos.push({ id: existente[0].id, tipo, valor, acao: 'atualizado' });
         } else {
-          // Inserir novo
+          // Inserir novo (incluindo nome da escola)
           const result = await executeQuery(
-            'INSERT INTO registros_diarios (escola_id, nutricionista_id, data, tipo_refeicao, valor) VALUES (?, ?, ?, ?, ?)',
-            [escola_id, nutricionista_id, data, tipo, valor]
+            'INSERT INTO registros_diarios (escola_id, escola_nome, nutricionista_id, data, tipo_refeicao, valor) VALUES (?, ?, ?, ?, ?, ?)',
+            [escola_id, escola_nome, nutricionista_id, data, tipo, valor]
           );
           registrosInseridos.push({ id: result.insertId, tipo, valor, acao: 'criado' });
         }
