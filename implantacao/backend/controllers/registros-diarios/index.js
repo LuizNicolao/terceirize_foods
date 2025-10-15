@@ -8,6 +8,7 @@ module.exports = {
   excluir: RegistrosDiariosCRUDController.excluir,
   listar: RegistrosDiariosListController.listar,
   listarMedias: RegistrosDiariosListController.listarMedias,
+  buscarHistorico: RegistrosDiariosListController.buscarHistorico,
   obterEstatisticas: RegistrosDiariosStatsController.obterEstatisticas
 };
 
