@@ -505,10 +505,7 @@ class FoodsApiService {
    */
   static async getRotasNutricionistas(params = {}) {
     try {
-      console.log('🔍 [FoodsApiService] Buscando rotas nutricionistas com params:', params);
       const response = await foodsApi.get('/rotas-nutricionistas', { params });
-      
-      console.log('📦 [FoodsApiService] Response completo:', response.data);
       
       // Formato do Foods: { success: true, data: { rotas: [...], pagination: {...} } }
       let rotasData = response.data.data?.rotas || response.data.rotas || response.data.data || response.data;
@@ -520,12 +517,6 @@ class FoodsApiService {
       
       const arrayData = Array.isArray(rotasData) ? rotasData : [];
       
-      console.log('✅ [FoodsApiService] Dados processados:', {
-        totalRotas: arrayData.length,
-        primeiraRota: arrayData[0],
-        pagination: response.data.data?.pagination || response.data.pagination
-      });
-      
       return {
         success: true,
         data: arrayData,
@@ -533,8 +524,6 @@ class FoodsApiService {
         message: 'Rotas nutricionistas consultadas com sucesso'
       };
     } catch (error) {
-      console.error('❌ [FoodsApiService] Erro ao buscar rotas nutricionistas:', error);
-      console.error('❌ [FoodsApiService] Error response:', error.response?.data);
       return {
         success: false,
         data: [],
