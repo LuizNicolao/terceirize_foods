@@ -22,12 +22,6 @@ router.get('/medias',
   RegistrosDiariosController.listarMedias
 );
 
-// GET /api/registros-diarios/historico - Listar histórico de uma escola
-router.get('/historico',
-  checkScreenPermission('registros_diarios', 'visualizar'),
-  RegistrosDiariosController.listarHistorico
-);
-
 // GET /api/registros-diarios/estatisticas - Obter estatísticas
 router.get('/estatisticas',
   checkScreenPermission('registros_diarios', 'visualizar'),
@@ -56,6 +50,12 @@ router.delete('/',
   registrosDiariosValidations.excluir,
   handleValidationErrors,
   RegistrosDiariosController.excluir
+);
+
+// GET /api/registros-diarios/historico/:escola_id - Buscar histórico de auditoria de uma escola
+router.get('/historico/:escola_id',
+  checkScreenPermission('registros_diarios', 'visualizar'),
+  RegistrosDiariosController.buscarHistoricoPorEscola
 );
 
 module.exports = router;

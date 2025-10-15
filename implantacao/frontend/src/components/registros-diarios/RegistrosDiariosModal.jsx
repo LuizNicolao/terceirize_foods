@@ -170,28 +170,11 @@ const RegistrosDiariosModal = ({
       if (isViewMode && abaAtiva === 'historico' && formData.escola_id) {
         setLoadingHistorico(true);
         
-        // Buscar histórico real do backend
-        const result = await RegistrosDiariosService.listarHistorico(formData.escola_id);
+        // Buscar histórico real da API (audit logs)
+        const result = await RegistrosDiariosService.buscarHistorico(formData.escola_id);
         
-        if (result.success && result.data) {
-          // Converter para formato do histórico
-          const historicoFormatado = result.data.map(reg => ({
-            acao: 'criacao',
-            data_acao: reg.data_cadastro || reg.data_atualizacao || new Date(),
-            escola_id: reg.escola_id,
-            escola_nome: reg.escola_nome,
-            data: reg.data,
-            nutricionista_id: reg.nutricionista_id,
-            usuario_nome: user?.nome,
-            valores: {
-              lanche_manha: reg.lanche_manha,
-              almoco: reg.almoco,
-              lanche_tarde: reg.lanche_tarde,
-              parcial: reg.parcial,
-              eja: reg.eja
-            }
-          }));
-          setHistorico(historicoFormatado);
+        if (result.success) {
+          setHistorico(result.data || []);
         } else {
           setHistorico([]);
         }
@@ -201,7 +184,7 @@ const RegistrosDiariosModal = ({
     };
     
     carregarHistorico();
-  }, [abaAtiva, formData.escola_id, isViewMode, user]);
+  }, [abaAtiva, formData.escola_id, isViewMode]);
   
   // Resetar aba ao abrir/fechar modal
   useEffect(() => {
