@@ -82,7 +82,7 @@ const userValidations = {
     body('tipo_de_acesso')
       .notEmpty().withMessage('Tipo de acesso é obrigatório')
       .custom((value) => {
-        return ['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor'].includes(value);
+        return ['administrador', 'coordenador', 'administrativo', 'gerente', 'supervisor', 'nutricionista'].includes(value);
       })
       .withMessage('Tipo de acesso inválido'),
     
