@@ -374,18 +374,17 @@ const RegistrosDiariosModal = ({
         </form>
       )}
       
-        {isViewMode && (
-          <div className="flex justify-end pt-4 border-t">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-            >
-              Fechar
-            </Button>
-          </div>
-        )}
-      </form>
+      {isViewMode && (
+        <div className="flex justify-end pt-4 border-t">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+          >
+            Fechar
+          </Button>
+        </div>
+      )}
     </Modal>
   );
 };
