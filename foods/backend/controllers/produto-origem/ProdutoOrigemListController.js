@@ -24,6 +24,7 @@ class ProdutoOrigemListController {
       SELECT 
         po.*,
         um.nome as unidade_medida_nome,
+        um.sigla as unidade_medida_sigla,
         g.nome as grupo_nome,
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,

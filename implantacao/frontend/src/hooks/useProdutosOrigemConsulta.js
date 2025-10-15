@@ -333,7 +333,8 @@ export const useProdutosOrigemConsulta = () => {
     },
     getUnidadeMedidaName: (produto) => {
       if (!produto) return '-';
-      return produto.unidade_medida_nome || '-';
+      // Priorizar sigla (KG) ao invés do nome completo (QUILOGRAMA)
+      return produto.unidade_medida_sigla || produto.unidade_medida_nome || '-';
     }
   };
 };
