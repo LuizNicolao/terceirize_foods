@@ -23,10 +23,19 @@ const RegistrosDiariosModal = ({
   const [historico, setHistorico] = useState([]);
   const [loadingHistorico, setLoadingHistorico] = useState(false);
   
+  // Função para obter data atual no formato YYYY-MM-DD
+  const getDataAtual = () => {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  };
+  
   const [formData, setFormData] = useState({
     escola_id: '',
     nutricionista_id: user?.id || '',
-    data: new Date().toISOString().split('T')[0],
+    data: getDataAtual(),
     quantidades: {
       lanche_manha: 0,
       almoco: 0,
@@ -102,11 +111,11 @@ const RegistrosDiariosModal = ({
         }
       });
     } else if (!registro && isOpen) {
-      // Resetar para novo registro
+      // Resetar para novo registro com data atual
       setFormData({
         escola_id: '',
         nutricionista_id: user?.id || '',
-        data: new Date().toISOString().split('T')[0],
+        data: getDataAtual(),
         quantidades: {
           lanche_manha: 0,
           almoco: 0,
