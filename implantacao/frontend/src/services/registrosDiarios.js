@@ -107,6 +107,27 @@ class RegistrosDiariosService {
   }
   
   /**
+   * Listar histórico de uma escola
+   */
+  static async listarHistorico(escolaId) {
+    try {
+      const response = await api.get('/registros-diarios/historico', {
+        params: { escola_id: escolaId }
+      });
+      return {
+        success: true,
+        data: response.data.data || []
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao listar histórico',
+        data: []
+      };
+    }
+  }
+  
+  /**
    * Obter estatísticas
    */
   static async obterEstatisticas() {
