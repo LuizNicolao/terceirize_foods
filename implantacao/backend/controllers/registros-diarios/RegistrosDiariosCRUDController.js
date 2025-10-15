@@ -1,5 +1,4 @@
 const { executeQuery } = require('../../config/database');
-const { logAction } = require('../../utils/audit');
 
 /**
  * Controller CRUD para Registros Diários de Refeições
@@ -48,22 +47,6 @@ class RegistrosDiariosCRUDController {
       const media = await executeQuery(
         'SELECT * FROM media_escolas WHERE escola_id = ?',
         [escola_id]
-      );
-      
-      // Registrar auditoria
-      await logAction(
-        req.user?.id,
-        'create',
-        'registros_diarios',
-        {
-          escola_id,
-          escola_nome,
-          data,
-          quantidades,
-          registros_inseridos: registrosInseridos.length,
-          acoes: registrosInseridos.map(r => r.acao)
-        },
-        req.ip
       );
       
       res.json({
@@ -149,29 +132,9 @@ class RegistrosDiariosCRUDController {
         });
       }
       
-      // Buscar registros antes de deletar (para auditoria)
-      const registrosAntigos = await executeQuery(
-        'SELECT * FROM registros_diarios WHERE escola_id = ? AND data = ?',
-        [escola_id, data]
-      );
-      
       await executeQuery(
         'DELETE FROM registros_diarios WHERE escola_id = ? AND data = ?',
         [escola_id, data]
-      );
-      
-      // Registrar auditoria
-      await logAction(
-        req.user?.id,
-        'delete',
-        'registros_diarios',
-        {
-          escola_id,
-          data,
-          registros_deletados: registrosAntigos.length,
-          valores_deletados: registrosAntigos
-        },
-        req.ip
       );
       
       res.json({

@@ -164,19 +164,44 @@ const RegistrosDiariosModal = ({
     carregarMedias();
   }, [abaAtiva, formData.escola_id, isViewMode]);
   
-  // Carregar histórico quando aba de histórico for ativada (apenas em modo visualização)
+  // Carregar histórico REAL quando aba de histórico for ativada (apenas em modo visualização)
   useEffect(() => {
     const carregarHistorico = async () => {
-      if (isViewMode && abaAtiva === 'historico' && formData.escola_id) {
+      if (isViewMode && abaAtiva === 'historico' && formData.escola_id && formData.data) {
         setLoadingHistorico(true);
         
-        // Buscar histórico real da API (audit logs)
-        const result = await RegistrosDiariosService.buscarHistorico(formData.escola_id);
+        // Buscar histórico real do backend
+        const result = await RegistrosDiariosService.buscarHistoricoPorEscolaData(
+          formData.escola_id,
+          formData.data
+        );
         
         if (result.success) {
-          setHistorico(result.data || []);
-        } else {
-          setHistorico([]);
+          // Transformar dados para o formato esperado pelo HistoricoTab
+          const historicoFormatado = result.data.map(item => ({
+            acao: item.acao,
+            data_acao: item.data_acao,
+            escola_id: item.escola_id,
+            escola_nome: item.escola_nome,
+            data: item.data,
+            nutricionista_id: item.nutricionista_id,
+            usuario_nome: user?.nome,
+            valores: {
+              lanche_manha: item.lanche_manha,
+              almoco: item.almoco,
+              lanche_tarde: item.lanche_tarde,
+              parcial: item.parcial,
+              eja: item.eja
+            },
+            valores_anteriores: {
+              lanche_manha: item.lanche_manha_anterior,
+              almoco: item.almoco_anterior,
+              lanche_tarde: item.lanche_tarde_anterior,
+              parcial: item.parcial_anterior,
+              eja: item.eja_anterior
+            }
+          }));
+          setHistorico(historicoFormatado);
         }
         
         setLoadingHistorico(false);
@@ -184,7 +209,7 @@ const RegistrosDiariosModal = ({
     };
     
     carregarHistorico();
-  }, [abaAtiva, formData.escola_id, isViewMode]);
+  }, [abaAtiva, formData.escola_id, formData.data, isViewMode, user]);
   
   // Resetar aba ao abrir/fechar modal
   useEffect(() => {

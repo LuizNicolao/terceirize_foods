@@ -1,7 +1,7 @@
 const RegistrosDiariosCRUDController = require('./RegistrosDiariosCRUDController');
 const RegistrosDiariosListController = require('./RegistrosDiariosListController');
 const RegistrosDiariosStatsController = require('./RegistrosDiariosStatsController');
-const RegistrosDiariosAuditController = require('./RegistrosDiariosAuditController');
+const RegistrosDiariosHistoricoController = require('./RegistrosDiariosHistoricoController');
 
 module.exports = {
   criar: RegistrosDiariosCRUDController.criar,
@@ -10,6 +10,7 @@ module.exports = {
   listar: RegistrosDiariosListController.listar,
   listarMedias: RegistrosDiariosListController.listarMedias,
   obterEstatisticas: RegistrosDiariosStatsController.obterEstatisticas,
-  buscarHistoricoPorEscola: RegistrosDiariosAuditController.buscarHistoricoPorEscola
+  buscarHistoricoPorEscola: RegistrosDiariosHistoricoController.buscarPorEscola,
+  buscarHistoricoPorEscolaData: RegistrosDiariosHistoricoController.buscarPorEscolaData
 };
 
