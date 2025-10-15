@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, SearchableSelect } from '../ui';
-import { useUnidadesEscolaresConsulta } from '../../hooks/useUnidadesEscolaresConsulta';
+import FoodsApiService from '../../services/FoodsApiService';
 import { useAuth } from '../../contexts/AuthContext';
 import RegistrosDiariosService from '../../services/registrosDiarios';
 
@@ -12,7 +12,8 @@ const RegistrosDiariosModal = ({
   isViewMode = false
 }) => {
   const { user } = useAuth();
-  const { unidadesEscolares, loading: loadingEscolas } = useUnidadesEscolaresConsulta();
+  const [unidadesEscolares, setUnidadesEscolares] = useState([]);
+  const [loadingEscolas, setLoadingEscolas] = useState(false);
   
   const [formData, setFormData] = useState({
     escola_id: '',
@@ -26,6 +27,56 @@ const RegistrosDiariosModal = ({
       eja: 0
     }
   });
+  
+  // Carregar TODAS as escolas quando modal abrir
+  useEffect(() => {
+    const carregarTodasEscolas = async () => {
+      if (!isOpen) return;
+      
+      try {
+        setLoadingEscolas(true);
+        let todasEscolas = [];
+        let page = 1;
+        let hasMore = true;
+        const limit = 100;
+        
+        // Buscar todas as escolas fazendo múltiplas requisições
+        while (hasMore) {
+          const result = await FoodsApiService.getUnidadesEscolares({
+            page,
+            limit,
+            status: 'ativo'
+          });
+          
+          if (result.success && result.data && result.data.length > 0) {
+            todasEscolas = [...todasEscolas, ...result.data];
+            
+            if (result.data.length < limit) {
+              hasMore = false;
+            } else {
+              page++;
+            }
+          } else {
+            hasMore = false;
+          }
+          
+          // Limite de segurança
+          if (page > 50) {
+            hasMore = false;
+          }
+        }
+        
+        setUnidadesEscolares(todasEscolas);
+      } catch (error) {
+        console.error('Erro ao carregar escolas:', error);
+        setUnidadesEscolares([]);
+      } finally {
+        setLoadingEscolas(false);
+      }
+    };
+    
+    carregarTodasEscolas();
+  }, [isOpen]);
   
   // Carregar dados do registro ao editar
   useEffect(() => {
