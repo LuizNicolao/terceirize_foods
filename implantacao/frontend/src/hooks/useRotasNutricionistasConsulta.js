@@ -179,7 +179,7 @@ export const useRotasNutricionistasConsulta = () => {
     } finally {
       setLoading(false);
     }
-  }, [pagination.currentPage, pagination.itemsPerPage, filters, checkConnection, applyFrontendPagination, calcularEstatisticas]);
+  }, [pagination.currentPage, pagination.itemsPerPage, filters, checkConnection]);
 
   /**
    * Carregar estatísticas

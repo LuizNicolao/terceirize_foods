@@ -20,7 +20,7 @@ router.use(hateoasMiddleware('rotas-nutricionistas'));
 
 // GET /api/rotas-nutricionistas - Listar todas as rotas nutricionistas
 router.get('/', 
-  checkScreenPermission('rotas_nutricionistas', 'visualizar'),
+  checkPermission('visualizar'),
   commonValidations.search,
   commonValidations.pagination,
   rotasNutricionistasValidations.filtros,
@@ -49,7 +49,7 @@ router.get('/ativas/listar',
 
 // GET /api/rotas-nutricionistas/:id - Buscar rota nutricionista por ID
 router.get('/:id', 
-  checkScreenPermission('rotas_nutricionistas', 'visualizar'),
+  checkPermission('visualizar'),
   commonValidations.id,
   RotasNutricionistasController.buscarPorId
 );
