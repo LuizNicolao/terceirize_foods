@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlus, FaList, FaChartLine } from 'react-icons/fa';
+import { FaPlus, FaList, FaChartLine, FaHistory } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRegistrosDiarios } from '../../hooks/useRegistrosDiarios';
 import { Button, ConfirmModal } from '../../components/ui';
@@ -10,6 +10,7 @@ import {
   RegistrosDiariosStats 
 } from '../../components/registros-diarios';
 import MediasCalculadasTab from '../../components/registros-diarios/MediasCalculadasTab';
+import HistoricoTab from '../../components/registros-diarios/HistoricoTab';
 import RegistrosDiariosService from '../../services/registrosDiarios';
 
 const RegistrosDiarios = () => {
@@ -42,6 +43,8 @@ const RegistrosDiarios = () => {
   const [deletingRegistro, setDeletingRegistro] = useState(null);
   const [medias, setMedias] = useState([]);
   const [loadingMedias, setLoadingMedias] = useState(false);
+  const [historico, setHistorico] = useState([]);
+  const [loadingHistorico, setLoadingHistorico] = useState(false);
   
   const handleDeleteClick = (escolaId, data) => {
     setDeletingRegistro({ escolaId, data });
@@ -72,9 +75,39 @@ const RegistrosDiarios = () => {
     carregarMedias();
   }, [abaAtiva]);
   
+  // Carregar histórico quando aba de histórico for ativada
+  useEffect(() => {
+    const carregarHistorico = async () => {
+      if (abaAtiva === 'historico') {
+        setLoadingHistorico(true);
+        // Simular histórico baseado nos registros existentes
+        // TODO: Criar endpoint específico de histórico se necessário
+        const historicoSimulado = registros.map(reg => ({
+          acao: 'criacao',
+          data_acao: reg.data_cadastro || new Date(),
+          escola_id: reg.escola_id,
+          data: reg.data,
+          nutricionista_id: reg.nutricionista_id,
+          valores: {
+            lanche_manha: reg.lanche_manha,
+            almoco: reg.almoco,
+            lanche_tarde: reg.lanche_tarde,
+            parcial: reg.parcial,
+            eja: reg.eja
+          }
+        }));
+        setHistorico(historicoSimulado);
+        setLoadingHistorico(false);
+      }
+    };
+    
+    carregarHistorico();
+  }, [abaAtiva, registros]);
+  
   const abas = [
-    { id: 'registros', label: 'Registros', icon: FaList },
-    { id: 'medias', label: 'Médias Calculadas', icon: FaChartLine }
+    { id: 'registros', label: 'Registros Diários', icon: FaList },
+    { id: 'medias', label: 'Médias Calculadas', icon: FaChartLine },
+    { id: 'historico', label: 'Histórico', icon: FaHistory }
   ];
   
   return (
@@ -171,6 +204,13 @@ const RegistrosDiarios = () => {
         <MediasCalculadasTab
           medias={medias}
           loading={loadingMedias}
+        />
+      )}
+      
+      {abaAtiva === 'historico' && (
+        <HistoricoTab
+          historico={historico}
+          loading={loadingHistorico}
         />
       )}
       
