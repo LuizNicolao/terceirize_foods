@@ -480,12 +480,7 @@ export const usePatrimonios = () => {
 
   return {
     // Estados principais
-    patrimonios: isSortingLocally ? patrimoniosOrdenados : patrimonios,
-    
-    // Estados de ordenação
-    sortField,
-    sortDirection,
-    isSortingLocally,
+    patrimonios,
     loading,
     saving,
     selectedPatrimonio,

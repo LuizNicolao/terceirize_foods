@@ -41,7 +41,7 @@ export const useTiposCardapio = () => {
     handleSort,
     isSortingLocally
   } = useTableSort({
-    data: tiposCardapio,
+    data: tipos,
     threshold: 100,
     totalItems: totalItems || 0
   });

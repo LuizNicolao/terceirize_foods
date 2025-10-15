@@ -4,6 +4,7 @@ import PeriodosRefeicaoService from '../services/periodosRefeicao';
 import FiliaisService from '../services/filiais';
 import { useValidation } from './common/useValidation';
 import { useDebouncedSearch } from './common/useDebouncedSearch';
+import useTableSort from './common/useTableSort';
 
 export const usePeriodosRefeicao = () => {
   // Hook de busca com debounce
