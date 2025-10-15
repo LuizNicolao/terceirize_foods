@@ -26,7 +26,12 @@ const dashboardRelatorios = async (req, res) => {
         });
 
         if (response.data && response.data.success) {
-          const rotas = response.data.data || [];
+          // Extrair array de rotas corretamente
+          let rotas = response.data.data?.rotas || response.data.data || response.data || [];
+          // Garantir que é um array
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
           const escolasIds = [];
           
           // Extrair IDs das escolas das rotas
@@ -151,7 +156,12 @@ const obterEstatisticas = async (req, res) => {
         });
 
         if (response.data && response.data.success) {
-          const rotas = response.data.data || [];
+          // Extrair array de rotas corretamente
+          let rotas = response.data.data?.rotas || response.data.data || response.data || [];
+          // Garantir que é um array
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
           const escolasIds = [];
           
           // Extrair IDs das escolas das rotas
@@ -260,7 +270,12 @@ const obterResumo = async (req, res) => {
         });
 
         if (response.data && response.data.success) {
-          const rotas = response.data.data || [];
+          // Extrair array de rotas corretamente
+          let rotas = response.data.data?.rotas || response.data.data || response.data || [];
+          // Garantir que é um array
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
           const escolasIds = [];
           
           // Extrair IDs das escolas das rotas

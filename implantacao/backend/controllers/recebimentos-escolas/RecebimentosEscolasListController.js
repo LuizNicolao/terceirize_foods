@@ -50,7 +50,12 @@ const listar = async (req, res) => {
         });
 
         if (response.data && response.data.success) {
-          const rotas = response.data.data?.rotas || response.data.data || [];
+          // Extrair array de rotas corretamente
+          let rotas = response.data.data?.rotas || response.data.data || response.data || [];
+          // Garantir que é um array
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
           console.log('📋 [FILTRO NUTRICIONISTA] Rotas encontradas:', rotas.length);
           
           const escolasIds = [];
@@ -301,7 +306,12 @@ const listarTodas = async (req, res) => {
         });
 
         if (response.data && response.data.success) {
-          const rotas = response.data.data || [];
+          // Extrair array de rotas corretamente
+          let rotas = response.data.data?.rotas || response.data.data || response.data || [];
+          // Garantir que é um array
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
           const escolasIds = [];
           
           // Extrair IDs das escolas das rotas
