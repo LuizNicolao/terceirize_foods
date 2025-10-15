@@ -170,38 +170,28 @@ const RegistrosDiariosModal = ({
       if (isViewMode && abaAtiva === 'historico' && formData.escola_id) {
         setLoadingHistorico(true);
         
-        // Buscar histórico real da escola (todos os registros dessa escola)
-        const result = await RegistrosDiariosService.buscarHistorico(formData.escola_id);
+        // Buscar nome da escola
+        const escolaSelecionada = unidadesEscolares.find(e => e.id === formData.escola_id);
+        const escola_nome = escolaSelecionada ? escolaSelecionada.nome_escola : `ID ${formData.escola_id}`;
         
-        if (result.success) {
-          // Transformar para formato do HistoricoTab
-          const historicoFormatado = result.data.map((reg, index) => ({
-            acao: index === 0 ? 'edicao' : 'criacao', // Primeiro é mais recente (edição)
-            data_acao: reg.data_atualizacao || reg.data_cadastro,
-            escola_id: reg.escola_id,
-            escola_nome: reg.escola_nome,
-            data: reg.data,
-            nutricionista_id: reg.nutricionista_id,
-            usuario_nome: user?.nome,
-            valores: {
-              lanche_manha: reg.lanche_manha,
-              almoco: reg.almoco,
-              lanche_tarde: reg.lanche_tarde,
-              parcial: reg.parcial,
-              eja: reg.eja
-            }
-          }));
-          setHistorico(historicoFormatado);
-        } else {
-          setHistorico([]);
-        }
-        
+        // Simular histórico baseado no registro atual
+        const historicoSimulado = [{
+          acao: 'criacao',
+          data_acao: registro?.data_cadastro || new Date(),
+          escola_id: formData.escola_id,
+          escola_nome: escola_nome,
+          data: formData.data,
+          nutricionista_id: formData.nutricionista_id,
+          usuario_nome: user?.nome,
+          valores: formData.quantidades
+        }];
+        setHistorico(historicoSimulado);
         setLoadingHistorico(false);
       }
     };
     
     carregarHistorico();
-  }, [abaAtiva, formData.escola_id, isViewMode, user]);
+  }, [abaAtiva, formData, isViewMode, registro, user, unidadesEscolares]);
   
   // Resetar aba ao abrir/fechar modal
   useEffect(() => {

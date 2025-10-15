@@ -51,8 +51,9 @@ class RegistrosDiariosListController {
       const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 20));
       const offsetNum = (pageNum - 1) * limitNum;
       
-      // Buscar apenas o registro mais recente de cada escola
-      // Usa subquery para pegar a data máxima de cada escola
+      // Buscar registros agrupados por escola e data
+      // Pivotear os tipos de refeição em colunas
+      // IMPORTANTE: LIMIT e OFFSET interpolados diretamente (números seguros)
       const query = `
         SELECT 
           rd.escola_id,
@@ -67,30 +68,18 @@ class RegistrosDiariosListController {
           MIN(rd.data_cadastro) as data_cadastro,
           MAX(rd.data_atualizacao) as data_atualizacao
         FROM registros_diarios rd
-        INNER JOIN (
-          SELECT escola_id, MAX(data) as data_maxima
-          FROM registros_diarios
-          WHERE ativo = 1
-          GROUP BY escola_id
-        ) rd_max ON rd.escola_id = rd_max.escola_id AND rd.data = rd_max.data_maxima
         ${whereClause}
         GROUP BY rd.escola_id, rd.data, rd.nutricionista_id
-        ORDER BY rd.escola_id ASC
+        ORDER BY rd.data DESC, rd.escola_id ASC
         LIMIT ${limitNum} OFFSET ${offsetNum}
       `;
       
       const registros = await executeQuery(query, params);
       
-      // Contar total de escolas (não de registros)
+      // Contar total
       const countQuery = `
-        SELECT COUNT(DISTINCT rd.escola_id) as total
+        SELECT COUNT(DISTINCT CONCAT(rd.escola_id, '-', rd.data)) as total
         FROM registros_diarios rd
-        INNER JOIN (
-          SELECT escola_id, MAX(data) as data_maxima
-          FROM registros_diarios
-          WHERE ativo = 1
-          GROUP BY escola_id
-        ) rd_max ON rd.escola_id = rd_max.escola_id AND rd.data = rd_max.data_maxima
         ${whereClause}
       `;
       const countResult = await executeQuery(countQuery, params);
@@ -155,61 +144,6 @@ class RegistrosDiariosListController {
         success: false,
         error: 'Erro interno do servidor',
         message: 'Erro ao listar médias'
-      });
-    }
-  }
-  
-  /**
-   * Buscar histórico completo de uma escola (todos os registros)
-   */
-  static async buscarHistorico(req, res) {
-    try {
-      const userId = req.user.id;
-      const userType = req.user.tipo_de_acesso;
-      const { escola_id } = req.params;
-      
-      let whereClause = 'WHERE rd.ativo = 1 AND rd.escola_id = ?';
-      let params = [escola_id];
-      
-      // Filtro por tipo de usuário
-      if (userType === 'nutricionista') {
-        whereClause += ' AND rd.nutricionista_id = ?';
-        params.push(userId);
-      }
-      
-      // Buscar TODOS os registros dessa escola (todas as datas)
-      const query = `
-        SELECT 
-          rd.escola_id,
-          MAX(rd.escola_nome) as escola_nome,
-          rd.data,
-          rd.nutricionista_id,
-          MAX(CASE WHEN rd.tipo_refeicao = 'lanche_manha' THEN rd.valor ELSE 0 END) as lanche_manha,
-          MAX(CASE WHEN rd.tipo_refeicao = 'almoco' THEN rd.valor ELSE 0 END) as almoco,
-          MAX(CASE WHEN rd.tipo_refeicao = 'lanche_tarde' THEN rd.valor ELSE 0 END) as lanche_tarde,
-          MAX(CASE WHEN rd.tipo_refeicao = 'parcial' THEN rd.valor ELSE 0 END) as parcial,
-          MAX(CASE WHEN rd.tipo_refeicao = 'eja' THEN rd.valor ELSE 0 END) as eja,
-          MIN(rd.data_cadastro) as data_cadastro,
-          MAX(rd.data_atualizacao) as data_atualizacao
-        FROM registros_diarios rd
-        ${whereClause}
-        GROUP BY rd.escola_id, rd.data, rd.nutricionista_id
-        ORDER BY rd.data DESC
-        LIMIT 100
-      `;
-      
-      const historico = await executeQuery(query, params);
-      
-      res.json({
-        success: true,
-        data: historico
-      });
-    } catch (error) {
-      console.error('Erro ao buscar histórico:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Erro interno do servidor',
-        message: 'Erro ao buscar histórico'
       });
     }
   }
