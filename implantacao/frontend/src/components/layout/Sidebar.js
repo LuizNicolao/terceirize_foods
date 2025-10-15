@@ -22,7 +22,8 @@ import {
   FaChartLine,
   FaStar,
   FaRegStar,
-  FaClipboardCheck
+  FaClipboardCheck,
+  FaCalendarCheck
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -50,6 +51,7 @@ const menuGroups = [
               { path: '/classes', icon: FaList, label: 'Classes', screen: 'classes' },
               { path: '/produtos-per-capita', icon: FaChartLine, label: 'Produtos Per Capita', screen: 'produtos_per_capita' },
               { path: '/recebimentos-escolas', icon: FaClipboardCheck, label: 'Recebimentos Escolas', screen: 'recebimentos_escolas' },
+              { path: '/registros-diarios', icon: FaCalendarCheck, label: 'Registros Diários', screen: 'registros_diarios' },
             ]
           },
   {
