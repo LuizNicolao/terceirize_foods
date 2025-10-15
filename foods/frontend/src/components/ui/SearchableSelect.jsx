@@ -146,7 +146,7 @@ const SearchableSelect = ({
           className={`
             relative cursor-pointer border border-gray-300 rounded-lg transition-colors duration-200
             ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white hover:border-gray-400'}
-            ${isOpen ? 'border-blue-500 ring-2 ring-blue-500 ring-opacity-50' : ''}
+            ${isOpen ? 'border-green-500 ring-2 ring-green-500 ring-opacity-50' : ''}
             ${error ? 'border-red-500' : ''}
             ${sizes[size]}
           `}
