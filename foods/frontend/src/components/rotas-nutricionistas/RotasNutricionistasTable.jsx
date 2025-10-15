@@ -1,6 +1,6 @@
 import React from 'react';
-import { FaEye, FaEdit, FaTrash, FaBuilding, FaUser, FaUserTie, FaUserGraduate } from 'react-icons/fa';
-import { Button, Table, EmptyState } from '../ui';
+import { FaBuilding, FaUser, FaUserTie, FaUserGraduate } from 'react-icons/fa';
+import { ActionButtons, Table, EmptyState } from '../ui';
 
 const RotasNutricionistasTable = ({ 
   rotasNutricionistas, 
@@ -96,42 +96,17 @@ const RotasNutricionistasTable = ({
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {getStatusBadge(rota.status)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div className="flex space-x-2">
-                    {canView && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onView(rota)}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="Visualizar"
-                      >
-                        <FaEye className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {canEdit && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onEdit(rota)}
-                        className="text-green-600 hover:text-green-900"
-                        title="Editar"
-                      >
-                        <FaEdit className="h-4 w-4" />
-                      </Button>
-                    )}
-                    {canDelete && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onDelete(rota)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Excluir"
-                      >
-                        <FaTrash className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <ActionButtons
+                    canView={canView}
+                    canEdit={canEdit}
+                    canDelete={canDelete}
+                    onView={onView}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    item={rota}
+                    size="xs"
+                  />
                 </td>
               </tr>
             ))}
@@ -145,7 +120,7 @@ const RotasNutricionistasTable = ({
           <div key={rota.id} className="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
             {/* Header do card */}
             <div className="flex justify-between items-start mb-3">
-              <div className="flex items-center">
+              <div className="flex items-center flex-1">
                 <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
                   <FaBuilding className="h-4 w-4 text-blue-600" />
                 </div>
@@ -153,6 +128,21 @@ const RotasNutricionistasTable = ({
                   <h3 className="text-sm font-semibold text-gray-900">{rota.codigo}</h3>
                 </div>
               </div>
+              <ActionButtons
+                canView={canView}
+                canEdit={canEdit}
+                canDelete={canDelete}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={rota}
+                size="xs"
+                className="p-2"
+              />
+            </div>
+            
+            {/* Status Badge */}
+            <div className="mb-3">
               {getStatusBadge(rota.status)}
             </div>
             
@@ -193,43 +183,6 @@ const RotasNutricionistasTable = ({
                   <div className="text-xs text-gray-500">Coordenador</div>
                 </div>
               </div>
-            </div>
-            
-            {/* Ações */}
-            <div className="flex justify-end space-x-2 pt-3 border-t border-gray-200">
-              {canView && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onView(rota)}
-                  className="text-blue-600 hover:text-blue-900"
-                  title="Visualizar"
-                >
-                  <FaEye className="h-4 w-4" />
-                </Button>
-              )}
-              {canEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEdit(rota)}
-                  className="text-green-600 hover:text-green-900"
-                  title="Editar"
-                >
-                  <FaEdit className="h-4 w-4" />
-                </Button>
-              )}
-              {canDelete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onDelete(rota)}
-                  className="text-red-600 hover:text-red-900"
-                  title="Excluir"
-                >
-                  <FaTrash className="h-4 w-4" />
-                </Button>
-              )}
             </div>
           </div>
         ))}
