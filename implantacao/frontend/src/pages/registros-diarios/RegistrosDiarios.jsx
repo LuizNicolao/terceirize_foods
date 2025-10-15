@@ -7,7 +7,8 @@ import { Pagination } from '../../components/ui';
 import { 
   RegistrosDiariosModal, 
   RegistrosDiariosTable, 
-  RegistrosDiariosStats 
+  RegistrosDiariosStats,
+  RegistrosDiariosFilters
 } from '../../components/registros-diarios';
 
 const RegistrosDiarios = () => {
@@ -32,7 +33,11 @@ const RegistrosDiarios = () => {
     handleViewRegistro,
     handleCloseModal,
     handlePageChange,
-    handleItemsPerPageChange
+    handleItemsPerPageChange,
+    handleEscolaFilterChange,
+    handleDataInicioChange,
+    handleDataFimChange,
+    clearFiltros
   } = useRegistrosDiarios();
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -75,6 +80,16 @@ const RegistrosDiarios = () => {
       
       {/* Estatísticas */}
       <RegistrosDiariosStats estatisticas={estatisticas} />
+      
+      {/* Filtros */}
+      <RegistrosDiariosFilters
+        onFilter={(filters) => {
+          if (filters.escola_id) handleEscolaFilterChange(filters.escola_id);
+          if (filters.data_inicio) handleDataInicioChange(filters.data_inicio);
+          if (filters.data_fim) handleDataFimChange(filters.data_fim);
+        }}
+        onClear={clearFiltros}
+      />
       
       {/* Tabela de Registros */}
       <RegistrosDiariosTable
