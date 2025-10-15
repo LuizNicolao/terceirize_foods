@@ -4,6 +4,7 @@ import RotasNutricionistasService from '../services/rotasNutricionistas';
 import { useAuditoria } from './common/useAuditoria';
 import { useExport } from './common/useExport';
 import { useDebouncedSearch } from './common/useDebouncedSearch';
+import useTableSort from './common/useTableSort';
 
 export const useRotasNutricionistas = () => {
   // Hook de busca com debounce
