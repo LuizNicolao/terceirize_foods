@@ -17,6 +17,10 @@ export const useRotasNutricionistas = () => {
   const [error, setError] = useState(null);
 
   // Estados de paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   // Hook de ordenação híbrida
   const {
@@ -30,11 +34,6 @@ export const useRotasNutricionistas = () => {
     threshold: 100,
     totalItems: totalItems || 0
   });
-
-const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   // Estados de filtro
   const [statusFilter, setStatusFilter] = useState('');
