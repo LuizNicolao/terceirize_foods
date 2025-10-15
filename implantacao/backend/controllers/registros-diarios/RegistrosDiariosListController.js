@@ -46,8 +46,14 @@ class RegistrosDiariosListController {
         params.push(data_fim);
       }
       
+      // Converter para números inteiros ANTES de usar na query
+      const pageNum = Math.max(1, parseInt(page) || 1);
+      const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 20));
+      const offsetNum = (pageNum - 1) * limitNum;
+      
       // Buscar registros agrupados por escola e data
       // Pivotear os tipos de refeição em colunas
+      // IMPORTANTE: LIMIT e OFFSET interpolados diretamente (números seguros)
       const query = `
         SELECT 
           rd.escola_id,
@@ -64,23 +70,10 @@ class RegistrosDiariosListController {
         ${whereClause}
         GROUP BY rd.escola_id, rd.data, rd.nutricionista_id
         ORDER BY rd.data DESC, rd.escola_id ASC
-        LIMIT ? OFFSET ?
+        LIMIT ${limitNum} OFFSET ${offsetNum}
       `;
       
-      const offset = (parseInt(page) - 1) * parseInt(limit);
-      
-      // Debug: verificar tipos
-      const limitInt = parseInt(limit);
-      const offsetInt = parseInt(offset);
-      console.log('🔍 DEBUG PARAMS:', {
-        page, limit, offset,
-        limitInt, offsetInt,
-        limitType: typeof limitInt,
-        offsetType: typeof offsetInt,
-        allParams: [...params, limitInt, offsetInt]
-      });
-      
-      const registros = await executeQuery(query, [...params, limitInt, offsetInt]);
+      const registros = await executeQuery(query, params);
       
       // Contar total
       const countQuery = `
