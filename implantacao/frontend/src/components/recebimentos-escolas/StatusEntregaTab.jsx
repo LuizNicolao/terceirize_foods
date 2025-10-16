@@ -40,7 +40,10 @@ const StatusEntregaTab = () => {
   const carregarFiliais = async () => {
     try {
       setLoadingFiliais(true);
+      console.log('🔍 Carregando filiais...');
       const result = await FoodsApiService.getFiliais();
+      console.log('📊 Resultado da API filiais:', result);
+      
       if (result.success && Array.isArray(result.data)) {
         const filiaisFormatadas = [
           { value: '', label: 'Todas as filiais' },
@@ -49,10 +52,15 @@ const StatusEntregaTab = () => {
             label: filial.nome
           }))
         ];
+        console.log('✅ Filiais formatadas:', filiaisFormatadas);
         setFiliais(filiaisFormatadas);
+      } else {
+        console.warn('⚠️ Dados de filiais inválidos:', result);
+        setFiliais([{ value: '', label: 'Todas as filiais' }]);
       }
     } catch (error) {
-      console.error('Erro ao carregar filiais:', error);
+      console.error('❌ Erro ao carregar filiais:', error);
+      setFiliais([{ value: '', label: 'Todas as filiais' }]);
     } finally {
       setLoadingFiliais(false);
     }

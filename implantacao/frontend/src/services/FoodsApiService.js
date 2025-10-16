@@ -378,36 +378,6 @@ class FoodsApiService {
    * ==================== FILIAIS ====================
    */
   
-  /**
-   * Consultar filiais do sistema Foods
-   */
-  static async getFiliais(params = {}) {
-    try {
-      const response = await foodsApi.get('/filiais', { params });
-      
-      let filiaisData = response.data.data || response.data;
-      if (filiaisData && filiaisData.items && Array.isArray(filiaisData.items)) {
-        filiaisData = filiaisData.items;
-      }
-      
-      const arrayData = Array.isArray(filiaisData) ? filiaisData : [];
-      
-      return {
-        success: true,
-        data: arrayData,
-        pagination: response.data.pagination || null,
-        message: 'Filiais consultadas com sucesso'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        data: [],
-        pagination: null,
-        message: error.response?.data?.message || 'Erro ao consultar filiais',
-        error: error.response?.data || error.message
-      };
-    }
-  }
 
   /**
    * Buscar filial por ID
@@ -584,15 +554,23 @@ class FoodsApiService {
   static async getFiliais(params = {}) {
     try {
       const response = await foodsApi.get('/filiais', { params });
+      
+      let filiaisData = response.data.data || response.data;
+      if (filiaisData && filiaisData.items && Array.isArray(filiaisData.items)) {
+        filiaisData = filiaisData.items;
+      }
+      
+      const arrayData = Array.isArray(filiaisData) ? filiaisData : [];
+      
       return {
         success: true,
-        data: response.data,
+        data: arrayData,
         message: 'Filiais consultadas com sucesso'
       };
     } catch (error) {
       return {
         success: false,
-        data: null,
+        data: [],
         message: error.response?.data?.message || 'Erro ao consultar filiais',
         error: error.response?.data || error.message
       };
