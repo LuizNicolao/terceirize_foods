@@ -45,10 +45,13 @@ export const AuthProvider = ({ children }) => {
             // Validar token SSO com o backend
             const response = await api.post('/auth/sso', { token: ssoToken });
             
-            console.log('📊 Resposta do backend SSO:', response.data);
+            console.log('📊 Resposta COMPLETA do backend SSO:', JSON.stringify(response.data, null, 2));
             console.log('📦 response.data.data:', response.data.data);
-            console.log('🔑 Chaves de response.data.data:', Object.keys(response.data.data || {}));
-            console.log('👤 response.data.data.user:', response.data.data?.user);
+            const chaves = Object.keys(response.data.data || {});
+            console.log('🔑 Chaves de response.data.data:', chaves);
+            chaves.forEach(chave => {
+              console.log(`  - ${chave}:`, response.data.data[chave]);
+            });
             
             if (response.data.success) {
               const { user: userData, token: jwtToken } = response.data.data;
