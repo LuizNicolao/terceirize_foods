@@ -21,7 +21,6 @@ const EditarCotacao = () => {
     saving,
     
     // Constantes
-    locaisEntrega,
     tiposFrete,
     motivosEmergenciais,
     
@@ -78,7 +77,6 @@ const EditarCotacao = () => {
           formData={formData}
           errors={errors}
           handleInputChange={handleInputChange}
-          locaisEntrega={locaisEntrega}
           motivosEmergenciais={motivosEmergenciais}
         />
 

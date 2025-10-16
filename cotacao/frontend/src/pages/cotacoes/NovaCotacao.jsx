@@ -23,7 +23,6 @@ const NovaCotacao = () => {
     saving,
     
     // Constantes
-    locaisEntrega,
     tiposFrete,
     motivosEmergenciais,
     
@@ -65,7 +64,6 @@ const NovaCotacao = () => {
           formData={formData}
           errors={errors}
           handleInputChange={handleInputChange}
-          locaisEntrega={locaisEntrega}
           motivosEmergenciais={motivosEmergenciais}
         />
 
