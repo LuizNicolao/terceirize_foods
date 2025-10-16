@@ -40,31 +40,22 @@ const StatusEntregaTab = () => {
   const carregarFiliais = async () => {
     try {
       setLoadingFiliais(true);
-      console.log('🔍 Carregando filiais...');
       const result = await FoodsApiService.getFiliais();
-      console.log('📊 Resultado da API filiais:', result);
       
       if (result.success && Array.isArray(result.data)) {
-        console.log('🔍 Dados brutos das filiais:', result.data);
-        console.log('🔍 Primeira filial:', result.data[0]);
-        
         const filiaisFormatadas = [
           { value: '', label: 'Todas as filiais' },
-          ...result.data.map(filial => {
-            return {
-              value: filial.id.toString(),
-              label: filial.filial || filial.nome || filial.razao_social || `Filial ${filial.id}`
-            };
-          })
+          ...result.data.map(filial => ({
+            value: filial.id.toString(),
+            label: filial.filial || filial.nome || filial.razao_social || `Filial ${filial.id}`
+          }))
         ];
-        console.log('✅ Filiais formatadas:', filiaisFormatadas);
         setFiliais(filiaisFormatadas);
       } else {
-        console.warn('⚠️ Dados de filiais inválidos:', result);
         setFiliais([{ value: '', label: 'Todas as filiais' }]);
       }
     } catch (error) {
-      console.error('❌ Erro ao carregar filiais:', error);
+      console.error('Erro ao carregar filiais:', error);
       setFiliais([{ value: '', label: 'Todas as filiais' }]);
     } finally {
       setLoadingFiliais(false);
@@ -180,19 +171,9 @@ const StatusEntregaTab = () => {
         // Aplicar filtro de filial se selecionado
         let escolasFiltradas = escolas || [];
         if (filtros.filial) {
-          console.log('🔍 Filtro de filial ativo:', filtros.filial);
-          console.log('🔍 Total de escolas antes do filtro:', escolasFiltradas.length);
-          console.log('🔍 Primeira escola (para ver campos):', escolasFiltradas[0]);
-          
-          escolasFiltradas = escolasFiltradas.filter(escola => {
-            const match = escola.filial_id?.toString() === filtros.filial;
-            if (!match && escolasFiltradas.length < 5) {
-              console.log(`🔍 Escola ${escola.nome} - filial_id: ${escola.filial_id}, buscando: ${filtros.filial}`);
-            }
-            return match;
-          });
-          
-          console.log('✅ Total de escolas após filtro:', escolasFiltradas.length);
+          escolasFiltradas = escolasFiltradas.filter(escola => 
+            escola.filial_id?.toString() === filtros.filial
+          );
         }
         
         // Separar escolas recebidas e não recebidas
