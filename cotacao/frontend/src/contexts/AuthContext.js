@@ -106,8 +106,14 @@ export const AuthProvider = ({ children }) => {
                 
                 // Buscar permissões
                 const permsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
+                console.log('📋 Resposta de permissões (token local):', permsResponse.data);
+                console.log('📦 permsResponse.data.data:', permsResponse.data.data);
+                
                 if (permsResponse.data.success) {
                   const permsData = permsResponse.data.data?.data || permsResponse.data.data;
+                  console.log('🔍 permsData:', permsData);
+                  console.log('🔍 permsData?.permissions:', permsData?.permissions);
+                  
                   const userPermissions = permsData?.permissions || permsData || {};
                   setPermissions(userPermissions);
                   console.log('✅ Permissões carregadas do token local:', userPermissions);
