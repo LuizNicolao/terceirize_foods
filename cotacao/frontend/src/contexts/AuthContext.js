@@ -50,12 +50,17 @@ export const AuthProvider = ({ children }) => {
             if (response.data.success) {
               const { user: userData, token: jwtToken } = response.data.data;
               
-              console.log('✅ SSO validado com sucesso:', userData.email);
+              console.log('✅ SSO validado com sucesso:', userData?.email || 'email não encontrado');
               
               // Salvar token JWT da Cotação
               localStorage.setItem('token', jwtToken);
               api.defaults.headers.authorization = `Bearer ${jwtToken}`;
               setToken(jwtToken);
+              
+              // Verificar se userData existe
+              if (!userData) {
+                throw new Error('Dados do usuário não recebidos do servidor');
+              }
               
               // Salvar usuário
               setUser(userData);
