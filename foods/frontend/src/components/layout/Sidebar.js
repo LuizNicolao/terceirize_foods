@@ -284,11 +284,16 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           e.preventDefault();
                           const ssoToken = localStorage.getItem('ssoToken');
                           
+                          console.log('🔍 Abrindo Cotação (mobile)...');
+                          console.log('🔑 SSO Token disponível:', !!ssoToken);
+                          
                           if (ssoToken) {
-                            // Passar token SSO na URL
-                            window.open(`https://foods.terceirizemais.com.br/cotacao?sso_token=${ssoToken}`, '_blank');
+                            const url = `https://foods.terceirizemais.com.br/cotacao?sso_token=${ssoToken}`;
+                            console.log('✅ Abrindo Cotação com SSO Token');
+                            window.open(url, '_blank');
                           } else {
-                            console.error('Token SSO não encontrado');
+                            console.error('❌ Token SSO não encontrado no localStorage');
+                            console.log('ℹ️ Abrindo Cotação sem SSO (usuário verá tela de acesso restrito)');
                             window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
                           }
                         }
@@ -362,11 +367,16 @@ const Sidebar = ({ collapsed, onToggle }) => {
                           e.preventDefault();
                           const ssoToken = localStorage.getItem('ssoToken');
                           
+                          console.log('🔍 Abrindo Cotação...');
+                          console.log('🔑 SSO Token disponível:', !!ssoToken);
+                          
                           if (ssoToken) {
-                            // Passar token SSO na URL
-                            window.open(`https://foods.terceirizemais.com.br/cotacao?sso_token=${ssoToken}`, '_blank');
+                            const url = `https://foods.terceirizemais.com.br/cotacao?sso_token=${ssoToken}`;
+                            console.log('✅ Abrindo Cotação com SSO Token');
+                            window.open(url, '_blank');
                           } else {
-                            console.error('Token SSO não encontrado');
+                            console.error('❌ Token SSO não encontrado no localStorage');
+                            console.log('ℹ️ Abrindo Cotação sem SSO (usuário verá tela de acesso restrito)');
                             window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
                           }
                         }

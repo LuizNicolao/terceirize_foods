@@ -22,43 +22,55 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const validateSSOToken = async () => {
       try {
+        console.log('🔍 Iniciando validação SSO...');
+        
         // Capturar token SSO da URL
         const params = new URLSearchParams(window.location.search);
         const ssoToken = params.get('sso_token');
         
+        console.log('🔑 Token SSO na URL:', ssoToken ? 'Sim' : 'Não');
+        
         if (ssoToken) {
-          console.log('🔐 Token SSO encontrado na URL, validando...');
+          console.log('🔐 Token SSO encontrado, validando com backend...');
           
           // Limpar URL (remover token da URL por segurança)
           window.history.replaceState({}, document.title, '/cotacao');
           
-          // Validar token SSO com o backend
-          const response = await api.post('/auth/sso', { token: ssoToken });
-          
-          if (response.data.success) {
-            const { user: userData, token: jwtToken } = response.data.data;
+          try {
+            // Validar token SSO com o backend
+            const response = await api.post('/auth/sso', { token: ssoToken });
             
-            console.log('✅ SSO validado com sucesso:', userData.email);
+            console.log('📊 Resposta do backend SSO:', response.data);
             
-            // Salvar token JWT da Cotação
-            localStorage.setItem('token', jwtToken);
-            api.defaults.headers.authorization = `Bearer ${jwtToken}`;
-            setToken(jwtToken);
-            
-            // Salvar usuário
-            setUser(userData);
-            
-            // Buscar permissões do usuário
-            const permsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
-            if (permsResponse.data.success) {
-              setPermissions(permsResponse.data.data.permissions || {});
+            if (response.data.success) {
+              const { user: userData, token: jwtToken } = response.data.data;
+              
+              console.log('✅ SSO validado com sucesso:', userData.email);
+              
+              // Salvar token JWT da Cotação
+              localStorage.setItem('token', jwtToken);
+              api.defaults.headers.authorization = `Bearer ${jwtToken}`;
+              setToken(jwtToken);
+              
+              // Salvar usuário
+              setUser(userData);
+              
+              // Buscar permissões do usuário
+              const permsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
+              if (permsResponse.data.success) {
+                setPermissions(permsResponse.data.data.permissions || {});
+                console.log('✅ Permissões carregadas:', permsResponse.data.data.permissions);
+              }
+            } else {
+              console.error('❌ Erro na validação SSO:', response.data.message);
             }
-          } else {
-            console.error('❌ Erro na validação SSO:', response.data.message);
+          } catch (error) {
+            console.error('❌ Erro ao chamar /auth/sso:', error);
           }
           
           setLoading(false);
         } else {
+          console.log('ℹ️ Sem token SSO na URL, verificando token local...');
           // Sem token SSO - verificar se já tem token local
           const localToken = localStorage.getItem('token');
           if (localToken) {
@@ -74,10 +86,15 @@ export const AuthProvider = ({ children }) => {
                 if (permsResponse.data.success) {
                   setPermissions(permsResponse.data.data.permissions || {});
                 }
+              } else {
+                // Token inválido
+                localStorage.removeItem('token');
+                setUser(null);
               }
             } catch (error) {
-              console.error('Token local inválido');
+              // Token expirado ou inválido - limpar
               localStorage.removeItem('token');
+              setUser(null);
             }
           }
           setLoading(false);
