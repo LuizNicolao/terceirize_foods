@@ -47,6 +47,7 @@ export const AuthProvider = ({ children }) => {
             
             console.log('📊 Resposta do backend SSO:', response.data);
             console.log('📦 response.data.data:', response.data.data);
+            console.log('🔑 Chaves de response.data.data:', Object.keys(response.data.data || {}));
             console.log('👤 response.data.data.user:', response.data.data?.user);
             
             if (response.data.success) {
