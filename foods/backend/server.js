@@ -1,5 +1,14 @@
 require('dotenv').config();
 
+// Debug: verificar variáveis de ambiente
+console.log('🔧 Variáveis de ambiente carregadas (Foods):');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('JWT_SECRET:', process.env.JWT_SECRET ? '✅ Definida' : '❌ Não definida');
+console.log('SSO_SECRET:', process.env.SSO_SECRET ? '✅ Definida' : '❌ Não definida');
+console.log('DB_HOST:', process.env.DB_HOST);
+console.log('DB_NAME:', process.env.DB_NAME);
+
 // Importar configurações da aplicação
 const { app, PORT, limiter, loginLimiter } = require('./config/app');
 
