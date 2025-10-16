@@ -113,50 +113,133 @@ class AuthController {
   static ssoLogin = asyncHandler(async (req, res) => {
     const { token } = req.body;
 
-    // Aqui você implementaria a lógica de validação do token SSO
-    // Por enquanto, vamos simular uma validação
-    
-    // Simular busca de usuário por token SSO
-    const users = await executeQuery(`
-      SELECT id, name, email, role, status
-      FROM users WHERE email = 'admin@example.com'
-    `);
-
-    if (users.length === 0) {
-      return unauthorizedResponse(res, 'Token SSO inválido');
+    if (!token) {
+      return unauthorizedResponse(res, 'Token SSO não fornecido');
     }
 
-    const user = users[0];
+    try {
+      // Validar token SSO com o secret compartilhado
+      const ssoSecret = process.env.SSO_SECRET || process.env.JWT_SECRET;
+      const decoded = jwt.verify(token, ssoSecret);
 
-    if (user.status !== 'ativo') {
-      return unauthorizedResponse(res, 'Usuário inativo');
+      // Verificar se o token é do sistema Foods
+      if (decoded.sistema !== 'foods') {
+        return unauthorizedResponse(res, 'Token SSO inválido - sistema não reconhecido');
+      }
+
+      // Buscar usuário por email
+      let users = await executeQuery(`
+        SELECT id, name, email, role, status
+        FROM users WHERE email = ?
+      `, [decoded.email]);
+
+      let user;
+
+      // Se usuário não existe, criar automaticamente
+      if (users.length === 0) {
+        console.log(`📝 Criando usuário SSO: ${decoded.email}`);
+        
+        // Mapear role do Foods para role da Cotação
+        const roleMap = {
+          'administrador': 'administrador',
+          'gestor': 'gestor',
+          'nutricionista': 'comprador',
+          'supervisor': 'supervisor'
+        };
+        const mappedRole = roleMap[decoded.tipo_de_acesso] || 'comprador';
+
+        // Criar usuário sem senha (SSO only)
+        const result = await executeQuery(`
+          INSERT INTO users (name, email, password, role, status, created_at)
+          VALUES (?, ?, ?, ?, 'ativo', NOW())
+        `, [
+          decoded.nome,
+          decoded.email,
+          '$2a$10$SSOUSER.NO.PASSWORD.HASH', // Hash placeholder para SSO
+          mappedRole
+        ]);
+
+        // Criar permissões padrão baseadas no role
+        const userId = result.insertId;
+        await AuthController.createDefaultPermissions(userId, mappedRole);
+
+        // Buscar usuário recém-criado
+        users = await executeQuery(`
+          SELECT id, name, email, role, status
+          FROM users WHERE id = ?
+        `, [userId]);
+      }
+
+      user = users[0];
+
+      // Verificar se usuário está ativo
+      if (user.status !== 'ativo') {
+        return unauthorizedResponse(res, 'Usuário inativo');
+      }
+
+      console.log(`✅ SSO Login bem-sucedido: ${user.email}`);
+
+      // Gerar token JWT da Cotação
+      const jwtToken = jwt.sign(
+        { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email, 
+          role: user.role 
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' }
+      );
+
+      // Adicionar links HATEOAS
+      const responseData = res.addHateoasLinks({
+        user,
+        token: jwtToken
+      });
+
+      return successResponse(
+        res, 
+        responseData, 
+        'SSO Login realizado com sucesso', 
+        200
+      );
+
+    } catch (error) {
+      console.error('❌ Erro na validação SSO:', error.message);
+      return unauthorizedResponse(res, 'Token SSO inválido ou expirado');
     }
-
-    // Gerar novo token JWT
-    const jwtToken = jwt.sign(
-      { 
-        id: user.id, 
-        name: user.name, 
-        email: user.email, 
-        role: user.role 
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    // Adicionar links HATEOAS
-    const responseData = res.addHateoasLinks({
-      user,
-      token: jwtToken
-    });
-
-    return successResponse(
-      res, 
-      responseData, 
-      'SSO Login realizado com sucesso', 
-      200
-    );
   });
+
+  // Helper: Criar permissões padrão para usuário SSO
+  static async createDefaultPermissions(userId, role) {
+    const screens = ['cotacoes', 'fornecedores', 'produtos', 'aprovacoes'];
+    
+    // Definir permissões baseadas no role
+    const permissions = {
+      'administrador': { view: 1, create: 1, edit: 1, delete: 1 },
+      'gestor': { view: 1, create: 1, edit: 1, delete: 0 },
+      'supervisor': { view: 1, create: 1, edit: 1, delete: 0 },
+      'comprador': { view: 1, create: 1, edit: 0, delete: 0 }
+    };
+
+    const userPerms = permissions[role] || permissions['comprador'];
+
+    for (const screen of screens) {
+      await executeQuery(`
+        INSERT INTO user_permissions (user_id, screen, can_view, can_create, can_edit, can_delete)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [
+        userId,
+        screen,
+        userPerms.view,
+        userPerms.create,
+        userPerms.edit,
+        userPerms.delete
+      ]);
+    }
+
+    console.log(`✅ Permissões padrão criadas para usuário ${userId} (${role})`);
+  }
 
   // Buscar permissões do usuário
   static getUserPermissions = asyncHandler(async (req, res) => {

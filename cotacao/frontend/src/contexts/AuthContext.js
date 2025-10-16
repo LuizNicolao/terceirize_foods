@@ -26,61 +26,77 @@ export const AuthProvider = ({ children }) => {
     aprovacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true }
   });
 
-    // Buscar usuário do sistema de cotação baseado no email do Foods
+    // Validar token SSO da URL
   useEffect(() => {
-    const findUserByEmail = async () => {
+    const validateSSOToken = async () => {
       try {
-        // Tentar ler dados do sessionStorage primeiro
-        const foodsUserData = sessionStorage.getItem('foodsUser');
+        // Capturar token SSO da URL
+        const params = new URLSearchParams(window.location.search);
+        const ssoToken = params.get('sso_token');
         
-        if (foodsUserData) {
-          const foodsUser = JSON.parse(foodsUserData);
+        if (ssoToken) {
+          console.log('🔐 Token SSO encontrado na URL, validando...');
           
-          // Buscar usuário no sistema de cotação por email
-          const response = await api.get(`/users/by-email/${encodeURIComponent(foodsUser.email)}`);
+          // Limpar URL (remover token da URL por segurança)
+          window.history.replaceState({}, document.title, '/cotacao');
           
-          if (response.data.data) {
-            // Usuário encontrado no sistema de cotação
-            setUser(response.data.data.data);
+          // Validar token SSO com o backend
+          const response = await api.post('/auth/sso', { token: ssoToken });
+          
+          if (response.data.success) {
+            const { user: userData, token: jwtToken } = response.data.data;
             
-            // Usar permissões que já vêm na resposta do usuário
-            if (response.data.data.data.permissions) {
-              // Converter array de permissões para objeto
-              const permissionsObj = {};
-              response.data.data.data.permissions.forEach(perm => {
-                permissionsObj[perm.screen] = {
-                  can_view: perm.can_view === 1,
-                  can_create: perm.can_create === 1,
-                  can_edit: perm.can_edit === 1,
-                  can_delete: perm.can_delete === 1
-                };
-              });
-              setPermissions(permissionsObj);
-            } else {
-              setPermissions({});
+            console.log('✅ SSO validado com sucesso:', userData.email);
+            
+            // Salvar token JWT da Cotação
+            localStorage.setItem('token', jwtToken);
+            api.defaults.headers.authorization = `Bearer ${jwtToken}`;
+            setToken(jwtToken);
+            
+            // Salvar usuário
+            setUser(userData);
+            
+            // Buscar permissões do usuário
+            const permsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
+            if (permsResponse.data.success) {
+              setPermissions(permsResponse.data.data.permissions || {});
             }
           } else {
-            // Usuário não encontrado, usar dados do Foods
-            setUser(foodsUser);
-            setPermissions({});
+            console.error('❌ Erro na validação SSO:', response.data.message);
           }
           
-          // Definir loading como false após processar
           setLoading(false);
-          
-          // Limpar dados do sessionStorage APÓS definir o usuário
-          sessionStorage.removeItem('foodsUser');
         } else {
+          // Sem token SSO - verificar se já tem token local
+          const localToken = localStorage.getItem('token');
+          if (localToken) {
+            api.defaults.headers.authorization = `Bearer ${localToken}`;
+            setToken(localToken);
+            // Verificar token local
+            try {
+              const response = await api.get('/auth/verify');
+              if (response.data.success) {
+                setUser(response.data.data.user);
+                // Buscar permissões
+                const permsResponse = await api.get(`/auth/users/${response.data.data.user.id}/permissions`);
+                if (permsResponse.data.success) {
+                  setPermissions(permsResponse.data.data.permissions || {});
+                }
+              }
+            } catch (error) {
+              console.error('Token local inválido');
+              localStorage.removeItem('token');
+            }
+          }
           setLoading(false);
         }
       } catch (error) {
-        console.error('Erro ao buscar usuário:', error);
-        // Em caso de erro, manter usuário padrão
+        console.error('❌ Erro no SSO:', error);
         setLoading(false);
       }
     };
 
-    findUserByEmail();
+    validateSSOToken();
   }, []);
 
   // DESABILITADO - Login centralizado no Foods
