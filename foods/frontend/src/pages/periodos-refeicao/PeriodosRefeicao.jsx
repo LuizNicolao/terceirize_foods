@@ -55,7 +55,10 @@ const PeriodosRefeicao = () => {
     handleAuditClose,
     handleValidationErrorClose,
     formatDate,
-    getStatusLabel
+    getStatusLabel,
+    sortField,
+    sortDirection,
+    handleSort
   } = usePeriodosRefeicao();
 
   const {
@@ -160,6 +163,9 @@ const PeriodosRefeicao = () => {
           onDelete={handleDeletePeriodo}
           getStatusLabel={getStatusLabel}
           formatDate={formatDate}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSort={handleSort}
         />
       </div>
 
