@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaCalendarAlt, FaSchool, FaUser, FaClock, FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import { EmptyState } from '../ui';
+import { formatarDataParaExibicao } from '../../utils/dateUtils';
 
 const HistoricoTab = ({ historico, loading }) => {
   if (loading) {
@@ -90,13 +91,15 @@ const HistoricoTab = ({ historico, loading }) => {
                     </h4>
                     <span className="text-xs text-gray-500 flex items-center">
                       <FaClock className="mr-1" />
-                      {new Date(item.data_acao).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
+                      {(() => {
+                        const date = new Date(item.data_acao);
+                        const dia = String(date.getDate()).padStart(2, '0');
+                        const mes = String(date.getMonth() + 1).padStart(2, '0');
+                        const ano = date.getFullYear();
+                        const hora = String(date.getHours()).padStart(2, '0');
+                        const min = String(date.getMinutes()).padStart(2, '0');
+                        return `${dia}/${mes}/${ano}, ${hora}:${min}`;
+                      })()}
                     </span>
                   </div>
                   
@@ -112,7 +115,7 @@ const HistoricoTab = ({ historico, loading }) => {
                       <FaCalendarAlt className="mr-2 text-blue-600" />
                       <span className="font-medium">Data Registro:</span>
                       <span className="ml-2">
-                        {new Date(item.data).toLocaleDateString('pt-BR')}
+                        {formatarDataParaExibicao(item.data)}
                       </span>
                     </div>
                     
