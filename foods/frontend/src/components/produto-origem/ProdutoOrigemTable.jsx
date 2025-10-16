@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaBox } from 'react-icons/fa';
-import { ActionButtons, EmptyState } from '../ui';
+import { ActionButtons, EmptyState, SortableTableHeader } from '../ui';
 
 const ProdutoOrigemTable = ({
   produtosOrigem,
@@ -15,7 +15,10 @@ const ProdutoOrigemTable = ({
   getClasseName,
   getUnidadeMedidaName,
   getUnidadeMedidaSigla,
-  getProdutoGenericoPadraoName
+  getProdutoGenericoPadraoName,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (!produtosOrigem || produtosOrigem.length === 0) {
     return (
@@ -35,12 +38,20 @@ const ProdutoOrigemTable = ({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Código
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nome
-                </th>
+                <SortableTableHeader
+                  label="Código"
+                  field="codigo"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Nome"
+                  field="nome"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Unidade
                 </th>
@@ -53,9 +64,13 @@ const ProdutoOrigemTable = ({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Classe
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
+                <SortableTableHeader
+                  label="Status"
+                  field="status"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ref. Mercado
                 </th>

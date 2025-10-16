@@ -64,7 +64,10 @@ const ProdutoOrigem = () => {
     getSubgrupoName,
     getClasseName,
     getUnidadeMedidaName,
-    getUnidadeMedidaSigla
+    getUnidadeMedidaSigla,
+    sortField,
+    sortDirection,
+    handleSort
   } = useProdutoOrigem();
 
   const {
@@ -208,6 +211,9 @@ const ProdutoOrigem = () => {
         getClasseName={getClasseName}
         getUnidadeMedidaName={getUnidadeMedidaName}
         getUnidadeMedidaSigla={getUnidadeMedidaSigla}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Paginação */}
