@@ -23,12 +23,17 @@ export const AuthProvider = ({ children }) => {
     const validateSSOToken = async () => {
       try {
         console.log('🔍 Iniciando validação SSO...');
+        console.log('🌐 URL completa:', window.location.href);
+        console.log('🔍 Query string:', window.location.search);
         
         // Capturar token SSO da URL
         const params = new URLSearchParams(window.location.search);
         const ssoToken = params.get('sso_token');
         
         console.log('🔑 Token SSO na URL:', ssoToken ? 'Sim' : 'Não');
+        if (ssoToken) {
+          console.log('🔑 Token SSO (primeiros 50 chars):', ssoToken.substring(0, 50) + '...');
+        }
         
         if (ssoToken) {
           console.log('🔐 Token SSO encontrado, validando com backend...');
