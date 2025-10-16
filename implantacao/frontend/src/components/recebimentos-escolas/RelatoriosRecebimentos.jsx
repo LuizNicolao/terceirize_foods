@@ -6,6 +6,7 @@ import useRecebimentosEscolas from '../../hooks/useRecebimentosEscolas';
 import useRecebimentosRelatorios from '../../hooks/useRecebimentosRelatorios';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
+import FoodsApiService from '../../services/FoodsApiService';
 import toast from 'react-hot-toast';
 import StatusEntregaTab from './StatusEntregaTab';
 
@@ -52,6 +53,10 @@ const RelatoriosRecebimentos = () => {
   // Estados locais
   const [activeTab, setActiveTab] = useState(isNutricionista ? 'status-entrega' : 'dashboard');
   
+  // Estado para filiais
+  const [filiais, setFiliais] = useState([]);
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
+  
   // Filtros específicos por aba
   const [filtrosDashboard, setFiltrosDashboard] = useState({
     tipo_entrega: '',
@@ -68,11 +73,32 @@ const RelatoriosRecebimentos = () => {
   const [filtrosCompletos, setFiltrosCompletos] = useState({
     tipo_entrega: '',
     rota: '',
-    semana_abastecimento: ''
+    semana_abastecimento: '',
+    filial: ''
   });
   
   // Estado para controle de inicialização
   const [inicializado, setInicializado] = useState(false);
+
+  // Carregar filiais
+  const carregarFiliais = async () => {
+    try {
+      setLoadingFiliais(true);
+      const result = await FoodsApiService.getFiliais();
+      if (result.success) {
+        const filiaisFormatadas = result.data.map(filial => ({
+          value: filial.id.toString(),
+          label: filial.nome
+        }));
+        setFiliais(filiaisFormatadas);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar filiais:', error);
+      toast.error('Erro ao carregar filiais');
+    } finally {
+      setLoadingFiliais(false);
+    }
+  };
 
   // Inicializar filtros com semana atual
   useEffect(() => {
@@ -84,6 +110,11 @@ const RelatoriosRecebimentos = () => {
       setInicializado(true);
     }
   }, [obterValorPadrao, inicializado]);
+
+  // Carregar filiais quando o componente montar
+  useEffect(() => {
+    carregarFiliais();
+  }, []);
 
   const tiposEntrega = [
     { value: '', label: 'Selecione um tipo...' },
@@ -196,7 +227,7 @@ const RelatoriosRecebimentos = () => {
                     setFiltrosPendencias({ tipo_entrega: '', rota: '', semana_abastecimento: obterValorPadrao() });
                     break;
                   case 'completos':
-                    setFiltrosCompletos({ tipo_entrega: '', rota: '', semana_abastecimento: obterValorPadrao() });
+                    setFiltrosCompletos({ tipo_entrega: '', rota: '', semana_abastecimento: obterValorPadrao(), filial: '' });
                     break;
                 }
               }}
@@ -208,7 +239,7 @@ const RelatoriosRecebimentos = () => {
           </Button>
           )}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className={`grid grid-cols-1 ${aba === 'completos' ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4`}>
           <div>
             <SearchableSelect
               label="Tipo de Entrega"
@@ -241,6 +272,19 @@ const RelatoriosRecebimentos = () => {
               disabled={loading}
             />
           </div>
+          
+          {aba === 'completos' && (
+            <div>
+              <SearchableSelect
+                label="Filial"
+                value={filtrosAtivos.filial}
+                onChange={(value) => handleFiltroChange(aba, 'filial', value)}
+                options={filiais}
+                placeholder="Selecione uma filial..."
+                disabled={loading || loadingFiliais}
+              />
+            </div>
+          )}
         </div>
       </div>
     );
