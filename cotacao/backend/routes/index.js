@@ -4,7 +4,7 @@
  */
 
 // Importar todas as rotas
-// const authRoutes = require('./auth/authRoute'); // DESABILITADO - Autenticação centralizada no Foods
+const authRoutes = require('./auth/authRoute'); // Necessário para SSO
 const usuariosRoutes = require('./usuarios');
 const cotacoesRoutes = require('./cotacoes/index');
 const dashboardRoutes = require('./dashboard/dashboardRoute');
@@ -26,7 +26,7 @@ const { aprovacoesRoute } = require('./aprovacoes');
 
 // Definir todas as rotas com seus caminhos
 const routes = [
-  // { path: '/auth', router: authRoutes }, // DESABILITADO - Autenticação centralizada no Foods
+  { path: '/auth', router: authRoutes }, // Necessário para SSO (/auth/sso, /auth/verify)
   { path: '/users', router: usuariosRoutes },
   { path: '/cotacoes', router: cotacoesRoutes },
   { path: '/dashboard', router: dashboardRoutes },
