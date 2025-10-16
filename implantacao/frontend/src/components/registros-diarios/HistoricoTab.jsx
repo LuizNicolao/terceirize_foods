@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaCalendarAlt, FaSchool, FaUser, FaClock, FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
 import { EmptyState } from '../ui';
-import { formatarDataParaExibicao } from '../../utils/dateUtils';
+import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
 
 const HistoricoTab = ({ historico, loading }) => {
   if (loading) {
