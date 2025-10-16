@@ -45,12 +45,18 @@ const StatusEntregaTab = () => {
       console.log('📊 Resultado da API filiais:', result);
       
       if (result.success && Array.isArray(result.data)) {
+        console.log('🔍 Dados brutos das filiais:', result.data);
+        console.log('🔍 Primeira filial:', result.data[0]);
+        
         const filiaisFormatadas = [
           { value: '', label: 'Todas as filiais' },
-          ...result.data.map(filial => ({
-            value: filial.id.toString(),
-            label: filial.nome
-          }))
+          ...result.data.map(filial => {
+            console.log('🔍 Processando filial:', filial);
+            return {
+              value: filial.id.toString(),
+              label: filial.nome || filial.filial || filial.razao_social || `Filial ${filial.id}`
+            };
+          })
         ];
         console.log('✅ Filiais formatadas:', filiaisFormatadas);
         setFiliais(filiaisFormatadas);
