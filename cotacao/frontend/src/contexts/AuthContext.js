@@ -74,28 +74,35 @@ export const AuthProvider = ({ children }) => {
           // Sem token SSO - verificar se já tem token local
           const localToken = localStorage.getItem('token');
           if (localToken) {
+            console.log('🔑 Token local encontrado, verificando validade...');
             api.defaults.headers.authorization = `Bearer ${localToken}`;
             setToken(localToken);
             // Verificar token local
             try {
               const response = await api.get('/auth/verify');
               if (response.data.success) {
+                console.log('✅ Token local válido, usuário autenticado');
                 setUser(response.data.data.user);
                 // Buscar permissões
                 const permsResponse = await api.get(`/auth/users/${response.data.data.user.id}/permissions`);
                 if (permsResponse.data.success) {
                   setPermissions(permsResponse.data.data.permissions || {});
+                  console.log('✅ Permissões carregadas do token local');
                 }
               } else {
                 // Token inválido
+                console.log('❌ Token local inválido, limpando...');
                 localStorage.removeItem('token');
                 setUser(null);
               }
             } catch (error) {
-              // Token expirado ou inválido - limpar
+              // Token expirado ou inválido - limpar silenciosamente
+              console.log('ℹ️ Token local expirado ou inválido');
               localStorage.removeItem('token');
               setUser(null);
             }
+          } else {
+            console.log('ℹ️ Nenhum token encontrado, usuário não autenticado');
           }
           setLoading(false);
         }

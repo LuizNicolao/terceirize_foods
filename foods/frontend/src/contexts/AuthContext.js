@@ -95,6 +95,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('rememberMe');
+    localStorage.removeItem('ssoToken'); // Limpar token SSO também
     delete api.defaults.headers.authorization;
     setToken(null);
     setUser(null);
