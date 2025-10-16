@@ -69,9 +69,15 @@ export const AuthProvider = ({ children }) => {
               
               // Buscar permissões do usuário
               const permsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
+              console.log('📋 Resposta de permissões:', permsResponse.data);
+              
               if (permsResponse.data.success) {
-                setPermissions(permsResponse.data.data.permissions || {});
-                console.log('✅ Permissões carregadas:', permsResponse.data.data.permissions);
+                // Mesmo problema: dois níveis de "data"
+                const permsData = permsResponse.data.data?.data || permsResponse.data.data;
+                const userPermissions = permsData?.permissions || permsData || {};
+                
+                setPermissions(userPermissions);
+                console.log('✅ Permissões carregadas:', userPermissions);
               }
             } else {
               console.error('❌ Erro na validação SSO:', response.data.message);
@@ -94,11 +100,16 @@ export const AuthProvider = ({ children }) => {
               const response = await api.get('/auth/verify');
               if (response.data.success) {
                 console.log('✅ Token local válido, usuário autenticado');
-                setUser(response.data.data.user);
+                // Dois níveis de data
+                const userData = response.data.data?.user || response.data.data;
+                setUser(userData);
+                
                 // Buscar permissões
-                const permsResponse = await api.get(`/auth/users/${response.data.data.user.id}/permissions`);
+                const permsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
                 if (permsResponse.data.success) {
-                  setPermissions(permsResponse.data.data.permissions || {});
+                  const permsData = permsResponse.data.data?.data || permsResponse.data.data;
+                  const userPermissions = permsData?.permissions || permsData || {};
+                  setPermissions(userPermissions);
                   console.log('✅ Permissões carregadas do token local');
                 }
               } else {
