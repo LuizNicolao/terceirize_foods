@@ -110,7 +110,7 @@ export const AuthProvider = ({ children }) => {
                   const permsData = permsResponse.data.data?.data || permsResponse.data.data;
                   const userPermissions = permsData?.permissions || permsData || {};
                   setPermissions(userPermissions);
-                  console.log('✅ Permissões carregadas do token local');
+                  console.log('✅ Permissões carregadas do token local:', userPermissions);
                 }
               } else {
                 // Token inválido
