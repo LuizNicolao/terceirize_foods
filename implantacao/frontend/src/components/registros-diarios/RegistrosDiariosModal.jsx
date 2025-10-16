@@ -266,7 +266,7 @@ const RegistrosDiariosModal = ({
       isOpen={isOpen}
       onClose={onClose}
       title={isViewMode ? 'Visualizar Quantidade Servida' : registro ? 'Editar Quantidade Servida' : 'Nova Quantidade Servida'}
-      size="xl"
+      size="6xl"
     >
       {isViewMode && (
         <div className="mb-4">
