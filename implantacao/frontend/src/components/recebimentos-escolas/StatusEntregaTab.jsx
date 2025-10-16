@@ -51,10 +51,9 @@ const StatusEntregaTab = () => {
         const filiaisFormatadas = [
           { value: '', label: 'Todas as filiais' },
           ...result.data.map(filial => {
-            console.log('🔍 Processando filial:', filial);
             return {
               value: filial.id.toString(),
-              label: filial.nome || filial.filial || filial.razao_social || `Filial ${filial.id}`
+              label: filial.filial || filial.nome || filial.razao_social || `Filial ${filial.id}`
             };
           })
         ];

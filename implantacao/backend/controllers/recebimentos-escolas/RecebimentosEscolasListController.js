@@ -594,7 +594,8 @@ const listarEscolasNutricionista = async (req, res) => {
             id: unidade.id,
             nome_escola: unidade.nome_escola || unidade.nome,
             rota: unidade.rota_nome || unidade.rota || 'N/A',
-            cidade: unidade.cidade || ''
+            cidade: unidade.cidade || '',
+            filial_id: unidade.filial_id
           }));
 
           return res.json({
