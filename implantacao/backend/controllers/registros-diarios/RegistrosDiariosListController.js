@@ -54,6 +54,10 @@ class RegistrosDiariosListController {
       // Buscar registros agrupados por escola (apenas o mais recente de cada escola)
       // Pivotear os tipos de refeição em colunas
       // IMPORTANTE: LIMIT e OFFSET interpolados diretamente (números seguros)
+      
+      // Criar whereClause para subquery (substituir rd. por alias correto)
+      const subqueryWhere = whereClause.replace(/rd\./g, 'registros_diarios.');
+      
       const query = `
         SELECT 
           rd.escola_id,
@@ -71,7 +75,7 @@ class RegistrosDiariosListController {
         INNER JOIN (
           SELECT escola_id, MAX(data) as max_data
           FROM registros_diarios
-          ${whereClause}
+          ${subqueryWhere}
           GROUP BY escola_id
         ) rd_recente ON rd.escola_id = rd_recente.escola_id AND rd.data = rd_recente.max_data
         ${whereClause}
