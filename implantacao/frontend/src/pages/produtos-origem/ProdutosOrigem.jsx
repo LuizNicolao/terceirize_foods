@@ -95,7 +95,7 @@ const ProdutosOrigem = () => {
             </div>
             
       {/* Estatísticas */}
-      <ProdutosOrigemStats estatisticas={stats} />
+      <ProdutosOrigemStats stats={stats} />
 
         {/* Filtros */}
       <CadastroFilterBar
