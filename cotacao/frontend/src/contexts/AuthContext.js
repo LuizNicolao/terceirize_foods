@@ -45,27 +45,23 @@ export const AuthProvider = ({ children }) => {
             // Validar token SSO com o backend
             const response = await api.post('/auth/sso', { token: ssoToken });
             
-            console.log('📊 Resposta COMPLETA do backend SSO:', JSON.stringify(response.data, null, 2));
-            console.log('📦 response.data.data:', response.data.data);
-            const chaves = Object.keys(response.data.data || {});
-            console.log('🔑 Chaves de response.data.data:', chaves);
-            chaves.forEach(chave => {
-              console.log(`  - ${chave}:`, response.data.data[chave]);
-            });
-            
             if (response.data.success) {
-              const { user: userData, token: jwtToken } = response.data.data;
+              // CORREÇÃO: A resposta tem dois níveis de "data"
+              // response.data.data.data (não response.data.data)
+              const responseData = response.data.data?.data || response.data.data;
+              const { user: userData, token: jwtToken } = responseData;
               
-              console.log('✅ SSO validado com sucesso:', userData?.email || 'email não encontrado');
+              console.log('✅ SSO validado com sucesso:', userData?.email);
               
               // Salvar token JWT da Cotação
               localStorage.setItem('token', jwtToken);
               api.defaults.headers.authorization = `Bearer ${jwtToken}`;
               setToken(jwtToken);
               
-              // Verificar se userData existe
-              if (!userData) {
-                throw new Error('Dados do usuário não recebidos do servidor');
+              // Verificar se userData e token existem
+              if (!userData || !jwtToken) {
+                console.error('❌ Dados incompletos:', { userData, jwtToken });
+                throw new Error('Dados do usuário ou token não recebidos do servidor');
               }
               
               // Salvar usuário
