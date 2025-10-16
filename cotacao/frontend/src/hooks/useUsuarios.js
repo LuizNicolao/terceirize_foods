@@ -42,15 +42,18 @@ export const useUsuarios = () => {
   };
 
   const handleView = (user) => {
-    navigate(`/visualizar-usuario/${user.id}`);
+    toast.error('Funcionalidade de visualização ainda não implementada');
+    // navigate(`/visualizar-usuario/${user.id}`);
   };
 
   const handleEdit = (user) => {
-    navigate(`/editar-usuario/${user.id}`);
+    toast.error('Funcionalidade de edição ainda não implementada');
+    // navigate(`/editar-usuario/${user.id}`);
   };
 
   const handleCreate = () => {
-    navigate('/editar-usuario/new');
+    toast.error('Funcionalidade de criação ainda não implementada');
+    // navigate('/editar-usuario/new');
   };
 
   const handleDelete = async (userId) => {
