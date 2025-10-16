@@ -46,7 +46,10 @@ const Intolerancias = () => {
     setSearchTerm,
     handleKeyPress,
     setStatusFilter,
-    formatDate
+    formatDate,
+    sortField,
+    sortDirection,
+    handleSort
   } = useIntolerancias();
 
   const {
@@ -128,6 +131,9 @@ const Intolerancias = () => {
         onView={canView('intolerancias') ? handleViewIntolerancia : null}
         onEdit={canEdit('intolerancias') ? handleEditIntolerancia : null}
         onDelete={canDelete('intolerancias') ? handleDeleteIntolerancia : null}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Intolerância */}
