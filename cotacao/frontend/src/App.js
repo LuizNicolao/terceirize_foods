@@ -80,6 +80,20 @@ const AuthenticatedRoute = ({ children }) => {
   return <Layout>{children}</Layout>;
 };
 
+// Componente para capturar SSO token da raiz e redirecionar
+const SSORedirect = () => {
+  const params = new URLSearchParams(window.location.search);
+  const ssoToken = params.get('sso_token');
+  
+  if (ssoToken) {
+    // Redirecionar para dashboard preservando o token
+    return <Navigate to={`/dashboard?sso_token=${ssoToken}`} replace />;
+  }
+  
+  // Sem token, redirecionar normalmente
+  return <Navigate to="/dashboard" replace />;
+};
+
 function AppRoutes() {
   return (
     <Routes>
@@ -256,9 +270,10 @@ function AppRoutes() {
 
 
 
+      {/* Rota raiz - capturar SSO token e redirecionar */}
       <Route 
         path="/" 
-        element={<Navigate to="/dashboard" />} 
+        element={<SSORedirect />} 
       />
     </Routes>
   );
