@@ -98,10 +98,15 @@ export const AuthProvider = ({ children }) => {
             // Verificar token local
             try {
               const response = await api.get('/auth/verify');
+              console.log('🔍 Resposta do /auth/verify:', response.data);
+              console.log('🔍 response.data.data:', response.data.data);
+              
               if (response.data.success) {
                 console.log('✅ Token local válido, usuário autenticado');
                 // Dois níveis de data
-                const userData = response.data.data?.user || response.data.data;
+                const verifyData = response.data.data?.data || response.data.data;
+                const userData = verifyData?.user || verifyData;
+                console.log('👤 userData extraído:', userData);
                 setUser(userData);
                 
                 // Buscar permissões
