@@ -47,18 +47,12 @@ export const AuthProvider = ({ children }) => {
       });
       const { token: newToken, user: userData, ssoToken } = response.data;
       
-      console.log('🔐 Login Foods - Token recebido:', !!newToken);
-      console.log('🔐 SSO Token recebido:', !!ssoToken);
-      
       // Salvar token no localStorage
       localStorage.setItem('token', newToken);
       
       // Salvar token SSO (para sistemas externos)
       if (ssoToken) {
         localStorage.setItem('ssoToken', ssoToken);
-        console.log('✅ SSO Token salvo no localStorage');
-      } else {
-        console.warn('⚠️ SSO Token não foi retornado pelo backend');
       }
       
       // Salvar usuário no localStorage
