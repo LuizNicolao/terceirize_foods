@@ -36,6 +36,8 @@ const Classes = () => {
     estatisticas,
     showDeleteConfirmModal,
     classeToDelete,
+    sortField,
+    sortDirection,
 
     // Funções CRUD
     onSubmit,
@@ -58,6 +60,7 @@ const Classes = () => {
     handleKeyPress,
     setStatusFilter,
     setSubgrupoFilter,
+    handleSort,
     handleClearFilters,
 
     // Funções utilitárias
@@ -166,6 +169,9 @@ const Classes = () => {
         getStatusLabel={getStatusLabel}
         getSubgrupoNome={getSubgrupoNome}
         formatDate={formatDate}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Classe */}

@@ -43,6 +43,9 @@ const Ajudantes = () => {
     setItemsPerPage,
     formatDate,
     getStatusLabel,
+    sortField,
+    sortDirection,
+    handleSort,
 
     // Estados de validação
     validationErrors,
@@ -137,6 +140,9 @@ const Ajudantes = () => {
         onDelete={handleDeleteAjudante}
         getStatusLabel={getStatusLabel}
         formatDate={formatDate}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Modal de Ajudante */}
