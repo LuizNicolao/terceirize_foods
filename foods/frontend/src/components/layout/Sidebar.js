@@ -282,15 +282,15 @@ const Sidebar = ({ collapsed, onToggle }) => {
                       onClick={(e) => {
                         if (item.path === '/cotacao') {
                           e.preventDefault();
-                          const user = JSON.parse(localStorage.getItem('user') || '{}');
-                          const userData = encodeURIComponent(JSON.stringify({
-                            id: user.id,
-                            name: user.name,
-                            email: user.email,
-                            role: user.role
-                          }));
-                          const cotacaoUrl = `https://foods.terceirizemais.com.br/cotacao?user=${userData}`;
-                          window.open(cotacaoUrl, '_blank');
+                          const ssoToken = localStorage.getItem('ssoToken');
+                          
+                          if (ssoToken) {
+                            // Passar token SSO na URL
+                            window.open(`https://foods.terceirizemais.com.br/cotacao?sso_token=${ssoToken}`, '_blank');
+                          } else {
+                            console.error('Token SSO não encontrado');
+                            window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
+                          }
                         }
                         if (window.innerWidth <= 768) {
                           onToggle();
@@ -357,23 +357,18 @@ const Sidebar = ({ collapsed, onToggle }) => {
                         ${isActive ? 'bg-green-100 text-green-500 border-l-green-500 font-semibold' : ''}
                       `}
                       onClick={(e) => {
-                        // Se for o item de cotação, abrir em nova aba com dados do usuário
+                        // Se for o item de cotação, abrir em nova aba com token SSO
                         if (item.path === '/cotacao') {
                           e.preventDefault();
-                          const user = JSON.parse(localStorage.getItem('user') || '{}');
+                          const ssoToken = localStorage.getItem('ssoToken');
                           
-                          const userData = {
-                            id: user.id,
-                            name: user.nome,
-                            email: user.email,
-                            role: user.tipo_de_acesso
-                          };
-                          
-                          // Salvar dados no sessionStorage (compartilhado entre abas do mesmo domínio)
-                          sessionStorage.setItem('foodsUser', JSON.stringify(userData));
-                          
-                          // Abrir cotação em nova aba
-                          window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
+                          if (ssoToken) {
+                            // Passar token SSO na URL
+                            window.open(`https://foods.terceirizemais.com.br/cotacao?sso_token=${ssoToken}`, '_blank');
+                          } else {
+                            console.error('Token SSO não encontrado');
+                            window.open('https://foods.terceirizemais.com.br/cotacao', '_blank');
+                          }
                         }
                         
                         // Fechar sidebar no mobile quando clicar em um item

@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const { executeQuery } = require('../config/database');
 const { generateToken } = require('../middleware/auth');
@@ -89,6 +90,21 @@ router.post('/login', [
     const tokenExpiration = rememberMe ? '30d' : '24h'; // 30 dias se "lembrar", 24h se não
     const token = generateToken(user.id, tokenExpiration);
 
+    // Gerar token SSO para sistemas externos (Cotação)
+    const ssoSecret = process.env.SSO_SECRET || process.env.JWT_SECRET;
+    const ssoToken = jwt.sign(
+      { 
+        email: user.email,
+        nome: user.nome,
+        tipo_de_acesso: user.tipo_de_acesso,
+        nivel_de_acesso: user.nivel_de_acesso,
+        sistema: 'foods',
+        timestamp: Date.now()
+      },
+      ssoSecret,
+      { expiresIn: '1h' } // Token SSO expira em 1 hora
+    );
+
     // Remover senha do objeto de resposta
     const { senha: _, ...userWithoutPassword } = user;
 
@@ -110,6 +126,7 @@ router.post('/login', [
       message: 'Login realizado com sucesso',
       user: userWithoutPassword,
       token,
+      ssoToken, // Token SSO para sistemas externos
       rememberMe: rememberMe,
       tokenExpiration: tokenExpiration
     });

@@ -45,10 +45,15 @@ export const AuthProvider = ({ children }) => {
         senha,
         rememberMe: rememberMeOption 
       });
-      const { token: newToken, user: userData } = response.data;
+      const { token: newToken, user: userData, ssoToken } = response.data;
       
       // Salvar token no localStorage
       localStorage.setItem('token', newToken);
+      
+      // Salvar token SSO (para sistemas externos)
+      if (ssoToken) {
+        localStorage.setItem('ssoToken', ssoToken);
+      }
       
       // Salvar usuário no localStorage
       localStorage.setItem('user', JSON.stringify(userData));
