@@ -200,7 +200,7 @@ const SearchableSelect = ({
             <div className="max-h-60 overflow-y-auto" style={{ maxHeight }}>
               {loading ? (
                 <div className="p-4 text-center text-gray-500">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mx-auto mb-2"></div>
                   <span className="text-sm">Carregando...</span>
                 </div>
               ) : filteredOptions.length > 0 ? (
@@ -210,7 +210,7 @@ const SearchableSelect = ({
                     className={`
                       px-4 py-3 cursor-pointer transition-colors duration-150
                       ${selectedOption?.value === option.value 
-                        ? 'bg-blue-50 border-l-4 border-l-blue-500' 
+                        ? 'bg-green-50 border-l-4 border-l-green-500' 
                         : 'hover:bg-gray-50'
                       }
                       ${index < filteredOptions.length - 1 ? 'border-b border-gray-100' : ''}
