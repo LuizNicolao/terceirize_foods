@@ -178,9 +178,27 @@ const StatusEntregaTab = () => {
           recebimentosPorEscola.get(recebimento.escola_id).push(recebimento);
         });
         
+        // Aplicar filtro de filial se selecionado
+        let escolasFiltradas = escolas || [];
+        if (filtros.filial) {
+          console.log('🔍 Filtro de filial ativo:', filtros.filial);
+          console.log('🔍 Total de escolas antes do filtro:', escolasFiltradas.length);
+          console.log('🔍 Primeira escola (para ver campos):', escolasFiltradas[0]);
+          
+          escolasFiltradas = escolasFiltradas.filter(escola => {
+            const match = escola.filial_id?.toString() === filtros.filial;
+            if (!match && escolasFiltradas.length < 5) {
+              console.log(`🔍 Escola ${escola.nome} - filial_id: ${escola.filial_id}, buscando: ${filtros.filial}`);
+            }
+            return match;
+          });
+          
+          console.log('✅ Total de escolas após filtro:', escolasFiltradas.length);
+        }
+        
         // Separar escolas recebidas e não recebidas
-        const recebidas = (escolas || []).filter(escola => recebimentosPorEscola.has(escola.id));
-        const naoRecebidas = (escolas || []).filter(escola => !recebimentosPorEscola.has(escola.id));
+        const recebidas = escolasFiltradas.filter(escola => recebimentosPorEscola.has(escola.id));
+        const naoRecebidas = escolasFiltradas.filter(escola => !recebimentosPorEscola.has(escola.id));
         
         // Adicionar dados de recebimentos às escolas recebidas
         const recebidasComDetalhes = recebidas.map(escola => ({
