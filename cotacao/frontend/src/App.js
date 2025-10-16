@@ -50,9 +50,33 @@ import { Aprovacoes, VisualizarAprovacao } from './pages/aprovacoes';
 //   return children;
 // };
 
-// DESABILITADO - Autenticação centralizada no Foods
-// Agora todas as rotas são acessíveis diretamente
+// Componente para rotas protegidas com SSO
 const AuthenticatedRoute = ({ children }) => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Acesso Restrito</h1>
+          <p className="text-gray-600 mb-6">
+            Você precisa estar autenticado no sistema Foods para acessar a Cotação.
+          </p>
+          <a 
+            href="https://foods.terceirizemais.com.br/foods/login" 
+            className="inline-block px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Fazer Login no Foods
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return <Layout>{children}</Layout>;
 };
 

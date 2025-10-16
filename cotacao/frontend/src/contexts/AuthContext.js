@@ -12,19 +12,11 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
-  // Capturar dados do usuário da URL (SSO do Foods) e buscar no sistema de cotação
-  const [user, setUser] = useState({ id: 1, name: 'Sistema', role: 'administrador' });
+  const [user, setUser] = useState(null); // Sem usuário padrão
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(null);
   const [rememberMe, setRememberMe] = useState(false);
-  const [permissions, setPermissions] = useState({
-    dashboard: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-    usuarios: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-    cotacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-    saving: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-    supervisor: { can_view: true, can_create: true, can_edit: true, can_delete: true },
-    aprovacoes: { can_view: true, can_create: true, can_edit: true, can_delete: true }
-  });
+  const [permissions, setPermissions] = useState({});
 
     // Validar token SSO da URL
   useEffect(() => {
@@ -109,16 +101,16 @@ export const AuthProvider = ({ children }) => {
     // Não faz nada - logout controlado pelo Foods
   };
 
-  // DESABILITADO - Permissões centralizadas no Foods
-  // Agora todas as permissões são liberadas por padrão
+  // Verificar permissões reais
   const hasPermission = (screen, action) => {
-    return true;
+    if (!permissions[screen]) return false;
+    return permissions[screen][`can_${action}`] === true;
   };
 
-  const canView = (screen) => true;
-  const canCreate = (screen) => true;
-  const canEdit = (screen) => true;
-  const canDelete = (screen) => true;
+  const canView = (screen) => hasPermission(screen, 'view');
+  const canCreate = (screen) => hasPermission(screen, 'create');
+  const canEdit = (screen) => hasPermission(screen, 'edit');
+  const canDelete = (screen) => hasPermission(screen, 'delete');
 
   const value = {
     user,
