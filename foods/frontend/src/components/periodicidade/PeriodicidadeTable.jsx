@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaCalendarAlt } from 'react-icons/fa';
-import { ActionButtons, EmptyState } from '../ui';
+import { ActionButtons, EmptyState, SortableTableHeader } from '../ui';
 
 const PeriodicidadeTable = ({ 
   agrupamentos, 
@@ -10,7 +10,10 @@ const PeriodicidadeTable = ({
   canDelete,
   onEdit,
   onDelete,
-  onView
+  onView,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (loading) {
     return (
@@ -58,18 +61,30 @@ const PeriodicidadeTable = ({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Nome
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Tipo
-              </th>
+              <SortableTableHeader
+                label="Nome"
+                field="nome"
+                currentSort={sortField}
+                currentDirection={sortDirection}
+                onSort={onSort}
+              />
+              <SortableTableHeader
+                label="Tipo"
+                field="tipo"
+                currentSort={sortField}
+                currentDirection={sortDirection}
+                onSort={onSort}
+              />
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Descrição
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
+              <SortableTableHeader
+                label="Status"
+                field="ativo"
+                currentSort={sortField}
+                currentDirection={sortDirection}
+                onSort={onSort}
+              />
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Ações
               </th>

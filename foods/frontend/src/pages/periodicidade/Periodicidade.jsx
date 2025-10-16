@@ -47,7 +47,10 @@ const Periodicidade = () => {
     setSearchTerm,
     handleKeyPress,
     setStatusFilter,
-    formatDate
+    formatDate,
+    sortField,
+    sortDirection,
+    handleSort
   } = usePeriodicidade();
 
   const {
@@ -134,6 +137,9 @@ const Periodicidade = () => {
         onEdit={handleEditAgrupamento}
         onDelete={handleDeleteAgrupamento}
         onView={handleViewAgrupamento}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Paginação */}
