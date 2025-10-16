@@ -52,18 +52,34 @@ const ProdutoOrigemTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Unidade
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Grupo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Subgrupo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Classe
-                </th>
+                <SortableTableHeader
+                  label="Unidade"
+                  field="unidade_medida_id"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Grupo"
+                  field="grupo_id"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Subgrupo"
+                  field="subgrupo_id"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Classe"
+                  field="classe_id"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
                 <SortableTableHeader
                   label="Status"
                   field="status"
