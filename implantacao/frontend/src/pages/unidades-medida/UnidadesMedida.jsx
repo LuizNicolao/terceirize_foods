@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import useUnidadesMedidaConsulta from '../../hooks/useUnidadesMedidaConsulta';
 import { UnidadesMedidaStats, UnidadesMedidaTable, UnidadeModal } from '../../components/unidades-medida';
-import { ConsultaActions } from '../../components/shared';
+import { ExportButtons } from '../../components/shared';
 import { Button, CadastroFilterBar, Pagination } from '../../components/ui';
 
 /**
@@ -126,13 +126,13 @@ const UnidadesMedida = () => {
       />
 
       {/* Ações */}
-      <ConsultaActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={pagination.totalItems}
-        loading={loading}
-        showTotal={false}
-      />
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+        />
+      </div>
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow overflow-hidden">

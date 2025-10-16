@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import useGruposConsulta from '../../hooks/useGruposConsulta';
 import { GruposStats, GruposTable, GrupoModal } from '../../components/grupos';
-import { ConsultaActions } from '../../components/shared';
+import { ExportButtons } from '../../components/shared';
 import { Button, Pagination } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 
@@ -115,13 +115,13 @@ const Grupos = () => {
       />
 
       {/* Ações */}
-      <ConsultaActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={pagination.totalItems}
-        loading={loading}
-        showTotal={false}
-      />
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+        />
+      </div>
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow overflow-hidden">

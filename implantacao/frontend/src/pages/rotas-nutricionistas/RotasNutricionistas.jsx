@@ -10,7 +10,7 @@ import {
 } from '../../components/rotas-nutricionistas';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { ConsultaActions } from '../../components/shared';
+import { ExportButtons } from '../../components/shared';
 
 const RotasNutricionistas = () => {
   const { canView } = usePermissions();
@@ -141,12 +141,13 @@ const RotasNutricionistas = () => {
       />
 
       {/* Ações */}
-      <ConsultaActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={rotasNutricionistas.length}
-        loading={loading}
-      />
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+        />
+      </div>
 
       {/* Tabela */}
       <RotasNutricionistasTable
