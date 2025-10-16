@@ -51,7 +51,7 @@ class RegistrosDiariosListController {
       const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 20));
       const offsetNum = (pageNum - 1) * limitNum;
       
-      // Buscar registros agrupados por escola e data
+      // Buscar registros agrupados por escola (apenas o mais recente de cada escola)
       // Pivotear os tipos de refeição em colunas
       // IMPORTANTE: LIMIT e OFFSET interpolados diretamente (números seguros)
       const query = `
@@ -68,17 +68,23 @@ class RegistrosDiariosListController {
           MIN(rd.data_cadastro) as data_cadastro,
           MAX(rd.data_atualizacao) as data_atualizacao
         FROM registros_diarios rd
+        INNER JOIN (
+          SELECT escola_id, MAX(data) as max_data
+          FROM registros_diarios
+          ${whereClause}
+          GROUP BY escola_id
+        ) rd_recente ON rd.escola_id = rd_recente.escola_id AND rd.data = rd_recente.max_data
         ${whereClause}
         GROUP BY rd.escola_id, rd.data, rd.nutricionista_id
         ORDER BY rd.data DESC, rd.escola_id ASC
         LIMIT ${limitNum} OFFSET ${offsetNum}
       `;
       
-      const registros = await executeQuery(query, params);
+      const registros = await executeQuery(query, params.concat(params));
       
-      // Contar total
+      // Contar total (apenas escolas únicas)
       const countQuery = `
-        SELECT COUNT(DISTINCT CONCAT(rd.escola_id, '-', rd.data)) as total
+        SELECT COUNT(DISTINCT rd.escola_id) as total
         FROM registros_diarios rd
         ${whereClause}
       `;
@@ -144,6 +150,54 @@ class RegistrosDiariosListController {
         success: false,
         error: 'Erro interno do servidor',
         message: 'Erro ao listar médias'
+      });
+    }
+  }
+  
+  /**
+   * Listar histórico completo de uma escola (todos os registros)
+   */
+  static async listarHistorico(req, res) {
+    try {
+      const { escola_id } = req.query;
+      
+      if (!escola_id) {
+        return res.status(400).json({
+          success: false,
+          error: 'escola_id é obrigatório'
+        });
+      }
+      
+      const historico = await executeQuery(
+        `SELECT 
+          rd.escola_id,
+          MAX(rd.escola_nome) as escola_nome,
+          rd.data,
+          rd.nutricionista_id,
+          MAX(CASE WHEN rd.tipo_refeicao = 'lanche_manha' THEN rd.valor ELSE 0 END) as lanche_manha,
+          MAX(CASE WHEN rd.tipo_refeicao = 'almoco' THEN rd.valor ELSE 0 END) as almoco,
+          MAX(CASE WHEN rd.tipo_refeicao = 'lanche_tarde' THEN rd.valor ELSE 0 END) as lanche_tarde,
+          MAX(CASE WHEN rd.tipo_refeicao = 'parcial' THEN rd.valor ELSE 0 END) as parcial,
+          MAX(CASE WHEN rd.tipo_refeicao = 'eja' THEN rd.valor ELSE 0 END) as eja,
+          MIN(rd.data_cadastro) as data_cadastro,
+          MAX(rd.data_atualizacao) as data_atualizacao
+        FROM registros_diarios rd
+        WHERE rd.escola_id = ? AND rd.ativo = 1
+        GROUP BY rd.escola_id, rd.data, rd.nutricionista_id
+        ORDER BY rd.data DESC`,
+        [escola_id]
+      );
+      
+      res.json({
+        success: true,
+        data: historico
+      });
+    } catch (error) {
+      console.error('Erro ao listar histórico:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Erro ao listar histórico'
       });
     }
   }

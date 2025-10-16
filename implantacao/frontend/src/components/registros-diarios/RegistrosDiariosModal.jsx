@@ -170,28 +170,42 @@ const RegistrosDiariosModal = ({
       if (isViewMode && abaAtiva === 'historico' && formData.escola_id) {
         setLoadingHistorico(true);
         
-        // Buscar nome da escola
-        const escolaSelecionada = unidadesEscolares.find(e => e.id === formData.escola_id);
-        const escola_nome = escolaSelecionada ? escolaSelecionada.nome_escola : `ID ${formData.escola_id}`;
+        try {
+          const result = await RegistrosDiariosService.listarHistorico(formData.escola_id);
+          
+          if (result.success && result.data.length > 0) {
+            // Transformar dados do backend para formato do HistoricoTab
+            const historicoFormatado = result.data.map((reg, index) => ({
+              acao: index === 0 ? 'criacao' : 'edicao', // Mais recente = criação (na verdade é o último editado)
+              data_acao: reg.data_atualizacao || reg.data_cadastro,
+              escola_id: reg.escola_id,
+              escola_nome: reg.escola_nome,
+              data: reg.data,
+              nutricionista_id: reg.nutricionista_id,
+              usuario_nome: user?.nome,
+              valores: {
+                lanche_manha: reg.lanche_manha || 0,
+                almoco: reg.almoco || 0,
+                lanche_tarde: reg.lanche_tarde || 0,
+                parcial: reg.parcial || 0,
+                eja: reg.eja || 0
+              }
+            }));
+            setHistorico(historicoFormatado);
+          } else {
+            setHistorico([]);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar histórico:', error);
+          setHistorico([]);
+        }
         
-        // Simular histórico baseado no registro atual
-        const historicoSimulado = [{
-          acao: 'criacao',
-          data_acao: registro?.data_cadastro || new Date(),
-          escola_id: formData.escola_id,
-          escola_nome: escola_nome,
-          data: formData.data,
-          nutricionista_id: formData.nutricionista_id,
-          usuario_nome: user?.nome,
-          valores: formData.quantidades
-        }];
-        setHistorico(historicoSimulado);
         setLoadingHistorico(false);
       }
     };
     
     carregarHistorico();
-  }, [abaAtiva, formData, isViewMode, registro, user, unidadesEscolares]);
+  }, [abaAtiva, formData.escola_id, isViewMode, user]);
   
   // Resetar aba ao abrir/fechar modal
   useEffect(() => {

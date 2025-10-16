@@ -22,6 +22,12 @@ router.get('/medias',
   RegistrosDiariosController.listarMedias
 );
 
+// GET /api/registros-diarios/historico - Listar histórico completo de uma escola
+router.get('/historico',
+  checkScreenPermission('registros_diarios', 'visualizar'),
+  RegistrosDiariosController.listarHistorico
+);
+
 // GET /api/registros-diarios/estatisticas - Obter estatísticas
 router.get('/estatisticas',
   checkScreenPermission('registros_diarios', 'visualizar'),
