@@ -46,6 +46,8 @@ export const AuthProvider = ({ children }) => {
             const response = await api.post('/auth/sso', { token: ssoToken });
             
             console.log('📊 Resposta do backend SSO:', response.data);
+            console.log('📦 response.data.data:', response.data.data);
+            console.log('👤 response.data.data.user:', response.data.data?.user);
             
             if (response.data.success) {
               const { user: userData, token: jwtToken } = response.data.data;
