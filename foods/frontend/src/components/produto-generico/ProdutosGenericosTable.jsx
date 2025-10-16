@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaStar } from 'react-icons/fa';
-import { ActionButtons, EmptyState } from '../../components/ui';
+import { ActionButtons, EmptyState, SortableTableHeader } from '../../components/ui';
 
 const ProdutosGenericosTable = ({
   produtosGenericos,
@@ -17,7 +17,10 @@ const ProdutosGenericosTable = ({
   getSubgrupoName,
   getClasseName,
   getProdutoOrigemName,
-  getUnidadeMedidaName
+  getUnidadeMedidaName,
+  sortField,
+  sortDirection,
+  onSort
 }) => {
   if (!Array.isArray(produtosGenericos) || produtosGenericos.length === 0) {
     return (
@@ -37,12 +40,20 @@ const ProdutosGenericosTable = ({
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Código
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nome
-                </th>
+                <SortableTableHeader
+                  label="Código"
+                  field="codigo"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
+                <SortableTableHeader
+                  label="Nome"
+                  field="nome"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Grupo
                 </th>
@@ -58,9 +69,13 @@ const ProdutosGenericosTable = ({
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Origem
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
+                <SortableTableHeader
+                  label="Status"
+                  field="status"
+                  currentSort={sortField}
+                  currentDirection={sortDirection}
+                  onSort={onSort}
+                />
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Produtos Vinculados
                 </th>

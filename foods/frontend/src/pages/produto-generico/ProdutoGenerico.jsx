@@ -74,7 +74,10 @@ const ProdutoGenerico = () => {
     getSubgrupoName,
     getClasseName,
     getProdutoOrigemName,
-    getUnidadeMedidaName
+    getUnidadeMedidaName,
+    sortField,
+    sortDirection,
+    handleSort
   } = useProdutoGenerico();
 
   const {
@@ -211,6 +214,9 @@ const ProdutoGenerico = () => {
         getClasseName={getClasseName}
         getProdutoOrigemName={getProdutoOrigemName}
         getUnidadeMedidaName={getUnidadeMedidaName}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
       />
 
       {/* Paginação */}
