@@ -22,21 +22,11 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const validateSSOToken = async () => {
       try {
-        console.log('🔍 Iniciando validação SSO...');
-        console.log('🌐 URL completa:', window.location.href);
-        console.log('🔍 Query string:', window.location.search);
-        
         // Capturar token SSO da URL
         const params = new URLSearchParams(window.location.search);
         const ssoToken = params.get('sso_token');
         
-        console.log('🔑 Token SSO na URL:', ssoToken ? 'Sim' : 'Não');
         if (ssoToken) {
-          console.log('🔑 Token SSO (primeiros 50 chars):', ssoToken.substring(0, 50) + '...');
-        }
-        
-        if (ssoToken) {
-          console.log('🔐 Token SSO encontrado, validando com backend...');
           
           // Limpar URL (remover token da URL por segurança)
           window.history.replaceState({}, document.title, '/cotacao');
@@ -46,97 +36,68 @@ export const AuthProvider = ({ children }) => {
             const response = await api.post('/auth/sso', { token: ssoToken });
             
             if (response.data.success) {
-              // CORREÇÃO: A resposta tem dois níveis de "data"
-              // response.data.data.data (não response.data.data)
+              // A resposta tem dois níveis de "data"
               const responseData = response.data.data?.data || response.data.data;
               const { user: userData, token: jwtToken } = responseData;
               
-              console.log('✅ SSO validado com sucesso:', userData?.email);
+              // Verificar se userData e token existem
+              if (!userData || !jwtToken) {
+                throw new Error('Dados do usuário ou token não recebidos do servidor');
+              }
               
               // Salvar token JWT da Cotação
               localStorage.setItem('token', jwtToken);
               api.defaults.headers.authorization = `Bearer ${jwtToken}`;
               setToken(jwtToken);
-              
-              // Verificar se userData e token existem
-              if (!userData || !jwtToken) {
-                console.error('❌ Dados incompletos:', { userData, jwtToken });
-                throw new Error('Dados do usuário ou token não recebidos do servidor');
-              }
-              
-              // Salvar usuário
               setUser(userData);
               
               // Buscar permissões do usuário
               const permsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
-              console.log('📋 Resposta de permissões:', permsResponse.data);
               
               if (permsResponse.data.success) {
-                // Mesmo problema: dois níveis de "data"
                 const permsData = permsResponse.data.data?.data || permsResponse.data.data;
                 const userPermissions = permsData?.permissions || permsData || {};
-                
                 setPermissions(userPermissions);
-                console.log('✅ Permissões carregadas:', userPermissions);
               }
-            } else {
-              console.error('❌ Erro na validação SSO:', response.data.message);
             }
           } catch (error) {
-            console.error('❌ Erro ao chamar /auth/sso:', error);
+            console.error('Erro ao validar SSO:', error);
           }
           
           setLoading(false);
         } else {
-          console.log('ℹ️ Sem token SSO na URL, verificando token local...');
           // Sem token SSO - verificar se já tem token local
           const localToken = localStorage.getItem('token');
           if (localToken) {
-            console.log('🔑 Token local encontrado, verificando validade...');
             api.defaults.headers.authorization = `Bearer ${localToken}`;
             setToken(localToken);
-            // Verificar token local
+            
             try {
               const response = await api.get('/auth/verify');
-              console.log('🔍 Resposta do /auth/verify:', response.data);
-              console.log('🔍 response.data.data:', response.data.data);
               
               if (response.data.success) {
-                console.log('✅ Token local válido, usuário autenticado');
                 // Dois níveis de data
                 const verifyData = response.data.data?.data || response.data.data;
                 const userData = verifyData?.user || verifyData;
-                console.log('👤 userData extraído:', userData);
                 setUser(userData);
                 
                 // Buscar permissões
                 const permsResponse = await api.get(`/auth/users/${userData.id}/permissions`);
-                console.log('📋 Resposta de permissões (token local):', permsResponse.data);
-                console.log('📦 permsResponse.data.data:', permsResponse.data.data);
                 
                 if (permsResponse.data.success) {
                   const permsData = permsResponse.data.data?.data || permsResponse.data.data;
-                  console.log('🔍 permsData:', permsData);
-                  console.log('🔍 permsData?.permissions:', permsData?.permissions);
-                  
                   const userPermissions = permsData?.permissions || permsData || {};
                   setPermissions(userPermissions);
-                  console.log('✅ Permissões carregadas do token local:', userPermissions);
                 }
               } else {
-                // Token inválido
-                console.log('❌ Token local inválido, limpando...');
                 localStorage.removeItem('token');
                 setUser(null);
               }
             } catch (error) {
               // Token expirado ou inválido - limpar silenciosamente
-              console.log('ℹ️ Token local expirado ou inválido');
               localStorage.removeItem('token');
               setUser(null);
             }
-          } else {
-            console.log('ℹ️ Nenhum token encontrado, usuário não autenticado');
           }
           setLoading(false);
         }
