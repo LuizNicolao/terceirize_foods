@@ -10,7 +10,7 @@ import {
 } from '../../components/filiais';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { ConsultaActions } from '../../components/shared';
+import { ExportButtons } from '../../components/shared';
 
 const Filiais = () => {
   const { canView } = usePermissions();
@@ -153,24 +153,13 @@ const Filiais = () => {
         placeholder="Buscar por nome, cidade ou código..."
       />
 
-      {/* Ações */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
-        <Button
-          onClick={handleExportXLSX}
-          variant="outline"
-          size="sm"
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
           disabled={!canView('filiais')}
-        >
-          Exportar XLSX
-        </Button>
-        <Button
-          onClick={handleExportPDF}
-          variant="outline"
-          size="sm"
-          disabled={!canView('filiais')}
-        >
-          Exportar PDF
-        </Button>
+        />
       </div>
 
       {/* Tabela */}

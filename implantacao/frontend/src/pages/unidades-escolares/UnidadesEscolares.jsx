@@ -5,6 +5,7 @@ import { useUnidadesEscolaresConsulta } from '../../hooks/useUnidadesEscolaresCo
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
+import { ExportButtons } from '../../components/shared';
 import { 
   UnidadesEscolaresTable, 
   UnidadesEscolaresStats,
@@ -176,24 +177,13 @@ const UnidadesEscolares = () => {
         ]}
       />
 
-      {/* Ações */}
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4">
-        <Button
-          onClick={handleExportXLSX}
-          variant="outline"
-          size="sm"
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
           disabled={!canView('unidades_escolares')}
-        >
-          Exportar XLSX
-        </Button>
-        <Button
-          onClick={handleExportPDF}
-          variant="outline"
-          size="sm"
-          disabled={!canView('unidades_escolares')}
-        >
-          Exportar PDF
-        </Button>
+        />
       </div>
 
       {/* Tabela */}

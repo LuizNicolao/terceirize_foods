@@ -10,7 +10,7 @@ import {
 } from '../../components/fornecedores';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { ConsultaActions } from '../../components/shared';
+import { ExportButtons } from '../../components/shared';
 
 const Fornecedores = () => {
   const { canView } = usePermissions();
@@ -156,12 +156,13 @@ const Fornecedores = () => {
       />
 
       {/* Ações */}
-      <ConsultaActions
-        onExportXLSX={handleExportXLSX}
-        onExportPDF={handleExportPDF}
-        totalItems={fornecedores.length}
-        loading={loading}
-      />
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+        />
+      </div>
 
       {/* Tabela */}
       <FornecedoresTable

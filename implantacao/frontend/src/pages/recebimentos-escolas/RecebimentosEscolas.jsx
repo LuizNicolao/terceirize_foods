@@ -14,7 +14,7 @@ import {
   RecebimentosTabs,
   RelatoriosRecebimentos
 } from '../../components/recebimentos-escolas';
-import { ConsultaActions } from '../../components/shared';
+import { ExportButtons } from '../../components/shared';
 import { RecebimentosEscolasHeader } from './components';
 import { ActionButtons, Modal, Pagination } from '../../components/ui';
 // import { formatarDataParaExibicao } from '../../utils/recebimentosUtils';
@@ -173,12 +173,13 @@ const RecebimentosEscolas = () => {
         />
 
         {/* Ações de Exportação - sempre visíveis */}
-        <ConsultaActions 
-          onExportXLSX={exportarXLSX}
-          onExportPDF={exportarPDF}
-          totalItems={recebimentos.length}
-          loading={loading}
-        />
+        {/* Botões de Exportação */}
+        <div className="mb-4">
+          <ExportButtons
+            onExportXLSX={exportarXLSX}
+            onExportPDF={exportarPDF}
+          />
+        </div>
 
         {/* Conteúdo da aba Lista de Recebimentos */}
         {activeTab === 'lista' && (
