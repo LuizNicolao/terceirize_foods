@@ -4,6 +4,7 @@ import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRegistrosDiarios } from '../../hooks/useRegistrosDiarios';
 import { Button, ConfirmModal } from '../../components/ui';
 import { Pagination } from '../../components/ui';
+import { ExportButtons } from '../../components/shared';
 import { 
   RegistrosDiariosModal, 
   RegistrosDiariosTable, 
@@ -56,6 +57,16 @@ const RegistrosDiarios = () => {
     }
   };
   
+  const handleExportXLSX = () => {
+    // TODO: Implementar exportação para Excel
+    console.log('Exportar para Excel');
+  };
+  
+  const handleExportPDF = () => {
+    // TODO: Implementar exportação para PDF
+    console.log('Exportar para PDF');
+  };
+  
   return (
     <div className="p-6">
       {/* Header */}
@@ -90,6 +101,15 @@ const RegistrosDiarios = () => {
         }}
         onClear={clearFiltros}
       />
+      
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={handleExportXLSX}
+          onExportPDF={handleExportPDF}
+          disabled={!canView('registros_diarios')}
+        />
+      </div>
       
       {/* Tabela de Registros */}
       <RegistrosDiariosTable
