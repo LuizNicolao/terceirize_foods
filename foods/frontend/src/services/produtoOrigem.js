@@ -263,6 +263,53 @@ class ProdutoOrigemService {
       };
     }
   }
+
+  async importarExcel(formData) {
+    try {
+      const response = await api.post('/produto-origem/import/excel', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return {
+        success: true,
+        data: response.data.data,
+        message: response.data.message
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao importar planilha'
+      };
+    }
+  }
+
+  async baixarModelo() {
+    try {
+      const response = await api.get('/produto-origem/import/modelo', {
+        responseType: 'blob'
+      });
+      
+      // Criar link para download
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'modelo_produtos_origem.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return {
+        success: true
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Erro ao baixar modelo'
+      };
+    }
+  }
 }
 
 export default new ProdutoOrigemService();

@@ -1,5 +1,5 @@
-import React from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaPlus, FaQuestionCircle, FaUpload } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useProdutoOrigem } from '../../hooks/useProdutoOrigem';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
@@ -8,13 +8,14 @@ import ProdutoOrigemService from '../../services/produtoOrigem';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { CadastroFilterBar } from '../../components/ui';
 import { Pagination } from '../../components/ui';
-import { ProdutoOrigemModal } from '../../components/produto-origem';
+import { ProdutoOrigemModal, ImportModal } from '../../components/produto-origem';
 import ProdutoOrigemStats from '../../components/produto-origem/ProdutoOrigemStats';
 import ProdutoOrigemTable from '../../components/produto-origem/ProdutoOrigemTable';
 import { AuditModal, ExportButtons } from '../../components/shared';
 
 const ProdutoOrigem = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
+  const [showImportModal, setShowImportModal] = useState(false);
   
   // Hooks customizados
   const {
@@ -81,6 +82,19 @@ const ProdutoOrigem = () => {
 
   const { handleExportXLSX, handleExportPDF } = useExport(ProdutoOrigemService);
 
+  const handleOpenImportModal = () => {
+    setShowImportModal(true);
+  };
+
+  const handleCloseImportModal = () => {
+    setShowImportModal(false);
+  };
+
+  const handleImportSuccess = () => {
+    // Recarregar lista após importação bem-sucedida
+    window.location.reload();
+  };
+
   if (loading) {
     return (
       <div className="p-6">
@@ -109,11 +123,18 @@ const ProdutoOrigem = () => {
             <span className="sm:hidden">Auditoria</span>
           </Button>
           {canCreate('produto_origem') && (
-            <Button onClick={handleAddProdutoOrigem} variant="primary" size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar Produto Origem</span>
-              <span className="sm:hidden">Adicionar</span>
-            </Button>
+            <>
+              <Button onClick={handleOpenImportModal} variant="outline" size="sm">
+                <FaUpload className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Importar Excel</span>
+                <span className="sm:hidden">Importar</span>
+              </Button>
+              <Button onClick={handleAddProdutoOrigem} variant="primary" size="sm">
+                <FaPlus className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Adicionar Produto Origem</span>
+                <span className="sm:hidden">Adicionar</span>
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -244,6 +265,13 @@ const ProdutoOrigem = () => {
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
+      />
+
+      {/* Modal de Importação */}
+      <ImportModal
+        isOpen={showImportModal}
+        onClose={handleCloseImportModal}
+        onImportSuccess={handleImportSuccess}
       />
     </div>
   );

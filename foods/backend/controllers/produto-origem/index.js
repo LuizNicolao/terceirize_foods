@@ -8,6 +8,7 @@ const ProdutoOrigemListController = require('./ProdutoOrigemListController');
 const ProdutoOrigemSearchController = require('./ProdutoOrigemSearchController');
 const ProdutoOrigemStatsController = require('./ProdutoOrigemStatsController');
 const ProdutoOrigemExportController = require('./ProdutoOrigemExportController');
+const ProdutoOrigemImportController = require('./ProdutoOrigemImportController');
 
 module.exports = {
   // Operações CRUD
@@ -52,5 +53,9 @@ module.exports = {
   
   // Métodos de Exportação
   exportarXLSX: ProdutoOrigemExportController.exportarXLSX,
-  exportarPDF: ProdutoOrigemExportController.exportarPDF
+  exportarPDF: ProdutoOrigemExportController.exportarPDF,
+  
+  // Métodos de Importação
+  importarExcel: ProdutoOrigemImportController.importarExcel,
+  baixarModelo: ProdutoOrigemImportController.baixarModelo
 };

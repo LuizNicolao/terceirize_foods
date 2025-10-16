@@ -9,6 +9,7 @@ const { produtoOrigemValidations, commonValidations } = require('./produtoOrigem
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
 const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const { uploadExcel, handleUploadError } = require('../../middleware/upload');
 const ProdutoOrigemController = require('../../controllers/produto-origem');
 
 const router = express.Router();
@@ -213,5 +214,22 @@ router.get('/stats/peso-liquido',
 
 router.get('/export/xlsx', checkScreenPermission('produto_origem', 'visualizar'), ProdutoOrigemController.exportarXLSX);
 router.get('/export/pdf', checkScreenPermission('produto_origem', 'visualizar'), ProdutoOrigemController.exportarPDF);
+
+// ===== ROTAS DE IMPORTAÇÃO =====
+
+// POST /api/produto-origem/import/excel - Importar produtos via Excel
+router.post('/import/excel',
+  checkPermission('criar'),
+  auditMiddleware(AUDIT_ACTIONS.CREATE, 'produto_origem'),
+  uploadExcel,
+  handleUploadError,
+  ProdutoOrigemController.importarExcel
+);
+
+// GET /api/produto-origem/import/modelo - Baixar modelo de planilha
+router.get('/import/modelo',
+  checkPermission('visualizar'),
+  ProdutoOrigemController.baixarModelo
+);
 
 module.exports = router;
