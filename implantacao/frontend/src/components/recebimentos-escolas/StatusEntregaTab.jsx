@@ -5,6 +5,7 @@ import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 import { useAuth } from '../../contexts/AuthContext';
 import useRecebimentosEscolas from '../../hooks/useRecebimentosEscolas';
 import { recebimentosEscolasService } from '../../services/recebimentos';
+import FoodsApiService from '../../services/FoodsApiService';
 import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
 
@@ -16,8 +17,13 @@ const StatusEntregaTab = () => {
   const [filtros, setFiltros] = useState({
     tipo_entrega: '',
     tipo_recebimento: '',
-    semana_abastecimento: ''
+    semana_abastecimento: '',
+    filial: ''
   });
+  
+  // Estado para filiais
+  const [filiais, setFiliais] = useState([]);
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
 
   // Verificar se é nutricionista
   const isNutricionista = user?.tipo_de_acesso === 'nutricionista';
@@ -30,6 +36,28 @@ const StatusEntregaTab = () => {
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null);
   const [autoUpdateEnabled, setAutoUpdateEnabled] = useState(true);
 
+  // Carregar filiais
+  const carregarFiliais = async () => {
+    try {
+      setLoadingFiliais(true);
+      const result = await FoodsApiService.getFiliais();
+      if (result.success && Array.isArray(result.data)) {
+        const filiaisFormatadas = [
+          { value: '', label: 'Todas as filiais' },
+          ...result.data.map(filial => ({
+            value: filial.id.toString(),
+            label: filial.nome
+          }))
+        ];
+        setFiliais(filiaisFormatadas);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar filiais:', error);
+    } finally {
+      setLoadingFiliais(false);
+    }
+  };
+
   // Carregar dados iniciais
   useEffect(() => {
     if (user) {
@@ -37,6 +65,11 @@ const StatusEntregaTab = () => {
       carregarEscolas(tipoUsuario, user.id);
     }
   }, [user, carregarEscolas]);
+
+  // Carregar filiais quando o componente montar
+  useEffect(() => {
+    carregarFiliais();
+  }, []);
 
   // Inicializar filtro de semana com a semana atual
   const [inicializado, setInicializado] = useState(false);
@@ -328,7 +361,7 @@ const StatusEntregaTab = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Filtro por Tipo de Entrega */}
           <div>
             <SearchableSelect
@@ -362,6 +395,18 @@ const StatusEntregaTab = () => {
               options={opcoesSemanas}
               placeholder="Selecione uma semana..."
               disabled={loading}
+            />
+          </div>
+
+          {/* Filtro por Filial */}
+          <div>
+            <SearchableSelect
+              label="Filial"
+              value={filtros.filial}
+              onChange={(value) => handleFiltroChange('filial', value)}
+              options={filiais}
+              placeholder="Selecione uma filial..."
+              disabled={loading || loadingFiliais}
             />
           </div>
         </div>

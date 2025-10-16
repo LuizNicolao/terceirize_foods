@@ -73,8 +73,7 @@ const RelatoriosRecebimentos = () => {
   const [filtrosCompletos, setFiltrosCompletos] = useState({
     tipo_entrega: '',
     rota: '',
-    semana_abastecimento: '',
-    filial: ''
+    semana_abastecimento: ''
   });
   
   // Estado para controle de inicialização
@@ -85,11 +84,14 @@ const RelatoriosRecebimentos = () => {
     try {
       setLoadingFiliais(true);
       const result = await FoodsApiService.getFiliais();
-      if (result.success) {
-        const filiaisFormatadas = result.data.map(filial => ({
-          value: filial.id.toString(),
-          label: filial.nome
-        }));
+      if (result.success && Array.isArray(result.data)) {
+        const filiaisFormatadas = [
+          { value: '', label: 'Todas as filiais' },
+          ...result.data.map(filial => ({
+            value: filial.id.toString(),
+            label: filial.nome
+          }))
+        ];
         setFiliais(filiaisFormatadas);
       }
     } catch (error) {
@@ -227,7 +229,7 @@ const RelatoriosRecebimentos = () => {
                     setFiltrosPendencias({ tipo_entrega: '', rota: '', semana_abastecimento: obterValorPadrao() });
                     break;
                   case 'completos':
-                    setFiltrosCompletos({ tipo_entrega: '', rota: '', semana_abastecimento: obterValorPadrao(), filial: '' });
+                    setFiltrosCompletos({ tipo_entrega: '', rota: '', semana_abastecimento: obterValorPadrao() });
                     break;
                 }
               }}
@@ -239,7 +241,7 @@ const RelatoriosRecebimentos = () => {
           </Button>
           )}
         </div>
-        <div className={`grid grid-cols-1 ${aba === 'completos' ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4`}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <SearchableSelect
               label="Tipo de Entrega"
@@ -272,19 +274,6 @@ const RelatoriosRecebimentos = () => {
               disabled={loading}
             />
           </div>
-          
-          {aba === 'completos' && (
-            <div>
-              <SearchableSelect
-                label="Filial"
-                value={filtrosAtivos.filial}
-                onChange={(value) => handleFiltroChange(aba, 'filial', value)}
-                options={filiais}
-                placeholder="Selecione uma filial..."
-                disabled={loading || loadingFiliais}
-              />
-            </div>
-          )}
         </div>
       </div>
     );
