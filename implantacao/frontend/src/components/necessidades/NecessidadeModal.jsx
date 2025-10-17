@@ -27,7 +27,9 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
 
   const [formData, setFormData] = useState({
     escola_id: '',
+    escola: null, // Objeto completo da escola
     grupo_id: '',
+    grupo: null, // Objeto completo do grupo
     data: obterDataAtual()
   });
 
@@ -39,7 +41,9 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       // Limpar dados imediatamente quando modal é fechado
       setFormData({
         escola_id: '',
+        escola: null,
         grupo_id: '',
+        grupo: null,
         data: obterDataAtual()
       });
       setProdutosTabela([]);
@@ -232,13 +236,21 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       return;
     }
 
+    // Buscar dados completos da escola selecionada
+    const escolaSelecionada = escolas.find(e => e.id === formData.escola_id);
+    
     const dadosParaSalvar = {
       escola_id: formData.escola_id,
+      escola_nome: escolaSelecionada?.nome_escola || '',
+      escola_rota: escolaSelecionada?.rota || '',
+      escola_codigo_teknisa: escolaSelecionada?.codigo_teknisa || '',
       data_consumo: formData.data,
       semana_abastecimento: calcularSemanaAbastecimento(formData.data),
       produtos: produtosTabela.map(produto => ({
         produto_id: produto.id,
-        ajuste: produto.ajuste
+        produto_nome: produto.nome,
+        produto_unidade: produto.unidade_medida,
+        ajuste: produto.ajuste || 0
       }))
     };
     

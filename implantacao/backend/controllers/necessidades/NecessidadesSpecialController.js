@@ -2,25 +2,14 @@ const { executeQuery } = require('../../config/database');
 
 const gerarNecessidade = async (req, res) => {
   try {
-    const { escola_id, data_consumo, semana_abastecimento, produtos } = req.body;
+    const { escola_id, escola_nome, escola_rota, escola_codigo_teknisa, data_consumo, semana_abastecimento, produtos } = req.body;
 
     // Validar dados obrigatórios
-    if (!escola_id || !data_consumo || !produtos || !Array.isArray(produtos)) {
+    if (!escola_id || !escola_nome || !data_consumo || !produtos || !Array.isArray(produtos)) {
       return res.status(400).json({
+        success: false,
         error: 'Dados obrigatórios',
-        message: 'Escola, data de consumo e produtos são obrigatórios'
-      });
-    }
-
-    // Verificar se a escola existe
-    const escola = await executeQuery(`
-      SELECT id, nome_escola FROM escolas WHERE id = ?
-    `, [escola_id]);
-
-    if (escola.length === 0) {
-      return res.status(400).json({
-        error: 'Escola não encontrada',
-        message: 'A escola selecionada não existe'
+        message: 'Escola (id e nome), data de consumo e produtos são obrigatórios'
       });
     }
 
@@ -28,22 +17,18 @@ const gerarNecessidade = async (req, res) => {
     const necessidadesCriadas = [];
     
     for (const produto of produtos) {
-      const { produto_id, ajuste } = produto;
+      const { produto_id, produto_nome, produto_unidade, ajuste } = produto;
 
-      // Verificar se o produto existe
-      const produtoExiste = await executeQuery(`
-        SELECT id, nome, tipo FROM produtos WHERE id = ?
-      `, [produto_id]);
-
-      if (produtoExiste.length === 0) {
-        continue; // Pular produto inexistente
+      // Validar dados do produto
+      if (!produto_id || !produto_nome) {
+        continue; // Pular produto sem dados completos
       }
 
       // Verificar se já existe necessidade para este produto/escola/data
       const existing = await executeQuery(`
         SELECT id FROM necessidades 
-        WHERE usuario_email = ? AND produto = ? AND escola = ? AND data_consumo = ?
-      `, [req.user.email, produtoExiste[0].nome, escola[0].nome_escola, data_consumo]);
+        WHERE usuario_email = ? AND produto_id = ? AND escola_id = ? AND data_consumo = ?
+      `, [req.user.email, produto_id, escola_id, data_consumo]);
 
       if (existing.length > 0) {
         // Atualizar necessidade existente
@@ -51,40 +36,48 @@ const gerarNecessidade = async (req, res) => {
           UPDATE necessidades 
           SET ajuste = ?, semana_abastecimento = ?, data_atualizacao = CURRENT_TIMESTAMP
           WHERE id = ?
-        `, [ajuste, semana_abastecimento || null, existing[0].id]);
+        `, [ajuste || 0, semana_abastecimento || null, existing[0].id]);
         
         necessidadesCriadas.push({
           id: existing[0].id,
-          produto: produtoExiste[0].nome,
-          ajuste,
+          produto: produto_nome,
+          ajuste: ajuste || 0,
           status: 'atualizada'
         });
       } else {
         // Criar nova necessidade
         const result = await executeQuery(`
           INSERT INTO necessidades (
-            usuario_email, 
-            produto, 
-            escola, 
+            usuario_email,
+            usuario_id,
+            produto_id,
+            produto,
+            escola_id,
+            escola,
+            escola_rota,
             codigo_teknisa,
             ajuste, 
             data_consumo,
             semana_abastecimento
-          ) VALUES (?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
-          req.user.email, 
-          produtoExiste[0].nome, 
-          escola[0].nome_escola, 
-          escola[0].codigo_teknisa,
-          ajuste, 
+          req.user.email,
+          req.user.id,
+          produto_id,
+          produto_nome,
+          escola_id,
+          escola_nome,
+          escola_rota || '',
+          escola_codigo_teknisa || '',
+          ajuste || 0, 
           data_consumo,
           semana_abastecimento || null
         ]);
 
         necessidadesCriadas.push({
           id: result.insertId,
-          produto: produtoExiste[0].nome,
-          ajuste,
+          produto: produto_nome,
+          ajuste: ajuste || 0,
           status: 'criada'
         });
       }
@@ -94,7 +87,7 @@ const gerarNecessidade = async (req, res) => {
       success: true,
       message: `Necessidade gerada com sucesso! ${necessidadesCriadas.length} produtos processados.`,
       data: {
-        escola: escola[0].nome_escola,
+        escola: escola_nome,
         data_consumo,
         necessidades: necessidadesCriadas
       }
@@ -102,6 +95,7 @@ const gerarNecessidade = async (req, res) => {
   } catch (error) {
     console.error('Erro ao gerar necessidade:', error);
     res.status(500).json({
+      success: false,
       error: 'Erro interno do servidor',
       message: 'Erro ao gerar necessidade'
     });

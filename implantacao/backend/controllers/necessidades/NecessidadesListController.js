@@ -11,8 +11,8 @@ const listar = async (req, res) => {
 
     // Lógica de permissões por tipo de usuário
     if (userType === 'nutricionista') {
-      // Nutricionista: apenas escolas associadas a ela
-      whereClause += ' AND e.email_nutricionista = ?';
+      // Nutricionista: apenas registros criados por ela
+      whereClause += ' AND n.usuario_email = ?';
       params.push(req.user.email);
     } else if (userType === 'coordenador' || userType === 'supervisor' || userType === 'administrador') {
       // Coordenador, Supervisor e Administrador: acesso a todas as escolas
@@ -25,7 +25,7 @@ const listar = async (req, res) => {
 
     // Filtros opcionais
     if (search) {
-      whereClause += ' AND (n.produto LIKE ? OR e.nome_escola LIKE ?)';
+      whereClause += ' AND (n.produto LIKE ? OR n.escola LIKE ?)';
       params.push(`%${search}%`, `%${search}%`);
     }
 
@@ -72,11 +72,10 @@ const listar = async (req, res) => {
     
     const offset = (validPageNum - 1) * validLimitNum;
 
-    // Query para contar total de registros
+    // Query para contar total de registros (sem JOIN com tabelas externas)
     const countQuery = `
       SELECT COUNT(*) as total
       FROM necessidades n
-      LEFT JOIN escolas e ON n.escola = e.nome_escola
       ${whereClause}
     `;
     
@@ -84,18 +83,11 @@ const listar = async (req, res) => {
     const totalItems = countResult && countResult.length > 0 && countResult[0] ? countResult[0].total : 0;
     const totalPages = Math.ceil(totalItems / validLimitNum);
 
-    // Query principal com paginação
+    // Query principal com paginação (sem JOIN - dados já na tabela necessidades)
     const necessidades = await executeQuery(`
       SELECT 
-        n.*,
-        p.id as produto_id,
-        p.nome as produto_nome,
-        p.unidade_medida,
-        e.nome_escola,
-        e.rota
+        n.*
       FROM necessidades n
-      LEFT JOIN produtos p ON n.produto = p.nome
-      LEFT JOIN escolas e ON n.escola = e.nome_escola
       ${whereClause}
       ORDER BY n.data_preenchimento DESC
       LIMIT ${validLimitNum} OFFSET ${offset}
@@ -133,8 +125,8 @@ const listarTodas = async (req, res) => {
 
     // Lógica de permissões por tipo de usuário
     if (userType === 'nutricionista') {
-      // Nutricionista: apenas escolas associadas a ela
-      whereClause += ' AND e.email_nutricionista = ?';
+      // Nutricionista: apenas registros criados por ela
+      whereClause += ' AND n.usuario_email = ?';
       params.push(req.user.email);
     } else if (userType === 'coordenador' || userType === 'supervisor' || userType === 'administrador') {
       // Coordenador, Supervisor e Administrador: acesso a todas as escolas
@@ -147,7 +139,7 @@ const listarTodas = async (req, res) => {
 
     // Filtros opcionais
     if (search) {
-      whereClause += ' AND (n.produto LIKE ? OR e.nome_escola LIKE ?)';
+      whereClause += ' AND (n.produto LIKE ? OR n.escola LIKE ?)';
       params.push(`%${search}%`, `%${search}%`);
     }
 
@@ -159,16 +151,8 @@ const listarTodas = async (req, res) => {
 
     const necessidades = await executeQuery(`
       SELECT 
-        n.*,
-        p.id as produto_id,
-        p.nome as produto_nome,
-        p.unidade_medida,
-        e.nome_escola,
-        e.rota,
-        e.codigo_teknisa
+        n.*
       FROM necessidades n
-      LEFT JOIN produtos p ON n.produto = p.nome
-      LEFT JOIN escolas e ON n.escola = e.nome_escola
       ${whereClause}
       ORDER BY n.data_preenchimento DESC
     `, params);

@@ -1,38 +1,43 @@
 import api from './api';
+import FoodsApiService from './FoodsApiService';
 
 const escolasService = {
-  // Listar escolas com filtros (com permissões por nutricionista)
+  // Listar escolas com filtros (busca do Foods)
   listar: async (filtros = {}) => {
-    const params = new URLSearchParams();
-    
-    Object.keys(filtros).forEach(key => {
-      if (filtros[key] !== undefined && filtros[key] !== '') {
-        params.append(key, filtros[key]);
+    try {
+      // Buscar escolas do sistema Foods via FoodsApiService
+      const response = await FoodsApiService.getUnidadesEscolares({ ativo: true, ...filtros });
+      
+      if (response.success) {
+        // Mapear dados do Foods para o formato esperado
+        const escolasFormatadas = (response.data || []).map(escola => ({
+          id: escola.id,
+          nome_escola: escola.nome,
+          rota: escola.rota || '',
+          codigo_teknisa: escola.codigo_teknisa || escola.codigo || '',
+          cidade: escola.cidade || '',
+          ativo: escola.ativo
+        }));
+        
+        return {
+          success: true,
+          data: escolasFormatadas
+        };
       }
-    });
-
-    const url = `/escolas?${params.toString()}`;
-
-    // Usar a rota de escolas que respeita as permissões por nutricionista
-    const response = await api.get(url);
-    return response.data;
+      
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        data: [],
+        error: error.response?.data?.message || 'Erro ao carregar escolas'
+      };
+    }
   },
 
-  // Listar todas as escolas (sem filtro de permissão por nutricionista)
+  // Listar todas as escolas (mesmo que listar - Foods não tem filtro de nutricionista)
   listarTodas: async (filtros = {}) => {
-    const params = new URLSearchParams();
-    
-    Object.keys(filtros).forEach(key => {
-      if (filtros[key] !== undefined && filtros[key] !== '') {
-        params.append(key, filtros[key]);
-      }
-    });
-
-    const url = `/escolas/todas?${params.toString()}`;
-
-    // Usar a rota de escolas que retorna todas as escolas (para Coordenador/Supervisor)
-    const response = await api.get(url);
-    return response.data;
+    return await escolasService.listar(filtros);
   },
 
   // Buscar escola por ID
