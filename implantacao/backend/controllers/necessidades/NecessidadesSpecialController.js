@@ -1,4 +1,4 @@
-const { query } = require('../../config/database');
+const { executeQuery } = require('../../config/database');
 
 const gerarNecessidade = async (req, res) => {
   try {
@@ -13,7 +13,7 @@ const gerarNecessidade = async (req, res) => {
     }
 
     // Verificar se a escola existe
-    const escola = await query(`
+    const escola = await executeQuery(`
       SELECT id, nome_escola FROM escolas WHERE id = ?
     `, [escola_id]);
 
@@ -31,7 +31,7 @@ const gerarNecessidade = async (req, res) => {
       const { produto_id, ajuste } = produto;
 
       // Verificar se o produto existe
-      const produtoExiste = await query(`
+      const produtoExiste = await executeQuery(`
         SELECT id, nome, tipo FROM produtos WHERE id = ?
       `, [produto_id]);
 
@@ -40,14 +40,14 @@ const gerarNecessidade = async (req, res) => {
       }
 
       // Verificar se já existe necessidade para este produto/escola/data
-      const existing = await query(`
+      const existing = await executeQuery(`
         SELECT id FROM necessidades 
         WHERE usuario_email = ? AND produto = ? AND escola = ? AND data_consumo = ?
       `, [req.user.email, produtoExiste[0].nome, escola[0].nome_escola, data_consumo]);
 
       if (existing.length > 0) {
         // Atualizar necessidade existente
-        await query(`
+        await executeQuery(`
           UPDATE necessidades 
           SET ajuste = ?, semana_abastecimento = ?, data_atualizacao = CURRENT_TIMESTAMP
           WHERE id = ?
@@ -61,7 +61,7 @@ const gerarNecessidade = async (req, res) => {
         });
       } else {
         // Criar nova necessidade
-        const result = await query(`
+        const result = await executeQuery(`
           INSERT INTO necessidades (
             usuario_email, 
             produto, 

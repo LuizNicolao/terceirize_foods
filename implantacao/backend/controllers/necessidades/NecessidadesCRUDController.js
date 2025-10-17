@@ -1,4 +1,4 @@
-const { query } = require('../../config/database');
+const { executeQuery } = require('../../config/database');
 
 const criar = async (req, res) => {
   try {
@@ -13,7 +13,7 @@ const criar = async (req, res) => {
     }
 
     // Verificar se já existe uma necessidade para este produto/escola/tipo
-    const existing = await query(`
+    const existing = await executeQuery(`
       SELECT id FROM necessidades 
       WHERE usuario_email = ? AND produto = ? AND escola = ? AND tipo_entrega = ?
     `, [req.user.email, produto, escola, tipo_entrega]);
@@ -26,7 +26,7 @@ const criar = async (req, res) => {
     }
 
     // Inserir nova necessidade
-    const resultado = await query(`
+    const resultado = await executeQuery(`
       INSERT INTO necessidades (usuario_email, produto, escola, quantidade, tipo_entrega, data_preenchimento)
       VALUES (?, ?, ?, ?, ?, NOW())
     `, [req.user.email, produto, escola, quantidade, tipo_entrega]);
@@ -59,7 +59,7 @@ const atualizar = async (req, res) => {
     }
 
     // Verificar se a necessidade existe e pertence ao usuário
-    const existing = await query(`
+    const existing = await executeQuery(`
       SELECT id FROM necessidades 
       WHERE id = ? AND usuario_email = ?
     `, [id, req.user.email]);
@@ -72,7 +72,7 @@ const atualizar = async (req, res) => {
     }
 
     // Atualizar necessidade
-    await query(`
+    await executeQuery(`
       UPDATE necessidades 
       SET produto = ?, escola = ?, quantidade = ?, tipo_entrega = ?, data_atualizacao = NOW()
       WHERE id = ? AND usuario_email = ?
@@ -96,7 +96,7 @@ const deletar = async (req, res) => {
     const { id } = req.params;
 
     // Verificar se a necessidade existe e pertence ao usuário
-    const existing = await query(`
+    const existing = await executeQuery(`
       SELECT id FROM necessidades 
       WHERE id = ? AND usuario_email = ?
     `, [id, req.user.email]);
@@ -109,7 +109,7 @@ const deletar = async (req, res) => {
     }
 
     // Deletar necessidade
-    await query(`
+    await executeQuery(`
       DELETE FROM necessidades 
       WHERE id = ? AND usuario_email = ?
     `, [id, req.user.email]);
@@ -131,7 +131,7 @@ const buscarPorId = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const necessidades = await query(`
+    const necessidades = await executeQuery(`
       SELECT 
         n.*,
         p.nome as produto_nome,

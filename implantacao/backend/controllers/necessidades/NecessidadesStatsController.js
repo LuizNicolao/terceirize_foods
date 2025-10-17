@@ -1,4 +1,4 @@
-const { query } = require('../../config/database');
+const { executeQuery } = require('../../config/database');
 
 const obterEstatisticas = async (req, res) => {
   try {
@@ -29,7 +29,7 @@ const obterEstatisticas = async (req, res) => {
     }
 
     // Estatísticas gerais
-    const stats = await query(`
+    const stats = await executeQuery(`
       SELECT 
         COUNT(*) as total_necessidades,
         COUNT(DISTINCT n.escola) as total_escolas,
@@ -41,7 +41,7 @@ const obterEstatisticas = async (req, res) => {
     `, params);
 
     // Estatísticas por escola
-    const statsPorEscola = await query(`
+    const statsPorEscola = await executeQuery(`
       SELECT 
         n.escola,
         COUNT(*) as total_necessidades,
@@ -54,7 +54,7 @@ const obterEstatisticas = async (req, res) => {
     `, params);
 
     // Estatísticas por tipo de entrega
-    const statsPorTipoEntrega = await query(`
+    const statsPorTipoEntrega = await executeQuery(`
       SELECT 
         n.tipo_entrega,
         COUNT(*) as total_necessidades,
@@ -66,7 +66,7 @@ const obterEstatisticas = async (req, res) => {
     `, params);
 
     // Estatísticas por produto
-    const statsPorProduto = await query(`
+    const statsPorProduto = await executeQuery(`
       SELECT 
         n.produto,
         COUNT(*) as total_necessidades,
@@ -120,7 +120,7 @@ const obterResumo = async (req, res) => {
     }
 
     // Resumo por período
-    const resumo = await query(`
+    const resumo = await executeQuery(`
       SELECT 
         DATE(n.data_preenchimento) as data,
         COUNT(*) as total_necessidades,

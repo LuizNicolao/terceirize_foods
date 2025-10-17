@@ -1,21 +1,21 @@
-const { query } = require('../../config/database');
+const { executeQuery } = require('../../config/database');
 
 const listar = async (req, res) => {
   try {
     const { page = 1, limit = 10, search, escola, grupo, data, semana_abastecimento } = req.query;
     const userId = req.user.id;
-    const userType = req.user.tipo_usuario;
+    const userType = req.user.tipo_de_acesso;
     
     let whereClause = 'WHERE 1=1';
     let params = [];
 
     // Lógica de permissões por tipo de usuário
-    if (userType === 'Nutricionista') {
+    if (userType === 'nutricionista') {
       // Nutricionista: apenas escolas associadas a ela
       whereClause += ' AND e.email_nutricionista = ?';
       params.push(req.user.email);
-    } else if (userType === 'Coordenacao' || userType === 'Supervisor') {
-      // Coordenador e Supervisor: acesso a todas as escolas
+    } else if (userType === 'coordenador' || userType === 'supervisor' || userType === 'administrador') {
+      // Coordenador, Supervisor e Administrador: acesso a todas as escolas
       // Não adiciona filtro adicional
     } else {
       // Outros tipos: apenas registros criados por eles
@@ -80,12 +80,12 @@ const listar = async (req, res) => {
       ${whereClause}
     `;
     
-    const [countResult] = await query(countQuery, params);
-    const totalItems = countResult && countResult[0] ? countResult[0].total : 0;
+    const countResult = await executeQuery(countQuery, params);
+    const totalItems = countResult && countResult.length > 0 && countResult[0] ? countResult[0].total : 0;
     const totalPages = Math.ceil(totalItems / validLimitNum);
 
     // Query principal com paginação
-    const necessidades = await query(`
+    const necessidades = await executeQuery(`
       SELECT 
         n.*,
         p.id as produto_id,
@@ -126,18 +126,18 @@ const listarTodas = async (req, res) => {
   try {
     const { search, escola } = req.query;
     const userId = req.user.id;
-    const userType = req.user.tipo_usuario;
+    const userType = req.user.tipo_de_acesso;
     
     let whereClause = 'WHERE 1=1';
     let params = [];
 
     // Lógica de permissões por tipo de usuário
-    if (userType === 'Nutricionista') {
+    if (userType === 'nutricionista') {
       // Nutricionista: apenas escolas associadas a ela
       whereClause += ' AND e.email_nutricionista = ?';
       params.push(req.user.email);
-    } else if (userType === 'Coordenacao' || userType === 'Supervisor') {
-      // Coordenador e Supervisor: acesso a todas as escolas
+    } else if (userType === 'coordenador' || userType === 'supervisor' || userType === 'administrador') {
+      // Coordenador, Supervisor e Administrador: acesso a todas as escolas
       // Não adiciona filtro adicional
     } else {
       // Outros tipos: apenas registros criados por eles
@@ -157,7 +157,7 @@ const listarTodas = async (req, res) => {
     }
 
 
-    const necessidades = await query(`
+    const necessidades = await executeQuery(`
       SELECT 
         n.*,
         p.id as produto_id,
