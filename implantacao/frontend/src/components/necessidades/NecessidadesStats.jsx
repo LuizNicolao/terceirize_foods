@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaClipboardList, FaBox, FaSchool, FaCalendarAlt } from 'react-icons/fa';
-import StatCard from '../ui/StatCard';
+import { StatCard } from '../ui';
 
 const NecessidadesStats = ({ 
   produtos = [], 

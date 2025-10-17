@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaFileExcel, FaFilePdf, FaPlus } from 'react-icons/fa';
-import Button from '../ui/Button';
+import { Button } from '../ui';
 
 const NecessidadesActions = ({ 
   canCreate = false,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaSchool, FaBox, FaCalendarAlt } from 'react-icons/fa';
-import SearchableSelect from '../../../components/ui/SearchableSelect';
+import { SearchableSelect } from '../../../components/ui';
 
 const FiltrosGerarNecessidade = ({ 
   escolas, 

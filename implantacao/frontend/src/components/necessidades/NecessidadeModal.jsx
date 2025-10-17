@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import Modal from '../ui/Modal';
-import Button from '../ui/Button';
-import { Input, SearchableSelect } from '../ui';
+import { Modal, Button, Input, SearchableSelect } from '../ui';
 import { FaCalculator, FaSave, FaTimes } from 'react-icons/fa';
 import { useNecessidades } from '../../hooks/useNecessidades';
-import { calcularSemanaAbastecimento } from '../../utils/semanaAbastecimentoUtils';
+import { calcularSemanaAbastecimento } from '../../utils/semanasAbastecimentoUtils';
 import toast from 'react-hot-toast';
 
 // Função para obter a data atual no formato YYYY-MM-DD (sem problemas de fuso horário)

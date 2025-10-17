@@ -11,9 +11,8 @@ import {
   NecessidadesFilters,
   NecessidadeModal
 } from '../../components/necessidades';
-import ActionButtons from '../../components/ui/ActionButtons';
-import Modal from '../../components/ui/Modal';
-import { formatarDataParaExibicao } from '../../utils/recebimentosUtils';
+import { ActionButtons, Modal } from '../../components/ui';
+import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
 import toast from 'react-hot-toast';
 
 const Necessidades = () => {

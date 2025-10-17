@@ -1,7 +1,6 @@
 import React from 'react';
 import { FaSchool, FaBox, FaCalendarAlt, FaSearch, FaTimes, FaCalendarWeek } from 'react-icons/fa';
-import { Input, SearchableSelect } from '../ui';
-import Button from '../ui/Button';
+import { Input, SearchableSelect, Button } from '../ui';
 import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 
 const NecessidadesFilters = ({ 
