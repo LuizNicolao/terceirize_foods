@@ -7,7 +7,6 @@ import UsuariosStats from './components/UsuariosStats';
 import UsuariosActions from './components/UsuariosActions';
 import { AuditModal } from '../../components/shared';
 import { Button, CadastroFilterBar, LoadingSpinner } from '../../components/ui';
-import { UsuarioModal } from '../../components/usuarios';
 
 const Usuarios = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -20,15 +19,10 @@ const Usuarios = () => {
     setSearchTerm,
     statusFilter,
     setStatusFilter,
-    showModal,
-    viewMode,
-    editingUsuario,
     handleView,
     handleEdit,
     handleCreate,
     handleDelete,
-    handleCloseModal,
-    handleSubmit,
     refetch,
     handleExportXLSX,
     handleExportPDF,
@@ -120,15 +114,6 @@ const Usuarios = () => {
         canView={canView('usuarios')}
         canEdit={canEdit('usuarios')}
         canDelete={canDelete('usuarios')}
-      />
-
-      {/* Usuario Modal */}
-      <UsuarioModal
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        onSubmit={handleSubmit}
-        usuario={editingUsuario}
-        isViewMode={viewMode}
       />
 
       {/* Audit Modal */}
