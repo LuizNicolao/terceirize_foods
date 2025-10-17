@@ -52,17 +52,17 @@ export const useNecessidades = () => {
     }
   }, []);
 
-  // Carregar escolas disponíveis
+  // Carregar escolas disponíveis (filtradas por nutricionista se aplicável)
   const carregarEscolas = useCallback(async () => {
     try {
-      const response = await escolasService.listar();
+      const response = await escolasService.listar({}, user);
       if (response.success) {
         setEscolas(response.data);
       }
     } catch (err) {
       console.error('Erro ao carregar escolas:', err);
     }
-  }, []);
+  }, [user]);
 
   // Carregar grupos de produtos
   const carregarGrupos = useCallback(async () => {
