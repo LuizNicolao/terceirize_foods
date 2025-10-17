@@ -30,7 +30,8 @@
     "pdfkit": "^0.14.0",
     "puppeteer": "^21.5.2",
     "string-similarity": "^4.0.4",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "yup": "^1.4.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",
