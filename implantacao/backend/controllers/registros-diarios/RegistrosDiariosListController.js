@@ -1,4 +1,5 @@
 const { executeQuery } = require('../../config/database');
+const { calcularPeriodoDiasUteis } = require('../../utils/diasUteisUtils');
 
 /**
  * Controller de Listagem de Registros Diários
@@ -202,6 +203,88 @@ class RegistrosDiariosListController {
         success: false,
         error: 'Erro interno do servidor',
         message: 'Erro ao listar histórico'
+      });
+    }
+  }
+  
+  /**
+   * Calcular médias por período (últimos 20 dias úteis)
+   * Usado pela funcionalidade de Gerar Necessidades
+   */
+  static async calcularMediasPorPeriodo(req, res) {
+    try {
+      const { escola_id, data } = req.query;
+      const userId = req.user.id;
+      const userType = req.user.tipo_de_acesso;
+
+      if (!escola_id || !data) {
+        return res.status(400).json({
+          success: false,
+          error: 'Parâmetros obrigatórios',
+          message: 'Escola e data são obrigatórios'
+        });
+      }
+
+      // Calcular período dos últimos 20 dias úteis
+      const dataReferencia = new Date(data);
+      const { dataInicio, dataFim } = calcularPeriodoDiasUteis(dataReferencia, 20);
+
+      let whereClause = 'WHERE rd.ativo = 1 AND rd.escola_id = ? AND rd.data >= ? AND rd.data <= ?';
+      let params = [escola_id, dataInicio, dataFim];
+
+      // Se for nutricionista, filtrar apenas escolas associadas
+      if (userType === 'nutricionista') {
+        whereClause += ' AND rd.nutricionista_id = ?';
+        params.push(userId);
+      }
+
+      // Buscar registros dos últimos 20 dias úteis e calcular média
+      const medias = await executeQuery(`
+        SELECT 
+          rd.tipo_refeicao,
+          SUM(rd.valor) as soma_total,
+          COUNT(*) as quantidade_registros,
+          COUNT(DISTINCT rd.data) as dias_com_registro,
+          CEIL(SUM(rd.valor) / COUNT(*)) as media_correta
+        FROM registros_diarios rd
+        ${whereClause}
+        GROUP BY rd.tipo_refeicao
+      `, params);
+
+      // Organizar as médias por tipo
+      const tiposPermitidos = ['lanche_manha', 'almoco', 'lanche_tarde', 'parcial', 'eja'];
+      const mediasOrganizadas = {};
+      
+      // Inicializar todos os tipos com valores padrão
+      tiposPermitidos.forEach(tipo => {
+        mediasOrganizadas[tipo] = {
+          media: 0,
+          quantidade_registros: 0,
+          dias_com_registro: 0
+        };
+      });
+
+      // Preencher com os dados encontrados
+      medias.forEach(media => {
+        if (tiposPermitidos.includes(media.tipo_refeicao)) {
+          mediasOrganizadas[media.tipo_refeicao] = {
+            media: parseInt(media.media_correta) || 0,
+            quantidade_registros: media.quantidade_registros,
+            dias_com_registro: media.dias_com_registro
+          };
+        }
+      });
+
+      res.json({
+        success: true,
+        data: mediasOrganizadas
+      });
+    } catch (error) {
+      console.error('Erro ao calcular médias por período:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Erro ao calcular médias por período'
       });
     }
   }

@@ -20,6 +20,7 @@ import Classes from './pages/classes/Classes';
 import RecebimentosEscolas from './pages/recebimentos-escolas/RecebimentosEscolas';
 import ProdutosPerCapita from './pages/produtos-per-capita/ProdutosPerCapita';
 import RegistrosDiarios from './pages/registros-diarios/RegistrosDiarios';
+import Necessidades from './pages/necessidades/Necessidades';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -191,6 +192,15 @@ function App() {
                 element={
                   <AuthenticatedRoute>
                     <RegistrosDiarios />
+                  </AuthenticatedRoute>
+                } 
+              />
+
+              <Route 
+                path="/necessidades" 
+                element={
+                  <AuthenticatedRoute>
+                    <Necessidades />
                   </AuthenticatedRoute>
                 } 
               />

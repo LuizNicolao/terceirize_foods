@@ -9,6 +9,7 @@ module.exports = {
   listar: RegistrosDiariosListController.listar,
   listarMedias: RegistrosDiariosListController.listarMedias,
   listarHistorico: RegistrosDiariosListController.listarHistorico,
+  calcularMediasPorPeriodo: RegistrosDiariosListController.calcularMediasPorPeriodo,
   obterEstatisticas: RegistrosDiariosStatsController.obterEstatisticas
 };
 

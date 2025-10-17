@@ -28,6 +28,12 @@ router.get('/historico',
   RegistrosDiariosController.listarHistorico
 );
 
+// GET /api/registros-diarios/medias-periodo - Calcular médias por período (necessidades)
+router.get('/medias-periodo',
+  checkScreenPermission('registros_diarios', 'visualizar'),
+  RegistrosDiariosController.calcularMediasPorPeriodo
+);
+
 // GET /api/registros-diarios/estatisticas - Obter estatísticas
 router.get('/estatisticas',
   checkScreenPermission('registros_diarios', 'visualizar'),
