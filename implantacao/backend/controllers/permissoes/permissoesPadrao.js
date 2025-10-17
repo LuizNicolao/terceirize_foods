@@ -20,6 +20,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -36,6 +37,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -52,6 +54,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: true },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: true },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -70,6 +73,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -86,6 +90,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -102,6 +107,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: true },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -120,6 +126,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -136,6 +143,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -152,6 +160,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -170,6 +179,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -186,6 +196,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -202,6 +213,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: true },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -220,6 +232,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -236,6 +249,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -252,6 +266,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: true },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: true },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -270,6 +285,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: false, editar: false, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -286,6 +302,7 @@ const PERMISSOES_PADRAO = {
       produtos_per_capita: { visualizar: true, criar: true, editar: true, excluir: false },
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
+      necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -322,6 +339,7 @@ const TODAS_TELAS = [
   'produtos_per_capita',
   'recebimentos_escolas',
   'registros_diarios',
+  'necessidades',
   'permissoes'
 ];
 
@@ -357,6 +375,7 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'produtos_per_capita', descricao: 'Gerenciamento de Produtos Per Capita' },
   { nome: 'recebimentos_escolas', descricao: 'Gerenciamento de Recebimentos Escolas' },
   { nome: 'registros_diarios', descricao: 'Registros Diários de Refeições' },
+  { nome: 'necessidades', descricao: 'Geração de Necessidades' },
   { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
 ];
 
