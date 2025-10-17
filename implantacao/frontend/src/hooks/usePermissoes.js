@@ -147,6 +147,7 @@ export const usePermissoes = () => {
         'produtos_per_capita',
         'recebimentos_escolas',
         'registros_diarios',
+        'necessidades',
         'permissoes'
       ];
       
