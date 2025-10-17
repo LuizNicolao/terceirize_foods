@@ -4,6 +4,46 @@
  */
 
 /**
+ * Calcula a semana de abastecimento (semana anterior à data de consumo)
+ * @param {string} dataConsumo - Data de consumo no formato ISO (YYYY-MM-DD)
+ * @returns {string} Semana de abastecimento no formato "DD/MM a DD/MM"
+ */
+export const calcularSemanaAbastecimento = (dataConsumo) => {
+  if (!dataConsumo) return '';
+  
+  try {
+    const data = new Date(dataConsumo);
+    
+    // Verificar se a data é válida
+    if (isNaN(data.getTime())) {
+      console.error('Data inválida:', dataConsumo);
+      return '';
+    }
+    
+    // Calcular o início da semana anterior (segunda-feira)
+    const inicioSemanaAnterior = new Date(data);
+    inicioSemanaAnterior.setDate(data.getDate() - 7 - data.getDay() + 1); // -7 dias + ajuste para segunda-feira
+    
+    // Calcular o fim da semana anterior (domingo)
+    const fimSemanaAnterior = new Date(inicioSemanaAnterior);
+    fimSemanaAnterior.setDate(inicioSemanaAnterior.getDate() + 6);
+    
+    // Formatar as datas
+    const formatarDataSemana = (data) => {
+      const dia = String(data.getDate()).padStart(2, '0');
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      return `${dia}/${mes}`;
+    };
+    
+    const resultado = `${formatarDataSemana(inicioSemanaAnterior)} a ${formatarDataSemana(fimSemanaAnterior)}`;
+    return resultado;
+  } catch (error) {
+    console.error('Erro ao calcular semana de abastecimento:', error);
+    return '';
+  }
+};
+
+/**
  * Gera todas as semanas de abastecimento para um ano
  * @param {number} ano - Ano para gerar as semanas (padrão: ano atual)
  * @returns {Array} Array de objetos com informações das semanas
