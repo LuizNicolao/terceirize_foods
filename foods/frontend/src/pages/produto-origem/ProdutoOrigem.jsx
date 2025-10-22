@@ -217,14 +217,16 @@ const ProdutoOrigem = () => {
       />
 
       {/* Paginação */}
-      <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-        itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={setItemsPerPage}
-        totalItems={totalItems}
-      />
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+          onItemsPerPageChange={setItemsPerPage}
+          totalItems={totalItems}
+        />
+      )}
 
       {/* Modal */}
       <ProdutoOrigemModal
