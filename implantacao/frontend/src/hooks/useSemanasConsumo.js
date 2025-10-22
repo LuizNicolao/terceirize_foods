@@ -16,33 +16,16 @@ export const useSemanasConsumo = (ano = new Date().getFullYear()) => {
     setError(null);
     
     try {
-      // Buscar dados do calendário para o ano
-      const response = await calendarioService.listar({
-        ano: anoSelecionado,
-        limit: 1000 // Buscar todos os registros
-      });
+      // Usar endpoint específico para semanas de consumo
+      const response = await calendarioService.buscarSemanasConsumo(anoSelecionado);
+      
+      console.log('DEBUG: Response semanas consumo:', response);
 
       if (response.success && response.data) {
-        // Extrair semanas de consumo únicas
-        const semanasConsumo = new Set();
+        // response.data contém array de objetos com semana_consumo
+        const semanasArray = response.data.map(item => item.semana_consumo).filter(semana => semana);
         
-        response.data.forEach(dia => {
-          if (dia.semana_consumo && dia.semana_consumo.trim() !== '') {
-            semanasConsumo.add(dia.semana_consumo);
-          }
-        });
-
-        // Converter para array e ordenar
-        const semanasArray = Array.from(semanasConsumo).sort((a, b) => {
-          // Ordenar por data de início da semana
-          const [diaA, mesA] = a.split(' a ')[0].split('/');
-          const [diaB, mesB] = b.split(' a ')[0].split('/');
-          
-          const dataA = new Date(anoSelecionado, parseInt(mesA) - 1, parseInt(diaA));
-          const dataB = new Date(anoSelecionado, parseInt(mesB) - 1, parseInt(diaB));
-          
-          return dataA - dataB;
-        });
+        console.log('DEBUG: Semanas extraídas:', semanasArray);
 
         // Criar opções para o selectbox
         const opcoesSelect = [
@@ -56,9 +39,12 @@ export const useSemanasConsumo = (ano = new Date().getFullYear()) => {
           });
         });
 
+        console.log('DEBUG: Opções finais:', opcoesSelect);
+
         setOpcoes(opcoesSelect);
         setSemanas(semanasArray);
       } else {
+        console.log('DEBUG: Erro na resposta ou dados vazios');
         setError('Erro ao carregar semanas de consumo');
         setOpcoes([{ value: '', label: 'Selecione uma semana de consumo...' }]);
         setSemanas([]);
