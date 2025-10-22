@@ -19,13 +19,9 @@ export const useSemanasConsumo = (ano = new Date().getFullYear()) => {
       // Usar endpoint específico para semanas de consumo
       const response = await calendarioService.buscarSemanasConsumo(anoSelecionado);
       
-      console.log('DEBUG: Response semanas consumo:', response);
-
       if (response.success && response.data) {
         // response.data contém array de objetos com semana_consumo
         const semanasArray = response.data.map(item => item.semana_consumo).filter(semana => semana);
-        
-        console.log('DEBUG: Semanas extraídas:', semanasArray);
 
         // Criar opções para o selectbox
         const opcoesSelect = [
@@ -39,12 +35,9 @@ export const useSemanasConsumo = (ano = new Date().getFullYear()) => {
           });
         });
 
-        console.log('DEBUG: Opções finais:', opcoesSelect);
-
         setOpcoes(opcoesSelect);
         setSemanas(semanasArray);
       } else {
-        console.log('DEBUG: Erro na resposta ou dados vazios');
         setError('Erro ao carregar semanas de consumo');
         setOpcoes([{ value: '', label: 'Selecione uma semana de consumo...' }]);
         setSemanas([]);
