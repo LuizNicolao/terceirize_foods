@@ -188,7 +188,7 @@ class ProdutosPerCapitaListController {
   static buscarGruposComPercapita = asyncHandler(async (req, res) => {
     const grupos = await executeQuery(`
       SELECT DISTINCT 
-        ppc.grupo,
+        ppc.grupo as id,
         ppc.grupo as nome
       FROM produtos_per_capita ppc
       WHERE ppc.ativo = 1 AND ppc.grupo IS NOT NULL AND ppc.grupo != ''

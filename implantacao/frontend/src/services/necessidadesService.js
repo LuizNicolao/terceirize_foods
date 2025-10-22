@@ -66,11 +66,10 @@ const necessidadesService = {
     }
   },
 
-  // Buscar produtos por grupo (via Foods API)
+  // Buscar produtos por grupo (do sistema implantacao)
   buscarProdutosPorGrupo: async (grupoId) => {
-    // Buscar produtos origem do Foods filtrados por grupo
-    const response = await FoodsApiService.getProdutosOrigem({ grupo_id: grupoId, ativo: true });
-    return response;
+    const response = await api.get(`/produtos-per-capita?grupo=${grupoId}&ativo=true`);
+    return response.data;
   },
 
   // Buscar percapita de produtos
