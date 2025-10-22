@@ -28,6 +28,9 @@ const PermissoesForm = ({
       { key: 'produtos_per_capita', label: 'Produtos Per Capita' },
       { key: 'recebimentos_escolas', label: 'Recebimentos Escolas' }
     ],
+    'Calendário': [
+      { key: 'calendario', label: 'Calendário' }
+    ],
     'Sistema': [
       { key: 'permissoes', label: 'Permissões' }
     ]
