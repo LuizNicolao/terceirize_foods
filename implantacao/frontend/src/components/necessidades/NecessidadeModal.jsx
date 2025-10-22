@@ -104,12 +104,12 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         eja: 0.1
       };
       
-      // Valores per capita por tipo de refeição (valores reais do banco)
-      const percapitaLancheManha = Number(percapitaData.lanche_manha);
-      const percapitaAlmoco = Number(percapitaData.almoco);
-      const percapitaLancheTarde = Number(percapitaData.lanche_tarde);
-      const percapitaParcial = Number(percapitaData.parcial);
-      const percapitaEja = Number(percapitaData.eja);
+      // Valores per capita por tipo de refeição (valores reais do banco ou padrão)
+      const percapitaLancheManha = Number(percapitaData.lanche_manha) || 0.1;
+      const percapitaAlmoco = Number(percapitaData.almoco) || 0.1;
+      const percapitaLancheTarde = Number(percapitaData.lanche_tarde) || 0.1;
+      const percapitaParcial = Number(percapitaData.parcial) || 0.1;
+      const percapitaEja = Number(percapitaData.eja) || 0.1;
 
       // Frequências das médias das escolas (número de alunos) - AUTOMÁTICO
       // Usar a estrutura correta das médias com os 5 novos tipos
@@ -126,11 +126,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       // const frequenciaEja = 0; // Será editável
 
       // Quantidades calculadas (percapta × média) × frequência
-      const qtdLancheManha = Number((percapitaLancheManha * frequenciaLancheManha) * 0); // Começar em 0
-      const qtdAlmoco = Number((percapitaAlmoco * frequenciaAlmoco) * 0); // Começar em 0
-      const qtdLancheTarde = Number((percapitaLancheTarde * frequenciaLancheTarde) * 0); // Começar em 0
-      const qtdParcial = Number((percapitaParcial * frequenciaParcial) * 0); // Começar em 0
-      const qtdEja = Number((percapitaEja * frequenciaEja) * 0); // Começar em 0
+      const qtdLancheManha = Number((percapitaLancheManha * frequenciaLancheManha) * 1); // Usar frequência 1 como padrão
+      const qtdAlmoco = Number((percapitaAlmoco * frequenciaAlmoco) * 1); // Usar frequência 1 como padrão
+      const qtdLancheTarde = Number((percapitaLancheTarde * frequenciaLancheTarde) * 1); // Usar frequência 1 como padrão
+      const qtdParcial = Number((percapitaParcial * frequenciaParcial) * 1); // Usar frequência 1 como padrão
+      const qtdEja = Number((percapitaEja * frequenciaEja) * 1); // Usar frequência 1 como padrão
 
       // Total
       const total = Number(qtdLancheManha + qtdAlmoco + qtdLancheTarde + qtdParcial + qtdEja);
@@ -149,17 +149,17 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         media_lanche_tarde: frequenciaLancheTarde,
         media_parcial: frequenciaParcial,
         media_eja: frequenciaEja,
-        frequencia_lanche_manha: '', // Sempre começar em branco (editável)
-        frequencia_almoco: '',
-        frequencia_lanche_tarde: '',
-        frequencia_parcial: '',
-        frequencia_eja: '',
-        qtd_lanche_manha: 0, // Começar em 0 (percapita × frequência)
-        qtd_almoco: 0,
-        qtd_lanche_tarde: 0,
-        qtd_parcial: 0,
-        qtd_eja: 0,
-        total: 0, // Começar em 0
+        frequencia_lanche_manha: 1, // Começar com 1 (editável)
+        frequencia_almoco: 1,
+        frequencia_lanche_tarde: 1,
+        frequencia_parcial: 1,
+        frequencia_eja: 1,
+        qtd_lanche_manha: qtdLancheManha, // Usar cálculo inicial
+        qtd_almoco: qtdAlmoco,
+        qtd_lanche_tarde: qtdLancheTarde,
+        qtd_parcial: qtdParcial,
+        qtd_eja: qtdEja,
+        total: total, // Usar total calculado
         ajuste: ajustesExistentes[produto.id] || '' // Preservar ajuste existente ou inicializar em branco
       };
     });
