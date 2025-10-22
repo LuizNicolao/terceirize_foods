@@ -137,11 +137,8 @@ class CalendarioVisualizacaoController {
   static async obterPorMes(req, res) {
     try {
       const { ano = new Date().getFullYear(), mes } = req.query;
-      
-      console.log('Parâmetros recebidos:', { ano, mes });
 
       if (!mes) {
-        console.log('Erro: Mês não fornecido');
         return res.status(400).json({
           success: false,
           message: 'Mês é obrigatório'
