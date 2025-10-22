@@ -52,6 +52,7 @@ const ProdutoOrigem = () => {
     handleCloseModal,
     handleCloseValidationModal,
     handlePageChange,
+    handleItemsPerPageChange,
     handleClearFilters,
     setSearchTerm,
     handleKeyPress,
