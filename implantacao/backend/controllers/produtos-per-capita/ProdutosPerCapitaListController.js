@@ -19,7 +19,8 @@ class ProdutosPerCapitaListController {
     const { 
       search = '', 
       status = 'todos',
-      produto_id = ''
+      produto_id = '',
+      grupo = ''
     } = req.query;
     const pagination = req.pagination;
 
@@ -64,6 +65,11 @@ class ProdutosPerCapitaListController {
     if (produto_id) {
       baseQuery += ' AND ppc.produto_id = ?';
       params.push(produto_id);
+    }
+
+    if (grupo) {
+      baseQuery += ' AND ppc.grupo = ?';
+      params.push(grupo);
     }
 
     baseQuery += ' ORDER BY ppc.data_cadastro DESC';
