@@ -93,11 +93,12 @@ export const useNecessidades = () => {
         if (percapitaResponse.success) {
           const percapitaMap = {};
           percapitaResponse.data.forEach(p => {
-            // Usar todos os valores de per capita do banco
+            // Usar todos os valores de per capita do banco com estrutura correta
             percapitaMap[p.produto_id] = {
-              parcial: p.per_capita_parcial || 0,
+              lanche_manha: p.per_capita_lanche_manha || 0,
               almoco: p.per_capita_almoco || 0,
-              lanche: p.per_capita_lanche || 0,
+              lanche_tarde: p.per_capita_lanche_tarde || 0,
+              parcial: p.per_capita_parcial || 0,
               eja: p.per_capita_eja || 0
             };
           });
