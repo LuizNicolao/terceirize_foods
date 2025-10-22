@@ -97,11 +97,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     const produtosComCalculos = produtos.map(produto => {
       // Usar valores reais do banco de dados com os 5 novos tipos
       const percapitaData = percapitas[produto.id] || {
-        lanche_manha: 0.1,
-        almoco: 0.1,
-        lanche_tarde: 0.1,
-        parcial: 0.1,
-        eja: 0.1
+        lanche_manha: 0,
+        almoco: 0,
+        lanche_tarde: 0,
+        parcial: 0,
+        eja: 0
       };
       
       // Valores per capita por tipo de refeição (valores reais do banco ou 0)
