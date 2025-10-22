@@ -225,6 +225,12 @@ const ProdutoOrigem = () => {
         hasOnPageChange: !!handlePageChange,
         hasOnItemsPerPageChange: !!setItemsPerPage
       })}
+      {console.log('🔍 VALORES ESPECÍFICOS:', {
+        'currentPage': currentPage,
+        'totalPages': totalPages,
+        'totalItems': totalItems,
+        'itemsPerPage': itemsPerPage
+      })}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
