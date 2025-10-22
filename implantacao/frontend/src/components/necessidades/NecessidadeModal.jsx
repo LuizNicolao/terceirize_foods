@@ -123,7 +123,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const frequenciaParcial = Math.round(Number(mediasPeriodo.parcial?.media || 0)); // Número inteiro
       const frequenciaEja = Math.round(Number(mediasPeriodo.eja?.media || 0)); // Número inteiro
 
-      console.log('DEBUG: MediasPeriodo:', mediasPeriodo);
+      console.log('DEBUG: MediasPeriodo completo:', JSON.stringify(mediasPeriodo, null, 2));
       console.log('DEBUG: Frequencias:', {
         lanche_manha: frequenciaLancheManha,
         almoco: frequenciaAlmoco,
