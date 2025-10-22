@@ -218,26 +218,13 @@ export const useNecessidades = () => {
     
     // Converter string da semana para data válida
     let dataConsumoFormatada = filtros.data;
-    console.log('Verificando se contém " a ":', filtros.data.includes(' a '));
     
     if (typeof filtros.data === 'string' && filtros.data.includes(' a ')) {
-      console.log('Entrando na conversão...');
       const primeiraData = filtros.data.split(' a ')[0];
       const [dia, mes] = primeiraData.split('/');
       const ano = new Date().getFullYear();
       dataConsumoFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-      console.log('Conversão realizada:', dataConsumoFormatada);
-    } else {
-      console.log('Não entrou na conversão, usando data original:', filtros.data);
     }
-    
-    console.log('Data original:', filtros.data);
-    console.log('Data formatada:', dataConsumoFormatada);
-    console.log('Tipo da data original:', typeof filtros.data);
-    console.log('Tipo da data formatada:', typeof dataConsumoFormatada);
-    
-    console.log('dadosExternos:', dadosExternos);
-    console.log('dataConsumoFormatada antes do payload:', dataConsumoFormatada);
     
     const dadosParaEnviar = dadosExternos ? {
       ...dadosExternos,
@@ -257,31 +244,21 @@ export const useNecessidades = () => {
       }))
     };
     
-    console.log('semana_consumo no payload antes de enviar:', dadosParaEnviar.semana_consumo);
-
-    // Debug: mostrar dados que serão enviados
-    console.log('Dados para enviar:', dadosParaEnviar);
-    console.log('Escola selecionada:', filtros.escola);
-    console.log('semana_consumo no payload:', dadosParaEnviar.semana_consumo);
 
     // Validação baseada nos dados que serão enviados
     if (!dadosParaEnviar.escola_id || !dadosParaEnviar.semana_consumo) {
-      console.log('Validação falhou - escola_id:', dadosParaEnviar.escola_id, 'semana_consumo:', dadosParaEnviar.semana_consumo);
       toast.error('Selecione escola e data antes de gerar a necessidade');
       return { success: false };
     }
 
     if (!dadosParaEnviar.produtos || dadosParaEnviar.produtos.length === 0) {
-      console.log('Validação falhou - produtos:', dadosParaEnviar.produtos);
       toast.error('Nenhum produto selecionado');
       return { success: false };
     }
 
     setLoading(true);
     try {
-      console.log('Enviando requisição para backend...');
       const response = await necessidadesService.gerarNecessidade(dadosParaEnviar);
-      console.log('Resposta do backend:', response);
       
       if (response.success) {
         toast.success('Necessidade gerada com sucesso!');

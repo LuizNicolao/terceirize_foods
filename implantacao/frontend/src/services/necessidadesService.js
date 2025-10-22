@@ -52,9 +52,7 @@ const necessidadesService = {
   // Gerar necessidade (nova funcionalidade)
   gerarNecessidade: async (dados) => {
     try {
-      console.log('Enviando dados para /necessidades/gerar:', dados);
       const response = await api.post('/necessidades/gerar', dados);
-      console.log('Resposta recebida:', response.data);
       return response.data;
     } catch (error) {
       console.error('Erro na requisição:', error);
