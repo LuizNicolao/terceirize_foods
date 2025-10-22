@@ -225,6 +225,9 @@ export const useNecessidades = () => {
       dataConsumoFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
     }
     
+    console.log('Data original:', filtros.data);
+    console.log('Data formatada:', dataConsumoFormatada);
+    
     const dadosParaEnviar = dadosExternos || {
       escola_id: filtros.escola?.id,
       escola_nome: filtros.escola?.nome_escola || filtros.escola?.nome,

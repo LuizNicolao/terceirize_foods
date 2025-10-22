@@ -17,9 +17,20 @@ const gerarNecessidadeSchema = yup.object().shape({
     .positive('ID da escola deve ser positivo')
     .required('ID da escola é obrigatório'),
   
-  data_consumo: yup.string()
+  escola_nome: yup.string()
+    .required('Nome da escola é obrigatório'),
+  
+  escola_rota: yup.string()
+    .nullable()
+    .optional(),
+  
+  escola_codigo_teknisa: yup.string()
+    .nullable()
+    .optional(),
+  
+  semana_consumo: yup.string()
     .matches(/^\d{4}-\d{2}-\d{2}$/, 'Data deve estar no formato YYYY-MM-DD')
-    .required('Data de consumo é obrigatória'),
+    .required('Semana de consumo é obrigatória'),
   
   semana_abastecimento: yup.string()
     .nullable()
@@ -32,6 +43,13 @@ const gerarNecessidadeSchema = yup.object().shape({
           .integer('ID do produto deve ser um número inteiro')
           .positive('ID do produto deve ser positivo')
           .required('ID do produto é obrigatório'),
+        
+        produto_nome: yup.string()
+          .required('Nome do produto é obrigatório'),
+        
+        produto_unidade: yup.string()
+          .nullable()
+          .optional(),
         
         ajuste: yup.number()
           .min(0, 'Ajuste não pode ser negativo')
