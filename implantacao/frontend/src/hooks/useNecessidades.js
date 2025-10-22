@@ -55,9 +55,12 @@ export const useNecessidades = () => {
   // Carregar escolas disponíveis (filtradas por nutricionista se aplicável)
   const carregarEscolas = useCallback(async () => {
     try {
+      console.log('DEBUG: Carregando escolas para user:', user);
       const response = await escolasService.listar({}, user);
+      console.log('DEBUG: Resposta escolas:', response);
       if (response.success) {
         setEscolas(response.data);
+        console.log('DEBUG: Escolas carregadas:', response.data.length);
       }
     } catch (err) {
       console.error('Erro ao carregar escolas:', err);
