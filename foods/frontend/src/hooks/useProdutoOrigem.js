@@ -184,6 +184,17 @@ export const useProdutoOrigem = () => {
     return unidade ? unidade.sigla : '-';
   }, [unidadesMedida]);
 
+  // Debug logs
+  console.log('🔍 USEPRODUTOORIGEM DEBUG:', {
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
+    itemsLength: baseEntity.items?.length,
+    hasHandlePageChange: !!baseEntity.handlePageChange,
+    hasHandleItemsPerPageChange: !!baseEntity.handleItemsPerPageChange
+  });
+
   return {
     // Estados principais
     produtosOrigem: isSortingLocally ? produtosOrigemOrdenados : baseEntity.items,

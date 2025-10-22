@@ -128,7 +128,10 @@ export const useNecessidades = () => {
         // Extrair ano da string completa - procurar por padrão /25 no final
         const anoMatch = data.match(/\/(\d{2})$/);
         const ano = anoMatch ? `20${anoMatch[1]}` : new Date().getFullYear();
-        dataFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+        // Garantir que dia e mês tenham 2 dígitos
+        const diaFormatado = dia.padStart(2, '0');
+        const mesFormatado = mes.padStart(2, '0');
+        dataFormatada = `${ano}-${mesFormatado}-${diaFormatado}`;
       } else if (data instanceof Date) {
         dataFormatada = data.toISOString().split('T')[0];
       } else {

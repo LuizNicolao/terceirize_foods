@@ -9,6 +9,15 @@ const Pagination = ({
   itemsPerPage,
   onItemsPerPageChange
 }) => {
+  console.log('🔍 PAGINATION COMPONENT RECEIVED:', {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    hasOnPageChange: !!onPageChange,
+    hasOnItemsPerPageChange: !!onItemsPerPageChange
+  });
+
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
