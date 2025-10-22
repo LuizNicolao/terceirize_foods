@@ -216,18 +216,29 @@ export const useNecessidades = () => {
     // Se dados externos foram fornecidos, usar eles; senão usar filtros internos
     const semanaCalculada = calcularSemanaAbastecimento(filtros.data);
     
+    // Converter string da semana para data válida
+    let dataConsumoFormatada = filtros.data;
+    if (typeof filtros.data === 'string' && filtros.data.includes(' a ')) {
+      const primeiraData = filtros.data.split(' a ')[0];
+      const [dia, mes] = primeiraData.split('/');
+      const ano = new Date().getFullYear();
+      dataConsumoFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+    }
+    
     const dadosParaEnviar = dadosExternos || {
       escola_id: filtros.escola?.id,
-      data_consumo: filtros.data,
+      semana_consumo: dataConsumoFormatada, // Usar semana_consumo em vez de data_consumo
       semana_abastecimento: semanaCalculada, // Calcular automaticamente
       produtos: produtosTabela.map(produto => ({
         produto_id: produto.id,
+        produto_nome: produto.nome,
+        produto_unidade: produto.unidade_medida,
         ajuste: produto.ajuste
       }))
     };
 
     // Validação baseada nos dados que serão enviados
-    if (!dadosParaEnviar.escola_id || !dadosParaEnviar.data_consumo) {
+    if (!dadosParaEnviar.escola_id || !dadosParaEnviar.semana_consumo) {
       toast.error('Selecione escola e data antes de gerar a necessidade');
       return { success: false };
     }
