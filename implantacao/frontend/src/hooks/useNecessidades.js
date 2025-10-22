@@ -241,13 +241,13 @@ export const useNecessidades = () => {
     
     const dadosParaEnviar = dadosExternos ? {
       ...dadosExternos,
-      semana_consumo: dataConsumoFormatada // Sempre usar data formatada
+      semana_consumo: filtros.data // Usar string da semana original
     } : {
       escola_id: filtros.escola?.id,
       escola_nome: filtros.escola?.nome_escola || filtros.escola?.nome,
       escola_rota: filtros.escola?.rota || '',
       escola_codigo_teknisa: filtros.escola?.codigo_teknisa || '',
-      semana_consumo: dataConsumoFormatada, // Usar data formatada
+      semana_consumo: filtros.data, // Usar string da semana original
       semana_abastecimento: semanaCalculada,
       produtos: produtosTabela.map(produto => ({
         produto_id: produto.id,
