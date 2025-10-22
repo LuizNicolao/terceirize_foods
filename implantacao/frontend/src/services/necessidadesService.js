@@ -64,7 +64,7 @@ const necessidadesService = {
 
   // Buscar percapita de produtos
   buscarPercapitaProdutos: async (produtoIds) => {
-    const response = await api.post('/produtos-per-capita/buscar-por-produtos', { produtoIds });
+    const response = await api.post('/produtos-per-capita/buscar-por-produtos', { produto_ids: produtoIds });
     return response.data;
   },
 
