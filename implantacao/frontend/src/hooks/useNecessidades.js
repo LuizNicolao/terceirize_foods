@@ -250,6 +250,9 @@ export const useNecessidades = () => {
         ajuste: produto.ajuste
       }))
     };
+    
+    console.log('dataConsumoFormatada antes do payload:', dataConsumoFormatada);
+    console.log('semana_consumo no payload antes de enviar:', dadosParaEnviar.semana_consumo);
 
     // Debug: mostrar dados que serão enviados
     console.log('Dados para enviar:', dadosParaEnviar);
