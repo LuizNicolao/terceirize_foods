@@ -156,44 +156,38 @@ const CalendarioConfiguracao = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <Link
-                to="/calendario"
-                className="mr-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <FaArrowLeft className="h-5 w-5" />
-              </Link>
-              <FaCog className="h-8 w-8 text-green-600 mr-3" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Configuração do Calendário</h1>
-                <p className="text-sm text-gray-500">Configure dias úteis, abastecimento, consumo e feriados</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ano</label>
-                <select
-                  value={ano}
-                  onChange={(e) => handleAnoChange(parseInt(e.target.value))}
-                  className="block w-32 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
-                >
-                  {gerarAnos().map(anoOption => (
-                    <option key={anoOption} value={anoOption}>{anoOption}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <div className="flex items-center">
+          <Link
+            to="/calendario"
+            className="mr-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <FaArrowLeft className="h-5 w-5" />
+          </Link>
+          <FaCog className="h-6 w-6 text-green-600 mr-3" />
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Configuração do Calendário</h1>
+            <p className="text-sm text-gray-600">Configure dias úteis, abastecimento, consumo e feriados</p>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ano</label>
+            <select
+              value={ano}
+              onChange={(e) => handleAnoChange(parseInt(e.target.value))}
+              className="block w-24 px-2 py-1 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500"
+            >
+              {gerarAnos().map(anoOption => (
+                <option key={anoOption} value={anoOption}>{anoOption}</option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Dias Úteis */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

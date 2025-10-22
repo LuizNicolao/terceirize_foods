@@ -77,40 +77,34 @@ const CalendarioRelatorios = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <Link
-                to="/calendario"
-                className="mr-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <FaArrowLeft className="h-5 w-5" />
-              </Link>
-              <FaChartBar className="h-8 w-8 text-green-600 mr-3" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Relatórios do Calendário</h1>
-                <p className="text-sm text-gray-500">Análises e gráficos do calendário</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={loading}
-              >
-                <FaDownload className="h-4 w-4 mr-2" />
-                Exportar
-              </Button>
-            </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <div className="flex items-center">
+          <Link
+            to="/calendario"
+            className="mr-3 p-1 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <FaArrowLeft className="h-5 w-5" />
+          </Link>
+          <FaChartBar className="h-6 w-6 text-green-600 mr-3" />
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Relatórios do Calendário</h1>
+            <p className="text-sm text-gray-600">Análises e gráficos do calendário</p>
           </div>
         </div>
+        
+        <div className="flex items-center space-x-3">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={loading}
+          >
+            <FaDownload className="h-4 w-4 mr-2" />
+            Exportar
+          </Button>
+        </div>
       </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -254,7 +248,6 @@ const CalendarioRelatorios = () => {
             mes={mes}
           />
         </div>
-      </div>
     </div>
   );
 };
