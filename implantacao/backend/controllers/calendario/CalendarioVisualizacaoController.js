@@ -32,7 +32,7 @@ class CalendarioVisualizacaoController {
       }
 
       // Filtro por mês
-      if (mes && mes !== '' && mes !== null && mes !== undefined) {
+      if (mes && mes !== '' && mes !== 'undefined') {
         whereClause += ' AND mes = ?';
         params.push(parseInt(mes));
       }
