@@ -137,7 +137,7 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-lg font-semibold text-gray-900">
-                        {dia.dia}
+                        {new Date(dia.data).getDate()}
                       </span>
                       <span className="text-xs text-gray-500">
                         {dia.dia_semana_nome}
