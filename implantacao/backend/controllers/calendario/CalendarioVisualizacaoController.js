@@ -79,6 +79,10 @@ class CalendarioVisualizacaoController {
       }
 
       // Buscar dados
+      const queryParams = [...params, parseInt(limit), parseInt(offset)];
+      console.log('Query params:', queryParams);
+      console.log('Where clause:', whereClause);
+      
       const dados = await executeQuery(`
         SELECT 
           id,
@@ -102,7 +106,7 @@ class CalendarioVisualizacaoController {
         ${whereClause}
         ORDER BY data ASC
         LIMIT ? OFFSET ?
-      `, [...params, parseInt(limit), parseInt(offset)]);
+      `, queryParams);
 
       // Contar total para paginação
       const [total] = await executeQuery(`
