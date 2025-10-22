@@ -50,7 +50,7 @@ router.post('/',
 
 // PUT /api/produto-origem/:id - Atualizar produto origem
 router.put('/:id', 
-  checkPermission('atualizar'),
+  checkPermission('editar'),
   auditMiddleware(AUDIT_ACTIONS.UPDATE, 'produto_origem'),
   produtoOrigemValidations.update,
   ProdutoOrigemController.atualizarProdutoOrigem
