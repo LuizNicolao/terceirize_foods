@@ -21,6 +21,10 @@ import RecebimentosEscolas from './pages/recebimentos-escolas/RecebimentosEscola
 import ProdutosPerCapita from './pages/produtos-per-capita/ProdutosPerCapita';
 import RegistrosDiarios from './pages/registros-diarios/RegistrosDiarios';
 import Necessidades from './pages/necessidades/Necessidades';
+import CalendarioDashboard from './pages/calendario/CalendarioDashboard';
+import CalendarioVisualizacao from './pages/calendario/CalendarioVisualizacao';
+import CalendarioConfiguracao from './pages/calendario/CalendarioConfiguracao';
+import CalendarioRelatorios from './pages/calendario/CalendarioRelatorios';
 
 // Componente para rotas protegidas com autenticação
 const AuthenticatedRoute = ({ children }) => {
@@ -201,6 +205,43 @@ function App() {
                 element={
                   <AuthenticatedRoute>
                     <Necessidades />
+                  </AuthenticatedRoute>
+                } 
+              />
+
+              {/* Rotas do Calendário */}
+              <Route 
+                path="/calendario" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioDashboard />
+                  </AuthenticatedRoute>
+                } 
+              />
+
+              <Route 
+                path="/calendario/visualizacao" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioVisualizacao />
+                  </AuthenticatedRoute>
+                } 
+              />
+
+              <Route 
+                path="/calendario/configuracao" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioConfiguracao />
+                  </AuthenticatedRoute>
+                } 
+              />
+
+              <Route 
+                path="/calendario/relatorios" 
+                element={
+                  <AuthenticatedRoute>
+                    <CalendarioRelatorios />
                   </AuthenticatedRoute>
                 } 
               />

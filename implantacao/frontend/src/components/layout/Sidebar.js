@@ -24,7 +24,8 @@ import {
   FaRegStar,
   FaClipboardCheck,
   FaCalendarCheck,
-  FaCalculator
+  FaCalculator,
+  FaCalendarAlt
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -56,6 +57,12 @@ const menuGroups = [
               { path: '/necessidades', icon: FaCalculator, label: 'Gerar Necessidades', screen: 'necessidades' },
             ]
           },
+          {
+            title: 'Calendário',
+            items: [
+              { path: '/calendario', icon: FaCalendarAlt, label: 'Calendário', screen: 'calendario' },
+            ]
+          },
   {
     title: 'Sistema',
     items: [
@@ -73,6 +80,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
   const [expandedGroups, setExpandedGroups] = useState({
     'Principal': true,
     'Cadastros': true,
+    'Calendário': true,
     'Sistema': true
   });
 
