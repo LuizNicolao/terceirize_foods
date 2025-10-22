@@ -104,12 +104,12 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         eja: 0.1
       };
       
-      // Valores per capita por tipo de refeição (valores reais do banco ou padrão)
-      const percapitaLancheManha = Number(percapitaData.lanche_manha) || 0.1;
-      const percapitaAlmoco = Number(percapitaData.almoco) || 0.1;
-      const percapitaLancheTarde = Number(percapitaData.lanche_tarde) || 0.1;
-      const percapitaParcial = Number(percapitaData.parcial) || 0.1;
-      const percapitaEja = Number(percapitaData.eja) || 0.1;
+      // Valores per capita por tipo de refeição (valores reais do banco ou 0)
+      const percapitaLancheManha = Number(percapitaData.lanche_manha) || 0;
+      const percapitaAlmoco = Number(percapitaData.almoco) || 0;
+      const percapitaLancheTarde = Number(percapitaData.lanche_tarde) || 0;
+      const percapitaParcial = Number(percapitaData.parcial) || 0;
+      const percapitaEja = Number(percapitaData.eja) || 0;
 
       // Frequências das médias das escolas (número de alunos) - AUTOMÁTICO
       // Usar a estrutura correta das médias com os 5 novos tipos

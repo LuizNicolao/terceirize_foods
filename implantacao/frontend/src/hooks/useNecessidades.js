@@ -117,8 +117,20 @@ export const useNecessidades = () => {
     if (!escolaId || !data) return;
     
     try {
-      // Garantir que a data esteja no formato YYYY-MM-DD
-      const dataFormatada = data instanceof Date ? data.toISOString().split('T')[0] : data;
+      let dataFormatada;
+      
+      // Se a data for uma string da semana (ex: "20/10 a 24/10"), converter para data
+      if (typeof data === 'string' && data.includes(' a ')) {
+        // Extrair a primeira data da string (ex: "20/10" de "20/10 a 24/10")
+        const primeiraData = data.split(' a ')[0];
+        const [dia, mes] = primeiraData.split('/');
+        const ano = new Date().getFullYear();
+        dataFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+      } else if (data instanceof Date) {
+        dataFormatada = data.toISOString().split('T')[0];
+      } else {
+        dataFormatada = data;
+      }
       
       const response = await necessidadesService.calcularMediasPorPeriodo(escolaId, dataFormatada);
       
