@@ -29,6 +29,11 @@ router.post('/buscar-por-produtos',
   ProdutosPerCapitaController.buscarPorProdutos
 );
 
+router.get('/grupos-com-percapita',
+  checkScreenPermission('produtos_per_capita', 'visualizar'),
+  ProdutosPerCapitaController.buscarGruposComPercapita
+);
+
 router.get('/estatisticas',
   checkScreenPermission('produtos_per_capita', 'visualizar'),
   ProdutosPerCapitaController.obterEstatisticas

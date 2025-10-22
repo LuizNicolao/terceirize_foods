@@ -89,6 +89,12 @@ const necessidadesService = {
   buscarGrupos: async () => {
     const response = await FoodsApiService.getGruposAtivos();
     return response;
+  },
+
+  // Buscar grupos que têm produtos cadastrados em Produtos Per Capita
+  buscarGruposComPercapita: async () => {
+    const response = await api.get('/produtos-per-capita/grupos-com-percapita');
+    return response.data;
   }
 };
 

@@ -18,6 +18,7 @@ module.exports = {
   listar: ProdutosPerCapitaListController.listar,
   buscarProdutosDisponiveis: ProdutosPerCapitaListController.buscarProdutosDisponiveis,
   buscarPorProdutos: ProdutosPerCapitaListController.buscarPorProdutos,
+  buscarGruposComPercapita: ProdutosPerCapitaListController.buscarGruposComPercapita,
 
   // Stats Operations
   obterEstatisticas: ProdutosPerCapitaStatsController.obterEstatisticas,

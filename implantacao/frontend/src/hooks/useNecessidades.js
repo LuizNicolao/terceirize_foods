@@ -64,10 +64,10 @@ export const useNecessidades = () => {
     }
   }, [user]);
 
-  // Carregar grupos de produtos
+  // Carregar grupos de produtos que têm percapita cadastrado
   const carregarGrupos = useCallback(async () => {
     try {
-      const response = await necessidadesService.buscarGrupos();
+      const response = await necessidadesService.buscarGruposComPercapita();
       if (response.success) {
         setGrupos(response.data);
       }
