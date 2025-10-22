@@ -32,6 +32,14 @@ class ProdutoOrigemService {
         produtosOrigem = response.data;
       }
       
+      // Se não conseguiu extrair paginação da estrutura HATEOAS, usar diretamente da resposta
+      if (!pagination && response.data.pagination) {
+        pagination = response.data.pagination;
+      }
+      if (!statistics && response.data.statistics) {
+        statistics = response.data.statistics;
+      }
+      
       console.log('🔍 PRODUTO ORIGEM PROCESSED:', {
         produtosOrigem: produtosOrigem.length,
         pagination,
