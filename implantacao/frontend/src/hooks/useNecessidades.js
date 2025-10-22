@@ -125,9 +125,9 @@ export const useNecessidades = () => {
         // Extrair a primeira data da string (ex: "06/01" de "06/01 a 12/01/25")
         const primeiraData = data.split(' a ')[0];
         const [dia, mes] = primeiraData.split('/');
-        // Extrair ano da string completa se disponível
-        const anoMatch = data.match(/\/(\d{2,4})/);
-        const ano = anoMatch ? (anoMatch[1].length === 2 ? `20${anoMatch[1]}` : anoMatch[1]) : new Date().getFullYear();
+        // Extrair ano da string completa - procurar por padrão /25 no final
+        const anoMatch = data.match(/\/(\d{2})$/);
+        const ano = anoMatch ? `20${anoMatch[1]}` : new Date().getFullYear();
         dataFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
       } else if (data instanceof Date) {
         dataFormatada = data.toISOString().split('T')[0];
