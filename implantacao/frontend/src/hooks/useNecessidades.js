@@ -243,7 +243,6 @@ export const useNecessidades = () => {
         ajuste: produto.ajuste
       }))
     };
-    
 
     // Validação baseada nos dados que serão enviados
     if (!dadosParaEnviar.escola_id || !dadosParaEnviar.semana_consumo) {
