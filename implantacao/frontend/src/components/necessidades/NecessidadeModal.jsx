@@ -126,11 +126,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       // const frequenciaEja = 0; // Será editável
 
       // Quantidades calculadas (percapta × média) × frequência
-      const qtdLancheManha = Number((percapitaLancheManha * frequenciaLancheManha) * 1); // Usar frequência 1 como padrão
-      const qtdAlmoco = Number((percapitaAlmoco * frequenciaAlmoco) * 1); // Usar frequência 1 como padrão
-      const qtdLancheTarde = Number((percapitaLancheTarde * frequenciaLancheTarde) * 1); // Usar frequência 1 como padrão
-      const qtdParcial = Number((percapitaParcial * frequenciaParcial) * 1); // Usar frequência 1 como padrão
-      const qtdEja = Number((percapitaEja * frequenciaEja) * 1); // Usar frequência 1 como padrão
+      const qtdLancheManha = Number((percapitaLancheManha * frequenciaLancheManha) * 0); // Começar em 0
+      const qtdAlmoco = Number((percapitaAlmoco * frequenciaAlmoco) * 0); // Começar em 0
+      const qtdLancheTarde = Number((percapitaLancheTarde * frequenciaLancheTarde) * 0); // Começar em 0
+      const qtdParcial = Number((percapitaParcial * frequenciaParcial) * 0); // Começar em 0
+      const qtdEja = Number((percapitaEja * frequenciaEja) * 0); // Começar em 0
 
       // Total
       const total = Number(qtdLancheManha + qtdAlmoco + qtdLancheTarde + qtdParcial + qtdEja);
@@ -149,11 +149,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         media_lanche_tarde: frequenciaLancheTarde,
         media_parcial: frequenciaParcial,
         media_eja: frequenciaEja,
-        frequencia_lanche_manha: 1, // Começar com 1 (editável)
-        frequencia_almoco: 1,
-        frequencia_lanche_tarde: 1,
-        frequencia_parcial: 1,
-        frequencia_eja: 1,
+        frequencia_lanche_manha: '', // Começar em branco (editável)
+        frequencia_almoco: '',
+        frequencia_lanche_tarde: '',
+        frequencia_parcial: '',
+        frequencia_eja: '',
         qtd_lanche_manha: qtdLancheManha, // Usar cálculo inicial
         qtd_almoco: qtdAlmoco,
         qtd_lanche_tarde: qtdLancheTarde,
