@@ -2,62 +2,29 @@ import api from './api';
 import FoodsApiService from './FoodsApiService';
 
 const escolasService = {
-  // Listar escolas com filtros (busca do Foods com filtro por nutricionista)
+  // Listar escolas com filtros (usando endpoint específico para necessidades)
   listar: async (filtros = {}, user = null) => {
     try {
-      // Buscar todas as escolas do Foods primeiro
+      // Usar endpoint específico de necessidades (igual ao recebimentos-escolas)
+      if (user && user.id) {
+        const response = await api.get(`/necessidades/escolas-nutricionista/${user.id}`);
+        if (response.data && response.data.success) {
+          return {
+            success: true,
+            data: response.data.data || []
+          };
+        }
+      }
+      
+      // Fallback: buscar todas as escolas do Foods
       const response = await FoodsApiService.getUnidadesEscolares({ ativo: true, ...filtros });
       
       if (!response.success) {
         return response;
       }
       
-      let escolasData = response.data || [];
-      
-      // Se for nutricionista, filtrar pelas escolas das rotas nutricionistas
-      if (user && user.tipo_de_acesso === 'nutricionista') {
-        try {
-          // Buscar rotas nutricionistas do Foods pelo email do usuário
-          const rotasResponse = await FoodsApiService.getRotasNutricionistas({ 
-            email: user.email, 
-            status: 'ativo' 
-          });
-          
-          if (rotasResponse.success && rotasResponse.data && rotasResponse.data.length > 0) {
-            // Extrair IDs das escolas responsáveis de todas as rotas
-            const escolasIds = [];
-            rotasResponse.data.forEach(rota => {
-              if (rota.escolas_responsaveis) {
-                // escolas_responsaveis é uma string com IDs separados por vírgula
-                const ids = rota.escolas_responsaveis
-                  .split(',')
-                  .map(id => parseInt(id.trim()))
-                  .filter(id => !isNaN(id));
-                escolasIds.push(...ids);
-              }
-            });
-            
-            // Filtrar apenas as escolas que a nutricionista é responsável
-            if (escolasIds.length > 0) {
-              const escolasIdsUnicos = [...new Set(escolasIds)];
-              escolasData = escolasData.filter(escola => escolasIdsUnicos.includes(escola.id));
-            } else {
-              // Se nutricionista não tem escolas, retornar array vazio
-              escolasData = [];
-            }
-          } else {
-            // Se não encontrou rotas, nutricionista não vê nenhuma escola
-            escolasData = [];
-          }
-        } catch (error) {
-          console.error('Erro ao buscar rotas nutricionistas:', error);
-          // Em caso de erro, nutricionista não vê escolas
-          escolasData = [];
-        }
-      }
-      
       // Mapear dados do Foods para o formato esperado
-      const escolasFormatadas = escolasData.map(escola => ({
+      const escolasFormatadas = (response.data || []).map(escola => ({
         id: escola.id,
         nome_escola: escola.nome_escola || escola.nome,
         rota: escola.rota_nome || escola.rota || '',

@@ -170,7 +170,109 @@ const listarTodas = async (req, res) => {
   }
 };
 
+const listarEscolasNutricionista = async (req, res) => {
+  try {
+    const { usuarioId } = req.params;
+    const userType = req.user.tipo_de_acesso;
+    
+    // Se não for nutricionista, buscar todas as unidades escolares do Foods
+    if (userType !== 'nutricionista') {
+      try {
+        const axios = require('axios');
+        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+        
+        // Buscar todas as unidades escolares do foods (sem paginação para admin)
+        const response = await axios.get(`${foodsApiUrl}/unidades-escolares?limit=10000`, {
+          headers: {
+            'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
+          },
+          timeout: 5000 // Timeout de 5 segundos
+        });
+
+        if (response.data && response.data.success) {
+          const unidadesEscolares = response.data.data || [];
+          
+          // Converter unidades escolares para o formato esperado pelo dropdown
+          const escolas = unidadesEscolares.map(unidade => ({
+            id: unidade.id,
+            nome_escola: unidade.nome_escola || unidade.nome,
+            rota: unidade.rota_nome || unidade.rota || 'N/A',
+            cidade: unidade.cidade || '',
+            codigo_teknisa: unidade.codigo_teknisa || unidade.codigo || '',
+            filial_id: unidade.filial_id
+          }));
+
+          return res.json({
+            success: true,
+            data: escolas
+          });
+        } else {
+          return res.json({
+            success: true,
+            data: []
+          });
+        }
+      } catch (apiError) {
+        console.error('Erro ao buscar unidades escolares do foods:', apiError);
+        return res.json({
+          success: true,
+          data: []
+        });
+      }
+    }
+
+    // Buscar escolas da nutricionista via API do foods (mesmo endpoint usado em Unidades Escolares)
+    try {
+      const axios = require('axios');
+      const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+      
+      // Buscar unidades escolares do foods (que já aplica filtro por nutricionista)
+      const response = await axios.get(`${foodsApiUrl}/unidades-escolares?limit=10000`, {
+        headers: {
+          'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
+        }
+      });
+
+      if (response.data && response.data.success) {
+        const unidadesEscolares = response.data.data || [];
+        
+        // Converter unidades escolares para o formato esperado pelo dropdown
+        const escolas = unidadesEscolares.map(unidade => ({
+          id: unidade.id,
+          nome_escola: unidade.nome_escola || unidade.nome,
+          rota: unidade.rota || 'N/A',
+          cidade: unidade.cidade || '',
+          codigo_teknisa: unidade.codigo_teknisa || unidade.codigo || ''
+        }));
+
+        return res.json({
+          success: true,
+          data: escolas
+        });
+      } else {
+        return res.json({
+          success: true,
+          data: []
+        });
+      }
+    } catch (apiError) {
+      console.error('Erro ao buscar unidades escolares do foods:', apiError);
+      return res.json({
+        success: true,
+        data: []
+      });
+    }
+  } catch (error) {
+    console.error('Erro ao buscar escolas da nutricionista:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar escolas'
+    });
+  }
+};
+
 module.exports = {
   listar,
-  listarTodas
+  listarTodas,
+  listarEscolasNutricionista
 };
