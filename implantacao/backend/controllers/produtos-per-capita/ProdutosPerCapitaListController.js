@@ -185,20 +185,18 @@ class ProdutosPerCapitaListController {
   /**
    * Buscar grupos que têm produtos cadastrados em Produtos Per Capita
    */
-  static async buscarGruposComPercapita(req, res) {
-    return handleDatabaseOperation(async () => {
-      const grupos = await executeQuery(`
-        SELECT DISTINCT 
-          ppc.grupo,
-          ppc.grupo as nome
-        FROM produtos_per_capita ppc
-        WHERE ppc.ativo = 1 AND ppc.grupo IS NOT NULL AND ppc.grupo != ''
-        ORDER BY ppc.grupo
-      `);
+  static buscarGruposComPercapita = asyncHandler(async (req, res) => {
+    const grupos = await executeQuery(`
+      SELECT DISTINCT 
+        ppc.grupo,
+        ppc.grupo as nome
+      FROM produtos_per_capita ppc
+      WHERE ppc.ativo = 1 AND ppc.grupo IS NOT NULL AND ppc.grupo != ''
+      ORDER BY ppc.grupo
+    `);
 
-      return successResponse(res, grupos, 'Grupos com per capita encontrados com sucesso', STATUS_CODES.OK);
-    });
-  }
+    return successResponse(res, grupos, 'Grupos com per capita encontrados com sucesso', STATUS_CODES.OK);
+  });
 }
 
 module.exports = ProdutosPerCapitaListController;
