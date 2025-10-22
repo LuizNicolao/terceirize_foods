@@ -23,6 +23,7 @@ const calendarioService = {
   },
 
   obterPorMes: async (ano, mes) => {
+    console.log('Fazendo requisição para /calendario/mes:', { ano, mes });
     const response = await api.get('/calendario/mes', {
       params: { ano, mes }
     });

@@ -26,9 +26,9 @@ const CalendarioVisualizacao = () => {
   const [tipoVisualizacao, setTipoVisualizacao] = useState('mes'); // 'mes' ou 'lista'
 
   useEffect(() => {
-    if (tipoVisualizacao === 'mes') {
+    if (tipoVisualizacao === 'mes' && ano && mes) {
       carregarPorMes(ano, mes);
-    } else {
+    } else if (tipoVisualizacao === 'lista') {
       carregarDados();
     }
   }, [ano, mes, tipoVisualizacao, carregarPorMes, carregarDados]);

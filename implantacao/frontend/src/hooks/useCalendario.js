@@ -74,6 +74,7 @@ export const useCalendario = () => {
   const carregarPorMes = useCallback(async (ano, mes) => {
     setLoading(true);
     try {
+      console.log('Carregando dados do mês:', { ano, mes });
       const response = await calendarioService.obterPorMes(ano, mes);
       if (response.success) {
         setDados(response.data);
