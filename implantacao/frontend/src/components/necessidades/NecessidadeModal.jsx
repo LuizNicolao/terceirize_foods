@@ -106,6 +106,15 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const percapitaParcial = Number(produto.per_capita_parcial) || 0;
       const percapitaEja = Number(produto.per_capita_eja) || 0;
 
+      console.log('DEBUG: Produto:', produto.produto_nome);
+      console.log('DEBUG: Percapitas:', {
+        lanche_manha: percapitaLancheManha,
+        almoco: percapitaAlmoco,
+        lanche_tarde: percapitaLancheTarde,
+        parcial: percapitaParcial,
+        eja: percapitaEja
+      });
+
       // Frequências das médias das escolas (número de alunos) - AUTOMÁTICO
       // Usar a estrutura correta das médias com os 5 novos tipos
       const frequenciaLancheManha = Math.round(Number(mediasPeriodo.lanche_manha?.media || 0)); // Número inteiro
@@ -113,6 +122,15 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const frequenciaLancheTarde = Math.round(Number(mediasPeriodo.lanche_tarde?.media || 0)); // Número inteiro
       const frequenciaParcial = Math.round(Number(mediasPeriodo.parcial?.media || 0)); // Número inteiro
       const frequenciaEja = Math.round(Number(mediasPeriodo.eja?.media || 0)); // Número inteiro
+
+      console.log('DEBUG: MediasPeriodo:', mediasPeriodo);
+      console.log('DEBUG: Frequencias:', {
+        lanche_manha: frequenciaLancheManha,
+        almoco: frequenciaAlmoco,
+        lanche_tarde: frequenciaLancheTarde,
+        parcial: frequenciaParcial,
+        eja: frequenciaEja
+      });
       
       // EDIÇÃO MANUAL (comentado - usar apenas se necessário no futuro)
       // const frequenciaAlmoco = 0; // Será editável
@@ -126,6 +144,14 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const qtdLancheTarde = Number((percapitaLancheTarde * frequenciaLancheTarde) * 1); // Começar com frequência 1
       const qtdParcial = Number((percapitaParcial * frequenciaParcial) * 1); // Começar com frequência 1
       const qtdEja = Number((percapitaEja * frequenciaEja) * 1); // Começar com frequência 1
+
+      console.log('DEBUG: Quantidades calculadas:', {
+        lanche_manha: qtdLancheManha,
+        almoco: qtdAlmoco,
+        lanche_tarde: qtdLancheTarde,
+        parcial: qtdParcial,
+        eja: qtdEja
+      });
 
       // Total
       const total = Number(qtdLancheManha + qtdAlmoco + qtdLancheTarde + qtdParcial + qtdEja);
