@@ -106,14 +106,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const percapitaParcial = Number(produto.per_capita_parcial) || 0;
       const percapitaEja = Number(produto.per_capita_eja) || 0;
 
-      console.log('DEBUG: Produto:', produto.produto_nome);
-      console.log('DEBUG: Percapitas:', {
-        lanche_manha: percapitaLancheManha,
-        almoco: percapitaAlmoco,
-        lanche_tarde: percapitaLancheTarde,
-        parcial: percapitaParcial,
-        eja: percapitaEja
-      });
 
       // Frequências das médias das escolas (número de alunos) - AUTOMÁTICO
       // Usar a estrutura correta das médias com os 5 novos tipos
@@ -123,14 +115,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const frequenciaParcial = Math.round(Number(mediasPeriodo.parcial?.media || 0)); // Número inteiro
       const frequenciaEja = Math.round(Number(mediasPeriodo.eja?.media || 0)); // Número inteiro
 
-      console.log('DEBUG: MediasPeriodo completo:', JSON.stringify(mediasPeriodo, null, 2));
-      console.log('DEBUG: Frequencias:', {
-        lanche_manha: frequenciaLancheManha,
-        almoco: frequenciaAlmoco,
-        lanche_tarde: frequenciaLancheTarde,
-        parcial: frequenciaParcial,
-        eja: frequenciaEja
-      });
       
       // EDIÇÃO MANUAL (comentado - usar apenas se necessário no futuro)
       // const frequenciaAlmoco = 0; // Será editável
