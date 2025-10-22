@@ -3,6 +3,7 @@ import { Modal, Button, Input, SearchableSelect } from '../ui';
 import { FaCalculator, FaSave, FaTimes } from 'react-icons/fa';
 import { useNecessidades } from '../../hooks/useNecessidades';
 import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
+import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import { calcularSemanaAbastecimento } from '../../utils/semanasAbastecimentoUtils';
 import toast from 'react-hot-toast';
 
@@ -28,6 +29,9 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
 
   // Hook para semanas de abastecimento
   const { opcoes: opcoesSemanas, obterValorPadrao } = useSemanasAbastecimento();
+  
+  // Hook para semanas de consumo do calendário
+  const { opcoes: opcoesSemanasConsumo, obterValorPadrao: obterValorPadraoConsumo } = useSemanasConsumo();
 
   const [formData, setFormData] = useState({
     escola_id: '',
@@ -37,16 +41,16 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     data: '' // Será inicializado com semana atual
   });
 
-  // Inicializar com semana atual
+  // Inicializar com semana de consumo atual
   useEffect(() => {
-    const semanaAtual = obterValorPadrao();
-    if (semanaAtual) {
+    const semanaConsumoAtual = obterValorPadraoConsumo();
+    if (semanaConsumoAtual) {
       setFormData(prev => ({
         ...prev,
-        data: semanaAtual
+        data: semanaConsumoAtual
       }));
     }
-  }, [obterValorPadrao]);
+  }, [obterValorPadraoConsumo]);
 
   const [produtosTabela, setProdutosTabela] = useState([]);
 
@@ -367,7 +371,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
               label="Semana de Consumo"
               value={formData.data}
               onChange={(value) => handleInputChange('data', value)}
-              options={opcoesSemanas || []}
+              options={opcoesSemanasConsumo || []}
               placeholder="Selecione a semana de consumo..."
               disabled={necessidadesLoading || loading}
               required
