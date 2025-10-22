@@ -218,11 +218,17 @@ export const useNecessidades = () => {
     
     // Converter string da semana para data válida
     let dataConsumoFormatada = filtros.data;
+    console.log('Verificando se contém " a ":', filtros.data.includes(' a '));
+    
     if (typeof filtros.data === 'string' && filtros.data.includes(' a ')) {
+      console.log('Entrando na conversão...');
       const primeiraData = filtros.data.split(' a ')[0];
       const [dia, mes] = primeiraData.split('/');
       const ano = new Date().getFullYear();
       dataConsumoFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+      console.log('Conversão realizada:', dataConsumoFormatada);
+    } else {
+      console.log('Não entrou na conversão, usando data original:', filtros.data);
     }
     
     console.log('Data original:', filtros.data);
