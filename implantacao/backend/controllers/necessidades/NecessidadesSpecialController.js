@@ -2,14 +2,14 @@ const { executeQuery } = require('../../config/database');
 
 const gerarNecessidade = async (req, res) => {
   try {
-    const { escola_id, escola_nome, escola_rota, escola_codigo_teknisa, data_consumo, semana_abastecimento, produtos } = req.body;
+    const { escola_id, escola_nome, escola_rota, escola_codigo_teknisa, semana_consumo, semana_abastecimento, produtos } = req.body;
 
     // Validar dados obrigatórios
-    if (!escola_id || !escola_nome || !data_consumo || !produtos || !Array.isArray(produtos)) {
+    if (!escola_id || !escola_nome || !semana_consumo || !produtos || !Array.isArray(produtos)) {
       return res.status(400).json({
         success: false,
         error: 'Dados obrigatórios',
-        message: 'Escola (id e nome), data de consumo e produtos são obrigatórios'
+        message: 'Escola (id e nome), semana de consumo e produtos são obrigatórios'
       });
     }
 
@@ -24,11 +24,11 @@ const gerarNecessidade = async (req, res) => {
         continue; // Pular produto sem dados completos
       }
 
-      // Verificar se já existe necessidade para este produto/escola/data
+      // Verificar se já existe necessidade para este produto/escola/semana
       const existing = await executeQuery(`
         SELECT id FROM necessidades 
-        WHERE usuario_email = ? AND produto_id = ? AND escola_id = ? AND data_consumo = ?
-      `, [req.user.email, produto_id, escola_id, data_consumo]);
+        WHERE usuario_email = ? AND produto_id = ? AND escola_id = ? AND semana_consumo = ?
+      `, [req.user.email, produto_id, escola_id, semana_consumo]);
 
       if (existing.length > 0) {
         // Atualizar necessidade existente
@@ -52,25 +52,27 @@ const gerarNecessidade = async (req, res) => {
             usuario_id,
             produto_id,
             produto,
+            produto_unidade,
             escola_id,
             escola,
             escola_rota,
             codigo_teknisa,
             ajuste, 
-            data_consumo,
+            semana_consumo,
             semana_abastecimento
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           req.user.email,
           req.user.id,
           produto_id,
           produto_nome,
+          produto_unidade || '',
           escola_id,
           escola_nome,
           escola_rota || '',
           escola_codigo_teknisa || '',
           ajuste || 0, 
-          data_consumo,
+          semana_consumo,
           semana_abastecimento || null
         ]);
 
@@ -88,7 +90,7 @@ const gerarNecessidade = async (req, res) => {
       message: `Necessidade gerada com sucesso! ${necessidadesCriadas.length} produtos processados.`,
       data: {
         escola: escola_nome,
-        data_consumo,
+        semana_consumo,
         necessidades: necessidadesCriadas
       }
     });

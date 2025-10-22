@@ -40,26 +40,14 @@ const listar = async (req, res) => {
     }
 
     if (data) {
-      whereClause += ' AND n.data_consumo = ?';
+      whereClause += ' AND n.semana_consumo = ?';
       params.push(data);
     }
 
     if (semana_abastecimento) {
-      // Para semana de abastecimento, vamos filtrar por data_consumo dentro da semana
-      // Assumindo que semana_abastecimento vem no formato "DD/MM a DD/MM"
-      const [dataInicio, dataFim] = semana_abastecimento.split(' a ');
-      if (dataInicio && dataFim) {
-        // Converter formato DD/MM para YYYY-MM-DD (assumindo ano atual)
-        const anoAtual = new Date().getFullYear();
-        const [diaInicio, mesInicio] = dataInicio.split('/');
-        const [diaFim, mesFim] = dataFim.split('/');
-        
-        const dataInicioFormatada = `${anoAtual}-${mesInicio.padStart(2, '0')}-${diaInicio.padStart(2, '0')}`;
-        const dataFimFormatada = `${anoAtual}-${mesFim.padStart(2, '0')}-${diaFim.padStart(2, '0')}`;
-        
-        whereClause += ' AND n.data_consumo >= ? AND n.data_consumo <= ?';
-        params.push(dataInicioFormatada, dataFimFormatada);
-      }
+      // Para semana de abastecimento, filtrar por semana_abastecimento
+      whereClause += ' AND n.semana_abastecimento = ?';
+      params.push(semana_abastecimento);
     }
 
     // Calcular paginação com validação
