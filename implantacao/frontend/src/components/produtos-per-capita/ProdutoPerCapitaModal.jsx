@@ -99,7 +99,7 @@ const ProdutoPerCapitaModal = ({
           produto_origem_id: produtoSelecionado.id,
           produto_nome: produtoSelecionado.nome,
           produto_codigo: produtoSelecionado.codigo,
-          unidade_medida: produtoSelecionado.unidade_medida_nome || produtoSelecionado.unidade_medida,
+          unidade_medida: produtoSelecionado.unidade_medida_sigla || produtoSelecionado.unidade_medida_nome || produtoSelecionado.unidade_medida,
           grupo: produtoSelecionado.grupo_nome,
           subgrupo: produtoSelecionado.subgrupo_nome,
           classe: produtoSelecionado.classe_nome
@@ -207,7 +207,7 @@ const ProdutoPerCapitaModal = ({
               options={produtosDisponiveis.map(prod => ({
                 value: prod.id,
                 label: `${prod.nome} (${prod.codigo})`,
-                description: `${prod.unidade_medida_nome || prod.unidade_medida || '-'} - ${prod.grupo_nome || '-'}`
+                description: `${prod.unidade_medida_sigla || prod.unidade_medida_nome || prod.unidade_medida || '-'} - ${prod.grupo_nome || '-'}`
               }))}
               placeholder="Digite para buscar um produto..."
               disabled={isViewMode || loading}
