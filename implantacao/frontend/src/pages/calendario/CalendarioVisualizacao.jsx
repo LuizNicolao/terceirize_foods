@@ -23,7 +23,7 @@ const CalendarioVisualizacao = () => {
   const [ano, setAno] = useState(new Date().getFullYear());
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
-  const [tipoVisualizacao, setTipoVisualizacao] = useState('mes'); // apenas 'mes'
+  // Removido tipoVisualizacao - apenas visualização em mês
 
   useEffect(() => {
     if (ano && mes && mes > 0) {
@@ -157,20 +157,12 @@ const CalendarioVisualizacao = () => {
 
             <div className="flex items-center space-x-2">
               <Button
-                onClick={() => handleTipoVisualizacaoChange('mes')}
-                variant={tipoVisualizacao === 'mes' ? 'primary' : 'outline'}
-                size="sm"
-              >
-                <FaCalendarAlt className="h-4 w-4 mr-2" />
-                Mês
-              </Button>
-              <Button
-                onClick={() => handleTipoVisualizacaoChange('lista')}
-                variant={tipoVisualizacao === 'lista' ? 'primary' : 'outline'}
+                onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                variant={mostrarFiltros ? 'primary' : 'outline'}
                 size="sm"
               >
                 <FaFilter className="h-4 w-4 mr-2" />
-                Lista
+                Filtros
               </Button>
             </div>
           </div>
@@ -201,100 +193,12 @@ const CalendarioVisualizacao = () => {
         )}
 
         {/* Conteúdo */}
-        {tipoVisualizacao === 'mes' ? (
-          <CalendarioGrid
-            dados={dados}
-            ano={ano}
-            mes={mes}
-            loading={loading}
-          />
-        ) : (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Lista de Datas</h3>
-            </div>
-            
-            {dados && dados.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Data
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Dia da Semana
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Tipo
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Semana
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Observações
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {dados.map((dia) => (
-                      <tr key={dia.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {new Date(dia.data).toLocaleDateString('pt-BR')}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {dia.dia_semana_nome}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex flex-wrap gap-1">
-                            {dia.dia_util && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <FaCalendarCheck className="h-3 w-3 mr-1" />
-                                Útil
-                              </span>
-                            )}
-                            {dia.dia_abastecimento && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                <FaTruck className="h-3 w-3 mr-1" />
-                                Abastecimento
-                              </span>
-                            )}
-                            {dia.dia_consumo && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                <FaShoppingCart className="h-3 w-3 mr-1" />
-                                Consumo
-                              </span>
-                            )}
-                            {dia.feriado && (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                <FaExclamationTriangle className="h-3 w-3 mr-1" />
-                                Feriado
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {dia.semana_numero}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {dia.observacoes || '-'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <FaCalendarAlt className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">Nenhum dado encontrado</h3>
-                <p className="mt-1 text-sm text-gray-500">
-                  Tente ajustar os filtros ou selecionar um período diferente.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        <CalendarioGrid
+          dados={dados}
+          ano={ano}
+          mes={mes}
+          loading={loading}
+        />
     </div>
   );
 };
