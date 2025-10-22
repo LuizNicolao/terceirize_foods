@@ -227,8 +227,11 @@ export const useNecessidades = () => {
     
     const dadosParaEnviar = dadosExternos || {
       escola_id: filtros.escola?.id,
-      semana_consumo: dataConsumoFormatada, // Usar semana_consumo em vez de data_consumo
-      semana_abastecimento: semanaCalculada, // Calcular automaticamente
+      escola_nome: filtros.escola?.nome_escola || filtros.escola?.nome,
+      escola_rota: filtros.escola?.rota || '',
+      escola_codigo_teknisa: filtros.escola?.codigo_teknisa || '',
+      semana_consumo: dataConsumoFormatada,
+      semana_abastecimento: semanaCalculada,
       produtos: produtosTabela.map(produto => ({
         produto_id: produto.id,
         produto_nome: produto.nome,
