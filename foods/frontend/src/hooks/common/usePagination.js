@@ -15,6 +15,15 @@ export const usePagination = (initialItemsPerPage = 20) => {
    * Atualiza informações de paginação
    */
   const updatePagination = useCallback((paginationData) => {
+    console.log('🔍 PAGINATION UPDATE:', {
+      paginationData,
+      hasData: !!paginationData,
+      totalPages: paginationData?.totalPages,
+      totalItems: paginationData?.totalItems,
+      page: paginationData?.page,
+      currentPage: paginationData?.currentPage
+    });
+    
     if (paginationData) {
       // A API retorna 'page' não 'currentPage'
       const newPage = paginationData.page || paginationData.currentPage || 1;
@@ -22,6 +31,12 @@ export const usePagination = (initialItemsPerPage = 20) => {
       setTotalPages(paginationData.totalPages || 1);
       setTotalItems(paginationData.totalItems || 0);
       setCurrentPage(newPage);
+      
+      console.log('🔍 PAGINATION SET:', {
+        newPage,
+        totalPages: paginationData.totalPages || 1,
+        totalItems: paginationData.totalItems || 0
+      });
     }
   }, []);
 
