@@ -268,9 +268,13 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       }))
     };
     
-    console.log('DEBUG: Dados sendo enviados:', dadosParaSalvar);
-    console.log('DEBUG: Escola selecionada:', escolaSelecionada);
-    console.log('DEBUG: Produtos da tabela:', produtosTabela);
+    console.log('DEBUG: Dados sendo enviados:', JSON.stringify(dadosParaSalvar, null, 2));
+    console.log('DEBUG: Escola selecionada:', JSON.stringify(escolaSelecionada, null, 2));
+    console.log('DEBUG: Produtos da tabela:', JSON.stringify(produtosTabela, null, 2));
+    console.log('DEBUG: Escola ID:', formData.escola_id);
+    console.log('DEBUG: Escola nome:', escolaSelecionada?.nome_escola);
+    console.log('DEBUG: Semana consumo:', formData.data);
+    console.log('DEBUG: Quantidade de produtos:', produtosTabela.length);
     
 
     try {
