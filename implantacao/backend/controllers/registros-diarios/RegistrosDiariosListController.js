@@ -217,8 +217,6 @@ class RegistrosDiariosListController {
       const userId = req.user.id;
       const userType = req.user.tipo_de_acesso;
 
-      console.log('DEBUG BACKEND: calcularMediasPorPeriodo chamado com:', { escola_id, data, userId, userType });
-
       if (!escola_id || !data) {
         return res.status(400).json({
           success: false,
@@ -231,7 +229,9 @@ class RegistrosDiariosListController {
       const dataReferencia = new Date(data);
       const { dataInicio, dataFim } = calcularPeriodoDiasUteis(dataReferencia, 20);
       
-      console.log('DEBUG BACKEND: Período calculado:', { dataReferencia, dataInicio, dataFim });
+      console.log('DEBUG: Data de referência:', data);
+      console.log('DEBUG: Período calculado:', { dataInicio, dataFim });
+      console.log('DEBUG: Escola ID:', escola_id);
 
       let whereClause = 'WHERE rd.ativo = 1 AND rd.escola_id = ? AND rd.data >= ? AND rd.data <= ?';
       let params = [escola_id, dataInicio, dataFim];
@@ -243,7 +243,7 @@ class RegistrosDiariosListController {
       }
 
       // Buscar registros dos últimos 20 dias úteis e calcular média
-      const query = `
+      console.log('DEBUG: Query SQL:', `
         SELECT 
           rd.tipo_refeicao,
           SUM(rd.valor) as soma_total,
@@ -253,14 +253,22 @@ class RegistrosDiariosListController {
         FROM registros_diarios rd
         ${whereClause}
         GROUP BY rd.tipo_refeicao
-      `;
+      `);
+      console.log('DEBUG: Parâmetros:', params);
       
-      console.log('DEBUG BACKEND: Query SQL:', query);
-      console.log('DEBUG BACKEND: Params:', params);
+      const medias = await executeQuery(`
+        SELECT 
+          rd.tipo_refeicao,
+          SUM(rd.valor) as soma_total,
+          COUNT(*) as quantidade_registros,
+          COUNT(DISTINCT rd.data) as dias_com_registro,
+          CEIL(SUM(rd.valor) / COUNT(*)) as media_correta
+        FROM registros_diarios rd
+        ${whereClause}
+        GROUP BY rd.tipo_refeicao
+      `, params);
       
-      const medias = await executeQuery(query, params);
-      
-      console.log('DEBUG BACKEND: Resultados da query:', medias);
+      console.log('DEBUG: Registros encontrados:', medias);
 
       // Organizar as médias por tipo
       const tiposPermitidos = ['lanche_manha', 'almoco', 'lanche_tarde', 'parcial', 'eja'];
