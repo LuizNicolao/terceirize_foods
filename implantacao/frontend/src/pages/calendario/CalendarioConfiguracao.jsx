@@ -337,7 +337,6 @@ const CalendarioConfiguracao = () => {
             </div>
           </div>
         </div>
-      </div>
 
       {/* Modal de Feriado */}
       <Modal
