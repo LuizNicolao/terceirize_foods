@@ -9,15 +9,6 @@ const Pagination = ({
   itemsPerPage,
   onItemsPerPageChange
 }) => {
-  console.log('🔍 PAGINATION COMPONENT RECEIVED:', {
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    hasOnPageChange: !!onPageChange,
-    hasOnItemsPerPageChange: !!onItemsPerPageChange
-  });
-
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
@@ -51,17 +42,7 @@ const Pagination = ({
     return pages;
   };
 
-  console.log('🔍 PAGINATION RENDER CHECK:', {
-    totalPages,
-    totalItems,
-    shouldRender: totalPages > 1,
-    willReturnNull: totalPages <= 1
-  });
-  
-  if (totalPages <= 1) {
-    console.log('🔍 PAGINATION RETURNING NULL - totalPages <= 1');
-    return null;
-  }
+  if (totalPages <= 1) return null;
 
   return (
     <div className="flex justify-center items-center gap-2 mt-6 p-4">

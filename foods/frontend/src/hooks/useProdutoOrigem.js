@@ -184,22 +184,6 @@ export const useProdutoOrigem = () => {
     return unidade ? unidade.sigla : '-';
   }, [unidadesMedida]);
 
-  // Debug logs
-  console.log('🔍 USEPRODUTOORIGEM DEBUG:', {
-    currentPage: baseEntity.currentPage,
-    totalPages: baseEntity.totalPages,
-    totalItems: baseEntity.totalItems,
-    itemsPerPage: baseEntity.itemsPerPage,
-    itemsLength: baseEntity.items?.length,
-    hasHandlePageChange: !!baseEntity.handlePageChange,
-    hasHandleItemsPerPageChange: !!baseEntity.handleItemsPerPageChange
-  });
-  
-  console.log('🔍 DADOS CARREGADOS:', {
-    items: baseEntity.items,
-    itemsLength: baseEntity.items?.length,
-    loading: baseEntity.loading
-  });
 
   return {
     // Estados principais
