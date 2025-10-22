@@ -8,7 +8,9 @@ import api from './api';
 class ProdutoOrigemService {
   async listar(params = {}) {
     try {
+      console.log('🔍 PRODUTO ORIGEM API CALL:', { params });
       const response = await api.get('/produto-origem', { params });
+      console.log('🔍 PRODUTO ORIGEM API RESPONSE:', response.data);
       
       // Extrair dados da estrutura HATEOAS
       let produtosOrigem = [];
@@ -30,6 +32,12 @@ class ProdutoOrigemService {
         produtosOrigem = response.data;
       }
       
+      console.log('🔍 PRODUTO ORIGEM PROCESSED:', {
+        produtosOrigem: produtosOrigem.length,
+        pagination,
+        statistics
+      });
+      
       return {
         success: true,
         data: produtosOrigem,
@@ -37,6 +45,7 @@ class ProdutoOrigemService {
         statistics: statistics || response.data.statistics
       };
     } catch (error) {
+      console.log('🔍 PRODUTO ORIGEM API ERROR:', error);
       return {
         success: false,
         message: error.response?.data?.message || 'Erro ao carregar produtos origem'

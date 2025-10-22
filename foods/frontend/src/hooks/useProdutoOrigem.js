@@ -194,6 +194,12 @@ export const useProdutoOrigem = () => {
     hasHandlePageChange: !!baseEntity.handlePageChange,
     hasHandleItemsPerPageChange: !!baseEntity.handleItemsPerPageChange
   });
+  
+  console.log('🔍 DADOS CARREGADOS:', {
+    items: baseEntity.items,
+    itemsLength: baseEntity.items?.length,
+    loading: baseEntity.loading
+  });
 
   return {
     // Estados principais
