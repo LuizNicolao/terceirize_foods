@@ -10,7 +10,7 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
   };
 
   const obterDiasSemana = () => {
-    return ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    return ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
   };
 
   const obterBadges = (dia) => {
@@ -125,47 +125,59 @@ const CalendarioGrid = ({ dados, ano, mes, loading = false }) => {
                 </div>
               ))}
 
-              {/* Dias da semana */}
-              {semana.dias.map((dia) => {
-                const badges = obterBadges(dia);
-                const corFundo = obterCorFundo(dia);
-                
-                return (
-                  <div
-                    key={dia.id}
-                    className={`p-3 rounded-lg border ${corFundo} min-h-[120px]`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-lg font-semibold text-gray-900">
-                        {new Date(dia.data).getDate()}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {dia.dia_semana_nome}
-                      </span>
-                    </div>
-
-                    {/* Badges */}
-                    <div className="space-y-1">
-                      {badges.map((badge, badgeIndex) => (
-                        <div
-                          key={badgeIndex}
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}
-                        >
-                          <badge.icon className="h-3 w-3 mr-1" />
-                          {badge.text}
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Observações */}
-                    {dia.observacoes && (
-                      <div className="mt-2 text-xs text-gray-600">
-                        {dia.observacoes}
+              {/* Dias da semana - organizados começando pela segunda-feira */}
+              {semana.dias
+                .sort((a, b) => {
+                  // Ordenar os dias da semana começando pela segunda-feira
+                  const diaSemanaA = new Date(a.data).getDay();
+                  const diaSemanaB = new Date(b.data).getDay();
+                  
+                  // Converter para ordem da semana (Seg=1, Ter=2, ..., Dom=0)
+                  const ordemA = diaSemanaA === 0 ? 7 : diaSemanaA;
+                  const ordemB = diaSemanaB === 0 ? 7 : diaSemanaB;
+                  
+                  return ordemA - ordemB;
+                })
+                .map((dia) => {
+                  const badges = obterBadges(dia);
+                  const corFundo = obterCorFundo(dia);
+                  
+                  return (
+                    <div
+                      key={dia.id}
+                      className={`p-3 rounded-lg border ${corFundo} min-h-[120px]`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-lg font-semibold text-gray-900">
+                          {new Date(dia.data).getDate()}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {dia.dia_semana_nome}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
+
+                      {/* Badges */}
+                      <div className="space-y-1">
+                        {badges.map((badge, badgeIndex) => (
+                          <div
+                            key={badgeIndex}
+                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${badge.color}`}
+                          >
+                            <badge.icon className="h-3 w-3 mr-1" />
+                            {badge.text}
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Observações */}
+                      {dia.observacoes && (
+                        <div className="mt-2 text-xs text-gray-600">
+                          {dia.observacoes}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </div>
           </div>
         ))}
