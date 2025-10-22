@@ -115,16 +115,15 @@ const NecessidadesFilters = ({
           />
         </div>
 
-        {/* Selecionar Data */}
+        {/* Semana de Consumo */}
         <div>
-          <Input
+          <SearchableSelect
             label="Semana de Consumo"
-            type="date"
             value={filtros.data}
-            onChange={(e) => handleDataChange(e.target.value)}
+            onChange={handleDataChange}
+            options={opcoesSemanas || []}
+            placeholder="Selecione a semana de consumo..."
             disabled={loading}
-            min="2020-01-01"
-            placeholder="Selecione uma data..."
           />
         </div>
 

@@ -1,23 +1,28 @@
-import { useState, useCallback } from 'react';
-
-// Função para obter a data atual no formato YYYY-MM-DD (sem problemas de fuso horário)
-const obterDataAtual = () => {
-  const agora = new Date();
-  const ano = agora.getFullYear();
-  const mes = String(agora.getMonth() + 1).padStart(2, '0');
-  const dia = String(agora.getDate()).padStart(2, '0');
-  return `${ano}-${mes}-${dia}`;
-};
+import { useState, useCallback, useEffect } from 'react';
+import { useSemanasAbastecimento } from './useSemanasAbastecimento';
 
 export const useNecessidadesFilters = () => {
+  const { obterValorPadrao } = useSemanasAbastecimento();
+  
   const [filtros, setFiltros] = useState({
     escola: null,
     grupo: null,
-    data: '', // Data vazia por padrão
+    data: '', // Semana de consumo (será inicializada com semana atual)
     search: '',
     semana_abastecimento: '',
     ativo: true
   });
+
+  // Inicializar com a semana atual para "Semana de Consumo"
+  useEffect(() => {
+    const semanaAtual = obterValorPadrao();
+    if (semanaAtual) {
+      setFiltros(prev => ({
+        ...prev,
+        data: semanaAtual
+      }));
+    }
+  }, [obterValorPadrao]);
 
   const updateFiltros = useCallback((novosFiltros) => {
     setFiltros(prev => ({
@@ -27,15 +32,16 @@ export const useNecessidadesFilters = () => {
   }, []);
 
   const clearFiltros = useCallback(() => {
+    const semanaAtual = obterValorPadrao();
     setFiltros({
       escola: null,
       grupo: null,
-      data: '', // Data vazia ao limpar filtros
+      data: semanaAtual || '', // Manter semana atual ao limpar filtros
       search: '',
       semana_abastecimento: '',
       ativo: true
     });
-  }, []);
+  }, [obterValorPadrao]);
 
   const setEscola = useCallback((escola) => {
     setFiltros(prev => ({ ...prev, escola }));
