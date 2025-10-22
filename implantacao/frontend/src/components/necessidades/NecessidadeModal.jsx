@@ -253,12 +253,15 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     // Buscar dados completos da escola selecionada
     const escolaSelecionada = escolas.find(e => e.id === formData.escola_id);
     
+    // Formatar semana de consumo para o formato esperado pelo backend (DD/MM a DD/MM)
+    const semanaFormatada = formData.data.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
+    
     const dadosParaSalvar = {
       escola_id: formData.escola_id,
       escola_nome: escolaSelecionada?.nome_escola || '',
       escola_rota: escolaSelecionada?.rota || '',
       escola_codigo_teknisa: escolaSelecionada?.codigo_teknisa || '',
-      semana_consumo: formData.data,
+      semana_consumo: semanaFormatada,
       semana_abastecimento: calcularSemanaAbastecimento(formData.data),
       produtos: produtosTabela.map(produto => ({
         produto_id: produto.id,
@@ -268,6 +271,8 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       }))
     };
     
+    console.log('DEBUG: Semana original:', formData.data);
+    console.log('DEBUG: Semana formatada:', semanaFormatada);
     console.log('DEBUG: Dados sendo enviados:', JSON.stringify(dadosParaSalvar, null, 2));
     console.log('DEBUG: Escola selecionada:', JSON.stringify(escolaSelecionada, null, 2));
     console.log('DEBUG: Produtos da tabela:', JSON.stringify(produtosTabela, null, 2));
