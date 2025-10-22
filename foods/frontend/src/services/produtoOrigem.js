@@ -35,7 +35,9 @@ class ProdutoOrigemService {
       console.log('🔍 PRODUTO ORIGEM PROCESSED:', {
         produtosOrigem: produtosOrigem.length,
         pagination,
-        statistics
+        statistics,
+        responsePagination: response.data.pagination,
+        responseStatistics: response.data.statistics
       });
       
       return {
