@@ -4,8 +4,15 @@ const gerarNecessidade = async (req, res) => {
   try {
     const { escola_id, escola_nome, escola_rota, escola_codigo_teknisa, semana_consumo, semana_abastecimento, produtos } = req.body;
 
+    console.log('DEBUG: Dados recebidos no backend:', JSON.stringify(req.body, null, 2));
+    console.log('DEBUG: Escola ID:', escola_id, typeof escola_id);
+    console.log('DEBUG: Escola nome:', escola_nome);
+    console.log('DEBUG: Semana consumo:', semana_consumo);
+    console.log('DEBUG: Produtos:', produtos?.length);
+
     // Validar dados obrigatórios
     if (!escola_id || !escola_nome || !semana_consumo || !produtos || !Array.isArray(produtos)) {
+      console.log('DEBUG: Validação falhou - dados obrigatórios');
       return res.status(400).json({
         success: false,
         error: 'Dados obrigatórios',
