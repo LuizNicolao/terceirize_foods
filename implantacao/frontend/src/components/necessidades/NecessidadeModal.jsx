@@ -141,7 +141,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
 
       return {
         id: produto.id,
-        nome: produto.nome,
+        nome: produto.produto_nome,
         unidade_medida: produto.unidade_medida,
         percapita_lanche_manha: percapitaLancheManha,
         percapita_almoco: percapitaAlmoco,
