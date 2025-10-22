@@ -268,6 +268,10 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       }))
     };
     
+    console.log('DEBUG: Dados sendo enviados:', dadosParaSalvar);
+    console.log('DEBUG: Escola selecionada:', escolaSelecionada);
+    console.log('DEBUG: Produtos da tabela:', produtosTabela);
+    
 
     try {
       const resultado = await onSave(dadosParaSalvar);
