@@ -10,9 +10,6 @@ class CalendarioVisualizacaoController {
    */
   static async listar(req, res) {
     try {
-      console.log('=== CALENDARIO LISTAR ===');
-      console.log('Query params recebidos:', req.query);
-      
       const { 
         ano = new Date().getFullYear(), 
         mes, 
@@ -83,16 +80,6 @@ class CalendarioVisualizacaoController {
 
       // Buscar dados
       const queryParams = [...params, parseInt(limit), parseInt(offset)];
-      
-      // Debug: verificar se os parâmetros estão corretos
-      console.log('=== DEBUG CALENDARIO ===');
-      console.log('Where clause:', whereClause);
-      console.log('Params array:', params);
-      console.log('QueryParams array:', queryParams);
-      console.log('Params length:', params.length);
-      console.log('QueryParams length:', queryParams.length);
-      console.log('Limit:', limit, 'Offset:', offset);
-      console.log('========================');
       
       const dados = await executeQuery(`
         SELECT 

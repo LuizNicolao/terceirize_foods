@@ -18,6 +18,11 @@ const calendarioService = {
 
   // ===== VISUALIZAÇÃO =====
   listar: async (filtros) => {
+    console.log('=== CALENDARIO SERVICE ===');
+    console.log('Filtros enviados:', filtros);
+    console.log('URL:', '/calendario');
+    console.log('========================');
+    
     const response = await api.get('/calendario', { params: filtros });
     return response.data;
   },
