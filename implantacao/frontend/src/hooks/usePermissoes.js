@@ -148,6 +148,7 @@ export const usePermissoes = () => {
         'recebimentos_escolas',
         'registros_diarios',
         'necessidades',
+        'calendario',
         'permissoes'
       ];
       
