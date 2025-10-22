@@ -236,6 +236,9 @@ export const useNecessidades = () => {
     console.log('Tipo da data original:', typeof filtros.data);
     console.log('Tipo da data formatada:', typeof dataConsumoFormatada);
     
+    console.log('dadosExternos:', dadosExternos);
+    console.log('dataConsumoFormatada antes do payload:', dataConsumoFormatada);
+    
     const dadosParaEnviar = dadosExternos || {
       escola_id: filtros.escola?.id,
       escola_nome: filtros.escola?.nome_escola || filtros.escola?.nome,
@@ -251,7 +254,6 @@ export const useNecessidades = () => {
       }))
     };
     
-    console.log('dataConsumoFormatada antes do payload:', dataConsumoFormatada);
     console.log('semana_consumo no payload antes de enviar:', dadosParaEnviar.semana_consumo);
 
     // Debug: mostrar dados que serão enviados
