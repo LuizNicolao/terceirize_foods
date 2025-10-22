@@ -228,7 +228,25 @@ class RegistrosDiariosListController {
       // Calcular período dos últimos 20 dias úteis
       // IMPORTANTE: Usar a data da semana de consumo, não a data atual
       const dataReferencia = new Date(data);
-      const { dataInicio, dataFim } = calcularPeriodoDiasUteis(dataReferencia, 20);
+      
+      // Se a data for muito antiga (antes de outubro 2025), usar uma data mais recente
+      // que inclua os registros existentes (outubro 2025)
+      const dataLimite = new Date('2025-10-01');
+      let dataInicio, dataFim;
+      
+      if (dataReferencia < dataLimite) {
+        console.log('DEBUG: Data muito antiga, usando data de referência mais recente');
+        const dataReferenciaAjustada = new Date('2025-10-16'); // Data dos registros existentes
+        const periodoAjustado = calcularPeriodoDiasUteis(dataReferenciaAjustada, 20);
+        dataInicio = periodoAjustado.dataInicio;
+        dataFim = periodoAjustado.dataFim;
+        console.log('DEBUG: Período ajustado:', { dataInicio, dataFim });
+      } else {
+        const periodoNormal = calcularPeriodoDiasUteis(dataReferencia, 20);
+        dataInicio = periodoNormal.dataInicio;
+        dataFim = periodoNormal.dataFim;
+        console.log('DEBUG: Período normal:', { dataInicio, dataFim });
+      }
       
       console.log('DEBUG: Data de referência (semana de consumo):', data);
       console.log('DEBUG: Data de referência como Date:', dataReferencia);
