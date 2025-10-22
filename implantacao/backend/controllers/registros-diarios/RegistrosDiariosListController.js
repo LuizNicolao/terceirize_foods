@@ -275,7 +275,7 @@ class RegistrosDiariosListController {
         SELECT 
           rd.tipo_refeicao,
           rd.data,
-          rd.valor,
+          SUM(rd.valor) as valor_total,
           COUNT(*) as total_registros
         FROM registros_diarios rd
         WHERE rd.ativo = 1 AND rd.escola_id = ?
