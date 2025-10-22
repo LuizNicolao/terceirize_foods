@@ -49,9 +49,11 @@ const ProdutoPerCapitaModal = ({
   // Carregar produtos disponíveis quando modal abrir
   useEffect(() => {
     if (isOpen && onCarregarProdutosDisponiveis) {
-      onCarregarProdutosDisponiveis();
+      // Se está editando, passar o ID do produto para incluí-lo na lista
+      const produtoIdForEdit = produto?.produto_id || null;
+      onCarregarProdutosDisponiveis({ produtoIdForEdit });
     }
-  }, [isOpen, onCarregarProdutosDisponiveis]);
+  }, [isOpen, onCarregarProdutosDisponiveis, produto]);
 
   // Preencher dados quando produto é fornecido
   useEffect(() => {

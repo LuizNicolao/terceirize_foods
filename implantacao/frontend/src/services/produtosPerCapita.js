@@ -109,9 +109,12 @@ class ProdutosPerCapitaService {
   /**
    * Buscar produtos disponíveis para per capita
    * Busca produtos do Foods que NÃO têm percapita cadastrado
+   * Se produtoIdForEdit for fornecido, inclui esse produto na lista (para edição)
    */
   static async buscarProdutosDisponiveis(filtros = {}) {
     try {
+      const { produtoIdForEdit } = filtros;
+      
       // Primeiro, buscar IDs de produtos que já têm percapita cadastrado
       const response = await api.get('/produtos-per-capita/produtos-disponiveis');
       
@@ -123,7 +126,12 @@ class ProdutosPerCapitaService {
         };
       }
       
-      const idsComPercapita = response.data.data.produtos_com_percapita || [];
+      let idsComPercapita = response.data.data.produtos_com_percapita || [];
+      
+      // Se está editando, remover o produto atual da lista de excluídos
+      if (produtoIdForEdit) {
+        idsComPercapita = idsComPercapita.filter(id => id !== produtoIdForEdit);
+      }
       
       // Buscar todos os produtos do Foods
       const result = await FoodsApiService.getProdutosOrigem({ 
@@ -132,7 +140,7 @@ class ProdutosPerCapitaService {
       });
       
       if (result.success) {
-        // Filtrar produtos que NÃO têm percapita cadastrado
+        // Filtrar produtos que NÃO têm percapita cadastrado (exceto o produto sendo editado)
         const produtosDisponiveis = (result.data || []).filter(produto => 
           !idsComPercapita.includes(produto.id)
         );
