@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, SearchableSelect } from '../ui';
 import { FaCalculator, FaSave, FaTimes } from 'react-icons/fa';
 import { useNecessidades } from '../../hooks/useNecessidades';
-import { calcularSemanaAbastecimento } from '../../utils/semanasAbastecimentoUtils';
+import { calcularSemanaAbastecimento, converterSemanaParaData } from '../../utils/semanasAbastecimentoUtils';
 import toast from 'react-hot-toast';
 
 // Função para obter a data atual no formato YYYY-MM-DD (sem problemas de fuso horário)
@@ -239,13 +239,16 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     // Buscar dados completos da escola selecionada
     const escolaSelecionada = escolas.find(e => e.id === formData.escola_id);
     
+    // Converter semana para data se necessário
+    const dataConsumo = converterSemanaParaData(formData.data) || formData.data;
+    
     const dadosParaSalvar = {
       escola_id: formData.escola_id,
       escola_nome: escolaSelecionada?.nome_escola || '',
       escola_rota: escolaSelecionada?.rota || '',
       escola_codigo_teknisa: escolaSelecionada?.codigo_teknisa || '',
-      data_consumo: formData.data,
-      semana_abastecimento: calcularSemanaAbastecimento(formData.data),
+      data_consumo: dataConsumo,
+      semana_abastecimento: calcularSemanaAbastecimento(dataConsumo),
       produtos: produtosTabela.map(produto => ({
         produto_id: produto.id,
         produto_nome: produto.nome,

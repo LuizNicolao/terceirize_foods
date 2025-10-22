@@ -211,3 +211,14 @@ export const obterInfoSemana = (semanaLabel, ano = new Date().getFullYear()) => 
   const semanas = gerarSemanasAbastecimento(ano);
   return semanas.find(semana => semana.label === semanaLabel);
 };
+
+/**
+ * Converte uma semana (label) para uma data específica
+ * @param {string} semanaLabel - Label da semana no formato "DD/MM a DD/MM"
+ * @param {number} ano - Ano da semana
+ * @returns {string|null} Data no formato YYYY-MM-DD (data de início da semana)
+ */
+export const converterSemanaParaData = (semanaLabel, ano = new Date().getFullYear()) => {
+  const semana = obterInfoSemana(semanaLabel, ano);
+  return semana ? semana.dataInicio : null;
+};
