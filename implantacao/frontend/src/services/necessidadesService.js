@@ -51,8 +51,21 @@ const necessidadesService = {
 
   // Gerar necessidade (nova funcionalidade)
   gerarNecessidade: async (dados) => {
-    const response = await api.post('/necessidades/gerar', dados);
-    return response.data;
+    try {
+      console.log('Enviando dados para /necessidades/gerar:', dados);
+      const response = await api.post('/necessidades/gerar', dados);
+      console.log('Resposta recebida:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Erro na requisição:', error);
+      console.error('Status:', error.response?.status);
+      console.error('Dados do erro:', error.response?.data);
+      return {
+        success: false,
+        error: error.response?.data?.message || error.message,
+        details: error.response?.data
+      };
+    }
   },
 
   // Buscar produtos por grupo (via Foods API)

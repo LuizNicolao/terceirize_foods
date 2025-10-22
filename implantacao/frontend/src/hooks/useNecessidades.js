@@ -240,20 +240,28 @@ export const useNecessidades = () => {
       }))
     };
 
+    // Debug: mostrar dados que serão enviados
+    console.log('Dados para enviar:', dadosParaEnviar);
+    console.log('Escola selecionada:', filtros.escola);
+
     // Validação baseada nos dados que serão enviados
     if (!dadosParaEnviar.escola_id || !dadosParaEnviar.semana_consumo) {
+      console.log('Validação falhou - escola_id:', dadosParaEnviar.escola_id, 'semana_consumo:', dadosParaEnviar.semana_consumo);
       toast.error('Selecione escola e data antes de gerar a necessidade');
       return { success: false };
     }
 
     if (!dadosParaEnviar.produtos || dadosParaEnviar.produtos.length === 0) {
+      console.log('Validação falhou - produtos:', dadosParaEnviar.produtos);
       toast.error('Nenhum produto selecionado');
       return { success: false };
     }
 
     setLoading(true);
     try {
+      console.log('Enviando requisição para backend...');
       const response = await necessidadesService.gerarNecessidade(dadosParaEnviar);
+      console.log('Resposta do backend:', response);
       
       if (response.success) {
         toast.success('Necessidade gerada com sucesso!');
