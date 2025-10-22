@@ -226,10 +226,12 @@ class RegistrosDiariosListController {
       }
 
       // Calcular período dos últimos 20 dias úteis
+      // IMPORTANTE: Usar a data da semana de consumo, não a data atual
       const dataReferencia = new Date(data);
       const { dataInicio, dataFim } = calcularPeriodoDiasUteis(dataReferencia, 20);
       
-      console.log('DEBUG: Data de referência:', data);
+      console.log('DEBUG: Data de referência (semana de consumo):', data);
+      console.log('DEBUG: Data de referência como Date:', dataReferencia);
       console.log('DEBUG: Período calculado:', { dataInicio, dataFim });
       console.log('DEBUG: Escola ID:', escola_id);
 
