@@ -26,15 +26,15 @@ class CalendarioVisualizacaoController {
       const params = [];
 
       // Filtro por ano
-      if (ano && ano !== '') {
+      if (ano && ano !== '' && ano !== null && ano !== undefined) {
         whereClause += ' AND ano = ?';
-        params.push(ano);
+        params.push(parseInt(ano));
       }
 
       // Filtro por mês
-      if (mes && mes !== '') {
+      if (mes && mes !== '' && mes !== null && mes !== undefined) {
         whereClause += ' AND mes = ?';
-        params.push(mes);
+        params.push(parseInt(mes));
       }
 
       // Filtro por período
