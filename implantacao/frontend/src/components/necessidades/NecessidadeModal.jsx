@@ -312,7 +312,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       isOpen={isOpen}
       onClose={onClose}
       title="Gerar Necessidade"
-      size="7xl"
+      size="full"
     >
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Filtros */}
