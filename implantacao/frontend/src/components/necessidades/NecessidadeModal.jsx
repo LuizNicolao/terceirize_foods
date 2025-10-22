@@ -121,11 +121,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       // const frequenciaEja = 0; // Será editável
 
       // Quantidades calculadas (percapta × média) × frequência
-      const qtdLancheManha = Number((percapitaLancheManha * frequenciaLancheManha) * 0); // Começar em 0
-      const qtdAlmoco = Number((percapitaAlmoco * frequenciaAlmoco) * 0); // Começar em 0
-      const qtdLancheTarde = Number((percapitaLancheTarde * frequenciaLancheTarde) * 0); // Começar em 0
-      const qtdParcial = Number((percapitaParcial * frequenciaParcial) * 0); // Começar em 0
-      const qtdEja = Number((percapitaEja * frequenciaEja) * 0); // Começar em 0
+      const qtdLancheManha = Number((percapitaLancheManha * frequenciaLancheManha) * 1); // Começar com frequência 1
+      const qtdAlmoco = Number((percapitaAlmoco * frequenciaAlmoco) * 1); // Começar com frequência 1
+      const qtdLancheTarde = Number((percapitaLancheTarde * frequenciaLancheTarde) * 1); // Começar com frequência 1
+      const qtdParcial = Number((percapitaParcial * frequenciaParcial) * 1); // Começar com frequência 1
+      const qtdEja = Number((percapitaEja * frequenciaEja) * 1); // Começar com frequência 1
 
       // Total
       const total = Number(qtdLancheManha + qtdAlmoco + qtdLancheTarde + qtdParcial + qtdEja);
