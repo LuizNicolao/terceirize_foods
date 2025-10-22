@@ -9,6 +9,14 @@ const Pagination = ({
   itemsPerPage,
   onItemsPerPageChange
 }) => {
+  console.log('🔍 PAGINATION RENDER:', {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    willReturnNull: totalPages <= 1
+  });
+
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 

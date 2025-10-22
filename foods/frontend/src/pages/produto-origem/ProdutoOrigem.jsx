@@ -217,6 +217,15 @@ const ProdutoOrigem = () => {
       />
 
       {/* Paginação */}
+      {console.log('🔍 DEBUG PAGINAÇÃO FINAL:', {
+        currentPage,
+        totalPages,
+        totalItems,
+        itemsPerPage,
+        shouldShow: totalPages > 1,
+        hasHandlePageChange: !!handlePageChange,
+        hasHandleItemsPerPageChange: !!handleItemsPerPageChange
+      })}
       {totalPages > 1 && (
         <Pagination
           currentPage={currentPage}
