@@ -93,7 +93,7 @@ export const useNecessidades = () => {
         if (percapitaResponse.success) {
           const percapitaMap = {};
           percapitaResponse.data.forEach(p => {
-            // Usar todos os valores de per capita do banco com estrutura correta
+            // Usar estrutura igual ao Geracao_necessidade
             percapitaMap[p.produto_id] = {
               lanche_manha: p.per_capita_lanche_manha || 0,
               almoco: p.per_capita_almoco || 0,

@@ -95,9 +95,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     });
     
     const produtosComCalculos = produtos.map(produto => {
-      // Debug: verificar percapitas carregados
-      console.log('Produto:', produto.nome, 'Percapitas:', percapitas[produto.id]);
-      
       // Usar valores reais do banco de dados com os 5 novos tipos
       const percapitaData = percapitas[produto.id] || {
         lanche_manha: 0,
