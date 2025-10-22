@@ -12,7 +12,18 @@ export const calcularSemanaAbastecimento = (dataConsumo) => {
   if (!dataConsumo) return '';
   
   try {
-    const data = new Date(dataConsumo);
+    let data;
+    
+    // Se for uma string da semana (ex: "20/10 a 24/10"), converter para data
+    if (typeof dataConsumo === 'string' && dataConsumo.includes(' a ')) {
+      // Extrair a primeira data da string (ex: "20/10" de "20/10 a 24/10")
+      const primeiraData = dataConsumo.split(' a ')[0];
+      const [dia, mes] = primeiraData.split('/');
+      const ano = new Date().getFullYear();
+      data = new Date(`${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`);
+    } else {
+      data = new Date(dataConsumo);
+    }
     
     // Verificar se a data é válida
     if (isNaN(data.getTime())) {
