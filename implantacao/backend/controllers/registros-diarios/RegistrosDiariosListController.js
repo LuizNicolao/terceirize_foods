@@ -217,6 +217,8 @@ class RegistrosDiariosListController {
       const userId = req.user.id;
       const userType = req.user.tipo_de_acesso;
 
+      console.log('DEBUG BACKEND: calcularMediasPorPeriodo chamado com:', { escola_id, data, userId, userType });
+
       if (!escola_id || !data) {
         return res.status(400).json({
           success: false,
@@ -228,6 +230,8 @@ class RegistrosDiariosListController {
       // Calcular período dos últimos 20 dias úteis
       const dataReferencia = new Date(data);
       const { dataInicio, dataFim } = calcularPeriodoDiasUteis(dataReferencia, 20);
+      
+      console.log('DEBUG BACKEND: Período calculado:', { dataReferencia, dataInicio, dataFim });
 
       let whereClause = 'WHERE rd.ativo = 1 AND rd.escola_id = ? AND rd.data >= ? AND rd.data <= ?';
       let params = [escola_id, dataInicio, dataFim];
@@ -239,7 +243,7 @@ class RegistrosDiariosListController {
       }
 
       // Buscar registros dos últimos 20 dias úteis e calcular média
-      const medias = await executeQuery(`
+      const query = `
         SELECT 
           rd.tipo_refeicao,
           SUM(rd.valor) as soma_total,
@@ -249,7 +253,14 @@ class RegistrosDiariosListController {
         FROM registros_diarios rd
         ${whereClause}
         GROUP BY rd.tipo_refeicao
-      `, params);
+      `;
+      
+      console.log('DEBUG BACKEND: Query SQL:', query);
+      console.log('DEBUG BACKEND: Params:', params);
+      
+      const medias = await executeQuery(query, params);
+      
+      console.log('DEBUG BACKEND: Resultados da query:', medias);
 
       // Organizar as médias por tipo
       const tiposPermitidos = ['lanche_manha', 'almoco', 'lanche_tarde', 'parcial', 'eja'];
