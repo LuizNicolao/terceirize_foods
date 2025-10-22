@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input, SearchableSelect } from '../ui';
 import { FaCalculator, FaSave, FaTimes } from 'react-icons/fa';
 import { useNecessidades } from '../../hooks/useNecessidades';
+import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 import { calcularSemanaAbastecimento } from '../../utils/semanasAbastecimentoUtils';
 import toast from 'react-hot-toast';
 
@@ -25,13 +26,27 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     error: necessidadesError
   } = useNecessidades();
 
+  // Hook para semanas de abastecimento
+  const { opcoes: opcoesSemanas, obterValorPadrao } = useSemanasAbastecimento();
+
   const [formData, setFormData] = useState({
     escola_id: '',
     escola: null, // Objeto completo da escola
     grupo_id: '',
     grupo: null, // Objeto completo do grupo
-    data: obterDataAtual()
+    data: '' // Será inicializado com semana atual
   });
+
+  // Inicializar com semana atual
+  useEffect(() => {
+    const semanaAtual = obterValorPadrao();
+    if (semanaAtual) {
+      setFormData(prev => ({
+        ...prev,
+        data: semanaAtual
+      }));
+    }
+  }, [obterValorPadrao]);
 
   const [produtosTabela, setProdutosTabela] = useState([]);
 
@@ -39,12 +54,13 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   useEffect(() => {
     if (!isOpen) {
       // Limpar dados imediatamente quando modal é fechado
+      const semanaAtual = obterValorPadrao();
       setFormData({
         escola_id: '',
         escola: null,
         grupo_id: '',
         grupo: null,
-        data: obterDataAtual()
+        data: semanaAtual || ''
       });
       setProdutosTabela([]);
     }
@@ -347,14 +363,14 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
           </div>
           
           <div>
-            <Input
+            <SearchableSelect
               label="Semana de Consumo"
-              type="date"
               value={formData.data}
-              onChange={(e) => handleInputChange('data', e.target.value)}
+              onChange={(value) => handleInputChange('data', value)}
+              options={opcoesSemanas || []}
+              placeholder="Selecione a semana de consumo..."
               disabled={necessidadesLoading || loading}
               required
-              min={new Date().toISOString().split('T')[0]}
             />
           </div>
         </div>
