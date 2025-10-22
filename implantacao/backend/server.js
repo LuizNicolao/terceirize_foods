@@ -16,6 +16,7 @@ const recebimentosEscolasRoute = require('./routes/recebimentos-escolas');
 const registrosDiariosRoute = require('./routes/registros-diarios/registrosDiariosRoute');
 const necessidadesRoute = require('./routes/necessidades');
 const auditoriaRoute = require('./routes/auditoria/auditoriaRoute');
+const calendarioRoute = require('./routes/calendario/calendarioRoute');
 
 // Definir rotas com seus middlewares
 const routes = [
@@ -33,7 +34,8 @@ const routes = [
   { path: '/recebimentos-escolas', router: recebimentosEscolasRoute },
   { path: '/registros-diarios', router: registrosDiariosRoute },
   { path: '/necessidades', router: necessidadesRoute },
-  { path: '/auditoria', router: auditoriaRoute }
+  { path: '/auditoria', router: auditoriaRoute },
+  { path: '/calendario', router: calendarioRoute }
 ];
 
 // Aplicar rotas com prefixos automaticamente (desenvolvimento e produção)
@@ -54,7 +56,8 @@ app.get('/', (req, res) => {
       produtosPerCapita: `${basePath}/produtos-per-capita`,
       recebimentosEscolas: `${basePath}/recebimentos-escolas`,
       registrosDiarios: `${basePath}/registros-diarios`,
-      necessidades: `${basePath}/necessidades`
+      necessidades: `${basePath}/necessidades`,
+      calendario: `${basePath}/calendario`
     }
   });
 });

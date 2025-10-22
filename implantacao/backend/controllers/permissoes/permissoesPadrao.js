@@ -21,6 +21,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -38,6 +39,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -74,6 +76,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -91,6 +94,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -127,6 +131,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -144,6 +149,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -161,6 +167,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -180,6 +187,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -197,6 +205,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -233,6 +242,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -250,6 +260,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -286,6 +297,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -303,6 +315,7 @@ const PERMISSOES_PADRAO = {
       recebimentos_escolas: { visualizar: true, criar: true, editar: true, excluir: false },
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: false },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -340,6 +353,7 @@ const TODAS_TELAS = [
   'recebimentos_escolas',
   'registros_diarios',
   'necessidades',
+  'calendario',
   'permissoes'
 ];
 
@@ -376,6 +390,7 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'recebimentos_escolas', descricao: 'Gerenciamento de Recebimentos Escolas' },
   { nome: 'registros_diarios', descricao: 'Registros Diários de Refeições' },
   { nome: 'necessidades', descricao: 'Geração de Necessidades' },
+  { nome: 'calendario', descricao: 'Gerenciamento de Calendário' },
   { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
 ];
 
