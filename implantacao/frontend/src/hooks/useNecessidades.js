@@ -132,8 +132,8 @@ export const useNecessidades = () => {
         const anoMatch = data.match(/\/(\d{2})$/);
         const ano = anoMatch ? `20${anoMatch[1]}` : new Date().getFullYear();
         // Garantir que dia e mês tenham 2 dígitos
-        const diaFormatado = dia.padStart(2, '0');
-        const mesFormatado = mes.padStart(2, '0');
+        const diaFormatado = String(dia).padStart(2, '0');
+        const mesFormatado = String(mes).padStart(2, '0');
         dataFormatada = `${ano}-${mesFormatado}-${diaFormatado}`;
       } else if (data instanceof Date) {
         dataFormatada = data.toISOString().split('T')[0];
