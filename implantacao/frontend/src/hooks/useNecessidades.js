@@ -125,16 +125,22 @@ export const useNecessidades = () => {
       
       // Se a data for uma string da semana (ex: "06/01 a 12/01/25"), converter para data
       if (typeof data === 'string' && data.includes(' a ')) {
+        console.log('DEBUG: Data original recebida:', data);
         // Extrair a primeira data da string (ex: "06/01" de "06/01 a 12/01/25")
         const primeiraData = data.split(' a ')[0];
+        console.log('DEBUG: Primeira data extraída:', primeiraData);
         const [dia, mes] = primeiraData.split('/');
+        console.log('DEBUG: Dia e mês extraídos:', { dia, mes });
         // Extrair ano da string completa - procurar por padrão /25 no final
         const anoMatch = data.match(/\/(\d{2})$/);
         const ano = anoMatch ? `20${anoMatch[1]}` : new Date().getFullYear();
+        console.log('DEBUG: Ano extraído:', ano);
         // Garantir que dia e mês tenham 2 dígitos
         const diaFormatado = String(dia).padStart(2, '0');
         const mesFormatado = String(mes).padStart(2, '0');
+        console.log('DEBUG: Dia e mês formatados:', { diaFormatado, mesFormatado });
         dataFormatada = `${ano}-${mesFormatado}-${diaFormatado}`;
+        console.log('DEBUG: Data final formatada:', dataFormatada);
       } else if (data instanceof Date) {
         dataFormatada = data.toISOString().split('T')[0];
       } else {
