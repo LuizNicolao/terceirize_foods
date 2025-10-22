@@ -138,7 +138,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       // const frequenciaLanche = 0; // Será editável
       // const frequenciaEja = 0; // Será editável
 
-      // QTD inicial vazia - usuário deve preencher manualmente
+      // QTD inicial vazia - será calculada automaticamente quando o usuário preencher a frequência
       const qtdLancheManha = 0;
       const qtdAlmoco = 0;
       const qtdLancheTarde = 0;
