@@ -108,21 +108,39 @@ class ProdutosPerCapitaService {
 
   /**
    * Buscar produtos disponíveis para per capita
-   * Agora busca de produtos origem do sistema Foods
+   * Busca produtos do Foods que NÃO têm percapita cadastrado
    */
   static async buscarProdutosDisponiveis(filtros = {}) {
     try {
-      // Buscar produtos origem do sistema Foods
+      // Primeiro, buscar IDs de produtos que já têm percapita cadastrado
+      const response = await api.get('/produtos-per-capita/produtos-disponiveis');
+      
+      if (!response.data.success) {
+        return {
+          success: false,
+          error: response.data.error || 'Erro ao buscar produtos disponíveis',
+          data: []
+        };
+      }
+      
+      const idsComPercapita = response.data.data.produtos_com_percapita || [];
+      
+      // Buscar todos os produtos do Foods
       const result = await FoodsApiService.getProdutosOrigem({ 
         status: 1, // Apenas ativos
         limit: 1000 // Buscar todos os produtos ativos
       });
       
       if (result.success) {
+        // Filtrar produtos que NÃO têm percapita cadastrado
+        const produtosDisponiveis = (result.data || []).filter(produto => 
+          !idsComPercapita.includes(produto.id)
+        );
+        
         return {
           success: true,
-          data: result.data || [],
-          message: 'Produtos origem carregados com sucesso'
+          data: produtosDisponiveis,
+          message: `${produtosDisponiveis.length} produtos disponíveis para per capita`
         };
       } else {
         return {
@@ -134,7 +152,7 @@ class ProdutosPerCapitaService {
     } catch (error) {
       return {
         success: false,
-        error: error.response?.data?.message || 'Erro ao carregar produtos origem',
+        error: error.response?.data?.message || 'Erro ao carregar produtos disponíveis',
         data: []
       };
     }

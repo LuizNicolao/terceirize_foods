@@ -107,12 +107,35 @@ class ProdutosPerCapitaListController {
 
   /**
    * Buscar produtos disponíveis para per capita
-   * NOTA: Esta funcionalidade foi desabilitada pois agora produtos vêm do sistema Foods
-   * O frontend usa FoodsApiService.getProdutosOrigem() para buscar produtos
+   * Retorna produtos do Foods que NÃO têm percapita cadastrado
    */
   static buscarProdutosDisponiveis = asyncHandler(async (req, res) => {
-    // Retornar array vazio pois produtos agora vêm do sistema Foods
-    return successResponse(res, [], 'Produtos disponíveis agora vêm do sistema Foods', STATUS_CODES.OK);
+    try {
+      // Buscar IDs de produtos que já têm percapita cadastrado
+      const produtosComPercapita = await executeQuery(
+        'SELECT DISTINCT produto_id FROM produtos_per_capita WHERE ativo = 1'
+      );
+      
+      const idsComPercapita = produtosComPercapita.map(p => p.produto_id);
+      
+      // Se não há produtos com percapita, retornar todos os produtos do Foods
+      if (idsComPercapita.length === 0) {
+        return successResponse(res, [], 'Todos os produtos estão disponíveis', STATUS_CODES.OK);
+      }
+      
+      // Retornar os IDs que NÃO têm percapita para o frontend filtrar
+      return successResponse(res, {
+        produtos_com_percapita: idsComPercapita,
+        message: 'IDs de produtos com percapita cadastrado'
+      }, 'Produtos com percapita identificados', STATUS_CODES.OK);
+    } catch (error) {
+      console.error('Erro ao buscar produtos disponíveis:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Erro ao buscar produtos disponíveis'
+      });
+    }
   });
 
   /**

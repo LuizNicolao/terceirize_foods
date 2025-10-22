@@ -54,6 +54,11 @@ router.get('/',
   ProdutosPerCapitaController.listar
 );
 
+router.get('/produtos-disponiveis',
+  checkScreenPermission('produtos_per_capita', 'visualizar'),
+  ProdutosPerCapitaController.buscarProdutosDisponiveis
+);
+
 router.get('/:id',
   checkScreenPermission('produtos_per_capita', 'visualizar'),
   commonValidations.id,
