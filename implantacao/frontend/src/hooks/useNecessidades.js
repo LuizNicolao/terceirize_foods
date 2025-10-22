@@ -227,13 +227,15 @@ export const useNecessidades = () => {
     
     console.log('Data original:', filtros.data);
     console.log('Data formatada:', dataConsumoFormatada);
+    console.log('Tipo da data original:', typeof filtros.data);
+    console.log('Tipo da data formatada:', typeof dataConsumoFormatada);
     
     const dadosParaEnviar = dadosExternos || {
       escola_id: filtros.escola?.id,
       escola_nome: filtros.escola?.nome_escola || filtros.escola?.nome,
       escola_rota: filtros.escola?.rota || '',
       escola_codigo_teknisa: filtros.escola?.codigo_teknisa || '',
-      semana_consumo: dataConsumoFormatada,
+      semana_consumo: dataConsumoFormatada, // Usar data formatada
       semana_abastecimento: semanaCalculada,
       produtos: produtosTabela.map(produto => ({
         produto_id: produto.id,
@@ -246,6 +248,7 @@ export const useNecessidades = () => {
     // Debug: mostrar dados que serão enviados
     console.log('Dados para enviar:', dadosParaEnviar);
     console.log('Escola selecionada:', filtros.escola);
+    console.log('semana_consumo no payload:', dadosParaEnviar.semana_consumo);
 
     // Validação baseada nos dados que serão enviados
     if (!dadosParaEnviar.escola_id || !dadosParaEnviar.semana_consumo) {
