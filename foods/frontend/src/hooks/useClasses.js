@@ -121,7 +121,7 @@ export const useClasses = () => {
     baseEntity.clearSearch();
     baseEntity.setStatusFilter('todos');
     baseEntity.updateFilter('subgrupoFilter', 'todos');
-    baseEntity.setCurrentPage(1);
+    baseEntity.handlePageChange(1);
   }, [baseEntity]);
 
   const getStatusLabel = useCallback((status) => {

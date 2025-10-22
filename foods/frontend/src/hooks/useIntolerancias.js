@@ -113,7 +113,7 @@ export const useIntolerancias = () => {
 
   const handleClearFilters = useCallback(() => {
     customFilters.clearFilters();
-    baseEntity.setCurrentPage(1);
+    baseEntity.handlePageChange(1);
   }, [customFilters, baseEntity]);
 
   const formatDate = useCallback((dateString) => {

@@ -83,8 +83,7 @@ export const useProdutoOrigem = () => {
    */
   const onSubmitCustom = useCallback(async (data) => {
     await baseEntity.onSubmit(data);
-    // Recalcular estatísticas após salvar
-    setEstatisticasProdutoOrigem(baseEntity.statistics || { total: 0, ativos: 0, inativos: 0 });
+    // Estatísticas são atualizadas automaticamente pelo baseEntity após salvar
   }, [baseEntity]);
 
   /**

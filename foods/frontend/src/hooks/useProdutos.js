@@ -159,7 +159,7 @@ export const useProdutos = () => {
   const handleClearFilters = useCallback(() => {
     customFilters.setSearchTerm('');
     customFilters.setStatusFilter('todos');
-    baseEntity.setCurrentPage(1);
+    baseEntity.handlePageChange(1);
   }, [customFilters, baseEntity]);
 
   // Carregar dados auxiliares na inicialização

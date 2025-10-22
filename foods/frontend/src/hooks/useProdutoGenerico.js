@@ -138,7 +138,7 @@ export const useProdutoGenerico = () => {
     baseEntity.updateFilter('subgrupoFilter', 'todos');
     baseEntity.updateFilter('classeFilter', 'todos');
     baseEntity.updateFilter('produtoOrigemFilter', 'todos');
-    baseEntity.setCurrentPage(1);
+    baseEntity.handlePageChange(1);
   }, [baseEntity]);
 
   /**

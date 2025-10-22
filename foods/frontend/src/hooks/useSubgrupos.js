@@ -119,7 +119,7 @@ export const useSubgrupos = () => {
     baseEntity.clearSearch();
     baseEntity.setStatusFilter('todos');
     baseEntity.updateFilter('grupoFilter', 'todos');
-    baseEntity.setCurrentPage(1);
+    baseEntity.handlePageChange(1);
   }, [baseEntity]);
 
   const getStatusLabel = useCallback((status) => {
