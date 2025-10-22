@@ -26,30 +26,30 @@ class CalendarioVisualizacaoController {
       const params = [];
 
       // Filtro por ano
-      if (ano) {
+      if (ano && ano !== '') {
         whereClause += ' AND ano = ?';
         params.push(ano);
       }
 
       // Filtro por mês
-      if (mes) {
+      if (mes && mes !== '') {
         whereClause += ' AND mes = ?';
         params.push(mes);
       }
 
       // Filtro por período
-      if (data_inicio) {
+      if (data_inicio && data_inicio !== '') {
         whereClause += ' AND data >= ?';
         params.push(data_inicio);
       }
 
-      if (data_fim) {
+      if (data_fim && data_fim !== '') {
         whereClause += ' AND data <= ?';
         params.push(data_fim);
       }
 
       // Filtro por dia da semana
-      if (dia_semana) {
+      if (dia_semana && dia_semana !== '') {
         whereClause += ' AND dia_semana_numero = ?';
         params.push(dia_semana);
       }
@@ -73,7 +73,7 @@ class CalendarioVisualizacaoController {
       }
 
       // Filtro por feriado
-      if (feriado !== undefined) {
+      if (feriado !== undefined && feriado !== '') {
         whereClause += ' AND feriado = ?';
         params.push(feriado);
       }
