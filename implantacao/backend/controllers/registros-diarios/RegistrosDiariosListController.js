@@ -269,6 +269,22 @@ class RegistrosDiariosListController {
       `, params);
       
       console.log('DEBUG: Registros encontrados:', medias);
+      
+      // Verificar se há registros para essa escola em qualquer período
+      const registrosGerais = await executeQuery(`
+        SELECT 
+          rd.tipo_refeicao,
+          rd.data,
+          rd.valor,
+          COUNT(*) as total_registros
+        FROM registros_diarios rd
+        WHERE rd.ativo = 1 AND rd.escola_id = ?
+        GROUP BY rd.tipo_refeicao, rd.data
+        ORDER BY rd.data DESC
+        LIMIT 10
+      `, [escola_id]);
+      
+      console.log('DEBUG: Registros gerais da escola (últimos 10):', registrosGerais);
 
       // Organizar as médias por tipo
       const tiposPermitidos = ['lanche_manha', 'almoco', 'lanche_tarde', 'parcial', 'eja'];
