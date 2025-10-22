@@ -23,15 +23,13 @@ const CalendarioVisualizacao = () => {
   const [ano, setAno] = useState(new Date().getFullYear());
   const [mes, setMes] = useState(new Date().getMonth() + 1);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
-  const [tipoVisualizacao, setTipoVisualizacao] = useState('mes'); // 'mes' ou 'lista'
+  const [tipoVisualizacao, setTipoVisualizacao] = useState('mes'); // apenas 'mes'
 
   useEffect(() => {
-    if (tipoVisualizacao === 'mes' && ano && mes && mes > 0) {
+    if (ano && mes && mes > 0) {
       carregarPorMes(ano, mes);
-    } else if (tipoVisualizacao === 'lista') {
-      carregarDados();
     }
-  }, [ano, mes, tipoVisualizacao, carregarPorMes, carregarDados]);
+  }, [ano, mes, carregarPorMes]);
 
   const handleAnoChange = (novoAno) => {
     setAno(novoAno);
@@ -43,24 +41,11 @@ const CalendarioVisualizacao = () => {
     atualizarFiltros({ mes: novoMes });
   };
 
-  const handleTipoVisualizacaoChange = (tipo) => {
-    setTipoVisualizacao(tipo);
-  };
-
-  const handleFiltrosChange = (novosFiltros) => {
-    atualizarFiltros(novosFiltros);
-    if (tipoVisualizacao === 'lista') {
-      carregarDados();
-    }
-  };
 
   const handleLimparFiltros = () => {
     limparFiltros();
     setAno(new Date().getFullYear());
     setMes(new Date().getMonth() + 1);
-    if (tipoVisualizacao === 'lista') {
-      carregarDados();
-    }
   };
 
   const gerarAnos = () => {
