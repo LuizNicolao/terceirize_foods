@@ -10,6 +10,9 @@ class CalendarioVisualizacaoController {
    */
   static async listar(req, res) {
     try {
+      console.log('=== CALENDARIO LISTAR ===');
+      console.log('Query params recebidos:', req.query);
+      
       const { 
         ano = new Date().getFullYear(), 
         mes, 
