@@ -239,7 +239,10 @@ export const useNecessidades = () => {
     console.log('dadosExternos:', dadosExternos);
     console.log('dataConsumoFormatada antes do payload:', dataConsumoFormatada);
     
-    const dadosParaEnviar = dadosExternos || {
+    const dadosParaEnviar = dadosExternos ? {
+      ...dadosExternos,
+      semana_consumo: dataConsumoFormatada // Sempre usar data formatada
+    } : {
       escola_id: filtros.escola?.id,
       escola_nome: filtros.escola?.nome_escola || filtros.escola?.nome,
       escola_rota: filtros.escola?.rota || '',
