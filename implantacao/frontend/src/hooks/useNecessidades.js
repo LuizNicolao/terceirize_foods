@@ -133,7 +133,10 @@ export const useNecessidades = () => {
         dataFormatada = data;
       }
       
+      console.log('DEBUG: Chamando calcularMediasPorPeriodo com:', { escolaId, dataFormatada });
       const response = await necessidadesService.calcularMediasPorPeriodo(escolaId, dataFormatada);
+      
+      console.log('DEBUG: Resposta calcularMediasPorPeriodo:', response);
       
       if (response.success) {
         setMediasPeriodo(response.data);
