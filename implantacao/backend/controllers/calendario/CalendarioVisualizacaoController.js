@@ -80,8 +80,13 @@ class CalendarioVisualizacaoController {
 
       // Buscar dados
       const queryParams = [...params, parseInt(limit), parseInt(offset)];
+      console.log('=== DEBUG CALENDARIO ===');
       console.log('Query params:', queryParams);
       console.log('Where clause:', whereClause);
+      console.log('Params length:', params.length);
+      console.log('QueryParams length:', queryParams.length);
+      console.log('Limit:', limit, 'Offset:', offset);
+      console.log('========================');
       
       const dados = await executeQuery(`
         SELECT 
