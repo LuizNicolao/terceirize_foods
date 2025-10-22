@@ -126,8 +126,11 @@ export const useNecessidades = () => {
       // Se a data for uma string da semana (ex: "06/01 a 12/01/25"), converter para data
       if (typeof data === 'string' && data.includes(' a ')) {
         console.log('DEBUG: Data original recebida:', data);
+        // Remover parênteses se existirem
+        const dataLimpa = data.replace(/[()]/g, '');
+        console.log('DEBUG: Data após remover parênteses:', dataLimpa);
         // Extrair a primeira data da string (ex: "06/01" de "06/01 a 12/01/25")
-        const primeiraData = data.split(' a ')[0];
+        const primeiraData = dataLimpa.split(' a ')[0];
         console.log('DEBUG: Primeira data extraída:', primeiraData);
         const [dia, mes] = primeiraData.split('/');
         console.log('DEBUG: Dia e mês extraídos:', { dia, mes });
