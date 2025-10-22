@@ -8,7 +8,14 @@ import api from './api';
 class ProdutoOrigemService {
   async listar(params = {}) {
     try {
+      console.log('🔍 PRODUTO ORIGEM API CALL:', { params });
       const response = await api.get('/produto-origem', { params });
+      console.log('🔍 PRODUTO ORIGEM API RESPONSE:', {
+        success: true,
+        data: response.data.data,
+        pagination: response.data.pagination,
+        statistics: response.data.statistics
+      });
       
       // Extrair dados da estrutura HATEOAS
       let produtosOrigem = [];
@@ -38,6 +45,13 @@ class ProdutoOrigemService {
         statistics = response.data.statistics;
       }
       
+      console.log('🔍 PRODUTO ORIGEM PROCESSED:', {
+        produtosOrigem: produtosOrigem.length,
+        pagination,
+        statistics,
+        responsePagination: response.data.pagination,
+        responseStatistics: response.data.statistics
+      });
       
       return {
         success: true,
