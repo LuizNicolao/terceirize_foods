@@ -99,21 +99,12 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     });
     
     const produtosComCalculos = produtos.map(produto => {
-      // Usar valores reais do banco de dados com os 5 novos tipos
-      const percapitaData = percapitas[produto.id] || {
-        lanche_manha: 0,
-        almoco: 0,
-        lanche_tarde: 0,
-        parcial: 0,
-        eja: 0
-      };
-      
-      // Valores per capita por tipo de refeição (valores reais do banco ou 0)
-      const percapitaLancheManha = Number(percapitaData.lanche_manha) || 0;
-      const percapitaAlmoco = Number(percapitaData.almoco) || 0;
-      const percapitaLancheTarde = Number(percapitaData.lanche_tarde) || 0;
-      const percapitaParcial = Number(percapitaData.parcial) || 0;
-      const percapitaEja = Number(percapitaData.eja) || 0;
+      // Usar valores reais do banco de dados com os 5 novos tipos (diretamente do produto)
+      const percapitaLancheManha = Number(produto.per_capita_lanche_manha) || 0;
+      const percapitaAlmoco = Number(produto.per_capita_almoco) || 0;
+      const percapitaLancheTarde = Number(produto.per_capita_lanche_tarde) || 0;
+      const percapitaParcial = Number(produto.per_capita_parcial) || 0;
+      const percapitaEja = Number(produto.per_capita_eja) || 0;
 
       // Frequências das médias das escolas (número de alunos) - AUTOMÁTICO
       // Usar a estrutura correta das médias com os 5 novos tipos
