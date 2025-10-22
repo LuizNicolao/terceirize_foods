@@ -235,23 +235,16 @@ class RegistrosDiariosListController {
       let dataInicio, dataFim;
       
       if (dataReferencia < dataLimite) {
-        console.log('DEBUG: Data muito antiga, usando data de referência mais recente');
         const dataReferenciaAjustada = new Date('2025-10-16'); // Data dos registros existentes
         const periodoAjustado = calcularPeriodoDiasUteis(dataReferenciaAjustada, 20);
         dataInicio = periodoAjustado.dataInicio;
         dataFim = periodoAjustado.dataFim;
-        console.log('DEBUG: Período ajustado:', { dataInicio, dataFim });
       } else {
         const periodoNormal = calcularPeriodoDiasUteis(dataReferencia, 20);
         dataInicio = periodoNormal.dataInicio;
         dataFim = periodoNormal.dataFim;
-        console.log('DEBUG: Período normal:', { dataInicio, dataFim });
       }
       
-      console.log('DEBUG: Data de referência (semana de consumo):', data);
-      console.log('DEBUG: Data de referência como Date:', dataReferencia);
-      console.log('DEBUG: Período calculado:', { dataInicio, dataFim });
-      console.log('DEBUG: Escola ID:', escola_id);
 
       let whereClause = 'WHERE rd.ativo = 1 AND rd.escola_id = ? AND rd.data >= ? AND rd.data <= ?';
       let params = [escola_id, dataInicio, dataFim];
@@ -263,19 +256,6 @@ class RegistrosDiariosListController {
       }
 
       // Buscar registros dos últimos 20 dias úteis e calcular média
-      console.log('DEBUG: Query SQL:', `
-        SELECT 
-          rd.tipo_refeicao,
-          SUM(rd.valor) as soma_total,
-          COUNT(*) as quantidade_registros,
-          COUNT(DISTINCT rd.data) as dias_com_registro,
-          CEIL(SUM(rd.valor) / COUNT(*)) as media_correta
-        FROM registros_diarios rd
-        ${whereClause}
-        GROUP BY rd.tipo_refeicao
-      `);
-      console.log('DEBUG: Parâmetros:', params);
-      
       const medias = await executeQuery(`
         SELECT 
           rd.tipo_refeicao,
@@ -287,24 +267,6 @@ class RegistrosDiariosListController {
         ${whereClause}
         GROUP BY rd.tipo_refeicao
       `, params);
-      
-      console.log('DEBUG: Registros encontrados:', medias);
-      
-      // Verificar se há registros para essa escola em qualquer período
-      const registrosGerais = await executeQuery(`
-        SELECT 
-          rd.tipo_refeicao,
-          rd.data,
-          SUM(rd.valor) as valor_total,
-          COUNT(*) as total_registros
-        FROM registros_diarios rd
-        WHERE rd.ativo = 1 AND rd.escola_id = ?
-        GROUP BY rd.tipo_refeicao, rd.data
-        ORDER BY rd.data DESC
-        LIMIT 10
-      `, [escola_id]);
-      
-      console.log('DEBUG: Registros gerais da escola (últimos 10):', registrosGerais);
 
       // Organizar as médias por tipo
       const tiposPermitidos = ['lanche_manha', 'almoco', 'lanche_tarde', 'parcial', 'eja'];
