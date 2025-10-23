@@ -21,7 +21,7 @@ const AnaliseNecessidades = () => {
   const [necessidadeSelecionada, setNecessidadeSelecionada] = useState(null);
   const [ajusteForm, setAjusteForm] = useState({
     observacoes: '',
-    status: 'NEC NUTRI'
+    status: 'NEC'
   });
   
   // Hook para gerenciar necessidades
@@ -109,7 +109,7 @@ const AnaliseNecessidades = () => {
 
   // Filtrar necessidades por status
   const necessidadesFiltradas = necessidades.filter(nec => 
-    nec.status === 'NEC NUTRI' || nec.status === 'EM_ANALISE'
+    nec.status === 'NEC' || nec.status === 'EM_ANALISE'
   );
 
   return (
@@ -190,7 +190,7 @@ const AnaliseNecessidades = () => {
                           <span>Gerado em: {new Date(grupo.data_preenchimento).toLocaleString('pt-BR')}</span>
                         </div>
                         <div className="mt-2">
-                          <StatusBadge status={grupo.produtos[0]?.status || 'NEC NUTRI'} />
+                          <StatusBadge status={grupo.produtos[0]?.status || 'NEC'} />
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
@@ -274,7 +274,7 @@ const AnaliseNecessidades = () => {
               Nenhuma necessidade para análise
             </h3>
             <p className="text-gray-600">
-              Não há necessidades com status "NEC NUTRI" ou "EM_ANALISE" para análise.
+              Não há necessidades com status "NEC" ou "EM_ANALISE" para análise.
             </p>
           </div>
         )}
@@ -306,7 +306,7 @@ const AnaliseNecessidades = () => {
               onChange={(e) => setAjusteForm({ ...ajusteForm, status: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="NEC NUTRI">Criada pela Nutricionista</option>
+              <option value="NEC">Criada pela Nutricionista</option>
               <option value="EM_ANALISE">Em Análise</option>
               <option value="APROVADA">Aprovada</option>
               <option value="REJEITADA">Rejeitada</option>

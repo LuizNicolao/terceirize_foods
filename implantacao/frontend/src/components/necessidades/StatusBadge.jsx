@@ -3,7 +3,7 @@ import React from 'react';
 const StatusBadge = ({ status }) => {
   const getStatusConfig = (status) => {
     switch (status) {
-      case 'NEC NUTRI':
+      case 'NEC':
         return {
           label: 'Criada pela Nutricionista',
           className: 'bg-blue-100 text-blue-800',

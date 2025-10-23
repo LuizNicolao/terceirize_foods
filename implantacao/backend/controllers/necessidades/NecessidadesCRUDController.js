@@ -28,7 +28,7 @@ const criar = async (req, res) => {
     // Inserir nova necessidade
     const resultado = await executeQuery(`
       INSERT INTO necessidades (usuario_email, produto, escola, quantidade, tipo_entrega, data_preenchimento, status, observacoes)
-      VALUES (?, ?, ?, ?, ?, NOW(), 'NEC NUTRI', NULL)
+      VALUES (?, ?, ?, ?, ?, NOW(), 'NEC', NULL)
     `, [req.user.email, produto, escola, quantidade, tipo_entrega]);
 
     res.status(201).json({

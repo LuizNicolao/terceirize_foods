@@ -77,7 +77,7 @@ const gerarNecessidade = async (req, res) => {
           ajuste || 0, 
           semana_consumo,
           semana_abastecimento || null,
-          'NEC NUTRI',
+          'NEC',
           null
         ]);
 
