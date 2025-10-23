@@ -25,6 +25,12 @@ export const useNecessidadesMerenda = () => {
     necessidades_ativas: 0
   });
 
+  // Estados de paginação e filtros
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
+
   // Hook de ordenação híbrida
   const {
     sortedData: necessidadesOrdenadas,
@@ -37,12 +43,6 @@ export const useNecessidadesMerenda = () => {
     threshold: 100,
     totalItems: totalItems
   });
-
-  // Estados de paginação e filtros
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
   const [filtros, setFiltros] = useState({
     status: '',
     unidade_escolar_id: '',

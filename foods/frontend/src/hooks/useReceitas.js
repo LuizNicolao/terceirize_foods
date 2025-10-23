@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useValidation } from './common/useValidation';
 import { useExport } from './common/useExport';
 import { useBaseEntity } from './common/useBaseEntity';
+import useTableSort from './common/useTableSort';
 import ReceitasService from '../services/receitas';
 import toast from 'react-hot-toast';
 
