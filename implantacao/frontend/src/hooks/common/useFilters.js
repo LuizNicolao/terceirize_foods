@@ -37,6 +37,7 @@ export const useFilters = (initialFilters = {}, semanaPadrao = '') => {
   const applySearch = useCallback(() => {
     console.log('applySearch chamado com searchTerm:', searchTerm);
     setAppliedSearchTerm(searchTerm);
+    console.log('appliedSearchTerm atualizado para:', searchTerm);
   }, [searchTerm]);
 
   /**
