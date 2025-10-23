@@ -161,7 +161,7 @@ const ProdutoOrigemModal = ({
               <option value="">Selecione uma unidade</option>
               {unidadesMedida.map(unidade => (
                 <option key={unidade.id} value={unidade.id}>
-                  {unidade.nome}
+                  {unidade.sigla}
                 </option>
               ))}
             </Input>
