@@ -178,15 +178,13 @@ const Ajudantes = () => {
       />
 
       {/* Paginação */}
-      {
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-        />
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+      />
 
       {/* Modal de Confirmação de Exclusão */}
       <ConfirmModal
