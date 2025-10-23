@@ -303,7 +303,7 @@ const Necessidades = () => {
                           {produto.produto_nome || produto.produto}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-500">
-                          {produto.unidade_medida}
+                          {produto.produto_unidade}
                         </td>
                         <td className="px-4 py-3 text-center">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
