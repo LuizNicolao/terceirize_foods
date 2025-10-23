@@ -234,8 +234,8 @@ export const useNecessidades = () => {
     }
     
     const dadosParaEnviar = dadosExternos ? {
-      ...dadosExternos,
-      semana_consumo: filtros.data // Usar string da semana original
+      ...dadosExternos
+      // Usar dados externos diretamente, sem modificar semana_consumo
     } : {
       escola_id: filtros.escola?.id,
       escola_nome: filtros.escola?.nome_escola || filtros.escola?.nome,
@@ -250,6 +250,11 @@ export const useNecessidades = () => {
         ajuste: produto.ajuste
       }))
     };
+
+    console.log('DEBUG: dadosExternos recebidos:', dadosExternos);
+    console.log('DEBUG: dadosParaEnviar:', dadosParaEnviar);
+    console.log('DEBUG: escola_id:', dadosParaEnviar.escola_id);
+    console.log('DEBUG: semana_consumo:', dadosParaEnviar.semana_consumo);
 
     // Validação baseada nos dados que serão enviados
     if (!dadosParaEnviar.escola_id || !dadosParaEnviar.semana_consumo) {
