@@ -71,6 +71,19 @@ const ProdutoOrigem = () => {
     handleSort
   } = useProdutoOrigem();
 
+  // Debug logs para verificar dados
+  console.log('🔍 DEBUG DADOS:', {
+    produtosOrigemLength: produtosOrigem?.length || 0,
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    searchTerm,
+    statusFilter,
+    grupoFilter,
+    subgrupoFilter,
+    classeFilter
+  });
 
   const {
     showAuditModal,
