@@ -26,7 +26,7 @@ export const useNecessidades = () => {
   const [filtros, setFiltros] = useState({
     escola: null,
     grupo: null,
-    data: new Date().toISOString().split('T')[0]
+    data: '' // Inicializar vazio para semana de consumo
   });
 
   // Dados da tabela de produtos
