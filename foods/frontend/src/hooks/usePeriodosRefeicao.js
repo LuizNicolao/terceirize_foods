@@ -32,6 +32,10 @@ export const usePeriodosRefeicao = () => {
   const [periodoToDelete, setPeriodoToDelete] = useState(null);
 
   // Estados de filtros e paginação
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(20);
   
   // Hook de ordenação híbrida
   const {
@@ -45,11 +49,6 @@ export const usePeriodosRefeicao = () => {
     threshold: 100,
     totalItems: totalItems || 0
   });
-
-const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
-  const [itemsPerPage, setItemsPerPage] = useState(20);
 
   // Estados de estatísticas
   const [estatisticas, setEstatisticas] = useState({
