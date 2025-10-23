@@ -94,10 +94,10 @@ const NecessidadeModal = ({
               Unidade Escolar *
             </label>
             <SearchableSelect
-              options={unidadesEscolares.map(ue => ({
+              options={Array.isArray(unidadesEscolares) ? unidadesEscolares.map(ue => ({
                 value: ue.id,
                 label: ue.nome_escola
-              }))}
+              })) : []}
               value={watch('unidade_escolar_id')}
               onChange={(value) => setValue('unidade_escolar_id', value)}
               placeholder="Selecione uma unidade escolar"
@@ -113,10 +113,10 @@ const NecessidadeModal = ({
               Produto *
             </label>
             <SearchableSelect
-              options={produtos.map(produto => ({
+              options={Array.isArray(produtos) ? produtos.map(produto => ({
                 value: produto.id,
                 label: produto.nome
-              }))}
+              })) : []}
               value={watch('produto_id')}
               onChange={(value) => setValue('produto_id', value)}
               placeholder="Selecione um produto"
@@ -151,10 +151,10 @@ const NecessidadeModal = ({
               Cardápio *
             </label>
             <SearchableSelect
-              options={cardapios.map(cardapio => ({
+              options={Array.isArray(cardapios) ? cardapios.map(cardapio => ({
                 value: cardapio.id,
                 label: `${cardapio.nome} - ${new Date(cardapio.data_inicio).toLocaleDateString('pt-BR')}`
-              }))}
+              })) : []}
               value={watch('cardapio_id')}
               onChange={(value) => setValue('cardapio_id', value)}
               placeholder="Selecione um cardápio"
