@@ -43,8 +43,6 @@ const ProdutosPerCapitaFilters = ({
    * Lidar com mudança de grupo
    */
   const handleGrupoChange = (grupoId) => {
-    console.log('handleGrupoChange chamado - grupoId:', grupoId);
-    console.log('onGrupoFilterChange:', !!onGrupoFilterChange);
     onGrupoFilterChange(grupoId);
   };
 
@@ -52,9 +50,7 @@ const ProdutosPerCapitaFilters = ({
    * Lidar com pesquisa por Enter
    */
   const handleKeyPress = (e) => {
-    console.log('handleKeyPress - key:', e.key, 'onSearchSubmit:', !!onSearchSubmit);
     if (e.key === 'Enter' && onSearchSubmit) {
-      console.log('Executando pesquisa...');
       onSearchSubmit();
     }
   };

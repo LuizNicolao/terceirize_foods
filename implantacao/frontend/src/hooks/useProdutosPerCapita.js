@@ -267,7 +267,7 @@ export const useProdutosPerCapita = () => {
     validarProdutoPerCapita,
     
     // Função de pesquisa manual
-    applySearch: baseEntity.filters.applySearch,
+    applySearch: baseEntity.applySearch,
     
     // Filtros adicionais
     grupoFilter: baseEntity.filters.filters?.grupo_id || '',
