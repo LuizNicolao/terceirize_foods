@@ -55,6 +55,11 @@ export const useBaseEntity = (entityName, service, options = {}) => {
       const response = await service.listar(params);
 
       if (response.success) {
+        console.log('🔍 BASE ENTITY RESPONSE:', {
+          dataLength: response.data?.length,
+          pagination: response.pagination,
+          statistics: response.statistics
+        });
         setItems(response.data);
         pagination.updatePagination(response.pagination);
         

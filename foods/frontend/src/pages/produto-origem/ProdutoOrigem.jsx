@@ -82,7 +82,8 @@ const ProdutoOrigem = () => {
     statusFilter,
     grupoFilter,
     subgrupoFilter,
-    classeFilter
+    classeFilter,
+    produtosOrigem: produtosOrigem
   });
 
   const {
