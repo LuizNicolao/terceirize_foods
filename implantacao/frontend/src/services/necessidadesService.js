@@ -4,9 +4,6 @@ import FoodsApiService from './FoodsApiService';
 const necessidadesService = {
   // Listar necessidades com filtros
   listar: async (filtros = {}) => {
-    console.log('=== NECESSIDADES SERVICE ===');
-    console.log('Filtros recebidos:', filtros);
-    
     const params = new URLSearchParams();
     
     Object.keys(filtros).forEach(key => {
@@ -18,18 +15,16 @@ const necessidadesService = {
           value = value.nome_escola;
         } else if (key === 'grupo' && typeof value === 'object' && value && value.id) {
           value = value.id;
+        } else if (key === 'data' && typeof value === 'string' && value.includes('(')) {
+          // Remover parênteses da semana de consumo
+          value = value.replace(/[()]/g, '');
         }
         
-        console.log(`Parâmetro ${key}:`, value);
         params.append(key, value);
       }
     });
     
-    const url = `/necessidades?${params.toString()}`;
-    console.log('URL final:', url);
-    console.log('========================');
-    
-    const response = await api.get(url);
+    const response = await api.get(`/necessidades?${params.toString()}`);
     return response.data;
   },
 

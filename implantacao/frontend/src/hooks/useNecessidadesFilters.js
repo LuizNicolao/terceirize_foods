@@ -32,23 +32,15 @@ export const useNecessidadesFilters = () => {
   }, []);
 
   const clearFiltros = useCallback(() => {
-    console.log('=== CLEAR FILTROS ===');
-    const semanaAtual = obterValorPadrao();
-    console.log('Semana atual:', semanaAtual);
-    
-    const novosFiltros = {
+    setFiltros({
       escola: null,
       grupo: null,
       data: '', // Limpar completamente a semana de consumo
       search: '',
       semana_abastecimento: '',
       ativo: true
-    };
-    
-    console.log('Novos filtros:', novosFiltros);
-    setFiltros(novosFiltros);
-    console.log('========================');
-  }, [obterValorPadrao]);
+    });
+  }, []);
 
   const setEscola = useCallback((escola) => {
     setFiltros(prev => ({ ...prev, escola }));
