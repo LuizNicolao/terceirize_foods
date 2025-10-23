@@ -16,8 +16,10 @@ export const calcularSemanaAbastecimento = (dataConsumo) => {
     
     // Se for uma string da semana (ex: "20/10 a 24/10"), converter para data
     if (typeof dataConsumo === 'string' && dataConsumo.includes(' a ')) {
+      // Remover parênteses se existirem
+      const dataLimpa = dataConsumo.replace(/[()]/g, '');
       // Extrair a primeira data da string (ex: "20/10" de "20/10 a 24/10")
-      const primeiraData = dataConsumo.split(' a ')[0];
+      const primeiraData = dataLimpa.split(' a ')[0];
       const [dia, mes] = primeiraData.split('/');
       const ano = new Date().getFullYear();
       data = new Date(`${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`);
