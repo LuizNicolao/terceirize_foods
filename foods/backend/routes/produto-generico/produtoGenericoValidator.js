@@ -152,8 +152,8 @@ const produtoGenericoValidations = {
     
     body('referencia_mercado')
       .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Referência de mercado deve ter entre 1 e 200 caracteres'),
+      .isLength({ max: 200 })
+      .withMessage('Referência de mercado deve ter no máximo 200 caracteres'),
     
     body('produto_padrao')
       .optional()
@@ -182,23 +182,23 @@ const produtoGenericoValidations = {
     
     body('referencia_interna')
       .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Referência interna deve ter entre 1 e 200 caracteres'),
+      .isLength({ max: 200 })
+      .withMessage('Referência interna deve ter no máximo 200 caracteres'),
     
     body('referencia_externa')
       .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Referência externa deve ter entre 1 e 200 caracteres'),
+      .isLength({ max: 200 })
+      .withMessage('Referência externa deve ter no máximo 200 caracteres'),
     
     body('registro_especifico')
       .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Registro específico deve ter entre 1 e 200 caracteres'),
+      .isLength({ max: 200 })
+      .withMessage('Registro específico deve ter no máximo 200 caracteres'),
     
     body('tipo_registro')
       .optional()
-      .isLength({ min: 1, max: 100 })
-      .withMessage('Tipo de registro deve ter entre 1 e 100 caracteres'),
+      .isLength({ max: 100 })
+      .withMessage('Tipo de registro deve ter no máximo 100 caracteres'),
     
     body('prazo_validade_padrao')
       .optional()
@@ -212,8 +212,8 @@ const produtoGenericoValidations = {
     
     body('integracao_senior')
       .optional()
-      .isLength({ min: 1, max: 50 })
-      .withMessage('Integração Senior deve ter entre 1 e 50 caracteres'),
+      .isLength({ max: 50 })
+      .withMessage('Integração Senior deve ter no máximo 50 caracteres'),
     
     body('status')
       .optional()
@@ -271,8 +271,8 @@ const produtoGenericoValidations = {
     
     body('referencia_mercado')
       .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Referência de mercado deve ter entre 1 e 200 caracteres'),
+      .isLength({ max: 200 })
+      .withMessage('Referência de mercado deve ter no máximo 200 caracteres'),
     
     body('produto_padrao')
       .optional()
@@ -301,23 +301,23 @@ const produtoGenericoValidations = {
     
     body('referencia_interna')
       .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Referência interna deve ter entre 1 e 200 caracteres'),
+      .isLength({ max: 200 })
+      .withMessage('Referência interna deve ter no máximo 200 caracteres'),
     
     body('referencia_externa')
       .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Referência externa deve ter entre 1 e 200 caracteres'),
+      .isLength({ max: 200 })
+      .withMessage('Referência externa deve ter no máximo 200 caracteres'),
     
     body('registro_especifico')
       .optional()
-      .isLength({ min: 1, max: 200 })
-      .withMessage('Registro específico deve ter entre 1 e 200 caracteres'),
+      .isLength({ max: 200 })
+      .withMessage('Registro específico deve ter no máximo 200 caracteres'),
     
     body('tipo_registro')
       .optional()
-      .isLength({ min: 1, max: 100 })
-      .withMessage('Tipo de registro deve ter entre 1 e 100 caracteres'),
+      .isLength({ max: 100 })
+      .withMessage('Tipo de registro deve ter no máximo 100 caracteres'),
     
     body('prazo_validade_padrao')
       .optional()
@@ -331,8 +331,8 @@ const produtoGenericoValidations = {
     
     body('integracao_senior')
       .optional()
-      .isLength({ min: 1, max: 50 })
-      .withMessage('Integração Senior deve ter entre 1 e 50 caracteres'),
+      .isLength({ max: 50 })
+      .withMessage('Integração Senior deve ter no máximo 50 caracteres'),
     
     body('status')
       .optional()
