@@ -158,8 +158,7 @@ const Patrimonios = () => {
         loading={loading}
         selectedPatrimonio={selectedPatrimonio}
         onPatrimonioSelect={(patrimonio) => openViewModal(patrimonio)}
-        pagination={
-        <Pagination
+        pagination={{
           currentPage,
           totalPages,
           totalItems,
