@@ -28,8 +28,8 @@ export const usePagination = (initialItemsPerPage = 20) => {
       // A API retorna 'page' não 'currentPage'
       const newPage = paginationData.page || paginationData.currentPage || 1;
       
-      setTotalPages(paginationData.totalPages || 1);
-      setTotalItems(paginationData.totalItems || 0);
+      setTotalPages(paginationData.pages || paginationData.totalPages || 1);
+      setTotalItems(paginationData.total || paginationData.totalItems || 0);
       setCurrentPage(newPage);
       
       console.log('🔍 PAGINATION SET:', {
