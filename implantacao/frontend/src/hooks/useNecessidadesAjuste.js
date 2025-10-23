@@ -50,7 +50,7 @@ export const useNecessidadesAjuste = () => {
   const carregarEscolas = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await escolasService.listarEscolasNutricionista(user.id);
+      const response = await escolasService.listar({}, user);
       if (response.success) {
         setEscolas(response.data);
       } else {
@@ -62,7 +62,7 @@ export const useNecessidadesAjuste = () => {
     } finally {
       setLoading(false);
     }
-  }, [user.id]);
+  }, [user]);
 
   // Carregar grupos de produtos
   const carregarGrupos = useCallback(async () => {
