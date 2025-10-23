@@ -254,10 +254,20 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     const escolaSelecionada = escolas.find(e => e.id === formData.escola_id);
     
     // Formatar semana de consumo para o formato esperado pelo backend (DD/MM a DD/MM)
-    const semanaFormatada = formData.data.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
+    let semanaFormatada = formData.data.replace(/[()]/g, '');
     
-    console.log('Semana original:', formData.data);
-    console.log('Semana formatada:', semanaFormatada);
+    // Se a semana não tem o formato completo (DD/MM a DD/MM), adicionar o mês no final
+    if (semanaFormatada.includes(' a ') && !semanaFormatada.match(/^\d{2}\/\d{2} a \d{2}\/\d{2}$/)) {
+      // Extrair o mês da primeira data e aplicar na segunda
+      const partes = semanaFormatada.split(' a ');
+      if (partes.length === 2) {
+        const primeiraData = partes[0]; // ex: "06/01"
+        const segundaData = partes[1]; // ex: "12"
+        const mes = primeiraData.split('/')[1]; // ex: "01"
+        semanaFormatada = `${primeiraData} a ${segundaData}/${mes}`;
+      }
+    }
+    
     
     // Filtrar apenas produtos com frequência > 0 (que têm pelo menos um período com frequência)
     const produtosComFrequencia = produtosTabela.filter(produto => {
@@ -291,8 +301,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       }))
     };
 
-    // Debug: Log dos dados que serão enviados
-    console.log('Dados para salvar necessidade:', dadosParaSalvar);
     
     
 
