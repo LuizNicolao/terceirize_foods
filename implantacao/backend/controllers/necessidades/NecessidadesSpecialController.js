@@ -52,29 +52,22 @@ const gerarNecessidade = async (req, res) => {
         });
       }
 
-      // Verificar se já existe necessidade para este produto/escola/semana
+      // Verificar se já existe necessidade para esta escola/semana (independente do produto)
       const existing = await executeQuery(`
-        SELECT id FROM necessidades 
-        WHERE usuario_email = ? AND produto_id = ? AND escola_id = ? AND semana_consumo = ?
-      `, [req.user.email, produto_id, escola_id, semana_consumo]);
+        SELECT DISTINCT necessidade_id FROM necessidades 
+        WHERE escola_id = ? AND semana_consumo = ?
+      `, [escola_id, semana_consumo]);
 
       if (existing.length > 0) {
-        // Atualizar necessidade existente
-        await executeQuery(`
-          UPDATE necessidades 
-          SET ajuste = ?, semana_abastecimento = ?, data_atualizacao = CURRENT_TIMESTAMP
-          WHERE id = ?
-        `, [ajuste || 0, semana_abastecimento || null, existing[0].id]);
-        
-        necessidadesCriadas.push({
-          id: existing[0].id,
-          produto: produto_nome,
-          ajuste: ajuste || 0,
-          status: 'atualizada'
+        return res.status(409).json({
+          success: false,
+          error: 'Necessidade já existe',
+          message: `Necessidade para a escola "${escola_nome}" já gerada nessa semana selecionada, permitido realizar alterações na tela de Ajustes de Necessidade`
         });
-      } else {
-        // Criar nova necessidade
-        const result = await executeQuery(`
+      }
+
+      // Criar nova necessidade
+      const result = await executeQuery(`
           INSERT INTO necessidades (
             usuario_email,
             usuario_id,

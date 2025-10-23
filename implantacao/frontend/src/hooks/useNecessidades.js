@@ -277,6 +277,21 @@ export const useNecessidades = () => {
       }
     } catch (err) {
       console.error('Erro ao gerar necessidade:', err);
+      
+      // Tratar erro específico de necessidade já existente
+      if (err.response?.status === 409) {
+        const errorMessage = err.response?.data?.message || 'Necessidade já existe para esta escola nesta semana';
+        toast.error(errorMessage, {
+          duration: 5000, // Mostrar por mais tempo
+          style: {
+            background: '#fef2f2',
+            color: '#dc2626',
+            border: '1px solid #fecaca'
+          }
+        });
+        return { success: false, error: errorMessage, conflict: true };
+      }
+      
       const errorMessage = err.response?.data?.message || 'Erro ao gerar necessidade';
       toast.error(errorMessage);
       return { success: false, error: errorMessage };
