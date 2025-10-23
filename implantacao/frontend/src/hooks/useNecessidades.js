@@ -377,10 +377,10 @@ export const useNecessidades = () => {
         'Código e nome da Escola': `${necessidade.codigo_teknisa || ''} - ${necessidade.escola}`,
         'ID Necessidade': necessidade.id,
         'Semana Abastecimento': necessidade.semana_abastecimento || '',
-        'Semana de Consumo': formatarDataParaExibicao(necessidade.data_consumo),
+        'Semana de Consumo': necessidade.semana_consumo || '',
         'Código Produto': necessidade.produto_id || '',
         'Produto': necessidade.produto,
-        'UN': necessidade.unidade_medida || '',
+        'UN': necessidade.produto_unidade || '',
         'Quantidade': necessidade.ajuste
       }));
 
@@ -512,10 +512,10 @@ export const useNecessidades = () => {
           `${necessidade.codigo_teknisa || ''} - ${necessidade.escola}`,
           necessidade.id.toString(),
           necessidade.semana_abastecimento || '',
-          formatarDataParaExibicao(necessidade.data_consumo),
+          necessidade.semana_consumo || '',
           necessidade.produto_id?.toString() || '',
           necessidade.produto,
-          necessidade.unidade_medida || '',
+          necessidade.produto_unidade || '',
           necessidade.ajuste.toString()
         ];
 
