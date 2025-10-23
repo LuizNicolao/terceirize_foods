@@ -256,6 +256,10 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     // Formatar semana de consumo para o formato esperado pelo backend (DD/MM a DD/MM)
     const semanaFormatada = formData.data.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
     
+    console.log('DEBUG: Semana original formData.data:', formData.data);
+    console.log('DEBUG: Semana formatada:', semanaFormatada);
+    console.log('DEBUG: Tipo da semana formatada:', typeof semanaFormatada);
+    
     const dadosParaSalvar = {
       escola_id: Number(formData.escola_id), // Garantir que seja número
       escola_nome: escolaSelecionada?.nome_escola || '',
