@@ -1,6 +1,7 @@
 import React from 'react';
-import { FaFileExcel, FaFilePdf, FaPlus } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
 import { Button } from '../ui';
+import { ExportButtons } from '../shared';
 
 const NecessidadesActions = ({ 
   canCreate = false,
@@ -11,45 +12,42 @@ const NecessidadesActions = ({
   loading = false 
 }) => {
   return (
-    <div className="flex justify-end gap-2">
-      {canExport && (
-        <>
-          <Button
-            onClick={onExportXLSX}
-            variant="secondary"
-            size="sm"
-            disabled={loading}
-          >
-            <FaFileExcel className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Exportar XLSX</span>
-            <span className="sm:hidden">XLSX</span>
-          </Button>
-          
-          <Button
-            onClick={onExportPDF}
-            variant="secondary"
-            size="sm"
-            disabled={loading}
-          >
-            <FaFilePdf className="mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Exportar PDF</span>
-            <span className="sm:hidden">PDF</span>
-          </Button>
-        </>
-      )}
+    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
+      <div className="flex items-center gap-2">
+        <h2 className="text-lg font-semibold text-gray-800">
+          Necessidades
+        </h2>
+        {loading && (
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+        )}
+      </div>
       
-      {canCreate && (
-        <Button
-          onClick={onAdd}
-          variant="primary"
-          size="sm"
-          disabled={loading}
-        >
-          <FaPlus className="mr-1 sm:mr-2" />
-          <span className="hidden sm:inline">Gerar Necessidade</span>
-          <span className="sm:hidden">Gerar</span>
-        </Button>
-      )}
+      <div className="flex flex-col sm:flex-row gap-2">
+        {canExport && (
+          <ExportButtons
+            onExportXLSX={onExportXLSX}
+            onExportPDF={onExportPDF}
+            size="sm"
+            variant="outline"
+            showLabels={true}
+            disabled={loading}
+          />
+        )}
+        
+        {canCreate && (
+          <Button
+            onClick={onAdd}
+            variant="primary"
+            size="sm"
+            disabled={loading}
+            className="flex items-center gap-2"
+          >
+            <FaPlus className="w-4 h-4" />
+            <span className="hidden sm:inline">Gerar Necessidade</span>
+            <span className="sm:hidden">Gerar</span>
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
