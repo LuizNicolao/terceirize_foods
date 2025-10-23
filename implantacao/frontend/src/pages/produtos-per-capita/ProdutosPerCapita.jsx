@@ -53,6 +53,7 @@ const ProdutosPerCapita = () => {
     handleItemsPerPageChange,
     setSearchTerm,
     setStatusFilter,
+    applySearch,
     formatarPerCapita,
     formatarPeriodo,
     obterPeriodosComPerCapita,
@@ -121,10 +122,7 @@ const ProdutosPerCapita = () => {
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
         onClear={() => setSearchTerm('')}
-        onSearchSubmit={() => {
-          // A pesquisa já é executada automaticamente pelo useBaseEntity
-          // quando searchTerm muda, mas podemos adicionar lógica adicional aqui se necessário
-        }}
+        onSearchSubmit={applySearch}
         placeholder="Buscar por nome do produto..."
       />
 

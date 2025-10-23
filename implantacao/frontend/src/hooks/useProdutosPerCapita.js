@@ -263,6 +263,9 @@ export const useProdutosPerCapita = () => {
     formatarPerCapita,
     formatarPeriodo,
     obterPeriodosComPerCapita,
-    validarProdutoPerCapita
+    validarProdutoPerCapita,
+    
+    // Função de pesquisa manual
+    applySearch: baseEntity.filters.applySearch
   };
 };

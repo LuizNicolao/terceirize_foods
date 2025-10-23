@@ -7,6 +7,7 @@ import { useState, useCallback, useEffect } from 'react';
 
 export const useFilters = (initialFilters = {}, semanaPadrao = '') => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [appliedSearchTerm, setAppliedSearchTerm] = useState(''); // Termo aplicado na busca
   const [semanaAbastecimento, setSemanaAbastecimento] = useState(semanaPadrao);
   const [filters, setFilters] = useState(initialFilters);
 
@@ -31,10 +32,18 @@ export const useFilters = (initialFilters = {}, semanaPadrao = '') => {
   }, []);
 
   /**
+   * Aplica o termo de busca (chamado quando pressiona Enter)
+   */
+  const applySearch = useCallback(() => {
+    setAppliedSearchTerm(searchTerm);
+  }, [searchTerm]);
+
+  /**
    * Limpa todos os filtros
    */
   const clearFilters = useCallback(() => {
     setSearchTerm('');
+    setAppliedSearchTerm('');
     setSemanaAbastecimento('');
     setFilters(initialFilters);
   }, [initialFilters]);
@@ -51,7 +60,7 @@ export const useFilters = (initialFilters = {}, semanaPadrao = '') => {
    */
   const getFilterParams = useCallback(() => {
     const params = {
-      search: searchTerm || undefined,
+      search: appliedSearchTerm || undefined,
       semana_abastecimento: semanaAbastecimento || undefined
     };
 
@@ -66,20 +75,21 @@ export const useFilters = (initialFilters = {}, semanaPadrao = '') => {
     return Object.fromEntries(
       Object.entries(params).filter(([_, value]) => value !== undefined)
     );
-  }, [searchTerm, semanaAbastecimento, filters]);
+  }, [appliedSearchTerm, semanaAbastecimento, filters]);
 
   /**
    * Verifica se há filtros ativos
    */
   const hasActiveFilters = useCallback(() => {
-    return searchTerm !== '' || 
+    return appliedSearchTerm !== '' || 
            semanaAbastecimento !== '' || 
            Object.values(filters).some(value => value && value !== 'todos' && value !== '');
-  }, [searchTerm, semanaAbastecimento, filters]);
+  }, [appliedSearchTerm, semanaAbastecimento, filters]);
 
   return {
     // Estados básicos
     searchTerm,
+    appliedSearchTerm,
     semanaAbastecimento,
     filters,
     
@@ -93,6 +103,7 @@ export const useFilters = (initialFilters = {}, semanaPadrao = '') => {
     updateFilters,
     clearFilters,
     clearCustomFilters,
+    applySearch,
     getFilterParams,
     hasActiveFilters
   };
