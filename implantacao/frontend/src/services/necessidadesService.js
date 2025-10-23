@@ -52,6 +52,10 @@ const necessidadesService = {
   // Gerar necessidade (nova funcionalidade)
   gerarNecessidade: async (dados) => {
     try {
+      console.log('DEBUG: Dados sendo enviados no serviço:', JSON.stringify(dados, null, 2));
+      console.log('DEBUG: Semana consumo no serviço:', dados.semana_consumo);
+      console.log('DEBUG: Tipo da semana no serviço:', typeof dados.semana_consumo);
+      
       const response = await api.post('/necessidades/gerar', dados);
       return response.data;
     } catch (error) {
