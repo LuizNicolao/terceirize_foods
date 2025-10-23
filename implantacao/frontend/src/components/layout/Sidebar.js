@@ -25,7 +25,8 @@ import {
   FaClipboardCheck,
   FaCalendarCheck,
   FaCalculator,
-  FaCalendarAlt
+  FaCalendarAlt,
+  FaEdit
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
