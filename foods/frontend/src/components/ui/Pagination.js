@@ -9,14 +9,6 @@ const Pagination = ({
   itemsPerPage,
   onItemsPerPageChange
 }) => {
-  console.log('🔍 PAGINATION DEBUG:', {
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
-    onItemsPerPageChange: !!onItemsPerPageChange,
-    willShowSelector: !!onItemsPerPageChange
-  });
 
   const startItem = (currentPage - 1) * itemsPerPage + 1;
   const endItem = Math.min(currentPage * itemsPerPage, totalItems);
