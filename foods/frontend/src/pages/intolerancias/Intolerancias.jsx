@@ -168,7 +168,7 @@ const Intolerancias = () => {
       />
 
       {/* Paginação */}
-      {totalPages > 1 && (
+      {
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}

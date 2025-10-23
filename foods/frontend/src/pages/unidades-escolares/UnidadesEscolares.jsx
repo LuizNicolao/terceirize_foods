@@ -216,17 +216,15 @@ const UnidadesEscolares = () => {
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
       />
 
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
-        />
-      )}
+      {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
 
       {/* Modal de Erros de Validação */}
       <ValidationErrorModal

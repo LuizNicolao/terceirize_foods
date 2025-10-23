@@ -160,7 +160,7 @@ const RotasNutricionistas = () => {
       </div>
 
       {/* Paginação */}
-      {totalPages > 1 && (
+      {
         <div className="mt-6">
           <Pagination
             currentPage={currentPage}

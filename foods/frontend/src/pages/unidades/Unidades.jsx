@@ -171,16 +171,15 @@ const Unidades = () => {
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
       />
 
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-        />
-      )}
+      {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+      />
 
       {/* Modal de Confirmação de Exclusão */}
       <ConfirmModal

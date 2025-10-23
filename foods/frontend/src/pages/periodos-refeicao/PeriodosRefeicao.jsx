@@ -170,7 +170,7 @@ const PeriodosRefeicao = () => {
       </div>
 
       {/* Paginação */}
-      {totalPages > 1 && (
+      {
         <div className="mt-4 sm:mt-6">
           <Pagination
             currentPage={currentPage}

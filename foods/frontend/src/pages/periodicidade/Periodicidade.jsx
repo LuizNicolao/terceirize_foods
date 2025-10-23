@@ -143,7 +143,7 @@ const Periodicidade = () => {
       />
 
       {/* Paginação */}
-      {totalPages > 1 && (
+      {
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
