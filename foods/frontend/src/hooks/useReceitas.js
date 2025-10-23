@@ -323,7 +323,7 @@ export const useReceitas = () => {
   return {
     // Estados
     receitas: isSortingLocally ? receitasOrdenadas : receitas,
-    loading,
+    loading: baseEntity.loading,
     saving,
     showModal,
     
