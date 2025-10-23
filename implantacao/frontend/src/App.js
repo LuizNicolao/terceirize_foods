@@ -21,6 +21,7 @@ import RecebimentosEscolas from './pages/recebimentos-escolas/RecebimentosEscola
 import ProdutosPerCapita from './pages/produtos-per-capita/ProdutosPerCapita';
 import RegistrosDiarios from './pages/registros-diarios/RegistrosDiarios';
 import Necessidades from './pages/necessidades/Necessidades';
+import AjusteNecessidades from './pages/necessidades/AjusteNecessidades';
 import CalendarioDashboard from './pages/calendario/CalendarioDashboard';
 import CalendarioVisualizacao from './pages/calendario/CalendarioVisualizacao';
 import CalendarioConfiguracao from './pages/calendario/CalendarioConfiguracao';
@@ -205,6 +206,15 @@ function App() {
                 element={
                   <AuthenticatedRoute>
                     <Necessidades />
+                  </AuthenticatedRoute>
+                } 
+              />
+
+              <Route 
+                path="/necessidades/ajuste" 
+                element={
+                  <AuthenticatedRoute>
+                    <AjusteNecessidades />
                   </AuthenticatedRoute>
                 } 
               />

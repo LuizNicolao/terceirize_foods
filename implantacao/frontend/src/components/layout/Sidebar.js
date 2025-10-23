@@ -55,6 +55,7 @@ const menuGroups = [
               { path: '/recebimentos-escolas', icon: FaClipboardCheck, label: 'Recebimentos Escolas', screen: 'recebimentos_escolas' },
               { path: '/registros-diarios', icon: FaCalendarCheck, label: 'Quantidade Servida', screen: 'registros_diarios' },
               { path: '/necessidades', icon: FaCalculator, label: 'Gerar Necessidades', screen: 'necessidades' },
+              { path: '/necessidades/ajuste', icon: FaEdit, label: 'Ajustar Necessidades', screen: 'necessidades' },
             ]
           },
           {
