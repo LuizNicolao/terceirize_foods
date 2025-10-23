@@ -259,7 +259,7 @@ export const useNecessidades = () => {
     }
 
     if (!dadosParaEnviar.produtos || dadosParaEnviar.produtos.length === 0) {
-      toast.error('Nenhum produto selecionado');
+      toast.error('Nenhum produto com frequência preenchida encontrado');
       return { success: false };
     }
 

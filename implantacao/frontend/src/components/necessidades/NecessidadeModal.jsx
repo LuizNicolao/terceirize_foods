@@ -256,6 +256,23 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     // Formatar semana de consumo para o formato esperado pelo backend (DD/MM a DD/MM)
     const semanaFormatada = formData.data.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
     
+    // Filtrar apenas produtos com frequência > 0 (que têm pelo menos um período com frequência)
+    const produtosComFrequencia = produtosTabela.filter(produto => {
+      const temFrequencia = 
+        (produto.frequencia_lanche_manha && produto.frequencia_lanche_manha > 0) ||
+        (produto.frequencia_almoco && produto.frequencia_almoco > 0) ||
+        (produto.frequencia_lanche_tarde && produto.frequencia_lanche_tarde > 0) ||
+        (produto.frequencia_parcial && produto.frequencia_parcial > 0) ||
+        (produto.frequencia_eja && produto.frequencia_eja > 0);
+      
+      return temFrequencia;
+    });
+
+    if (produtosComFrequencia.length === 0) {
+      toast.error('Preencha a frequência de pelo menos um produto antes de gerar a necessidade');
+      return;
+    }
+
     const dadosParaSalvar = {
       escola_id: Number(formData.escola_id), // Garantir que seja número
       escola_nome: escolaSelecionada?.nome_escola || '',
@@ -263,11 +280,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       escola_codigo_teknisa: escolaSelecionada?.codigo_teknisa || '',
       semana_consumo: semanaFormatada,
       semana_abastecimento: calcularSemanaAbastecimento(formData.data),
-      produtos: produtosTabela.map(produto => ({
+      produtos: produtosComFrequencia.map(produto => ({
         produto_id: Number(produto.id), // Garantir que seja número
         produto_nome: produto.nome,
         produto_unidade: produto.unidade_medida,
-        ajuste: Number(produto.ajuste) || 0 // Garantir que seja número
+        ajuste: Number(produto.total) || 0 // Usar o total calculado como ajuste
       }))
     };
     
