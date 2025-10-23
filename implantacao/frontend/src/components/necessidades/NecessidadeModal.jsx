@@ -287,6 +287,9 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         ajuste: Number(produto.total) || 0 // Usar o total calculado como ajuste
       }))
     };
+
+    // Debug: Log dos dados que serão enviados
+    console.log('Dados para salvar necessidade:', dadosParaSalvar);
     
     
 
