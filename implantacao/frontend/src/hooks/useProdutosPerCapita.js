@@ -272,9 +272,9 @@ export const useProdutosPerCapita = () => {
     applySearch: baseEntity.filters.applySearch,
     
     // Filtros adicionais
-    grupoFilter: baseEntity.filters.filters.grupo_id,
-    subgrupoFilter: baseEntity.filters.filters.subgrupo_id,
-    classeFilter: baseEntity.filters.filters.classe_id,
+    grupoFilter: baseEntity.filters.filters?.grupo_id || '',
+    subgrupoFilter: baseEntity.filters.filters?.subgrupo_id || '',
+    classeFilter: baseEntity.filters.filters?.classe_id || '',
     setGrupoFilter: (value) => baseEntity.filters.updateFilter('grupo_id', value),
     setSubgrupoFilter: (value) => baseEntity.filters.updateFilter('subgrupo_id', value),
     setClasseFilter: (value) => baseEntity.filters.updateFilter('classe_id', value)
