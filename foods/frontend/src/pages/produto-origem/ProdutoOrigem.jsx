@@ -73,12 +73,13 @@ const ProdutoOrigem = () => {
 
   // Debug logs para paginação
   console.log('🔍 DEBUG PAGINAÇÃO VARIÁVEIS:', {
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
+    currentPage: currentPage,
+    totalPages: totalPages,
+    totalItems: totalItems,
+    itemsPerPage: itemsPerPage,
     handlePageChange: !!handlePageChange,
-    handleItemsPerPageChange: !!handleItemsPerPageChange
+    handleItemsPerPageChange: !!handleItemsPerPageChange,
+    handleItemsPerPageChangeType: typeof handleItemsPerPageChange
   });
 
   const {
@@ -229,14 +230,15 @@ const ProdutoOrigem = () => {
 
       {/* Paginação */}
       {console.log('🔍 DEBUG PAGINAÇÃO FINAL:', {
-        currentPage,
-        totalPages,
-        totalItems,
-        itemsPerPage,
+        currentPage: currentPage,
+        totalPages: totalPages,
+        totalItems: totalItems,
+        itemsPerPage: itemsPerPage,
         shouldShow: totalPages > 1,
         hasHandlePageChange: !!handlePageChange,
         hasHandleItemsPerPageChange: !!handleItemsPerPageChange,
-        handleItemsPerPageChangeType: typeof handleItemsPerPageChange
+        handleItemsPerPageChangeType: typeof handleItemsPerPageChange,
+        handleItemsPerPageChangeValue: handleItemsPerPageChange
       })}
       {totalPages > 1 && (
         <Pagination
