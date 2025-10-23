@@ -455,7 +455,7 @@ const ProdutoGenericoModal = ({
               <select
                 {...register('unidade_validade')}
                 disabled={viewMode}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               >
                 <option value="">Selecione</option>
                 <option value="Dias">Dias</option>
