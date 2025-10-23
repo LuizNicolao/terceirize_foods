@@ -27,6 +27,7 @@ const Receitas = () => {
     saving,
     showModal,
     showPreviewModal,
+    showUploadModal,
     editingReceita,
     viewMode,
     currentPage,
