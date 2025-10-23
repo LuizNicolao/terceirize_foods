@@ -248,7 +248,7 @@ class NecessidadesMerendaService {
   // Buscar cardápios para seleção
   static async buscarCardapios(params = {}) {
     try {
-      const response = await api.get('/cardapios-gerados', { params });
+      const response = await api.get('/tipos-cardapio', { params });
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar cardápios:', error);

@@ -132,10 +132,10 @@ const NecessidadeModal = ({
               Receita *
             </label>
             <SearchableSelect
-              options={receitas.map(receita => ({
+              options={Array.isArray(receitas) ? receitas.map(receita => ({
                 value: receita.id,
                 label: receita.nome || receita.codigo
-              }))}
+              })) : []}
               value={watch('receita_id')}
               onChange={(value) => setValue('receita_id', value)}
               placeholder="Selecione uma receita"
