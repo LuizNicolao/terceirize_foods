@@ -51,7 +51,8 @@ const Pagination = ({
     return pages;
   };
 
-  if (totalPages <= 1) return null;
+  // Sempre renderizar para permitir mudança de itens por página
+  // if (totalPages <= 1) return null;
 
   return (
     <div className="flex justify-center items-center gap-2 mt-6 p-4">
