@@ -55,8 +55,29 @@ export const useBaseEntity = (entityName, service, options = {}) => {
       const response = await service.listar(params);
 
       if (response.success) {
-        setItems(response.data);
-        pagination.updatePagination(response.pagination);
+        // Lidar com diferentes estruturas de resposta
+        let items = [];
+        let paginationData = response.pagination;
+        
+        if (Array.isArray(response.data)) {
+          // Estrutura simples: response.data é um array
+          items = response.data;
+        } else if (response.data && Array.isArray(response.data[entityName])) {
+          // Estrutura aninhada: response.data.{entityName} é um array
+          items = response.data[entityName];
+        } else if (response.data && Array.isArray(response.data.receitas)) {
+          // Estrutura específica para receitas
+          items = response.data.receitas;
+          paginationData = {
+            page: response.data.totalPages || 1,
+            limit: response.data.totalItems || 0,
+            total: response.data.totalItems || 0,
+            pages: response.data.totalPages || 1
+          };
+        }
+        
+        setItems(items);
+        pagination.updatePagination(paginationData);
         
         // Atualizar estatísticas se habilitado
         if (enableStats) {
@@ -67,7 +88,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
               ativos: response.statistics.ativos || 0,
               inativos: response.statistics.inativos || 0
             });
-          } else if (response.data) {
+          } else if (response.data && Array.isArray(response.data)) {
             // Fallback: calcular localmente apenas se backend não enviar
             const total = response.pagination?.totalItems || response.data.length;
             const ativos = response.data.filter(item => item.status === 1).length;
