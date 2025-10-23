@@ -161,12 +161,12 @@ const Necessidades = () => {
             {(() => {
               // Agrupar necessidades por escola e data
               const agrupadas = necessidades.reduce((acc, necessidade) => {
-                const chave = `${necessidade.nome_escola || necessidade.escola}-${necessidade.data_consumo}`;
+                const chave = `${necessidade.escola}-${necessidade.semana_consumo}`;
                 if (!acc[chave]) {
                   acc[chave] = {
-                    escola: necessidade.nome_escola || necessidade.escola,
-                    rota: necessidade.rota,
-                    data_consumo: necessidade.data_consumo,
+                    escola: necessidade.escola,
+                    rota: necessidade.escola_rota,
+                    data_consumo: necessidade.semana_consumo,
                     data_preenchimento: necessidade.data_preenchimento,
                     produtos: []
                   };
