@@ -80,37 +80,7 @@ export const useReceitas = () => {
     }
   };
 
-  // Carregar receitas
-  const loadReceitas = useCallback(async () => {
-    try {
-      const params = {
-        page: baseEntity.currentPage,
-        limit: baseEntity.itemsPerPage,
-        search: baseEntity.searchTerm,
-        ...filtros
-      };
-
-      const response = await ReceitasService.listar(params);
-      
-      if (response.success) {
-        baseEntity.setItems(response.data.receitas || []);
-        baseEntity.setTotalPages(response.data.totalPages || 1);
-        baseEntity.setTotalItems(response.data.totalItems || 0);
-        setEstatisticas(response.data.estatisticas || {});
-      } else {
-        console.error('Erro ao carregar receitas:', response.error);
-        toast.error(response.error || 'Erro ao carregar receitas');
-      }
-    } catch (error) {
-      console.error('Erro ao carregar receitas:', error);
-      toast.error('Erro ao carregar receitas');
-    }
-  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, filtros]);
-
-  // Carregar dados quando os parâmetros mudarem
-  useEffect(() => {
-    loadReceitas();
-  }, [loadReceitas]);
+  // O baseEntity já gerencia o carregamento automático dos dados
 
   // Função para submeter formulário
   const onSubmit = async (data) => {
@@ -127,7 +97,7 @@ export const useReceitas = () => {
       if (response.success) {
         toast.success(response.message || 'Cardápio salvo com sucesso!');
         handleCloseModal();
-        loadReceitas();
+        baseEntity.loadData();
       } else {
         handleApiResponse(response);
       }
@@ -293,7 +263,7 @@ export const useReceitas = () => {
       
       if (response.success) {
         toast.success('Cardápio excluído com sucesso!');
-        loadReceitas();
+        baseEntity.loadData();
       } else {
         toast.error(response.error || 'Erro ao excluir receita');
       }
@@ -352,7 +322,6 @@ export const useReceitas = () => {
     estatisticas,
 
     // Funções
-    loadReceitas,
     onSubmit,
     handleDeleteReceita,
     confirmDeleteReceita,
