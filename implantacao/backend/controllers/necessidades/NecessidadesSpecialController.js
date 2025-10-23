@@ -5,23 +5,30 @@ const gerarNecessidade = async (req, res) => {
     const { escola_id, escola_nome, escola_rota, escola_codigo_teknisa, semana_consumo, semana_abastecimento, produtos } = req.body;
 
     // Debug: Log dos dados recebidos
-    console.log('Dados recebidos para gerar necessidade:', {
-      escola_id,
-      escola_nome,
-      semana_consumo,
-      produtos_count: produtos ? produtos.length : 0,
-      produtos: produtos
-    });
+    console.log('=== DADOS RECEBIDOS PARA GERAR NECESSIDADE ===');
+    console.log('escola_id:', escola_id, typeof escola_id);
+    console.log('escola_nome:', escola_nome, typeof escola_nome);
+    console.log('semana_consumo:', semana_consumo, typeof semana_consumo);
+    console.log('produtos:', produtos);
+    console.log('produtos é array?', Array.isArray(produtos));
+    console.log('produtos.length:', produtos ? produtos.length : 'null/undefined');
+    console.log('===============================================');
 
     // Validar dados obrigatórios
+    console.log('=== VALIDAÇÃO DOS DADOS ===');
+    console.log('escola_id válido?', !!escola_id, escola_id);
+    console.log('escola_nome válido?', !!escola_nome, escola_nome);
+    console.log('semana_consumo válido?', !!semana_consumo, semana_consumo);
+    console.log('produtos válido?', !!produtos, produtos);
+    console.log('produtos é array?', Array.isArray(produtos));
+    
     if (!escola_id || !escola_nome || !semana_consumo || !produtos || !Array.isArray(produtos)) {
-      console.log('Erro de validação - dados faltando:', {
-        escola_id: !!escola_id,
-        escola_nome: !!escola_nome,
-        semana_consumo: !!semana_consumo,
-        produtos: !!produtos,
-        isArray: Array.isArray(produtos)
-      });
+      console.log('❌ ERRO DE VALIDAÇÃO - DADOS FALTANDO');
+      console.log('escola_id:', escola_id, 'válido:', !!escola_id);
+      console.log('escola_nome:', escola_nome, 'válido:', !!escola_nome);
+      console.log('semana_consumo:', semana_consumo, 'válido:', !!semana_consumo);
+      console.log('produtos:', produtos, 'válido:', !!produtos);
+      console.log('produtos é array:', Array.isArray(produtos));
       
       return res.status(400).json({
         success: false,
@@ -29,6 +36,8 @@ const gerarNecessidade = async (req, res) => {
         message: 'Escola (id e nome), semana de consumo e produtos são obrigatórios'
       });
     }
+    
+    console.log('✅ VALIDAÇÃO PASSOU - DADOS VÁLIDOS');
 
     // Validar se há produtos válidos
     if (produtos.length === 0) {
@@ -46,14 +55,28 @@ const gerarNecessidade = async (req, res) => {
     // Inserir necessidades para cada produto
     const necessidadesCriadas = [];
     
-    for (const produto of produtos) {
+    console.log('=== PROCESSANDO PRODUTOS ===');
+    console.log('Total de produtos a processar:', produtos.length);
+    
+    for (let i = 0; i < produtos.length; i++) {
+      const produto = produtos[i];
+      console.log(`--- Processando produto ${i + 1}/${produtos.length} ---`);
+      console.log('Produto completo:', produto);
+      
       const { produto_id, produto_nome, produto_unidade, ajuste } = produto;
+      
+      console.log('produto_id:', produto_id, typeof produto_id);
+      console.log('produto_nome:', produto_nome, typeof produto_nome);
+      console.log('produto_unidade:', produto_unidade, typeof produto_unidade);
+      console.log('ajuste:', ajuste, typeof ajuste);
 
       // Validar dados do produto
       if (!produto_id || !produto_nome) {
-        console.log('Produto sem dados completos:', produto);
+        console.log('❌ Produto sem dados completos:', produto);
         continue; // Pular produto sem dados completos
       }
+      
+      console.log('✅ Produto válido, processando...');
 
       // Verificar se já existe necessidade para este produto/escola/semana
       const existing = await executeQuery(`
