@@ -374,7 +374,8 @@ export const useNecessidades = () => {
     try {
       // Preparar dados para exportação
       const dadosExportacao = necessidades.map(necessidade => ({
-        'Código e nome da Escola': `${necessidade.codigo_teknisa || ''} - ${necessidade.escola}`,
+        'Código Escola': necessidade.codigo_teknisa || '',
+        'Nome da Escola': necessidade.escola,
         'ID Necessidade': necessidade.id,
         'Semana Abastecimento': necessidade.semana_abastecimento || '',
         'Semana de Consumo': necessidade.semana_consumo || '',
@@ -390,7 +391,8 @@ export const useNecessidades = () => {
 
       // Ajustar largura das colunas
       const colWidths = [
-        { wch: 30 }, // Código e nome da Escola
+        { wch: 15 }, // Código Escola
+        { wch: 35 }, // Nome da Escola
         { wch: 15 }, // ID Necessidade
         { wch: 20 }, // Semana Abastecimento
         { wch: 15 }, // Semana de Consumo
