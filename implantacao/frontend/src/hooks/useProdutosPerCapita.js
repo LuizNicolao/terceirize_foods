@@ -275,8 +275,8 @@ export const useProdutosPerCapita = () => {
     grupoFilter: baseEntity.filters.filters?.grupo_id || '',
     subgrupoFilter: baseEntity.filters.filters?.subgrupo_id || '',
     classeFilter: baseEntity.filters.filters?.classe_id || '',
-    setGrupoFilter: (value) => baseEntity.filters.updateFilter('grupo_id', value),
-    setSubgrupoFilter: (value) => baseEntity.filters.updateFilter('subgrupo_id', value),
-    setClasseFilter: (value) => baseEntity.filters.updateFilter('classe_id', value)
+    setGrupoFilter: (value) => baseEntity.updateFilter('grupo_id', value),
+    setSubgrupoFilter: (value) => baseEntity.updateFilter('subgrupo_id', value),
+    setClasseFilter: (value) => baseEntity.updateFilter('classe_id', value)
   };
 };
