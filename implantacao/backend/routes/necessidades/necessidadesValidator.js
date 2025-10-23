@@ -52,8 +52,8 @@ const gerarNecessidadeSchema = yup.object().shape({
           .optional(),
         
         ajuste: yup.number()
-          .min(0, 'Ajuste não pode ser negativo')
-          .required('Ajuste é obrigatório')
+          .min(0.01, 'Ajuste deve ser maior que 0')
+          .required('Ajuste (PEDIDO) é obrigatório')
       })
     )
     .min(1, 'Pelo menos um produto deve ser informado')
@@ -65,10 +65,7 @@ const atualizarNecessidadeSchema = yup.object().shape({
   produto: yup.string(),
   escola: yup.string(),
   quantidade: yup.number().positive('Quantidade deve ser positiva'),
-  tipo_entrega: yup.string(),
-  status: yup.string(),
-  observacoes: yup.string(),
-  pedido: yup.string().nullable()
+  tipo_entrega: yup.string()
 }).test(
   'at-least-one-field',
   'Pelo menos um campo deve ser informado para atualização',

@@ -36,6 +36,15 @@ const gerarNecessidade = async (req, res) => {
         continue; // Pular produto sem dados completos
       }
 
+      // Validar se o ajuste (PEDIDO) foi preenchido
+      if (!ajuste || ajuste <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Ajuste obrigatório',
+          message: `O produto "${produto_nome}" deve ter um ajuste (PEDIDO) maior que 0`
+        });
+      }
+
       // Verificar se já existe necessidade para este produto/escola/semana
       const existing = await executeQuery(`
         SELECT id FROM necessidades 
@@ -74,9 +83,8 @@ const gerarNecessidade = async (req, res) => {
             semana_abastecimento,
             status,
             observacoes,
-            necessidade_id,
-            pedido
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            necessidade_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           req.user.email,
           req.user.id,
@@ -92,8 +100,7 @@ const gerarNecessidade = async (req, res) => {
           semana_abastecimento || null,
           'NEC',
           null,
-          necessidadeId,
-          null // PEDIDO será preenchido posteriormente
+          necessidadeId
         ]);
 
         necessidadesCriadas.push({
