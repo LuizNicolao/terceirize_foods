@@ -4,6 +4,9 @@ import FoodsApiService from './FoodsApiService';
 const necessidadesService = {
   // Listar necessidades com filtros
   listar: async (filtros = {}) => {
+    console.log('=== NECESSIDADES SERVICE ===');
+    console.log('Filtros recebidos:', filtros);
+    
     const params = new URLSearchParams();
     
     Object.keys(filtros).forEach(key => {
@@ -17,10 +20,16 @@ const necessidadesService = {
           value = value.id;
         }
         
+        console.log(`Parâmetro ${key}:`, value);
         params.append(key, value);
       }
     });
-    const response = await api.get(`/necessidades?${params.toString()}`);
+    
+    const url = `/necessidades?${params.toString()}`;
+    console.log('URL final:', url);
+    console.log('========================');
+    
+    const response = await api.get(url);
     return response.data;
   },
 
