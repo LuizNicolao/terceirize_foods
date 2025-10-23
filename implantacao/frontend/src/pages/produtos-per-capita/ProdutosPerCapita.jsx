@@ -130,7 +130,10 @@ const ProdutosPerCapita = () => {
           setStatusFilter('todos');
           setGrupoFilter('');
         }}
-        onSearchSubmit={applySearch}
+        onSearchSubmit={() => {
+          console.log('onSearchSubmit chamado - applySearch:', !!applySearch);
+          applySearch();
+        }}
         placeholder="Buscar por nome do produto..."
       />
 
