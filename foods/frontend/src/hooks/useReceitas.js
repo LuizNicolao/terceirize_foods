@@ -30,6 +30,7 @@ export const useReceitas = () => {
   // Estados específicos das receitas
   const [saving, setSaving] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [editingReceita, setEditingReceita] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [filtros, setFiltros] = useState({
     mes: '',
