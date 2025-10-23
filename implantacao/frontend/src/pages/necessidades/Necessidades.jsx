@@ -186,7 +186,7 @@ const Necessidades = () => {
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <span>Rota: {grupo.rota}</span>
                           <span>•</span>
-                          <span>Data Consumo: {formatarDataParaExibicao(grupo.data_consumo)}</span>
+                          <span>Data Consumo: {grupo.data_consumo}</span>
                           <span>•</span>
                           <span>Gerado em: {new Date(grupo.data_preenchimento).toLocaleString('pt-BR')}</span>
                         </div>
@@ -267,7 +267,7 @@ const Necessidades = () => {
                 </div>
                             <div>
                               <span className="font-medium text-gray-700">Semana de Consumo:</span>
-                              <p className="text-gray-900">{formatarDataParaExibicao(necessidadeSelecionada.data_consumo)}</p>
+                              <p className="text-gray-900">{necessidadeSelecionada.data_consumo}</p>
                             </div>
                 <div>
                   <span className="font-medium text-gray-700">Gerado em:</span>
