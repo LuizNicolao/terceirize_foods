@@ -329,6 +329,7 @@ export const useReceitas = () => {
     loading: baseEntity.loading,
     saving,
     showModal,
+    showUploadModal,
     
     // Estados de ordenação
     sortField,
