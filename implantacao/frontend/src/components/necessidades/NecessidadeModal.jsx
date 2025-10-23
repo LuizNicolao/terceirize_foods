@@ -257,17 +257,17 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     const semanaFormatada = formData.data.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
     
     const dadosParaSalvar = {
-      escola_id: formData.escola_id,
+      escola_id: Number(formData.escola_id), // Garantir que seja número
       escola_nome: escolaSelecionada?.nome_escola || '',
       escola_rota: escolaSelecionada?.rota || '',
       escola_codigo_teknisa: escolaSelecionada?.codigo_teknisa || '',
       semana_consumo: semanaFormatada,
       semana_abastecimento: calcularSemanaAbastecimento(formData.data),
       produtos: produtosTabela.map(produto => ({
-        produto_id: produto.id,
+        produto_id: Number(produto.id), // Garantir que seja número
         produto_nome: produto.nome,
         produto_unidade: produto.unidade_medida,
-        ajuste: produto.ajuste || 0
+        ajuste: Number(produto.ajuste) || 0 // Garantir que seja número
       }))
     };
     
