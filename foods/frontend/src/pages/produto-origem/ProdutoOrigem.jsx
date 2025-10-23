@@ -71,17 +71,6 @@ const ProdutoOrigem = () => {
     handleSort
   } = useProdutoOrigem();
 
-  // Debug logs para paginação
-  console.log('🔍 DEBUG PAGINAÇÃO VARIÁVEIS:', {
-    currentPage: currentPage,
-    totalPages: totalPages,
-    totalItems: totalItems,
-    itemsPerPage: itemsPerPage,
-    handlePageChange: !!handlePageChange,
-    handleItemsPerPageChange: !!handleItemsPerPageChange,
-    handleItemsPerPageChangeType: typeof handleItemsPerPageChange,
-    produtosOrigemLength: produtosOrigem?.length || 0
-  });
 
   const {
     showAuditModal,
@@ -230,17 +219,6 @@ const ProdutoOrigem = () => {
       />
 
       {/* Paginação */}
-      {console.log('🔍 DEBUG PAGINAÇÃO FINAL:', {
-        currentPage: currentPage,
-        totalPages: totalPages,
-        totalItems: totalItems,
-        itemsPerPage: itemsPerPage,
-        shouldShow: totalPages > 1,
-        hasHandlePageChange: !!handlePageChange,
-        hasHandleItemsPerPageChange: !!handleItemsPerPageChange,
-        handleItemsPerPageChangeType: typeof handleItemsPerPageChange,
-        handleItemsPerPageChangeValue: handleItemsPerPageChange
-      })}
       {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
       <Pagination
         currentPage={currentPage}
