@@ -119,6 +119,7 @@ const Necessidades = () => {
       <NecessidadesActions
         canCreate={canCreateNecessidades}
         onAdd={handleGerarNecessidade}
+        onShowHelp={() => {}} // TODO: Implementar ajuda
         loading={loading}
       />
 
