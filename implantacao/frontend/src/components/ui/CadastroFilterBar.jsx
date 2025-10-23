@@ -27,9 +27,6 @@ const CadastroFilterBar = ({
   loading = false
 }) => {
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm || '');
-  
-  // Debug: verificar se o componente está sendo renderizado
-  console.log('🔍 CadastroFilterBar renderizado:', { searchTerm, statusFilter, loading });
 
   // Função para lidar com mudanças no campo de busca
   const handleSearchChange = (e) => {
