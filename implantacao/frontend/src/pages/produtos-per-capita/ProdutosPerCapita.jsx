@@ -11,9 +11,9 @@ import {
   ProdutosPerCapitaActions,
   ProdutosPerCapitaTable
 } from './components';
+import ProdutosPerCapitaFilters from './components/ProdutosPerCapitaFilters';
 import { ProdutoPerCapitaModal } from '../../components/produtos-per-capita';
 import { AuditModal } from '../../components/shared';
-import { CadastroFilterBar } from '../../components/ui';
 
 /**
  * Página principal de Produtos Per Capita
@@ -54,6 +54,12 @@ const ProdutosPerCapita = () => {
     setSearchTerm,
     setStatusFilter,
     applySearch,
+    grupoFilter,
+    subgrupoFilter,
+    classeFilter,
+    setGrupoFilter,
+    setSubgrupoFilter,
+    setClasseFilter,
     formatarPerCapita,
     formatarPeriodo,
     obterPeriodosComPerCapita,
@@ -115,13 +121,25 @@ const ProdutosPerCapita = () => {
       {/* Estatísticas */}
       <ProdutosPerCapitaStats estatisticas={estatisticas} />
 
-      {/* Filtros */}
-      <CadastroFilterBar
+      {/* Filtros Avançados */}
+      <ProdutosPerCapitaFilters
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        onClear={() => setSearchTerm('')}
+        grupoFilter={grupoFilter}
+        onGrupoFilterChange={setGrupoFilter}
+        subgrupoFilter={subgrupoFilter}
+        onSubgrupoFilterChange={setSubgrupoFilter}
+        classeFilter={classeFilter}
+        onClasseFilterChange={setClasseFilter}
+        onClear={() => {
+          setSearchTerm('');
+          setStatusFilter('todos');
+          setGrupoFilter('');
+          setSubgrupoFilter('');
+          setClasseFilter('');
+        }}
         onSearchSubmit={applySearch}
         placeholder="Buscar por nome do produto..."
       />
