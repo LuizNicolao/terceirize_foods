@@ -40,8 +40,9 @@ const listar = async (req, res) => {
     }
 
     if (data) {
-      whereClause += ' AND n.semana_consumo = ?';
-      params.push(data);
+      // Buscar por semana de consumo usando LIKE para maior flexibilidade
+      whereClause += ' AND n.semana_consumo LIKE ?';
+      params.push(`%${data}%`);
     }
 
     if (semana_abastecimento) {
