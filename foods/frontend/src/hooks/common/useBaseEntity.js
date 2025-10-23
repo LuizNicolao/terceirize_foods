@@ -58,7 +58,14 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         console.log('🔍 BASE ENTITY RESPONSE:', {
           dataLength: response.data?.length,
           pagination: response.pagination,
-          statistics: response.statistics
+          statistics: response.statistics,
+          paginationDetails: {
+            total: response.pagination?.total,
+            totalItems: response.pagination?.totalItems,
+            totalPages: response.pagination?.pages,
+            page: response.pagination?.page,
+            limit: response.pagination?.limit
+          }
         });
         setItems(response.data);
         pagination.updatePagination(response.pagination);
