@@ -5,7 +5,7 @@ import { useProdutosPerCapita } from '../../hooks/useProdutosPerCapita';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import ProdutosPerCapitaService from '../../services/produtosPerCapita';
-import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal, CadastroFilterBar } from '../../components/ui';
 import { 
   ProdutosPerCapitaStats,
   ProdutosPerCapitaActions,
@@ -13,7 +13,6 @@ import {
 } from './components';
 import { ProdutoPerCapitaModal } from '../../components/produtos-per-capita';
 import { AuditModal } from '../../components/shared';
-import CadastroFilterBar from '../../components/ui/CadastroFilterBar';
 
 /**
  * Página principal de Produtos Per Capita

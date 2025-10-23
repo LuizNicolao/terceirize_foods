@@ -11,3 +11,4 @@ export * from 'foods-frontend/src/components/ui';
 
 // Componentes específicos do Implantação (manter locais)
 export { default as SemanaAbastecimentoFilter } from './SemanaAbastecimentoFilter';
+export { default as CadastroFilterBar } from './CadastroFilterBar';
