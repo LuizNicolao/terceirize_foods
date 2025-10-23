@@ -65,7 +65,10 @@ const Receitas = () => {
     clearFieldError,
     handleCloseValidationModal,
     handleExportXLSX,
-    handleExportPDF
+    handleExportPDF,
+    handleUploadPDF,
+    handleCloseUploadModal,
+    handleProcessarPDF
   } = useReceitas();
 
   const {
