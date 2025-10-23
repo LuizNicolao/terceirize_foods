@@ -32,6 +32,20 @@ const gerarNecessidade = async (req, res) => {
     const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
     const necessidadeId = proximoId.toString();
 
+    // Verificar se já existe necessidade para esta escola/semana (independente do produto)
+    const existing = await executeQuery(`
+      SELECT DISTINCT necessidade_id FROM necessidades 
+      WHERE escola_id = ? AND semana_consumo = ?
+    `, [escola_id, semana_consumo]);
+
+    if (existing.length > 0) {
+      return res.status(409).json({
+        success: false,
+        error: 'Necessidade já existe',
+        message: `Necessidade para a escola "${escola_nome}" já gerada nessa semana selecionada, permitido realizar alterações na tela de Ajustes de Necessidade`
+      });
+    }
+
     // Inserir necessidades para cada produto
     const necessidadesCriadas = [];
     
@@ -49,20 +63,6 @@ const gerarNecessidade = async (req, res) => {
           success: false,
           error: 'Ajuste obrigatório',
           message: `O produto "${produto_nome}" deve ter um ajuste (PEDIDO) maior que 0`
-        });
-      }
-
-      // Verificar se já existe necessidade para esta escola/semana (independente do produto)
-      const existing = await executeQuery(`
-        SELECT DISTINCT necessidade_id FROM necessidades 
-        WHERE escola_id = ? AND semana_consumo = ?
-      `, [escola_id, semana_consumo]);
-
-      if (existing.length > 0) {
-        return res.status(409).json({
-          success: false,
-          error: 'Necessidade já existe',
-          message: `Necessidade para a escola "${escola_nome}" já gerada nessa semana selecionada, permitido realizar alterações na tela de Ajustes de Necessidade`
         });
       }
 
@@ -109,7 +109,6 @@ const gerarNecessidade = async (req, res) => {
           ajuste: ajuste || 0,
           status: 'criada'
         });
-      }
     }
     
     res.status(201).json({
