@@ -197,7 +197,7 @@ const ProdutosPerCapita = () => {
         onClose={handleCloseDeleteModal}
         onConfirm={handleConfirmDelete}
         title="Excluir Produto Per Capita"
-        message={`Tem certeza que deseja excluir o produto "${produtoToDelete?.nome_produto}"?`}
+        message={`Tem certeza que deseja excluir o produto "${produtoToDelete?.produto_nome}"?`}
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
