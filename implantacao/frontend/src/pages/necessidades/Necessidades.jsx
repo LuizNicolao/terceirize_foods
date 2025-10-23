@@ -91,13 +91,11 @@ const Necessidades = () => {
     try {
       const resultado = await gerarNecessidade(dados);
       if (resultado.success) {
-        toast.success('Necessidade gerada com sucesso!');
         setModalAberto(false);
         // Recarregar necessidades após gerar
         carregarNecessidades();
-      } else {
-        toast.error(resultado.error || 'Erro ao gerar necessidade');
       }
+      // Toast de sucesso/erro é tratado no hook
     } catch (error) {
       console.error('Erro ao gerar necessidade:', error);
       toast.error('Erro ao gerar necessidade');
