@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../../middleware/auth');
+const { authenticateToken } = require('../../middleware/auth');
 const {
   listarParaAjuste,
   salvarAjustes,
@@ -22,18 +22,18 @@ const isNutricionista = (req, res, next) => {
 };
 
 // GET /api/necessidades/ajuste - Listar necessidades para ajuste
-router.get('/ajuste', auth, isNutricionista, listarParaAjuste);
+router.get('/ajuste', authenticateToken, isNutricionista, listarParaAjuste);
 
 // PUT /api/necessidades/ajustes - Salvar ajustes da nutricionista
-router.put('/ajustes', auth, isNutricionista, salvarAjustes);
+router.put('/ajustes', authenticateToken, isNutricionista, salvarAjustes);
 
 // POST /api/necessidades/produto-extra - Incluir produto extra
-router.post('/produto-extra', auth, isNutricionista, incluirProdutoExtra);
+router.post('/produto-extra', authenticateToken, isNutricionista, incluirProdutoExtra);
 
 // POST /api/necessidades/liberar-coordenacao - Liberar para coordenação
-router.post('/liberar-coordenacao', auth, isNutricionista, liberarCoordenacao);
+router.post('/liberar-coordenacao', authenticateToken, isNutricionista, liberarCoordenacao);
 
 // GET /api/necessidades/produtos-modal - Buscar produtos para modal
-router.get('/produtos-modal', auth, isNutricionista, buscarProdutosParaModal);
+router.get('/produtos-modal', authenticateToken, isNutricionista, buscarProdutosParaModal);
 
 module.exports = router;
