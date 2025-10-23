@@ -251,10 +251,6 @@ export const useNecessidades = () => {
       }))
     };
 
-    console.log('DEBUG: dadosExternos recebidos:', dadosExternos);
-    console.log('DEBUG: dadosParaEnviar:', dadosParaEnviar);
-    console.log('DEBUG: escola_id:', dadosParaEnviar.escola_id);
-    console.log('DEBUG: semana_consumo:', dadosParaEnviar.semana_consumo);
 
     // Validação baseada nos dados que serão enviados
     if (!dadosParaEnviar.escola_id || !dadosParaEnviar.semana_consumo) {

@@ -78,13 +78,9 @@ const atualizarNecessidadeSchema = yup.object().shape({
 const validate = (schema) => {
   return async (req, res, next) => {
     try {
-      console.log('DEBUG: Validando dados no middleware Yup:', JSON.stringify(req.body, null, 2));
       await schema.validate(req.body, { abortEarly: false });
-      console.log('DEBUG: Validação Yup passou com sucesso');
       next();
     } catch (error) {
-      console.log('DEBUG: Erro na validação Yup:', error.inner);
-      console.log('DEBUG: Dados que falharam:', JSON.stringify(req.body, null, 2));
       const errors = error.inner.map(err => ({
         field: err.path,
         message: err.message

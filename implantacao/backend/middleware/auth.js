@@ -8,16 +8,11 @@ if (!JWT_SECRET) {
 
 // Middleware para verificar token JWT
 const authenticateToken = async (req, res, next) => {
-  console.log('DEBUG: Middleware authenticateToken executado');
-  console.log('DEBUG: URL:', req.url);
-  console.log('DEBUG: Method:', req.method);
-  console.log('DEBUG: Headers authorization:', req.headers['authorization']);
   
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    console.log('DEBUG: Token não fornecido');
     return res.status(401).json({ error: 'Token de acesso não fornecido' });
   }
 

@@ -6,8 +6,6 @@ const necessidadesService = {
   listar: async (filtros = {}) => {
     const params = new URLSearchParams();
     
-    console.log('DEBUG: Filtros recebidos no serviço:', filtros);
-    
     Object.keys(filtros).forEach(key => {
       if (filtros[key] !== undefined && filtros[key] !== '' && filtros[key] !== null) {
         let value = filtros[key];
@@ -19,12 +17,9 @@ const necessidadesService = {
           value = value.id;
         }
         
-        console.log(`DEBUG: Adicionando parâmetro ${key}:`, value);
         params.append(key, value);
       }
     });
-
-    console.log('DEBUG: URL final:', `/necessidades?${params.toString()}`);
     const response = await api.get(`/necessidades?${params.toString()}`);
     return response.data;
   },
