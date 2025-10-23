@@ -33,6 +33,10 @@ export const useReceitas = () => {
   const [editingReceita, setEditingReceita] = useState(null);
   const [viewMode, setViewMode] = useState(false);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [receitaToDelete, setReceitaToDelete] = useState(null);
+  const [validationErrors, setValidationErrors] = useState([]);
+  const [showValidationModal, setShowValidationModal] = useState(false);
+  const [estatisticas, setEstatisticas] = useState({});
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [filtros, setFiltros] = useState({
     mes: '',
