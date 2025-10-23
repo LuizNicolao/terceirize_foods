@@ -15,9 +15,7 @@ export const useProdutosPerCapita = () => {
     initialFilters: {
       status: 'todos',
       produto_id: '',
-      grupo_id: '',
-      subgrupo_id: '',
-      classe_id: ''
+      grupo_id: ''
     }
   });
 
@@ -273,10 +271,6 @@ export const useProdutosPerCapita = () => {
     
     // Filtros adicionais
     grupoFilter: baseEntity.filters.filters?.grupo_id || '',
-    subgrupoFilter: baseEntity.filters.filters?.subgrupo_id || '',
-    classeFilter: baseEntity.filters.filters?.classe_id || '',
-    setGrupoFilter: (value) => baseEntity.updateFilter('grupo_id', value),
-    setSubgrupoFilter: (value) => baseEntity.updateFilter('subgrupo_id', value),
-    setClasseFilter: (value) => baseEntity.updateFilter('classe_id', value)
+    setGrupoFilter: (value) => baseEntity.updateFilter('grupo_id', value)
   };
 };

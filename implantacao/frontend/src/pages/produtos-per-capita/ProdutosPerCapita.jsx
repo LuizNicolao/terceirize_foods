@@ -55,11 +55,7 @@ const ProdutosPerCapita = () => {
     setStatusFilter,
     applySearch,
     grupoFilter,
-    subgrupoFilter,
-    classeFilter,
     setGrupoFilter,
-    setSubgrupoFilter,
-    setClasseFilter,
     formatarPerCapita,
     formatarPeriodo,
     obterPeriodosComPerCapita,
@@ -129,16 +125,10 @@ const ProdutosPerCapita = () => {
         onStatusFilterChange={setStatusFilter}
         grupoFilter={grupoFilter}
         onGrupoFilterChange={setGrupoFilter}
-        subgrupoFilter={subgrupoFilter}
-        onSubgrupoFilterChange={setSubgrupoFilter}
-        classeFilter={classeFilter}
-        onClasseFilterChange={setClasseFilter}
         onClear={() => {
           setSearchTerm('');
           setStatusFilter('todos');
           setGrupoFilter('');
-          setSubgrupoFilter('');
-          setClasseFilter('');
         }}
         onSearchSubmit={applySearch}
         placeholder="Buscar por nome do produto..."

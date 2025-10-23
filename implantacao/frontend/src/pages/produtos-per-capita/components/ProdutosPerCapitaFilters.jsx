@@ -13,21 +13,13 @@ const ProdutosPerCapitaFilters = ({
   onStatusFilterChange,
   grupoFilter,
   onGrupoFilterChange,
-  subgrupoFilter,
-  onSubgrupoFilterChange,
-  classeFilter,
-  onClasseFilterChange,
   onClear,
   onSearchSubmit,
   placeholder = 'Buscar por nome do produto...'
 }) => {
   // Estados para dados auxiliares
   const [grupos, setGrupos] = useState([]);
-  const [subgrupos, setSubgrupos] = useState([]);
-  const [classes, setClasses] = useState([]);
   const [loadingGrupos, setLoadingGrupos] = useState(false);
-  const [loadingSubgrupos, setLoadingSubgrupos] = useState(false);
-  const [loadingClasses, setLoadingClasses] = useState(false);
 
   /**
    * Carregar grupos
@@ -46,71 +38,12 @@ const ProdutosPerCapitaFilters = ({
     }
   }, []);
 
-  /**
-   * Carregar subgrupos por grupo
-   */
-  const carregarSubgrupos = useCallback(async (grupoId) => {
-    if (!grupoId) {
-      setSubgrupos([]);
-      return;
-    }
-
-    setLoadingSubgrupos(true);
-    try {
-      const response = await FoodsApiService.getSubgrupos({ grupo_id: grupoId, ativo: true });
-      if (response.success) {
-        setSubgrupos(response.data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar subgrupos:', error);
-    } finally {
-      setLoadingSubgrupos(false);
-    }
-  }, []);
-
-  /**
-   * Carregar classes por subgrupo
-   */
-  const carregarClasses = useCallback(async (subgrupoId) => {
-    if (!subgrupoId) {
-      setClasses([]);
-      return;
-    }
-
-    setLoadingClasses(true);
-    try {
-      const response = await FoodsApiService.getClasses({ subgrupo_id: subgrupoId, ativo: true });
-      if (response.success) {
-        setClasses(response.data || []);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar classes:', error);
-    } finally {
-      setLoadingClasses(false);
-    }
-  }, []);
 
   /**
    * Lidar com mudança de grupo
    */
   const handleGrupoChange = (grupoId) => {
     onGrupoFilterChange(grupoId);
-    // Limpar subgrupo e classe quando grupo muda
-    onSubgrupoFilterChange('');
-    onClasseFilterChange('');
-    // Carregar subgrupos do novo grupo
-    carregarSubgrupos(grupoId);
-  };
-
-  /**
-   * Lidar com mudança de subgrupo
-   */
-  const handleSubgrupoChange = (subgrupoId) => {
-    onSubgrupoFilterChange(subgrupoId);
-    // Limpar classe quando subgrupo muda
-    onClasseFilterChange('');
-    // Carregar classes do novo subgrupo
-    carregarClasses(subgrupoId);
   };
 
   /**
@@ -127,8 +60,6 @@ const ProdutosPerCapitaFilters = ({
    */
   const handleClear = () => {
     onClear();
-    setSubgrupos([]);
-    setClasses([]);
   };
 
   // Carregar grupos na montagem
@@ -136,23 +67,9 @@ const ProdutosPerCapitaFilters = ({
     carregarGrupos();
   }, [carregarGrupos]);
 
-  // Carregar subgrupos quando grupo muda
-  useEffect(() => {
-    if (grupoFilter) {
-      carregarSubgrupos(grupoFilter);
-    }
-  }, [grupoFilter, carregarSubgrupos]);
-
-  // Carregar classes quando subgrupo muda
-  useEffect(() => {
-    if (subgrupoFilter) {
-      carregarClasses(subgrupoFilter);
-    }
-  }, [subgrupoFilter, carregarClasses]);
-
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Campo de busca */}
         <div className="lg:col-span-2 relative">
           <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm" />
@@ -196,39 +113,6 @@ const ProdutosPerCapitaFilters = ({
           </select>
         </div>
 
-        {/* Filtro de subgrupo */}
-        <div>
-          <select 
-            value={subgrupoFilter} 
-            onChange={e => handleSubgrupoChange(e.target.value)}
-            disabled={loadingSubgrupos || !grupoFilter}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors bg-white disabled:bg-gray-100"
-          >
-            <option value="">Todos os subgrupos</option>
-            {subgrupos.map(subgrupo => (
-              <option key={subgrupo.id} value={subgrupo.id}>
-                {subgrupo.nome}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Filtro de classe */}
-        <div>
-          <select 
-            value={classeFilter} 
-            onChange={e => onClasseFilterChange(e.target.value)}
-            disabled={loadingClasses || !subgrupoFilter}
-            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-colors bg-white disabled:bg-gray-100"
-          >
-            <option value="">Todas as classes</option>
-            {classes.map(classe => (
-              <option key={classe.id} value={classe.id}>
-                {classe.nome}
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
 
       {/* Botão limpar */}
