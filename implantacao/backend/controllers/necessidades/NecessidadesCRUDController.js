@@ -25,11 +25,14 @@ const criar = async (req, res) => {
       });
     }
 
+    // Gerar ID único para esta necessidade
+    const necessidadeId = `NEC-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     // Inserir nova necessidade
     const resultado = await executeQuery(`
-      INSERT INTO necessidades (usuario_email, produto, escola, quantidade, tipo_entrega, data_preenchimento, status, observacoes)
-      VALUES (?, ?, ?, ?, ?, NOW(), 'NEC', NULL)
-    `, [req.user.email, produto, escola, quantidade, tipo_entrega]);
+      INSERT INTO necessidades (usuario_email, produto, escola, quantidade, tipo_entrega, data_preenchimento, status, observacoes, necessidade_id)
+      VALUES (?, ?, ?, ?, ?, NOW(), 'NEC', NULL, ?)
+    `, [req.user.email, produto, escola, quantidade, tipo_entrega, necessidadeId]);
 
     res.status(201).json({
       success: true,

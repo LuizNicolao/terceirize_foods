@@ -14,6 +14,9 @@ const gerarNecessidade = async (req, res) => {
       });
     }
 
+    // Gerar ID único para esta necessidade
+    const necessidadeId = `NEC-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     // Inserir necessidades para cada produto
     const necessidadesCriadas = [];
     
@@ -62,8 +65,9 @@ const gerarNecessidade = async (req, res) => {
             semana_consumo,
             semana_abastecimento,
             status,
-            observacoes
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            observacoes,
+            necessidade_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           req.user.email,
           req.user.id,
@@ -78,7 +82,8 @@ const gerarNecessidade = async (req, res) => {
           semana_consumo,
           semana_abastecimento || null,
           'NEC',
-          null
+          null,
+          necessidadeId
         ]);
 
         necessidadesCriadas.push({
@@ -94,6 +99,7 @@ const gerarNecessidade = async (req, res) => {
       success: true,
       message: `Necessidade gerada com sucesso! ${necessidadesCriadas.length} produtos processados.`,
       data: {
+        necessidade_id: necessidadeId,
         escola: escola_nome,
         semana_consumo,
         necessidades: necessidadesCriadas

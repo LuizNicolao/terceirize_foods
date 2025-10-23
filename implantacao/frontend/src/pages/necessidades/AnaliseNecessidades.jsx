@@ -158,11 +158,13 @@ const AnaliseNecessidades = () => {
             </div>
             <div className="divide-y divide-gray-200">
               {(() => {
-                // Agrupar necessidades por escola e data
+                // Agrupar necessidades por necessidade_id (se disponível) ou por escola e data
                 const agrupadas = necessidadesFiltradas.reduce((acc, necessidade) => {
-                  const chave = `${necessidade.escola}-${necessidade.semana_consumo}`;
+                  // Usar necessidade_id se disponível, senão usar escola-data como fallback
+                  const chave = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}`;
                   if (!acc[chave]) {
                     acc[chave] = {
+                      necessidade_id: necessidade.necessidade_id,
                       escola: necessidade.escola,
                       rota: necessidade.escola_rota,
                       data_consumo: necessidade.semana_consumo,
@@ -189,8 +191,13 @@ const AnaliseNecessidades = () => {
                           <span>•</span>
                           <span>Gerado em: {new Date(grupo.data_preenchimento).toLocaleString('pt-BR')}</span>
                         </div>
-                        <div className="mt-2">
+                        <div className="mt-2 flex items-center space-x-2">
                           <StatusBadge status={grupo.produtos[0]?.status || 'NEC'} />
+                          {grupo.necessidade_id && (
+                            <span className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
+                              ID: {grupo.necessidade_id}
+                            </span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
