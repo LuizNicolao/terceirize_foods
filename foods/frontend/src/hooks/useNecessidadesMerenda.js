@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useValidation } from './common/useValidation';
 import { useExport } from './common/useExport';
+import { useDebouncedSearch } from './common/useDebouncedSearch';
 import useTableSort from './common/useTableSort';
 import NecessidadesMerendaService from '../services/necessidadesMerenda';
 import toast from 'react-hot-toast';
 
 export const useNecessidadesMerenda = () => {
   // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
 
   // Estados principais
   const [necessidades, setNecessidades] = useState([]);

@@ -78,9 +78,9 @@ export const useReceitas = () => {
     setLoading(true);
     try {
       const params = {
-        page: currentPage,
-        limit: itemsPerPage,
-        search: debouncedSearch.debouncedSearchTerm,
+        page: baseEntity.currentPage,
+        limit: baseEntity.itemsPerPage,
+        search: baseEntity.searchTerm,
         ...filtros
       };
 
@@ -101,7 +101,7 @@ export const useReceitas = () => {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, itemsPerPage, debouncedSearch.debouncedSearchTerm, filtros]);
+  }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, filtros]);
 
   // Carregar dados quando os parâmetros mudarem
   useEffect(() => {
@@ -248,12 +248,12 @@ export const useReceitas = () => {
 
   // Funções de paginação
   const handlePageChange = (page) => {
-    setCurrentPage(page);
+    baseEntity.setCurrentPage(page);
   };
 
   const handleItemsPerPageChange = (itemsPerPage) => {
-    setItemsPerPage(itemsPerPage);
-    setCurrentPage(1);
+    baseEntity.setItemsPerPage(itemsPerPage);
+    baseEntity.setCurrentPage(1);
   };
 
   // Funções de filtros
@@ -334,10 +334,10 @@ export const useReceitas = () => {
     showPreviewModal,
     editingReceita,
     viewMode,
-    currentPage,
-    totalPages,
-    totalItems,
-    itemsPerPage,
+    currentPage: baseEntity.currentPage,
+    totalPages: baseEntity.totalPages,
+    totalItems: baseEntity.totalItems,
+    itemsPerPage: baseEntity.itemsPerPage,
     filtros,
     showDeleteConfirmModal,
     setShowDeleteConfirmModal,
