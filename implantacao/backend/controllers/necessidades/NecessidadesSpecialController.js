@@ -30,6 +30,16 @@ const gerarNecessidade = async (req, res) => {
       });
     }
 
+    // Validar se há produtos válidos
+    if (produtos.length === 0) {
+      console.log('Nenhum produto enviado');
+      return res.status(400).json({
+        success: false,
+        error: 'Nenhum produto',
+        message: 'Nenhum produto foi enviado para processar'
+      });
+    }
+
     // Gerar ID único para esta necessidade
     const necessidadeId = `NEC-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -41,6 +51,7 @@ const gerarNecessidade = async (req, res) => {
 
       // Validar dados do produto
       if (!produto_id || !produto_nome) {
+        console.log('Produto sem dados completos:', produto);
         continue; // Pular produto sem dados completos
       }
 

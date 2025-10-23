@@ -256,6 +256,9 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     // Formatar semana de consumo para o formato esperado pelo backend (DD/MM a DD/MM)
     const semanaFormatada = formData.data.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
     
+    console.log('Semana original:', formData.data);
+    console.log('Semana formatada:', semanaFormatada);
+    
     // Filtrar apenas produtos com frequência > 0 (que têm pelo menos um período com frequência)
     const produtosComFrequencia = produtosTabela.filter(produto => {
       const temFrequencia = 
