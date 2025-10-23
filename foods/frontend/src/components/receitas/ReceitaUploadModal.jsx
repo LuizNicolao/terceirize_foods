@@ -7,6 +7,8 @@ const ReceitaUploadModal = ({ isOpen, onClose, onProcessar }) => {
   const [arquivo, setArquivo] = useState(null);
   const [processando, setProcessando] = useState(false);
 
+  console.log('🔍 ReceitaUploadModal renderizado - isOpen:', isOpen);
+
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file && file.type === 'application/pdf') {

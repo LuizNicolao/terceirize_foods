@@ -222,7 +222,9 @@ export const useReceitas = () => {
 
   // Funções de upload de PDF
   const handleUploadPDF = () => {
+    console.log('🔍 handleUploadPDF chamado');
     setShowUploadModal(true);
+    console.log('🔍 showUploadModal definido como true');
   };
 
   const handleCloseUploadModal = () => {
