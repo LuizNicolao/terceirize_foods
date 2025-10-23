@@ -25,8 +25,15 @@ const criar = async (req, res) => {
       });
     }
 
-    // Gerar ID único para esta necessidade
-    const necessidadeId = `NEC-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    // Gerar ID sequencial para esta necessidade
+    const ultimoId = await executeQuery(`
+      SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
+      FROM necessidades 
+      WHERE necessidade_id REGEXP '^[0-9]+$'
+    `);
+    
+    const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
+    const necessidadeId = proximoId.toString();
 
     // Inserir nova necessidade
     const resultado = await executeQuery(`
