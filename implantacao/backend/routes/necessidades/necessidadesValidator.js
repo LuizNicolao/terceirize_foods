@@ -65,7 +65,10 @@ const atualizarNecessidadeSchema = yup.object().shape({
   produto: yup.string(),
   escola: yup.string(),
   quantidade: yup.number().positive('Quantidade deve ser positiva'),
-  tipo_entrega: yup.string()
+  tipo_entrega: yup.string(),
+  status: yup.string(),
+  observacoes: yup.string(),
+  pedido: yup.string().nullable()
 }).test(
   'at-least-one-field',
   'Pelo menos um campo deve ser informado para atualização',

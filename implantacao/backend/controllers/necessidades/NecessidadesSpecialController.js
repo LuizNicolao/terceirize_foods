@@ -15,7 +15,6 @@ const gerarNecessidade = async (req, res) => {
 
     // Validar se há produtos válidos
     if (produtos.length === 0) {
-      console.log('Nenhum produto enviado');
       return res.status(400).json({
         success: false,
         error: 'Nenhum produto',
@@ -75,8 +74,9 @@ const gerarNecessidade = async (req, res) => {
             semana_abastecimento,
             status,
             observacoes,
-            necessidade_id
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            necessidade_id,
+            pedido
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           req.user.email,
           req.user.id,
@@ -92,7 +92,8 @@ const gerarNecessidade = async (req, res) => {
           semana_abastecimento || null,
           'NEC',
           null,
-          necessidadeId
+          necessidadeId,
+          null // PEDIDO será preenchido posteriormente
         ]);
 
         necessidadesCriadas.push({

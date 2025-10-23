@@ -30,8 +30,8 @@ const criar = async (req, res) => {
 
     // Inserir nova necessidade
     const resultado = await executeQuery(`
-      INSERT INTO necessidades (usuario_email, produto, escola, quantidade, tipo_entrega, data_preenchimento, status, observacoes, necessidade_id)
-      VALUES (?, ?, ?, ?, ?, NOW(), 'NEC', NULL, ?)
+      INSERT INTO necessidades (usuario_email, produto, escola, quantidade, tipo_entrega, data_preenchimento, status, observacoes, necessidade_id, pedido)
+      VALUES (?, ?, ?, ?, ?, NOW(), 'NEC', NULL, ?, NULL)
     `, [req.user.email, produto, escola, quantidade, tipo_entrega, necessidadeId]);
 
     res.status(201).json({
@@ -51,7 +51,7 @@ const criar = async (req, res) => {
 const atualizar = async (req, res) => {
   try {
     const { id } = req.params;
-    const { produto, escola, quantidade, tipo_entrega, status, observacoes } = req.body;
+    const { produto, escola, quantidade, tipo_entrega, status, observacoes, pedido } = req.body;
 
     // Verificar se a necessidade existe
     const existing = await executeQuery(`
@@ -105,6 +105,10 @@ const atualizar = async (req, res) => {
     if (observacoes !== undefined) {
       updateFields.push('observacoes = ?');
       updateValues.push(observacoes);
+    }
+    if (pedido !== undefined) {
+      updateFields.push('pedido = ?');
+      updateValues.push(pedido);
     }
 
     // Sempre atualizar data_atualizacao
@@ -204,9 +208,54 @@ const buscarPorId = async (req, res) => {
   }
 };
 
+const validarPedido = async (req, res) => {
+  try {
+    const { necessidade_id } = req.params;
+
+    // Buscar todas as necessidades com o mesmo necessidade_id
+    const necessidades = await executeQuery(`
+      SELECT id, produto, pedido, status
+      FROM necessidades 
+      WHERE necessidade_id = ?
+    `, [necessidade_id]);
+
+    if (necessidades.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Necessidade não encontrada',
+        message: 'Necessidade não encontrada'
+      });
+    }
+
+    // Verificar se todas as necessidades já têm pedido preenchido
+    const todasComPedido = necessidades.every(n => n.pedido !== null && n.pedido !== '');
+    const nenhumaComPedido = necessidades.every(n => n.pedido === null || n.pedido === '');
+
+    res.json({
+      success: true,
+      data: {
+        necessidade_id,
+        total_produtos: necessidades.length,
+        todas_com_pedido: todasComPedido,
+        nenhuma_com_pedido: nenhumaComPedido,
+        pode_converter_pedido: nenhumaComPedido && necessidades.some(n => n.status === 'APROVADA'),
+        necessidades: necessidades
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao validar pedido:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Erro ao validar pedido'
+    });
+  }
+};
+
 module.exports = {
   criar,
   atualizar,
   deletar,
-  buscarPorId
+  buscarPorId,
+  validarPedido
 };

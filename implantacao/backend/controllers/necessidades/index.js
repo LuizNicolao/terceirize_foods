@@ -2,7 +2,8 @@ const {
   criar, 
   atualizar, 
   deletar, 
-  buscarPorId 
+  buscarPorId,
+  validarPedido
 } = require('./NecessidadesCRUDController');
 
 const { 
@@ -26,6 +27,7 @@ module.exports = {
   atualizar,
   deletar,
   buscarPorId,
+  validarPedido,
   
   // List Operations
   listar,
