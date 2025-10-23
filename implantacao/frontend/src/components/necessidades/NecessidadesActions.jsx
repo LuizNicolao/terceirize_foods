@@ -1,14 +1,10 @@
 import React from 'react';
 import { FaPlus } from 'react-icons/fa';
 import { Button } from '../ui';
-import { ExportButtons } from '../shared';
 
 const NecessidadesActions = ({ 
   canCreate = false,
-  canExport = false,
   onAdd,
-  onExportXLSX,
-  onExportPDF,
   loading = false 
 }) => {
   return (
@@ -23,17 +19,6 @@ const NecessidadesActions = ({
       </div>
       
       <div className="flex flex-col sm:flex-row gap-2">
-        {canExport && (
-          <ExportButtons
-            onExportXLSX={onExportXLSX}
-            onExportPDF={onExportPDF}
-            size="sm"
-            variant="outline"
-            showLabels={true}
-            disabled={loading}
-          />
-        )}
-        
         {canCreate && (
           <Button
             onClick={onAdd}

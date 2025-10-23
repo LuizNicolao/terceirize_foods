@@ -117,10 +117,7 @@ const Necessidades = () => {
       {/* Botão de Adicionar */}
       <NecessidadesActions
         canCreate={canCreateNecessidades}
-        canExport={necessidades && necessidades.length > 0}
         onAdd={handleGerarNecessidade}
-        onExportXLSX={exportarXLSX}
-        onExportPDF={exportarPDF}
         loading={loading}
       />
 
@@ -141,6 +138,14 @@ const Necessidades = () => {
         onClearFilters={clearFiltros}
         loading={loading}
       />
+
+      {/* Botões de Exportação */}
+      <div className="mb-4">
+        <ExportButtons
+          onExportXLSX={exportarXLSX}
+          onExportPDF={exportarPDF}
+        />
+      </div>
 
       {/* Error Message */}
       {error && (
