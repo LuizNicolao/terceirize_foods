@@ -269,7 +269,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     }
     
     
-    // Filtrar apenas produtos com frequência > 0 (que têm pelo menos um período com frequência)
+    // Filtrar apenas produtos com frequência > 0 E PEDIDO preenchido
     const produtosComFrequencia = produtosTabela.filter(produto => {
       const temFrequencia = 
         (produto.frequencia_lanche_manha && produto.frequencia_lanche_manha > 0) ||
@@ -278,11 +278,13 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         (produto.frequencia_parcial && produto.frequencia_parcial > 0) ||
         (produto.frequencia_eja && produto.frequencia_eja > 0);
       
-      return temFrequencia;
+      const temPedido = produto.ajuste && produto.ajuste > 0;
+      
+      return temFrequencia && temPedido;
     });
 
     if (produtosComFrequencia.length === 0) {
-      toast.error('Preencha a frequência de pelo menos um produto antes de gerar a necessidade');
+      toast.error('Preencha a frequência E o PEDIDO de pelo menos um produto antes de gerar a necessidade');
       return;
     }
 
@@ -297,7 +299,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         produto_id: Number(produto.id), // Garantir que seja número
         produto_nome: produto.nome,
         produto_unidade: produto.unidade_medida,
-        ajuste: Number(produto.total) || 0 // Usar o total calculado como ajuste
+        ajuste: Number(produto.ajuste) || 0 // Usar o campo PEDIDO (ajuste) preenchido pelo usuário
       }))
     };
 
