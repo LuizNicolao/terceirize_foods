@@ -301,7 +301,7 @@ const ProdutoGenericoModal = ({
               <option value="">Selecione uma unidade</option>
               {unidadesMedida?.map(unidade => (
                 <option key={unidade.id} value={unidade.id}>
-                  {unidade.nome}
+                  {unidade.sigla}
                 </option>
               ))}
             </Input>
@@ -326,9 +326,8 @@ const ProdutoGenericoModal = ({
                   maxLength: { value: 200, message: 'Referência deve ter no máximo 200 caracteres' }
                 })}
                 error={errors.referencia_mercado?.message}
-                disabled={true}
-                className="bg-gray-50"
-                placeholder="Preenchido automaticamente"
+                disabled={viewMode}
+                placeholder="Digite a referência de mercado"
               />
             </div>
 
