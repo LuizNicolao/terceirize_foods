@@ -5,7 +5,7 @@ import { useProdutosPerCapita } from '../../hooks/useProdutosPerCapita';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import ProdutosPerCapitaService from '../../services/produtosPerCapita';
-import { Button, ValidationErrorModal, ConfirmModal, Pagination } from '../../components/ui';
+import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
 import { 
   ProdutosPerCapitaStats,
   ProdutosPerCapitaActions,
@@ -13,7 +13,7 @@ import {
 } from './components';
 import { ProdutoPerCapitaModal } from '../../components/produtos-per-capita';
 import { AuditModal } from '../../components/shared';
-import { CadastroFilterBar } from '../../components/ui';
+import CadastroFilterBar from '../../components/ui/CadastroFilterBar';
 
 /**
  * Página principal de Produtos Per Capita
@@ -57,7 +57,10 @@ const ProdutosPerCapita = () => {
     formatarPeriodo,
     obterPeriodosComPerCapita,
     produtosDisponiveis,
-    carregarProdutosDisponiveis
+    carregarProdutosDisponiveis,
+    sortField,
+    sortDirection,
+    handleSort
   } = useProdutosPerCapita();
 
   const { handleExportXLSX, handleExportPDF } = useExport(ProdutosPerCapitaService);
@@ -118,10 +121,18 @@ const ProdutosPerCapita = () => {
       <CadastroFilterBar
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        onSearchSubmit={(term) => {
+          setSearchTerm(term);
+          // A busca será executada automaticamente pelo hook
+        }}
         statusFilter={statusFilter}
         onStatusFilterChange={setStatusFilter}
-        onClear={() => setSearchTerm('')}
+        onClear={() => {
+          setSearchTerm('');
+          setStatusFilter('todos');
+        }}
         placeholder="Buscar por nome do produto..."
+        loading={loading}
       />
 
       {/* Ações */}
@@ -144,19 +155,20 @@ const ProdutosPerCapita = () => {
         formatarPerCapita={formatarPerCapita}
         formatarPeriodo={formatarPeriodo}
         obterPeriodosComPerCapita={obterPeriodosComPerCapita}
+        sortField={sortField}
+        sortDirection={sortDirection}
+        onSort={handleSort}
+        pagination={{
+          currentPage,
+          totalPages,
+          totalItems,
+          itemsPerPage,
+          hasPrevPage: currentPage > 1,
+          hasNextPage: currentPage < totalPages
+        }}
+        onPageChange={handlePageChange}
+        onLimitChange={handleItemsPerPageChange}
       />
-
-      {/* Paginação */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
-        />
-      )}
 
       {/* Modal de Produto Per Capita */}
       <ProdutoPerCapitaModal

@@ -1,5 +1,5 @@
-import React from 'react';
-import { FaEye, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaEye, FaEdit, FaTrash, FaCheckCircle, FaTimesCircle, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { ActionButtons } from '../ui';
 import { formatDate } from '../../utils/formatters';
 
@@ -22,8 +22,40 @@ const ProdutosPerCapitaTable = ({
   onLimitChange,
   formatarPerCapita,
   formatarPeriodo,
-  obterPeriodosComPerCapita
+  obterPeriodosComPerCapita,
+  sortField = 'nome_produto',
+  sortDirection = 'asc',
+  onSort
 }) => {
+  // Função para lidar com ordenação
+  const handleSort = (field) => {
+    if (onSort) {
+      onSort(field);
+    }
+  };
+
+  // Componente de cabeçalho clicável
+  const SortableHeader = ({ field, children, className = "" }) => {
+    const isActive = sortField === field;
+    const getSortIcon = () => {
+      if (!isActive) return <FaSort className="ml-1 text-gray-400" />;
+      return sortDirection === 'asc' 
+        ? <FaSortUp className="ml-1 text-blue-600" />
+        : <FaSortDown className="ml-1 text-blue-600" />;
+    };
+
+    return (
+      <th 
+        className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors ${className}`}
+        onClick={() => handleSort(field)}
+      >
+        <div className="flex items-center">
+          {children}
+          {getSortIcon()}
+        </div>
+      </th>
+    );
+  };
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -74,18 +106,18 @@ const ProdutosPerCapitaTable = ({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <SortableHeader field="nome_produto">
                 Produto
-              </th>
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Per Capita
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <SortableHeader field="ativo">
                 Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </SortableHeader>
+              <SortableHeader field="created_at">
                 Criado em
-              </th>
+              </SortableHeader>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Ações
               </th>

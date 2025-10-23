@@ -29,6 +29,10 @@ export const useProdutosPerCapita = () => {
   const [loadingEstatisticas, setLoadingEstatisticas] = useState(false);
   const [resumoPorPeriodo, setResumoPorPeriodo] = useState([]);
 
+  // Estados de ordenação
+  const [sortField, setSortField] = useState('nome_produto');
+  const [sortDirection, setSortDirection] = useState('asc');
+
   /**
    * Carregar produtos disponíveis
    */
@@ -251,6 +255,9 @@ export const useProdutosPerCapita = () => {
     loadingEstatisticas,
     resumoPorPeriodo,
     
+    // Estados de ordenação
+    sortField,
+    sortDirection,
     
     // Exportação
     ...exportHook,
@@ -263,6 +270,16 @@ export const useProdutosPerCapita = () => {
     formatarPerCapita,
     formatarPeriodo,
     obterPeriodosComPerCapita,
-    validarProdutoPerCapita
+    validarProdutoPerCapita,
+    
+    // Funções de ordenação
+    handleSort: (field) => {
+      if (sortField === field) {
+        setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+      } else {
+        setSortField(field);
+        setSortDirection('asc');
+      }
+    }
   };
 };
