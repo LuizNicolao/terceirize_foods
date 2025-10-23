@@ -60,8 +60,10 @@ const gerarNecessidade = async (req, res) => {
             codigo_teknisa,
             ajuste, 
             semana_consumo,
-            semana_abastecimento
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            semana_abastecimento,
+            status,
+            observacoes
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           req.user.email,
           req.user.id,
@@ -74,7 +76,9 @@ const gerarNecessidade = async (req, res) => {
           escola_codigo_teknisa || '',
           ajuste || 0, 
           semana_consumo,
-          semana_abastecimento || null
+          semana_abastecimento || null,
+          'NEC NUTRI',
+          null
         ]);
 
         necessidadesCriadas.push({

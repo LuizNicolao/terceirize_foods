@@ -9,7 +9,8 @@ import {
   NecessidadesLoading,
   NecessidadesStats,
   NecessidadesFilters,
-  NecessidadeModal
+  NecessidadeModal,
+  StatusBadge
 } from '../../components/necessidades';
 import { ActionButtons, Modal } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
@@ -196,6 +197,9 @@ const Necessidades = () => {
                           <span>Semana de Consumo: {grupo.data_consumo}</span>
                           <span>•</span>
                           <span>Gerado em: {new Date(grupo.data_preenchimento).toLocaleString('pt-BR')}</span>
+                        </div>
+                        <div className="mt-2">
+                          <StatusBadge status={grupo.produtos[0]?.status || 'NEC NUTRI'} />
                         </div>
                     </div>
                     <div className="flex items-center space-x-3">

@@ -5,4 +5,5 @@ export { default as NecessidadesTable } from './NecessidadesTable';
 export { default as NecessidadesLoading } from './NecessidadesLoading';
 export { default as NecessidadesStats } from './NecessidadesStats';
 export { default as NecessidadeModal } from './NecessidadeModal';
+export { default as StatusBadge } from './StatusBadge';
 

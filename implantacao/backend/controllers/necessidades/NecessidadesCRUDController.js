@@ -27,8 +27,8 @@ const criar = async (req, res) => {
 
     // Inserir nova necessidade
     const resultado = await executeQuery(`
-      INSERT INTO necessidades (usuario_email, produto, escola, quantidade, tipo_entrega, data_preenchimento)
-      VALUES (?, ?, ?, ?, ?, NOW())
+      INSERT INTO necessidades (usuario_email, produto, escola, quantidade, tipo_entrega, data_preenchimento, status, observacoes)
+      VALUES (?, ?, ?, ?, ?, NOW(), 'NEC NUTRI', NULL)
     `, [req.user.email, produto, escola, quantidade, tipo_entrega]);
 
     res.status(201).json({
@@ -48,35 +48,72 @@ const criar = async (req, res) => {
 const atualizar = async (req, res) => {
   try {
     const { id } = req.params;
-    const { produto, escola, quantidade, tipo_entrega } = req.body;
+    const { produto, escola, quantidade, tipo_entrega, status, observacoes } = req.body;
 
-    // Validar dados obrigatórios
-    if (!produto || !escola || !quantidade || !tipo_entrega) {
-      return res.status(400).json({
-        error: 'Dados obrigatórios',
-        message: 'Todos os campos são obrigatórios'
-      });
-    }
-
-    // Verificar se a necessidade existe e pertence ao usuário
+    // Verificar se a necessidade existe
     const existing = await executeQuery(`
-      SELECT id FROM necessidades 
-      WHERE id = ? AND usuario_email = ?
-    `, [id, req.user.email]);
+      SELECT id, usuario_email FROM necessidades 
+      WHERE id = ?
+    `, [id]);
 
     if (existing.length === 0) {
       return res.status(404).json({
         error: 'Necessidade não encontrada',
-        message: 'Necessidade não encontrada ou não pertence ao usuário'
+        message: 'Necessidade não encontrada'
       });
     }
+
+    // Verificar permissões - coordenador/supervisor/admin podem editar qualquer necessidade
+    const userType = req.user.tipo_de_acesso;
+    const canEdit = userType === 'coordenador' || userType === 'supervisor' || userType === 'administrador' || 
+                   existing[0].usuario_email === req.user.email;
+
+    if (!canEdit) {
+      return res.status(403).json({
+        error: 'Sem permissão',
+        message: 'Você não tem permissão para editar esta necessidade'
+      });
+    }
+
+    // Construir query de atualização dinamicamente
+    let updateFields = [];
+    let updateValues = [];
+
+    if (produto !== undefined) {
+      updateFields.push('produto = ?');
+      updateValues.push(produto);
+    }
+    if (escola !== undefined) {
+      updateFields.push('escola = ?');
+      updateValues.push(escola);
+    }
+    if (quantidade !== undefined) {
+      updateFields.push('quantidade = ?');
+      updateValues.push(quantidade);
+    }
+    if (tipo_entrega !== undefined) {
+      updateFields.push('tipo_entrega = ?');
+      updateValues.push(tipo_entrega);
+    }
+    if (status !== undefined) {
+      updateFields.push('status = ?');
+      updateValues.push(status);
+    }
+    if (observacoes !== undefined) {
+      updateFields.push('observacoes = ?');
+      updateValues.push(observacoes);
+    }
+
+    // Sempre atualizar data_atualizacao
+    updateFields.push('data_atualizacao = NOW()');
+    updateValues.push(id);
 
     // Atualizar necessidade
     await executeQuery(`
       UPDATE necessidades 
-      SET produto = ?, escola = ?, quantidade = ?, tipo_entrega = ?, data_atualizacao = NOW()
-      WHERE id = ? AND usuario_email = ?
-    `, [produto, escola, quantidade, tipo_entrega, id, req.user.email]);
+      SET ${updateFields.join(', ')}
+      WHERE id = ?
+    `, updateValues);
 
     res.json({
       success: true,
