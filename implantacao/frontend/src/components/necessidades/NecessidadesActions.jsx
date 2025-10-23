@@ -10,23 +10,7 @@ const NecessidadesActions = ({
 }) => {
   return (
     <div className="mb-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-            📋 Necessidades
-            <button
-              onClick={onShowHelp}
-              className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
-              title="Ajuda"
-            >
-              <FaQuestionCircle size={16} />
-            </button>
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Gere necessidades de produtos para as escolas
-          </p>
-        </div>
-        
+      <div className="flex justify-end">
         <div className="flex space-x-3">
           {canCreate && (
             <Button
@@ -38,6 +22,14 @@ const NecessidadesActions = ({
               <span>Gerar Necessidade</span>
             </Button>
           )}
+          <button
+            onClick={onShowHelp}
+            className="flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            title="Ajuda"
+          >
+            <FaQuestionCircle size={16} />
+            <span>Ajuda</span>
+          </button>
         </div>
       </div>
     </div>
