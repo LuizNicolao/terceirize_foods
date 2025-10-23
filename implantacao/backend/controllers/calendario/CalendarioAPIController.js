@@ -23,10 +23,14 @@ class CalendarioAPIController {
         ORDER BY semana_consumo_inicio
       `, [ano]);
 
-      // Remover parênteses das semanas de consumo
+      // Remover parênteses e ano das semanas de consumo
       const semanasLimpas = semanas.map(semana => ({
         ...semana,
-        semana_consumo: semana.semana_consumo ? semana.semana_consumo.replace(/[()]/g, '') : semana.semana_consumo
+        semana_consumo: semana.semana_consumo ? 
+          semana.semana_consumo
+            .replace(/[()]/g, '') // Remover parênteses
+            .replace(/\/\d{2}$/, '') // Remover ano no final (ex: /25)
+          : semana.semana_consumo
       }));
 
       res.json({
