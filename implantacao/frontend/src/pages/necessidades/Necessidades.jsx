@@ -12,6 +12,7 @@ import {
   NecessidadeModal
 } from '../../components/necessidades';
 import { ActionButtons, Modal } from '../../components/ui';
+import { ExportButtons } from '../../components/shared';
 import { formatarDataParaExibicao } from '../../utils/recebimentos/recebimentosUtils';
 import toast from 'react-hot-toast';
 
