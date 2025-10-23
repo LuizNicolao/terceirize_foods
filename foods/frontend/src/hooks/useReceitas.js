@@ -82,7 +82,6 @@ export const useReceitas = () => {
 
   // Carregar receitas
   const loadReceitas = useCallback(async () => {
-    setLoading(true);
     try {
       const params = {
         page: baseEntity.currentPage,
@@ -94,10 +93,10 @@ export const useReceitas = () => {
       const response = await ReceitasService.listar(params);
       
       if (response.success) {
-        setReceitas(response.data.receitas || []);
-        setTotalPages(response.data.totalPages || 1);
-        setTotalItems(response.data.totalItems || 0);
-        setEstatisticas(response.data.estatisticas || estatisticas);
+        baseEntity.setItems(response.data.receitas || []);
+        baseEntity.setTotalPages(response.data.totalPages || 1);
+        baseEntity.setTotalItems(response.data.totalItems || 0);
+        setEstatisticas(response.data.estatisticas || {});
       } else {
         console.error('Erro ao carregar receitas:', response.error);
         toast.error(response.error || 'Erro ao carregar receitas');
@@ -105,8 +104,6 @@ export const useReceitas = () => {
     } catch (error) {
       console.error('Erro ao carregar receitas:', error);
       toast.error('Erro ao carregar receitas');
-    } finally {
-      setLoading(false);
     }
   }, [baseEntity.currentPage, baseEntity.itemsPerPage, baseEntity.searchTerm, filtros]);
 
@@ -269,7 +266,7 @@ export const useReceitas = () => {
       ...prev,
       [filtro]: value
     }));
-    setCurrentPage(1);
+    baseEntity.setCurrentPage(1);
   };
 
   const clearFiltros = () => {
@@ -278,8 +275,8 @@ export const useReceitas = () => {
       ano: new Date().getFullYear(),
       unidade_escolar_id: ''
     });
-    setSearchTerm('');
-    setCurrentPage(1);
+    baseEntity.setSearchTerm('');
+    baseEntity.setCurrentPage(1);
   };
 
   // Funções de exclusão
@@ -329,7 +326,7 @@ export const useReceitas = () => {
 
   return {
     // Estados
-    receitas: isSortingLocally ? receitasOrdenadas : receitas,
+    receitas: isSortingLocally ? receitasOrdenadas : baseEntity.items,
     loading: baseEntity.loading,
     saving,
     showModal,
