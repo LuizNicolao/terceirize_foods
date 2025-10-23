@@ -79,7 +79,8 @@ const ProdutoOrigem = () => {
     itemsPerPage: itemsPerPage,
     handlePageChange: !!handlePageChange,
     handleItemsPerPageChange: !!handleItemsPerPageChange,
-    handleItemsPerPageChangeType: typeof handleItemsPerPageChange
+    handleItemsPerPageChangeType: typeof handleItemsPerPageChange,
+    produtosOrigemLength: produtosOrigem?.length || 0
   });
 
   const {
@@ -240,16 +241,15 @@ const ProdutoOrigem = () => {
         handleItemsPerPageChangeType: typeof handleItemsPerPageChange,
         handleItemsPerPageChangeValue: handleItemsPerPageChange
       })}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
-        />
-      )}
+      {/* Paginação - sempre mostrar para permitir mudança de itens por página */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
 
       {/* Modal */}
       <ProdutoOrigemModal
