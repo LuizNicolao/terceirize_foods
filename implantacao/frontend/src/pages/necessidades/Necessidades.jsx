@@ -186,7 +186,7 @@ const Necessidades = () => {
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                           <span>Rota: {grupo.rota}</span>
                           <span>•</span>
-                          <span>Data Consumo: {grupo.data_consumo}</span>
+                          <span>Semana de Consumo: {grupo.data_consumo}</span>
                           <span>•</span>
                           <span>Gerado em: {new Date(grupo.data_preenchimento).toLocaleString('pt-BR')}</span>
                         </div>
