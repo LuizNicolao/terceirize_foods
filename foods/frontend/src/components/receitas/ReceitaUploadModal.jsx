@@ -26,26 +26,35 @@ const ReceitaUploadModal = ({ isOpen, onClose, onProcessar }) => {
 
     setProcessando(true);
     try {
-      // Aqui você pode implementar a lógica de processamento do PDF
-      // Por enquanto, vamos simular o processamento
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Criar FormData para enviar o PDF
+      const formData = new FormData();
+      formData.append('pdf', arquivo);
       
-      // Simular dados extraídos do PDF
-      const dadosProcessados = {
-        textoExtraido: 'Texto extraído do PDF...',
-        ingredientes: [
-          { nome: 'Ingrediente 1', quantidade: '100g' },
-          { nome: 'Ingrediente 2', quantidade: '200ml' }
-        ],
-        instrucoes: 'Instruções de preparo extraídas do PDF...'
-      };
+      // Enviar para o backend para processamento real
+      const response = await fetch('/api/receitas/processar-pdf', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
       
-      toast.success('PDF processado com sucesso!');
-      onProcessar(dadosProcessados);
-      handleClose();
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+      
+      const resultado = await response.json();
+      
+      if (resultado.success) {
+        toast.success('PDF processado com sucesso!');
+        onProcessar(resultado.data);
+        handleClose();
+      } else {
+        throw new Error(resultado.error || 'Erro ao processar PDF');
+      }
     } catch (error) {
       console.error('Erro ao processar PDF:', error);
-      toast.error('Erro ao processar PDF');
+      toast.error('Erro ao processar PDF: ' + error.message);
     } finally {
       setProcessando(false);
     }

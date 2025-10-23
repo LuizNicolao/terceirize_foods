@@ -233,18 +233,32 @@ export const useReceitas = () => {
 
   const handleProcessarPDF = async (dadosProcessados) => {
     try {
-      // Aqui você pode processar os dados extraídos do PDF
-      // Por exemplo, criar uma nova receita com os dados extraídos
       console.log('Dados processados do PDF:', dadosProcessados);
       
-      // Fechar modal e recarregar dados
-      setShowUploadModal(false);
-      baseEntity.loadData();
+      // Criar nova receita com os dados extraídos
+      const novaReceita = {
+        nome: dadosProcessados.nome || 'Receita do PDF',
+        descricao: dadosProcessados.textoExtraido || '',
+        ingredientes: dadosProcessados.ingredientes || [],
+        instrucoes: dadosProcessados.instrucoes || '',
+        texto_extraido_pdf: dadosProcessados.textoExtraido || ''
+      };
       
-      toast.success('PDF processado com sucesso!');
+      // Salvar no banco de dados
+      const resultado = await ReceitasService.criar(novaReceita);
+      
+      if (resultado.success) {
+        toast.success('Receita criada com sucesso a partir do PDF!');
+        
+        // Fechar modal e recarregar dados
+        setShowUploadModal(false);
+        baseEntity.loadData();
+      } else {
+        toast.error('Erro ao salvar receita: ' + (resultado.error || 'Erro desconhecido'));
+      }
     } catch (error) {
       console.error('Erro ao processar PDF:', error);
-      toast.error('Erro ao processar PDF');
+      toast.error('Erro ao processar PDF: ' + error.message);
     }
   };
 

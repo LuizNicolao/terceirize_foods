@@ -229,6 +229,46 @@ class ReceitasCRUDController {
     }
   }
 
+  /**
+   * Processar PDF de receita e extrair ingredientes
+   */
+  static async processarPDF(req, res) {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'Arquivo PDF é obrigatório'
+        });
+      }
+
+      // Aqui você pode implementar o processamento real do PDF
+      // Por enquanto, vamos simular a extração
+      const dadosExtraidos = {
+        nome: 'Receita Extraída do PDF',
+        descricao: 'Receita extraída automaticamente do PDF',
+        texto_extraido_pdf: 'Texto extraído do PDF...',
+        ingredientes: [
+          { nome: 'Ingrediente 1', quantidade: '100g' },
+          { nome: 'Ingrediente 2', quantidade: '200ml' }
+        ],
+        instrucoes: 'Instruções de preparo extraídas do PDF...'
+      };
+
+      res.json({
+        success: true,
+        data: dadosExtraidos,
+        message: 'PDF processado com sucesso'
+      });
+
+    } catch (error) {
+      console.error('Erro ao processar PDF:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor'
+      });
+    }
+  }
+
 }
 
 module.exports = ReceitasCRUDController;

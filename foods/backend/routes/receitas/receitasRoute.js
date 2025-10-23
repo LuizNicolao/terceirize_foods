@@ -62,6 +62,20 @@ router.delete('/:id',
   receitasController.excluir
 );
 
+// ===== ROTAS DE PROCESSAMENTO DE PDF =====
+
+/**
+ * @route POST /receitas/processar-pdf
+ * @desc Processar PDF de receita e extrair ingredientes
+ */
+router.post('/processar-pdf',
+  uploadPDF,
+  handleUploadError,
+  checkScreenPermission('receitas', 'criar'),
+  auditMiddleware('receitas', AUDIT_ACTIONS.CREATE),
+  receitasController.processarPDF
+);
+
 // ===== ROTAS DE EXPORTAÇÃO =====
 
 router.get('/export/xlsx', checkScreenPermission('receitas', 'visualizar'), receitasController.exportarXLSX);

@@ -24,5 +24,8 @@ module.exports = {
   
   // Métodos de Exportação
   exportarXLSX: ReceitasExportController.exportarXLSX,
-  exportarPDF: ReceitasExportController.exportarPDF
+  exportarPDF: ReceitasExportController.exportarPDF,
+  
+  // Métodos de Processamento
+  processarPDF: ReceitasCRUDController.processarPDF
 };
