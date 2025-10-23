@@ -71,6 +71,16 @@ const ProdutoOrigem = () => {
     handleSort
   } = useProdutoOrigem();
 
+  // Debug logs para paginação
+  console.log('🔍 DEBUG PAGINAÇÃO VARIÁVEIS:', {
+    currentPage,
+    totalPages,
+    totalItems,
+    itemsPerPage,
+    handlePageChange: !!handlePageChange,
+    handleItemsPerPageChange: !!handleItemsPerPageChange
+  });
+
   const {
     showAuditModal,
     auditLogs,
