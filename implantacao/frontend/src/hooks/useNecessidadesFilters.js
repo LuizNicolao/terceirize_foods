@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useSemanasAbastecimento } from './useSemanasAbastecimento';
+import { useSemanasConsumo } from './useSemanasConsumo';
 
 export const useNecessidadesFilters = () => {
-  const { obterValorPadrao } = useSemanasAbastecimento();
+  const { obterValorPadrao } = useSemanasConsumo();
   
   const [filtros, setFiltros] = useState({
     escola: null,

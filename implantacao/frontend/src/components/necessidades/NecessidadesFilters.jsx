@@ -2,6 +2,7 @@ import React from 'react';
 import { FaSchool, FaBox, FaCalendarAlt, FaSearch, FaTimes, FaCalendarWeek } from 'react-icons/fa';
 import { Input, SearchableSelect, Button } from '../ui';
 import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
+import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 
 const NecessidadesFilters = ({ 
   escolas = [], 
@@ -13,6 +14,9 @@ const NecessidadesFilters = ({
 }) => {
   // Hook para semanas de abastecimento
   const { opcoes: opcoesSemanas, obterValorPadrao } = useSemanasAbastecimento();
+  
+  // Hook para semanas de consumo do calendário
+  const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo();
   const handleEscolaChange = (escola) => {
     onFilterChange({ escola });
   };
@@ -121,7 +125,7 @@ const NecessidadesFilters = ({
             label="Semana de Consumo"
             value={filtros.data}
             onChange={handleDataChange}
-            options={opcoesSemanas || []}
+            options={opcoesSemanasConsumo || []}
             placeholder="Selecione a semana de consumo..."
             disabled={loading}
           />
