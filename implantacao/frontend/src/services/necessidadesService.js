@@ -86,6 +86,51 @@ const necessidadesService = {
   buscarGruposComPercapita: async () => {
     const response = await api.get('/produtos-per-capita/grupos-com-percapita');
     return response.data;
+  },
+
+  // ===== ENDPOINTS PARA AJUSTE DE NECESSIDADES =====
+
+  // Listar necessidades para ajuste (status = 'NEC')
+  listarParaAjuste: async (filtros) => {
+    const params = new URLSearchParams();
+    if (filtros.escola_id) params.append('escola_id', filtros.escola_id);
+    if (filtros.grupo) params.append('grupo', filtros.grupo);
+    if (filtros.consumo_de) params.append('consumo_de', filtros.consumo_de);
+    if (filtros.consumo_ate) params.append('consumo_ate', filtros.consumo_ate);
+    
+    const response = await api.get(`/necessidades/ajuste?${params.toString()}`);
+    return response.data;
+  },
+
+  // Salvar ajustes da nutricionista
+  salvarAjustes: async (dados) => {
+    const response = await api.put('/necessidades/ajustes', dados);
+    return response.data;
+  },
+
+  // Incluir produto extra
+  incluirProdutoExtra: async (dados) => {
+    const response = await api.post('/necessidades/produto-extra', dados);
+    return response.data;
+  },
+
+  // Liberar para coordenação
+  liberarCoordenacao: async (dados) => {
+    const response = await api.post('/necessidades/liberar-coordenacao', dados);
+    return response.data;
+  },
+
+  // Buscar produtos para modal (excluindo já incluídos)
+  buscarProdutosParaModal: async (filtros) => {
+    const params = new URLSearchParams();
+    if (filtros.grupo) params.append('grupo', filtros.grupo);
+    if (filtros.escola_id) params.append('escola_id', filtros.escola_id);
+    if (filtros.search) params.append('search', filtros.search);
+    if (filtros.consumo_de) params.append('consumo_de', filtros.consumo_de);
+    if (filtros.consumo_ate) params.append('consumo_ate', filtros.consumo_ate);
+    
+    const response = await api.get(`/necessidades/produtos-modal?${params.toString()}`);
+    return response.data;
   }
 };
 
