@@ -14,6 +14,7 @@ const Pagination = ({
     totalPages,
     totalItems,
     itemsPerPage,
+    onItemsPerPageChange: !!onItemsPerPageChange,
     willReturnNull: totalPages <= 1
   });
 

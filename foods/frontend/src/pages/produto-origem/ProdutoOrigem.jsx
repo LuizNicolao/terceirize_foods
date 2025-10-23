@@ -225,7 +225,8 @@ const ProdutoOrigem = () => {
         itemsPerPage,
         shouldShow: totalPages > 1,
         hasHandlePageChange: !!handlePageChange,
-        hasHandleItemsPerPageChange: !!handleItemsPerPageChange
+        hasHandleItemsPerPageChange: !!handleItemsPerPageChange,
+        handleItemsPerPageChangeType: typeof handleItemsPerPageChange
       })}
       {totalPages > 1 && (
         <Pagination
