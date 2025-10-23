@@ -54,16 +54,8 @@ const necessidadesService = {
 
   // Gerar necessidade (nova funcionalidade)
   gerarNecessidade: async (dados) => {
-    try {
-      const response = await api.post('/necessidades/gerar', dados);
-      return response.data;
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || error.message,
-        details: error.response?.data
-      };
-    }
+    const response = await api.post('/necessidades/gerar', dados);
+    return response.data;
   },
 
   // Buscar produtos por grupo (do sistema implantacao)
