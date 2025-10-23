@@ -160,18 +160,16 @@ const RotasNutricionistas = () => {
       </div>
 
       {/* Paginação */}
-      {
-        <div className="mt-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onLimitChange={handleLimitChange}
-          />
-        </div>
-      )}
+      <div className="mt-6">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onLimitChange={handleLimitChange}
+        />
+      </div>
 
       {/* Modal de Formulário */}
       <RotasNutricionistasModal

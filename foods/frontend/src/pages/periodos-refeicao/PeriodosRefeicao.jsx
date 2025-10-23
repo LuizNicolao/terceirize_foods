@@ -170,18 +170,16 @@ const PeriodosRefeicao = () => {
       </div>
 
       {/* Paginação */}
-      {
-        <div className="mt-4 sm:mt-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            itemsPerPage={itemsPerPage}
-            onPageChange={handlePageChange}
-            onItemsPerPageChange={handleItemsPerPageChange}
-          />
-        </div>
-      )}
+      <div className="mt-4 sm:mt-6">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          itemsPerPage={itemsPerPage}
+          onPageChange={handlePageChange}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
+      </div>
 
       {/* Modal de Cadastro/Edição */}
       {showModal && (
