@@ -153,6 +153,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
    * Carrega dados quando filtros ou paginação mudam
    */
   useEffect(() => {
+    console.log('useBaseEntity: Carregando dados com appliedSearchTerm:', filters.appliedSearchTerm);
     loadData();
   }, [pagination.currentPage, pagination.itemsPerPage, filters.appliedSearchTerm, filters.statusFilter]);
 

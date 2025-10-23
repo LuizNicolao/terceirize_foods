@@ -118,6 +118,7 @@ const ProdutosPerCapitaFilters = ({
    */
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && onSearchSubmit) {
+      console.log('Enter pressionado, executando pesquisa...');
       onSearchSubmit();
     }
   };
