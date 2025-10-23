@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaQuestionCircle, FaPlus } from 'react-icons/fa';
+import { FaQuestionCircle, FaPlus, FaFileUpload } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useReceitas } from '../../hooks/useReceitas';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
@@ -12,7 +12,8 @@ import {
   ReceitaModal, 
   ReceitaTable, 
   ReceitaStats,
-  ReceitaPreviewModal
+  ReceitaPreviewModal,
+  ReceitaUploadModal
 } from '../../components/receitas';
 import { AuditModal, ExportButtons } from '../../components/shared';
 
@@ -108,6 +109,13 @@ const Receitas = () => {
             <FaQuestionCircle className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Auditoria</span>
           </Button>
+          {canCreate('receitas') && (
+            <Button onClick={handleUploadPDF} size="sm" variant="outline">
+              <FaFileUpload className="mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Upload PDF</span>
+              <span className="sm:hidden">PDF</span>
+            </Button>
+          )}
           {canCreate('receitas') && (
             <Button onClick={handleAddReceita} size="sm">
               <FaPlus className="mr-1 sm:mr-2" />
@@ -216,6 +224,13 @@ const Receitas = () => {
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
+      />
+
+      {/* Modal de Upload de PDF */}
+      <ReceitaUploadModal
+        isOpen={showUploadModal}
+        onClose={handleCloseUploadModal}
+        onProcessar={handleProcessarPDF}
       />
     </div>
   );

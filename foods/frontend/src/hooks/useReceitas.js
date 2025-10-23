@@ -36,6 +36,7 @@ export const useReceitas = () => {
   const [receitaToDelete, setReceitaToDelete] = useState(null);
   const [estatisticas, setEstatisticas] = useState({});
   const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const [filtros, setFiltros] = useState({
     mes: '',
     ano: new Date().getFullYear(),
@@ -219,6 +220,32 @@ export const useReceitas = () => {
     setEditingReceita(null);
   };
 
+  // Funções de upload de PDF
+  const handleUploadPDF = () => {
+    setShowUploadModal(true);
+  };
+
+  const handleCloseUploadModal = () => {
+    setShowUploadModal(false);
+  };
+
+  const handleProcessarPDF = async (dadosProcessados) => {
+    try {
+      // Aqui você pode processar os dados extraídos do PDF
+      // Por exemplo, criar uma nova receita com os dados extraídos
+      console.log('Dados processados do PDF:', dadosProcessados);
+      
+      // Fechar modal e recarregar dados
+      setShowUploadModal(false);
+      baseEntity.loadData();
+      
+      toast.success('PDF processado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao processar PDF:', error);
+      toast.error('Erro ao processar PDF');
+    }
+  };
+
 
   // Funções de paginação
   const handlePageChange = (page) => {
@@ -346,6 +373,11 @@ export const useReceitas = () => {
     handleCloseValidationModal,
     handleExportXLSX,
     handleExportPDF,
+    
+    // Funções de upload de PDF
+    handleUploadPDF,
+    handleCloseUploadModal,
+    handleProcessarPDF,
     
     // Ações de ordenação
     handleSort
