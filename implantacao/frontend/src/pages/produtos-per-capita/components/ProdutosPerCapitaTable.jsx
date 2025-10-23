@@ -1,5 +1,5 @@
 import React from 'react';
-import { EmptyState, ActionButtons } from '../../../components/ui';
+import { EmptyState, ActionButtons, SortableHeader, useSorting } from '../../../components/ui';
 
 const ProdutosPerCapitaTable = ({ 
   produtos, 
@@ -14,6 +14,11 @@ const ProdutosPerCapitaTable = ({
   formatarPeriodo,
   obterPeriodosComPerCapita
 }) => {
+  // Hook para ordenação
+  const { sortConfig, handleSort, sortData } = useSorting('produto_nome', 'asc');
+  
+  // Aplicar ordenação aos dados
+  const produtosOrdenados = sortData(produtos);
   if (loading) {
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -69,34 +74,62 @@ const ProdutosPerCapitaTable = ({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <SortableHeader 
+                field="produto_nome" 
+                currentSort={sortConfig} 
+                onSort={handleSort}
+              >
                 Produto
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </SortableHeader>
+              <SortableHeader 
+                field="per_capita_lanche_manha" 
+                currentSort={sortConfig} 
+                onSort={handleSort}
+              >
                 Lanche Manhã
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </SortableHeader>
+              <SortableHeader 
+                field="per_capita_almoco" 
+                currentSort={sortConfig} 
+                onSort={handleSort}
+              >
                 Almoço
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </SortableHeader>
+              <SortableHeader 
+                field="per_capita_lanche_tarde" 
+                currentSort={sortConfig} 
+                onSort={handleSort}
+              >
                 Lanche Tarde
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </SortableHeader>
+              <SortableHeader 
+                field="per_capita_parcial" 
+                currentSort={sortConfig} 
+                onSort={handleSort}
+              >
                 Parcial
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </SortableHeader>
+              <SortableHeader 
+                field="per_capita_eja" 
+                currentSort={sortConfig} 
+                onSort={handleSort}
+              >
                 EJA
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              </SortableHeader>
+              <SortableHeader 
+                field="ativo" 
+                currentSort={sortConfig} 
+                onSort={handleSort}
+              >
                 Status
-              </th>
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Ações
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {produtos.map((produto) => (
+            {produtosOrdenados.map((produto) => (
               <tr key={produto.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div>
