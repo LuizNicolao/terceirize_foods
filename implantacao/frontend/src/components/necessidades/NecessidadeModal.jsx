@@ -118,6 +118,8 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     console.log('Object.keys(mediasPeriodo):', Object.keys(mediasPeriodo));
     console.log('mediasPeriodo.lanche_manha:', mediasPeriodo.lanche_manha);
     console.log('mediasPeriodo.almoco:', mediasPeriodo.almoco);
+    console.log('mediasPeriodo.lanche_manha?.media:', mediasPeriodo.lanche_manha?.media);
+    console.log('mediasPeriodo.almoco?.media:', mediasPeriodo.almoco?.media);
     
     // Preservar ajustes existentes
     const ajustesExistentes = {};
