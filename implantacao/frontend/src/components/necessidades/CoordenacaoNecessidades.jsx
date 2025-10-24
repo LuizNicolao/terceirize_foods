@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch } from 'react-icons/fa';
-import { useNecessidadesCoordenacao } from '../../hooks/useNecessidadesCoordenacao';
+import useNecessidadesCoordenacao from '../../hooks/useNecessidadesCoordenacao';
 import { Modal, Button, Input, SearchableSelect } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
 import toast from 'react-hot-toast';
