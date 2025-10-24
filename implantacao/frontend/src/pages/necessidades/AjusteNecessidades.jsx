@@ -3,6 +3,7 @@ import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch } from 
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
+import { useNecessidadesCoordenacao } from '../../hooks/useNecessidadesCoordenacao';
 import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import {
@@ -22,7 +23,16 @@ const AjusteNecessidades = () => {
   const [produtosSelecionados, setProdutosSelecionados] = useState([]);
   const [searchProduto, setSearchProduto] = useState('');
 
-  // Hook para gerenciar ajuste de necessidades
+  // Detectar modo baseado no status das necessidades
+  const [modoCoordenacao, setModoCoordenacao] = useState(false);
+
+  // Hook para gerenciar ajuste de necessidades (nutricionista)
+  const hookNutricionista = useNecessidadesAjuste();
+  
+  // Hook para gerenciar coordenação
+  const hookCoordenacao = useNecessidadesCoordenacao();
+
+  // Usar hook baseado no modo
   const {
     necessidades,
     escolas,
@@ -36,7 +46,7 @@ const AjusteNecessidades = () => {
     liberarCoordenacao,
     buscarProdutosParaModal,
     atualizarFiltros
-  } = useNecessidadesAjuste();
+  } = modoCoordenacao ? hookCoordenacao : hookNutricionista;
 
   // Hook para semanas de abastecimento
   const { opcoes: opcoesSemanasAbastecimento } = useSemanasAbastecimento();
@@ -48,6 +58,14 @@ const AjusteNecessidades = () => {
   const [ajustesLocais, setAjustesLocais] = useState({});
   const [necessidadeAtual, setNecessidadeAtual] = useState(null);
   const [buscaProduto, setBuscaProduto] = useState('');
+
+  // Detectar modo baseado no status das necessidades
+  useEffect(() => {
+    if (necessidades && necessidades.length > 0) {
+      const status = necessidades[0].status;
+      setModoCoordenacao(status === 'NEC COORD');
+    }
+  }, [necessidades]);
   const [necessidadesFiltradas, setNecessidadesFiltradas] = useState([]);
 
   // Verificar permissões específicas
@@ -451,10 +469,13 @@ const AjusteNecessidades = () => {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
               <FaEdit className="mr-2 sm:mr-3 text-blue-600" />
-              Ajuste de Necessidade por Nutricionista
+              {modoCoordenacao ? 'Liberação para Coordenação' : 'Ajuste de Necessidade por Nutricionista'}
             </h1>
             <p className="text-gray-600 mt-1">
-              Visualize, edite e ajuste necessidades geradas
+              {modoCoordenacao 
+                ? 'Visualize, edite e libere necessidades para logística'
+                : 'Visualize, edite e ajuste necessidades geradas'
+              }
             </p>
           </div>
           <div className="flex items-center space-x-3">
@@ -610,19 +631,31 @@ const AjusteNecessidades = () => {
                         size="sm"
                         onClick={handleSalvarAjustes}
                         icon={<FaSave />}
-                        disabled={statusAtual === 'NEC COORD'}
+                        disabled={statusAtual === 'CONF'}
                       >
                         Salvar Ajustes
                       </Button>
-                      <Button
-                        variant="success"
-                        size="sm"
-                        onClick={handleLiberarCoordenacao}
-                        icon={<FaPaperPlane />}
-                        disabled={statusAtual === 'NEC COORD'}
-                      >
-                        Liberar para Coordenação
-                      </Button>
+                      {modoCoordenacao ? (
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={handleLiberarCoordenacao}
+                          icon={<FaPaperPlane />}
+                          disabled={statusAtual === 'CONF'}
+                        >
+                          Liberar para Logística
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="success"
+                          size="sm"
+                          onClick={handleLiberarCoordenacao}
+                          icon={<FaPaperPlane />}
+                          disabled={statusAtual === 'NEC COORD'}
+                        >
+                          Liberar para Coordenação
+                        </Button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -634,52 +667,120 @@ const AjusteNecessidades = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Código
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Produto
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Unidade
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Quantidade (gerada)
-                    </th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ajuste (nutricionista)
-                    </th>
+                    {modoCoordenacao ? (
+                      // Colunas para modo coordenação
+                      <>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Cod Unidade
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Unidade Escolar
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Codigo Produto
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Produto
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Unidade de Medida
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Quantidade
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ajuste
+                        </th>
+                      </>
+                    ) : (
+                      // Colunas para modo nutricionista
+                      <>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Código
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Produto
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Unidade
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Quantidade (gerada)
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ajuste (nutricionista)
+                        </th>
+                      </>
+                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {necessidadesFiltradas.map((necessidade) => (
                     <tr key={necessidade.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
-                        {necessidade.codigo_teknisa || 'N/A'}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
-                        {necessidade.produto}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">
-                        {necessidade.produto_unidade}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                        {necessidade.status === 'NEC NUTRI' 
-                          ? (necessidade.ajuste_nutricionista || 0)
-                          : (necessidade.ajuste || 0)
-                        }
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                        <Input
-                          type="number"
-                          value={ajustesLocais[necessidade.id] || ''}
-                          onChange={(e) => handleAjusteChange(necessidade.id, e.target.value)}
-                          min="0"
-                          step="0.001"
-                          className="w-20 text-center text-xs py-1"
-                          disabled={statusAtual === 'NEC COORD' || !canEditAjuste}
-                        />
-                      </td>
+                      {modoCoordenacao ? (
+                        // Células para modo coordenação
+                        <>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                            {necessidade.codigo_teknisa || 'N/A'}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                            {necessidade.escola}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                            {necessidade.codigo_teknisa || 'N/A'}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                            {necessidade.produto}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">
+                            {necessidade.produto_unidade}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
+                            {necessidade.ajuste_nutricionista || necessidade.ajuste || 0}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
+                            <Input
+                              type="number"
+                              value={ajustesLocais[necessidade.id] || ''}
+                              onChange={(e) => handleAjusteChange(necessidade.id, e.target.value)}
+                              min="0"
+                              step="0.001"
+                              className="w-20 text-center text-xs py-1"
+                              disabled={!canEditAjuste}
+                            />
+                          </td>
+                        </>
+                      ) : (
+                        // Células para modo nutricionista
+                        <>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                            {necessidade.codigo_teknisa || 'N/A'}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                            {necessidade.produto}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">
+                            {necessidade.produto_unidade}
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
+                            {necessidade.status === 'NEC NUTRI' 
+                              ? (necessidade.ajuste_nutricionista || 0)
+                              : (necessidade.ajuste || 0)
+                            }
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
+                            <Input
+                              type="number"
+                              value={ajustesLocais[necessidade.id] || ''}
+                              onChange={(e) => handleAjusteChange(necessidade.id, e.target.value)}
+                              min="0"
+                              step="0.001"
+                              className="w-20 text-center text-xs py-1"
+                              disabled={statusAtual === 'NEC COORD' || !canEditAjuste}
+                            />
+                          </td>
+                        </>
+                      )}
                     </tr>
                   ))}
                 </tbody>
