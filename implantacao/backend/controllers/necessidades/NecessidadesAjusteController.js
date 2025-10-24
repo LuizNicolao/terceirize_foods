@@ -445,6 +445,23 @@ const buscarProdutosParaModal = async (req, res) => {
         WHERE escola_id = ? AND semana_consumo = ?
       )`;
       params.push(escola_id, semana_consumo);
+      
+      // Log para verificar se o produto está sendo encontrado na tabela necessidades
+      console.log('=== DEBUG VERIFICAR PRODUTO NA TABELA ===');
+      console.log('Verificando se produto_id 36 está na tabela necessidades...');
+      try {
+        const checkQuery = `
+          SELECT produto_id, produto, escola_id, semana_consumo 
+          FROM necessidades 
+          WHERE produto_id = ? AND escola_id = ? AND semana_consumo = ?
+        `;
+        const checkParams = [36, escola_id, semana_consumo];
+        const checkResult = await executeQuery(checkQuery, checkParams);
+        console.log('Resultado da verificação:', checkResult);
+        console.log('==========================================');
+      } catch (checkError) {
+        console.error('Erro ao verificar produto:', checkError);
+      }
     }
 
     query += ` ORDER BY ppc.produto_nome ASC`;
