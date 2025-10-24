@@ -155,8 +155,8 @@ const AjusteNecessidades = () => {
       const produtos = await buscarProdutosParaModal({
         grupo: filtros.grupo,
         escola_id: filtros.escola_id,
-        semana_consumo: filtros.semana_consumo,
-        semana_abastecimento: filtros.semana_abastecimento
+        consumo_de: filtros.consumo_de,
+        consumo_ate: filtros.consumo_ate
       });
 
       if (produtos.success) {
@@ -209,8 +209,8 @@ const AjusteNecessidades = () => {
       const produtos = await buscarProdutosParaModal({
         grupo: filtros.grupo,
         escola_id: filtros.escola_id,
-        semana_consumo: filtros.semana_consumo,
-        semana_abastecimento: filtros.semana_abastecimento,
+        consumo_de: filtros.consumo_de,
+        consumo_ate: filtros.consumo_ate,
         search
       });
 

@@ -404,15 +404,7 @@ const liberarCoordenacao = async (req, res) => {
 // Buscar produtos para modal (excluindo já incluídos)
 const buscarProdutosParaModal = async (req, res) => {
   try {
-    const { grupo, escola_id, search, semana_consumo, semana_abastecimento } = req.query;
-
-    console.log('=== DEBUG PARÂMETROS RECEBIDOS ===');
-    console.log('grupo:', grupo);
-    console.log('escola_id:', escola_id);
-    console.log('search:', search);
-    console.log('semana_consumo:', semana_consumo);
-    console.log('semana_abastecimento:', semana_abastecimento);
-    console.log('===================================');
+    const { grupo, escola_id, search, consumo_de, consumo_ate } = req.query;
 
     // Validar parâmetros obrigatórios
     if (!grupo) {
@@ -437,114 +429,27 @@ const buscarProdutosParaModal = async (req, res) => {
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    // Excluir produtos já incluídos na necessidade (se escola_id e semana_consumo fornecidos)
-    if (escola_id && semana_consumo) {
+    // Excluir produtos já incluídos na necessidade (se escola_id e período fornecidos)
+    if (escola_id && consumo_de && consumo_ate) {
       query += ` AND ppc.produto_id NOT IN (
         SELECT DISTINCT produto_id 
         FROM necessidades 
-        WHERE escola_id = ? AND semana_consumo = ?
+        WHERE escola_id = ? AND semana_consumo BETWEEN ? AND ?
+      )`;
+      params.push(escola_id, consumo_de, consumo_ate);
+    } else if (escola_id && semana_consumo) {
+      // Se não tiver consumo_de e consumo_ate, usar semana_consumo diretamente
+      query += ` AND ppc.produto_id NOT IN (
+        SELECT DISTINCT hedge.produto_id 
+        FROM necessidades hedge
+        WHERE hedge.escola_id = ? AND hedge.semana_consumo = ?
       )`;
       params.push(escola_id, semana_consumo);
-      
-      // Log para verificar se o produto está sendo encontrado na tabela necessidades
-      console.log('=== DEBUG VERIFICAR PRODUTO NA TABELA ===');
-      console.log('Verificando se produto_id 36 está na tabela necessidades...');
-      try {
-        const checkQuery = `
-          SELECT produto_id, produto, escola_id, semana_consumo 
-          FROM necessidades 
-          WHERE produto_id = ? AND escola_id = ? AND semana_consumo = ?
-        `;
-        const checkParams = [36, escola_id, semana_consumo];
-        const checkResult = await executeQuery(checkQuery, checkParams);
-        console.log('Resultado da verificação:', checkResult);
-        
-        // Verificar se o produto está sendo encontrado com outros critérios
-        const checkQuery2 = `
-          SELECT produto_id, produto, escola_id, semana_consumo 
-          FROM necessidades 
-          WHERE produto_id = ? AND escola_id = ?
-        `;
-        const checkParams2 = [36, escola_id];
-        const checkResult2 = await executeQuery(checkQuery2, checkParams2);
-        console.log('Resultado da verificação 2 (sem semana_consumo):', checkResult2);
-        
-        // Verificar se o produto está sendo encontrado em qualquer lugar
-        const checkQuery3 = `
-          SELECT produto_id, produto, escola_id, semana_consumo 
-          FROM necessidades 
-          WHERE produto_id = ?
-        `;
-        const checkParams3 = [36];
-        const checkResult3 = await executeQuery(checkQuery3, checkParams3);
-        console.log('Resultado da verificação 3 (apenas produto_id):', checkResult3);
-        
-        // Verificar se o produto está sendo encontrado com escola_id 159
-        const checkQuery4 = `
-          SELECT produto_id, produto, escola_id, semana_consumo 
-          FROM necessidades 
-          WHERE produto_id = ? AND escola_id = 159
-        `;
-        const checkParams4 = [36];
-        const checkResult4 = await executeQuery(checkQuery4, checkParams4);
-        console.log('Resultado da verificação 4 (escola_id 159):', checkResult4);
-        
-        // Verificar se o produto está sendo encontrado com semana_consumo '06/01 a 12/01'
-        const checkQuery5 = `
-          SELECT produto_id, produto, escola_id, semana_consumo 
-          FROM necessidades 
-          WHERE produto_id = ? AND semana_consumo = '06/01 a 12/01'
-        `;
-        const checkParams5 = [36];
-        const checkResult5 = await executeQuery(checkQuery5, checkParams5);
-        console.log('Resultado da verificação 5 (semana_consumo 06/01 a 12/01):', checkResult5);
-        
-        // Verificar se o produto está sendo encontrado com escola_id 159 e semana_consumo '06/01 a 12/01'
-        const checkQuery6 = `
-          SELECT produto_id, produto, escola_id, semana_consumo 
-          FROM necessidades 
-          WHERE produto_id = ? AND escola_id = 159 AND semana_consumo = '06/01 a 12/01'
-        `;
-        const checkParams6 = [36];
-        const checkResult6 = await executeQuery(checkQuery6, checkParams6);
-        console.log('Resultado da verificação 6 (escola_id 159 e semana_consumo 06/01 a 12/01):', checkResult6);
-        
-        // Verificar se o produto está sendo encontrado com escola_id 159 e semana_consumo '06/01 a 12/01'
-        const checkQuery7 = `
-          SELECT produto_id, produto, escola_id, semana_consumo 
-          FROM necessidades 
-          WHERE produto_id = ? AND escola_id = 159 AND semana_consumo = '06/01 a 12/01'
-        `;
-        const checkParams7 = [36];
-        const checkResult7 = await executeQuery(checkQuery7, checkParams7);
-        console.log('Resultado da verificação 7 (escola_id 159 e semana_consumo 06/01 a 12/01):', checkResult7);
-        
-        // Verificar se o produto está sendo encontrado com escola_id 159 e semana_consumo '06/01 a 12/01'
-        const checkQuery8 = `
-          SELECT produto_id, produto, escola_id, semana_consumo 
-          FROM necessidades 
-          WHERE produto_id = ? AND escola_id = 159 AND semana_consumo = '06/01 a 12/01'
-        `;
-        const checkParams8 = [36];
-        const checkResult8 = await executeQuery(checkQuery8, checkParams8);
-        console.log('Resultado da verificação 8 (escola_id 159 e semana_consumo 06/01 a 12/01):', checkResult8);
-        
-        console.log('==========================================');
-      } catch (checkError) {
-        console.error('Erro ao verificar produto:', checkError);
-      }
     }
 
     query += ` ORDER BY ppc.produto_nome ASC`;
 
     const produtos = await executeQuery(query, params);
-
-    console.log('=== DEBUG EXCLUSÃO PRODUTOS ===');
-    console.log('Query executada:', query);
-    console.log('Parâmetros:', params);
-    console.log('Produtos encontrados:', produtos.length);
-    console.log('Primeiros produtos:', produtos.slice(0, 3));
-    console.log('================================');
 
     res.json({
       success: true,
