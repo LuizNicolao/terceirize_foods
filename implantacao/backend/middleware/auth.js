@@ -8,24 +8,37 @@ if (!JWT_SECRET) {
 
 // Middleware para verificar token JWT
 const authenticateToken = async (req, res, next) => {
+  console.log('=== AUTH MIDDLEWARE DEBUG ===');
+  console.log('URL:', req.url);
+  console.log('Method:', req.method);
+  console.log('Headers:', req.headers);
   
   const authHeader = req.headers['authorization'];
+  console.log('Auth Header:', authHeader);
+  
   const token = authHeader && authHeader.split(' ')[1];
+  console.log('Token:', token);
 
   if (!token) {
+    console.log('❌ Token não fornecido');
     return res.status(401).json({ error: 'Token de acesso não fornecido' });
   }
 
   try {
+    console.log('🔍 Verificando token JWT...');
     const decoded = jwt.verify(token, JWT_SECRET);
+    console.log('✅ Token válido, decoded:', decoded);
     
     // Verificar se o usuário ainda existe e está ativo
+    console.log('🔍 Buscando usuário no banco...');
     const user = await executeQuery(
       'SELECT id, nome, email, nivel_de_acesso, tipo_de_acesso, status FROM usuarios WHERE id = ?',
       [decoded.userId]
     );
+    console.log('👤 Usuário encontrado:', user);
 
     if (user.length === 0) {
+      console.log('❌ Usuário não encontrado no banco');
       return res.status(401).json({ error: 'Usuário não encontrado' });
     }
 
@@ -38,8 +51,11 @@ const authenticateToken = async (req, res, next) => {
     }
 
     req.user = user[0];
+    console.log('✅ Autenticação bem-sucedida, prosseguindo...');
     next();
   } catch (error) {
+    console.log('❌ Erro na autenticação:', error.message);
+    console.log('❌ Erro completo:', error);
     return res.status(403).json({ error: 'Token inválido' });
   }
 };
