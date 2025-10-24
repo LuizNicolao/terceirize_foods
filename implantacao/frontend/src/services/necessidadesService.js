@@ -4,28 +4,42 @@ import FoodsApiService from './FoodsApiService';
 const necessidadesService = {
   // Listar necessidades com filtros
   listar: async (filtros = {}) => {
-    const params = new URLSearchParams();
-    
-    Object.keys(filtros).forEach(key => {
-      if (filtros[key] !== undefined && filtros[key] !== '' && filtros[key] !== null) {
-        let value = filtros[key];
-        
-        // Tratar objetos complexos
-        if (key === 'escola' && typeof value === 'object' && value && value.nome_escola) {
-          value = value.nome_escola;
-        } else if (key === 'grupo' && typeof value === 'object' && value && value.id) {
-          value = value.id;
-        } else if (key === 'data' && typeof value === 'string' && value.includes('(')) {
-          // Remover parênteses da semana de consumo
-          value = value.replace(/[()]/g, '');
+    try {
+      const params = new URLSearchParams();
+      
+      Object.keys(filtros).forEach(key => {
+        if (filtros[key] !== undefined && filtros[key] !== '' && filtros[key] !== null) {
+          let value = filtros[key];
+          
+          // Tratar objetos complexos
+          if (key === 'escola' && typeof value === 'object' && value && value.nome_escola) {
+            value = value.nome_escola;
+          } else if (key === 'grupo' && typeof value === 'object' && value && value.id) {
+            value = value.id;
+          } else if (key === 'data' && typeof value === 'string' && value.includes('(')) {
+            // Remover parênteses da semana de consumo
+            value = value.replace(/[()]/g, '');
+          }
+          
+          params.append(key, value);
         }
-        
-        params.append(key, value);
-      }
-    });
-    
-    const response = await api.get(`/necessidades?${params.toString()}`);
-    return response.data;
+      });
+      
+      const response = await api.get(`/necessidades?${params.toString()}`);
+      return {
+        success: true,
+        data: response.data.data || response.data,
+        pagination: response.data.pagination || null,
+        message: response.data.message || 'Necessidades carregadas com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao carregar necessidades',
+        data: [],
+        pagination: null
+      };
+    }
   },
 
   // Buscar necessidade por ID
