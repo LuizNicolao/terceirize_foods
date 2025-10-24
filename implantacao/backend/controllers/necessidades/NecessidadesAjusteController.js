@@ -9,6 +9,7 @@ const listarParaAjuste = async (req, res) => {
 
     console.log('=== DEBUG NECESSIDADES AJUSTE ===');
     console.log('Usuário logado:', usuario_id, tipo_usuario);
+    console.log('Email do usuário:', req.user.email);
     console.log('Parâmetros recebidos:', { escola_id, grupo, consumo_de, consumo_ate });
 
     // Construir query baseada no tipo de usuário
@@ -72,9 +73,11 @@ const listarParaAjuste = async (req, res) => {
 
           // Se a nutricionista tem escolas vinculadas, filtrar por elas
           if (escolasIds.length > 0) {
+            console.log('Escolas da nutricionista encontradas:', escolasIds);
             query += ` AND n.escola_id IN (${escolasIds.map(() => '?').join(',')})`;
             params.push(...escolasIds);
           } else {
+            console.log('Nenhuma escola vinculada à nutricionista');
             // Se não tem escolas vinculadas, não mostrar nenhuma necessidade
             query += ' AND 1=0';
           }
