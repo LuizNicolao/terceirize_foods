@@ -18,7 +18,7 @@ const AjusteNecessidades = () => {
   const { canView, canEdit, loading: permissionsLoading } = usePermissions();
   const [modalProdutoExtraAberto, setModalProdutoExtraAberto] = useState(false);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
-  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  const [produtosSelecionados, setProdutosSelecionados] = useState([]);
   const [searchProduto, setSearchProduto] = useState('');
 
   // Hook para gerenciar ajuste de necessidades
@@ -202,37 +202,80 @@ const AjusteNecessidades = () => {
     }
   };
 
-  // Handler para incluir produto extra
-  const handleIncluirProdutoExtra = async () => {
-    if (!produtoSelecionado) {
-      toast.error('Selecione um produto');
+  // Handler para incluir produtos extras
+  const handleIncluirProdutosExtra = async () => {
+    if (produtosSelecionados.length === 0) {
+      toast.error('Selecione pelo menos um produto');
       return;
     }
 
     try {
-      const dadosParaIncluir = {
-        escola_id: filtros.escola_id,
-        grupo: filtros.grupo,
-        periodo: {
-          consumo_de: filtros.consumo_de,
-          consumo_ate: filtros.consumo_ate
-        },
-        produto_id: produtoSelecionado.produto_id
-      };
+      let sucessos = 0;
+      let erros = 0;
 
-      const resultado = await incluirProdutoExtra(dadosParaIncluir);
-      
-      if (resultado.success) {
-        toast.success('Produto extra incluído com sucesso!');
+      // Incluir cada produto selecionado
+      for (const produto of produtosSelecionados) {
+        try {
+          const dadosParaIncluir = {
+            escola_id: filtros.escola_id,
+            grupo: filtros.grupo,
+            periodo: {
+              consumo_de: filtros.consumo_de,
+              consumo_ate: filtros.consumo_ate
+            },
+            produto_id: produto.produto_id
+          };
+
+          const resultado = await incluirProdutoExtra(dadosParaIncluir);
+          
+          if (resultado.success) {
+            sucessos++;
+          } else {
+            erros++;
+          }
+        } catch (error) {
+          console.error(`Erro ao incluir produto ${produto.produto_nome}:`, error);
+          erros++;
+        }
+      }
+
+      if (sucessos > 0) {
+        toast.success(`${sucessos} produto(s) incluído(s) com sucesso!`);
         setModalProdutoExtraAberto(false);
-        setProdutoSelecionado(null);
+        setProdutosSelecionados([]);
         setSearchProduto('');
-        carregarNecessidades(); // Recarregar para mostrar novo produto
+        carregarNecessidades(); // Recarregar para mostrar novos produtos
+      }
+
+      if (erros > 0) {
+        toast.error(`${erros} produto(s) não puderam ser incluídos`);
       }
     } catch (error) {
-      console.error('Erro ao incluir produto extra:', error);
-      toast.error('Erro ao incluir produto extra');
+      console.error('Erro ao incluir produtos extras:', error);
+      toast.error('Erro ao incluir produtos extras');
     }
+  };
+
+  // Handler para selecionar/deselecionar produto
+  const handleToggleProduto = (produto) => {
+    setProdutosSelecionados(prev => {
+      const jaSelecionado = prev.find(p => p.produto_id === produto.produto_id);
+      if (jaSelecionado) {
+        return prev.filter(p => p.produto_id !== produto.produto_id);
+      } else {
+        return [...prev, produto];
+      }
+    });
+  };
+
+  // Handler para selecionar todos os produtos
+  const handleSelecionarTodos = () => {
+    setProdutosSelecionados(produtosDisponiveis);
+  };
+
+  // Handler para desmarcar todos os produtos
+  const handleDesmarcarTodos = () => {
+    setProdutosSelecionados([]);
   };
 
   // Buscar produtos com filtro de pesquisa
@@ -546,8 +589,12 @@ const AjusteNecessidades = () => {
       {/* Modal de Produto Extra */}
       <Modal
         isOpen={modalProdutoExtraAberto}
-        onClose={() => setModalProdutoExtraAberto(false)}
-        title="Incluir Produto Extra"
+        onClose={() => {
+          setModalProdutoExtraAberto(false);
+          setProdutosSelecionados([]);
+          setSearchProduto('');
+        }}
+        title="Incluir Produtos Extra"
         size="lg"
       >
         <div className="p-6 space-y-4">
@@ -563,34 +610,60 @@ const AjusteNecessidades = () => {
             />
           </div>
 
+          {/* Controles de seleção */}
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-gray-600">
+              {produtosSelecionados.length} produto(s) selecionado(s)
+            </div>
+            <div className="space-x-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleSelecionarTodos}
+                disabled={produtosDisponiveis.length === 0}
+              >
+                Selecionar Todos
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleDesmarcarTodos}
+                disabled={produtosSelecionados.length === 0}
+              >
+                Desmarcar Todos
+              </Button>
+            </div>
+          </div>
+
           <div className="max-h-64 overflow-y-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Selecionar</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
                   <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unidade</th>
-                  <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Ação</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {produtosDisponiveis.map((produto) => (
-                  <tr key={produto.produto_id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 text-sm text-gray-900">{produto.produto_codigo || 'N/A'}</td>
-                    <td className="px-4 py-2 text-sm font-medium text-gray-900">{produto.produto_nome}</td>
-                    <td className="px-4 py-2 text-sm text-gray-500">{produto.unidade_medida}</td>
-                    <td className="px-4 py-2 text-center">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={() => setProdutoSelecionado(produto)}
-                        disabled={produtoSelecionado?.produto_id === produto.produto_id}
-                      >
-                        {produtoSelecionado?.produto_id === produto.produto_id ? 'Selecionado' : 'Selecionar'}
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                {produtosDisponiveis.map((produto) => {
+                  const isSelected = produtosSelecionados.find(p => p.produto_id === produto.produto_id);
+                  return (
+                    <tr key={produto.produto_id} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={!!isSelected}
+                          onChange={() => handleToggleProduto(produto)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-900">{produto.produto_codigo || 'N/A'}</td>
+                      <td className="px-4 py-2 text-sm font-medium text-gray-900">{produto.produto_nome}</td>
+                      <td className="px-4 py-2 text-sm text-gray-500">{produto.unidade_medida}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -598,17 +671,21 @@ const AjusteNecessidades = () => {
           <div className="flex justify-end space-x-3 pt-4">
             <Button
               variant="secondary"
-              onClick={() => setModalProdutoExtraAberto(false)}
+              onClick={() => {
+                setModalProdutoExtraAberto(false);
+                setProdutosSelecionados([]);
+                setSearchProduto('');
+              }}
             >
               Cancelar
             </Button>
             <Button
               variant="primary"
-              onClick={handleIncluirProdutoExtra}
-              disabled={!produtoSelecionado}
+              onClick={handleIncluirProdutosExtra}
+              disabled={produtosSelecionados.length === 0}
               icon={<FaPlus />}
             >
-              Incluir Produto
+              Incluir {produtosSelecionados.length} Produto(s)
             </Button>
           </div>
         </div>
