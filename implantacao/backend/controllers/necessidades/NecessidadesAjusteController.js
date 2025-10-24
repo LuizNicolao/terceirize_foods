@@ -152,13 +152,27 @@ const salvarAjustes = async (req, res) => {
 
       if (!necessidade_id) continue;
 
-      await executeQuery(`
-        UPDATE necessidades 
-        SET ajuste_nutricionista = ?, data_atualizacao = CURRENT_TIMESTAMP
+      // Só atualizar se o valor for diferente do atual
+      const currentRecord = await executeQuery(`
+        SELECT ajuste_nutricionista FROM necessidades 
         WHERE id = ? AND escola_id = ? AND status IN ('NEC', 'NEC NUTRI')
-      `, [ajuste_nutricionista || null, necessidade_id, escola_id]);
+      `, [necessidade_id, escola_id]);
 
-      updatedCount++;
+      if (currentRecord.length > 0) {
+        const currentValue = currentRecord[0].ajuste_nutricionista;
+        const newValue = ajuste_nutricionista || null;
+        
+        // Só atualizar se o valor for diferente
+        if (currentValue !== newValue) {
+          await executeQuery(`
+            UPDATE necessidades 
+            SET ajuste_nutricionista = ?, data_atualizacao = CURRENT_TIMESTAMP
+            WHERE id = ? AND escola_id = ? AND status IN ('NEC', 'NEC NUTRI')
+          `, [newValue, necessidade_id, escola_id]);
+          
+          updatedCount++;
+        }
+      }
     }
 
     // Atualizar status do conjunto para 'NEC NUTRI' se houve atualizações
