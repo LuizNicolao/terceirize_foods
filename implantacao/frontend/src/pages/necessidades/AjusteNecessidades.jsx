@@ -46,6 +46,8 @@ const AjusteNecessidades = () => {
   // Estados locais para edição
   const [ajustesLocais, setAjustesLocais] = useState({});
   const [necessidadeAtual, setNecessidadeAtual] = useState(null);
+  const [buscaProduto, setBuscaProduto] = useState('');
+  const [necessidadesFiltradas, setNecessidadesFiltradas] = useState([]);
 
   // Verificar permissões específicas
   const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador'];
@@ -71,8 +73,24 @@ const AjusteNecessidades = () => {
       });
       setAjustesLocais(ajustesIniciais);
       setNecessidadeAtual(necessidades[0]); // Para obter informações do conjunto
+      setNecessidadesFiltradas(necessidades); // Inicializar filtro
     }
   }, [necessidades]);
+
+  // Filtrar necessidades baseado na busca
+  useEffect(() => {
+    if (necessidades.length > 0) {
+      if (buscaProduto.trim() === '') {
+        setNecessidadesFiltradas(necessidades);
+      } else {
+        const filtradas = necessidades.filter(nec => 
+          nec.produto.toLowerCase().includes(buscaProduto.toLowerCase()) ||
+          (nec.codigo_teknisa && nec.codigo_teknisa.toLowerCase().includes(buscaProduto.toLowerCase()))
+        );
+        setNecessidadesFiltradas(filtradas);
+      }
+    }
+  }, [necessidades, buscaProduto]);
 
   // Handler para mudança de filtros
   const handleFiltroChange = (campo, valor) => {
@@ -386,10 +404,21 @@ const AjusteNecessidades = () => {
         {necessidades.length > 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Necessidades Disponíveis para Ajuste ({necessidades.length} produtos)
-                </h3>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Necessidades Disponíveis para Ajuste ({necessidadesFiltradas.length} de {necessidades.length} produtos)
+                  </h3>
+                  <div className="w-full max-w-md">
+                    <Input
+                      type="text"
+                      value={buscaProduto}
+                      onChange={(e) => setBuscaProduto(e.target.value)}
+                      placeholder="Buscar por produto ou código..."
+                      className="w-full"
+                    />
+                  </div>
+                </div>
                 {canEditAjuste && (
                   <div className="flex items-center space-x-3">
                     <Button
@@ -446,7 +475,7 @@ const AjusteNecessidades = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {necessidades.map((necessidade) => (
+                  {necessidadesFiltradas.map((necessidade) => (
                     <tr key={necessidade.id} className="hover:bg-gray-50">
                       <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
                         {necessidade.codigo_teknisa || 'N/A'}
@@ -489,6 +518,27 @@ const AjusteNecessidades = () => {
             <p className="text-gray-600">
               Não há necessidades disponíveis para ajuste no momento.
             </p>
+          </div>
+        )}
+
+        {/* Mensagem quando busca não retorna resultados */}
+        {necessidades.length > 0 && necessidadesFiltradas.length === 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <FaSearch className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Nenhum produto encontrado
+            </h3>
+            <p className="text-gray-600">
+              Nenhum produto corresponde à busca "{buscaProduto}".
+            </p>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setBuscaProduto('')}
+              className="mt-4"
+            >
+              Limpar busca
+            </Button>
           </div>
         )}
       </NecessidadesLayout>
