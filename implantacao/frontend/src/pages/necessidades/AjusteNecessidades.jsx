@@ -304,26 +304,49 @@ const AjusteNecessidades = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Escola</label>
               <SearchableSelect
-                options={escolas}
-                value={escolas.find(e => e.id === filtros.escola_id)}
-                onChange={(selectedOption) => handleFiltroChange('escola_id', selectedOption?.id || null)}
-                getOptionLabel={(option) => option.nome_escola}
-                getOptionValue={(option) => option.id}
-                placeholder="Selecione a escola"
-                loading={loading}
+                value={filtros.escola_id || ''}
+                onChange={(value) => {
+                  const escola = escolas.find(e => e.id == value);
+                  handleFiltroChange('escola_id', escola?.id || null);
+                }}
+                options={escolas.map(escola => ({
+                  value: escola.id,
+                  label: `${escola.nome_escola} - ${escola.rota}`,
+                  description: escola.cidade
+                }))}
+                placeholder="Digite para buscar uma escola..."
+                disabled={loading}
                 required
+                filterBy={(option, searchTerm) => {
+                  const label = option.label.toLowerCase();
+                  const description = option.description?.toLowerCase() || '';
+                  const term = searchTerm.toLowerCase();
+                  return label.includes(term) || description.includes(term);
+                }}
+                renderOption={(option) => (
+                  <div className="flex flex-col">
+                    <span className="font-medium text-gray-900">{option.label}</span>
+                    {option.description && (
+                      <span className="text-xs text-gray-500 mt-1">{option.description}</span>
+                    )}
+                  </div>
+                )}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Grupo</label>
               <SearchableSelect
-                options={grupos}
-                value={grupos.find(g => g.nome === filtros.grupo)}
-                onChange={(selectedOption) => handleFiltroChange('grupo', selectedOption?.nome || null)}
-                getOptionLabel={(option) => option.nome}
-                getOptionValue={(option) => option.nome}
-                placeholder="Selecione o grupo"
-                loading={loading}
+                value={filtros.grupo || ''}
+                onChange={(value) => {
+                  const grupo = grupos.find(g => g.nome == value);
+                  handleFiltroChange('grupo', grupo?.nome || null);
+                }}
+                options={grupos.map(grupo => ({
+                  value: grupo.nome,
+                  label: grupo.nome
+                }))}
+                placeholder="Digite para buscar um grupo..."
+                disabled={loading}
                 required
               />
             </div>
