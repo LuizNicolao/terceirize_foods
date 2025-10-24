@@ -241,13 +241,6 @@ const AjusteNecessidades = () => {
   // Determinar status atual do conjunto
   const statusAtual = necessidades.length > 0 ? necessidades[0].status : 'NEC';
 
-  console.log('=== DEBUG AJUSTE NECESSIDADES ===');
-  console.log('Componente AjusteNecessidades renderizando');
-  console.log('Necessidades:', necessidades);
-  console.log('Loading:', loading);
-  console.log('Error:', error);
-  console.log('=====================================');
-
   return (
     <>
       <NecessidadesLayout hideHeader={true}>

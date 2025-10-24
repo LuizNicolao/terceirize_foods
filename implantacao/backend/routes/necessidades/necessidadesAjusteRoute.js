@@ -9,32 +9,20 @@ const {
   buscarProdutosParaModal
 } = require('../../controllers/necessidades/NecessidadesAjusteController');
 
-// Middleware para verificar se é nutricionista (temporariamente desabilitado para debug)
+// Middleware para verificar se é nutricionista
 const isNutricionista = (req, res, next) => {
-  console.log('=== DEBUG MIDDLEWARE NUTRICIONISTA ===');
-  console.log('Usuário:', req.user);
-  console.log('Tipo de acesso:', req.user?.tipo_de_acesso);
-  console.log('=====================================');
-  
-  // Temporariamente permitir acesso a todos para debug
-  // if (req.user.tipo_de_acesso !== 'nutricionista') {
-  //   return res.status(403).json({
-  //     success: false,
-  //     error: 'Acesso negado',
-  //     message: 'Apenas nutricionistas podem acessar esta funcionalidade'
-  //   });
-  // }
+  if (req.user.tipo_de_acesso !== 'nutricionista') {
+    return res.status(403).json({
+      success: false,
+      error: 'Acesso negado',
+      message: 'Apenas nutricionistas podem acessar esta funcionalidade'
+    });
+  }
   next();
 };
 
 // GET /api/necessidades/ajuste - Listar necessidades para ajuste
-router.get('/ajuste', authenticateToken, isNutricionista, (req, res) => {
-  console.log('=== DEBUG ROTA AJUSTE ===');
-  console.log('Rota /ajuste sendo executada');
-  console.log('Usuário:', req.user);
-  console.log('========================');
-  listarParaAjuste(req, res);
-});
+router.get('/ajuste', authenticateToken, isNutricionista, listarParaAjuste);
 
 // PUT /api/necessidades/ajustes - Salvar ajustes da nutricionista
 router.put('/ajustes', authenticateToken, isNutricionista, salvarAjustes);
