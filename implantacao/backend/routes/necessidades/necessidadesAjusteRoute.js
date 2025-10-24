@@ -11,6 +11,11 @@ const {
 
 // Middleware para verificar se é nutricionista
 const isNutricionista = (req, res, next) => {
+  console.log('=== DEBUG MIDDLEWARE NUTRICIONISTA ===');
+  console.log('Usuário:', req.user);
+  console.log('Tipo de acesso:', req.user?.tipo_de_acesso);
+  console.log('=====================================');
+  
   if (req.user.tipo_de_acesso !== 'nutricionista') {
     return res.status(403).json({
       success: false,
