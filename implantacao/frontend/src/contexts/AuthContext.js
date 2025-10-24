@@ -92,6 +92,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     console.error('=== LOGOUT INICIADO ===');
+    console.error('Stack trace:', new Error().stack);
     console.error('Mantendo logs por 10 segundos para debug...');
     
     // Delay para manter logs visíveis
