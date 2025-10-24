@@ -404,7 +404,7 @@ const liberarCoordenacao = async (req, res) => {
 // Buscar produtos para modal (excluindo já incluídos)
 const buscarProdutosParaModal = async (req, res) => {
   try {
-    const { grupo, escola_id, search, consumo_de, consumo_ate } = req.query;
+    const { grupo, escola_id, search, semana_consumo, semana_abastecimento } = req.query;
 
     // Validar parâmetros obrigatórios
     if (!grupo) {
@@ -429,14 +429,14 @@ const buscarProdutosParaModal = async (req, res) => {
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    // Excluir produtos já incluídos na necessidade (se escola_id e período fornecidos)
-    if (escola_id && consumo_de && consumo_ate) {
+    // Excluir produtos já incluídos na necessidade (se escola_id e semana_consumo fornecidos)
+    if (escola_id && semana_consumo) {
       query += ` AND ppc.produto_id NOT IN (
         SELECT DISTINCT produto_id 
         FROM necessidades 
-        WHERE escola_id = ? AND semana_consumo BETWEEN ? AND ?
+        WHERE escola_id = ? AND semana_consumo = ?
       )`;
-      params.push(escola_id, consumo_de, consumo_ate);
+      params.push(escola_id, semana_consumo);
     }
 
     query += ` ORDER BY ppc.produto_nome ASC`;
