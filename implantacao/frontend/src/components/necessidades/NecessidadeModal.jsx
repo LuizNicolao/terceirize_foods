@@ -87,10 +87,13 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   // Inicializar tabela quando produtos estiverem carregados
   useEffect(() => {
     if (isOpen && produtos.length > 0 && formData.grupo_id && formData.escola_id && formData.data) {
-      // Verificar se as médias foram carregadas (pelo menos uma deve ter valor > 0 ou todas devem estar definidas)
+      // Verificar se as médias foram carregadas corretamente
       const mediasCarregadas = Object.keys(mediasPeriodo).length > 0 && 
-        (mediasPeriodo.almoco || mediasPeriodo.lanche_manha || mediasPeriodo.lanche_tarde || 
-         mediasPeriodo.parcial || mediasPeriodo.eja);
+        mediasPeriodo.almoco !== undefined && 
+        mediasPeriodo.lanche_manha !== undefined && 
+        mediasPeriodo.lanche_tarde !== undefined && 
+        mediasPeriodo.parcial !== undefined && 
+        mediasPeriodo.eja !== undefined;
       
       if (mediasCarregadas) {
         inicializarTabelaProdutos();
@@ -121,6 +124,16 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const mediaLancheTarde = Math.round(Number(mediasPeriodo.lanche_tarde?.media || 0)); // Número inteiro
       const mediaParcial = Math.round(Number(mediasPeriodo.parcial?.media || 0)); // Número inteiro
       const mediaEja = Math.round(Number(mediasPeriodo.eja?.media || 0)); // Número inteiro
+      
+      // Debug temporário para verificar as médias
+      console.log('=== DEBUG MÉDIAS ===');
+      console.log('mediasPeriodo:', mediasPeriodo);
+      console.log('mediaLancheManha:', mediaLancheManha);
+      console.log('mediaAlmoco:', mediaAlmoco);
+      console.log('mediaLancheTarde:', mediaLancheTarde);
+      console.log('mediaParcial:', mediaParcial);
+      console.log('mediaEja:', mediaEja);
+      console.log('==================');
 
       
       // EDIÇÃO MANUAL (comentado - usar apenas se necessário no futuro)
