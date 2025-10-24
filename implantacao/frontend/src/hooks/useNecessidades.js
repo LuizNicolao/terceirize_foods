@@ -154,16 +154,9 @@ export const useNecessidades = () => {
         dataFormatada = data;
       }
       
-      console.log('=== DATA FORMATADA ===');
-      console.log('data original:', data);
-      console.log('dataFormatada:', dataFormatada);
-      console.log('===================');
-      
       const response = await necessidadesService.calcularMediasPorPeriodo(escolaId, dataFormatada);
       
       if (response.success) {
-        console.log('=== SETANDO mediasPeriodo ===');
-        console.log('response.data:', response.data);
         setMediasPeriodo(response.data);
         return response.data; // Retornar os dados para uso externo
       }

@@ -80,9 +80,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   // Calcular médias quando escola e data mudarem
   useEffect(() => {
     if (isOpen && formData.escola_id && formData.data) {
-      console.log('=== CHAMANDO calcularMediasPorPeriodo ===');
-      console.log('escola_id:', formData.escola_id);
-      console.log('data:', formData.data);
       calcularMediasPorPeriodo(formData.escola_id, formData.data);
     }
   }, [isOpen, formData.escola_id, formData.data, calcularMediasPorPeriodo]);
@@ -90,17 +87,12 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   // Inicializar tabela quando produtos estiverem carregados
   useEffect(() => {
     if (isOpen && produtos.length > 0 && formData.grupo_id && formData.escola_id && formData.data) {
-      // Verificar se as médias foram carregadas corretamente
-      const mediasCarregadas = Object.keys(mediasPeriodo).length > 0 && 
-        mediasPeriodo.almoco?.media !== undefined && 
-        mediasPeriodo.lanche_manha?.media !== undefined && 
-        mediasPeriodo.lanche_tarde?.media !== undefined && 
-        mediasPeriodo.parcial?.media !== undefined && 
-        mediasPeriodo.eja?.media !== undefined;
-      
-      if (mediasCarregadas) {
+      // Aguardar um pouco para garantir que as médias foram carregadas
+      const timer = setTimeout(() => {
         inicializarTabelaProdutos();
-      }
+      }, 200);
+      
+      return () => clearTimeout(timer);
     }
   }, [isOpen, produtos, percapitas, mediasPeriodo, formData.grupo_id, formData.escola_id, formData.data]);
 
