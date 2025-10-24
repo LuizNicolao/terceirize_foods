@@ -155,7 +155,7 @@ const salvarAjustes = async (req, res) => {
       await executeQuery(`
         UPDATE necessidades 
         SET ajuste_nutricionista = ?, data_atualizacao = CURRENT_TIMESTAMP
-        WHERE id = ? AND escola_id = ? AND status = 'NEC'
+        WHERE id = ? AND escola_id = ? AND status IN ('NEC', 'NEC NUTRI')
       `, [ajuste_nutricionista || null, necessidade_id, escola_id]);
 
       updatedCount++;
