@@ -430,21 +430,22 @@ const buscarProdutosParaModal = async (req, res) => {
     }
 
     // Excluir produtos já incluídos na necessidade (se escola_id e período fornecidos)
-    if (escola_id && consumo_de && consumo_ate) {
+    if (escola_id && semana_consumo) {
+      // Usar semana_consumo diretamente
       query += ` AND ppc.produto_id NOT IN (
-        SELECT DISTINCT produto_id 
-        FROM necessidades 
-        WHERE escola_id = ? AND semana_consumo BETWEEN ? AND ?
-      )`;
-      params.push(escola_id, consumo_de, consumo_ate);
-    } else if (escola_id && semana_consumo) {
-      // Se não tiver consumo_de e consumo_ate, usar semana_consumo diretamente
-      query += ` AND ppc.produto_id NOT IN (
-        SELECT DISTINCT hedge.produto_id 
-        FROM necessidades hedge
-        WHERE hedge.escola_id = ? AND hedge.semana_consumo = ?
+        SELECT DISTINCT n.produto_id 
+        FROM necessidades n
+        WHERE n.escola_id = ? AND n.semana_consumo = ?
       )`;
       params.push(escola_id, semana_consumo);
+    } else if (escola_id && consumo_de && consumo_ate) {
+      // Fallback para consumo_de e consumo_ate
+      query += ` AND ppc.produto_id NOT IN (
+        SELECT DISTINCT n.produto_id 
+        FROM necessidades n
+        WHERE n.escola_id = ? AND n.semana_consumo BETWEEN ? AND ?
+      )`;
+      params.push(escola_id, consumo_de, consumo_ate);
     }
 
     query += ` ORDER BY ppc.produto_nome ASC`;
