@@ -36,13 +36,57 @@ const listarParaAjuste = async (req, res) => {
 
     // Se for nutricionista, filtrar apenas pelas escolas da rota dela
     if (tipo_usuario === 'nutricionista') {
-      query += ` AND n.escola_id IN (
-        SELECT DISTINCT rne.escola_id
-        FROM rotas_nutricionistas_escolas rne
-        JOIN rotas_nutricionistas rn ON rne.rota_id = rn.id
-        WHERE rn.usuario_id = ?
-      )`;
-      params.push(usuario_id);
+      // Para nutricionista, filtrar apenas escolas das rotas nutricionistas
+      try {
+        const axios = require('axios');
+        const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+        
+        // Buscar email do usuário logado
+        const userEmail = req.user.email;
+        
+        // Buscar rotas da nutricionista por email
+        const response = await axios.get(`${foodsApiUrl}/rotas-nutricionistas?email=${encodeURIComponent(userEmail)}&status=ativo`, {
+          headers: {
+            'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
+          },
+          timeout: 5000 // Timeout de 5 segundos
+        });
+
+        if (response.data && response.data.success) {
+          // Extrair array de rotas corretamente
+          let rotas = response.data.data?.rotas || response.data.data || response.data || [];
+          // Garantir que é um array
+          if (!Array.isArray(rotas)) {
+            rotas = rotas.rotas || [];
+          }
+          
+          const escolasIds = [];
+          
+          // Extrair IDs das escolas das rotas
+          rotas.forEach(rota => {
+            if (rota.escolas_responsaveis) {
+              const ids = rota.escolas_responsaveis.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+              escolasIds.push(...ids);
+            }
+          });
+
+          // Se a nutricionista tem escolas vinculadas, filtrar por elas
+          if (escolasIds.length > 0) {
+            query += ` AND n.escola_id IN (${escolasIds.map(() => '?').join(',')})`;
+            params.push(...escolasIds);
+          } else {
+            // Se não tem escolas vinculadas, não mostrar nenhuma necessidade
+            query += ' AND 1=0';
+          }
+        } else {
+          // Se não conseguir buscar as rotas, não mostrar nenhuma necessidade
+          query += ' AND 1=0';
+        }
+      } catch (apiError) {
+        console.error('Erro ao buscar rotas do foods:', apiError);
+        // Se houver erro na API, não mostrar nenhuma necessidade
+        query += ' AND 1=0';
+      }
     }
 
     // Aplicar filtros opcionais se fornecidos
