@@ -416,7 +416,7 @@ const buscarProdutosParaModal = async (req, res) => {
     }
 
     let query = `
-      SELECT DISTINCT ppc.produto_id, ppc.codigo_teknisa, ppc.nome, ppc.unidade_medida
+      SELECT DISTINCT ppc.produto_id, ppc.produto_codigo, ppc.produto_nome, ppc.unidade_medida
       FROM produtos_per_capita ppc
       WHERE ppc.grupo = ? AND ppc.ativo = true
     `;
@@ -425,7 +425,7 @@ const buscarProdutosParaModal = async (req, res) => {
 
     // Filtro de busca por nome/código
     if (search) {
-      query += ` AND (ppc.nome LIKE ? OR ppc.codigo_teknisa LIKE ?)`;
+      query += ` AND (ppc.produto_nome LIKE ? OR ppc.produto_codigo LIKE ?)`;
       params.push(`%${search}%`, `%${search}%`);
     }
 
@@ -439,7 +439,7 @@ const buscarProdutosParaModal = async (req, res) => {
       params.push(escola_id, consumo_de, consumo_ate);
     }
 
-    query += ` ORDER BY ppc.nome ASC`;
+    query += ` ORDER BY ppc.produto_nome ASC`;
 
     const produtos = await executeQuery(query, params);
 
