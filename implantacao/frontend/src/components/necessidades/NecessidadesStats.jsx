@@ -42,7 +42,6 @@ const NecessidadesStats = ({
     <div className="space-y-6">
       {/* Estatísticas Principais */}
       <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">Estatísticas da Necessidade</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {statsCards.map((card, index) => (
             <StatCard
