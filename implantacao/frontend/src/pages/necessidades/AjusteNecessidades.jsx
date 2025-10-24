@@ -3,8 +3,12 @@ import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList } from 'react-ico
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
+import {
+  NecessidadesLayout,
+  NecessidadesLoading,
+  StatusBadge
+} from '../../components/necessidades';
 import { Modal, Button, Input, SearchableSelect } from '../../components/ui';
-import { StatusBadge } from '../../components/necessidades';
 import toast from 'react-hot-toast';
 
 const AjusteNecessidades = () => {
@@ -36,8 +40,8 @@ const AjusteNecessidades = () => {
   const [necessidadeAtual, setNecessidadeAtual] = useState(null);
 
   // Verificar permissões específicas
-  const canViewAjuste = canView('necessidades');
-  const canEditAjuste = canEdit('necessidades');
+  const canViewAjuste = canView('analise_necessidades');
+  const canEditAjuste = canEdit('analise_necessidades');
 
   // Carregar necessidades quando filtros mudarem
   useEffect(() => {
@@ -215,24 +219,22 @@ const AjusteNecessidades = () => {
 
   // Verificar se pode visualizar
   if (permissionsLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      </div>
-    );
+    return <NecessidadesLoading />;
   }
 
   if (!canViewAjuste) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-        <FaClipboardList className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Acesso Restrito
-        </h2>
-        <p className="text-gray-600">
-          Você não tem permissão para visualizar o ajuste de necessidades.
-        </p>
-      </div>
+      <NecessidadesLayout>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <FaClipboardList className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Acesso Restrito
+          </h2>
+          <p className="text-gray-600">
+            Você não tem permissão para visualizar o ajuste de necessidades.
+          </p>
+        </div>
+      </NecessidadesLayout>
     );
   }
 
@@ -241,10 +243,18 @@ const AjusteNecessidades = () => {
 
   return (
     <>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-800">Ajuste de Necessidade por Nutricionista</h1>
+      <NecessidadesLayout>
+        {/* Header com Status */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
+              <FaEdit className="mr-2 sm:mr-3 text-blue-600" />
+              Ajuste de Necessidade por Nutricionista
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Visualize, edite e ajuste necessidades geradas
+            </p>
+          </div>
           <div className="flex items-center space-x-3">
             <StatusBadge status={statusAtual} />
           </div>
@@ -438,7 +448,7 @@ const AjusteNecessidades = () => {
             </p>
           </div>
         )}
-      </div>
+      </NecessidadesLayout>
 
       {/* Modal de Produto Extra */}
       <Modal
