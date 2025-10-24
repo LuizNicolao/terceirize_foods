@@ -404,7 +404,7 @@ const liberarCoordenacao = async (req, res) => {
 // Buscar produtos para modal (excluindo já incluídos)
 const buscarProdutosParaModal = async (req, res) => {
   try {
-    const { grupo, escola_id, search, consumo_de, consumo_ate } = req.query;
+    const { grupo, escola_id, search, consumo_de, consumo_ate, semana_consumo } = req.query;
 
     // Validar parâmetros obrigatórios
     if (!grupo) {
