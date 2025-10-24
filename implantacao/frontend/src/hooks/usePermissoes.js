@@ -149,6 +149,7 @@ export const usePermissoes = () => {
         'registros_diarios',
         'necessidades',
         'calendario',
+        'analise_necessidades',
         'permissoes'
       ];
       
