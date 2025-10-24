@@ -63,6 +63,10 @@ const listarParaAjuste = async (req, res) => {
 
     const necessidades = await executeQuery(query, params);
 
+    console.log('Query executada:', query);
+    console.log('Parâmetros:', params);
+    console.log('Resultado:', necessidades);
+
     res.json({
       success: true,
       data: necessidades
