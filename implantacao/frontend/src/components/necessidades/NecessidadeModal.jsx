@@ -86,10 +86,17 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
 
   // Inicializar tabela quando produtos estiverem carregados
   useEffect(() => {
-    if (isOpen && produtos.length > 0 && formData.grupo_id) {
-      inicializarTabelaProdutos();
+    if (isOpen && produtos.length > 0 && formData.grupo_id && formData.escola_id && formData.data) {
+      // Verificar se as médias foram carregadas (pelo menos uma deve ter valor > 0 ou todas devem estar definidas)
+      const mediasCarregadas = Object.keys(mediasPeriodo).length > 0 && 
+        (mediasPeriodo.almoco || mediasPeriodo.lanche_manha || mediasPeriodo.lanche_tarde || 
+         mediasPeriodo.parcial || mediasPeriodo.eja);
+      
+      if (mediasCarregadas) {
+        inicializarTabelaProdutos();
+      }
     }
-  }, [isOpen, produtos, percapitas, mediasPeriodo, formData.grupo_id]);
+  }, [isOpen, produtos, percapitas, mediasPeriodo, formData.grupo_id, formData.escola_id, formData.data]);
 
   const inicializarTabelaProdutos = () => {
     // Preservar ajustes existentes
