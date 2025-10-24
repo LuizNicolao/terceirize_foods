@@ -438,6 +438,7 @@ const buscarProdutosParaModal = async (req, res) => {
         WHERE n.escola_id = ? AND n.semana_consumo = ?
       )`;
       params.push(escola_id, semana_consumo);
+      console.log('DEBUG: Aplicando exclusão com semana_consumo:', semana_consumo);
     } else if (escola_id && consumo_de && consumo_ate) {
       // Fallback para consumo_de e consumo_ate
       query += ` AND ppc.produto_id NOT IN (
@@ -446,6 +447,9 @@ const buscarProdutosParaModal = async (req, res) => {
         WHERE n.escola_id = ? AND n.semana_consumo BETWEEN ? AND ?
       )`;
       params.push(escola_id, consumo_de, consumo_ate);
+      console.log('DEBUG: Aplicando exclusão com consumo_de/ate:', consumo_de, consumo_ate);
+    } else {
+      console.log('DEBUG: Não aplicando exclusão - parâmetros insuficientes');
     }
 
     query += ` ORDER BY ppc.produto_nome ASC`;
