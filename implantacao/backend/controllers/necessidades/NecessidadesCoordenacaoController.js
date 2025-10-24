@@ -1,4 +1,3 @@
-const necessidadesService = require('../../services/necessidadesService');
 const { executeQuery } = require('../../config/database');
 
 class NecessidadesCoordenacaoController {
