@@ -479,6 +479,16 @@ const buscarProdutosParaModal = async (req, res) => {
         const checkResult3 = await executeQuery(checkQuery3, checkParams3);
         console.log('Resultado da verificação 3 (apenas produto_id):', checkResult3);
         
+        // Verificar se o produto está sendo encontrado com escola_id 159
+        const checkQuery4 = `
+          SELECT produto_id, produto, escola_id, semana_consumo 
+          FROM necessidades 
+          WHERE produto_id = ? AND escola_id = 159
+        `;
+        const checkParams4 = [36];
+        const checkResult4 = await executeQuery(checkQuery4, checkParams4);
+        console.log('Resultado da verificação 4 (escola_id 159):', checkResult4);
+        
         console.log('==========================================');
       } catch (checkError) {
         console.error('Erro ao verificar produto:', checkError);
