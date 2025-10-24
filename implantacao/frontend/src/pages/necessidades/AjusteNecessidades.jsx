@@ -442,29 +442,29 @@ const AjusteNecessidades = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {necessidades.map((necessidade) => (
                     <tr key={necessidade.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
                         {necessidade.codigo_teknisa || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
                         {necessidade.produto}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">
                         {necessidade.produto_unidade}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                      <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                         {necessidade.status === 'NEC NUTRI' 
                           ? (necessidade.ajuste_nutricionista || 0)
                           : (necessidade.ajuste || 0)
                         }
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                      <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                         <Input
                           type="number"
                           value={ajustesLocais[necessidade.id] || ''}
                           onChange={(e) => handleAjusteChange(necessidade.id, e.target.value)}
                           min="0"
                           step="0.001"
-                          className="w-24 text-center"
+                          className="w-20 text-center text-xs py-1"
                           disabled={statusAtual === 'NEC COORD' || !canEditAjuste}
                         />
                       </td>
