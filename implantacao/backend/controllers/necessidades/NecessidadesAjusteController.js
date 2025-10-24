@@ -39,11 +39,11 @@ const listarParaAjuste = async (req, res) => {
     const params = [escola_id];
 
     // Filtro por grupo (buscar produtos que pertencem ao grupo)
+    // Usar produtos_per_capita que tem a relação produto-grupo
     query += ` AND n.produto_id IN (
-      SELECT DISTINCT p.id 
-      FROM produtos p
-      INNER JOIN grupos g ON p.grupo_id = g.id
-      WHERE g.nome = ?
+      SELECT DISTINCT ppc.produto_id 
+      FROM produtos_per_capita ppc
+      WHERE ppc.grupo = ?
     )`;
     params.push(grupo);
 
@@ -116,10 +116,9 @@ const salvarAjustes = async (req, res) => {
         WHERE escola_id = ? 
           AND status = 'NEC'
           AND produto_id IN (
-            SELECT DISTINCT p.id 
-            FROM produtos p
-            INNER JOIN grupos g ON p.grupo_id = g.id
-            WHERE g.nome = ?
+            SELECT DISTINCT ppc.produto_id 
+            FROM produtos_per_capita ppc
+            WHERE ppc.grupo = ?
           )
       `, [escola_id, grupo]);
 
@@ -169,10 +168,10 @@ const incluirProdutoExtra = async (req, res) => {
 
     // Verificar se o produto pertence ao grupo
     const produtoGrupo = await executeQuery(`
-      SELECT p.id, p.nome, p.unidade_medida, p.codigo_teknisa
-      FROM produtos p
-      INNER JOIN grupos g ON p.grupo_id = g.id
-      WHERE p.id = ? AND g.nome = ?
+      SELECT ppc.produto_id, p.nome, p.unidade_medida, p.codigo_teknisa
+      FROM produtos_per_capita ppc
+      INNER JOIN produtos p ON ppc.produto_id = p.id
+      WHERE ppc.produto_id = ? AND ppc.grupo = ?
     `, [produto_id, grupo]);
 
     if (produtoGrupo.length === 0) {
@@ -315,10 +314,9 @@ const liberarCoordenacao = async (req, res) => {
       WHERE escola_id = ? 
         AND status IN ('NEC', 'NEC NUTRI')
         AND produto_id IN (
-          SELECT DISTINCT p.id 
-          FROM produtos p
-          INNER JOIN grupos g ON p.grupo_id = g.id
-          WHERE g.nome = ?
+          SELECT DISTINCT ppc.produto_id 
+          FROM produtos_per_capita ppc
+          WHERE ppc.grupo = ?
         )
     `;
 
@@ -366,9 +364,9 @@ const buscarProdutosParaModal = async (req, res) => {
 
     let query = `
       SELECT DISTINCT p.id as produto_id, p.codigo_teknisa, p.nome, p.unidade_medida
-      FROM produtos p
-      INNER JOIN grupos g ON p.grupo_id = g.id
-      WHERE g.nome = ? AND p.ativo = true
+      FROM produtos_per_capita ppc
+      INNER JOIN produtos p ON ppc.produto_id = p.id
+      WHERE ppc.grupo = ? AND p.ativo = true
     `;
 
     const params = [grupo];
