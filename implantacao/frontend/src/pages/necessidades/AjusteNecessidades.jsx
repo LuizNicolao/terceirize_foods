@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch } from 'react-icons/fa';
+import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch, FaFileExcel, FaFilePdf, FaDownload } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
@@ -278,6 +278,126 @@ const AjusteNecessidades = () => {
     setProdutosSelecionados([]);
   };
 
+  // Handler para exportar para Excel
+  const handleExportarExcel = () => {
+    if (necessidadesFiltradas.length === 0) {
+      toast.error('Nenhum dado para exportar');
+      return;
+    }
+
+    try {
+      // Criar dados para exportação
+      const dadosExportacao = necessidadesFiltradas.map(nec => ({
+        'Código': nec.codigo_teknisa || 'N/A',
+        'Produto': nec.produto,
+        'Unidade': nec.produto_unidade,
+        'Quantidade Gerada': nec.status === 'NEC NUTRI' 
+          ? (nec.ajuste_nutricionista || 0)
+          : (nec.ajuste || 0),
+        'Ajuste Nutricionista': ajustesLocais[nec.id] || '',
+        'Status': nec.status,
+        'Escola': nec.escola,
+        'Semana Consumo': nec.semana_consumo,
+        'Semana Abastecimento': nec.semana_abastecimento
+      }));
+
+      // Converter para CSV
+      const headers = Object.keys(dadosExportacao[0]);
+      const csvContent = [
+        headers.join(','),
+        ...dadosExportacao.map(row => 
+          headers.map(header => `"${row[header]}"`).join(',')
+        )
+      ].join('\n');
+
+      // Criar e baixar arquivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `necessidades_ajuste_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Arquivo Excel exportado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar Excel:', error);
+      toast.error('Erro ao exportar arquivo Excel');
+    }
+  };
+
+  // Handler para exportar para PDF
+  const handleExportarPDF = () => {
+    if (necessidadesFiltradas.length === 0) {
+      toast.error('Nenhum dado para exportar');
+      return;
+    }
+
+    try {
+      // Criar conteúdo HTML para PDF
+      const htmlContent = `
+        <html>
+          <head>
+            <title>Necessidades - Ajuste</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h1 { color: #333; text-align: center; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+              .header { margin-bottom: 20px; }
+            </style>
+          </head>
+          <body>
+            <h1>Necessidades - Ajuste por Nutricionista</h1>
+            <div class="header">
+              <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
+              <p><strong>Total de produtos:</strong> ${necessidadesFiltradas.length}</p>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Produto</th>
+                  <th>Unidade</th>
+                  <th>Quantidade Gerada</th>
+                  <th>Ajuste Nutricionista</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${necessidadesFiltradas.map(nec => `
+                  <tr>
+                    <td>${nec.codigo_teknisa || 'N/A'}</td>
+                    <td>${nec.produto}</td>
+                    <td>${nec.produto_unidade}</td>
+                    <td>${nec.status === 'NEC NUTRI' ? (nec.ajuste_nutricionista || 0) : (nec.ajuste || 0)}</td>
+                    <td>${ajustesLocais[nec.id] || ''}</td>
+                    <td>${nec.status}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `;
+
+      // Abrir nova janela para impressão
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+
+      toast.success('PDF gerado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar arquivo PDF');
+    }
+  };
+
   // Buscar produtos com filtro de pesquisa
   const handleSearchProduto = async (search) => {
     setSearchProduto(search);
@@ -462,36 +582,64 @@ const AjusteNecessidades = () => {
                     />
                   </div>
                 </div>
-                {canEditAjuste && (
-                  <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3">
+                  {/* Botões de Exportação */}
+                  <div className="flex items-center space-x-2">
                     <Button
                       variant="secondary"
                       size="sm"
-                      onClick={handleAbrirModalProdutoExtra}
-                      icon={<FaPlus />}
+                      onClick={handleExportarExcel}
+                      icon={<FaFileExcel />}
+                      disabled={necessidadesFiltradas.length === 0}
+                      title="Exportar para Excel"
                     >
-                      Incluir Produto Extra
+                      Excel
                     </Button>
                     <Button
-                      variant="primary"
+                      variant="secondary"
                       size="sm"
-                      onClick={handleSalvarAjustes}
-                      icon={<FaSave />}
-                      disabled={statusAtual === 'NEC COORD'}
+                      onClick={handleExportarPDF}
+                      icon={<FaFilePdf />}
+                      disabled={necessidadesFiltradas.length === 0}
+                      title="Exportar para PDF"
                     >
-                      Salvar Ajustes
-                    </Button>
-                    <Button
-                      variant="success"
-                      size="sm"
-                      onClick={handleLiberarCoordenacao}
-                      icon={<FaPaperPlane />}
-                      disabled={statusAtual === 'NEC COORD'}
-                    >
-                      Liberar para Coordenação
+                      PDF
                     </Button>
                   </div>
-                )}
+
+                  {/* Botões de Ação */}
+                  {canEditAjuste && (
+                    <>
+                      <div className="w-px h-6 bg-gray-300"></div>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={handleAbrirModalProdutoExtra}
+                        icon={<FaPlus />}
+                      >
+                        Incluir Produto Extra
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={handleSalvarAjustes}
+                        icon={<FaSave />}
+                        disabled={statusAtual === 'NEC COORD'}
+                      >
+                        Salvar Ajustes
+                      </Button>
+                      <Button
+                        variant="success"
+                        size="sm"
+                        onClick={handleLiberarCoordenacao}
+                        icon={<FaPaperPlane />}
+                        disabled={statusAtual === 'NEC COORD'}
+                      >
+                        Liberar para Coordenação
+                      </Button>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
             
