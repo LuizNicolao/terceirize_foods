@@ -211,7 +211,7 @@ function App() {
               />
 
               <Route 
-                path="/necessidades/ajuste" 
+                path="/ajuste-necessidade" 
                 element={
                   <AuthenticatedRoute>
                     <AjusteNecessidades />
