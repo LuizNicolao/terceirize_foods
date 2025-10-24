@@ -458,6 +458,27 @@ const buscarProdutosParaModal = async (req, res) => {
         const checkParams = [36, escola_id, semana_consumo];
         const checkResult = await executeQuery(checkQuery, checkParams);
         console.log('Resultado da verificação:', checkResult);
+        
+        // Verificar se o produto está sendo encontrado com outros critérios
+        const checkQuery2 = `
+          SELECT produto_id, produto, escola_id, semana_consumo 
+          FROM necessidades 
+          WHERE produto_id = ? AND escola_id = ?
+        `;
+        const checkParams2 = [36, escola_id];
+        const checkResult2 = await executeQuery(checkQuery2, checkParams2);
+        console.log('Resultado da verificação 2 (sem semana_consumo):', checkResult2);
+        
+        // Verificar se o produto está sendo encontrado em qualquer lugar
+        const checkQuery3 = `
+          SELECT produto_id, produto, escola_id, semana_consumo 
+          FROM necessidades 
+          WHERE produto_id = ?
+        `;
+        const checkParams3 = [36];
+        const checkResult3 = await executeQuery(checkQuery3, checkParams3);
+        console.log('Resultado da verificação 3 (apenas produto_id):', checkResult3);
+        
         console.log('==========================================');
       } catch (checkError) {
         console.error('Erro ao verificar produto:', checkError);
