@@ -120,16 +120,30 @@ export const useNecessidades = () => {
     try {
       let dataFormatada;
       
-      // Se a data for uma string da semana (ex: "06/01 a 12/01/25"), converter para data
+      // Se a data for uma string da semana (ex: "06/01 a 12/01"), converter para data
       if (typeof data === 'string' && data.includes(' a ')) {
         // Remover parênteses se existirem
         const dataLimpa = data.replace(/[()]/g, '');
-        // Extrair a primeira data da string (ex: "06/01" de "06/01 a 12/01/25")
+        // Extrair a primeira data da string (ex: "06/01" de "06/01 a 12/01")
         const primeiraData = dataLimpa.split(' a ')[0];
         const [dia, mes] = primeiraData.split('/');
-        // Extrair ano da string completa - procurar por padrão /25 no final
-        const anoMatch = data.match(/\/(\d{2})$/);
-        const ano = anoMatch ? `20${anoMatch[1]}` : new Date().getFullYear();
+        
+        // Determinar o ano baseado na data atual
+        // Se a data for de janeiro e estivermos em outubro/novembro/dezembro, usar próximo ano
+        const agora = new Date();
+        const mesAtual = agora.getMonth() + 1; // 0-11 -> 1-12
+        const anoAtual = agora.getFullYear();
+        const mesData = parseInt(mes);
+        
+        let ano;
+        if (mesData === 1 && mesAtual >= 10) {
+          // Janeiro do próximo ano
+          ano = anoAtual + 1;
+        } else {
+          // Mesmo ano
+          ano = anoAtual;
+        }
+        
         // Garantir que dia e mês tenham 2 dígitos
         const diaFormatado = String(dia).padStart(2, '0');
         const mesFormatado = String(mes).padStart(2, '0');
@@ -139,6 +153,11 @@ export const useNecessidades = () => {
       } else {
         dataFormatada = data;
       }
+      
+      console.log('=== DATA FORMATADA ===');
+      console.log('data original:', data);
+      console.log('dataFormatada:', dataFormatada);
+      console.log('===================');
       
       const response = await necessidadesService.calcularMediasPorPeriodo(escolaId, dataFormatada);
       
