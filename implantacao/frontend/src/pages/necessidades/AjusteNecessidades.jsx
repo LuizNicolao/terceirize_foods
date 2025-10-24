@@ -651,17 +651,19 @@ const AjusteNecessidades = () => {
                   return (
                     <tr 
                       key={produto.produto_id} 
-                      className={`hover:bg-gray-50 transition-colors ${
+                      className={`hover:bg-gray-50 transition-colors cursor-pointer ${
                         isSelected 
                           ? 'bg-green-50 border-l-4 border-green-500' 
                           : 'bg-white'
                       }`}
+                      onClick={() => handleToggleProduto(produto)}
                     >
                       <td className="px-4 py-2 text-center">
                         <input
                           type="checkbox"
                           checked={!!isSelected}
                           onChange={() => handleToggleProduto(produto)}
+                          onClick={(e) => e.stopPropagation()}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                       </td>
