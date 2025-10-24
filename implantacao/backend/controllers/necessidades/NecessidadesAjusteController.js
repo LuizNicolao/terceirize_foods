@@ -257,14 +257,15 @@ const incluirProdutoExtra = async (req, res) => {
       });
     }
 
-    // Buscar dados da escola
-    const escola = await executeQuery(`
-      SELECT nome_escola, rota, codigo_teknisa 
-      FROM escolas 
-      WHERE id = ?
+    // Buscar dados da escola das necessidades existentes
+    const escolaExistente = await executeQuery(`
+      SELECT escola, escola_rota, codigo_teknisa 
+      FROM necessidades 
+      WHERE escola_id = ? 
+      LIMIT 1
     `, [escola_id]);
 
-    if (escola.length === 0) {
+    if (escolaExistente.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Escola não encontrada',
@@ -272,7 +273,11 @@ const incluirProdutoExtra = async (req, res) => {
       });
     }
 
-    const escolaData = escola[0];
+    const escolaData = {
+      nome_escola: escolaExistente[0].escola,
+      rota: escolaExistente[0].escola_rota,
+      codigo_teknisa: escolaExistente[0].codigo_teknisa
+    };
 
     // Determinar status (NEC se conjunto ainda não foi ajustado, senão manter NEC NUTRI)
     const statusConjunto = await executeQuery(`
