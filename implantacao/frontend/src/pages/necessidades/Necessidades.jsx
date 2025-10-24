@@ -112,7 +112,7 @@ const Necessidades = () => {
 
   return (
     <>
-    <NecessidadesLayout>
+    <NecessidadesLayout hideHeader={true}>
       {/* Botão de Adicionar */}
       <NecessidadesActions
         canCreate={canCreateNecessidades}
