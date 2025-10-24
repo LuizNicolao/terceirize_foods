@@ -361,26 +361,28 @@ const AjusteNecessidades = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Semana de Consumo</label>
               <SearchableSelect
-                options={opcoesSemanasConsumo || []}
                 value={filtros.semana_consumo || ''}
-                onChange={(selectedOption) => handleFiltroChange('semana_consumo', selectedOption?.value || null)}
-                getOptionLabel={(option) => option.label}
-                getOptionValue={(option) => option.value}
+                onChange={(value) => {
+                  const semana = opcoesSemanasConsumo?.find(s => s.value === value);
+                  handleFiltroChange('semana_consumo', semana?.value || null);
+                }}
+                options={opcoesSemanasConsumo || []}
                 placeholder="Selecione a semana de consumo..."
-                loading={loading}
+                disabled={loading}
                 required
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Semana de Abastecimento (AB)</label>
               <SearchableSelect
-                options={opcoesSemanasAbastecimento || []}
                 value={filtros.semana_abastecimento || ''}
-                onChange={(selectedOption) => handleFiltroChange('semana_abastecimento', selectedOption?.value || null)}
-                getOptionLabel={(option) => option.label}
-                getOptionValue={(option) => option.value}
+                onChange={(value) => {
+                  const semana = opcoesSemanasAbastecimento?.find(s => s.value === value);
+                  handleFiltroChange('semana_abastecimento', semana?.value || null);
+                }}
+                options={opcoesSemanasAbastecimento || []}
                 placeholder="Selecione a semana..."
-                loading={loading}
+                disabled={loading}
               />
             </div>
           </div>
