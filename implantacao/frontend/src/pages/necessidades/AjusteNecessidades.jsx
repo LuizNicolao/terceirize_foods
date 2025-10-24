@@ -95,10 +95,16 @@ const AjusteNecessidades = () => {
     }
 
     try {
-      const itens = Object.entries(ajustesLocais).map(([necessidadeId, ajuste]) => ({
-        necessidade_id: parseInt(necessidadeId),
-        ajuste_nutricionista: ajuste
-      }));
+      // Filtrar apenas ajustes que têm valores (não vazios, não 0, não null)
+      const itens = Object.entries(ajustesLocais)
+        .filter(([necessidadeId, ajuste]) => {
+          const valor = parseFloat(ajuste);
+          return !isNaN(valor) && valor > 0;
+        })
+        .map(([necessidadeId, ajuste]) => ({
+          necessidade_id: parseInt(necessidadeId),
+          ajuste_nutricionista: parseFloat(ajuste)
+        }));
 
       const dadosParaSalvar = {
         escola_id: filtros.escola_id,
