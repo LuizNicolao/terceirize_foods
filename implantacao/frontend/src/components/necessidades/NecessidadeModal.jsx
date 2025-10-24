@@ -89,11 +89,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     if (isOpen && produtos.length > 0 && formData.grupo_id && formData.escola_id && formData.data) {
       // Verificar se as médias foram carregadas corretamente
       const mediasCarregadas = Object.keys(mediasPeriodo).length > 0 && 
-        mediasPeriodo.almoco !== undefined && 
-        mediasPeriodo.lanche_manha !== undefined && 
-        mediasPeriodo.lanche_tarde !== undefined && 
-        mediasPeriodo.parcial !== undefined && 
-        mediasPeriodo.eja !== undefined;
+        mediasPeriodo.almoco?.media !== undefined && 
+        mediasPeriodo.lanche_manha?.media !== undefined && 
+        mediasPeriodo.lanche_tarde?.media !== undefined && 
+        mediasPeriodo.parcial?.media !== undefined && 
+        mediasPeriodo.eja?.media !== undefined;
       
       if (mediasCarregadas) {
         inicializarTabelaProdutos();
@@ -125,15 +125,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const mediaParcial = Math.round(Number(mediasPeriodo.parcial?.media || 0)); // Número inteiro
       const mediaEja = Math.round(Number(mediasPeriodo.eja?.media || 0)); // Número inteiro
       
-      // Debug temporário para verificar as médias
-      console.log('=== DEBUG MÉDIAS ===');
-      console.log('mediasPeriodo:', mediasPeriodo);
-      console.log('mediaLancheManha:', mediaLancheManha);
-      console.log('mediaAlmoco:', mediaAlmoco);
-      console.log('mediaLancheTarde:', mediaLancheTarde);
-      console.log('mediaParcial:', mediaParcial);
-      console.log('mediaEja:', mediaEja);
-      console.log('==================');
 
       
       // EDIÇÃO MANUAL (comentado - usar apenas se necessário no futuro)
