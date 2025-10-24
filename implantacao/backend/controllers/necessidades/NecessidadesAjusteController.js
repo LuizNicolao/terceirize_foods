@@ -221,10 +221,9 @@ const incluirProdutoExtra = async (req, res) => {
 
     // Verificar se o produto pertence ao grupo
     const produtoGrupo = await executeQuery(`
-      SELECT ppc.produto_id, p.nome, p.unidade_medida, p.codigo_teknisa
+      SELECT ppc.produto_id, ppc.produto_nome, ppc.unidade_medida, ppc.produto_codigo
       FROM produtos_per_capita ppc
-      INNER JOIN produtos p ON ppc.produto_id = p.id
-      WHERE ppc.produto_id = ? AND ppc.grupo = ?
+      WHERE ppc.produto_id = ? AND ppc.grupo = ? AND ppc.ativo = true
     `, [produto_id, grupo]);
 
     if (produtoGrupo.length === 0) {
@@ -308,12 +307,12 @@ const incluirProdutoExtra = async (req, res) => {
       req.user.email,
       req.user.id,
       produto_id,
-      produto.nome,
+      produto.produto_nome,
       produto.unidade_medida,
       escola_id,
       escolaData.nome_escola,
       escolaData.rota || '',
-      produto.codigo_teknisa || '',
+      produto.produto_codigo || '',
       0, // ajuste zerado para produtos extras
       periodo?.consumo_de || null,
       periodo?.consumo_ate || null,
@@ -329,7 +328,7 @@ const incluirProdutoExtra = async (req, res) => {
       data: {
         id: result.insertId,
         produto_id: produto_id,
-        produto: produto.nome,
+        produto: produto.produto_nome,
         produto_unidade: produto.unidade_medida,
         ajuste: 0,
         ajuste_nutricionista: null,
