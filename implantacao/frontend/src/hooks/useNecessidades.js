@@ -87,7 +87,7 @@ export const useNecessidades = () => {
         setProdutos(response.data);
         
         // Carregar percapitas dos produtos
-        const produtoIds = response.data.map(p => p.id);
+        const produtoIds = response.data.map(p => p.produto_id);
         const percapitaResponse = await necessidadesService.buscarPercapitaProdutos(produtoIds);
         
         if (percapitaResponse.success) {
@@ -165,15 +165,15 @@ export const useNecessidades = () => {
     }
 
     const tabela = produtos.map(produto => {
-      const percapita = parseFloat(percapitas[produto.id]) || 0;
+      const percapita = parseFloat(percapitas[produto.produto_id]) || 0;
       
       // As médias vêm organizadas por tipo, não por produto
       // Vamos usar a média do almoço como padrão para exibição
       const mediaAlmoco = mediasPeriodo.almoco?.media || 0;
       
       return {
-        id: produto.id,
-        nome: produto.nome,
+        id: produto.produto_id,
+        nome: produto.produto_nome,
         unidade_medida: produto.unidade_medida,
         per_capita: percapita,
         media_periodo: mediaAlmoco,
