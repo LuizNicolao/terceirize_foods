@@ -583,8 +583,8 @@ const AjusteNecessidades = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {produtosDisponiveis.map((produto) => (
                   <tr key={produto.produto_id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 text-sm text-gray-900">{produto.codigo_teknisa || 'N/A'}</td>
-                    <td className="px-4 py-2 text-sm font-medium text-gray-900">{produto.nome}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{produto.produto_codigo || 'N/A'}</td>
+                    <td className="px-4 py-2 text-sm font-medium text-gray-900">{produto.produto_nome}</td>
                     <td className="px-4 py-2 text-sm text-gray-500">{produto.unidade_medida}</td>
                     <td className="px-4 py-2 text-center">
                       <Button
