@@ -1,9 +1,11 @@
+// Componentes principais
 export { default as NecessidadesLayout } from './NecessidadesLayout';
-export { default as NecessidadesActions } from './NecessidadesActions';
-export { default as NecessidadesFilters } from './NecessidadesFilters';
-export { default as NecessidadesTable } from './NecessidadesTable';
 export { default as NecessidadesLoading } from './NecessidadesLoading';
-export { default as NecessidadesStats } from './NecessidadesStats';
-export { default as NecessidadeModal } from './NecessidadeModal';
 export { default as StatusBadge } from './StatusBadge';
 
+// Componentes de Ajuste de Necessidades
+export { default as AjusteNecessidadesStats } from './AjusteNecessidadesStats';
+export { default as AjusteNecessidadesFilters } from './AjusteNecessidadesFilters';
+export { default as AjusteNecessidadesTable } from './AjusteNecessidadesTable';
+export { default as AjusteNecessidadesActions } from './AjusteNecessidadesActions';
+export { default as AjusteNecessidadesModal } from './AjusteNecessidadesModal';
