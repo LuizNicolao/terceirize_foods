@@ -3,7 +3,7 @@ import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch } from 
 import { useNecessidadesCoordenacao } from '../../hooks/useNecessidadesCoordenacao';
 import { Modal, Button, Input, SearchableSelect } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
-import { toast } from 'react-toastify';
+import toast from 'react-hot-toast';
 
 const CoordenacaoNecessidades = () => {
   const {
