@@ -406,6 +406,14 @@ const buscarProdutosParaModal = async (req, res) => {
   try {
     const { grupo, escola_id, search, semana_consumo, semana_abastecimento } = req.query;
 
+    console.log('=== DEBUG PARÂMETROS RECEBIDOS ===');
+    console.log('grupo:', grupo);
+    console.log('escola_id:', escola_id);
+    console.log('search:', search);
+    console.log('semana_consumo:', semana_consumo);
+    console.log('semana_abastecimento:', semana_abastecimento);
+    console.log('===================================');
+
     // Validar parâmetros obrigatórios
     if (!grupo) {
       return res.status(400).json({
