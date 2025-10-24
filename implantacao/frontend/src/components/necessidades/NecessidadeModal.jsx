@@ -95,7 +95,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     // Preservar ajustes existentes
     const ajustesExistentes = {};
     produtosTabela.forEach(produto => {
-      ajustesExistentes[produto.id] = produto.ajuste;
+      ajustesExistentes[produto.produto_id] = produto.ajuste;
     });
     
     const produtosComCalculos = produtos.map(produto => {
@@ -134,7 +134,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const total = Number(qtdLancheManha + qtdAlmoco + qtdLancheTarde + qtdParcial + qtdEja);
 
       return {
-        id: produto.id,
+        id: produto.produto_id,
         nome: produto.produto_nome,
         unidade_medida: produto.unidade_medida,
         percapita_lanche_manha: percapitaLancheManha,
@@ -158,7 +158,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         qtd_parcial: qtdParcial,
         qtd_eja: qtdEja,
         total: total, // Usar total calculado
-        ajuste: ajustesExistentes[produto.id] || '' // Preservar ajuste existente ou inicializar em branco
+        ajuste: ajustesExistentes[produto.produto_id] || '' // Preservar ajuste existente ou inicializar em branco
       };
     });
 
