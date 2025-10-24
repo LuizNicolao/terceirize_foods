@@ -111,6 +111,8 @@ const AjusteNecessidades = () => {
       
       if (resultado.success) {
         toast.success('Ajustes salvos com sucesso!');
+        // Zerar ajustes locais após salvar
+        setAjustesLocais({});
         carregarNecessidades(); // Recarregar para atualizar status
       }
     } catch (error) {
@@ -447,7 +449,10 @@ const AjusteNecessidades = () => {
                         {necessidade.produto_unidade}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                        {necessidade.ajuste || 0}
+                        {necessidade.status === 'NEC NUTRI' 
+                          ? (necessidade.ajuste_nutricionista || 0)
+                          : (necessidade.ajuste || 0)
+                        }
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                         <Input
