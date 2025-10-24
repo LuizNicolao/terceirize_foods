@@ -42,15 +42,6 @@ const NecessidadesFilters = ({
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-                <FaSearch className="mr-2 text-green-600" />
-                Filtros de Consulta
-              </h3>
-              <p className="text-gray-600 text-sm mt-1">
-                Filtre as necessidades por escola, grupo, data e semana de abastecimento
-              </p>
-            </div>
         
         {hasActiveFilters && (
           <Button
