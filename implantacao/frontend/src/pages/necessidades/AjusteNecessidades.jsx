@@ -635,7 +635,7 @@ const AjusteNecessidades = () => {
             </div>
           </div>
 
-          <div className="max-h-64 overflow-y-auto">
+          <div className="max-h-96 overflow-y-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
