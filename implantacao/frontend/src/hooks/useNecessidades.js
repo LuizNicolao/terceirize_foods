@@ -14,6 +14,12 @@ export const useNecessidades = () => {
   const [necessidades, setNecessidades] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Log para debug
+  console.log('=== USE NECESSIDADES HOOK ===');
+  console.log('user:', user);
+  console.log('loading:', loading);
+  console.log('error:', error);
 
   // Estados para gerar necessidade
   const [escolas, setEscolas] = useState([]);
