@@ -171,6 +171,11 @@ export const useNecessidades = () => {
     setFiltros(prev => ({ ...prev, ...novosFiltros }));
   }, []);
 
+  // Limpar médias por período
+  const limparMediasPeriodo = useCallback(() => {
+    setMediasPeriodo({});
+  }, []);
+
   // Inicializar tabela de produtos
   const inicializarTabelaProdutos = useCallback(() => {
     if (produtos.length === 0) {
@@ -597,6 +602,7 @@ export const useNecessidades = () => {
     carregarGrupos,
     carregarProdutosPorGrupo,
     calcularMediasPorPeriodo,
+    limparMediasPeriodo,
     atualizarFiltros,
     inicializarTabelaProdutos,
     atualizarFrequencia,

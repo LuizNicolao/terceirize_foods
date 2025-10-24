@@ -23,6 +23,7 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     mediasPeriodo,
     carregarProdutosPorGrupo,
     calcularMediasPorPeriodo,
+    limparMediasPeriodo,
     loading: necessidadesLoading,
     error: necessidadesError
   } = useNecessidades();
@@ -73,10 +74,9 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   // Limpar mediasPeriodo quando modal é aberto para forçar recarregamento
   useEffect(() => {
     if (isOpen) {
-      // Forçar recarregamento das médias quando modal é aberto
-      setMediasPeriodo({});
+      limparMediasPeriodo();
     }
-  }, [isOpen]);
+  }, [isOpen, limparMediasPeriodo]);
 
   // Carregar produtos quando grupo mudar
   useEffect(() => {
@@ -347,8 +347,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       data: obterDataAtual()
     });
     setProdutosTabela([]);
-    // Limpar mediasPeriodo para forçar recarregamento
-    setMediasPeriodo({});
   };
 
   const formatarNumero = (numero) => {
