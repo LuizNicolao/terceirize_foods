@@ -126,8 +126,8 @@ const necessidadesService = {
     if (filtros.grupo) params.append('grupo', filtros.grupo);
     if (filtros.escola_id) params.append('escola_id', filtros.escola_id);
     if (filtros.search) params.append('search', filtros.search);
-    if (filtros.consumo_de) params.append('consumo_de', filtros.consumo_de);
-    if (filtros.consumo_ate) params.append('consumo_ate', filtros.consumo_ate);
+    if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
+    if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
     
     const response = await api.get(`/necessidades/produtos-modal?${params.toString()}`);
     return response.data;

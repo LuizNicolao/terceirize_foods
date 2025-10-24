@@ -452,13 +452,6 @@ const buscarProdutosParaModal = async (req, res) => {
 
     const produtos = await executeQuery(query, params);
 
-    console.log('=== DEBUG PRODUTOS MODAL ===');
-    console.log('Parâmetros recebidos:', { grupo, escola_id, search, consumo_de, consumo_ate, semana_consumo });
-    console.log('Query executada:', query);
-    console.log('Parâmetros da query:', params);
-    console.log('Produtos encontrados:', produtos.length);
-    console.log('Produtos:', produtos);
-    console.log('=============================');
 
     res.json({
       success: true,
