@@ -265,36 +265,7 @@ const AjusteNecessidades = () => {
           </div>
         </div>
 
-        {/* Card de Informações da Escola */}
-        {necessidadeAtual && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6">
-            <h3 className="text-lg font-semibold text-blue-900 mb-4">Informações da Escola</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-blue-700 mb-1">Escola</label>
-                <p className="text-blue-900 font-medium">{necessidadeAtual.escola}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-blue-700 mb-1">Nutricionista</label>
-                <p className="text-blue-900 font-medium">{user.nome}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-blue-700 mb-1">Grupo</label>
-                <p className="text-blue-900 font-medium">{filtros.grupo}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-blue-700 mb-1">Período de Consumo</label>
-                <p className="text-blue-900 font-medium">{necessidadeAtual.semana_consumo}</p>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-blue-700 mb-1">Período de Abastecimento</label>
-                <p className="text-blue-900 font-medium">{necessidadeAtual.semana_abastecimento || 'N/A'}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Filtros */}
+        {/* Filtros e Informações */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Filtros</h3>
@@ -396,145 +367,99 @@ const AjusteNecessidades = () => {
           </div>
         )}
 
-        {/* Lista de Necessidades Agrupadas por Escola */}
+        {/* Lista de Necessidades */}
         {necessidades.length > 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Necessidades Disponíveis para Ajuste ({necessidades.length} produtos)
-              </h3>
-            </div>
-            <div className="divide-y divide-gray-200">
-              {(() => {
-                // Agrupar necessidades por escola e necessidade_id
-                const agrupadas = necessidades.reduce((acc, necessidade) => {
-                  const chave = `${necessidade.escola_id}-${necessidade.necessidade_id}`;
-                  if (!acc[chave]) {
-                    acc[chave] = {
-                      necessidade_id: necessidade.necessidade_id,
-                      escola_id: necessidade.escola_id,
-                      escola: necessidade.escola,
-                      semana_consumo: necessidade.semana_consumo,
-                      semana_abastecimento: necessidade.semana_abastecimento,
-                      status: necessidade.status,
-                      produtos: []
-                    };
-                  }
-                  acc[chave].produtos.push(necessidade);
-                  return acc;
-                }, {});
-
-                return Object.values(agrupadas).map((grupo, index) => (
-                  <div key={index} className="p-6">
-                    {/* Cabeçalho da Escola */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h4 className="text-lg font-semibold text-gray-900">
-                          {grupo.escola}
-                        </h4>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>Semana de Consumo: {grupo.semana_consumo}</span>
-                          <span>•</span>
-                          <span>ID: {grupo.necessidade_id}</span>
-                          <span>•</span>
-                          <StatusBadge status={grupo.status} />
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {grupo.produtos.length} produtos
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Tabela de Produtos */}
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Código
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Produto
-                            </th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Unidade
-                            </th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Quantidade (gerada)
-                            </th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Ajuste (nutricionista)
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {grupo.produtos.map((necessidade) => (
-                            <tr key={necessidade.id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {necessidade.codigo_teknisa || 'N/A'}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {necessidade.produto}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {necessidade.produto_unidade}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                {necessidade.ajuste || 0}
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                <Input
-                                  type="number"
-                                  value={ajustesLocais[necessidade.id] || ''}
-                                  onChange={(e) => handleAjusteChange(necessidade.id, e.target.value)}
-                                  min="0"
-                                  step="0.001"
-                                  className="w-24 text-center"
-                                  disabled={statusAtual === 'NEC COORD' || !canEditAjuste}
-                                />
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Botões de Ação para o Grupo */}
-                    {canEditAjuste && (
-                      <div className="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-200">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={handleAbrirModalProdutoExtra}
-                          icon={<FaPlus />}
-                        >
-                          Incluir Produto Extra
-                        </Button>
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          onClick={handleSalvarAjustes}
-                          icon={<FaSave />}
-                          disabled={statusAtual === 'NEC COORD'}
-                        >
-                          Salvar Ajustes
-                        </Button>
-                        <Button
-                          variant="success"
-                          size="sm"
-                          onClick={handleLiberarCoordenacao}
-                          icon={<FaPaperPlane />}
-                          disabled={statusAtual === 'NEC COORD'}
-                        >
-                          Liberar para Coordenação
-                        </Button>
-                      </div>
-                    )}
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Necessidades Disponíveis para Ajuste ({necessidades.length} produtos)
+                </h3>
+                {canEditAjuste && (
+                  <div className="flex items-center space-x-3">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleAbrirModalProdutoExtra}
+                      icon={<FaPlus />}
+                    >
+                      Incluir Produto Extra
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleSalvarAjustes}
+                      icon={<FaSave />}
+                      disabled={statusAtual === 'NEC COORD'}
+                    >
+                      Salvar Ajustes
+                    </Button>
+                    <Button
+                      variant="success"
+                      size="sm"
+                      onClick={handleLiberarCoordenacao}
+                      icon={<FaPaperPlane />}
+                      disabled={statusAtual === 'NEC COORD'}
+                    >
+                      Liberar para Coordenação
+                    </Button>
                   </div>
-                ));
-              })()}
+                )}
+              </div>
+            </div>
+            
+            {/* Tabela de Produtos */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Código
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Produto
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Unidade
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Quantidade (gerada)
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ajuste (nutricionista)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {necessidades.map((necessidade) => (
+                    <tr key={necessidade.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {necessidade.codigo_teknisa || 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {necessidade.produto}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {necessidade.produto_unidade}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                        {necessidade.ajuste || 0}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                        <Input
+                          type="number"
+                          value={ajustesLocais[necessidade.id] || ''}
+                          onChange={(e) => handleAjusteChange(necessidade.id, e.target.value)}
+                          min="0"
+                          step="0.001"
+                          className="w-24 text-center"
+                          disabled={statusAtual === 'NEC COORD' || !canEditAjuste}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         ) : !loading && (
