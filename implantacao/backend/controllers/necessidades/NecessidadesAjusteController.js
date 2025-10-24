@@ -431,14 +431,13 @@ const buscarProdutosParaModal = async (req, res) => {
 
     // Excluir produtos já incluídos na necessidade (se escola_id e período fornecidos)
     if (escola_id && semana_consumo) {
-      // Usar semana_consumo diretamente
+      // Usar semana_consumo diretamente - comparar produto_id da necessidades com produto_id da produtos_per_capita
       query += ` AND ppc.produto_id NOT IN (
         SELECT DISTINCT n.produto_id 
         FROM necessidades n
         WHERE n.escola_id = ? AND n.semana_consumo = ?
       )`;
       params.push(escola_id, semana_consumo);
-      console.log('DEBUG: Aplicando exclusão com semana_consumo:', semana_consumo);
     } else if (escola_id && consumo_de && consumo_ate) {
       // Fallback para consumo_de e consumo_ate
       query += ` AND ppc.produto_id NOT IN (
@@ -447,22 +446,11 @@ const buscarProdutosParaModal = async (req, res) => {
         WHERE n.escola_id = ? AND n.semana_consumo BETWEEN ? AND ?
       )`;
       params.push(escola_id, consumo_de, consumo_ate);
-      console.log('DEBUG: Aplicando exclusão com consumo_de/ate:', consumo_de, consumo_ate);
-    } else {
-      console.log('DEBUG: Não aplicando exclusão - parâmetros insuficientes');
     }
 
     query += ` ORDER BY ppc.produto_nome ASC`;
 
     const produtos = await executeQuery(query, params);
-
-    console.log('=== DEBUG PRODUTOS MODAL ===');
-    console.log('Parâmetros recebidos:', { grupo, escola_id, search, consumo_de, consumo_ate, semana_consumo });
-    console.log('Query executada:', query);
-    console.log('Parâmetros da query:', params);
-    console.log('Produtos encontrados:', produtos.length);
-    console.log('Produtos:', produtos);
-    console.log('=============================');
 
     res.json({
       success: true,
