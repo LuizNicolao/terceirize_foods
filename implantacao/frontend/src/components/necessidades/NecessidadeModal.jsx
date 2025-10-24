@@ -80,6 +80,9 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   // Calcular médias quando escola e data mudarem
   useEffect(() => {
     if (isOpen && formData.escola_id && formData.data) {
+      console.log('=== CHAMANDO calcularMediasPorPeriodo ===');
+      console.log('escola_id:', formData.escola_id);
+      console.log('data:', formData.data);
       calcularMediasPorPeriodo(formData.escola_id, formData.data);
     }
   }, [isOpen, formData.escola_id, formData.data, calcularMediasPorPeriodo]);
