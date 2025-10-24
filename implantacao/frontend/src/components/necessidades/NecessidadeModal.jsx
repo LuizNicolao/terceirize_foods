@@ -71,12 +71,6 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     }
   }, [isOpen]);
 
-  // Limpar mediasPeriodo quando modal é aberto para forçar recarregamento
-  useEffect(() => {
-    if (isOpen) {
-      limparMediasPeriodo();
-    }
-  }, [isOpen, limparMediasPeriodo]);
 
   // Carregar produtos quando grupo mudar
   useEffect(() => {
@@ -95,12 +89,26 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   // Inicializar tabela quando produtos estiverem carregados
   useEffect(() => {
     if (isOpen && produtos.length > 0 && formData.grupo_id && formData.escola_id && formData.data) {
-      // Aguardar um pouco para garantir que as médias foram carregadas
-      const timer = setTimeout(() => {
-        inicializarTabelaProdutos();
-      }, 200);
+      // Verificar se as médias foram carregadas corretamente
+      const mediasCarregadas = Object.keys(mediasPeriodo).length > 0 && 
+        mediasPeriodo.almoco?.media !== undefined && 
+        mediasPeriodo.lanche_manha?.media !== undefined && 
+        mediasPeriodo.lanche_tarde?.media !== undefined && 
+        mediasPeriodo.parcial?.media !== undefined && 
+        mediasPeriodo.eja?.media !== undefined;
       
-      return () => clearTimeout(timer);
+      if (mediasCarregadas) {
+        inicializarTabelaProdutos();
+      } else {
+        // Se as médias não foram carregadas, aguardar mais um pouco
+        const timer = setTimeout(() => {
+          if (Object.keys(mediasPeriodo).length > 0) {
+            inicializarTabelaProdutos();
+          }
+        }, 500);
+        
+        return () => clearTimeout(timer);
+      }
     }
   }, [isOpen, produtos, percapitas, mediasPeriodo, formData.grupo_id, formData.escola_id, formData.data]);
 
