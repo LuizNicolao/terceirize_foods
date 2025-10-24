@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaPlus, FaSave, FaPaperPlane } from 'react-icons/fa';
 import { Button } from '../../ui';
-import { ExportButtons } from '../../shared';
+import { ConsultaActions } from '../shared';
 
 const AjusteNecessidadesActions = ({
   necessidadesFiltradas,
@@ -17,13 +17,12 @@ const AjusteNecessidadesActions = ({
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       {/* Botões de Exportação */}
-      <ExportButtons
+      <ConsultaActions
         onExportXLSX={onExportarExcel}
         onExportPDF={onExportarPDF}
-        size="sm"
-        variant="outline"
-        showLabels={true}
-        disabled={necessidadesFiltradas.length === 0}
+        totalItems={necessidadesFiltradas.length}
+        loading={false}
+        showTotal={false}
       />
 
       {/* Botões de Ação */}
