@@ -115,15 +115,7 @@ export const useNecessidades = () => {
 
   // Calcular médias por período
   const calcularMediasPorPeriodo = useCallback(async (escolaId, data) => {
-    console.log('=== CHAMANDO calcularMediasPorPeriodo ===');
-    console.log('escolaId:', escolaId);
-    console.log('data:', data);
-    console.log('Tipo da data:', typeof data);
-    
-    if (!escolaId || !data) {
-      console.log('Parâmetros inválidos - escolaId ou data não fornecidos');
-      return;
-    }
+    if (!escolaId || !data) return;
     
     try {
       let dataFormatada;
@@ -159,23 +151,15 @@ export const useNecessidades = () => {
           const mesFormatado = String(mes).padStart(2, '0');
           dataFormatada = `${ano}-${mesFormatado}-${diaFormatado}`;
         }
-        console.log('=== DATA FORMATADA ===');
-        console.log('data original:', data);
-        console.log('dataFormatada:', dataFormatada);
-        console.log('===================');
       } else if (data instanceof Date) {
         dataFormatada = data.toISOString().split('T')[0];
       } else {
         dataFormatada = data;
       }
       
-      console.log('Fazendo chamada para API com:', { escolaId, dataFormatada });
       const response = await necessidadesService.calcularMediasPorPeriodo(escolaId, dataFormatada);
-      console.log('Resposta da API:', response);
       
       if (response.success) {
-        console.log('=== SETANDO mediasPeriodo ===');
-        console.log('response.data:', response.data);
         setMediasPeriodo(response.data);
         return response.data; // Retornar os dados para uso externo
       }
