@@ -113,6 +113,12 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
   }, [isOpen, produtos, percapitas, mediasPeriodo, formData.grupo_id, formData.escola_id, formData.data]);
 
   const inicializarTabelaProdutos = () => {
+    console.log('=== INICIALIZANDO TABELA PRODUTOS ===');
+    console.log('mediasPeriodo:', mediasPeriodo);
+    console.log('Object.keys(mediasPeriodo):', Object.keys(mediasPeriodo));
+    console.log('mediasPeriodo.lanche_manha:', mediasPeriodo.lanche_manha);
+    console.log('mediasPeriodo.almoco:', mediasPeriodo.almoco);
+    
     // Preservar ajustes existentes
     const ajustesExistentes = {};
     produtosTabela.forEach(produto => {
@@ -135,6 +141,13 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const mediaLancheTarde = Math.round(Number(mediasPeriodo.lanche_tarde?.media || 0)); // Número inteiro
       const mediaParcial = Math.round(Number(mediasPeriodo.parcial?.media || 0)); // Número inteiro
       const mediaEja = Math.round(Number(mediasPeriodo.eja?.media || 0)); // Número inteiro
+      
+      console.log('=== CALCULANDO MÉDIAS ===');
+      console.log('mediaLancheManha:', mediaLancheManha);
+      console.log('mediaAlmoco:', mediaAlmoco);
+      console.log('mediaLancheTarde:', mediaLancheTarde);
+      console.log('mediaParcial:', mediaParcial);
+      console.log('mediaEja:', mediaEja);
       
 
       
