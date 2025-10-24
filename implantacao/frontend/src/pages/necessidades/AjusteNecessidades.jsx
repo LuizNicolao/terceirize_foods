@@ -61,10 +61,11 @@ const AjusteNecessidades = () => {
       const ajustesIniciais = {};
       necessidades.forEach(nec => {
         // Se status for NEC NUTRI, usar ajuste_nutricionista, senão usar ajuste
+        // Se valor for 0, deixar em branco
         const valorInicial = nec.status === 'NEC NUTRI' 
           ? (nec.ajuste_nutricionista || 0)
           : (nec.ajuste || 0);
-        ajustesIniciais[nec.id] = valorInicial;
+        ajustesIniciais[nec.id] = valorInicial === 0 ? '' : valorInicial;
       });
       setAjustesLocais(ajustesIniciais);
       setNecessidadeAtual(necessidades[0]); // Para obter informações do conjunto
