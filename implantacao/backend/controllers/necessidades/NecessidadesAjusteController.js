@@ -26,7 +26,7 @@ const listarParaAjuste = async (req, res) => {
         n.status,
         n.data_preenchimento
       FROM necessidades n
-      WHERE n.status = 'NEC'
+      WHERE n.status IN ('NEC', 'NEC NUTRI')
     `;
 
     const params = [];
