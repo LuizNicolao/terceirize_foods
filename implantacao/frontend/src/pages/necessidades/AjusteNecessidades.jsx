@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch, FaFileExcel, FaFilePdf, FaDownload } from 'react-icons/fa';
+import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
@@ -11,6 +11,7 @@ import {
   StatusBadge
 } from '../../components/necessidades';
 import { Modal, Button, Input, SearchableSelect } from '../../components/ui';
+import { ExportButtons } from '../../components/shared';
 import toast from 'react-hot-toast';
 
 const AjusteNecessidades = () => {
@@ -582,35 +583,20 @@ const AjusteNecessidades = () => {
                     />
                   </div>
                 </div>
-                <div className="flex items-center space-x-3">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                   {/* Botões de Exportação */}
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleExportarExcel}
-                      icon={<FaFileExcel />}
-                      disabled={necessidadesFiltradas.length === 0}
-                      title="Exportar para Excel"
-                    >
-                      Excel
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={handleExportarPDF}
-                      icon={<FaFilePdf />}
-                      disabled={necessidadesFiltradas.length === 0}
-                      title="Exportar para PDF"
-                    >
-                      PDF
-                    </Button>
-                  </div>
+                  <ExportButtons
+                    onExportXLSX={handleExportarExcel}
+                    onExportPDF={handleExportarPDF}
+                    size="sm"
+                    variant="outline"
+                    showLabels={true}
+                    disabled={necessidadesFiltradas.length === 0}
+                  />
 
                   {/* Botões de Ação */}
                   {canEditAjuste && (
-                    <>
-                      <div className="w-px h-6 bg-gray-300"></div>
+                    <div className="flex items-center space-x-2">
                       <Button
                         variant="secondary"
                         size="sm"
@@ -637,7 +623,7 @@ const AjusteNecessidades = () => {
                       >
                         Liberar para Coordenação
                       </Button>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>
