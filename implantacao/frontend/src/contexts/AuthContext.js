@@ -29,7 +29,10 @@ export const AuthProvider = ({ children }) => {
           setUser(response.data.user);
         } catch (error) {
           console.error('Token inválido:', error);
-          logout();
+          // Só fazer logout se for erro de autenticação (401)
+          if (error.response?.status === 401) {
+            logout();
+          }
         }
       }
       setLoading(false);
