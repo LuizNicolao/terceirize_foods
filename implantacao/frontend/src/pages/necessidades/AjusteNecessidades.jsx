@@ -653,7 +653,7 @@ const AjusteNecessidades = () => {
                       key={produto.produto_id} 
                       className={`hover:bg-gray-50 transition-colors ${
                         isSelected 
-                          ? 'bg-blue-50 border-l-4 border-blue-500' 
+                          ? 'bg-green-50 border-l-4 border-green-500' 
                           : 'bg-white'
                       }`}
                     >
@@ -665,13 +665,13 @@ const AjusteNecessidades = () => {
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                       </td>
-                      <td className={`px-4 py-2 text-sm ${isSelected ? 'text-blue-900 font-medium' : 'text-gray-900'}`}>
+                      <td className={`px-4 py-2 text-sm ${isSelected ? 'text-green-900 font-medium' : 'text-gray-900'}`}>
                         {produto.produto_codigo || 'N/A'}
                       </td>
-                      <td className={`px-4 py-2 text-sm font-medium ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                      <td className={`px-4 py-2 text-sm font-medium ${isSelected ? 'text-green-900' : 'text-gray-900'}`}>
                         {produto.produto_nome}
                       </td>
-                      <td className={`px-4 py-2 text-sm ${isSelected ? 'text-blue-700' : 'text-gray-500'}`}>
+                      <td className={`px-4 py-2 text-sm ${isSelected ? 'text-green-700' : 'text-gray-500'}`}>
                         {produto.unidade_medida}
                       </td>
                     </tr>
