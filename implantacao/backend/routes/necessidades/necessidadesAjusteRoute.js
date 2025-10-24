@@ -28,7 +28,13 @@ const isNutricionista = (req, res, next) => {
 };
 
 // GET /api/necessidades/ajuste - Listar necessidades para ajuste
-router.get('/ajuste', authenticateToken, isNutricionista, listarParaAjuste);
+router.get('/ajuste', authenticateToken, isNutricionista, (req, res) => {
+  console.log('=== DEBUG ROTA AJUSTE ===');
+  console.log('Rota /ajuste sendo executada');
+  console.log('Usuário:', req.user);
+  console.log('========================');
+  listarParaAjuste(req, res);
+});
 
 // PUT /api/necessidades/ajustes - Salvar ajustes da nutricionista
 router.put('/ajustes', authenticateToken, isNutricionista, salvarAjustes);
