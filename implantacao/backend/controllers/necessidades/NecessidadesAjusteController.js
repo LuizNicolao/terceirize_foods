@@ -443,6 +443,13 @@ const buscarProdutosParaModal = async (req, res) => {
 
     const produtos = await executeQuery(query, params);
 
+    console.log('=== DEBUG EXCLUSÃO PRODUTOS ===');
+    console.log('Query executada:', query);
+    console.log('Parâmetros:', params);
+    console.log('Produtos encontrados:', produtos.length);
+    console.log('Primeiros produtos:', produtos.slice(0, 3));
+    console.log('================================');
+
     res.json({
       success: true,
       data: produtos
