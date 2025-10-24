@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import necessidadesCoordenacaoService from '../services/necessidadesCoordenacaoService';
-import toast from 'react-hot-toast';
+import { toast } from 'react-toastify';
 
 const useNecessidadesCoordenacao = () => {
   const [necessidades, setNecessidades] = useState([]);
