@@ -257,9 +257,9 @@ const incluirProdutoExtra = async (req, res) => {
       });
     }
 
-    // Buscar dados da escola das necessidades existentes
+    // Buscar dados da escola e necessidade_id das necessidades existentes
     const escolaExistente = await executeQuery(`
-      SELECT escola, escola_rota, codigo_teknisa 
+      SELECT escola, escola_rota, codigo_teknisa, necessidade_id, semana_consumo, semana_abastecimento
       FROM necessidades 
       WHERE escola_id = ? 
       LIMIT 1
@@ -276,7 +276,10 @@ const incluirProdutoExtra = async (req, res) => {
     const escolaData = {
       nome_escola: escolaExistente[0].escola,
       rota: escolaExistente[0].escola_rota,
-      codigo_teknisa: escolaExistente[0].codigo_teknisa
+      codigo_teknisa: escolaExistente[0].codigo_teknisa,
+      necessidade_id: escolaExistente[0].necessidade_id,
+      semana_consumo: escolaExistente[0].semana_consumo,
+      semana_abastecimento: escolaExistente[0].semana_abastecimento
     };
 
     // Determinar status (NEC se conjunto ainda não foi ajustado, senão manter NEC NUTRI)
@@ -288,7 +291,7 @@ const incluirProdutoExtra = async (req, res) => {
 
     const novoStatus = statusConjunto.length > 0 && statusConjunto[0].status === 'NEC NUTRI' ? 'NEC NUTRI' : 'NEC';
 
-    // Criar nova necessidade
+    // Criar nova necessidade com o mesmo necessidade_id
     const result = await executeQuery(`
       INSERT INTO necessidades (
         usuario_email,
@@ -317,13 +320,13 @@ const incluirProdutoExtra = async (req, res) => {
       escola_id,
       escolaData.nome_escola,
       escolaData.rota || '',
-      produto.produto_codigo || '',
+      escolaData.codigo_teknisa || '',
       0, // ajuste zerado para produtos extras
-      periodo?.consumo_de || null,
-      periodo?.consumo_ate || null,
+      escolaData.semana_consumo,
+      escolaData.semana_abastecimento,
       novoStatus,
       'Produto extra incluído pela nutricionista',
-      null, // necessidade_id será gerado automaticamente
+      escolaData.necessidade_id, // Usar o mesmo necessidade_id
       null // ajuste_nutricionista inicialmente null
     ]);
 
