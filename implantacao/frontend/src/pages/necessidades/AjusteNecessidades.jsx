@@ -48,8 +48,8 @@ const AjusteNecessidades = () => {
   const [necessidadeAtual, setNecessidadeAtual] = useState(null);
 
   // Verificar permissões específicas
-  const canViewAjuste = canView('analise_necessidades');
-  const canEditAjuste = canEdit('analise_necessidades');
+  const canViewAjuste = canView('analise_necessidades') || user.tipo_de_acesso === 'nutricionista';
+  const canEditAjuste = canEdit('analise_necessidades') || user.tipo_de_acesso === 'nutricionista';
 
   // Carregar necessidades apenas quando o botão filtrar for clicado
   // useEffect removido - carregamento manual via botão
