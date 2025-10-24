@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList } from 'react-icons/fa';
+import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
@@ -51,12 +51,8 @@ const AjusteNecessidades = () => {
   const canViewAjuste = canView('analise_necessidades');
   const canEditAjuste = canEdit('analise_necessidades');
 
-  // Carregar necessidades apenas quando filtros estiverem preenchidos
-  useEffect(() => {
-    if (canViewAjuste && filtros.escola_id && filtros.grupo && filtros.semana_consumo) {
-      carregarNecessidades();
-    }
-  }, [canViewAjuste, filtros, carregarNecessidades]);
+  // Carregar necessidades apenas quando o botão filtrar for clicado
+  // useEffect removido - carregamento manual via botão
 
   // Inicializar ajustes locais quando necessidades carregarem
   useEffect(() => {
@@ -299,7 +295,19 @@ const AjusteNecessidades = () => {
 
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtros</h3>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Filtros</h3>
+            <Button
+              onClick={carregarNecessidades}
+              variant="primary"
+              size="sm"
+              disabled={!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo || loading}
+              className="flex items-center"
+            >
+              <FaSearch className="mr-2" />
+              Filtrar
+            </Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Escola</label>
