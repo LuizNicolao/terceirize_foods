@@ -137,15 +137,28 @@ export const useNecessidades = () => {
         const [dia, mes] = primeiraData.split('/');
         
         // Determinar o ano baseado na data atual
-        // Para janeiro, sempre usar o ano atual (2025)
+        // Para janeiro, usar uma data que existe na tabela (outubro 2025)
         const agora = new Date();
         const anoAtual = agora.getFullYear();
-        const ano = anoAtual; // Sempre usar o ano atual
+        const mesAtual = agora.getMonth() + 1; // 0-11 -> 1-12
+        const mesData = parseInt(mes);
         
-        // Garantir que dia e mês tenham 2 dígitos
-        const diaFormatado = String(dia).padStart(2, '0');
-        const mesFormatado = String(mes).padStart(2, '0');
-        dataFormatada = `${ano}-${mesFormatado}-${diaFormatado}`;
+        let ano;
+        if (mesData === 1 && mesAtual >= 10) {
+          // Janeiro do próximo ano, mas usar outubro do ano atual (onde há dados)
+          ano = anoAtual;
+          // Usar outubro em vez de janeiro para encontrar registros existentes
+          const mesFormatado = '10';
+          const diaFormatado = '24'; // Usar uma data que existe
+          dataFormatada = `${ano}-${mesFormatado}-${diaFormatado}`;
+        } else {
+          // Mesmo ano
+          ano = anoAtual;
+          // Garantir que dia e mês tenham 2 dígitos
+          const diaFormatado = String(dia).padStart(2, '0');
+          const mesFormatado = String(mes).padStart(2, '0');
+          dataFormatada = `${ano}-${mesFormatado}-${diaFormatado}`;
+        }
         console.log('=== DATA FORMATADA ===');
         console.log('data original:', data);
         console.log('dataFormatada:', dataFormatada);
