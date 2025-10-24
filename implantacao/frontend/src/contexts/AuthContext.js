@@ -91,13 +91,25 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('rememberMe');
-    delete api.defaults.headers.authorization;
-    setToken(null);
-    setUser(null);
-    setRememberMe(false);
+    console.error('=== LOGOUT INICIADO ===');
+    console.error('Mantendo logs por 10 segundos para debug...');
+    
+    // Delay para manter logs visíveis
+    setTimeout(() => {
+      console.error('Executando logout após delay...');
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('rememberMe');
+      delete api.defaults.headers.authorization;
+      setToken(null);
+      setUser(null);
+      setRememberMe(false);
+      
+      // Recarregar página após logout
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    }, 10000); // 10 segundos para ver os logs
   };
 
   const isAuthenticated = !!user && !!token;
