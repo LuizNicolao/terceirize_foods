@@ -3,6 +3,8 @@ import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList } from 'react-ico
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
+import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
+import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import {
   NecessidadesLayout,
   NecessidadesLoading,
@@ -35,6 +37,12 @@ const AjusteNecessidades = () => {
     atualizarFiltros
   } = useNecessidadesAjuste();
 
+  // Hook para semanas de abastecimento
+  const { opcoes: opcoesSemanasAbastecimento } = useSemanasAbastecimento();
+  
+  // Hook para semanas de consumo do calendário
+  const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo();
+
   // Estados locais para edição
   const [ajustesLocais, setAjustesLocais] = useState({});
   const [necessidadeAtual, setNecessidadeAtual] = useState(null);
@@ -43,12 +51,12 @@ const AjusteNecessidades = () => {
   const canViewAjuste = canView('analise_necessidades');
   const canEditAjuste = canEdit('analise_necessidades');
 
-  // Carregar necessidades automaticamente quando a página carregar
+  // Carregar necessidades apenas quando filtros estiverem preenchidos
   useEffect(() => {
-    if (canViewAjuste) {
+    if (canViewAjuste && filtros.escola_id && filtros.grupo && filtros.semana_consumo) {
       carregarNecessidades();
     }
-  }, [canViewAjuste, carregarNecessidades]);
+  }, [canViewAjuste, filtros, carregarNecessidades]);
 
   // Inicializar ajustes locais quando necessidades carregarem
   useEffect(() => {
@@ -292,7 +300,7 @@ const AjusteNecessidades = () => {
         {/* Filtros */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Filtros</h3>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Escola</label>
               <SearchableSelect
@@ -303,6 +311,7 @@ const AjusteNecessidades = () => {
                 getOptionValue={(option) => option.id}
                 placeholder="Selecione a escola"
                 loading={loading}
+                required
               />
             </div>
             <div>
@@ -315,22 +324,32 @@ const AjusteNecessidades = () => {
                 getOptionValue={(option) => option.nome}
                 placeholder="Selecione o grupo"
                 loading={loading}
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Período de Consumo (De)</label>
-              <Input
-                type="date"
-                value={filtros.consumo_de || ''}
-                onChange={(e) => handleFiltroChange('consumo_de', e.target.value)}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Semana de Consumo</label>
+              <SearchableSelect
+                options={opcoesSemanasConsumo || []}
+                value={filtros.semana_consumo || ''}
+                onChange={(selectedOption) => handleFiltroChange('semana_consumo', selectedOption?.value || null)}
+                getOptionLabel={(option) => option.label}
+                getOptionValue={(option) => option.value}
+                placeholder="Selecione a semana de consumo..."
+                loading={loading}
+                required
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Período de Consumo (Até)</label>
-              <Input
-                type="date"
-                value={filtros.consumo_ate || ''}
-                onChange={(e) => handleFiltroChange('consumo_ate', e.target.value)}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Semana de Abastecimento (AB)</label>
+              <SearchableSelect
+                options={opcoesSemanasAbastecimento || []}
+                value={filtros.semana_abastecimento || ''}
+                onChange={(selectedOption) => handleFiltroChange('semana_abastecimento', selectedOption?.value || null)}
+                getOptionLabel={(option) => option.label}
+                getOptionValue={(option) => option.value}
+                placeholder="Selecione a semana..."
+                loading={loading}
               />
             </div>
           </div>

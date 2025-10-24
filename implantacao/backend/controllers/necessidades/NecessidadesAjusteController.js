@@ -3,7 +3,7 @@ const { executeQuery } = require('../../config/database');
 // Listar necessidades para ajuste (status = 'NEC')
 const listarParaAjuste = async (req, res) => {
   try {
-    const { escola_id, grupo, consumo_de, consumo_ate } = req.query;
+    const { escola_id, grupo, semana_consumo, semana_abastecimento } = req.query;
     const usuario_id = req.user.id;
     const tipo_usuario = req.user.tipo_de_acesso;
 
@@ -102,15 +102,14 @@ const listarParaAjuste = async (req, res) => {
     }
 
     // Filtros opcionais por período
-    if (consumo_de && consumo_ate) {
-      query += ` AND n.semana_consumo BETWEEN ? AND ?`;
-      params.push(consumo_de, consumo_ate);
-    } else if (consumo_de) {
-      query += ` AND n.semana_consumo >= ?`;
-      params.push(consumo_de);
-    } else if (consumo_ate) {
-      query += ` AND n.semana_consumo <= ?`;
-      params.push(consumo_ate);
+    if (semana_consumo) {
+      query += ` AND n.semana_consumo = ?`;
+      params.push(semana_consumo);
+    }
+
+    if (semana_abastecimento) {
+      query += ` AND n.semana_abastecimento = ?`;
+      params.push(semana_abastecimento);
     }
 
     query += ` ORDER BY n.produto ASC`;

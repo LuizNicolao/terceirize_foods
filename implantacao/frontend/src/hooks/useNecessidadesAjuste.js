@@ -17,8 +17,8 @@ export const useNecessidadesAjuste = () => {
   const [filtros, setFiltros] = useState({
     escola_id: null,
     grupo: null,
-    consumo_de: '',
-    consumo_ate: ''
+    semana_consumo: '',
+    semana_abastecimento: ''
   });
 
   // Carregar necessidades para ajuste automaticamente
