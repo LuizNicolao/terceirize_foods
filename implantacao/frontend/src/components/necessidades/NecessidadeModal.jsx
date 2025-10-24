@@ -114,13 +114,13 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
       const percapitaEja = Number(produto.per_capita_eja) || 0;
 
 
-      // Frequências das médias das escolas (número de alunos) - AUTOMÁTICO
+      // Médias das escolas (número de alunos) - AUTOMÁTICO
       // Usar a estrutura correta das médias com os 5 novos tipos
-      const frequenciaLancheManha = Math.round(Number(mediasPeriodo.lanche_manha?.media || 0)); // Número inteiro
-      const frequenciaAlmoco = Math.round(Number(mediasPeriodo.almoco?.media || 0)); // Número inteiro
-      const frequenciaLancheTarde = Math.round(Number(mediasPeriodo.lanche_tarde?.media || 0)); // Número inteiro
-      const frequenciaParcial = Math.round(Number(mediasPeriodo.parcial?.media || 0)); // Número inteiro
-      const frequenciaEja = Math.round(Number(mediasPeriodo.eja?.media || 0)); // Número inteiro
+      const mediaLancheManha = Math.round(Number(mediasPeriodo.lanche_manha?.media || 0)); // Número inteiro
+      const mediaAlmoco = Math.round(Number(mediasPeriodo.almoco?.media || 0)); // Número inteiro
+      const mediaLancheTarde = Math.round(Number(mediasPeriodo.lanche_tarde?.media || 0)); // Número inteiro
+      const mediaParcial = Math.round(Number(mediasPeriodo.parcial?.media || 0)); // Número inteiro
+      const mediaEja = Math.round(Number(mediasPeriodo.eja?.media || 0)); // Número inteiro
 
       
       // EDIÇÃO MANUAL (comentado - usar apenas se necessário no futuro)
@@ -149,11 +149,11 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
         percapita_lanche_tarde: percapitaLancheTarde,
         percapita_parcial: percapitaParcial,
         percapita_eja: percapitaEja,
-        media_lanche_manha: frequenciaLancheManha, // Média das escolas (número de alunos)
-        media_almoco: frequenciaAlmoco,
-        media_lanche_tarde: frequenciaLancheTarde,
-        media_parcial: frequenciaParcial,
-        media_eja: frequenciaEja,
+        media_lanche_manha: mediaLancheManha, // Média das escolas (número de alunos)
+        media_almoco: mediaAlmoco,
+        media_lanche_tarde: mediaLancheTarde,
+        media_parcial: mediaParcial,
+        media_eja: mediaEja,
         frequencia_lanche_manha: '', // Começar em branco (editável)
         frequencia_almoco: '',
         frequencia_lanche_tarde: '',
