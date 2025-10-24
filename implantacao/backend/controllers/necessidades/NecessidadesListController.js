@@ -2,6 +2,10 @@ const { executeQuery } = require('../../config/database');
 
 const listar = async (req, res) => {
   try {
+    console.log('=== NECESSIDADES LISTAR CONTROLLER ===');
+    console.log('Query params:', req.query);
+    console.log('User:', req.user);
+    
     const { page = 1, limit = 10, search, escola, grupo, data, semana_abastecimento } = req.query;
     const userId = req.user.id;
     const userType = req.user.tipo_de_acesso;
@@ -82,6 +86,9 @@ const listar = async (req, res) => {
       LIMIT ${validLimitNum} OFFSET ${offset}
     `, params);
 
+    console.log('✅ Necessidades encontradas:', necessidades.length);
+    console.log('✅ Retornando sucesso para frontend');
+    
     res.json({
       success: true,
       data: necessidades,
