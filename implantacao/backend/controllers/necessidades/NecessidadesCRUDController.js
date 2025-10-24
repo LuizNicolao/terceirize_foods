@@ -181,13 +181,11 @@ const buscarPorId = async (req, res) => {
     const necessidades = await executeQuery(`
       SELECT 
         n.*,
-        p.nome as produto_nome,
-        p.unidade_medida,
-        e.nome_escola,
-        e.rota
+        n.produto as produto_nome,
+        n.produto_unidade as unidade_medida,
+        n.escola as nome_escola,
+        n.escola_rota as rota
       FROM necessidades n
-      LEFT JOIN produtos p ON n.produto = p.nome
-      LEFT JOIN escolas e ON n.escola = e.nome_escola
       WHERE n.id = ? AND n.usuario_email = ?
     `, [id, req.user.email]);
 
