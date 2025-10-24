@@ -4,17 +4,14 @@ const { executeQuery } = require('../../config/database');
 const listarParaAjuste = async (req, res) => {
   try {
     const { escola_id, grupo, consumo_de, consumo_ate } = req.query;
+    const usuario_id = req.user.id;
+    const tipo_usuario = req.user.tipo_de_acesso;
 
-    // Validar parâmetros obrigatórios
-    if (!escola_id || !grupo) {
-      return res.status(400).json({
-        success: false,
-        error: 'Parâmetros obrigatórios',
-        message: 'escola_id e grupo são obrigatórios'
-      });
-    }
+    console.log('=== DEBUG NECESSIDADES AJUSTE ===');
+    console.log('Usuário logado:', usuario_id, tipo_usuario);
+    console.log('Parâmetros recebidos:', { escola_id, grupo, consumo_de, consumo_ate });
 
-    // Construir query com filtros
+    // Construir query baseada no tipo de usuário
     let query = `
       SELECT 
         n.id,
@@ -32,20 +29,36 @@ const listarParaAjuste = async (req, res) => {
         n.status,
         n.data_preenchimento
       FROM necessidades n
-      WHERE n.escola_id = ? 
-        AND n.status = 'NEC'
+      WHERE n.status = 'NEC'
     `;
 
-    const params = [escola_id];
+    const params = [];
 
-    // Filtro por grupo (buscar produtos que pertencem ao grupo)
-    // Usar produtos_per_capita que tem a relação produto-grupo
-    query += ` AND n.produto_id IN (
-      SELECT DISTINCT ppc.produto_id 
-      FROM produtos_per_capita ppc
-      WHERE ppc.grupo = ?
-    )`;
-    params.push(grupo);
+    // Se for nutricionista, filtrar apenas pelas escolas da rota dela
+    if (tipo_usuario === 'nutricionista') {
+      query += ` AND n.escola_id IN (
+        SELECT DISTINCT rne.escola_id
+        FROM rotas_nutricionistas_escolas rne
+        JOIN rotas_nutricionistas rn ON rne.rota_id = rn.id
+        WHERE rn.usuario_id = ?
+      )`;
+      params.push(usuario_id);
+    }
+
+    // Aplicar filtros opcionais se fornecidos
+    if (escola_id) {
+      query += ` AND n.escola_id = ?`;
+      params.push(escola_id);
+    }
+
+    if (grupo) {
+      query += ` AND n.produto_id IN (
+        SELECT DISTINCT ppc.produto_id 
+        FROM produtos_per_capita ppc
+        WHERE ppc.grupo = ?
+      )`;
+      params.push(grupo);
+    }
 
     // Filtros opcionais por período
     if (consumo_de && consumo_ate) {

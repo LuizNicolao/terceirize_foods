@@ -21,26 +21,27 @@ export const useNecessidadesAjuste = () => {
     consumo_ate: ''
   });
 
-  // Carregar necessidades para ajuste
-  const carregarNecessidades = useCallback(async () => {
-    if (!filtros.escola_id || !filtros.grupo) {
-      setNecessidades([]);
-      return;
-    }
-
+  // Carregar necessidades para ajuste automaticamente
+  const carregarNecessidades = useCallback(async (filtrosAdicionais = {}) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await necessidadesService.listarParaAjuste(filtros);
+      // Carregar necessidades baseado no usuário logado
+      const response = await necessidadesService.listarParaAjuste({
+        ...filtros,
+        ...filtrosAdicionais
+      });
       
       if (response.success) {
-        setNecessidades(response.data);
+        setNecessidades(response.data || []);
       } else {
         setError(response.message || 'Erro ao carregar necessidades');
+        setNecessidades([]);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Erro ao carregar necessidades');
       console.error('Erro ao carregar necessidades:', err);
+      setNecessidades([]);
     } finally {
       setLoading(false);
     }
