@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch } from 'react-icons/fa';
+import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch, FaTrash } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
@@ -14,6 +14,7 @@ import {
 import NecessidadesTabs from '../../components/necessidades/NecessidadesTabs';
 import { Modal, Button, Input, SearchableSelect } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
+import necessidadesService from '../../services/necessidadesService';
 import toast from 'react-hot-toast';
 
 const AjusteNecessidades = () => {
@@ -194,6 +195,27 @@ const AjusteNecessidades = () => {
       ...prev,
       [necessidadeId]: parseFloat(valor) || 0
     }));
+  };
+
+  // Handler para excluir necessidade
+  const handleExcluirNecessidade = async (necessidadeId) => {
+    if (!window.confirm('Tem certeza que deseja excluir este produto da necessidade?')) {
+      return;
+    }
+
+    try {
+      const response = await necessidadesService.deletar(necessidadeId);
+      
+      if (response.success) {
+        toast.success('Produto excluído com sucesso!');
+        carregarNecessidades(); // Recarregar para atualizar a lista
+      } else {
+        toast.error(response.message || 'Erro ao excluir produto');
+      }
+    } catch (error) {
+      console.error('Erro ao excluir necessidade:', error);
+      toast.error('Erro ao excluir produto');
+    }
   };
 
   // Handler para salvar ajustes
@@ -826,6 +848,9 @@ const AjusteNecessidades = () => {
                         <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Ajuste
                         </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ações
+                        </th>
                       </>
                     ) : (
                       <>
@@ -843,6 +868,9 @@ const AjusteNecessidades = () => {
                         </th>
                         <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Ajuste (nutricionista)
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Ações
                         </th>
                       </>
                     )}
@@ -885,6 +913,15 @@ const AjusteNecessidades = () => {
                               disabled={necessidade.status === 'CONF' || !canEditAjuste}
                             />
                           </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
+                            <button
+                              onClick={() => handleExcluirNecessidade(necessidade.id)}
+                              className="text-red-600 hover:text-red-800 transition-colors"
+                              title="Excluir produto"
+                            >
+                              <FaTrash className="h-4 w-4" />
+                            </button>
+                          </td>
                         </>
                       ) : (
                         <>
@@ -913,6 +950,15 @@ const AjusteNecessidades = () => {
                               className="w-20 text-center text-xs py-1"
                               disabled={necessidade.status === 'NEC NUTRI' || !canEditAjuste}
                             />
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
+                            <button
+                              onClick={() => handleExcluirNecessidade(necessidade.id)}
+                              className="text-red-600 hover:text-red-800 transition-colors"
+                              title="Excluir produto"
+                            >
+                              <FaTrash className="h-4 w-4" />
+                            </button>
                           </td>
                         </>
                       )}
