@@ -488,10 +488,111 @@ const buscarProdutosParaModal = async (req, res) => {
   }
 };
 
+// Excluir produto de necessidade em ajuste
+const excluirProdutoAjuste = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const usuario_id = req.user.id;
+    const tipo_usuario = req.user.tipo_de_acesso;
+
+    // Verificar se o produto existe e tem status apropriado para exclusão
+    const produto = await executeQuery(`
+      SELECT 
+        id, 
+        status, 
+        escola_id, 
+        usuario_id, 
+        produto,
+        semana_consumo
+      FROM necessidades 
+      WHERE id = ? AND status IN ('NEC', 'NEC NUTRI', 'NEC COORD')
+    `, [id]);
+
+    if (produto.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Produto não encontrado',
+        message: 'Produto não encontrado ou não pode ser excluído'
+      });
+    }
+
+    const produtoData = produto[0];
+
+    // Verificar permissões baseado no tipo de usuário
+    if (tipo_usuario === 'nutricionista') {
+      // Nutricionista só pode excluir se:
+      // 1. O produto tem status 'NEC' (ainda não ajustado pela nutricionista)
+      // 2. OU pertence à rota da nutricionista
+      
+      if (produtoData.status === 'NEC') {
+        // Qualquer nutricionista pode excluir produtos não ajustados
+      } else if (produtoData.status === 'NEC NUTRI') {
+        // Verificar se a nutricionista tem acesso à escola
+        const temAcesso = await executeQuery(`
+          SELECT 1 FROM rotas_nutricionistas 
+          WHERE usuario_id = ? AND escola_id = ? AND ativo = 1
+          LIMIT 1
+        `, [usuario_id, produtoData.escola_id]);
+
+        if (temAcesso.length === 0) {
+          return res.status(403).json({
+            success: false,
+            error: 'Sem permissão',
+            message: 'Você não tem permissão para excluir este produto'
+          });
+        }
+      } else {
+        return res.status(403).json({
+          success: false,
+          error: 'Sem permissão',
+          message: 'Produto não pode ser excluído neste status'
+        });
+      }
+    } else if (tipo_usuario === 'coordenador' || tipo_usuario === 'supervisor' || tipo_usuario === 'administrador') {
+      // Coordenador/supervisor/admin pode excluir produtos em NEC COORD
+      if (!['NEC', 'NEC NUTRI', 'NEC COORD'].includes(produtoData.status)) {
+        return res.status(403).json({
+          success: false,
+          error: 'Sem permissão',
+          message: 'Produto não pode ser excluído neste status'
+        });
+      }
+    } else {
+      return res.status(403).json({
+        success: false,
+        error: 'Sem permissão',
+        message: 'Você não tem permissão para excluir produtos'
+      });
+    }
+
+    // Deletar produto
+    await executeQuery(`
+      DELETE FROM necessidades 
+      WHERE id = ?
+    `, [id]);
+
+    res.json({
+      success: true,
+      message: 'Produto excluído com sucesso',
+      data: {
+        produto: produtoData.produto
+      }
+    });
+  } catch (error) {
+    console.error('Erro ao excluir produto em ajuste:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Erro interno do servidor',
+      message: 'Erro ao excluir produto'
+    });
+  }
+};
+
 module.exports = {
   listarParaAjuste,
   salvarAjustes,
   incluirProdutoExtra,
   liberarCoordenacao,
-  buscarProdutosParaModal
+  buscarProdutosParaModal,
+  excluirProdutoAjuste
 };

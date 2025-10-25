@@ -52,6 +52,12 @@ const necessidadesService = {
     return response.data;
   },
 
+  // Deletar produto de necessidade em ajuste
+  deletarProdutoAjuste: async (id) => {
+    const response = await api.delete(`/necessidades/ajuste/${id}`);
+    return response.data;
+  },
+
   // Gerar necessidade (nova funcionalidade)
   gerarNecessidade: async (dados) => {
     const response = await api.post('/necessidades/gerar', dados);

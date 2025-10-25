@@ -173,7 +173,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
     if (!produtoToDelete) return;
 
     try {
-      const response = await necessidadesService.deletar(produtoToDelete.id);
+      const response = await necessidadesService.deletarProdutoAjuste(produtoToDelete.id);
       
       if (response.success) {
         toast.success('Produto excluído com sucesso!');

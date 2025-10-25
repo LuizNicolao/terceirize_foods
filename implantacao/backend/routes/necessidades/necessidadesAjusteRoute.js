@@ -6,7 +6,8 @@ const {
   salvarAjustes,
   incluirProdutoExtra,
   liberarCoordenacao,
-  buscarProdutosParaModal
+  buscarProdutosParaModal,
+  excluirProdutoAjuste
 } = require('../../controllers/necessidades/NecessidadesAjusteController');
 
 // Middleware para verificar se tem acesso à funcionalidade
@@ -37,5 +38,8 @@ router.post('/liberar-coordenacao', authenticateToken, hasAccessToAdjustment, li
 
 // GET /api/necessidades/produtos-modal - Buscar produtos para modal
 router.get('/produtos-modal', authenticateToken, hasAccessToAdjustment, buscarProdutosParaModal);
+
+// DELETE /api/necessidades/ajuste/:id - Excluir produto de necessidade em ajuste
+router.delete('/ajuste/:id', authenticateToken, hasAccessToAdjustment, excluirProdutoAjuste);
 
 module.exports = router;
