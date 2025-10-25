@@ -26,7 +26,6 @@ router.use(authenticateToken);
 
 // ===== ROTAS ESPECÍFICAS (DEVEM VIR ANTES DAS ROTAS COM PARÂMETROS) =====
 router.post('/gerar', canCreate('necessidades'), validateGerarNecessidade, gerarNecessidade);
-router.get('/escolas-nutricionista/:usuarioId', canView('necessidades'), listarEscolasNutricionista);
 
 // ===== ROTAS CRUD =====
 router.get('/', canView('necessidades'), listar);
