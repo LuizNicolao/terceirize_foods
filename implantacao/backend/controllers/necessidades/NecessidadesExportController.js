@@ -259,8 +259,8 @@ class NecessidadesExportController {
 
       // Definir larguras das colunas (ajustadas para paisagem)
       const colWidths = isCoordenacao 
-        ? [25, 35, 100, 45, 120, 35, 45, 45, 45, 70, 70, 50, 90] // Com ajuste coordenação: larguras reduzidas para caber na página
-        : [0, 0, 120, 45, 130, 35, 0, 0, 70, 70, 50, 90]; // Sem ajuste coordenação: larguras reduzidas
+        ? [25, 35, 100, 45, 120, 35, 45, 45, 45, 70, 70, 50] // Com ajuste coordenação: sem coluna Observações
+        : [0, 0, 120, 45, 130, 35, 0, 0, 70, 70, 50]; // Sem ajuste coordenação: sem coluna Observações
       
       const startX = 50;
       const startY = doc.y;
@@ -269,8 +269,8 @@ class NecessidadesExportController {
 
       // Desenhar cabeçalho
       const headers = isCoordenacao
-        ? ['ID', 'Esc. ID', 'Escola', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Aj. Coord', 'Sem. Consumo', 'Sem. Abast', 'Status', 'Observações']
-        : ['', '', 'Escola', 'Prod. ID', 'Produto', 'Un.', '', '', 'Sem. Consumo', 'Sem. Abast', 'Status', 'Observações'];
+        ? ['ID', 'Esc. ID', 'Escola', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Aj. Coord', 'Sem. Consumo', 'Sem. Abast', 'Status']
+        : ['', '', 'Escola', 'Prod. ID', 'Produto', 'Un.', '', '', 'Sem. Consumo', 'Sem. Abast', 'Status'];
 
       doc.fontSize(8).font('Helvetica-Bold');
       let currentX = startX;
@@ -322,8 +322,7 @@ class NecessidadesExportController {
               nec.ajuste_coordenacao ? parseFloat(nec.ajuste_coordenacao).toFixed(3) : '0.000',
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
-              nec.status || 'N/A',
-              nec.observacoes || ''
+              nec.status || 'N/A'
             ]
           : [
               '', // ID removido
@@ -336,8 +335,7 @@ class NecessidadesExportController {
               '', // Aj. Nutri removida
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
-              nec.status || 'N/A',
-              nec.observacoes || ''
+              nec.status || 'N/A'
             ];
 
         data.forEach((value, i) => {
