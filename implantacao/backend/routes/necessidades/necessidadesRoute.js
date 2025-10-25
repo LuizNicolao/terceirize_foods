@@ -30,7 +30,6 @@ router.post('/gerar', canCreate('necessidades'), validateGerarNecessidade, gerar
 // ===== ROTAS CRUD =====
 router.get('/', canView('necessidades'), listar);
 router.get('/todas', canView('necessidades'), listarTodas);
-router.get('/:id', canView('necessidades'), buscarPorId);
 router.post('/', canCreate('necessidades'), validateCriarNecessidade, criar);
 router.put('/:id', canEdit('necessidades'), validateAtualizarNecessidade, atualizar);
 router.delete('/:id', canDelete('necessidades'), deletar);
@@ -38,5 +37,8 @@ router.delete('/:id', canDelete('necessidades'), deletar);
 // ===== ROTAS DE ESTATÍSTICAS =====
 router.get('/stats/estatisticas', canView('necessidades'), obterEstatisticas);
 router.get('/stats/resumo', canView('necessidades'), obterResumo);
+
+// ===== ROTAS COM PARÂMETROS (DEVEM VIR POR ÚLTIMO) =====
+router.get('/:id', canView('necessidades'), buscarPorId);
 
 module.exports = router;
