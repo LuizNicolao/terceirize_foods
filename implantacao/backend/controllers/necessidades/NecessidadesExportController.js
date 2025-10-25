@@ -26,8 +26,8 @@ class NecessidadesExportController {
       
       ws.columns = [
         { header: 'ID', key: 'id', width: 8 },
+        { header: 'Escola ID', key: 'escola_id', width: 12 },
         { header: 'Escola', key: 'escola', width: 40 },
-        { header: 'Rota', key: 'escola_rota', width: 30 },
         { header: 'Produto ID', key: 'produto_id', width: 12 },
         { header: 'Produto', key: 'produto', width: 40 },
         { header: 'Unidade', key: 'produto_unidade', width: 12 },
@@ -95,8 +95,8 @@ class NecessidadesExportController {
       const query = `
         SELECT 
           n.id,
+          n.escola_id,
           n.escola,
-          n.escola_rota,
           n.produto_id,
           n.produto,
           n.produto_unidade,
@@ -117,8 +117,8 @@ class NecessidadesExportController {
       necessidades.forEach(nec => {
         ws.addRow({
           id: nec.id,
+          escola_id: nec.escola_id,
           escola: nec.escola,
-          escola_rota: nec.escola_rota,
           produto_id: nec.produto_id,
           produto: nec.produto,
           produto_unidade: nec.produto_unidade,
@@ -222,8 +222,8 @@ class NecessidadesExportController {
       const query = `
         SELECT 
           n.id,
+          n.escola_id,
           n.escola,
-          n.escola_rota,
           n.produto_id,
           n.produto,
           n.produto_unidade,
@@ -255,8 +255,8 @@ class NecessidadesExportController {
 
       // Definir larguras das colunas (ajustadas para paisagem)
       const colWidths = isCoordenacao 
-        ? [40, 120, 100, 50, 150, 40, 50, 50, 50, 70, 70, 40] // Com ajuste coordenação
-        : [40, 120, 100, 50, 150, 40, 50, 50, 70, 70, 40]; // Sem ajuste coordenação
+        ? [40, 60, 120, 50, 150, 40, 50, 50, 50, 70, 70, 40] // Com ajuste coordenação
+        : [40, 60, 120, 50, 150, 40, 50, 50, 70, 70, 40]; // Sem ajuste coordenação
       
       const startX = 50;
       const startY = doc.y;
@@ -265,8 +265,8 @@ class NecessidadesExportController {
 
       // Desenhar cabeçalho
       const headers = isCoordenacao
-        ? ['ID', 'Escola', 'Rota', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Aj. Coord', 'Sem. Consumo', 'Sem. Abast', 'Status']
-        : ['ID', 'Escola', 'Rota', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Sem. Consumo', 'Sem. Abast', 'Status'];
+        ? ['ID', 'Esc. ID', 'Escola', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Aj. Coord', 'Sem. Consumo', 'Sem. Abast', 'Status']
+        : ['ID', 'Esc. ID', 'Escola', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Sem. Consumo', 'Sem. Abast', 'Status'];
 
       doc.fontSize(8).font('Helvetica-Bold');
       let currentX = startX;
@@ -308,8 +308,8 @@ class NecessidadesExportController {
         const data = isCoordenacao
           ? [
               nec.id,
+              nec.escola_id || 'N/A',
               nec.escola || 'N/A',
-              nec.escola_rota || 'N/A',
               nec.produto_id,
               nec.produto || 'N/A',
               nec.produto_unidade || 'N/A',
@@ -322,8 +322,8 @@ class NecessidadesExportController {
             ]
           : [
               nec.id,
+              nec.escola_id || 'N/A',
               nec.escola || 'N/A',
-              nec.escola_rota || 'N/A',
               nec.produto_id,
               nec.produto || 'N/A',
               nec.produto_unidade || 'N/A',
