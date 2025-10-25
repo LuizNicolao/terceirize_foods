@@ -65,14 +65,9 @@ const AjusteNecessidades = () => {
     if (necessidades.length > 0) {
       const ajustesIniciais = {};
       necessidades.forEach(nec => {
-        // Se status for NEC NUTRI, sempre deixar em branco (não mostrar valor salvo)
-        // Se status for NEC, usar ajuste como valor inicial
-        if (nec.status === 'NEC NUTRI') {
-          ajustesIniciais[nec.id] = ''; // Sempre em branco para NEC NUTRI
-        } else {
-          const valorInicial = nec.ajuste || 0;
-          ajustesIniciais[nec.id] = valorInicial === 0 ? '' : valorInicial;
-        }
+        // SEMPRE inicializar em branco para todos os status
+        // O usuário deve digitar o ajuste desejado
+        ajustesIniciais[nec.id] = '';
       });
       setAjustesLocais(ajustesIniciais);
       setNecessidadeAtual(necessidades[0]); // Para obter informações do conjunto
