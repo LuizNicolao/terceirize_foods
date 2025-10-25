@@ -1,4 +1,4 @@
-const db = require('../../config/database');
+const { executeQuery } = require('../../config/database');
 const XLSX = require('xlsx');
 const PDFDocument = require('pdfkit');
 
@@ -97,12 +97,12 @@ const exportarXLSX = async (req, res) => {
     query += ' ORDER BY re.data_recebimento DESC, re.escola_nome';
 
     // Executar query
-    const [recebimentos] = await db.execute(query, params);
+    const recebimentos = await executeQuery(query, params);
 
     // Buscar produtos para recebimentos parciais
     for (const recebimento of recebimentos) {
       if (recebimento.tipo_recebimento === 'Parcial') {
-        const [produtos] = await db.execute(
+        const produtos = await executeQuery(
           'SELECT * FROM recebimentos_produtos WHERE recebimento_id = ?',
           [recebimento.id]
         );
@@ -260,7 +260,7 @@ const exportarPDF = async (req, res) => {
     query += ' ORDER BY re.data_recebimento DESC, re.escola_nome';
 
     // Executar query
-    const [recebimentos] = await db.execute(query, params);
+    const recebimentos = await executeQuery(query, params);
 
     // Criar documento PDF
     const doc = new PDFDocument({ margin: 50 });
