@@ -441,7 +441,7 @@ const AjusteNecessidades = () => {
   const statusAtual = necessidades.length > 0 ? necessidades[0].status : 'NEC';
   
   // Verificar se deve mostrar modo coordenação
-  const isModoCoordenacao = statusAtual === 'NEC COORD' && (user?.role === 'coordenador' || user?.role === 'supervisor' || user?.role === 'administrador');
+  const isModoCoordenacao = statusAtual === 'NEC COORD' && (user?.tipo_de_acesso === 'coordenador' || user?.tipo_de_acesso === 'supervisor' || user?.tipo_de_acesso === 'administrador');
   
   // Se for modo coordenação, mostrar componente de coordenação
   if (isModoCoordenacao) {
