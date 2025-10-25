@@ -23,6 +23,7 @@ const AjusteNecessidades = () => {
   const [produtosSelecionados, setProdutosSelecionados] = useState([]);
   const [searchProduto, setSearchProduto] = useState('');
   const [modoCoordenacao, setModoCoordenacao] = useState(false);
+  const [abaAtiva, setAbaAtiva] = useState('nutricionista');
 
   // Hook para gerenciar ajuste de necessidades
   const {
@@ -56,6 +57,17 @@ const AjusteNecessidades = () => {
   const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador'];
   const canViewAjuste = canView('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
   const canEditAjuste = canEdit('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
+
+  // Determinar aba ativa baseada no tipo de usuário
+  useEffect(() => {
+    if (user?.tipo_de_acesso === 'administrador') {
+      setAbaAtiva('nutricionista'); // Admin começa na aba nutricionista
+    } else if (['coordenador', 'supervisor'].includes(user?.tipo_de_acesso)) {
+      setAbaAtiva('coordenacao');
+    } else {
+      setAbaAtiva('nutricionista');
+    }
+  }, [user?.tipo_de_acesso]);
 
   // Carregar necessidades automaticamente para administradores
   useEffect(() => {
@@ -469,6 +481,41 @@ const AjusteNecessidades = () => {
           </div>
           <div className="flex items-center space-x-3">
             <StatusBadge status={statusAtual} />
+          </div>
+        </div>
+
+        {/* Abas de Navegação */}
+        <div className="mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              {/* Aba Nutricionista */}
+              {(['nutricionista', 'administrador'].includes(user?.tipo_de_acesso)) && (
+                <button
+                  onClick={() => setAbaAtiva('nutricionista')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    abaAtiva === 'nutricionista'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  📝 Nutricionista
+                </button>
+              )}
+
+              {/* Aba Coordenação */}
+              {(['coordenador', 'supervisor', 'administrador'].includes(user?.tipo_de_acesso)) && (
+                <button
+                  onClick={() => setAbaAtiva('coordenacao')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    abaAtiva === 'coordenacao'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  👥 Coordenação
+                </button>
+              )}
+            </nav>
           </div>
         </div>
 
