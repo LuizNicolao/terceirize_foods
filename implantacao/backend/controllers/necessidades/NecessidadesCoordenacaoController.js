@@ -368,8 +368,8 @@ class NecessidadesCoordenacaoController {
           usuario_email, usuario_id, produto_id, produto, produto_unidade,
           escola_id, escola, escola_rota, codigo_teknisa, ajuste,
           semana_consumo, semana_abastecimento, status, necessidade_id,
-          data_preenchimento
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+          observacoes, data_preenchimento
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `;
 
       const values = [
@@ -386,7 +386,8 @@ class NecessidadesCoordenacaoController {
         semana_consumo || escolaData[0].semana_consumo,
         semana_abastecimento || escolaData[0].semana_abastecimento,
         'NEC COORD',
-        escolaData[0].necessidade_id
+        escolaData[0].necessidade_id,
+        'Produto extra incluído pela coordenação'
       ];
 
       await executeQuery(insertQuery, values);
