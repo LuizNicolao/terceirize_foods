@@ -106,8 +106,14 @@ export const useAjusteNecessidadesOrchestrator = () => {
     if (necessidades.length > 0) {
       const ajustesIniciais = {};
       necessidades.forEach(nec => {
-        // Sempre inicializar em branco para nutricionista e coordenação
-        ajustesIniciais[nec.id] = '';
+        // Carregar valores já salvos no banco ou inicializar em branco
+        if (activeTab === 'nutricionista') {
+          // Para nutricionista: usar ajuste_nutricionista se já existe
+          ajustesIniciais[nec.id] = nec.ajuste_nutricionista ? nec.ajuste_nutricionista : '';
+        } else {
+          // Para coordenação: usar ajuste_coordenacao se já existe
+          ajustesIniciais[nec.id] = nec.ajuste_coordenacao ? nec.ajuste_coordenacao : '';
+        }
       });
       setAjustesLocais(ajustesIniciais);
       setNecessidadeAtual(necessidades[0]);
