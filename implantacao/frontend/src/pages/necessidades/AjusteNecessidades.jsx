@@ -131,9 +131,9 @@ const AjusteNecessidades = () => {
       }
       carregarNecessidadesNutricionista();
     } else {
-      // Para coordenação: apenas escola é obrigatória, outros filtros são opcionais
-      if (!filtros.escola_id) {
-        toast.error('Selecione uma escola para filtrar');
+      // Para coordenação: pelo menos um filtro deve ser preenchido
+      if (!filtros.escola_id && !filtros.nutricionista_id && !filtros.grupo && !filtros.semana_consumo && !filtros.semana_abastecimento) {
+        toast.error('Selecione ao menos um filtro para buscar');
         return;
       }
       carregarNecessidadesCoordenacao();
@@ -585,7 +585,7 @@ const AjusteNecessidades = () => {
               disabled={
                 activeTab === 'nutricionista' 
                   ? (!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo || loading)
-                  : (!filtros.escola_id || loading)
+                  : (!filtros.escola_id && !filtros.nutricionista_id && !filtros.grupo && !filtros.semana_consumo && !filtros.semana_abastecimento || loading)
               }
               className="flex items-center"
             >
