@@ -259,7 +259,7 @@ class NecessidadesExportController {
 
       // Definir larguras das colunas (ajustadas para paisagem)
       const colWidths = isCoordenacao 
-        ? [0, 0, 140, 50, 130, 40, 0, 0, 50, 80, 80, 60, 120] // Com ajuste coordenação: removendo ID, Esc. ID, Qtd Gerada, Aj. Nutri
+        ? [0, 0, 140, 50, 160, 40, 0, 0, 0, 80, 80, 60, 120] // Com ajuste coordenação: removendo ID, Esc. ID, Qtd Gerada, Aj. Nutri, Aj. Coord
         : [0, 0, 140, 50, 160, 40, 0, 0, 80, 80, 60, 120]; // Sem ajuste coordenação: removendo ID, Esc. ID, Qtd Gerada, Aj. Nutri
       
       const startX = 50;
@@ -269,7 +269,7 @@ class NecessidadesExportController {
 
       // Desenhar cabeçalho
       const headers = isCoordenacao
-        ? ['', '', 'Escola', 'Prod. ID', 'Produto', 'Un.', '', '', 'Aj. Coord', 'Sem. Consumo', 'Sem. Abast', 'Status', 'Observações']
+        ? ['', '', 'Escola', 'Prod. ID', 'Produto', 'Un.', '', '', '', 'Sem. Consumo', 'Sem. Abast', 'Status', 'Observações']
         : ['', '', 'Escola', 'Prod. ID', 'Produto', 'Un.', '', '', 'Sem. Consumo', 'Sem. Abast', 'Status', 'Observações'];
 
       doc.fontSize(8).font('Helvetica-Bold');
@@ -319,7 +319,7 @@ class NecessidadesExportController {
               nec.produto_unidade || 'N/A',
               '', // Qtd Gerada removida
               '', // Aj. Nutri removida
-              typeof nec.ajuste_coordenacao === 'number' ? nec.ajuste_coordenacao.toFixed(3) : '0.000',
+              '', // Aj. Coord removida
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
               nec.status || 'N/A',
