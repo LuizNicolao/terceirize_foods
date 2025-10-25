@@ -10,7 +10,7 @@ import {
   NecessidadesLoading,
   StatusBadge
 } from '../../components/necessidades';
-import CoordenacaoNecessidades from '../../components/necessidades/CoordenacaoNecessidades';
+import NecessidadesTabs from '../../components/necessidades/NecessidadesTabs';
 import { Modal, Button, Input, SearchableSelect } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
 import toast from 'react-hot-toast';
@@ -18,12 +18,11 @@ import toast from 'react-hot-toast';
 const AjusteNecessidades = () => {
   const { user } = useAuth();
   const { canView, canEdit, loading: permissionsLoading } = usePermissions();
+  const [activeTab, setActiveTab] = useState('nutricionista');
   const [modalProdutoExtraAberto, setModalProdutoExtraAberto] = useState(false);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
   const [produtosSelecionados, setProdutosSelecionados] = useState([]);
   const [searchProduto, setSearchProduto] = useState('');
-  const [modoCoordenacao, setModoCoordenacao] = useState(false);
-  const [abaAtiva, setAbaAtiva] = useState('nutricionista');
 
   // Hook para gerenciar ajuste de necessidades
   const {
@@ -58,33 +57,22 @@ const AjusteNecessidades = () => {
   const canViewAjuste = canView('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
   const canEditAjuste = canEdit('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
 
-  // Determinar aba ativa baseada no tipo de usuário
-  useEffect(() => {
-    if (user?.tipo_de_acesso === 'administrador') {
-      setAbaAtiva('nutricionista'); // Admin começa na aba nutricionista
-    } else if (['coordenador', 'supervisor'].includes(user?.tipo_de_acesso)) {
-      setAbaAtiva('coordenacao');
-    } else {
-      setAbaAtiva('nutricionista');
-    }
-  }, [user?.tipo_de_acesso]);
-
-  // Carregar necessidades automaticamente para administradores
-  useEffect(() => {
-    if (user?.tipo_de_acesso === 'administrador') {
-      // Administradores veem todas as necessidades automaticamente
-      carregarNecessidades();
-    }
-  }, [user?.tipo_de_acesso]);
+  // Carregar necessidades apenas quando o botão filtrar for clicado
+  // useEffect removido - carregamento manual via botão
 
   // Inicializar ajustes locais quando necessidades carregarem
   useEffect(() => {
     if (necessidades.length > 0) {
       const ajustesIniciais = {};
       necessidades.forEach(nec => {
-        // SEMPRE inicializar em branco para todos os status
-        // O usuário deve digitar o ajuste desejado
-        ajustesIniciais[nec.id] = '';
+        // Se status for NEC NUTRI, sempre deixar em branco (não mostrar valor salvo)
+        // Se status for NEC, usar ajuste como valor inicial
+        if (nec.status === 'NEC NUTRI') {
+          ajustesIniciais[nec.id] = ''; // Sempre em branco para NEC NUTRI
+        } else {
+          const valorInicial = nec.ajuste || 0;
+          ajustesIniciais[nec.id] = valorInicial === 0 ? '' : valorInicial;
+        }
       });
       setAjustesLocais(ajustesIniciais);
       setNecessidadeAtual(necessidades[0]); // Para obter informações do conjunto
@@ -456,14 +444,6 @@ const AjusteNecessidades = () => {
 
   // Determinar status atual do conjunto
   const statusAtual = necessidades.length > 0 ? necessidades[0].status : 'NEC';
-  
-  // Verificar se deve mostrar modo coordenação
-  const isModoCoordenacao = statusAtual === 'NEC COORD' && (user?.tipo_de_acesso === 'coordenador' || user?.tipo_de_acesso === 'supervisor' || user?.tipo_de_acesso === 'administrador');
-  
-  // Se for modo coordenação, mostrar componente de coordenação
-  if (isModoCoordenacao) {
-    return <CoordenacaoNecessidades />;
-  }
 
   return (
     <>
@@ -473,10 +453,13 @@ const AjusteNecessidades = () => {
           <div>
             <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
               <FaEdit className="mr-2 sm:mr-3 text-blue-600" />
-              Ajuste de Necessidade por Nutricionista
+              {activeTab === 'nutricionista' ? 'Ajuste de Necessidade por Nutricionista' : 'Ajuste de Necessidade por Coordenação'}
             </h1>
             <p className="text-gray-600 mt-1">
-              Visualize, edite e ajuste necessidades geradas
+              {activeTab === 'nutricionista' 
+                ? 'Visualize, edite e ajuste necessidades geradas' 
+                : 'Visualize, edite e ajuste necessidades para coordenação'
+              }
             </p>
           </div>
           <div className="flex items-center space-x-3">
@@ -484,40 +467,12 @@ const AjusteNecessidades = () => {
           </div>
         </div>
 
-        {/* Abas de Navegação */}
-        <div className="mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              {/* Aba Nutricionista */}
-              {(['nutricionista', 'administrador'].includes(user?.tipo_de_acesso)) && (
-                <button
-                  onClick={() => setAbaAtiva('nutricionista')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    abaAtiva === 'nutricionista'
-                      ? 'border-green-500 text-green-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  📝 Nutricionista
-                </button>
-              )}
-
-              {/* Aba Coordenação */}
-              {(['coordenador', 'supervisor', 'administrador'].includes(user?.tipo_de_acesso)) && (
-                <button
-                  onClick={() => setAbaAtiva('coordenacao')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    abaAtiva === 'coordenacao'
-                      ? 'border-green-500 text-green-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  👥 Coordenação
-                </button>
-              )}
-            </nav>
-          </div>
-        </div>
+        {/* Abas */}
+        <NecessidadesTabs 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab}
+          userType={user?.tipo_de_acesso}
+        />
 
         {/* Filtros e Informações */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">

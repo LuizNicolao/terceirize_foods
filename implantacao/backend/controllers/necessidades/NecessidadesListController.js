@@ -173,7 +173,7 @@ const listarEscolasNutricionista = async (req, res) => {
         // Buscar todas as unidades escolares do foods (sem paginação para admin)
         const response = await axios.get(`${foodsApiUrl}/unidades-escolares?limit=10000`, {
           headers: {
-            'Authorization': req.headers.authorization // Já contém "Bearer " + token
+            'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
           },
           timeout: 5000 // Timeout de 5 segundos
         });
@@ -218,7 +218,7 @@ const listarEscolasNutricionista = async (req, res) => {
       // Buscar unidades escolares do foods (que já aplica filtro por nutricionista)
       const response = await axios.get(`${foodsApiUrl}/unidades-escolares?limit=10000`, {
         headers: {
-          'Authorization': req.headers.authorization // Já contém "Bearer " + token
+          'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
         }
       });
 

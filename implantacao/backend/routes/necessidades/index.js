@@ -1,18 +1,14 @@
 const express = require('express');
 const necessidadesRoute = require('./necessidadesRoute');
-const necessidadesEspecificasRoute = require('./necessidadesEspecificasRoute');
 const necessidadesAjusteRoute = require('./necessidadesAjusteRoute');
-const necessidadesCoordenacaoRoute = require('./necessidadesCoordenacaoRoute');
 
 const router = express.Router();
 
-// IMPORTANTE: Ordem das rotas para evitar conflitos
-// 1. Rotas específicas PRIMEIRO (para evitar interceptação)
-router.use('/', necessidadesEspecificasRoute);
+// IMPORTANTE: Rotas de ajuste devem vir ANTES das rotas com parâmetros (/:id)
+// para evitar que /ajuste seja capturado como /:id
 router.use('/', necessidadesAjusteRoute);
-router.use('/', necessidadesCoordenacaoRoute);
 
-// 2. Rotas gerais DEPOIS (necessidadesRoute)
+// Usar as rotas de necessidades
 router.use('/', necessidadesRoute);
 
 module.exports = router;

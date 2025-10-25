@@ -8,6 +8,7 @@ if (!JWT_SECRET) {
 
 // Middleware para verificar token JWT
 const authenticateToken = async (req, res, next) => {
+  
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 

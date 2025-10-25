@@ -29,17 +29,7 @@ export const AuthProvider = ({ children }) => {
           setUser(response.data.user);
         } catch (error) {
           console.error('Token inválido:', error);
-          console.error('Erro completo:', error.response?.data);
-          console.error('Status do erro:', error.response?.status);
-          console.error('URL da requisição:', error.config?.url);
-          
-          // Só fazer logout se for erro de autenticação (401)
-          if (error.response?.status === 401) {
-            console.error('Fazendo logout por token inválido (401)');
-            logout();
-          } else {
-            console.error('Erro não é de autenticação, mantendo usuário logado');
-          }
+          logout();
         }
       }
       setLoading(false);
@@ -91,26 +81,13 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    console.error('=== LOGOUT INICIADO ===');
-    console.error('Stack trace:', new Error().stack);
-    console.error('Mantendo logs por 10 segundos para debug...');
-    
-    // Delay para manter logs visíveis
-    setTimeout(() => {
-      console.error('Executando logout após delay...');
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('rememberMe');
-      delete api.defaults.headers.authorization;
-      setToken(null);
-      setUser(null);
-      setRememberMe(false);
-      
-      // Recarregar página após logout
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-    }, 10000); // 10 segundos para ver os logs
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('rememberMe');
+    delete api.defaults.headers.authorization;
+    setToken(null);
+    setUser(null);
+    setRememberMe(false);
   };
 
   const isAuthenticated = !!user && !!token;

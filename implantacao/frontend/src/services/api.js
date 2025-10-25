@@ -37,19 +37,10 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('=== API INTERCEPTOR ERROR ===');
-    console.error('Status:', error.response?.status);
-    console.error('URL:', error.config?.url);
-    console.error('Error:', error.response?.data);
-    
     if (error.response?.status === 401) {
-      console.error('Erro 401 detectado - redirecionando para login');
-      // Remover o redirecionamento imediato para permitir logs
-      setTimeout(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/implantacao/login';
-      }, 5000); // 5 segundos para ver os logs
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/implantacao/login';
     }
     return Promise.reject(error);
   }

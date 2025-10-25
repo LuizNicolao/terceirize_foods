@@ -44,7 +44,7 @@ const listarParaAjuste = async (req, res) => {
         // Buscar rotas da nutricionista por email
         const response = await axios.get(`${foodsApiUrl}/rotas-nutricionistas?email=${encodeURIComponent(userEmail)}&status=ativo`, {
           headers: {
-            'Authorization': req.headers.authorization // Já contém "Bearer " + token
+            'Authorization': `Bearer ${req.headers.authorization?.replace('Bearer ', '')}`
           },
           timeout: 5000 // Timeout de 5 segundos
         });

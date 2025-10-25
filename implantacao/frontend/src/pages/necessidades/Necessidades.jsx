@@ -23,7 +23,6 @@ const Necessidades = () => {
   const [modalVisualizacaoAberto, setModalVisualizacaoAberto] = useState(false);
   const [necessidadeSelecionada, setNecessidadeSelecionada] = useState(null);
   
-  
   // Hook para gerenciar necessidades
   const {
     necessidades,

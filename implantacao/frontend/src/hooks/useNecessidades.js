@@ -14,7 +14,6 @@ export const useNecessidades = () => {
   const [necessidades, setNecessidades] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
 
   // Estados para gerar necessidade
   const [escolas, setEscolas] = useState([]);
