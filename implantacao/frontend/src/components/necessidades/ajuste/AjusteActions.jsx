@@ -1,7 +1,6 @@
 import React from 'react';
 import { FaPlus, FaSave, FaPaperPlane } from 'react-icons/fa';
 import { Button, Input } from '../../ui';
-import { ExportButtons } from '../../shared';
 
 const AjusteActions = ({
   buscaProduto,
@@ -9,16 +8,13 @@ const AjusteActions = ({
   onIncluirProduto,
   onSalvarAjustes,
   onLiberar,
-  onExportXLSX,
-  onExportPDF,
   canEdit,
   activeTab,
   statusAtual,
   filtros,
   disabledSalvar,
   disabledLiberar,
-  titleIncluir,
-  hasData
+  titleIncluir
 }) => {
   return (
     <div className="px-6 py-4 border-b border-gray-200">
@@ -35,16 +31,6 @@ const AjusteActions = ({
           </div>
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          {/* Botões de Exportação */}
-          <ExportButtons
-            onExportXLSX={onExportXLSX}
-            onExportPDF={onExportPDF}
-            size="sm"
-            variant="outline"
-            showLabels={true}
-            disabled={!hasData}
-          />
-          
           {/* Botões de Ação */}
           {canEdit && (
             <div className="flex items-center space-x-2">

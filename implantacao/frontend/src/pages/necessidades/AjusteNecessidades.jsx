@@ -16,6 +16,7 @@ import ModalProdutoExtra from '../../components/necessidades/ajuste/ModalProduto
 import AjusteActions from '../../components/necessidades/ajuste/AjusteActions';
 import AjusteEmptyStates from '../../components/necessidades/ajuste/AjusteEmptyStates';
 import { ConfirmModal } from '../../components/ui';
+import { ExportButtons } from '../../components/shared';
 
 const AjusteNecessidades = () => {
   const { user } = useAuth();
@@ -139,6 +140,25 @@ const AjusteNecessidades = () => {
           </div>
         )}
 
+        {/* Ações (Botões de Exportar) */}
+        {necessidades.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold text-gray-800">Necessidades</h2>
+              <div className="flex items-center gap-2">
+                <ExportButtons
+                  onExportXLSX={handleExportarExcel}
+                  onExportPDF={handleExportarPDF}
+                  size="sm"
+                  variant="outline"
+                  showLabels={true}
+                  disabled={necessidadesFiltradas.length === 0}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Lista de Necessidades */}
         {necessidades.length > 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -148,13 +168,10 @@ const AjusteNecessidades = () => {
               onIncluirProduto={handleAbrirModalProdutoExtra}
               onSalvarAjustes={handleSalvarAjustes}
               onLiberar={handleLiberarCoordenacao}
-              onExportXLSX={handleExportarExcel}
-              onExportPDF={handleExportarPDF}
               canEdit={canEditAjuste}
               activeTab={activeTab}
               statusAtual={statusAtual}
               filtros={filtros}
-              hasData={necessidadesFiltradas.length > 0}
               titleIncluir={activeTab === 'coordenacao' && !filtros.escola_id ? 'Selecione uma escola e clique em Filtrar antes de incluir produtos' : undefined}
             />
             
