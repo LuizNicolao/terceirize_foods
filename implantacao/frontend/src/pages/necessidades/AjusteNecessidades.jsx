@@ -15,6 +15,7 @@ import AjusteTabelaCoordenacao from '../../components/necessidades/ajuste/Ajuste
 import ModalProdutoExtra from '../../components/necessidades/ajuste/ModalProdutoExtra';
 import AjusteActions from '../../components/necessidades/ajuste/AjusteActions';
 import AjusteEmptyStates from '../../components/necessidades/ajuste/AjusteEmptyStates';
+import { ConfirmModal } from '../../components/ui';
 
 const AjusteNecessidades = () => {
   const { user } = useAuth();
@@ -66,7 +67,13 @@ const AjusteNecessidades = () => {
     // Estados do modal
     produtosDisponiveis,
     produtosSelecionados,
-    searchProduto
+    searchProduto,
+    
+    // Estados de exclusão
+    showDeleteConfirmModal,
+    produtoToDelete,
+    handleConfirmDelete,
+    handleCloseDeleteModal
   } = useAjusteNecessidadesOrchestrator();
 
   // Verificar permissões específicas
@@ -201,6 +208,18 @@ const AjusteNecessidades = () => {
         onIncluirProdutos={handleIncluirProdutosExtra}
         searchProduto={searchProduto}
         onSearchChange={handleSearchProduto}
+      />
+
+      {/* Modal de Confirmação de Exclusão */}
+      <ConfirmModal
+        isOpen={showDeleteConfirmModal}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Excluir Produto"
+        message={`Tem certeza que deseja excluir o produto "${produtoToDelete?.produto}"?`}
+        confirmText="Excluir"
+        cancelText="Cancelar"
+        type="danger"
       />
     </>
   );

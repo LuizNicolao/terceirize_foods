@@ -77,7 +77,7 @@ const AjusteTabelaCoordenacao = ({
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                 <button
-                  onClick={() => onExcluirNecessidade(necessidade.id)}
+                  onClick={() => onExcluirNecessidade(necessidade)}
                   className="text-red-600 hover:text-red-800 transition-colors"
                   title="Excluir produto"
                 >

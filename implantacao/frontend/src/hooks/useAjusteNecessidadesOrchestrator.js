@@ -27,6 +27,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
   const [necessidadeAtual, setNecessidadeAtual] = useState(null);
   const [buscaProduto, setBuscaProduto] = useState('');
   const [necessidadesFiltradas, setNecessidadesFiltradas] = useState([]);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [produtoToDelete, setProdutoToDelete] = useState(null);
 
   // Hooks para nutricionista
   const {
@@ -160,16 +162,23 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }));
   }, []);
 
-  const handleExcluirNecessidade = useCallback(async (necessidadeId) => {
-    if (!window.confirm('Tem certeza que deseja excluir este produto da necessidade?')) {
-      return;
-    }
+  // Iniciar processo de exclusão (abre modal)
+  const handleExcluirNecessidade = useCallback((necessidade) => {
+    setProdutoToDelete(necessidade);
+    setShowDeleteConfirmModal(true);
+  }, []);
+
+  // Confirmar exclusão
+  const handleConfirmDelete = useCallback(async () => {
+    if (!produtoToDelete) return;
 
     try {
-      const response = await necessidadesService.deletar(necessidadeId);
+      const response = await necessidadesService.deletar(produtoToDelete.id);
       
       if (response.success) {
         toast.success('Produto excluído com sucesso!');
+        setShowDeleteConfirmModal(false);
+        setProdutoToDelete(null);
         handleCarregarNecessidades();
       } else {
         toast.error(response.message || 'Erro ao excluir produto');
@@ -178,7 +187,13 @@ export const useAjusteNecessidadesOrchestrator = () => {
       console.error('Erro ao excluir necessidade:', error);
       toast.error('Erro ao excluir produto');
     }
-  }, [handleCarregarNecessidades]);
+  }, [produtoToDelete, handleCarregarNecessidades]);
+
+  // Fechar modal de exclusão
+  const handleCloseDeleteModal = useCallback(() => {
+    setShowDeleteConfirmModal(false);
+    setProdutoToDelete(null);
+  }, []);
 
   const handleSalvarAjustes = useCallback(async () => {
     if (!necessidadeAtual) {
@@ -421,55 +436,61 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }
   }, [activeTab, filtros, buscarProdutosParaModalNutricionista, buscarProdutosParaModalCoordenacao]);
 
-  return {
-    // Estados
-    activeTab,
-    setActiveTab,
-    modalProdutoExtraAberto,
-    setModalProdutoExtraAberto,
-    produtosDisponiveis,
-    produtosSelecionados,
-    searchProduto,
-    ajustesLocais,
-    necessidadeAtual,
-    buscaProduto,
-    setBuscaProduto,
-    necessidades,
-    filtros,
-    loading,
-    error,
-    necessidadesFiltradas,
-    
-    // Dados
-    escolas,
-    grupos,
-    nutricionistas,
-    opcoesSemanasAbastecimento,
-    opcoesSemanasConsumo,
-    statusAtual: necessidades.length > 0 ? necessidades[0].status : 'NEC',
-    
-    // Handlers
-    handleCarregarNecessidades,
-    handleFiltroChange,
-    handleAjusteChange,
-    handleExcluirNecessidade,
-    handleSalvarAjustes,
-    handleLiberarCoordenacao,
-    handleAbrirModalProdutoExtra,
-    handleIncluirProdutosExtra,
-    handleToggleProduto,
-    handleSelecionarTodos,
-    handleDesmarcarTodos,
-    handleExportarExcel,
-    handleExportarPDF,
-    handleSearchProduto,
-    
-    // Modal helpers
-    handleCloseModalProdutoExtra: () => {
-      setModalProdutoExtraAberto(false);
-      setProdutosSelecionados([]);
-      setSearchProduto('');
-    },
-    handleClearSearch: () => setBuscaProduto('')
+      return {
+      // Estados
+      activeTab,
+      setActiveTab,
+      modalProdutoExtraAberto,
+      setModalProdutoExtraAberto,
+      produtosDisponiveis,
+      produtosSelecionados,
+      searchProduto,
+      ajustesLocais,
+      necessidadeAtual,
+      buscaProduto,
+      setBuscaProduto,
+      necessidades,
+      filtros,
+      loading,
+      error,
+      necessidadesFiltradas,
+      
+      // Estados de exclusão
+      showDeleteConfirmModal,
+      produtoToDelete,
+      
+      // Dados
+      escolas,
+      grupos,
+      nutricionistas,
+      opcoesSemanasAbastecimento,
+      opcoesSemanasConsumo,
+      statusAtual: necessidades.length > 0 ? necessidades[0].status : 'NEC',
+      
+      // Handlers
+      handleCarregarNecessidades,
+      handleFiltroChange,
+      handleAjusteChange,
+      handleExcluirNecessidade,
+      handleConfirmDelete,
+      handleCloseDeleteModal,
+      handleSalvarAjustes,
+      handleLiberarCoordenacao,
+      handleAbrirModalProdutoExtra,
+      handleIncluirProdutosExtra,
+      handleToggleProduto,
+      handleSelecionarTodos,
+      handleDesmarcarTodos,
+      handleExportarExcel,
+      handleExportarPDF,
+      handleSearchProduto,
+      
+      // Modal helpers
+      handleCloseModalProdutoExtra: () => {
+        setModalProdutoExtraAberto(false);
+        setProdutosSelecionados([]);
+        setSearchProduto('');
+      },
+      handleClearSearch: () => setBuscaProduto('')
+    };
   };
-};
