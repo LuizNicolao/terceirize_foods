@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch, FaTrash } from 'react-icons/fa';
+import { FaClipboardList, FaSearch, FaTrash, FaPlus, FaSave, FaPaperPlane } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
@@ -9,11 +9,13 @@ import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import {
   NecessidadesLayout,
   NecessidadesLoading,
-  StatusBadge
+  AjusteNecessidadesHeader,
+  AjusteNecessidadesFilters,
+  AjusteNecessidadesActions,
+  ModalProdutoExtra
 } from '../../components/necessidades';
 import NecessidadesTabs from '../../components/necessidades/NecessidadesTabs';
-import { Modal, Button, Input, SearchableSelect } from '../../components/ui';
-import { ExportButtons } from '../../components/shared';
+import { Button, Input } from '../../components/ui';
 import necessidadesService from '../../services/necessidadesService';
 import toast from 'react-hot-toast';
 
@@ -605,161 +607,32 @@ const AjusteNecessidades = () => {
   return (
     <>
       <NecessidadesLayout hideHeader={true}>
-        {/* Header com Status */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
-              <FaEdit className="mr-2 sm:mr-3 text-blue-600" />
-              {activeTab === 'nutricionista' ? 'Ajuste de Necessidade por Nutricionista' : 'Ajuste de Necessidade por Coordenação'}
-            </h1>
-            <p className="text-gray-600 mt-1">
-              {activeTab === 'nutricionista' 
-                ? 'Visualize, edite e ajuste necessidades geradas' 
-                : 'Visualize, edite e ajuste necessidades para coordenação'
-              }
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <StatusBadge status={statusAtual} />
-            {/* Botões de Exportação */}
-            <ExportButtons
-              onExportXLSX={handleExportarExcel}
-              onExportPDF={handleExportarPDF}
-              size="sm"
-              variant="outline"
-              showLabels={true}
-              disabled={necessidadesFiltradas.length === 0}
-            />
-          </div>
-        </div>
+        <AjusteNecessidadesHeader
+          activeTab={activeTab}
+          statusAtual={statusAtual}
+          onExportXLSX={handleExportarExcel}
+          onExportPDF={handleExportarPDF}
+          hasData={necessidadesFiltradas.length > 0}
+        />
 
-        {/* Abas */}
         <NecessidadesTabs 
           activeTab={activeTab} 
           setActiveTab={setActiveTab}
           userType={user?.tipo_de_acesso}
         />
 
-        {/* Filtros e Informações */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Filtros</h3>
-            <Button
-              onClick={carregarNecessidades}
-              variant="primary"
-              size="sm"
-              disabled={
-                activeTab === 'nutricionista' 
-                  ? (!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo || loading)
-                  : (!filtros.escola_id && !filtros.nutricionista_id && !filtros.grupo && !filtros.semana_consumo && !filtros.semana_abastecimento || loading)
-              }
-              className="flex items-center"
-            >
-              <FaSearch className="mr-2" />
-              Filtrar
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Escola</label>
-              <SearchableSelect
-                value={filtros.escola_id || ''}
-                onChange={(value) => {
-                  const escola = escolas.find(e => e.id == value);
-                  handleFiltroChange('escola_id', escola?.id || null);
-                }}
-                options={escolas.map(escola => ({
-                  value: escola.id,
-                  label: `${escola.nome_escola} - ${escola.rota}`,
-                  description: escola.cidade
-                }))}
-                placeholder="Digite para buscar uma escola..."
-                disabled={loading}
-                required
-                filterBy={(option, searchTerm) => {
-                  const label = option.label.toLowerCase();
-                  const description = option.description?.toLowerCase() || '';
-                  const term = searchTerm.toLowerCase();
-                  return label.includes(term) || description.includes(term);
-                }}
-                renderOption={(option) => (
-                  <div className="flex flex-col">
-                    <span className="font-medium text-gray-900">{option.label}</span>
-                    {option.description && (
-                      <span className="text-xs text-gray-500 mt-1">{option.description}</span>
-                    )}
-                  </div>
-                )}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Grupo {activeTab === 'nutricionista' && <span className="text-red-500">*</span>}
-              </label>
-              <SearchableSelect
-                value={filtros.grupo || ''}
-                onChange={(value) => {
-                  const grupo = grupos.find(g => g.nome == value);
-                  handleFiltroChange('grupo', grupo?.nome || null);
-                }}
-                options={grupos.map(grupo => ({
-                  value: grupo.nome,
-                  label: grupo.nome
-                }))}
-                placeholder="Digite para buscar um grupo..."
-                disabled={loading}
-                required={activeTab === 'nutricionista'}
-              />
-            </div>
-            {activeTab === 'coordenacao' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nutricionista</label>
-                <SearchableSelect
-                  value={filtros.nutricionista_id || ''}
-                  onChange={(value) => {
-                    const nutricionista = nutricionistas.find(n => n.id == value);
-                    handleFiltroChange('nutricionista_id', nutricionista?.id || null);
-                  }}
-                  options={nutricionistas.map(nutricionista => ({
-                    value: nutricionista.id,
-                    label: nutricionista.nome || nutricionista.email
-                  }))}
-                  placeholder="Selecione uma nutricionista..."
-                  disabled={loading}
-                />
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Semana de Consumo {activeTab === 'nutricionista' && <span className="text-red-500">*</span>}
-              </label>
-              <SearchableSelect
-                value={filtros.semana_consumo || ''}
-                onChange={(value) => {
-                  const semana = opcoesSemanasConsumo?.find(s => s.value === value);
-                  handleFiltroChange('semana_consumo', semana?.value || null);
-                }}
-                options={opcoesSemanasConsumo || []}
-                placeholder="Selecione a semana de consumo..."
-                disabled={loading}
-                required={activeTab === 'nutricionista'}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Semana de Abastecimento (AB)</label>
-              <SearchableSelect
-                value={filtros.semana_abastecimento || ''}
-                onChange={(value) => {
-                  const semana = opcoesSemanasAbastecimento?.find(s => s.value === value);
-                  handleFiltroChange('semana_abastecimento', semana?.value || null);
-                }}
-                options={opcoesSemanasAbastecimento || []}
-                placeholder="Selecione a semana..."
-                disabled={loading}
-              />
-            </div>
-          </div>
-        </div>
+        <AjusteNecessidadesFilters
+          activeTab={activeTab}
+          filtros={filtros}
+          escolas={escolas}
+          grupos={grupos}
+          nutricionistas={nutricionistas}
+          opcoesSemanasConsumo={opcoesSemanasConsumo}
+          opcoesSemanasAbastecimento={opcoesSemanasAbastecimento}
+          loading={loading}
+          onFiltroChange={handleFiltroChange}
+          onFiltrar={carregarNecessidades}
+        />
 
         {/* Error Message */}
         {error && (
@@ -785,45 +658,16 @@ const AjusteNecessidades = () => {
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  {/* Botões de Ação */}
                   {canEditAjuste && (
-                    <div className="flex items-center space-x-2">
-                      <div className="relative">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={handleAbrirModalProdutoExtra}
-                          icon={<FaPlus />}
-                          title={activeTab === 'coordenacao' && !filtros.escola_id ? 'Selecione uma escola e clique em Filtrar antes de incluir produtos' : undefined}
-                        >
-                          Incluir Produto Extra
-                        </Button>
-                        {activeTab === 'coordenacao' && !filtros.escola_id && (
-                          <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
-                          </span>
-                        )}
-                      </div>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={handleSalvarAjustes}
-                        icon={<FaSave />}
-                        disabled={activeTab === 'nutricionista' && statusAtual === 'NEC NUTRI'}
-                      >
-                        Salvar Ajustes
-                      </Button>
-                      <Button
-                        variant="success"
-                        size="sm"
-                        onClick={handleLiberarCoordenacao}
-                        icon={<FaPaperPlane />}
-                        disabled={activeTab === 'nutricionista' && statusAtual === 'NEC NUTRI'}
-                      >
-                        {activeTab === 'nutricionista' ? 'Liberar para Coordenação' : 'Liberar para Logística'}
-                      </Button>
-                    </div>
+                    <AjusteNecessidadesActions
+                      activeTab={activeTab}
+                      statusAtual={statusAtual}
+                      canEdit={canEditAjuste}
+                      filtros={filtros}
+                      onIncluirProdutoExtra={handleAbrirModalProdutoExtra}
+                      onSalvarAjustes={handleSalvarAjustes}
+                      onLiberarCoordenacao={handleLiberarCoordenacao}
+                    />
                   )}
                 </div>
               </div>
@@ -1011,125 +855,22 @@ const AjusteNecessidades = () => {
         )}
       </NecessidadesLayout>
 
-      {/* Modal de Produto Extra */}
-      <Modal
+      <ModalProdutoExtra
         isOpen={modalProdutoExtraAberto}
         onClose={() => {
           setModalProdutoExtraAberto(false);
           setProdutosSelecionados([]);
           setSearchProduto('');
         }}
-        title="Incluir Produtos Extra"
-        size="xl"
-      >
-        <div className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Buscar Produto
-            </label>
-            <Input
-              type="text"
-              value={searchProduto}
-              onChange={(e) => handleSearchProduto(e.target.value)}
-              placeholder="Digite o nome ou código do produto..."
-            />
-          </div>
-
-          {/* Controles de seleção */}
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-600">
-              {produtosSelecionados.length} produto(s) selecionado(s)
-            </div>
-            <div className="space-x-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleSelecionarTodos}
-                disabled={produtosDisponiveis.length === 0}
-              >
-                Selecionar Todos
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleDesmarcarTodos}
-                disabled={produtosSelecionados.length === 0}
-              >
-                Desmarcar Todos
-              </Button>
-            </div>
-          </div>
-
-          <div className="max-h-96 overflow-y-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Selecionar</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
-                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unidade</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {produtosDisponiveis.map((produto) => {
-                  const isSelected = produtosSelecionados.find(p => p.produto_id === produto.produto_id);
-                  return (
-                    <tr 
-                      key={produto.produto_id} 
-                      className={`hover:bg-gray-50 transition-colors cursor-pointer ${
-                        isSelected 
-                          ? 'bg-green-50 border-l-4 border-green-500' 
-                          : 'bg-white'
-                      }`}
-                      onClick={() => handleToggleProduto(produto)}
-                    >
-                      <td className="px-4 py-2 text-center">
-                        <input
-                          type="checkbox"
-                          checked={!!isSelected}
-                          onChange={() => handleToggleProduto(produto)}
-                          onClick={(e) => e.stopPropagation()}
-                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        />
-                      </td>
-                      <td className={`px-4 py-2 text-sm ${isSelected ? 'text-green-900 font-medium' : 'text-gray-900'}`}>
-                        {produto.produto_codigo || 'N/A'}
-                      </td>
-                      <td className={`px-4 py-2 text-sm font-medium ${isSelected ? 'text-green-900' : 'text-gray-900'}`}>
-                        {produto.produto_nome}
-                      </td>
-                      <td className={`px-4 py-2 text-sm ${isSelected ? 'text-green-700' : 'text-gray-500'}`}>
-                        {produto.unidade_medida}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setModalProdutoExtraAberto(false);
-                setProdutosSelecionados([]);
-                setSearchProduto('');
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="primary"
-              onClick={handleIncluirProdutosExtra}
-              disabled={produtosSelecionados.length === 0}
-              icon={<FaPlus />}
-            >
-              Incluir {produtosSelecionados.length} Produto(s)
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        produtosDisponiveis={produtosDisponiveis}
+        produtosSelecionados={produtosSelecionados}
+        searchProduto={searchProduto}
+        onSearchChange={handleSearchProduto}
+        onToggleProduto={handleToggleProduto}
+        onSelecionarTodos={handleSelecionarTodos}
+        onDesmarcarTodos={handleDesmarcarTodos}
+        onIncluir={handleIncluirProdutosExtra}
+      />
     </>
   );
 };
