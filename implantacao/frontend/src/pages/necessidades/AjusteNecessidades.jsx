@@ -785,19 +785,19 @@ const AjusteNecessidades = () => {
                   <tr>
                     {activeTab === 'coordenacao' ? (
                       <>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Cod Unidade
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Unidade Escolar
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Codigo Produto
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Produto
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                           Unidade de Medida
                         </th>
                         <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -833,19 +833,19 @@ const AjusteNecessidades = () => {
                     <tr key={necessidade.id} className="hover:bg-gray-50">
                       {activeTab === 'coordenacao' ? (
                         <>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                             {necessidade.escola_id || 'N/A'}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                          <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900 text-center">
                             {necessidade.escola}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                             {necessidade.produto_id || 'N/A'}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                          <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900 text-center">
                             {necessidade.produto}
                           </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">
+                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
                             {necessidade.produto_unidade}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
