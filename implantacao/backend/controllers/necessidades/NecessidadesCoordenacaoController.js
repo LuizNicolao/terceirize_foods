@@ -6,7 +6,6 @@ class NecessidadesCoordenacaoController {
     try {
       const { 
         escola_id, 
-        grupo, 
         semana_consumo, 
         semana_abastecimento,
         nutricionista_id 
@@ -20,10 +19,8 @@ class NecessidadesCoordenacaoController {
         queryParams.push(escola_id);
       }
 
-      if (grupo) {
-        whereConditions.push("n.grupo = ?");
-        queryParams.push(grupo);
-      }
+      // Nota: A tabela necessidades não possui coluna 'grupo'
+      // O filtro por grupo deve ser aplicado via produtos_per_capita se necessário
 
       if (semana_consumo) {
         whereConditions.push("n.semana_consumo = ?");
