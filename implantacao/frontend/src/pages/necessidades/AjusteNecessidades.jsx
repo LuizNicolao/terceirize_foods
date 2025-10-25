@@ -519,6 +519,15 @@ const AjusteNecessidades = () => {
           </div>
           <div className="flex items-center space-x-3">
             <StatusBadge status={statusAtual} />
+            {/* Botões de Exportação */}
+            <ExportButtons
+              onExportXLSX={handleExportarExcel}
+              onExportPDF={handleExportarPDF}
+              size="sm"
+              variant="outline"
+              showLabels={true}
+              disabled={necessidadesFiltradas.length === 0}
+            />
           </div>
         </div>
 
@@ -655,9 +664,6 @@ const AjusteNecessidades = () => {
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Necessidades Disponíveis para Ajuste ({necessidadesFiltradas.length} de {necessidades.length} produtos)
-                  </h3>
                   <div className="w-full max-w-md">
                     <Input
                       type="text"
@@ -669,16 +675,6 @@ const AjusteNecessidades = () => {
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  {/* Botões de Exportação */}
-                  <ExportButtons
-                    onExportXLSX={handleExportarExcel}
-                    onExportPDF={handleExportarPDF}
-                    size="sm"
-                    variant="outline"
-                    showLabels={true}
-                    disabled={necessidadesFiltradas.length === 0}
-                  />
-
                   {/* Botões de Ação */}
                   {canEditAjuste && (
                     <div className="flex items-center space-x-2">
