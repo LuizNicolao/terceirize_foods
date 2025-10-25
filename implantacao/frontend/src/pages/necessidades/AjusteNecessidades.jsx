@@ -122,14 +122,20 @@ const AjusteNecessidades = () => {
 
   // Função wrapper para carregar necessidades baseado na aba ativa
   const carregarNecessidades = () => {
-    if (!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo) {
-      toast.error('Preencha todos os filtros obrigatórios');
-      return;
-    }
-    
+    // Validação específica por aba
     if (activeTab === 'nutricionista') {
+      // Para nutricionista: escola, grupo e semana são obrigatórios
+      if (!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo) {
+        toast.error('Preencha todos os filtros obrigatórios');
+        return;
+      }
       carregarNecessidadesNutricionista();
     } else {
+      // Para coordenação: apenas escola é obrigatória, outros filtros são opcionais
+      if (!filtros.escola_id) {
+        toast.error('Selecione uma escola para filtrar');
+        return;
+      }
       carregarNecessidadesCoordenacao();
     }
   };
@@ -576,7 +582,11 @@ const AjusteNecessidades = () => {
               onClick={carregarNecessidades}
               variant="primary"
               size="sm"
-              disabled={!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo || loading}
+              disabled={
+                activeTab === 'nutricionista' 
+                  ? (!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo || loading)
+                  : (!filtros.escola_id || loading)
+              }
               className="flex items-center"
             >
               <FaSearch className="mr-2" />
@@ -617,7 +627,9 @@ const AjusteNecessidades = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Grupo</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Grupo {activeTab === 'nutricionista' && <span className="text-red-500">*</span>}
+              </label>
               <SearchableSelect
                 value={filtros.grupo || ''}
                 onChange={(value) => {
@@ -630,7 +642,7 @@ const AjusteNecessidades = () => {
                 }))}
                 placeholder="Digite para buscar um grupo..."
                 disabled={loading}
-                required
+                required={activeTab === 'nutricionista'}
               />
             </div>
             {activeTab === 'coordenacao' && (
@@ -652,7 +664,9 @@ const AjusteNecessidades = () => {
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Semana de Consumo</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Semana de Consumo {activeTab === 'nutricionista' && <span className="text-red-500">*</span>}
+              </label>
               <SearchableSelect
                 value={filtros.semana_consumo || ''}
                 onChange={(value) => {
@@ -662,7 +676,7 @@ const AjusteNecessidades = () => {
                 options={opcoesSemanasConsumo || []}
                 placeholder="Selecione a semana de consumo..."
                 disabled={loading}
-                required
+                required={activeTab === 'nutricionista'}
               />
             </div>
             <div>
