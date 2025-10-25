@@ -245,6 +245,64 @@ class ProdutosPerCapitaService {
       };
     }
   }
+
+  /**
+   * Exportar para XLSX
+   */
+  static async exportarXLSX(params = {}) {
+    try {
+      const response = await api.get('/produtos-per-capita/exportar/xlsx', {
+        params,
+        responseType: 'blob'
+      });
+      
+      const filename = response.headers['content-disposition']
+        ? response.headers['content-disposition'].split('filename=')[1]
+        : `produtos_per_capita_${new Date().toISOString().split('T')[0]}.xlsx`;
+      
+      return {
+        success: true,
+        data: response.data,
+        filename: filename.replace(/"/g, ''),
+        message: 'Exportação XLSX realizada com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar para XLSX',
+        data: null
+      };
+    }
+  }
+
+  /**
+   * Exportar para PDF
+   */
+  static async exportarPDF(params = {}) {
+    try {
+      const response = await api.get('/produtos-per-capita/exportar/pdf', {
+        params,
+        responseType: 'blob'
+      });
+      
+      const filename = response.headers['content-disposition']
+        ? response.headers['content-disposition'].split('filename=')[1]
+        : `produtos_per_capita_${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      return {
+        success: true,
+        data: response.data,
+        filename: filename.replace(/"/g, ''),
+        message: 'Exportação PDF realizada com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao exportar para PDF',
+        data: null
+      };
+    }
+  }
 }
 
 export default ProdutosPerCapitaService;
