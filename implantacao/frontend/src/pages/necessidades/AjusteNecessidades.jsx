@@ -3,7 +3,7 @@ import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch } from 
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
-import { useNecessidadesCoordenacao } from '../../hooks/useNecessidadesCoordenacao';
+import useNecessidadesCoordenacao from '../../hooks/useNecessidadesCoordenacao';
 import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import {
