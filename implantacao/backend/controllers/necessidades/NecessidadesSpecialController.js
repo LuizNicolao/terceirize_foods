@@ -58,16 +58,11 @@ const gerarNecessidade = async (req, res) => {
     const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
     const necessidadeId = proximoId.toString();
 
-    // Buscar a nutricionista vinculada à escola
-    const nutricionistaEscola = await buscarNutricionistaDaEscola(escola_id);
-    
-    if (!nutricionistaEscola) {
-      return res.status(400).json({
-        success: false,
-        error: 'Nutricionista não encontrada',
-        message: `Nenhuma nutricionista vinculada à escola "${escola_nome}". Verifique as rotas nutricionistas.`
-      });
-    }
+    // Obter dados da nutricionista do usuário logado (mesmo comportamento de incluirProdutoExtra)
+    const nutricionistaEscola = {
+      usuario_id: req.user.id,
+      usuario_email: req.user.email
+    };
 
     // Verificar se já existe necessidade para esta escola/semana (independente do produto)
     const existing = await executeQuery(`
