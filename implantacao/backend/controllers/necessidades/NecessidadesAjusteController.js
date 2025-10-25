@@ -272,8 +272,9 @@ const incluirProdutoExtra = async (req, res) => {
     }
 
     // Buscar dados da escola e necessidade_id das necessidades existentes
+    // IMPORTANTE: Buscar também usuario_email e usuario_id para manter consistência
     const escolaExistente = await executeQuery(`
-      SELECT escola, escola_rota, codigo_teknisa, necessidade_id, semana_consumo, semana_abastecimento
+      SELECT escola, escola_rota, codigo_teknisa, necessidade_id, semana_consumo, semana_abastecimento, usuario_email, usuario_id
       FROM necessidades 
       WHERE escola_id = ? 
       LIMIT 1
@@ -293,7 +294,9 @@ const incluirProdutoExtra = async (req, res) => {
       codigo_teknisa: escolaExistente[0].codigo_teknisa,
       necessidade_id: escolaExistente[0].necessidade_id,
       semana_consumo: escolaExistente[0].semana_consumo,
-      semana_abastecimento: escolaExistente[0].semana_abastecimento
+      semana_abastecimento: escolaExistente[0].semana_abastecimento,
+      usuario_email: escolaExistente[0].usuario_email,
+      usuario_id: escolaExistente[0].usuario_id
     };
 
     // Determinar status (NEC se conjunto ainda não foi ajustado, senão manter NEC NUTRI)
@@ -324,10 +327,10 @@ const incluirProdutoExtra = async (req, res) => {
         observacoes,
         necessidade_id,
         ajuste_nutricionista
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      )       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
-      req.user.email,
-      req.user.id,
+      escolaData.usuario_email,
+      escolaData.usuario_id,
       produto_id,
       produto.produto_nome,
       produto.unidade_medida,
