@@ -310,20 +310,29 @@ const AjusteNecessidades = () => {
 
   // Handler para abrir modal de produto extra
   const handleAbrirModalProdutoExtra = async () => {
-    if (!necessidadeAtual) {
-      toast.error('Nenhuma necessidade selecionada');
-      return;
-    }
-
     // Validação específica por aba
-    if (activeTab === 'coordenacao' && !filtros.escola_id) {
-      toast.error('É necessário selecionar uma escola para incluir produtos');
-      return;
-    }
-
-    if (!filtros.grupo) {
-      toast.error('É necessário selecionar um grupo para incluir produtos');
-      return;
+    if (activeTab === 'coordenacao') {
+      // Para coordenação: sempre validar filtros
+      if (!filtros.escola_id) {
+        toast.error('É necessário selecionar uma escola para incluir produtos');
+        return;
+      }
+      
+      if (!filtros.grupo) {
+        toast.error('É necessário selecionar um grupo para incluir produtos');
+        return;
+      }
+    } else {
+      // Para nutricionista: validar necessidade atual
+      if (!necessidadeAtual) {
+        toast.error('Nenhuma necessidade selecionada');
+        return;
+      }
+      
+      if (!filtros.grupo) {
+        toast.error('É necessário selecionar um grupo para incluir produtos');
+        return;
+      }
     }
 
     try {
