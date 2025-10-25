@@ -293,6 +293,17 @@ const AjusteNecessidades = () => {
       return;
     }
 
+    // Validação específica por aba
+    if (activeTab === 'coordenacao' && !filtros.escola_id) {
+      toast.error('É necessário selecionar uma escola para incluir produtos');
+      return;
+    }
+
+    if (!filtros.grupo) {
+      toast.error('É necessário selecionar um grupo para incluir produtos');
+      return;
+    }
+
     try {
       const buscarProdutos = activeTab === 'nutricionista' 
         ? buscarProdutosParaModalNutricionista
