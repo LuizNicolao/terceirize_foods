@@ -5,13 +5,13 @@ const necessidadesCoordenacaoRoute = require('./necessidadesCoordenacaoRoute');
 
 const router = express.Router();
 
-// IMPORTANTE: Rotas específicas devem vir ANTES das rotas com parâmetros (/:id)
+// Usar as rotas de necessidades PRIMEIRO
+router.use('/', necessidadesRoute);
+
+// IMPORTANTE: Rotas específicas devem vir DEPOIS das rotas gerais
 // para evitar conflitos de roteamento
 router.use('/', necessidadesAjusteRoute);
 router.use('/', necessidadesCoordenacaoRoute);
-
-// Usar as rotas de necessidades
-router.use('/', necessidadesRoute);
 
 module.exports = router;
 
