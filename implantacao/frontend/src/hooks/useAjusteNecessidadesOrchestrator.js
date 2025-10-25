@@ -158,7 +158,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
   const handleAjusteChange = useCallback((necessidadeId, valor) => {
     setAjustesLocais(prev => ({
       ...prev,
-      [necessidadeId]: parseFloat(valor) || 0
+      [necessidadeId]: valor === '' ? '' : parseFloat(valor) || ''
     }));
   }, []);
 
