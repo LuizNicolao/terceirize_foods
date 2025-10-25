@@ -6,6 +6,7 @@
 const ProdutosPerCapitaCRUDController = require('./ProdutosPerCapitaCRUDController');
 const ProdutosPerCapitaListController = require('./ProdutosPerCapitaListController');
 const ProdutosPerCapitaStatsController = require('./ProdutosPerCapitaStatsController');
+const ProdutosPerCapitaExportController = require('./ProdutosPerCapitaExportController');
 
 module.exports = {
   // CRUD Operations
@@ -23,5 +24,9 @@ module.exports = {
   // Stats Operations
   obterEstatisticas: ProdutosPerCapitaStatsController.obterEstatisticas,
   obterResumoPorPeriodo: ProdutosPerCapitaStatsController.obterResumoPorPeriodo,
-  obterEstatisticasExportacao: ProdutosPerCapitaStatsController.obterEstatisticasExportacao
+  obterEstatisticasExportacao: ProdutosPerCapitaStatsController.obterEstatisticasExportacao,
+
+  // Export Operations
+  exportarXLSX: ProdutosPerCapitaExportController.exportarXLSX,
+  exportarPDF: ProdutosPerCapitaExportController.exportarPDF
 };

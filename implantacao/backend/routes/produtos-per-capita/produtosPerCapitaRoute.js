@@ -49,6 +49,17 @@ router.get('/estatisticas-exportacao',
   ProdutosPerCapitaController.obterEstatisticasExportacao
 );
 
+// ===== ROTAS DE EXPORTAÇÃO =====
+router.get('/exportar/xlsx',
+  checkScreenPermission('produtos_per_capita', 'visualizar'),
+  ProdutosPerCapitaController.exportarXLSX
+);
+
+router.get('/exportar/pdf',
+  checkScreenPermission('produtos_per_capita', 'visualizar'),
+  ProdutosPerCapitaController.exportarPDF
+);
+
 // ===== ROTAS CRUD =====
 router.get('/',
   checkScreenPermission('produtos_per_capita', 'visualizar'),
