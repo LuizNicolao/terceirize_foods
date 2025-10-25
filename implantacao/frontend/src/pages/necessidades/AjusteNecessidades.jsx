@@ -816,7 +816,7 @@ const AjusteNecessidades = () => {
                             {necessidade.escola}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
-                            {necessidade.codigo_teknisa || 'N/A'}
+                            {necessidade.produto_id || 'N/A'}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
                             {necessidade.produto}
