@@ -840,8 +840,8 @@ const AjusteNecessidades = () => {
                             {necessidade.produto_unidade}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                            {necessidade.status === 'CONF'
-                              ? (necessidade.ajuste_coordenacao || 0)
+                            {necessidade.ajuste_coordenacao 
+                              ? (necessidade.ajuste_coordenacao)
                               : (necessidade.ajuste_nutricionista || necessidade.ajuste || 0)
                             }
                           </td>
