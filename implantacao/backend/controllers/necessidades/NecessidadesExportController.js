@@ -260,7 +260,7 @@ class NecessidadesExportController {
       // Definir larguras das colunas (ajustadas para paisagem)
       const colWidths = isCoordenacao 
         ? [40, 60, 100, 50, 130, 40, 50, 50, 50, 70, 70, 40, 100] // Com ajuste coordenação + observações
-        : [40, 60, 100, 50, 130, 40, 50, 50, 70, 70, 40, 100]; // Sem ajuste coordenação + observações
+        : [0, 0, 140, 50, 160, 40, 0, 0, 80, 80, 60, 120]; // Sem ajuste coordenação: removendo ID, Esc. ID, Qtd Gerada, Aj. Nutri
       
       const startX = 50;
       const startY = doc.y;
@@ -270,7 +270,7 @@ class NecessidadesExportController {
       // Desenhar cabeçalho
       const headers = isCoordenacao
         ? ['ID', 'Esc. ID', 'Escola', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Aj. Coord', 'Sem. Consumo', 'Sem. Abast', 'Status', 'Observações']
-        : ['ID', 'Esc. ID', 'Escola', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Sem. Consumo', 'Sem. Abast', 'Status', 'Observações'];
+        : ['', '', 'Escola', 'Prod. ID', 'Produto', 'Un.', '', '', 'Sem. Consumo', 'Sem. Abast', 'Status', 'Observações'];
 
       doc.fontSize(8).font('Helvetica-Bold');
       let currentX = startX;
@@ -326,14 +326,14 @@ class NecessidadesExportController {
               nec.observacoes || ''
             ]
           : [
-              nec.id,
-              nec.escola_id || 'N/A',
+              '', // ID removido
+              '', // Esc. ID removido
               nec.escola || 'N/A',
               nec.produto_id,
               nec.produto || 'N/A',
               nec.produto_unidade || 'N/A',
-              typeof nec.ajuste === 'number' ? nec.ajuste.toFixed(3) : '0.000',
-              typeof nec.ajuste_nutricionista === 'number' ? nec.ajuste_nutricionista.toFixed(3) : '0.000',
+              '', // Qtd Gerada removida
+              '', // Aj. Nutri removida
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
               nec.status || 'N/A',
