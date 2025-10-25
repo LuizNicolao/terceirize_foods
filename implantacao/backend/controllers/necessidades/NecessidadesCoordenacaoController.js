@@ -390,11 +390,13 @@ class NecessidadesCoordenacaoController {
     try {
       const query = `
         SELECT DISTINCT 
-          usuario_id as id,
-          usuario_email as nome
-        FROM necessidades 
-        WHERE status = 'NEC COORD'
-        ORDER BY usuario_email
+          n.usuario_id as id,
+          u.nome as nome,
+          n.usuario_email as email
+        FROM necessidades n
+        LEFT JOIN usuarios u ON n.usuario_id = u.id
+        WHERE n.status = 'NEC COORD'
+        ORDER BY u.nome
       `;
 
       const nutricionistas = await executeQuery(query);

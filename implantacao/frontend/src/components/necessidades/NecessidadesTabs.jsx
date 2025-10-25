@@ -9,7 +9,7 @@ const NecessidadesTabs = ({
     {
       id: 'nutricionista',
       label: '👩‍⚕️ Ajuste Nutricionista',
-      visible: ['nutricionista', 'coordenador', 'supervisor', 'administrador'].includes(userType)
+      visible: ['nutricionista', 'supervisor', 'administrador'].includes(userType)
     },
     {
       id: 'coordenacao',

@@ -90,6 +90,28 @@ const AjusteNecessidades = () => {
     }
   }, [activeTab, carregarNutricionistas]);
 
+  // Limpar filtros quando muda de aba para garantir independência
+  useEffect(() => {
+    if (activeTab === 'nutricionista') {
+      // Limpar filtros da coordenação
+      atualizarFiltrosCoordenacao({
+        escola_id: null,
+        grupo: null,
+        semana_consumo: null,
+        semana_abastecimento: null,
+        nutricionista_id: null
+      });
+    } else if (activeTab === 'coordenacao') {
+      // Limpar filtros da nutricionista
+      atualizarFiltrosNutricionista({
+        escola_id: null,
+        grupo: null,
+        semana_consumo: null,
+        semana_abastecimento: null
+      });
+    }
+  }, [activeTab, atualizarFiltrosCoordenacao, atualizarFiltrosNutricionista]);
+
   // Função wrapper para carregar necessidades baseado na aba ativa
   const carregarNecessidades = () => {
     if (!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo) {
@@ -614,7 +636,7 @@ const AjusteNecessidades = () => {
                   }}
                   options={nutricionistas.map(nutricionista => ({
                     value: nutricionista.id,
-                    label: nutricionista.nome
+                    label: nutricionista.nome || nutricionista.email
                   }))}
                   placeholder="Selecione uma nutricionista..."
                   disabled={loading}
