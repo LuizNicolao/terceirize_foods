@@ -7,13 +7,13 @@ const necessidadesCoordenacaoRoute = require('./necessidadesCoordenacaoRoute');
 const router = express.Router();
 
 // IMPORTANTE: Ordem das rotas para evitar conflitos
-// 1. Rotas gerais PRIMEIRO (necessidadesRoute)
-router.use('/', necessidadesRoute);
-
-// 2. Rotas específicas DEPOIS (para evitar interceptação)
+// 1. Rotas específicas PRIMEIRO (para evitar interceptação)
 router.use('/', necessidadesEspecificasRoute);
 router.use('/', necessidadesAjusteRoute);
 router.use('/', necessidadesCoordenacaoRoute);
+
+// 2. Rotas gerais DEPOIS (necessidadesRoute)
+router.use('/', necessidadesRoute);
 
 module.exports = router;
 
