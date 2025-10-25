@@ -57,8 +57,13 @@ const AjusteNecessidades = () => {
   const canViewAjuste = canView('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
   const canEditAjuste = canEdit('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
 
-  // Carregar necessidades apenas quando o botão filtrar for clicado
-  // useEffect removido - carregamento manual via botão
+  // Carregar necessidades automaticamente para administradores
+  useEffect(() => {
+    if (user?.tipo_de_acesso === 'administrador') {
+      // Administradores veem todas as necessidades automaticamente
+      carregarNecessidades();
+    }
+  }, [user?.tipo_de_acesso]);
 
   // Inicializar ajustes locais quando necessidades carregarem
   useEffect(() => {
