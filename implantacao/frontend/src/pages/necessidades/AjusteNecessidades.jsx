@@ -109,9 +109,6 @@ const AjusteNecessidades = () => {
         <AjusteHeader
           activeTab={activeTab}
           statusAtual={statusAtual}
-          onExportExcel={handleExportarExcel}
-          onExportPDF={handleExportarPDF}
-          disabled={necessidadesFiltradas.length === 0}
         />
 
         {/* Abas */}
@@ -151,10 +148,13 @@ const AjusteNecessidades = () => {
               onIncluirProduto={handleAbrirModalProdutoExtra}
               onSalvarAjustes={handleSalvarAjustes}
               onLiberar={handleLiberarCoordenacao}
+              onExportXLSX={handleExportarExcel}
+              onExportPDF={handleExportarPDF}
               canEdit={canEditAjuste}
               activeTab={activeTab}
               statusAtual={statusAtual}
               filtros={filtros}
+              hasData={necessidadesFiltradas.length > 0}
               titleIncluir={activeTab === 'coordenacao' && !filtros.escola_id ? 'Selecione uma escola e clique em Filtrar antes de incluir produtos' : undefined}
             />
             

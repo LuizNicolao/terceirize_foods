@@ -1,14 +1,10 @@
 import React from 'react';
 import { FaEdit } from 'react-icons/fa';
 import { StatusBadge } from '../../necessidades';
-import { ExportButtons } from '../../shared';
 
 const AjusteHeader = ({ 
   activeTab, 
-  statusAtual, 
-  onExportExcel, 
-  onExportPDF,
-  disabled = false 
+  statusAtual
 }) => {
   return (
     <div className="flex items-center justify-between mb-6">
@@ -25,17 +21,7 @@ const AjusteHeader = ({
             : 'Visualize, edite e ajuste necessidades para coordenação'}
         </p>
       </div>
-      <div className="flex items-center space-x-3">
-        <StatusBadge status={statusAtual} />
-        <ExportButtons
-          onExportXLSX={onExportExcel}
-          onExportPDF={onExportPDF}
-          size="sm"
-          variant="outline"
-          showLabels={true}
-          disabled={disabled}
-        />
-      </div>
+      <StatusBadge status={statusAtual} />
     </div>
   );
 };
