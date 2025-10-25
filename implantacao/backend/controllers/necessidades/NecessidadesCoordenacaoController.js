@@ -228,29 +228,45 @@ class NecessidadesCoordenacaoController {
       }
 
       // Buscar produtos já incluídos na necessidade
-      const produtosExistentesQuery = `
-        SELECT DISTINCT n.produto_id
-        FROM necessidades n
-        WHERE n.escola_id = ? 
-          AND n.semana_consumo = ?
-          AND n.status = 'NEC COORD'
-      `;
+      // Se semana_consumo for fornecido, usa ele; senão, busca todos os produtos da escola
+      let produtosExistentesQuery;
+      let queryParams;
+
+      if (semana_consumo) {
+        produtosExistentesQuery = `
+          SELECT DISTINCT n.produto_id
+          FROM necessidades n
+          WHERE n.escola_id = ? 
+            AND n.semana_consumo = ?
+            AND n.status = 'NEC COORD'
+        `;
+        queryParams = [escola_id, semana_consumo];
+      } else {
+        // Se não tem semana_consumo, busca de todas as necessidades da escola
+        produtosExistentesQuery = `
+          SELECT DISTINCT n.produto_id
+          FROM necessidades n
+          WHERE n.escola_id = ? 
+            AND n.status = 'NEC COORD'
+        `;
+        queryParams = [escola_id];
+      }
       
-      const produtosExistentes = await executeQuery(produtosExistentesQuery, [escola_id, semana_consumo]);
+      const produtosExistentes = await executeQuery(produtosExistentesQuery, queryParams);
       const idsExistentes = produtosExistentes.map(p => p.produto_id);
 
       // Buscar produtos disponíveis
       let whereConditions = ["ppc.grupo = ?", "ppc.ativo = true"];
-      let queryParams = [grupo];
+      let produtosQueryParams = [grupo];
 
       if (idsExistentes.length > 0) {
         whereConditions.push(`ppc.produto_id NOT IN (${idsExistentes.map(() => '?').join(',')})`);
-        queryParams.push(...idsExistentes);
+        produtosQueryParams.push(...idsExistentes);
       }
 
       if (search) {
         whereConditions.push("(ppc.produto_nome LIKE ? OR ppc.produto_codigo LIKE ?)");
-        queryParams.push(`%${search}%`, `%${search}%`);
+        produtosQueryParams.push(`%${search}%`, `%${search}%`);
       }
 
       const query = `
@@ -264,7 +280,7 @@ class NecessidadesCoordenacaoController {
         ORDER BY ppc.produto_nome ASC
       `;
 
-      const produtos = await executeQuery(query, queryParams);
+      const produtos = await executeQuery(query, produtosQueryParams);
 
       res.json({
         success: true,
@@ -292,7 +308,7 @@ class NecessidadesCoordenacaoController {
         produto_id 
       } = req.body;
 
-      if (!escola_id || !grupo || !semana_consumo || !produto_id) {
+      if (!escola_id || !grupo || !produto_id) {
         return res.status(400).json({
           success: false,
           message: 'Dados obrigatórios não fornecidos'
@@ -300,19 +316,34 @@ class NecessidadesCoordenacaoController {
       }
 
       // Buscar dados da escola e produto
-      const escolaQuery = `
-        SELECT escola, escola_rota, codigo_teknisa, necessidade_id, usuario_id, usuario_email
-        FROM necessidades 
-        WHERE escola_id = ? AND semana_consumo = ? AND status = 'NEC COORD'
-        LIMIT 1
-      `;
+      // Se semana_consumo for fornecido, busca por escola e semana; senão, busca por escola
+      let escolaQuery;
+      let queryParams;
+
+      if (semana_consumo) {
+        escolaQuery = `
+          SELECT escola, escola_rota, codigo_teknisa, necessidade_id, usuario_id, usuario_email, semana_consumo, semana_abastecimento
+          FROM necessidades 
+          WHERE escola_id = ? AND semana_consumo = ? AND status = 'NEC COORD'
+          LIMIT 1
+        `;
+        queryParams = [escola_id, semana_consumo];
+      } else {
+        escolaQuery = `
+          SELECT escola, escola_rota, codigo_teknisa, necessidade_id, usuario_id, usuario_email, semana_consumo, semana_abastecimento
+          FROM necessidades 
+          WHERE escola_id = ? AND status = 'NEC COORD'
+          LIMIT 1
+        `;
+        queryParams = [escola_id];
+      }
       
-      const escolaData = await executeQuery(escolaQuery, [escola_id, semana_consumo]);
+      const escolaData = await executeQuery(escolaQuery, queryParams);
       
       if (escolaData.length === 0) {
         return res.status(404).json({
           success: false,
-          message: 'Necessidade não encontrada para esta escola e semana'
+          message: 'Necessidade não encontrada para esta escola'
         });
       }
 
@@ -342,8 +373,8 @@ class NecessidadesCoordenacaoController {
       `;
 
       const values = [
-        req.user.email,
-        req.user.id,
+        escolaData[0].usuario_email,
+        escolaData[0].usuario_id,
         produto_id,
         produto[0].produto_nome,
         produto[0].unidade_medida,
@@ -352,7 +383,7 @@ class NecessidadesCoordenacaoController {
         escolaData[0].escola_rota,
         escolaData[0].codigo_teknisa,
         0, // ajuste inicial
-        semana_consumo,
+        semana_consumo || escolaData[0].semana_consumo,
         semana_abastecimento || escolaData[0].semana_abastecimento,
         'NEC COORD',
         escolaData[0].necessidade_id
