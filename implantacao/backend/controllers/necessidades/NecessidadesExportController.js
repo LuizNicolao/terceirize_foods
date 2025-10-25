@@ -242,28 +242,98 @@ class NecessidadesExportController {
         doc.moveDown(1);
       }
 
-      // Lista de necessidades (simplificada para PDF)
-      doc.fontSize(9).font('Helvetica');
+      // Definir larguras das colunas (ajustadas para paisagem)
+      const colWidths = isCoordenacao 
+        ? [40, 120, 100, 50, 150, 40, 50, 50, 50, 70, 70, 40] // Com ajuste coordenação
+        : [40, 120, 100, 50, 150, 40, 50, 50, 70, 70, 40]; // Sem ajuste coordenação
+      
+      const startX = 50;
+      const startY = doc.y;
+      const rowHeight = 15;
+      let currentY = startY;
+
+      // Desenhar cabeçalho
+      const headers = isCoordenacao
+        ? ['ID', 'Escola', 'Rota', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Aj. Coord', 'Sem. Consumo', 'Sem. Abast', 'Status']
+        : ['ID', 'Escola', 'Rota', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Sem. Consumo', 'Sem. Abast', 'Status'];
+
+      doc.fontSize(8).font('Helvetica-Bold');
+      let currentX = startX;
+      
+      headers.forEach((header, index) => {
+        doc.rect(currentX, currentY, colWidths[index], rowHeight).fillAndStroke('#4CAF50', '#000000');
+        doc.fillColor('#FFFFFF');
+        doc.text(header, currentX + 2, currentY + 4, { width: colWidths[index] - 4, height: rowHeight - 2 });
+        doc.fillColor('#000000');
+        currentX += colWidths[index];
+      });
+
+      currentY += rowHeight;
+
+      // Desenhar dados
+      doc.fontSize(7).font('Helvetica');
+      
       necessidades.forEach((nec, index) => {
-        if (index > 0 && index % 3 === 0) {
+        // Nova página a cada 25 linhas
+        if (index > 0 && index % 25 === 0) {
           doc.addPage();
+          currentY = 50;
+          
+          // Redesenhar cabeçalho
+          doc.fontSize(8).font('Helvetica-Bold');
+          currentX = startX;
+          headers.forEach((header, i) => {
+            doc.rect(currentX, currentY, colWidths[i], rowHeight).fillAndStroke('#4CAF50', '#000000');
+            doc.fillColor('#FFFFFF');
+            doc.text(header, currentX + 2, currentY + 4, { width: colWidths[i] - 4, height: rowHeight - 2 });
+            doc.fillColor('#000000');
+            currentX += colWidths[i];
+          });
+          currentY += rowHeight;
+          doc.fontSize(7).font('Helvetica');
         }
-        
-        doc.fontSize(11).font('Helvetica-Bold')
-          .text(`${nec.escola} - ${nec.produto}`, { underline: true });
-        doc.fontSize(9).font('Helvetica');
-        doc.text(`Rota: ${nec.escola_rota || 'N/A'}`);
-        doc.text(`Quantidade Gerada: ${nec.ajuste || 0} ${nec.produto_unidade}`);
-        doc.text(`Ajuste Nutricionista: ${nec.ajuste_nutricionista || 0} ${nec.produto_unidade}`);
-        if (isCoordenacao) {
-          doc.text(`Ajuste Coordenação: ${nec.ajuste_coordenacao || 0} ${nec.produto_unidade}`);
-        }
-        doc.text(`Semana Consumo: ${nec.semana_consumo || 'N/A'}`);
-        doc.text(`Semana Abastecimento: ${nec.semana_abastecimento || 'N/A'}`);
-        doc.text(`Status: ${nec.status}`);
-        doc.moveDown();
-        doc.strokeColor('#cccccc').lineWidth(0.5).moveTo(50, doc.y).lineTo(750, doc.y).stroke();
-        doc.moveDown(0.5);
+
+        currentX = startX;
+        const data = isCoordenacao
+          ? [
+              nec.id,
+              nec.escola || 'N/A',
+              nec.escola_rota || 'N/A',
+              nec.produto_id,
+              nec.produto || 'N/A',
+              nec.produto_unidade || 'N/A',
+              (nec.ajuste || 0).toFixed(3),
+              (nec.ajuste_nutricionista || 0).toFixed(3),
+              (nec.ajuste_coordenacao || 0).toFixed(3),
+              nec.semana_consumo || 'N/A',
+              nec.semana_abastecimento || 'N/A',
+              nec.status || 'N/A'
+            ]
+          : [
+              nec.id,
+              nec.escola || 'N/A',
+              nec.escola_rota || 'N/A',
+              nec.produto_id,
+              nec.produto || 'N/A',
+              nec.produto_unidade || 'N/A',
+              (nec.ajuste || 0).toFixed(3),
+              (nec.ajuste_nutricionista || 0).toFixed(3),
+              nec.semana_consumo || 'N/A',
+              nec.semana_abastecimento || 'N/A',
+              nec.status || 'N/A'
+            ];
+
+        data.forEach((value, i) => {
+          doc.rect(currentX, currentY, colWidths[i], rowHeight).stroke();
+          doc.text(String(value), currentX + 2, currentY + 4, { 
+            width: colWidths[i] - 4, 
+            height: rowHeight - 2,
+            ellipsis: true
+          });
+          currentX += colWidths[i];
+        });
+
+        currentY += rowHeight;
       });
 
       doc.end();
