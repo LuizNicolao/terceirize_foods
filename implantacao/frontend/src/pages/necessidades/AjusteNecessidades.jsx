@@ -3,6 +3,7 @@ import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList, FaSearch } from 
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
+import { useNecessidadesCoordenacao } from '../../hooks/useNecessidadesCoordenacao';
 import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import {
@@ -24,21 +25,37 @@ const AjusteNecessidades = () => {
   const [produtosSelecionados, setProdutosSelecionados] = useState([]);
   const [searchProduto, setSearchProduto] = useState('');
 
-  // Hook para gerenciar ajuste de necessidades
+  // Hook para gerenciar ajuste de necessidades (nutricionista)
   const {
-    necessidades,
+    necessidades: necessidadesNutricionista,
     escolas,
     grupos,
-    filtros,
-    loading,
-    error,
-    carregarNecessidades,
-    salvarAjustes,
-    incluirProdutoExtra,
+    filtros: filtrosNutricionista,
+    loading: loadingNutricionista,
+    error: errorNutricionista,
+    carregarNecessidades: carregarNecessidadesNutricionista,
+    salvarAjustes: salvarAjustesNutricionista,
+    incluirProdutoExtra: incluirProdutoExtraNutricionista,
     liberarCoordenacao,
-    buscarProdutosParaModal,
-    atualizarFiltros
+    buscarProdutosParaModal: buscarProdutosParaModalNutricionista,
+    atualizarFiltros: atualizarFiltrosNutricionista
   } = useNecessidadesAjuste();
+
+  // Hook para gerenciar coordenação
+  const {
+    necessidades: necessidadesCoordenacao,
+    nutricionistas,
+    filtros: filtrosCoordenacao,
+    loading: loadingCoordenacao,
+    error: errorCoordenacao,
+    carregarNecessidades: carregarNecessidadesCoordenacao,
+    carregarNutricionistas,
+    salvarAjustes: salvarAjustesCoordenacao,
+    liberarParaLogistica,
+    buscarProdutosParaModal: buscarProdutosParaModalCoordenacao,
+    incluirProdutoExtra: incluirProdutoExtraCoordenacao,
+    atualizarFiltros: atualizarFiltrosCoordenacao
+  } = useNecessidadesCoordenacao();
 
   // Hook para semanas de abastecimento
   const { opcoes: opcoesSemanasAbastecimento } = useSemanasAbastecimento();
@@ -50,6 +67,12 @@ const AjusteNecessidades = () => {
   const [ajustesLocais, setAjustesLocais] = useState({});
   const [necessidadeAtual, setNecessidadeAtual] = useState(null);
   const [buscaProduto, setBuscaProduto] = useState('');
+
+  // Dados baseados na aba ativa
+  const necessidades = activeTab === 'nutricionista' ? necessidadesNutricionista : necessidadesCoordenacao;
+  const filtros = activeTab === 'nutricionista' ? filtrosNutricionista : filtrosCoordenacao;
+  const loading = activeTab === 'nutricionista' ? loadingNutricionista : loadingCoordenacao;
+  const error = activeTab === 'nutricionista' ? errorNutricionista : errorCoordenacao;
   const [necessidadesFiltradas, setNecessidadesFiltradas] = useState([]);
 
   // Verificar permissões específicas
@@ -59,6 +82,27 @@ const AjusteNecessidades = () => {
 
   // Carregar necessidades apenas quando o botão filtrar for clicado
   // useEffect removido - carregamento manual via botão
+
+  // Carregar nutricionistas quando aba de coordenação for ativada
+  useEffect(() => {
+    if (activeTab === 'coordenacao') {
+      carregarNutricionistas();
+    }
+  }, [activeTab, carregarNutricionistas]);
+
+  // Função wrapper para carregar necessidades baseado na aba ativa
+  const carregarNecessidades = () => {
+    if (!filtros.escola_id || !filtros.grupo || !filtros.semana_consumo) {
+      toast.error('Preencha todos os filtros obrigatórios');
+      return;
+    }
+    
+    if (activeTab === 'nutricionista') {
+      carregarNecessidadesNutricionista();
+    } else {
+      carregarNecessidadesCoordenacao();
+    }
+  };
 
   // Inicializar ajustes locais quando necessidades carregarem
   useEffect(() => {
@@ -97,7 +141,11 @@ const AjusteNecessidades = () => {
 
   // Handler para mudança de filtros
   const handleFiltroChange = (campo, valor) => {
-    atualizarFiltros({ [campo]: valor });
+    if (activeTab === 'nutricionista') {
+      atualizarFiltrosNutricionista({ [campo]: valor });
+    } else {
+      atualizarFiltrosCoordenacao({ [campo]: valor });
+    }
   };
 
   // Handler para mudança de ajuste local
@@ -137,7 +185,9 @@ const AjusteNecessidades = () => {
         itens
       };
 
-      const resultado = await salvarAjustes(dadosParaSalvar);
+      const resultado = activeTab === 'nutricionista' 
+        ? await salvarAjustesNutricionista(dadosParaSalvar)
+        : await salvarAjustesCoordenacao(itens);
       
       if (resultado.success) {
         toast.success('Ajustes salvos com sucesso!');
@@ -168,10 +218,15 @@ const AjusteNecessidades = () => {
         }
       };
 
-      const resultado = await liberarCoordenacao(dadosParaLiberar);
+      const resultado = activeTab === 'nutricionista' 
+        ? await liberarCoordenacao(dadosParaLiberar)
+        : await liberarParaLogistica([necessidadeAtual.necessidade_id]);
       
       if (resultado.success) {
-        toast.success('Necessidades liberadas para coordenação!');
+        const mensagem = activeTab === 'nutricionista' 
+          ? 'Necessidades liberadas para coordenação!'
+          : 'Necessidades liberadas para logística!';
+        toast.success(mensagem);
         carregarNecessidades(); // Recarregar para atualizar status
       }
     } catch (error) {
@@ -539,6 +594,24 @@ const AjusteNecessidades = () => {
                 required
               />
             </div>
+            {activeTab === 'coordenacao' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nutricionista</label>
+                <SearchableSelect
+                  value={filtros.nutricionista_id || ''}
+                  onChange={(value) => {
+                    const nutricionista = nutricionistas.find(n => n.id == value);
+                    handleFiltroChange('nutricionista_id', nutricionista?.id || null);
+                  }}
+                  options={nutricionistas.map(nutricionista => ({
+                    value: nutricionista.id,
+                    label: nutricionista.nome
+                  }))}
+                  placeholder="Selecione uma nutricionista..."
+                  disabled={loading}
+                />
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Semana de Consumo</label>
               <SearchableSelect
@@ -633,7 +706,7 @@ const AjusteNecessidades = () => {
                         icon={<FaPaperPlane />}
                         disabled={statusAtual === 'NEC COORD'}
                       >
-                        Liberar para Coordenação
+                        {activeTab === 'nutricionista' ? 'Liberar para Coordenação' : 'Liberar para Logística'}
                       </Button>
                     </div>
                   )}
