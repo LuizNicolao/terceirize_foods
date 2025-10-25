@@ -19,7 +19,15 @@ import toast from 'react-hot-toast';
 const AjusteNecessidades = () => {
   const { user } = useAuth();
   const { canView, canEdit, loading: permissionsLoading } = usePermissions();
-  const [activeTab, setActiveTab] = useState('nutricionista');
+  // Inicializar aba baseada no tipo de usuário
+  const getInitialTab = () => {
+    if (user?.tipo_de_acesso === 'coordenador') {
+      return 'coordenacao';
+    }
+    return 'nutricionista';
+  };
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab());
   const [modalProdutoExtraAberto, setModalProdutoExtraAberto] = useState(false);
   const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
   const [produtosSelecionados, setProdutosSelecionados] = useState([]);
