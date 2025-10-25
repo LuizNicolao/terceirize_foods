@@ -23,11 +23,6 @@ const Necessidades = () => {
   const [modalVisualizacaoAberto, setModalVisualizacaoAberto] = useState(false);
   const [necessidadeSelecionada, setNecessidadeSelecionada] = useState(null);
   
-  // Log para debug
-  console.log('=== NECESSIDADES COMPONENT ===');
-  console.log('canView:', canView);
-  console.log('canCreate:', canCreate);
-  console.log('permissionsLoading:', permissionsLoading);
   
   // Hook para gerenciar necessidades
   const {
