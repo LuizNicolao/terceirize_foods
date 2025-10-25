@@ -26,9 +26,9 @@ const exportarXLSX = async (req, res) => {
         re.tipo_recebimento,
         re.tipo_entrega,
         re.observacoes,
-        re.status,
-        re.created_at,
-        re.updated_at,
+        re.status_entrega,
+        re.data_cadastro as created_at,
+        re.data_atualizacao as updated_at,
         u.nome as nutricionista_nome,
         u.email as nutricionista_email
       FROM recebimentos_escolas re
@@ -119,7 +119,7 @@ const exportarXLSX = async (req, res) => {
       'Data Recebimento': recebimento.data_recebimento ? new Date(recebimento.data_recebimento).toLocaleDateString('pt-BR') : '',
       'Tipo Recebimento': recebimento.tipo_recebimento,
       'Tipo Entrega': recebimento.tipo_entrega,
-      'Status': recebimento.status,
+      'Status': recebimento.status_entrega,
       'Nutricionista': recebimento.nutricionista_nome,
       'Email Nutricionista': recebimento.nutricionista_email,
       'Observações': recebimento.observacoes || '',
@@ -191,9 +191,9 @@ const exportarPDF = async (req, res) => {
         re.tipo_recebimento,
         re.tipo_entrega,
         re.observacoes,
-        re.status,
-        re.created_at,
-        re.updated_at,
+        re.status_entrega,
+        re.data_cadastro as created_at,
+        re.data_atualizacao as updated_at,
         u.nome as nutricionista_nome,
         u.email as nutricionista_email
       FROM recebimentos_escolas re
@@ -332,7 +332,7 @@ const exportarPDF = async (req, res) => {
         doc.text(recebimento.escola_rota || '', 200, doc.y, { width: 70, ellipsis: true });
         doc.text(recebimento.data_recebimento ? new Date(recebimento.data_recebimento).toLocaleDateString('pt-BR') : '', 280, doc.y);
         doc.text(recebimento.tipo_recebimento || '', 350, doc.y, { width: 60, ellipsis: true });
-        doc.text(recebimento.status || '', 420, doc.y, { width: 60, ellipsis: true });
+        doc.text(recebimento.status_entrega || '', 420, doc.y, { width: 60, ellipsis: true });
         
         doc.y += itemHeight;
       });
