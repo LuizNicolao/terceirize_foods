@@ -406,15 +406,22 @@ export const useAjusteNecessidadesOrchestrator = () => {
             produto_id: produto.produto_id
           };
 
+          console.log('🔍 [DEBUG] Incluindo produto:', produto.produto_nome);
+          console.log('🔍 [DEBUG] Dados para incluir:', dadosParaIncluir);
+
           const resultado = await incluirProduto(dadosParaIncluir);
           
+          console.log('🔍 [DEBUG] Resultado:', resultado);
+
           if (resultado.success) {
             sucessos++;
+            console.log('✅ [DEBUG] Produto incluído com sucesso');
           } else {
             erros++;
+            console.error('❌ [DEBUG] Falhou ao incluir:', resultado);
           }
         } catch (error) {
-          console.error(`Erro ao incluir produto ${produto.produto_nome}:`, error);
+          console.error(`❌ [DEBUG] Erro ao incluir produto ${produto.produto_nome}:`, error);
           erros++;
         }
       }
