@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import necessidadesCoordenacaoService from '../services/necessidadesCoordenacaoService';
 import toast from 'react-hot-toast';
+import { useExport } from './common/useExport';
 
 const useNecessidadesCoordenacao = () => {
   const [necessidades, setNecessidades] = useState([]);
@@ -155,6 +156,9 @@ const useNecessidadesCoordenacao = () => {
     });
   }, []);
 
+  // Hook de exportação padronizado
+  const { handleExportXLSX, handleExportPDF } = useExport(necessidadesCoordenacaoService);
+
   return {
     // Estados
     necessidades,
@@ -171,7 +175,11 @@ const useNecessidadesCoordenacao = () => {
     buscarProdutosParaModal,
     incluirProdutoExtra,
     atualizarFiltros,
-    limparFiltros
+    limparFiltros,
+
+    // Exportação
+    exportarXLSX: handleExportXLSX,
+    exportarPDF: handleExportPDF
   };
 };
 

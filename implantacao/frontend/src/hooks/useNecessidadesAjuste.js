@@ -4,6 +4,7 @@ import escolasService from '../services/escolasService';
 import produtosService from '../services/produtosService';
 import toast from 'react-hot-toast';
 import { useAuth } from '../contexts/AuthContext';
+import { useExport } from './common/useExport';
 
 export const useNecessidadesAjuste = () => {
   const { user } = useAuth();
@@ -141,6 +142,9 @@ export const useNecessidadesAjuste = () => {
     setFiltros(prev => ({ ...prev, ...novosFiltros }));
   }, []);
 
+  // Hook de exportação padronizado
+  const { handleExportXLSX, handleExportPDF } = useExport(necessidadesService);
+
   // Carregar dados iniciais
   useEffect(() => {
     carregarEscolas();
@@ -166,6 +170,10 @@ export const useNecessidadesAjuste = () => {
 
     // Dados auxiliares
     carregarEscolas,
-    carregarGrupos
+    carregarGrupos,
+
+    // Exportação
+    exportarXLSX: handleExportXLSX,
+    exportarPDF: handleExportPDF
   };
 };

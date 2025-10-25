@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaEdit, FaPlus, FaSave, FaPaperPlane, FaClipboardList } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
@@ -8,11 +7,9 @@ import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import {
   NecessidadesLayout,
-  NecessidadesLoading,
-  StatusBadge
+  NecessidadesLoading
 } from '../../components/necessidades';
 import NecessidadesTabs from '../../components/necessidades/NecessidadesTabs';
-import { Button, Input } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
 import necessidadesService from '../../services/necessidadesService';
 import toast from 'react-hot-toast';
@@ -22,6 +19,8 @@ import AjusteFiltros from '../../components/necessidades/ajuste/AjusteFiltros';
 import AjusteTabelaNutricionista from '../../components/necessidades/ajuste/AjusteTabelaNutricionista';
 import AjusteTabelaCoordenacao from '../../components/necessidades/ajuste/AjusteTabelaCoordenacao';
 import ModalProdutoExtra from '../../components/necessidades/ajuste/ModalProdutoExtra';
+import AjusteActions from '../../components/necessidades/ajuste/AjusteActions';
+import AjusteEmptyStates from '../../components/necessidades/ajuste/AjusteEmptyStates';
 
 const AjusteNecessidades = () => {
   const { user } = useAuth();
@@ -53,7 +52,9 @@ const AjusteNecessidades = () => {
     incluirProdutoExtra: incluirProdutoExtraNutricionista,
     liberarCoordenacao,
     buscarProdutosParaModal: buscarProdutosParaModalNutricionista,
-    atualizarFiltros: atualizarFiltrosNutricionista
+    atualizarFiltros: atualizarFiltrosNutricionista,
+    exportarXLSX: exportarXLSXNutricionista,
+    exportarPDF: exportarPDFNutricionista
   } = useNecessidadesAjuste();
 
   // Hook para gerenciar coordenação
@@ -444,124 +445,15 @@ const AjusteNecessidades = () => {
     setProdutosSelecionados([]);
   };
 
-  // Handler para exportar para Excel
+  // Handlers para exportação usando hook padronizado
   const handleExportarExcel = () => {
-    if (necessidadesFiltradas.length === 0) {
-      toast.error('Nenhum dado para exportar');
-      return;
-    }
-
-    try {
-      // Criar dados para exportação
-      const dadosExportacao = necessidadesFiltradas.map(nec => ({
-        'Código': nec.codigo_teknisa || 'N/A',
-        'Produto': nec.produto,
-        'Unidade': nec.produto_unidade,
-        'Quantidade Gerada': nec.status === 'NEC NUTRI' 
-          ? (nec.ajuste_nutricionista || 0)
-          : (nec.ajuste || 0),
-        'Ajuste Nutricionista': ajustesLocais[nec.id] || '',
-        'Status': nec.status,
-        'Escola': nec.escola,
-        'Semana Consumo': nec.semana_consumo,
-        'Semana Abastecimento': nec.semana_abastecimento
-      }));
-
-      // Converter para CSV
-      const headers = Object.keys(dadosExportacao[0]);
-      const csvContent = [
-        headers.join(','),
-        ...dadosExportacao.map(row => 
-          headers.map(header => `"${row[header]}"`).join(',')
-        )
-      ].join('\n');
-
-      // Criar e baixar arquivo
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `necessidades_ajuste_${new Date().toISOString().split('T')[0]}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast.success('Arquivo Excel exportado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar Excel:', error);
-      toast.error('Erro ao exportar arquivo Excel');
-    }
+    const exportFunc = activeTab === 'nutricionista' ? exportarXLSXNutricionista : exportarXLSXCoordenacao;
+    exportFunc(filtros);
   };
 
-  // Handler para exportar para PDF
   const handleExportarPDF = () => {
-    if (necessidadesFiltradas.length === 0) {
-      toast.error('Nenhum dado para exportar');
-      return;
-    }
-
-    try {
-      // Criar conteúdo HTML para PDF
-      const htmlContent = `
-        <html>
-          <head>
-            <title>Necessidades - Ajuste</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 20px; }
-              h1 { color: #333; text-align: center; }
-              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              th { background-color: #f2f2f2; }
-              .header { margin-bottom: 20px; }
-            </style>
-          </head>
-          <body>
-            <h1>Necessidades - Ajuste por Nutricionista</h1>
-            <div class="header">
-              <p><strong>Data:</strong> ${new Date().toLocaleDateString('pt-BR')}</p>
-              <p><strong>Total de produtos:</strong> ${necessidadesFiltradas.length}</p>
-            </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>Código</th>
-                  <th>Produto</th>
-                  <th>Unidade</th>
-                  <th>Quantidade Gerada</th>
-                  <th>Ajuste Nutricionista</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${necessidadesFiltradas.map(nec => `
-                  <tr>
-                    <td>${nec.codigo_teknisa || 'N/A'}</td>
-                    <td>${nec.produto}</td>
-                    <td>${nec.produto_unidade}</td>
-                    <td>${nec.status === 'NEC NUTRI' ? (nec.ajuste_nutricionista || 0) : (nec.ajuste || 0)}</td>
-                    <td>${ajustesLocais[nec.id] || ''}</td>
-                    <td>${nec.status}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
-          </body>
-        </html>
-      `;
-
-      // Abrir nova janela para impressão
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(htmlContent);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-
-      toast.success('PDF gerado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar PDF:', error);
-      toast.error('Erro ao exportar arquivo PDF');
-    }
+    const exportFunc = activeTab === 'nutricionista' ? exportarPDFNutricionista : exportarPDFCoordenacao;
+    exportFunc(filtros);
   };
 
   // Buscar produtos com filtro de pesquisa
@@ -670,63 +562,20 @@ const AjusteNecessidades = () => {
         {/* Lista de Necessidades */}
         {necessidades.length > 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex-1">
-                  <div className="w-full max-w-md">
-                    <Input
-                      type="text"
-                      value={buscaProduto}
-                      onChange={(e) => setBuscaProduto(e.target.value)}
-                      placeholder="Buscar por produto ou código..."
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  {/* Botões de Ação */}
-                  {canEditAjuste && (
-                    <div className="flex items-center space-x-2">
-                      <div className="relative">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={handleAbrirModalProdutoExtra}
-                          icon={<FaPlus />}
-                          title={activeTab === 'coordenacao' && !filtros.escola_id ? 'Selecione uma escola e clique em Filtrar antes de incluir produtos' : undefined}
-                        >
-                          Incluir Produto Extra
-                        </Button>
-                        {activeTab === 'coordenacao' && !filtros.escola_id && (
-                          <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-orange-500"></span>
-                          </span>
-                        )}
-                      </div>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        onClick={handleSalvarAjustes}
-                        icon={<FaSave />}
-                        disabled={activeTab === 'nutricionista' && statusAtual === 'NEC NUTRI'}
-                      >
-                        Salvar Ajustes
-                      </Button>
-                      <Button
-                        variant="success"
-                        size="sm"
-                        onClick={handleLiberarCoordenacao}
-                        icon={<FaPaperPlane />}
-                        disabled={activeTab === 'nutricionista' && statusAtual === 'NEC NUTRI'}
-                      >
-                        {activeTab === 'nutricionista' ? 'Liberar para Coordenação' : 'Liberar para Logística'}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <AjusteActions
+              buscaProduto={buscaProduto}
+              onBuscaChange={setBuscaProduto}
+              onIncluirProduto={handleAbrirModalProdutoExtra}
+              onSalvarAjustes={handleSalvarAjustes}
+              onLiberar={handleLiberarCoordenacao}
+              canEdit={canEditAjuste}
+              activeTab={activeTab}
+              statusAtual={statusAtual}
+              filtros={filtros}
+              disabledSalvar={activeTab === 'nutricionista' && statusAtual === 'NEC NUTRI'}
+              disabledLiberar={activeTab === 'nutricionista' && statusAtual === 'NEC NUTRI'}
+              titleIncluir={activeTab === 'coordenacao' && !filtros.escola_id ? 'Selecione uma escola e clique em Filtrar antes de incluir produtos' : undefined}
+            />
             
             {/* Tabela de Produtos */}
             {activeTab === 'coordenacao' ? (
@@ -748,36 +597,19 @@ const AjusteNecessidades = () => {
             )}
           </div>
         ) : !loading && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-            <FaClipboardList className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Nenhuma necessidade encontrada
-            </h3>
-            <p className="text-gray-600">
-              Não há necessidades disponíveis para ajuste no momento.
-            </p>
-          </div>
+          <AjusteEmptyStates
+            type="empty"
+            message="Nenhuma necessidade encontrada"
+          />
         )}
 
         {/* Mensagem quando busca não retorna resultados */}
         {necessidades.length > 0 && necessidadesFiltradas.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-            <FaSearch className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Nenhum produto encontrado
-            </h3>
-            <p className="text-gray-600">
-              Nenhum produto corresponde à busca "{buscaProduto}".
-            </p>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setBuscaProduto('')}
-              className="mt-4"
-            >
-              Limpar busca
-            </Button>
-          </div>
+          <AjusteEmptyStates
+            type="busca"
+            buscaProduto={buscaProduto}
+            onClearSearch={() => setBuscaProduto('')}
+          />
         )}
       </NecessidadesLayout>
 
