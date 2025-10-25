@@ -6,7 +6,18 @@ class NecessidadesExportController {
    */
   static async exportarXLSX(req, res) {
     try {
-      const ExcelJS = require('exceljs');
+      // Verificar se ExcelJS está instalado
+      let ExcelJS;
+      try {
+        ExcelJS = require('exceljs');
+      } catch (err) {
+        console.error('ExcelJS não está instalado. Instale com: npm install exceljs');
+        return res.status(500).json({
+          success: false,
+          error: 'Biblioteca ExcelJS não instalada',
+          message: 'Execute: npm install exceljs'
+        });
+      }
       const wb = new ExcelJS.Workbook();
       const ws = wb.addWorksheet('Necessidades');
 
@@ -302,9 +313,9 @@ class NecessidadesExportController {
               nec.produto_id,
               nec.produto || 'N/A',
               nec.produto_unidade || 'N/A',
-              (nec.ajuste || 0).toFixed(3),
-              (nec.ajuste_nutricionista || 0).toFixed(3),
-              (nec.ajuste_coordenacao || 0).toFixed(3),
+              typeof nec.ajuste === 'number' ? nec.ajuste.toFixed(3) : '0.000',
+              typeof nec.ajuste_nutricionista === 'number' ? nec.ajuste_nutricionista.toFixed(3) : '0.000',
+              typeof nec.ajuste_coordenacao === 'number' ? nec.ajuste_coordenacao.toFixed(3) : '0.000',
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
               nec.status || 'N/A'
@@ -316,8 +327,8 @@ class NecessidadesExportController {
               nec.produto_id,
               nec.produto || 'N/A',
               nec.produto_unidade || 'N/A',
-              (nec.ajuste || 0).toFixed(3),
-              (nec.ajuste_nutricionista || 0).toFixed(3),
+              typeof nec.ajuste === 'number' ? nec.ajuste.toFixed(3) : '0.000',
+              typeof nec.ajuste_nutricionista === 'number' ? nec.ajuste_nutricionista.toFixed(3) : '0.000',
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
               nec.status || 'N/A'
