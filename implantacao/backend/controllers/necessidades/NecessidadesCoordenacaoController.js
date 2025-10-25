@@ -36,7 +36,7 @@ class NecessidadesCoordenacaoController {
       }
 
       if (nutricionista_id) {
-        whereConditions.push("n.nutricionista_id = ?");
+        whereConditions.push("n.usuario_id = ?");
         queryParams.push(nutricionista_id);
       }
 
@@ -57,8 +57,8 @@ class NecessidadesCoordenacaoController {
           n.semana_abastecimento,
           n.status,
           n.necessidade_id,
-          n.nutricionista_id,
-          n.nutricionista_nome,
+          n.usuario_id as nutricionista_id,
+          n.usuario_email as nutricionista_nome,
           n.data_preenchimento,
           n.data_atualizacao
         FROM necessidades n
@@ -307,7 +307,7 @@ class NecessidadesCoordenacaoController {
 
       // Buscar dados da escola e produto
       const escolaQuery = `
-        SELECT escola, escola_rota, codigo_teknisa, necessidade_id, nutricionista_id, nutricionista_nome
+        SELECT escola, escola_rota, codigo_teknisa, necessidade_id, usuario_id, usuario_email
         FROM necessidades 
         WHERE escola_id = ? AND semana_consumo = ? AND status = 'NEC COORD'
         LIMIT 1
@@ -343,8 +343,8 @@ class NecessidadesCoordenacaoController {
           usuario_email, usuario_id, produto_id, produto, produto_unidade,
           escola_id, escola, escola_rota, codigo_teknisa, ajuste,
           semana_consumo, semana_abastecimento, status, necessidade_id,
-          nutricionista_id, nutricionista_nome, data_preenchimento
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+          data_preenchimento
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `;
 
       const values = [
@@ -361,9 +361,7 @@ class NecessidadesCoordenacaoController {
         semana_consumo,
         semana_abastecimento || escolaData[0].semana_abastecimento,
         'NEC COORD',
-        escolaData[0].necessidade_id,
-        escolaData[0].nutricionista_id,
-        escolaData[0].nutricionista_nome
+        escolaData[0].necessidade_id
       ];
 
       await executeQuery(insertQuery, values);
@@ -392,11 +390,11 @@ class NecessidadesCoordenacaoController {
     try {
       const query = `
         SELECT DISTINCT 
-          nutricionista_id as id,
-          nutricionista_nome as nome
+          usuario_id as id,
+          usuario_email as nome
         FROM necessidades 
         WHERE status = 'NEC COORD'
-        ORDER BY nutricionista_nome
+        ORDER BY usuario_email
       `;
 
       const nutricionistas = await executeQuery(query);
