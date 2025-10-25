@@ -1,6 +1,6 @@
 import React from 'react';
 import { FaEdit } from 'react-icons/fa';
-import { StatusBadge } from '../StatusBadge';
+import { StatusBadge } from '../../necessidades';
 import { ExportButtons } from '../../shared';
 
 const AjusteHeader = ({ 
