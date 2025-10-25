@@ -159,36 +159,12 @@ export const useAjusteNecessidadesOrchestrator = () => {
     setAjustesLocais(prev => {
       const novosAjustes = { ...prev };
       
-      // Atualizar o valor do produto que foi alterado
+      // Apenas atualizar o valor do produto que foi alterado
       novosAjustes[necessidadeId] = valor === '' ? '' : parseFloat(valor) || '';
-      
-      // Se foi inserido um valor, preencher automaticamente os produtos sem ajuste com valor original
-      if (valor !== '' && !isNaN(parseFloat(valor))) {
-        necessidades.forEach(nec => {
-          // Se o produto não tem ajuste ainda (campo vazio)
-          if (!novosAjustes[nec.id] || novosAjustes[nec.id] === '') {
-            let valorOriginal = 0;
-            
-            if (activeTab === 'coordenacao') {
-              // Para coordenação: usar ajuste_nutricionista como base
-              valorOriginal = nec.ajuste_nutricionista || nec.ajuste || 0;
-            } else {
-              // Para nutricionista: usar ajuste (quantidade gerada) como base
-              valorOriginal = nec.status === 'NEC NUTRI' 
-                ? (nec.ajuste_nutricionista || nec.ajuste || 0)
-                : (nec.ajuste || 0);
-            }
-            
-            if (valorOriginal > 0) {
-              novosAjustes[nec.id] = valorOriginal;
-            }
-          }
-        });
-      }
       
       return novosAjustes;
     });
-  }, [necessidades, activeTab]);
+  }, []);
 
   // Iniciar processo de exclusão (abre modal)
   const handleExcluirNecessidade = useCallback((necessidade) => {
