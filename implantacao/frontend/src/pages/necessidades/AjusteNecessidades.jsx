@@ -145,20 +145,24 @@ const AjusteNecessidades = () => {
     if (necessidades.length > 0) {
       const ajustesIniciais = {};
       necessidades.forEach(nec => {
-        // Se status for NEC NUTRI, sempre deixar em branco (não mostrar valor salvo)
-        // Se status for NEC, usar ajuste como valor inicial
-        if (nec.status === 'NEC NUTRI') {
-          ajustesIniciais[nec.id] = ''; // Sempre em branco para NEC NUTRI
+        if (activeTab === 'coordenacao') {
+          // Para coordenação: sempre deixar em branco (igual nutricionista)
+          ajustesIniciais[nec.id] = '';
         } else {
-          const valorInicial = nec.ajuste || 0;
-          ajustesIniciais[nec.id] = valorInicial === 0 ? '' : valorInicial;
+          // Para nutricionista: lógica original
+          if (nec.status === 'NEC NUTRI') {
+            ajustesIniciais[nec.id] = ''; // Sempre em branco para NEC NUTRI
+          } else {
+            const valorInicial = nec.ajuste || 0;
+            ajustesIniciais[nec.id] = valorInicial === 0 ? '' : valorInicial;
+          }
         }
       });
       setAjustesLocais(ajustesIniciais);
       setNecessidadeAtual(necessidades[0]); // Para obter informações do conjunto
       setNecessidadesFiltradas(necessidades); // Inicializar filtro
     }
-  }, [necessidades]);
+  }, [necessidades, activeTab]);
 
   // Filtrar necessidades baseado na busca
   useEffect(() => {
@@ -825,7 +829,7 @@ const AjusteNecessidades = () => {
                             {necessidade.produto_unidade}
                           </td>
                           <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                            {necessidade.status === 'NEC COORD' 
+                            {necessidade.status === 'CONF'
                               ? (necessidade.ajuste_coordenacao || 0)
                               : (necessidade.ajuste_nutricionista || necessidade.ajuste || 0)
                             }
