@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { FaClipboardList, FaSearch, FaTrash, FaPlus, FaSave, FaPaperPlane } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNecessidadesAjuste } from '../../hooks/useNecessidadesAjuste';
@@ -12,6 +11,8 @@ import {
   AjusteNecessidadesHeader,
   AjusteNecessidadesFilters,
   AjusteNecessidadesActions,
+  AjusteNecessidadesTable,
+  AjusteNecessidadesEmptyStates,
   ModalProdutoExtra
 } from '../../components/necessidades';
 import NecessidadesTabs from '../../components/necessidades/NecessidadesTabs';
@@ -673,186 +674,30 @@ const AjusteNecessidades = () => {
               </div>
             </div>
             
-            {/* Tabela de Produtos */}
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {activeTab === 'coordenacao' ? (
-                      <>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Cod Unidade
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Unidade Escolar
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Codigo Produto
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Produto
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Unidade de Medida
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Quantidade
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Ajuste
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Ações
-                        </th>
-                      </>
-                    ) : (
-                      <>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Código
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Produto
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Unidade
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Quantidade (gerada)
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Ajuste (nutricionista)
-                        </th>
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Ações
-                        </th>
-                      </>
-                    )}
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {necessidadesFiltradas.map((necessidade) => (
-                    <tr key={necessidade.id} className="hover:bg-gray-50">
-                      {activeTab === 'coordenacao' ? (
-                        <>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                            {necessidade.escola_id || 'N/A'}
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900 text-center">
-                            {necessidade.escola}
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                            {necessidade.produto_id || 'N/A'}
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900 text-center">
-                            {necessidade.produto}
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
-                            {necessidade.produto_unidade}
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                            {necessidade.ajuste_coordenacao 
-                              ? (necessidade.ajuste_coordenacao)
-                              : (necessidade.ajuste_nutricionista || necessidade.ajuste || 0)
-                            }
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                            <Input
-                              type="number"
-                              value={ajustesLocais[necessidade.id] || ''}
-                              onChange={(e) => handleAjusteChange(necessidade.id, e.target.value)}
-                              min="0"
-                              step="0.001"
-                              className="w-20 text-center text-xs py-1"
-                              disabled={necessidade.status === 'CONF' || !canEditAjuste}
-                            />
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                            <button
-                              onClick={() => handleExcluirNecessidade(necessidade.id)}
-                              className="text-red-600 hover:text-red-800 transition-colors"
-                              title="Excluir produto"
-                            >
-                              <FaTrash className="h-4 w-4" />
-                            </button>
-                          </td>
-                        </>
-                      ) : (
-                        <>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
-                            {necessidade.codigo_teknisa || 'N/A'}
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
-                            {necessidade.produto}
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">
-                            {necessidade.produto_unidade}
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                            {necessidade.status === 'NEC NUTRI' 
-                              ? (necessidade.ajuste_nutricionista || 0)
-                              : (necessidade.ajuste || 0)
-                            }
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                            <Input
-                              type="number"
-                              value={ajustesLocais[necessidade.id] || ''}
-                              onChange={(e) => handleAjusteChange(necessidade.id, e.target.value)}
-                              min="0"
-                              step="0.001"
-                              className="w-20 text-center text-xs py-1"
-                              disabled={necessidade.status === 'NEC NUTRI' || !canEditAjuste}
-                            />
-                          </td>
-                          <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                            <button
-                              onClick={() => handleExcluirNecessidade(necessidade.id)}
-                              className="text-red-600 hover:text-red-800 transition-colors"
-                              title="Excluir produto"
-                            >
-                              <FaTrash className="h-4 w-4" />
-                            </button>
-                          </td>
-                        </>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <AjusteNecessidadesTable
+              activeTab={activeTab}
+              necessidadesFiltradas={necessidadesFiltradas}
+              ajustesLocais={ajustesLocais}
+              onAjusteChange={handleAjusteChange}
+              onExcluir={handleExcluirNecessidade}
+              canEdit={canEditAjuste}
+            />
           </div>
         ) : !loading && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-            <FaClipboardList className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Nenhuma necessidade encontrada
-            </h3>
-            <p className="text-gray-600">
-              Não há necessidades disponíveis para ajuste no momento.
-            </p>
-          </div>
+          <AjusteNecessidadesEmptyStates
+            necessidadesLength={necessidades.length}
+            necessidadesFiltradasLength={necessidadesFiltradas.length}
+            buscaProduto={buscaProduto}
+            onClearBusca={() => setBuscaProduto('')}
+          />
         )}
 
-        {/* Mensagem quando busca não retorna resultados */}
-        {necessidades.length > 0 && necessidadesFiltradas.length === 0 && (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-            <FaSearch className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Nenhum produto encontrado
-            </h3>
-            <p className="text-gray-600">
-              Nenhum produto corresponde à busca "{buscaProduto}".
-            </p>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setBuscaProduto('')}
-              className="mt-4"
-            >
-              Limpar busca
-            </Button>
-          </div>
-        )}
+        <AjusteNecessidadesEmptyStates
+          necessidadesLength={necessidades.length}
+          necessidadesFiltradasLength={necessidadesFiltradas.length}
+          buscaProduto={buscaProduto}
+          onClearBusca={() => setBuscaProduto('')}
+        />
       </NecessidadesLayout>
 
       <ModalProdutoExtra

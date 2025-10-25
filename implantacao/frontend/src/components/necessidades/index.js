@@ -9,5 +9,7 @@ export { default as StatusBadge } from './StatusBadge';
 export { default as AjusteNecessidadesHeader } from './AjusteNecessidadesHeader';
 export { default as AjusteNecessidadesFilters } from './AjusteNecessidadesFilters';
 export { default as AjusteNecessidadesActions } from './AjusteNecessidadesActions';
+export { default as AjusteNecessidadesTable } from './AjusteNecessidadesTable';
+export { default as AjusteNecessidadesEmptyStates } from './AjusteNecessidadesEmptyStates';
 export { default as ModalProdutoExtra } from './ModalProdutoExtra';
 
