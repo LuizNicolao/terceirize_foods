@@ -294,7 +294,11 @@ const AjusteNecessidades = () => {
     }
 
     try {
-      const produtos = await buscarProdutosParaModal({
+      const buscarProdutos = activeTab === 'nutricionista' 
+        ? buscarProdutosParaModalNutricionista
+        : buscarProdutosParaModalCoordenacao;
+
+      const produtos = await buscarProdutos({
         grupo: filtros.grupo,
         escola_id: filtros.escola_id,
         semana_consumo: filtros.semana_consumo,
@@ -322,6 +326,11 @@ const AjusteNecessidades = () => {
       let sucessos = 0;
       let erros = 0;
 
+      // Selecionar função correta baseada na aba ativa
+      const incluirProduto = activeTab === 'nutricionista'
+        ? incluirProdutoExtraNutricionista
+        : incluirProdutoExtraCoordenacao;
+
       // Incluir cada produto selecionado
       for (const produto of produtosSelecionados) {
         try {
@@ -335,7 +344,7 @@ const AjusteNecessidades = () => {
             produto_id: produto.produto_id
           };
 
-          const resultado = await incluirProdutoExtra(dadosParaIncluir);
+          const resultado = await incluirProduto(dadosParaIncluir);
           
           if (resultado.success) {
             sucessos++;
