@@ -40,7 +40,8 @@ class NecessidadesExportController {
         ]),
         { header: 'Semana Consumo', key: 'semana_consumo', width: 20 },
         { header: 'Semana Abastecimento', key: 'semana_abastecimento', width: 22 },
-        { header: 'Status', key: 'status', width: 15 }
+        { header: 'Status', key: 'status', width: 15 },
+        { header: 'Observações', key: 'observacoes', width: 50 }
       ];
 
       // Estilizar cabeçalho
@@ -105,7 +106,8 @@ class NecessidadesExportController {
           n.ajuste_coordenacao,
           n.semana_consumo,
           n.semana_abastecimento,
-          n.status
+          n.status,
+          n.observacoes
         FROM necessidades n
         ${whereClause}
         ORDER BY n.escola, n.produto
@@ -127,7 +129,8 @@ class NecessidadesExportController {
           ajuste_coordenacao: nec.ajuste_coordenacao || 0,
           semana_consumo: nec.semana_consumo,
           semana_abastecimento: nec.semana_abastecimento,
-          status: nec.status
+          status: nec.status,
+          observacoes: nec.observacoes || ''
         });
       });
 
@@ -232,7 +235,8 @@ class NecessidadesExportController {
           n.ajuste_coordenacao,
           n.semana_consumo,
           n.semana_abastecimento,
-          n.status
+          n.status,
+          n.observacoes
         FROM necessidades n
         ${whereClause}
         ORDER BY n.escola, n.produto
@@ -255,8 +259,8 @@ class NecessidadesExportController {
 
       // Definir larguras das colunas (ajustadas para paisagem)
       const colWidths = isCoordenacao 
-        ? [40, 60, 120, 50, 150, 40, 50, 50, 50, 70, 70, 40] // Com ajuste coordenação
-        : [40, 60, 120, 50, 150, 40, 50, 50, 70, 70, 40]; // Sem ajuste coordenação
+        ? [40, 60, 100, 50, 130, 40, 50, 50, 50, 70, 70, 40, 100] // Com ajuste coordenação + observações
+        : [40, 60, 100, 50, 130, 40, 50, 50, 70, 70, 40, 100]; // Sem ajuste coordenação + observações
       
       const startX = 50;
       const startY = doc.y;
@@ -265,8 +269,8 @@ class NecessidadesExportController {
 
       // Desenhar cabeçalho
       const headers = isCoordenacao
-        ? ['ID', 'Esc. ID', 'Escola', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Aj. Coord', 'Sem. Consumo', 'Sem. Abast', 'Status']
-        : ['ID', 'Esc. ID', 'Escola', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Sem. Consumo', 'Sem. Abast', 'Status'];
+        ? ['ID', 'Esc. ID', 'Escola', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Aj. Coord', 'Sem. Consumo', 'Sem. Abast', 'Status', 'Observações']
+        : ['ID', 'Esc. ID', 'Escola', 'Prod. ID', 'Produto', 'Un.', 'Qtd Gerada', 'Aj. Nutri', 'Sem. Consumo', 'Sem. Abast', 'Status', 'Observações'];
 
       doc.fontSize(8).font('Helvetica-Bold');
       let currentX = startX;
@@ -318,7 +322,8 @@ class NecessidadesExportController {
               typeof nec.ajuste_coordenacao === 'number' ? nec.ajuste_coordenacao.toFixed(3) : '0.000',
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
-              nec.status || 'N/A'
+              nec.status || 'N/A',
+              nec.observacoes || ''
             ]
           : [
               nec.id,
@@ -331,7 +336,8 @@ class NecessidadesExportController {
               typeof nec.ajuste_nutricionista === 'number' ? nec.ajuste_nutricionista.toFixed(3) : '0.000',
               nec.semana_consumo || 'N/A',
               nec.semana_abastecimento || 'N/A',
-              nec.status || 'N/A'
+              nec.status || 'N/A',
+              nec.observacoes || ''
             ];
 
         data.forEach((value, i) => {
