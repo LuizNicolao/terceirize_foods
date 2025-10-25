@@ -211,17 +211,19 @@ const AjusteNecessidades = () => {
           return !isNaN(valor) && valor > 0;
         })
         .map(([necessidadeId, ajuste]) => {
-          const baseItem = {
-            necessidade_id: parseInt(necessidadeId),
-          };
-          
           if (activeTab === 'coordenacao') {
-            baseItem.ajuste_coordenacao = parseFloat(ajuste);
+            // Para coordenação: backend espera { id, ajuste }
+            return {
+              id: parseInt(necessidadeId),
+              ajuste: parseFloat(ajuste)
+            };
           } else {
-            baseItem.ajuste_nutricionista = parseFloat(ajuste);
+            // Para nutricionista: backend espera { necessidade_id, ajuste_nutricionista }
+            return {
+              necessidade_id: parseInt(necessidadeId),
+              ajuste_nutricionista: parseFloat(ajuste)
+            };
           }
-          
-          return baseItem;
         });
 
       const dadosParaSalvar = {

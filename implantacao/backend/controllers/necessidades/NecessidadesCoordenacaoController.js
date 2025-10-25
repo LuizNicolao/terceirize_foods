@@ -121,18 +121,15 @@ class NecessidadesCoordenacaoController {
           const currentValue = currentResult[0].ajuste_coordenacao;
           const newValue = parseFloat(ajuste) || 0;
 
-          // Só atualizar se o valor mudou
-          if (newValue !== currentValue) {
-            const updateQuery = `
-              UPDATE necessidades 
-              SET ajuste_coordenacao = ?, 
-                  data_atualizacao = NOW()
-              WHERE id = ? AND status = 'NEC COORD'
-            `;
-            
-            await executeQuery(updateQuery, [newValue, id]);
-          }
-
+          // Sempre atualizar (não verificar se mudou para permitir atualização de NULL)
+          const updateQuery = `
+            UPDATE necessidades 
+            SET ajuste_coordenacao = ?, 
+                data_atualizacao = NOW()
+            WHERE id = ? AND status = 'NEC COORD'
+          `;
+          
+          await executeQuery(updateQuery, [newValue, id]);
           sucessos++;
 
         } catch (error) {
