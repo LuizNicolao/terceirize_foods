@@ -306,52 +306,32 @@ export const useAjusteNecessidadesOrchestrator = () => {
   }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, liberarParaLogistica, handleCarregarNecessidades]);
 
   const handleAbrirModalProdutoExtra = useCallback(async () => {
-    console.log('🔍 [DEBUG] handleAbrirModalProdutoExtra chamado');
-    console.log('🔍 [DEBUG] activeTab:', activeTab);
-    console.log('🔍 [DEBUG] filtros:', filtros);
-    console.log('🔍 [DEBUG] necessidadeAtual:', necessidadeAtual);
-
     if (activeTab === 'coordenacao') {
-      console.log('🔍 [DEBUG] Entrou no fluxo de coordenação');
       if (!filtros.escola_id) {
-        console.log('❌ [DEBUG] Falta escola_id');
         toast.error('É necessário selecionar uma escola para incluir produtos');
         return;
       }
       
       if (!filtros.grupo) {
-        console.log('❌ [DEBUG] Falta grupo');
         toast.error('É necessário selecionar um grupo para incluir produtos');
         return;
       }
-      console.log('✅ [DEBUG] Validações passaram para coordenação');
     } else {
-      console.log('🔍 [DEBUG] Entrou no fluxo de nutricionista');
       if (!necessidadeAtual) {
-        console.log('❌ [DEBUG] Falta necessidadeAtual');
         toast.error('Nenhuma necessidade selecionada');
         return;
       }
       
       if (!filtros.grupo) {
-        console.log('❌ [DEBUG] Falta grupo');
         toast.error('É necessário selecionar um grupo para incluir produtos');
         return;
       }
-      console.log('✅ [DEBUG] Validações passaram para nutricionista');
     }
 
     try {
       const buscarProdutos = activeTab === 'nutricionista' 
         ? buscarProdutosParaModalNutricionista
         : buscarProdutosParaModalCoordenacao;
-
-      console.log('🔍 [DEBUG] Buscando produtos com filtros:', {
-        grupo: filtros.grupo,
-        escola_id: filtros.escola_id,
-        semana_consumo: filtros.semana_consumo,
-        semana_abastecimento: filtros.semana_abastecimento
-      });
 
       const produtos = await buscarProdutos({
         grupo: filtros.grupo,
@@ -360,22 +340,17 @@ export const useAjusteNecessidadesOrchestrator = () => {
         semana_abastecimento: filtros.semana_abastecimento
       });
 
-      console.log('🔍 [DEBUG] Resposta da busca:', produtos);
-
       // Verificar se produtos é array (resposta direta) ou objeto com success
       const produtosLista = Array.isArray(produtos) ? produtos : (produtos.success ? produtos.data : []);
       
       if (produtosLista && produtosLista.length > 0) {
-        console.log('✅ [DEBUG] Produtos encontrados:', produtosLista.length);
         setProdutosDisponiveis(produtosLista);
         setModalProdutoExtraAberto(true);
-        console.log('✅ [DEBUG] Modal aberto');
       } else {
-        console.error('❌ [DEBUG] Nenhum produto encontrado', produtos);
         toast.error('Nenhum produto disponível encontrado');
       }
     } catch (error) {
-      console.error('❌ [DEBUG] Erro ao buscar produtos:', error);
+      console.error('Erro ao buscar produtos:', error);
       toast.error('Erro ao buscar produtos disponíveis');
     }
   }, [activeTab, filtros, necessidadeAtual, buscarProdutosParaModalNutricionista, buscarProdutosParaModalCoordenacao]);
@@ -406,32 +381,20 @@ export const useAjusteNecessidadesOrchestrator = () => {
             produto_id: produto.produto_id
           };
 
-          console.log('🔍 [DEBUG] Incluindo produto:', produto.produto_nome);
-          console.log('🔍 [DEBUG] Dados para incluir:', dadosParaIncluir);
-
           const resultado = await incluirProduto(dadosParaIncluir);
-          
-          console.log('🔍 [DEBUG] Resultado:', resultado);
-          console.log('🔍 [DEBUG] Tipo do resultado:', typeof resultado);
 
-          // Verificar se resultado é booleano true ou objeto com success: true
-          const sucesso = resultado === true || resultado?.success === true;
-
-          if (sucesso) {
+          if (resultado) {
             sucessos++;
-            console.log('✅ [DEBUG] Produto incluído com sucesso');
           } else {
             erros++;
-            console.error('❌ [DEBUG] Falhou ao incluir:', resultado);
           }
         } catch (error) {
-          console.error(`❌ [DEBUG] Erro ao incluir produto ${produto.produto_nome}:`, error);
+          console.error('Erro ao incluir produto:', error);
           erros++;
         }
       }
 
       if (sucessos > 0) {
-        toast.success(`${sucessos} produto(s) incluído(s) com sucesso!`);
         setModalProdutoExtraAberto(false);
         setProdutosSelecionados([]);
         setSearchProduto('');
