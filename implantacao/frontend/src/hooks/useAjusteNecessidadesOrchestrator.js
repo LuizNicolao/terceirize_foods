@@ -167,10 +167,17 @@ export const useAjusteNecessidadesOrchestrator = () => {
         necessidades.forEach(nec => {
           // Se o produto não tem ajuste ainda (campo vazio)
           if (!novosAjustes[nec.id] || novosAjustes[nec.id] === '') {
-            // Usar valor original baseado no status
-            const valorOriginal = nec.status === 'NEC NUTRI' 
-              ? (nec.ajuste_nutricionista || nec.ajuste || 0)
-              : (nec.ajuste || 0);
+            let valorOriginal = 0;
+            
+            if (activeTab === 'coordenacao') {
+              // Para coordenação: usar ajuste_nutricionista como base
+              valorOriginal = nec.ajuste_nutricionista || nec.ajuste || 0;
+            } else {
+              // Para nutricionista: usar ajuste (quantidade gerada) como base
+              valorOriginal = nec.status === 'NEC NUTRI' 
+                ? (nec.ajuste_nutricionista || nec.ajuste || 0)
+                : (nec.ajuste || 0);
+            }
             
             if (valorOriginal > 0) {
               novosAjustes[nec.id] = valorOriginal;
@@ -181,7 +188,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
       
       return novosAjustes;
     });
-  }, [necessidades]);
+  }, [necessidades, activeTab]);
 
   // Iniciar processo de exclusão (abre modal)
   const handleExcluirNecessidade = useCallback((necessidade) => {
