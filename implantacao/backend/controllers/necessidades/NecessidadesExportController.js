@@ -259,8 +259,8 @@ class NecessidadesExportController {
 
       // Definir larguras das colunas (ajustadas para paisagem)
       const colWidths = isCoordenacao 
-        ? [25, 35, 100, 45, 120, 35, 45, 45, 45, 70, 70, 50] // Com ajuste coordenação: sem coluna Observações
-        : [0, 0, 120, 45, 130, 35, 0, 0, 70, 70, 50]; // Sem ajuste coordenação: sem coluna Observações
+        ? [25, 35, 130, 45, 140, 35, 45, 45, 45, 65, 65, 50] // Com ajuste coordenação: Escola e Produto com mais espaço
+        : [0, 0, 150, 45, 150, 35, 0, 0, 65, 65, 50]; // Sem ajuste coordenação: Escola e Produto com mais espaço
       
       const startX = 50;
       const startY = doc.y;
