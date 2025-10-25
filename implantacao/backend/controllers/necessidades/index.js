@@ -20,6 +20,8 @@ const {
   gerarNecessidade 
 } = require('./NecessidadesSpecialController');
 
+const NecessidadesExportController = require('./NecessidadesExportController');
+
 module.exports = {
   // CRUD Operations
   criar,
@@ -37,6 +39,10 @@ module.exports = {
   obterResumo,
   
   // Special Operations
-  gerarNecessidade
+  gerarNecessidade,
+  
+  // Export Operations
+  exportarXLSX: NecessidadesExportController.exportarXLSX,
+  exportarPDF: NecessidadesExportController.exportarPDF
 };
 

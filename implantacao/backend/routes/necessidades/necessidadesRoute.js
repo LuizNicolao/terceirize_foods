@@ -11,7 +11,9 @@ const {
   obterEstatisticas,
   obterResumo,
   gerarNecessidade,
-  listarEscolasNutricionista
+  listarEscolasNutricionista,
+  exportarXLSX,
+  exportarPDF
 } = require('../../controllers/necessidades');
 const { 
   validateCriarNecessidade, 
@@ -39,5 +41,9 @@ router.delete('/:id', canDelete('necessidades'), deletar);
 // ===== ROTAS DE ESTATÍSTICAS =====
 router.get('/stats/estatisticas', canView('necessidades'), obterEstatisticas);
 router.get('/stats/resumo', canView('necessidades'), obterResumo);
+
+// ===== ROTAS DE EXPORTAÇÃO =====
+router.get('/exportar/xlsx', canView('necessidades'), exportarXLSX);
+router.get('/exportar/pdf', canView('necessidades'), exportarPDF);
 
 module.exports = router;
