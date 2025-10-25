@@ -306,32 +306,52 @@ export const useAjusteNecessidadesOrchestrator = () => {
   }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, liberarParaLogistica, handleCarregarNecessidades]);
 
   const handleAbrirModalProdutoExtra = useCallback(async () => {
+    console.log('🔍 [DEBUG] handleAbrirModalProdutoExtra chamado');
+    console.log('🔍 [DEBUG] activeTab:', activeTab);
+    console.log('🔍 [DEBUG] filtros:', filtros);
+    console.log('🔍 [DEBUG] necessidadeAtual:', necessidadeAtual);
+
     if (activeTab === 'coordenacao') {
+      console.log('🔍 [DEBUG] Entrou no fluxo de coordenação');
       if (!filtros.escola_id) {
+        console.log('❌ [DEBUG] Falta escola_id');
         toast.error('É necessário selecionar uma escola para incluir produtos');
         return;
       }
       
       if (!filtros.grupo) {
+        console.log('❌ [DEBUG] Falta grupo');
         toast.error('É necessário selecionar um grupo para incluir produtos');
         return;
       }
+      console.log('✅ [DEBUG] Validações passaram para coordenação');
     } else {
+      console.log('🔍 [DEBUG] Entrou no fluxo de nutricionista');
       if (!necessidadeAtual) {
+        console.log('❌ [DEBUG] Falta necessidadeAtual');
         toast.error('Nenhuma necessidade selecionada');
         return;
       }
       
       if (!filtros.grupo) {
+        console.log('❌ [DEBUG] Falta grupo');
         toast.error('É necessário selecionar um grupo para incluir produtos');
         return;
       }
+      console.log('✅ [DEBUG] Validações passaram para nutricionista');
     }
 
     try {
       const buscarProdutos = activeTab === 'nutricionista' 
         ? buscarProdutosParaModalNutricionista
         : buscarProdutosParaModalCoordenacao;
+
+      console.log('🔍 [DEBUG] Buscando produtos com filtros:', {
+        grupo: filtros.grupo,
+        escola_id: filtros.escola_id,
+        semana_consumo: filtros.semana_consumo,
+        semana_abastecimento: filtros.semana_abastecimento
+      });
 
       const produtos = await buscarProdutos({
         grupo: filtros.grupo,
@@ -340,12 +360,18 @@ export const useAjusteNecessidadesOrchestrator = () => {
         semana_abastecimento: filtros.semana_abastecimento
       });
 
+      console.log('🔍 [DEBUG] Resposta da busca:', produtos);
+
       if (produtos.success) {
+        console.log('✅ [DEBUG] Produtos encontrados:', produtos.data.length);
         setProdutosDisponiveis(produtos.data);
         setModalProdutoExtraAberto(true);
+        console.log('✅ [DEBUG] Modal aberto');
+      } else {
+        console.error('❌ [DEBUG] Produtos retornaram success: false', produtos);
       }
     } catch (error) {
-      console.error('Erro ao buscar produtos:', error);
+      console.error('❌ [DEBUG] Erro ao buscar produtos:', error);
       toast.error('Erro ao buscar produtos disponíveis');
     }
   }, [activeTab, filtros, necessidadeAtual, buscarProdutosParaModalNutricionista, buscarProdutosParaModalCoordenacao]);
