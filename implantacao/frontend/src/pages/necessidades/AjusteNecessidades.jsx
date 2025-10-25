@@ -155,8 +155,6 @@ const AjusteNecessidades = () => {
               activeTab={activeTab}
               statusAtual={statusAtual}
               filtros={filtros}
-              disabledSalvar={activeTab === 'nutricionista' && statusAtual === 'NEC NUTRI'}
-              disabledLiberar={activeTab === 'nutricionista' && statusAtual === 'NEC NUTRI'}
               titleIncluir={activeTab === 'coordenacao' && !filtros.escola_id ? 'Selecione uma escola e clique em Filtrar antes de incluir produtos' : undefined}
             />
             
