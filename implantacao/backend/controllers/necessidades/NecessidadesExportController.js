@@ -259,7 +259,7 @@ class NecessidadesExportController {
 
       // Definir larguras das colunas (ajustadas para paisagem)
       const colWidths = isCoordenacao 
-        ? [30, 40, 140, 50, 160, 40, 40, 40, 40, 80, 80, 60, 120] // Com ajuste coordenação: IDs menores
+        ? [30, 40, 120, 50, 140, 40, 50, 50, 50, 80, 80, 60, 120] // Com ajuste coordenação: larguras adequadas para valores numéricos
         : [0, 0, 140, 50, 160, 40, 0, 0, 80, 80, 60, 120]; // Sem ajuste coordenação: removendo ID, Esc. ID, Qtd Gerada, Aj. Nutri
       
       const startX = 50;
@@ -342,10 +342,13 @@ class NecessidadesExportController {
 
         data.forEach((value, i) => {
           doc.rect(currentX, currentY, colWidths[i], rowHeight).stroke();
-          doc.text(String(value), currentX + 2, currentY + 4, { 
+          const textValue = String(value);
+          // Evitar ellipsis para valores numéricos importantes
+          const shouldEllipsis = i >= 6 && i <= 8; // Colunas de ajuste (Qtd Gerada, Aj. Nutri, Aj. Coord)
+          doc.text(textValue, currentX + 2, currentY + 4, { 
             width: colWidths[i] - 4, 
             height: rowHeight - 2,
-            ellipsis: true
+            ellipsis: !shouldEllipsis
           });
           currentX += colWidths[i];
         });
