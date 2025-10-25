@@ -106,14 +106,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
     if (necessidades.length > 0) {
       const ajustesIniciais = {};
       necessidades.forEach(nec => {
-        // Carregar valores já salvos no banco ou inicializar em branco
-        if (activeTab === 'nutricionista') {
-          // Para nutricionista: usar ajuste_nutricionista se já existe
-          ajustesIniciais[nec.id] = nec.ajuste_nutricionista ? nec.ajuste_nutricionista : '';
-        } else {
-          // Para coordenação: usar ajuste_coordenacao se já existe
-          ajustesIniciais[nec.id] = nec.ajuste_coordenacao ? nec.ajuste_coordenacao : '';
-        }
+        // Sempre inicializar em branco para nutricionista e coordenação
+        ajustesIniciais[nec.id] = '';
       });
       setAjustesLocais(ajustesIniciais);
       setNecessidadeAtual(necessidades[0]);
@@ -212,21 +206,43 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }
 
     try {
+      // Buscar valor original para cada necessidade
+      const necessidadesMap = {};
+      necessidades.forEach(nec => {
+        necessidadesMap[nec.id] = nec;
+      });
+
       const itens = Object.entries(ajustesLocais)
-        .filter(([necessidadeId, ajuste]) => {
-          const valor = parseFloat(ajuste);
-          return !isNaN(valor) && valor > 0;
+        .filter(([necessidadeId]) => {
+          return necessidadesMap[necessidadeId]; // Apenas necessidades válidas
         })
         .map(([necessidadeId, ajuste]) => {
+          const nec = necessidadesMap[necessidadeId];
+          const valor = parseFloat(ajuste);
+          
+          // Se não tem valor no ajuste local, usar o valor original
+          let valorFinal;
+          if (isNaN(valor) || valor <= 0) {
+            // Para nutricionista: usar ajuste (quantidade gerada)
+            // Para coordenação: usar ajuste_nutricionista
+            if (activeTab === 'nutricionista') {
+              valorFinal = nec.ajuste || 0;
+            } else {
+              valorFinal = nec.ajuste_nutricionista || nec.ajuste || 0;
+            }
+          } else {
+            valorFinal = valor;
+          }
+
           if (activeTab === 'coordenacao') {
             return {
               id: parseInt(necessidadeId),
-              ajuste: parseFloat(ajuste)
+              ajuste: valorFinal
             };
           } else {
             return {
               necessidade_id: parseInt(necessidadeId),
-              ajuste_nutricionista: parseFloat(ajuste)
+              ajuste_nutricionista: valorFinal
             };
           }
         });
