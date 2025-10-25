@@ -1,5 +1,30 @@
 const { executeQuery } = require('../../config/database');
 
+// Função para buscar a nutricionista vinculada à escola
+const buscarNutricionistaDaEscola = async (escola_id) => {
+  try {
+    const query = `
+      SELECT DISTINCT 
+        rn.usuario_id,
+        u.nome as usuario_nome,
+        u.email as usuario_email
+      FROM rotas_nutricionistas rn
+      LEFT JOIN usuarios u ON rn.usuario_id = u.id
+      WHERE rn.status = 'ativo'
+        AND rn.escolas_responsaveis IS NOT NULL 
+        AND rn.escolas_responsaveis != ''
+        AND FIND_IN_SET(?, rn.escolas_responsaveis) > 0
+      LIMIT 1
+    `;
+    
+    const result = await executeQuery(query, [escola_id]);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error('Erro ao buscar nutricionista da escola:', error);
+    return null;
+  }
+};
+
 const gerarNecessidade = async (req, res) => {
   try {
     const { escola_id, escola_nome, escola_rota, escola_codigo_teknisa, semana_consumo, semana_abastecimento, produtos } = req.body;
@@ -31,6 +56,17 @@ const gerarNecessidade = async (req, res) => {
     
     const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
     const necessidadeId = proximoId.toString();
+
+    // Buscar a nutricionista vinculada à escola
+    const nutricionistaEscola = await buscarNutricionistaDaEscola(escola_id);
+    
+    if (!nutricionistaEscola) {
+      return res.status(400).json({
+        success: false,
+        error: 'Nutricionista não encontrada',
+        message: `Nenhuma nutricionista vinculada à escola "${escola_nome}". Verifique as rotas nutricionistas.`
+      });
+    }
 
     // Verificar se já existe necessidade para esta escola/semana (independente do produto)
     const existing = await executeQuery(`
@@ -86,8 +122,8 @@ const gerarNecessidade = async (req, res) => {
             necessidade_id
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
-          req.user.email,
-          req.user.id,
+          nutricionistaEscola.usuario_email, // Email da nutricionista vinculada à escola
+          nutricionistaEscola.usuario_id,   // ID da nutricionista vinculada à escola
           produto_id,
           produto_nome,
           produto_unidade || '',
