@@ -1,23 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaPlus } from 'react-icons/fa';
-import { Modal, Button, Input } from '../ui';
+import { Modal, Button, Input } from '../../ui';
 
 const ModalProdutoExtra = ({
   isOpen,
   onClose,
   produtosDisponiveis,
   produtosSelecionados,
-  searchProduto,
-  onSearchChange,
   onToggleProduto,
   onSelecionarTodos,
   onDesmarcarTodos,
-  onIncluir
+  onIncluirProdutos,
+  searchProduto,
+  onSearchChange
 }) => {
+  const handleClose = () => {
+    onClose();
+  };
+
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title="Incluir Produtos Extra"
       size="xl"
     >
@@ -110,13 +114,13 @@ const ModalProdutoExtra = ({
         <div className="flex justify-end space-x-3 pt-4">
           <Button
             variant="secondary"
-            onClick={onClose}
+            onClick={handleClose}
           >
             Cancelar
           </Button>
           <Button
             variant="primary"
-            onClick={onIncluir}
+            onClick={onIncluirProdutos}
             disabled={produtosSelecionados.length === 0}
             icon={<FaPlus />}
           >
