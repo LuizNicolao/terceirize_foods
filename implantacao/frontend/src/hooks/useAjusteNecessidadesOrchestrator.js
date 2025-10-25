@@ -61,7 +61,9 @@ export const useAjusteNecessidadesOrchestrator = () => {
     liberarParaLogistica,
     buscarProdutosParaModal: buscarProdutosParaModalCoordenacao,
     incluirProdutoExtra: incluirProdutoExtraCoordenacao,
-    atualizarFiltros: atualizarFiltrosCoordenacao
+    atualizarFiltros: atualizarFiltrosCoordenacao,
+    exportarXLSX: exportarXLSXCoordenacao,
+    exportarPDF: exportarPDFCoordenacao
   } = useNecessidadesCoordenacao();
 
   // Hooks para semanas
@@ -430,18 +432,20 @@ export const useAjusteNecessidadesOrchestrator = () => {
   }, []);
 
   const handleExportarExcel = useCallback(() => {
-    const exportFunc = activeTab === 'nutricionista' ? exportarXLSXNutricionista : null;
-    if (exportFunc) {
-      exportFunc(filtros);
+    if (activeTab === 'nutricionista') {
+      exportarXLSXNutricionista(filtros);
+    } else if (activeTab === 'coordenacao') {
+      exportarXLSXCoordenacao(filtros);
     }
-  }, [activeTab, filtros, exportarXLSXNutricionista]);
+  }, [activeTab, filtros, exportarXLSXNutricionista, exportarXLSXCoordenacao]);
 
   const handleExportarPDF = useCallback(() => {
-    const exportFunc = activeTab === 'nutricionista' ? exportarPDFNutricionista : null;
-    if (exportFunc) {
-      exportFunc(filtros);
+    if (activeTab === 'nutricionista') {
+      exportarPDFNutricionista(filtros);
+    } else if (activeTab === 'coordenacao') {
+      exportarPDFCoordenacao(filtros);
     }
-  }, [activeTab, filtros, exportarPDFNutricionista]);
+  }, [activeTab, filtros, exportarPDFNutricionista, exportarPDFCoordenacao]);
 
   const handleSearchProduto = useCallback(async (search) => {
     setSearchProduto(search);

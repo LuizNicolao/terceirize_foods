@@ -147,6 +147,7 @@ const necessidadesService = {
         params.append(key, filtros[key]);
       }
     });
+    params.append('aba', 'nutricionista');
     
     const response = await api.get(`/necessidades/exportar/xlsx?${params.toString()}`, {
       responseType: 'blob'
@@ -155,7 +156,7 @@ const necessidadesService = {
     return {
       success: true,
       data: response.data,
-      filename: `necessidades_${new Date().toISOString().split('T')[0]}.xlsx`
+      filename: `necessidades_nutricionista_${new Date().toISOString().split('T')[0]}.xlsx`
     };
   },
 
@@ -167,6 +168,7 @@ const necessidadesService = {
         params.append(key, filtros[key]);
       }
     });
+    params.append('aba', 'nutricionista');
     
     const response = await api.get(`/necessidades/exportar/pdf?${params.toString()}`, {
       responseType: 'blob'
@@ -175,7 +177,7 @@ const necessidadesService = {
     return {
       success: true,
       data: response.data,
-      filename: `necessidades_${new Date().toISOString().split('T')[0]}.pdf`
+      filename: `necessidades_nutricionista_${new Date().toISOString().split('T')[0]}.pdf`
     };
   }
 };

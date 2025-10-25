@@ -84,6 +84,58 @@ const necessidadesCoordenacaoService = {
       console.error('Erro ao listar nutricionistas:', error);
       throw error;
     }
+  },
+
+  // Exportar para XLSX
+  async exportarXLSX(filtros = {}) {
+    try {
+      const params = new URLSearchParams();
+      Object.keys(filtros).forEach(key => {
+        if (filtros[key] !== undefined && filtros[key] !== '' && filtros[key] !== null) {
+          params.append(key, filtros[key]);
+        }
+      });
+      params.append('aba', 'coordenacao');
+      
+      const response = await api.get(`/necessidades/exportar/xlsx?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      return {
+        success: true,
+        data: response.data,
+        filename: `necessidades_coordenacao_${new Date().toISOString().split('T')[0]}.xlsx`
+      };
+    } catch (error) {
+      console.error('Erro ao exportar XLSX:', error);
+      throw error;
+    }
+  },
+
+  // Exportar para PDF
+  async exportarPDF(filtros = {}) {
+    try {
+      const params = new URLSearchParams();
+      Object.keys(filtros).forEach(key => {
+        if (filtros[key] !== undefined && filtros[key] !== '' && filtros[key] !== null) {
+          params.append(key, filtros[key]);
+        }
+      });
+      params.append('aba', 'coordenacao');
+      
+      const response = await api.get(`/necessidades/exportar/pdf?${params.toString()}`, {
+        responseType: 'blob'
+      });
+      
+      return {
+        success: true,
+        data: response.data,
+        filename: `necessidades_coordenacao_${new Date().toISOString().split('T')[0]}.pdf`
+      };
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      throw error;
+    }
   }
 };
 
