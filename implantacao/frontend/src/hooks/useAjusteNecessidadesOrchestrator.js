@@ -412,8 +412,12 @@ export const useAjusteNecessidadesOrchestrator = () => {
           const resultado = await incluirProduto(dadosParaIncluir);
           
           console.log('🔍 [DEBUG] Resultado:', resultado);
+          console.log('🔍 [DEBUG] Tipo do resultado:', typeof resultado);
 
-          if (resultado.success) {
+          // Verificar se resultado é booleano true ou objeto com success: true
+          const sucesso = resultado === true || resultado?.success === true;
+
+          if (sucesso) {
             sucessos++;
             console.log('✅ [DEBUG] Produto incluído com sucesso');
           } else {
