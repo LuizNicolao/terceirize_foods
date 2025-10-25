@@ -3,13 +3,14 @@ const { executeQuery } = require('../../config/database');
 // Função para buscar a nutricionista vinculada à escola
 const buscarNutricionistaDaEscola = async (escola_id) => {
   try {
+    // Buscar no banco foods_db
     const query = `
       SELECT DISTINCT 
         rn.usuario_id,
         u.nome as usuario_nome,
         u.email as usuario_email
-      FROM rotas_nutricionistas rn
-      LEFT JOIN usuarios u ON rn.usuario_id = u.id
+      FROM foods_db.rotas_nutricionistas rn
+      LEFT JOIN foods_db.usuarios u ON rn.usuario_id = u.id
       WHERE rn.status = 'ativo'
         AND rn.escolas_responsaveis IS NOT NULL 
         AND rn.escolas_responsaveis != ''
