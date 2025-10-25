@@ -210,10 +210,19 @@ const AjusteNecessidades = () => {
           const valor = parseFloat(ajuste);
           return !isNaN(valor) && valor > 0;
         })
-        .map(([necessidadeId, ajuste]) => ({
-          necessidade_id: parseInt(necessidadeId),
-          ajuste_nutricionista: parseFloat(ajuste)
-        }));
+        .map(([necessidadeId, ajuste]) => {
+          const baseItem = {
+            necessidade_id: parseInt(necessidadeId),
+          };
+          
+          if (activeTab === 'coordenacao') {
+            baseItem.ajuste_coordenacao = parseFloat(ajuste);
+          } else {
+            baseItem.ajuste_nutricionista = parseFloat(ajuste);
+          }
+          
+          return baseItem;
+        });
 
       const dadosParaSalvar = {
         escola_id: filtros.escola_id,
@@ -739,7 +748,7 @@ const AjusteNecessidades = () => {
                         size="sm"
                         onClick={handleSalvarAjustes}
                         icon={<FaSave />}
-                        disabled={statusAtual === 'NEC COORD'}
+                        disabled={activeTab === 'nutricionista' && statusAtual === 'NEC NUTRI'}
                       >
                         Salvar Ajustes
                       </Button>
@@ -748,7 +757,7 @@ const AjusteNecessidades = () => {
                         size="sm"
                         onClick={handleLiberarCoordenacao}
                         icon={<FaPaperPlane />}
-                        disabled={statusAtual === 'NEC COORD'}
+                        disabled={activeTab === 'nutricionista' && statusAtual === 'NEC NUTRI'}
                       >
                         {activeTab === 'nutricionista' ? 'Liberar para Coordenação' : 'Liberar para Logística'}
                       </Button>
@@ -842,7 +851,7 @@ const AjusteNecessidades = () => {
                               min="0"
                               step="0.001"
                               className="w-20 text-center text-xs py-1"
-                              disabled={statusAtual === 'NEC COORD' || !canEditAjuste}
+                              disabled={necessidade.status === 'CONF' || !canEditAjuste}
                             />
                           </td>
                         </>
@@ -871,7 +880,7 @@ const AjusteNecessidades = () => {
                               min="0"
                               step="0.001"
                               className="w-20 text-center text-xs py-1"
-                              disabled={statusAtual === 'NEC COORD' || !canEditAjuste}
+                              disabled={necessidade.status === 'NEC NUTRI' || !canEditAjuste}
                             />
                           </td>
                         </>
