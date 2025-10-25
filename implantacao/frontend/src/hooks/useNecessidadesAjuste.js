@@ -103,10 +103,17 @@ export const useNecessidadesAjuste = () => {
     setLoading(true);
     try {
       const response = await necessidadesService.incluirProdutoExtra(dados);
-      return response;
+      if (response.success) {
+        toast.success(response.message || 'Produto incluído com sucesso');
+        return true;
+      } else {
+        toast.error(response.message || 'Erro ao incluir produto');
+        return false;
+      }
     } catch (err) {
       console.error('Erro ao incluir produto extra:', err);
-      throw err;
+      toast.error('Erro ao incluir produto extra');
+      return false;
     } finally {
       setLoading(false);
     }
