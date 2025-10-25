@@ -362,13 +362,17 @@ export const useAjusteNecessidadesOrchestrator = () => {
 
       console.log('🔍 [DEBUG] Resposta da busca:', produtos);
 
-      if (produtos.success) {
-        console.log('✅ [DEBUG] Produtos encontrados:', produtos.data.length);
-        setProdutosDisponiveis(produtos.data);
+      // Verificar se produtos é array (resposta direta) ou objeto com success
+      const produtosLista = Array.isArray(produtos) ? produtos : (produtos.success ? produtos.data : []);
+      
+      if (produtosLista && produtosLista.length > 0) {
+        console.log('✅ [DEBUG] Produtos encontrados:', produtosLista.length);
+        setProdutosDisponiveis(produtosLista);
         setModalProdutoExtraAberto(true);
         console.log('✅ [DEBUG] Modal aberto');
       } else {
-        console.error('❌ [DEBUG] Produtos retornaram success: false', produtos);
+        console.error('❌ [DEBUG] Nenhum produto encontrado', produtos);
+        toast.error('Nenhum produto disponível encontrado');
       }
     } catch (error) {
       console.error('❌ [DEBUG] Erro ao buscar produtos:', error);
