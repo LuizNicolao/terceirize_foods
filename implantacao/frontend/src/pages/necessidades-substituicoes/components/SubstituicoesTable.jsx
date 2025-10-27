@@ -123,16 +123,16 @@ const SubstituicoesTable = ({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th style={{ width: '50px' }} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-              <th style={{ width: '100px' }} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-              <th style={{ minWidth: '200px' }} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Origem</th>
-              <th style={{ width: '100px' }} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid.</th>
-              <th style={{ width: '120px' }} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Origem</th>
-              <th style={{ width: '100px' }} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
-              <th style={{ minWidth: '250px' }} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Genérico</th>
-              <th style={{ width: '120px' }} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid. Medida</th>
-              <th style={{ width: '120px' }} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Genérico</th>
-              <th style={{ width: '120px' }} className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+              <th style={{ width: '50px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+              <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+              <th style={{ minWidth: '200px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Origem</th>
+              <th style={{ width: '100px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid.</th>
+              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Origem</th>
+              <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+              <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Genérico</th>
+              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid. Medida</th>
+              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Genérico</th>
+              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -140,41 +140,41 @@ const SubstituicoesTable = ({
               <React.Fragment key={necessidade.codigo_origem || index}>
                 {/* Linha Consolidada */}
                 <tr className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-4 py-2 whitespace-nowrap text-center">
                     <button
                       onClick={() => handleToggleExpand(necessidade.codigo_origem)}
-                      className="text-green-600 hover:text-green-700 focus:outline-none"
+                      className="text-green-600 hover:text-green-700 focus:outline-none transition-colors"
                     >
                       {expandedRows[necessidade.codigo_origem] ? (
-                        <FaMinusCircle className="w-5 h-5" />
+                        <FaMinusCircle className="w-4 h-4" />
                       ) : (
-                        <FaPlusCircle className="w-5 h-5" />
+                        <FaPlusCircle className="w-4 h-4" />
                       )}
                     </button>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-cyan-600">{necessidade.codigo_origem}</span>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    <span className="text-xs font-semibold text-cyan-600">{necessidade.codigo_origem}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-gray-900">{necessidade.produto_origem_nome}</span>
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    <span className="text-xs font-medium text-gray-900">{necessidade.produto_origem_nome}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className="text-sm font-semibold text-gray-700">{necessidade.produto_origem_unidade}</span>
+                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                    <span className="text-xs text-gray-700">{necessidade.produto_origem_unidade}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
-                    <span className="text-sm font-semibold text-gray-900">
+                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                    <span className="text-xs text-gray-900">
                       {necessidade.quantidade_total_origem ? 
                         parseFloat(necessidade.quantidade_total_origem).toFixed(3).replace('.', ',') : 
                         '0,000'
                       }
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-semibold text-purple-600">
+                  <td className="px-4 py-2 whitespace-nowrap">
+                    <span className="text-xs text-purple-600">
                       {selectedProdutosGenericos[necessidade.codigo_origem]?.split('|')[0] || '-'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-4 py-2 whitespace-nowrap">
                     <SearchableSelect
                       value={selectedProdutosGenericos[necessidade.codigo_origem] || ''}
                       onChange={(value) => handleProdutoGenericoChange(necessidade.codigo_origem, value)}
@@ -182,35 +182,36 @@ const SubstituicoesTable = ({
                         value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade || produto.unidade_medida}`,
                         label: produto.nome
                       })) || []}
-                      placeholder="Selecione o produto genérico..."
+                      placeholder="Selecione..."
                       disabled={loadingGenericos[necessidade.codigo_origem]}
+                      className="text-xs"
                       filterBy={(option, searchTerm) => {
                         return option.label.toLowerCase().includes(searchTerm.toLowerCase());
                       }}
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-4 py-2 whitespace-nowrap text-center">
                     <Input
                       type="text"
                       value={undGenericos[necessidade.codigo_origem] || ''}
                       readOnly
-                      className="text-center bg-gray-100 text-gray-700 font-semibold"
+                      className="text-center bg-gray-100 text-gray-700 text-xs py-1"
                       style={{ width: '80px' }}
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-4 py-2 whitespace-nowrap text-center">
                     <Input
                       type="number"
                       step="0.001"
                       value={quantidadesGenericos[necessidade.codigo_origem] || necessidade.quantidade_total_origem}
                       onChange={(e) => handleQuantidadeChange(necessidade.codigo_origem, e.target.value)}
-                      className="text-center font-semibold text-gray-900"
+                      className="text-center text-xs py-1"
                       style={{ width: '100px' }}
                     />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <td className="px-4 py-2 whitespace-nowrap text-center">
                     <Button
-                      size="sm"
+                      size="xs"
                       variant="success"
                       onClick={() => handleSaveConsolidated(necessidade)}
                       disabled={!selectedProdutosGenericos[necessidade.codigo_origem]}
