@@ -131,9 +131,15 @@ const Subgrupos = () => {
           subgrupos={subgrupos}
           loading={loading}
           onView={handleViewSubgrupo}
+          onEdit={() => {}}
+          onDelete={() => {}}
           canView={true}
           canEdit={false}
           canDelete={false}
+          getStatusLabel={(status) => {
+            if (status === 'ativo' || status === 1) return 'Ativo';
+            return 'Inativo';
+          }}
           getGrupoNome={getGrupoNome}
         />
       </div>

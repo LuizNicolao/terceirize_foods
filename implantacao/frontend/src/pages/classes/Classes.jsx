@@ -131,9 +131,15 @@ const Classes = () => {
           classes={classes}
           loading={loading}
           onView={handleViewClasse}
+          onEdit={() => {}}
+          onDelete={() => {}}
           canView={true}
           canEdit={false}
           canDelete={false}
+          getStatusLabel={(status) => {
+            if (status === 'ativo' || status === 1) return 'Ativo';
+            return 'Inativo';
+          }}
           getSubgrupoNome={getSubgrupoNome}
         />
       </div>
