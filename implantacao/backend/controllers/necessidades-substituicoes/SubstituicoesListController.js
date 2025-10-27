@@ -185,8 +185,8 @@ class SubstituicoesListController {
 
       console.log(`[Substituições] Buscando produtos genéricos. produto_origem_id: ${produto_origem_id}, search: ${search}`);
 
-      // Construir URL com query params
-      let url = `${foodsApiUrl}/api/produto-generico?limit=10000&status=1`;
+      // Construir URL com query params (foodsApiUrl já inclui /api)
+      let url = `${foodsApiUrl}/produto-generico?limit=10000&status=1`;
       
       if (produto_origem_id) {
         url += `&produto_origem_id=${produto_origem_id}`;
