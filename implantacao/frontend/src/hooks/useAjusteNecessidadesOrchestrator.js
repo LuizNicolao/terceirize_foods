@@ -110,9 +110,11 @@ export const useAjusteNecessidadesOrchestrator = () => {
         // Preservar ajustes existentes e só adicionar novos produtos
         const novosAjustes = { ...prev };
         necessidades.forEach(nec => {
+          // Usar chave composta (escola_id + produto_id)
+          const chave = `${nec.escola_id}_${nec.produto_id}`;
           // Só inicializar se ainda não existir um valor para este produto
-          if (!(nec.id in novosAjustes)) {
-            novosAjustes[nec.id] = '';
+          if (!(chave in novosAjustes)) {
+            novosAjustes[chave] = '';
           }
         });
         return novosAjustes;
@@ -162,16 +164,20 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }
   }, [activeTab, atualizarFiltrosNutricionista, atualizarFiltrosCoordenacao]);
 
-  const handleAjusteChange = useCallback((necessidadeId, valor) => {
+  const handleAjusteChange = useCallback((necessidade) => {
     setAjustesLocais(prev => {
-      console.log('handleAjusteChange - necessidadeId:', necessidadeId, 'valor:', valor);
+      console.log('handleAjusteChange - necessidade:', necessidade);
       console.log('handleAjusteChange - prev:', prev);
       
       const novosAjustes = { ...prev };
       
-      // Apenas atualizar o valor do produto que foi alterado
-      novosAjustes[necessidadeId] = valor === '' ? '' : parseFloat(valor) || '';
+      // Usar chave composta (escola_id + produto_id) ao invés de apenas necessidade.id
+      const chave = `${necessidade.escola_id}_${necessidade.produto_id}`;
+      const valor = necessidade.valor === '' ? '' : parseFloat(necessidade.valor) || '';
       
+      novosAjustes[chave] = valor;
+      
+      console.log('handleAjusteChange - chave:', chave, 'valor:', valor);
       console.log('handleAjusteChange - novosAjustes:', novosAjustes);
       
       return novosAjustes;
@@ -218,18 +224,19 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }
 
     try {
-      // Buscar valor original para cada necessidade
+      // Buscar valor original para cada necessidade usando chave composta
       const necessidadesMap = {};
       necessidades.forEach(nec => {
-        necessidadesMap[nec.id] = nec;
+        const chave = `${nec.escola_id}_${nec.produto_id}`;
+        necessidadesMap[chave] = nec;
       });
 
       const itens = Object.entries(ajustesLocais)
-        .filter(([necessidadeId]) => {
-          return necessidadesMap[necessidadeId]; // Apenas necessidades válidas
+        .filter(([chave]) => {
+          return necessidadesMap[chave]; // Apenas necessidades válidas
         })
-        .map(([necessidadeId, ajuste]) => {
-          const nec = necessidadesMap[necessidadeId];
+        .map(([chave, ajuste]) => {
+          const nec = necessidadesMap[chave];
           const valor = parseFloat(ajuste);
           
           // Se não tem valor no ajuste local, usar o valor original
@@ -248,12 +255,12 @@ export const useAjusteNecessidadesOrchestrator = () => {
 
           if (activeTab === 'coordenacao') {
             return {
-              id: parseInt(necessidadeId),
+              id: parseInt(nec.id),
               ajuste: valorFinal
             };
           } else {
             return {
-              necessidade_id: parseInt(necessidadeId),
+              necessidade_id: parseInt(nec.id),
               ajuste_nutricionista: valorFinal
             };
           }

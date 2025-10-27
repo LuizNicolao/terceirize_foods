@@ -67,10 +67,15 @@ const AjusteTabelaCoordenacao = ({
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                 <Input
                   type="number"
-                  value={ajustesLocais[necessidade.id] || ''}
+                  value={ajustesLocais[`${necessidade.escola_id}_${necessidade.produto_id}`] || ''}
                   onChange={(e) => {
-                    console.log('onChange - id:', necessidade.id, 'produto:', necessidade.produto, 'valor:', e.target.value);
-                    onAjusteChange(necessidade.id, e.target.value);
+                    const chave = `${necessidade.escola_id}_${necessidade.produto_id}`;
+                    console.log('onChange - chave:', chave, 'produto:', necessidade.produto, 'valor:', e.target.value);
+                    onAjusteChange({
+                      escola_id: necessidade.escola_id,
+                      produto_id: necessidade.produto_id,
+                      valor: e.target.value
+                    });
                   }}
                   min="0"
                   step="0.001"
