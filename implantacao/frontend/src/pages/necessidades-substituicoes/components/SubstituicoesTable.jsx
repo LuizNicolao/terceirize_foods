@@ -48,7 +48,6 @@ const SubstituicoesTable = ({
 
   const handleSaveConsolidated = async (necessidade) => {
     if (!selectedProdutosGenericos[necessidade.codigo_origem]) {
-      toast.error('Selecione um produto genérico antes de salvar!');
       return;
     }
 
@@ -81,7 +80,6 @@ const SubstituicoesTable = ({
 
   const handleSaveIndividual = async (escola, necessidade) => {
     if (!escola.selectedProdutoGenerico) {
-      toast.error('Selecione um produto genérico antes de salvar!');
       return;
     }
 
@@ -226,7 +224,6 @@ const SubstituicoesTable = ({
                       size="xs"
                       variant="success"
                       onClick={() => handleSaveConsolidated(necessidade)}
-                      disabled={!selectedProdutosGenericos[necessidade.codigo_origem]}
                       className="flex items-center gap-1"
                     >
                       <FaSave className="w-3 h-3" />
@@ -322,7 +319,6 @@ const SubstituicoesTable = ({
                                       size="xs"
                                       variant="success"
                                       onClick={() => handleSaveIndividual(escola, necessidade)}
-                                      disabled={!escola.selectedProdutoGenerico}
                                       className="flex items-center gap-1"
                                     >
                                       <FaSave className="w-3 h-3" />
