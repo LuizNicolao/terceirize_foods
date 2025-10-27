@@ -261,6 +261,12 @@ const SubstituicoesTable = ({
                               const produtoSelecionado = produtoEstadoLocal || escola.selectedProdutoGenerico || (escola.substituicao ? 
                                 `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade}` 
                                 : '');
+                              
+                              // Console para debug
+                              if (produtoSelecionado && !produtoSelecionado.startsWith('2|')) {
+                                console.log('🔍 [DEBUG] produtoSelecionado:', produtoSelecionado);
+                              }
+                              
                               const partes = produtoSelecionado ? produtoSelecionado.split('|') : [];
                               const codigoProduto = partes[0] || '-';
                               const unidadeProduto = partes[2] || '';
@@ -282,12 +288,15 @@ const SubstituicoesTable = ({
                                     <SearchableSelect
                                       value={produtoSelecionado}
                                       onChange={(value) => {
+                                        console.log('🔍 [DEBUG] onChange chamado com value:', value);
                                         const chave = `${necessidade.codigo_origem}-${escola.escola_id}`;
+                                        console.log('🔍 [DEBUG] chave:', chave);
                                         // Atualizar estado local para forçar re-render
-                                        setSelectedProdutosPorEscola(prev => ({
-                                          ...prev,
-                                          [chave]: value
-                                        }));
+                                        setSelectedProdutosPorEscola(prev => {
+                                          const newState = { ...prev, [chave]: value };
+                                          console.log('🔍 [DEBUG] novo estado:', newState);
+                                          return newState;
+                                        });
                                         // Também atualizar no objeto escola para salvar
                                         escola.selectedProdutoGenerico = value;
                                       }}
