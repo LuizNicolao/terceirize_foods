@@ -68,7 +68,10 @@ const AjusteTabelaCoordenacao = ({
                 <Input
                   type="number"
                   value={ajustesLocais[necessidade.id] || ''}
-                  onChange={(e) => onAjusteChange(necessidade.id, e.target.value)}
+                  onChange={(e) => {
+                    console.log('onChange - id:', necessidade.id, 'produto:', necessidade.produto, 'valor:', e.target.value);
+                    onAjusteChange(necessidade.id, e.target.value);
+                  }}
                   min="0"
                   step="0.001"
                   className="w-20 text-center text-xs py-1"
