@@ -269,11 +269,8 @@ const SubstituicoesTable = ({
                                       `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade}` 
                                       : '')}
                                     onChange={(value) => {
-                                      if (!escola.selectedProdutoGenerico) {
-                                        escola.selectedProdutoGenerico = value;
-                                      }
                                       escola.selectedProdutoGenerico = value;
-                                      handleSaveIndividual(escola, necessidade);
+                                      // Só atualizar o estado, não salvar automaticamente
                                     }}
                                     options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
                                       const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
