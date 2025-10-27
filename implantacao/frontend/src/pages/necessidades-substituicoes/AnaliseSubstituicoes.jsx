@@ -94,7 +94,6 @@ const AnaliseSubstituicoes = () => {
             );
 
             if (!produtoPadrao) {
-              console.warn(`Produto padrão não encontrado para ${necessidade.codigo_origem}`);
               return { success: false, message: `Produto padrão não encontrado para ${necessidade.codigo_origem}` };
             }
 
@@ -128,38 +127,24 @@ const AnaliseSubstituicoes = () => {
               })
             };
 
-            console.log('📤 Enviando dados para salvar:', JSON.stringify(dados, null, 2));
             const response = await salvarSubstituicao(dados);
-            console.log('✅ Resposta recebida:', response);
             return response;
           } catch (error) {
-            console.error(`❌ Erro ao salvar necessidade ${necessidade.codigo_origem}:`, error);
             return { success: false, error: error.message };
           }
         })
       );
 
-      console.log('📊 Resultados:', resultados);
-      
       const sucessos = resultados.filter(r => r.status === 'fulfilled').length;
       const erros = resultados.filter(r => r.status === 'rejected').length;
       
       if (erros > 0) {
-        console.error('⚠️ Alguns ajustes falharam:', erros);
-        console.log('📋 Resultados completos:', resultados);
-        toast.error(`${sucessos} salvos com sucesso, ${erros} falharam. Veja o console para detalhes.`);
+        toast.error(`${sucessos} salvos com sucesso, ${erros} falharam`);
       } else {
         toast.success('Ajustes iniciados com sucesso!');
         setAjustesAtivados(true);
-        
-        // Recarregar necessidades para atualizar os dados (após delay para ver logs)
-        setTimeout(() => {
-          console.log('🔄 Recarregando página...');
-          window.location.reload();
-        }, 3000); // 3 segundos para ver os logs
       }
     } catch (error) {
-      console.error('❌ Erro ao iniciar ajustes:', error);
       toast.error(`Erro ao iniciar ajustes: ${error.message}`);
     } finally {
       setSalvandoAjustes(false);
