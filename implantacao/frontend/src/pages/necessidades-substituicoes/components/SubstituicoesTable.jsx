@@ -191,7 +191,7 @@ const SubstituicoesTable = ({
                       value={selectedProdutosGenericos[necessidade.codigo_origem] || ''}
                       onChange={(value) => handleProdutoGenericoChange(necessidade.codigo_origem, value)}
                       options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
-                        value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade || produto.unidade_medida}`,
+                        value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_nome || produto.unidade || produto.unidade_medida || ''}`,
                         label: produto.nome
                       })) || []}
                       placeholder="Selecione..."
@@ -275,10 +275,13 @@ const SubstituicoesTable = ({
                                       escola.selectedProdutoGenerico = value;
                                       handleSaveIndividual(escola, necessidade);
                                     }}
-                                    options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
-                                      value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade || produto.unidade_medida}`,
-                                      label: `${produto.nome} (Cód: ${produto.id || produto.codigo} | Unid: ${produto.unidade || produto.unidade_medida})`
-                                    })) || []}
+                                    options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
+                                      const unidade = produto.unidade_medida_nome || produto.unidade || produto.unidade_medida || '';
+                                      return {
+                                        value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}`,
+                                        label: `${produto.nome} (Cód: ${produto.id || produto.codigo} | Unid: ${unidade})`
+                                      };
+                                    }) || []}
                                     placeholder="Selecione..."
                                     filterBy={(option, searchTerm) => {
                                       return option.label.toLowerCase().includes(searchTerm.toLowerCase());
