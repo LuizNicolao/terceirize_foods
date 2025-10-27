@@ -76,9 +76,8 @@ const FiliaisTable = ({
                 <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {filial.razao_social}
                 </td>
-                <td className="px-3 py-2 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{filial.cidade}</div>
-                  <div className="text-sm text-gray-500">{filial.estado}</div>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                  {filial.cidade && filial.estado ? `${filial.cidade}/${filial.estado}` : filial.cidade || filial.estado || '-'}
                 </td>
                 <td className="px-3 py-2 whitespace-nowrap">
                   {getStatusBadge(filial.status)}
