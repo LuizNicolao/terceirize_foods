@@ -300,10 +300,14 @@ const SubstituicoesTable = ({
                                         // Também atualizar no objeto escola para salvar
                                         escola.selectedProdutoGenerico = value;
                                       }}
-                                      options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
-                                        value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}`,
-                                        label: produto.nome
-                                      })) || []}
+                                      options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
+                                        const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
+                                        console.log('🔍 [DEBUG] produto:', produto.id, produto.nome, 'unidade:', unidade);
+                                        return {
+                                          value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}`,
+                                          label: produto.nome
+                                        };
+                                      }) || []}
                                       placeholder="Selecione..."
                                       className="text-xs"
                                       filterBy={(option, searchTerm) => {
