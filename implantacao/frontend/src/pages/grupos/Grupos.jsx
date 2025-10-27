@@ -129,9 +129,15 @@ const Grupos = () => {
           grupos={grupos}
           loading={loading}
           onView={handleViewGrupo}
+          onEdit={() => {}}
+          onDelete={() => {}}
           canView={true}
           canEdit={false}
           canDelete={false}
+          getStatusLabel={(status) => {
+            if (status === 'ativo' || status === 1) return 'Ativo';
+            return 'Inativo';
+          }}
         />
       </div>
 
