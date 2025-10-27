@@ -166,9 +166,6 @@ export const useAjusteNecessidadesOrchestrator = () => {
 
   const handleAjusteChange = useCallback((necessidade) => {
     setAjustesLocais(prev => {
-      console.log('handleAjusteChange - necessidade:', necessidade);
-      console.log('handleAjusteChange - prev:', prev);
-      
       const novosAjustes = { ...prev };
       
       // Usar chave composta (escola_id + produto_id) ao invés de apenas necessidade.id
@@ -176,9 +173,6 @@ export const useAjusteNecessidadesOrchestrator = () => {
       const valor = necessidade.valor === '' ? '' : parseFloat(necessidade.valor) || '';
       
       novosAjustes[chave] = valor;
-      
-      console.log('handleAjusteChange - chave:', chave, 'valor:', valor);
-      console.log('handleAjusteChange - novosAjustes:', novosAjustes);
       
       return novosAjustes;
     });
