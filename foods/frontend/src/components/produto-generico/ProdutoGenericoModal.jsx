@@ -353,13 +353,10 @@ const ProdutoGenericoModal = ({
                 label="Peso Líquido"
                 type="number"
                 step="0.001"
-                {...register('peso_liquido', {
-                  min: { value: 0.001, message: 'Peso deve ser maior que 0' },
-                  max: { value: 999999.999, message: 'Peso deve ser menor que 999999.999' }
-                })}
+                {...register('peso_liquido')}
                 error={errors.peso_liquido?.message}
                 disabled={viewMode}
-                placeholder="0.000"
+                placeholder="0.000 (opcional)"
               />
             </div>
 
@@ -369,13 +366,10 @@ const ProdutoGenericoModal = ({
                 label="Peso Bruto"
                 type="number"
                 step="0.001"
-                {...register('peso_bruto', {
-                  min: { value: 0.001, message: 'Peso deve ser maior que 0' },
-                  max: { value: 999999.999, message: 'Peso deve ser menor que 999999.999' }
-                })}
+                {...register('peso_bruto')}
                 error={errors.peso_bruto?.message}
                 disabled={viewMode}
-                placeholder="0.000"
+                placeholder="0.000 (opcional)"
               />
             </div>
 
@@ -384,14 +378,7 @@ const ProdutoGenericoModal = ({
               <Input
                 label="Regra Palet"
                 type="number"
-                {...register('regra_palet', {
-                  validate: (value) => {
-                    if (value && value !== '' && (isNaN(value) || parseInt(value) < 1)) {
-                      return 'Regra deve ser um número inteiro positivo';
-                    }
-                    return true;
-                  }
-                })}
+                {...register('regra_palet')}
                 error={errors.regra_palet?.message}
                 disabled={viewMode}
                 placeholder="Digite a regra palet (opcional)"
