@@ -186,20 +186,16 @@ class SubstituicoesListController {
       console.log(`[Substituições] Buscando produtos genéricos. produto_origem_id: ${produto_origem_id}, search: ${search}`);
 
       // Construir URL com query params (foodsApiUrl já inclui /api)
-      // TESTE: Por enquanto buscar todos, sem filtrar por produto_origem_id
       let url = `${foodsApiUrl}/produto-generico?limit=10000&status=1`;
       
-      // COMENTADO TEMPORARIAMENTE PARA TESTE
-      // if (produto_origem_id) {
-      //   url += `&produto_origem_id=${produto_origem_id}`;
-      // }
+      // NÃO usar filtro produto_origem_id na URL (o Foods não filtra corretamente)
+      // Filtrar manualmente após buscar todos
       
       if (search) {
         url += `&search=${encodeURIComponent(search)}`;
       }
 
       console.log(`[Substituições] URL completa: ${url}`);
-      console.log(`[Substituições] ATENÇÃO: Buscando TODOS os produtos genéricos (filtro produto_origem_id desabilitado temporariamente)`);
 
       const response = await axios.get(url, {
         headers: {
@@ -231,6 +227,16 @@ class SubstituicoesListController {
         }
 
         console.log(`[Substituições] Total produtos extraídos:`, produtosGenericos.length);
+
+        // Filtrar por produto_origem_id se fornecido (filtro manual, pois Foods não filtra corretamente)
+        if (produto_origem_id && produtosGenericos.length > 0) {
+          console.log(`[Substituições] Filtrando manualmente por produto_origem_id: ${produto_origem_id}`);
+          produtosGenericos = produtosGenericos.filter(pg => 
+            pg.produto_origem_id === parseInt(produto_origem_id)
+          );
+          console.log(`[Substituições] Total após filtrar:`, produtosGenericos.length);
+        }
+
         console.log(`[Substituições] Primeiro produto (se existir):`, produtosGenericos[0]);
       }
 
