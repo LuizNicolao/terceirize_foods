@@ -161,19 +161,13 @@ const produtoGenericoValidations = {
       .withMessage('Produto padrão deve ser Sim ou Não'),
     
     body('peso_liquido')
-      .optional()
-      .isFloat({ min: 0.001, max: 999999.999 })
-      .withMessage('Peso líquido deve ser um número entre 0.001 e 999999.999'),
+      .optional(),
     
     body('peso_bruto')
-      .optional()
-      .isFloat({ min: 0.001, max: 999999.999 })
-      .withMessage('Peso bruto deve ser um número entre 0.001 e 999999.999'),
+      .optional(),
     
     body('regra_palet')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Regra palet deve ser um número inteiro positivo'),
+      .optional(),
     
     body('informacoes_adicionais')
       .optional()
@@ -280,19 +274,13 @@ const produtoGenericoValidations = {
       .withMessage('Produto padrão deve ser Sim ou Não'),
     
     body('peso_liquido')
-      .optional()
-      .isFloat({ min: 0.001, max: 999999.999 })
-      .withMessage('Peso líquido deve ser um número entre 0.001 e 999999.999'),
+      .optional(),
     
     body('peso_bruto')
-      .optional()
-      .isFloat({ min: 0.001, max: 999999.999 })
-      .withMessage('Peso bruto deve ser um número entre 0.001 e 999999.999'),
+      .optional(),
     
     body('regra_palet')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Regra palet deve ser um número inteiro positivo'),
+      .optional(),
     
     body('informacoes_adicionais')
       .optional()
