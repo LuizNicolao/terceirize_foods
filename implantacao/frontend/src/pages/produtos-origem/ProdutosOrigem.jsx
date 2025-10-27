@@ -122,8 +122,6 @@ const ProdutosOrigem = () => {
       <ProdutosOrigemTable
         produtosOrigem={produtos}
         onView={handleViewProduto}
-        onEdit={() => {}}
-        onDelete={() => {}}
         canView={true}
         canEdit={false}
         canDelete={false}
