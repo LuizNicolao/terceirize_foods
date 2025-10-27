@@ -70,8 +70,8 @@ const AnaliseSubstituicoes = () => {
   };
 
   return (
-    <NecessidadesLayout>
-      {/* Header */}
+    <NecessidadesLayout hideHeader={true}>
+      {/* Header Personalizado */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
           <FaExchangeAlt className="text-blue-600 text-2xl" />
