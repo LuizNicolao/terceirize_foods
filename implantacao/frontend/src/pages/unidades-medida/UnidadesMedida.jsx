@@ -137,11 +137,18 @@ const UnidadesMedida = () => {
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <UnidadesMedidaTable
-          unidadesMedida={unidadesMedida}
+          unidades={unidadesMedida}
           loading={loading}
           onView={handleViewUnidadeMedida}
+          onEdit={() => {}}
+          onDelete={() => {}}
           canView={true}
-          mode="consulta"
+          canEdit={false}
+          canDelete={false}
+          getStatusLabel={(status) => {
+            if (status === 1) return 'Ativo';
+            return 'Inativo';
+          }}
         />
       </div>
 

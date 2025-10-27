@@ -1,6 +1,6 @@
 // Adaptador: Converte booleans para funções antes de usar componente do Foods
 import React from 'react';
-import FoodsUnidadesMedidaTable from 'foods-frontend/src/components/unidades/UnidadesMedidaTable';
+import FoodsUnidadesTable from 'foods-frontend/src/components/unidades/UnidadesTable';
 
 const UnidadesMedidaTable = (props) => {
   const { canView, canEdit, canDelete, ...otherProps } = props;
@@ -11,7 +11,7 @@ const UnidadesMedidaTable = (props) => {
   const canDeleteFn = () => canDelete;
 
   return (
-    <FoodsUnidadesMedidaTable
+    <FoodsUnidadesTable
       {...otherProps}
       canView={canViewFn}
       canEdit={canEditFn}
