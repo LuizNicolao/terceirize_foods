@@ -35,10 +35,22 @@ const AnaliseSubstituicoes = () => {
   // Carregar produtos genéricos quando necessário
   useEffect(() => {
     if (necessidades.length > 0) {
-      necessidades.forEach(necessidade => {
-        const key = `${necessidade.codigo_origem}_${necessidade.grupo}`;
-        if (!produtosGenericos[necessidade.codigo_origem] && necessidade.grupo) {
-          buscarProdutosGenericos(necessidade.codigo_origem, necessidade.grupo);
+      // Extrair produtos origem únicos (remover sufixo do produto genérico)
+      const produtosOrigemUnicos = [...new Set(necessidades.map(nec => {
+        // Se tem produto_generico_id, é uma linha de substituição existente
+        // Extrair o produto origem original (antes do _)
+        return nec.produto_generico_id ? nec.codigo_origem.split('_')[0] : nec.codigo_origem;
+      }))];
+
+      produtosOrigemUnicos.forEach(produtoOrigemId => {
+        if (!produtosGenericos[produtoOrigemId]) {
+          // Buscar grupo do primeiro produto com este ID
+          const primeiraNecessidade = necessidades.find(nec => 
+            (nec.produto_generico_id ? nec.codigo_origem.split('_')[0] : nec.codigo_origem) === produtoOrigemId
+          );
+          if (primeiraNecessidade?.grupo) {
+            buscarProdutosGenericos(produtoOrigemId, primeiraNecessidade.grupo);
+          }
         }
       });
     }
@@ -49,7 +61,7 @@ const AnaliseSubstituicoes = () => {
     if (necessidades.length > 0) {
       // Verificar se alguma necessidade já tem substituição salva
       const temSubstituicoes = necessidades.some(nec => 
-        nec.escolas.some(escola => escola.substituicao)
+        nec.substituicoes_existentes || nec.escolas?.some(escola => escola.substituicao)
       );
       setAjustesAtivados(temSubstituicoes);
     }

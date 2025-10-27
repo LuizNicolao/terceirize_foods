@@ -131,18 +131,68 @@ class SubstituicoesListController {
             escola.substituicao = substituicao || null;
           });
 
-          return {
-            ...necessidade,
-            escolas,
-            substituicoes_existentes: substituicoes.length > 0,
-            produto_padrao_id: produtoPadraoId
-          };
+          // Se há substituições, criar uma linha para cada produto genérico diferente
+          if (substituicoes.length > 0) {
+            // Agrupar substituições por produto genérico
+            const substituicoesPorProduto = substituicoes.reduce((acc, sub) => {
+              const key = sub.produto_generico_id;
+              if (!acc[key]) {
+                acc[key] = {
+                  produto_generico_id: sub.produto_generico_id,
+                  produto_generico_codigo: sub.produto_generico_codigo,
+                  produto_generico_nome: sub.produto_generico_nome,
+                  produto_generico_unidade: sub.produto_generico_unidade,
+                  substituicoes: []
+                };
+              }
+              acc[key].substituicoes.push(sub);
+              return acc;
+            }, {});
+
+            // Criar uma linha para cada produto genérico
+            return Object.values(substituicoesPorProduto).map(produtoGenerico => {
+              // Filtrar escolas que usam este produto genérico
+              const escolasComEsteProduto = escolas.filter(escola => 
+                produtoGenerico.substituicoes.some(sub => sub.escola_id === escola.escola_id)
+              );
+
+              // Calcular quantidade total para este produto genérico
+              const quantidadeTotal = escolasComEsteProduto.reduce((sum, escola) => {
+                const sub = produtoGenerico.substituicoes.find(s => s.escola_id === escola.escola_id);
+                return sum + (sub ? sub.quantidade_generico : 0);
+              }, 0);
+
+              return {
+                ...necessidade,
+                codigo_origem: `${necessidade.codigo_origem}_${produtoGenerico.produto_generico_id}`, // Chave única
+                produto_generico_id: produtoGenerico.produto_generico_id,
+                produto_generico_codigo: produtoGenerico.produto_generico_codigo,
+                produto_generico_nome: produtoGenerico.produto_generico_nome,
+                produto_generico_unidade: produtoGenerico.produto_generico_unidade,
+                quantidade_total_generico: quantidadeTotal,
+                escolas: escolasComEsteProduto,
+                substituicoes_existentes: true,
+                produto_padrao_id: produtoPadraoId
+              };
+            });
+          } else {
+            // Se não há substituições, retornar linha normal
+            return {
+              ...necessidade,
+              escolas,
+              substituicoes_existentes: false,
+              produto_padrao_id: produtoPadraoId
+            };
+          }
         })
       );
 
+      // Achatar array de arrays
+      const necessidadesFlattened = produtosComSubstituicoes.flat();
+
       res.json({
         success: true,
-        data: produtosComSubstituicoes
+        data: necessidadesFlattened
       });
     } catch (error) {
       console.error('Erro ao listar necessidades para substituição:', error);

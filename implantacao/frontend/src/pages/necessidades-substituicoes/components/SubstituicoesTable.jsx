@@ -47,50 +47,39 @@ const SubstituicoesTable = ({
   // Pré-selecionar produto padrão ou produto já salvo quando produtos genéricos forem carregados
   useEffect(() => {
     necessidades.forEach(necessidade => {
-      if (produtosGenericos[necessidade.codigo_origem] && !produtosPadraoSelecionados[necessidade.codigo_origem]) {
-        // Primeiro, verificar se já existe um produto salvo (substituição)
-        const produtoSalvo = necessidade.escolas.find(escola => escola.substituicao);
+      // Se já tem substituição existente, não precisa pré-selecionar
+      if (necessidade.substituicoes_existentes) {
+        return;
+      }
+
+      // Extrair produto origem original (sem sufixo do produto genérico)
+      const produtoOrigemId = necessidade.produto_generico_id ? 
+        necessidade.codigo_origem.split('_')[0] : 
+        necessidade.codigo_origem;
+
+      if (produtosGenericos[produtoOrigemId] && !produtosPadraoSelecionados[necessidade.codigo_origem]) {
+        // Buscar produto com produto_padrao = 'Sim'
+        const produtoPadrao = produtosGenericos[produtoOrigemId].find(
+          p => p.produto_padrao === 'Sim'
+        );
         
-        let produtoParaSelecionar;
-        
-        if (produtoSalvo) {
-          // Se já existe substituição salva, usar esse produto como padrão
-          produtoParaSelecionar = produtosGenericos[necessidade.codigo_origem].find(
-            p => (p.id || p.codigo) == produtoSalvo.substituicao.produto_generico_id
-          );
-        } else {
-          // Caso contrário, buscar produto com produto_padrao = 'Sim'
-          produtoParaSelecionar = produtosGenericos[necessidade.codigo_origem].find(
-            p => p.produto_padrao === 'Sim'
-          );
-        }
-        
-        if (produtoParaSelecionar) {
-          const unidade = produtoParaSelecionar.unidade_medida_sigla || produtoParaSelecionar.unidade || produtoParaSelecionar.unidade_medida || '';
-          const valor = `${produtoParaSelecionar.id || produtoParaSelecionar.codigo}|${produtoParaSelecionar.nome}|${unidade}|${produtoParaSelecionar.fator_conversao || 1}`;
+        if (produtoPadrao) {
+          const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || produtoPadrao.unidade_medida || '';
+          const valor = `${produtoPadrao.id || produtoPadrao.codigo}|${produtoPadrao.nome}|${unidade}|${produtoPadrao.fator_conversao || 1}`;
           
           setSelectedProdutosGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: valor }));
           setUndGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: unidade }));
           
-          const fatorConversao = produtoParaSelecionar.fator_conversao || 1;
+          const fatorConversao = produtoPadrao.fator_conversao || 1;
           if (necessidade.quantidade_total_origem && fatorConversao > 0) {
             const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
             setQuantidadesGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: quantidadeCalculada }));
           }
           
           // Pré-selecionar para cada escola no estado selectedProdutosPorEscola
-          necessidade.escolas.forEach(escola => {
+          necessidade.escolas?.forEach(escola => {
             const chaveEscola = `${necessidade.codigo_origem}-${escola.escola_id}`;
-            // Se a escola já tem substituição, usar ela; senão usar o produto padrão
-            const produtoEscola = escola.substituicao ? 
-              produtosGenericos[necessidade.codigo_origem].find(p => (p.id || p.codigo) == escola.substituicao.produto_generico_id) :
-              produtoParaSelecionar;
-              
-            if (produtoEscola) {
-              const unidadeEscola = produtoEscola.unidade_medida_sigla || produtoEscola.unidade || produtoEscola.unidade_medida || '';
-              const valorEscola = `${produtoEscola.id || produtoEscola.codigo}|${produtoEscola.nome}|${unidadeEscola}|${produtoEscola.fator_conversao || 1}`;
-              setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valorEscola }));
-            }
+            setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
           });
           
           setProdutosPadraoSelecionados(prev => ({ ...prev, [necessidade.codigo_origem]: true }));
@@ -116,8 +105,13 @@ const SubstituicoesTable = ({
     const partes = produtoSelecionado.split('|');
     const [produto_generico_id, produto_generico_nome, produto_generico_unidade] = partes;
 
+    // Extrair produto origem original (sem sufixo do produto genérico)
+    const produtoOrigemId = necessidade.produto_generico_id ? 
+      necessidade.codigo_origem.split('_')[0] : 
+      necessidade.codigo_origem;
+
     const dados = {
-      produto_origem_id: necessidade.codigo_origem,
+      produto_origem_id: produtoOrigemId,
       produto_origem_nome: necessidade.produto_origem_nome,
       produto_origem_unidade: necessidade.produto_origem_unidade,
       produto_generico_id,
@@ -127,13 +121,13 @@ const SubstituicoesTable = ({
       necessidade_id_grupo: necessidade.necessidade_id_grupo,
       semana_abastecimento: necessidade.semana_abastecimento,
       semana_consumo: necessidade.semana_consumo,
-      escola_ids: necessidade.escolas.map(escola => ({
+      escola_ids: necessidade.escolas?.map(escola => ({
         necessidade_id: escola.necessidade_id,
         escola_id: escola.escola_id,
         escola_nome: escola.escola_nome,
         quantidade_origem: escola.quantidade_origem,
         quantidade_generico: quantidadesGenericos[necessidade.codigo_origem] || escola.quantidade_origem
-      }))
+      })) || []
     };
 
     const response = await onSaveConsolidated(dados, necessidade.codigo_origem);
@@ -141,8 +135,8 @@ const SubstituicoesTable = ({
     // Se salvou com sucesso, atualizar o produto padrão para este produto
     if (response && response.success) {
       // Atualizar o produto padrão nos produtos genéricos
-      if (produtosGenericos[necessidade.codigo_origem]) {
-        produtosGenericos[necessidade.codigo_origem].forEach(produto => {
+      if (produtosGenericos[produtoOrigemId]) {
+        produtosGenericos[produtoOrigemId].forEach(produto => {
           produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
         });
       }
@@ -158,8 +152,13 @@ const SubstituicoesTable = ({
     const partes = escola.selectedProdutoGenerico.split('|');
     const [produto_generico_id, produto_generico_nome, produto_generico_unidade] = partes;
 
+    // Extrair produto origem original (sem sufixo do produto genérico)
+    const produtoOrigemId = necessidade.produto_generico_id ? 
+      necessidade.codigo_origem.split('_')[0] : 
+      necessidade.codigo_origem;
+
     const dados = {
-      produto_origem_id: necessidade.codigo_origem,
+      produto_origem_id: produtoOrigemId,
       produto_origem_nome: necessidade.produto_origem_nome,
       produto_origem_unidade: necessidade.produto_origem_unidade,
       produto_generico_id,
@@ -181,8 +180,8 @@ const SubstituicoesTable = ({
     // Se salvou com sucesso, atualizar o produto padrão para este produto
     if (response && response.success) {
       // Atualizar o produto padrão nos produtos genéricos
-      if (produtosGenericos[necessidade.codigo_origem]) {
-        produtosGenericos[necessidade.codigo_origem].forEach(produto => {
+      if (produtosGenericos[produtoOrigemId]) {
+        produtosGenericos[produtoOrigemId].forEach(produto => {
           produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
         });
       }
@@ -284,35 +283,45 @@ const SubstituicoesTable = ({
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     <span className="text-xs text-purple-600">
-                      {selectedProdutosGenericos[necessidade.codigo_origem]?.split('|')[0] || '-'}
+                      {necessidade.produto_generico_codigo || selectedProdutosGenericos[necessidade.codigo_origem]?.split('|')[0] || '-'}
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
-                    <SearchableSelect
-                      value={selectedProdutosGenericos[necessidade.codigo_origem] || ''}
-                      onChange={(value) => handleProdutoGenericoChange(necessidade.codigo_origem, value, necessidade.quantidade_total_origem)}
-                      options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
-                        value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}|${produto.fator_conversao || 1}`,
-                        label: produto.nome
-                      })) || []}
-                      placeholder="Selecione..."
-                      disabled={!ajustesAtivados || loadingGenericos[necessidade.codigo_origem]}
-                      className="text-xs"
-                      filterBy={(option, searchTerm) => {
-                        return option.label.toLowerCase().includes(searchTerm.toLowerCase());
-                      }}
-                    />
+                    {necessidade.substituicoes_existentes ? (
+                      <span className="text-xs text-gray-900">
+                        {necessidade.produto_generico_nome || '-'}
+                      </span>
+                    ) : (
+                      <SearchableSelect
+                        value={selectedProdutosGenericos[necessidade.codigo_origem] || ''}
+                        onChange={(value) => handleProdutoGenericoChange(necessidade.codigo_origem, value, necessidade.quantidade_total_origem)}
+                        options={produtosGenericos[necessidade.produto_generico_id ? 
+                          necessidade.codigo_origem.split('_')[0] : 
+                          necessidade.codigo_origem]?.map(produto => ({
+                          value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}|${produto.fator_conversao || 1}`,
+                          label: produto.nome
+                        })) || []}
+                        placeholder="Selecione..."
+                        disabled={!ajustesAtivados || loadingGenericos[necessidade.codigo_origem]}
+                        className="text-xs"
+                        filterBy={(option, searchTerm) => {
+                          return option.label.toLowerCase().includes(searchTerm.toLowerCase());
+                        }}
+                      />
+                    )}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-gray-700">
-                      {undGenericos[necessidade.codigo_origem] || '-'}
+                      {necessidade.produto_generico_unidade || undGenericos[necessidade.codigo_origem] || '-'}
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-cyan-600 font-semibold">
-                      {quantidadesGenericos[necessidade.codigo_origem] !== undefined ? 
-                        quantidadesGenericos[necessidade.codigo_origem] : 
-                        '0,000'
+                      {necessidade.quantidade_total_generico !== undefined ? 
+                        necessidade.quantidade_total_generico : 
+                        (quantidadesGenericos[necessidade.codigo_origem] !== undefined ? 
+                          quantidadesGenericos[necessidade.codigo_origem] : 
+                          '0,000')
                       }
                     </span>
                   </td>
@@ -339,6 +348,11 @@ const SubstituicoesTable = ({
                         <h4 className="text-md font-semibold text-green-700 mb-4 flex items-center gap-2">
                           <span className="text-xl">🏢</span>
                           Unidades Solicitantes
+                          {necessidade.produto_generico_nome && (
+                            <span className="text-sm text-gray-600 font-normal">
+                              - {necessidade.produto_generico_nome}
+                            </span>
+                          )}
                         </h4>
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead>
@@ -390,7 +404,9 @@ const SubstituicoesTable = ({
                                         // Também atualizar em escola para manter compatibilidade
                                         escola.selectedProdutoGenerico = value;
                                       }}
-                                      options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
+                                      options={produtosGenericos[necessidade.produto_generico_id ? 
+                                        necessidade.codigo_origem.split('_')[0] : 
+                                        necessidade.codigo_origem]?.map(produto => {
                                         const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
                                         return {
                                           value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}|${produto.fator_conversao || 1}`,
