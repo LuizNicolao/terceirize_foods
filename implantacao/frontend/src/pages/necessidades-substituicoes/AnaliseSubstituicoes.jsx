@@ -85,57 +85,75 @@ const AnaliseSubstituicoes = () => {
     
     try {
       // Para cada necessidade, criar registros iniciais com produtos padrão
-      const promises = necessidades.map(necessidade => {
-        // Buscar produto padrão
-        const produtoPadrao = produtosGenericos[necessidade.codigo_origem]?.find(
-          p => p.produto_padrao === 'Sim'
-        );
+      const resultados = await Promise.allSettled(
+        necessidades.map(async (necessidade) => {
+          try {
+            // Buscar produto padrão
+            const produtoPadrao = produtosGenericos[necessidade.codigo_origem]?.find(
+              p => p.produto_padrao === 'Sim'
+            );
 
-        if (!produtoPadrao) {
-          console.warn(`Produto padrão não encontrado para ${necessidade.codigo_origem}`);
-          return Promise.resolve();
-        }
+            if (!produtoPadrao) {
+              console.warn(`Produto padrão não encontrado para ${necessidade.codigo_origem}`);
+              return { success: false, message: `Produto padrão não encontrado para ${necessidade.codigo_origem}` };
+            }
 
-        const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || '';
-        const fatorConversao = produtoPadrao.fator_conversao || 1;
+            const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || '';
+            const fatorConversao = produtoPadrao.fator_conversao || 1;
 
-        // Preparar dados para salvar
-        const dados = {
-          produto_origem_id: necessidade.codigo_origem,
-          produto_origem_nome: necessidade.produto_origem_nome,
-          produto_origem_unidade: necessidade.produto_origem_unidade,
-          produto_generico_id: produtoPadrao.id || produtoPadrao.codigo,
-          produto_generico_codigo: produtoPadrao.id || produtoPadrao.codigo,
-          produto_generico_nome: produtoPadrao.nome,
-          produto_generico_unidade: unidade,
-          necessidade_id_grupo: necessidade.necessidade_id_grupo,
-          semana_abastecimento: necessidade.semana_abastecimento,
-          semana_consumo: necessidade.semana_consumo,
-          escola_ids: necessidade.escolas.map(escola => {
-            const quantidadeGenerico = Math.ceil(parseFloat(escola.quantidade_origem) / fatorConversao);
-            return {
-              necessidade_id: escola.necessidade_id,
-              escola_id: escola.escola_id,
-              escola_nome: escola.escola_nome,
-              quantidade_origem: escola.quantidade_origem,
-              quantidade_generico: quantidadeGenerico
+            // Preparar dados para salvar
+            const dados = {
+              produto_origem_id: necessidade.codigo_origem,
+              produto_origem_nome: necessidade.produto_origem_nome,
+              produto_origem_unidade: necessidade.produto_origem_unidade,
+              produto_generico_id: produtoPadrao.id || produtoPadrao.codigo,
+              produto_generico_codigo: produtoPadrao.id || produtoPadrao.codigo,
+              produto_generico_nome: produtoPadrao.nome,
+              produto_generico_unidade: unidade,
+              necessidade_id_grupo: necessidade.necessidade_id_grupo,
+              semana_abastecimento: necessidade.semana_abastecimento,
+              semana_consumo: necessidade.semana_consumo,
+              escola_ids: necessidade.escolas.map(escola => {
+                const quantidadeGenerico = Math.ceil(parseFloat(escola.quantidade_origem) / fatorConversao);
+                return {
+                  necessidade_id: escola.necessidade_id,
+                  escola_id: escola.escola_id,
+                  escola_nome: escola.escola_nome,
+                  quantidade_origem: escola.quantidade_origem,
+                  quantidade_generico: quantidadeGenerico
+                };
+              })
             };
-          })
-        };
 
-        return salvarSubstituicao(dados);
-      });
+            console.log('📤 Enviando dados para salvar:', dados);
+            const response = await salvarSubstituicao(dados);
+            console.log('✅ Resposta recebida:', response);
+            return response;
+          } catch (error) {
+            console.error(`❌ Erro ao salvar necessidade ${necessidade.codigo_origem}:`, error);
+            return { success: false, error: error.message };
+          }
+        })
+      );
 
-      await Promise.all(promises);
+      console.log('📊 Resultados:', resultados);
       
-      toast.success('Ajustes iniciados com sucesso!');
-      setAjustesAtivados(true);
+      const sucessos = resultados.filter(r => r.status === 'fulfilled').length;
+      const erros = resultados.filter(r => r.status === 'rejected').length;
       
-      // Recarregar necessidades para atualizar os dados
-      window.location.reload();
+      if (erros > 0) {
+        console.error('⚠️ Alguns ajustes falharam:', erros);
+        toast.error(`${sucessos} salvos com sucesso, ${erros} falharam`);
+      } else {
+        toast.success('Ajustes iniciados com sucesso!');
+        setAjustesAtivados(true);
+        
+        // Recarregar necessidades para atualizar os dados
+        window.location.reload();
+      }
     } catch (error) {
-      console.error('Erro ao iniciar ajustes:', error);
-      toast.error('Erro ao iniciar ajustes');
+      console.error('❌ Erro ao iniciar ajustes:', error);
+      toast.error(`Erro ao iniciar ajustes: ${error.message}`);
     } finally {
       setSalvandoAjustes(false);
     }
