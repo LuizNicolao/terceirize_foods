@@ -43,7 +43,7 @@ const rotaValidations = {
   create: [
     body('nome')
       .notEmpty().withMessage('Nome da rota é obrigatório')
-      .isString().trim().isLength({ min: 2, max: 100 }).withMessage('Nome deve ter entre 2 e 100 caracteres'),
+      .isString().trim().isLength({ min: 2, max: 150 }).withMessage('Nome deve ter entre 2 e 150 caracteres'),
     
     body('codigo')
       .notEmpty().withMessage('Código da rota é obrigatório')
@@ -70,7 +70,7 @@ const rotaValidations = {
     
     body('nome')
       .optional()
-      .isString().trim().isLength({ min: 2, max: 100 }).withMessage('Nome deve ter entre 2 e 100 caracteres'),
+      .isString().trim().isLength({ min: 2, max: 150 }).withMessage('Nome deve ter entre 2 e 150 caracteres'),
     
     body('codigo')
       .optional()
