@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { FaTimes, FaSave, FaEye, FaEdit } from 'react-icons/fa';
 import { Button, Input, Modal } from '../ui';
+import SearchableSelect from '../ui/SearchableSelect';
 import produtoGenericoService from '../../services/produtoGenerico';
 
 const ProdutoGenericoModal = ({
@@ -197,20 +198,35 @@ const ProdutoGenericoModal = ({
             </div>
 
             {/* Produto Origem */}
-            <Input
-              label="Produto Origem"
-              type="select"
-              {...register('produto_origem_id')}
-              error={errors.produto_origem_id?.message}
-              disabled={viewMode}
-            >
-              <option value="">Selecione um produto origem</option>
-              {produtosOrigem?.map(produto => (
-                <option key={produto.id} value={produto.id}>
-                  {produto.codigo} - {produto.nome}
-                </option>
-              ))}
-            </Input>
+            <div>
+              <SearchableSelect
+                label="Produto Origem"
+                value={watch('produto_origem_id')}
+                onChange={(value) => setValue('produto_origem_id', value)}
+                options={produtosOrigem?.map(produto => ({
+                  value: produto.id,
+                  label: `${produto.codigo} - ${produto.nome}`,
+                  description: produto.grupo_nome || produto.subgrupo_nome || ''
+                })) || []}
+                placeholder="Digite para buscar um produto origem..."
+                disabled={viewMode}
+                error={errors.produto_origem_id?.message}
+                filterBy={(option, searchTerm) => {
+                  const label = option.label.toLowerCase();
+                  const description = option.description?.toLowerCase() || '';
+                  const term = searchTerm.toLowerCase();
+                  return label.includes(term) || description.includes(term);
+                }}
+                renderOption={(option) => (
+                  <div className="flex flex-col">
+                    <span className="font-medium text-gray-900">{option.label}</span>
+                    {option.description && (
+                      <span className="text-xs text-gray-500 mt-1">{option.description}</span>
+                    )}
+                  </div>
+                )}
+              />
+            </div>
 
             {/* Fator de Conversão */}
             <div>
@@ -373,7 +389,7 @@ const ProdutoGenericoModal = ({
                 })}
                 error={errors.regra_palet?.message}
                 disabled={viewMode}
-                placeholder="Digite a regra palet"
+                placeholder="Digite a regra palet (opcional)"
               />
             </div>
 
