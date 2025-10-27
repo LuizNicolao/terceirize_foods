@@ -29,18 +29,18 @@ class SubstituicoesListController {
 
       // Filtro por semana de abastecimento
       if (semana_abastecimento) {
-        // Normalizar formato (remover /25 do final se existir)
-        const semanaAbastNormalizada = semana_abastecimento.replace(/\/25$/, '');
-        whereConditions.push("n.semana_abastecimento = ?");
-        params.push(semanaAbastNormalizada);
+        // Normalizar formato (remover /25 e parênteses)
+        const semanaAbastNormalizada = semana_abastecimento.replace(/[()]/g, '').replace(/\/25$/, '').trim();
+        whereConditions.push("n.semana_abastecimento LIKE ?");
+        params.push(`%${semanaAbastNormalizada}%`);
       }
 
       // Filtro por semana de consumo
       if (semana_consumo) {
-        // Normalizar formato (remover /25 do final se existir)
-        const semanaConsumoNormalizada = semana_consumo.replace(/\/25$/, '');
-        whereConditions.push("n.semana_consumo = ?");
-        params.push(semanaConsumoNormalizada);
+        // Normalizar formato (remover /25 e parênteses)
+        const semanaConsumoNormalizada = semana_consumo.replace(/[()]/g, '').replace(/\/25$/, '').trim();
+        whereConditions.push("n.semana_consumo LIKE ?");
+        params.push(`%${semanaConsumoNormalizada}%`);
       }
 
       // Buscar necessidades agrupadas por produto origem
@@ -145,18 +145,18 @@ class SubstituicoesListController {
         });
       }
 
-      // Normalizar formato (remover /25 do final se existir)
-      const semanaAbastNormalizada = semana_abastecimento.replace(/\/25$/, '');
+      // Normalizar formato (remover /25 e parênteses)
+      const semanaAbastNormalizada = semana_abastecimento.replace(/[()]/g, '').replace(/\/25$/, '').trim();
 
       // Buscar semana de consumo na tabela necessidades
       const result = await executeQuery(`
         SELECT DISTINCT semana_consumo
         FROM necessidades
-        WHERE semana_abastecimento = ?
+        WHERE semana_abastecimento LIKE ?
           AND semana_consumo IS NOT NULL
           AND semana_consumo != ''
         LIMIT 1
-      `, [semanaAbastNormalizada]);
+      `, [`%${semanaAbastNormalizada}%`]);
 
       if (result.length > 0) {
         res.json({
