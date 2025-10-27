@@ -77,7 +77,10 @@ const ProdutosGenericosTable = ({
                   onSort={onSort}
                 />
                 <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Produtos Vinculados
+                  <div className="leading-tight">
+                    <div>Produtos</div>
+                    <div>Vinculados</div>
+                  </div>
                 </th>
                 <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
