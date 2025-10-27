@@ -163,7 +163,10 @@ const SubstituicoesTable = ({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <span className="text-sm font-semibold text-gray-900">
-                      {necessidade.quantidade_total_origem.toFixed(3).replace('.', ',')}
+                      {necessidade.quantidade_total_origem ? 
+                        parseFloat(necessidade.quantidade_total_origem).toFixed(3).replace('.', ',') : 
+                        '0,000'
+                      }
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -270,7 +273,12 @@ const SubstituicoesTable = ({
                                   />
                                 </td>
                                 <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-semibold text-cyan-600">
-                                  {escola.selectedQuantidade || escola.quantidade_origem.toFixed(3).replace('.', ',')}
+                                  {escola.selectedQuantidade || 
+                                    (escola.quantidade_origem ? 
+                                      parseFloat(escola.quantidade_origem).toFixed(3).replace('.', ',') : 
+                                      '0,000'
+                                    )
+                                  }
                                 </td>
                                 <td className="px-4 py-2 whitespace-nowrap text-center">
                                   <Button
