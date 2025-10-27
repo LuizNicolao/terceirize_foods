@@ -7,6 +7,7 @@ const SubstituicoesTable = ({
   necessidades,
   produtosGenericos,
   loadingGenericos,
+  ajustesAtivados = false,
   onExpand,
   onSaveConsolidated,
   onSaveIndividual
@@ -233,7 +234,7 @@ const SubstituicoesTable = ({
                         label: produto.nome
                       })) || []}
                       placeholder="Selecione..."
-                      disabled={loadingGenericos[necessidade.codigo_origem]}
+                      disabled={!ajustesAtivados || loadingGenericos[necessidade.codigo_origem]}
                       className="text-xs"
                       filterBy={(option, searchTerm) => {
                         return option.label.toLowerCase().includes(searchTerm.toLowerCase());
@@ -254,15 +255,17 @@ const SubstituicoesTable = ({
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
-                    <Button
-                      size="xs"
-                      variant="success"
-                      onClick={() => handleSaveConsolidated(necessidade)}
-                      className="flex items-center gap-1"
-                    >
-                      <FaSave className="w-3 h-3" />
-                      Salvar
-                    </Button>
+                    {ajustesAtivados && (
+                      <Button
+                        size="xs"
+                        variant="success"
+                        onClick={() => handleSaveConsolidated(necessidade)}
+                        className="flex items-center gap-1"
+                      >
+                        <FaSave className="w-3 h-3" />
+                        Salvar
+                      </Button>
+                    )}
                   </td>
                 </tr>
 
@@ -333,6 +336,7 @@ const SubstituicoesTable = ({
                                         };
                                       }) || []}
                                       placeholder="Selecione..."
+                                      disabled={!ajustesAtivados}
                                       filterBy={(option, searchTerm) => {
                                         return option.label.toLowerCase().includes(searchTerm.toLowerCase());
                                       }}
@@ -347,15 +351,17 @@ const SubstituicoesTable = ({
                                     {quantidadeGenerica || '0,000'}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center">
-                                    <Button
-                                      size="xs"
-                                      variant="success"
-                                      onClick={() => handleSaveIndividual(escola, necessidade)}
-                                      className="flex items-center gap-1"
-                                    >
-                                      <FaSave className="w-3 h-3" />
-                                      Salvar
-                                    </Button>
+                                    {ajustesAtivados && (
+                                      <Button
+                                        size="xs"
+                                        variant="success"
+                                        onClick={() => handleSaveIndividual(escola, necessidade)}
+                                        className="flex items-center gap-1"
+                                      >
+                                        <FaSave className="w-3 h-3" />
+                                        Salvar
+                                      </Button>
+                                    )}
                                   </td>
                                 </tr>
                               );
