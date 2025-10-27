@@ -15,6 +15,7 @@ const produtosPerCapitaRoute = require('./routes/produtos-per-capita/produtosPer
 const recebimentosEscolasRoute = require('./routes/recebimentos-escolas');
 const registrosDiariosRoute = require('./routes/registros-diarios/registrosDiariosRoute');
 const necessidadesRoute = require('./routes/necessidades');
+const substituicoesRoute = require('./routes/necessidades-substituicoes/substituicoesRoute');
 const auditoriaRoute = require('./routes/auditoria/auditoriaRoute');
 const calendarioRoute = require('./routes/calendario/calendarioRoute');
 
@@ -34,6 +35,7 @@ const routes = [
   { path: '/recebimentos-escolas', router: recebimentosEscolasRoute },
   { path: '/registros-diarios', router: registrosDiariosRoute },
   { path: '/necessidades', router: necessidadesRoute },
+  { path: '/necessidades-substituicoes', router: substituicoesRoute },
   { path: '/auditoria', router: auditoriaRoute },
   { path: '/calendario', router: calendarioRoute }
 ];
@@ -57,6 +59,7 @@ app.get('/', (req, res) => {
       recebimentosEscolas: `${basePath}/recebimentos-escolas`,
       registrosDiarios: `${basePath}/registros-diarios`,
       necessidades: `${basePath}/necessidades`,
+      substituicoes: `${basePath}/necessidades-substituicoes`,
       calendario: `${basePath}/calendario`
     }
   });
