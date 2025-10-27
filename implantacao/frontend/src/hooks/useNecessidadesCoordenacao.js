@@ -107,12 +107,7 @@ const useNecessidadesCoordenacao = () => {
   const buscarProdutosParaModal = useCallback(async (filtrosModal) => {
     try {
       const response = await necessidadesCoordenacaoService.buscarProdutosParaModal(filtrosModal);
-      
-      if (response.success) {
-        return response.data;
-      } else {
-        throw new Error(response.message || 'Erro ao buscar produtos');
-      }
+      return response;
     } catch (error) {
       console.error('Erro ao buscar produtos para modal:', error);
       throw error;

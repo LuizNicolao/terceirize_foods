@@ -216,7 +216,8 @@ class NecessidadesCoordenacaoController {
       const { 
         grupo, 
         escola_id, 
-        semana_consumo, 
+        semana_consumo,
+        semana_abastecimento, 
         search 
       } = req.query;
 
@@ -232,7 +233,17 @@ class NecessidadesCoordenacaoController {
       let produtosExistentesQuery;
       let queryParams;
 
-      if (semana_consumo) {
+      if (semana_consumo && semana_abastecimento) {
+        produtosExistentesQuery = `
+          SELECT DISTINCT n.produto_id
+          FROM necessidades n
+          WHERE n.escola_id = ? 
+            AND n.semana_consumo = ?
+            AND n.semana_abastecimento = ?
+            AND n.status = 'NEC COORD'
+        `;
+        queryParams = [escola_id, semana_consumo, semana_abastecimento];
+      } else if (semana_consumo) {
         produtosExistentesQuery = `
           SELECT DISTINCT n.produto_id
           FROM necessidades n
