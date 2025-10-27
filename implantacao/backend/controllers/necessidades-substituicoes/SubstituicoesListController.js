@@ -190,21 +190,16 @@ class SubstituicoesListController {
       const { produto_origem_id, grupo, search } = req.query;
       const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
 
-      console.log(`[Substituições] Buscando produtos genéricos. produto_origem_id: ${produto_origem_id}, grupo: ${grupo}, search: ${search}`);
-
       // Buscar produtos genéricos vinculados ao produto origem específico
       let url = `${foodsApiUrl}/produto-generico?limit=10000&status=1`;
       
       if (produto_origem_id) {
         url += `&produto_origem_id=${produto_origem_id}`;
-        console.log(`[Substituições] Filtrando por produto_origem_id: ${produto_origem_id}`);
       }
       
       if (search) {
         url += `&search=${encodeURIComponent(search)}`;
       }
-
-      console.log(`[Substituições] URL completa: ${url}`);
 
       const response = await axios.get(url, {
         headers: {
@@ -213,29 +208,18 @@ class SubstituicoesListController {
         timeout: 5000
       });
 
-      console.log(`[Substituições] Status: ${response.status}`);
-      console.log(`[Substituições] Response data keys:`, Object.keys(response.data || {}));
-
       // Extrair dados da resposta Foods (estrutura HATEOAS)
       let produtosGenericos = [];
       
       if (response.data) {
-        console.log(`[Substituições] response.data.data:`, typeof response.data.data, Array.isArray(response.data.data));
-        
         // Verificar estrutura HATEOAS
         if (response.data.data && response.data.data.items) {
-          console.log(`[Substituições] Estrutura HATEOAS com items`);
           produtosGenericos = response.data.data.items;
         } else if (response.data.data) {
-          console.log(`[Substituições] response.data.data é array?`, Array.isArray(response.data.data));
           produtosGenericos = Array.isArray(response.data.data) ? response.data.data : [];
         } else if (Array.isArray(response.data)) {
-          console.log(`[Substituições] response.data é array direto`);
           produtosGenericos = response.data;
         }
-
-        console.log(`[Substituições] Total produtos extraídos do Foods:`, produtosGenericos.length);
-        console.log(`[Substituições] Primeiro produto (se existir):`, produtosGenericos[0]);
       }
 
       res.json({
