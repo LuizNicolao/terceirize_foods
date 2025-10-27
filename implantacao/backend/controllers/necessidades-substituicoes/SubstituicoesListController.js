@@ -190,44 +190,57 @@ class SubstituicoesListController {
         });
       }
 
-      // Buscar produtos genéricos relacionados no Foods
+      // Buscar produtos genéricos relacionados no Foods usando o endpoint correto
       let url = `${foodsApiUrl}/api/produto-generico`;
-      const params = new URLSearchParams();
       
+      // Se tem search, usar como query param
       if (search) {
-        params.append('search', search);
-      }
-      
-      // Buscar por produto_origem_id se disponível
-      if (produto_origem_id) {
-        params.append('produto_origem_id', produto_origem_id);
+        url += `?search=${encodeURIComponent(search)}`;
       }
 
-      const queryString = params.toString();
-      if (queryString) {
-        url += `?${queryString}`;
-      }
+      console.log(`[Substituições] Buscando produtos genéricos em: ${url}`);
 
       const response = await axios.get(url, {
         headers: {
           'Authorization': req.headers.authorization
         },
-        timeout: 5000
+        timeout: 5000,
+        params: {
+          produto_origem_id
+        }
       });
 
-      if (response.data && response.data.success) {
-        res.json({
-          success: true,
-          data: response.data.data || []
-        });
-      } else {
-        res.json({
-          success: true,
-          data: []
-        });
+      console.log(`[Substituições] Resposta Foods:`, response.status, response.data?.data?.length || 0, 'produtos');
+
+      // Extrair dados da resposta Foods (estrutura HATEOAS)
+      let produtosGenericos = [];
+      
+      if (response.data) {
+        // Verificar estrutura HATEOAS
+        if (response.data.data && response.data.data.items) {
+          produtosGenericos = response.data.data.items;
+        } else if (response.data.data) {
+          produtosGenericos = Array.isArray(response.data.data) ? response.data.data : [];
+        } else if (Array.isArray(response.data)) {
+          produtosGenericos = response.data;
+        }
+
+        // Filtrar por produto_origem_id se necessário
+        if (produto_origem_id && produtosGenericos.length > 0) {
+          produtosGenericos = produtosGenericos.filter(pg => 
+            pg.produto_origem_id === parseInt(produto_origem_id)
+          );
+        }
       }
+
+      console.log(`[Substituições] Produtos filtrados:`, produtosGenericos.length);
+
+      res.json({
+        success: true,
+        data: produtosGenericos
+      });
     } catch (error) {
-      console.error('Erro ao buscar produtos genéricos:', error);
+      console.error('[Substituições] Erro ao buscar produtos genéricos:', error.message);
       res.json({
         success: true,
         data: []
