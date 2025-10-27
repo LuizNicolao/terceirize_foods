@@ -88,7 +88,7 @@ const ProdutoOrigemTable = ({
                   onSort={onSort}
                 />
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ref. Mercado
+                  Produto Genérico
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -126,7 +126,10 @@ const ProdutoOrigemTable = ({
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {produto.referencia_mercado || '-'}
+                    {produto.produto_generico_padrao_nome ? 
+                      `${produto.produto_generico_padrao_codigo} - ${produto.produto_generico_padrao_nome}` : 
+                      '-'
+                    }
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end">
@@ -159,8 +162,10 @@ const ProdutoOrigemTable = ({
                 <p className="text-gray-600 text-xs">
                   Código: {produto.codigo ? produto.codigo.replace('ORIG-', '') : '-'}
                 </p>
-                {produto.referencia_mercado && (
-                  <p className="text-gray-500 text-xs">Ref: {produto.referencia_mercado}</p>
+                {produto.produto_generico_padrao_nome && (
+                  <p className="text-gray-500 text-xs">
+                    Genérico: {produto.produto_generico_padrao_codigo} - {produto.produto_generico_padrao_nome}
+                  </p>
                 )}
               </div>
               <ActionButtons
