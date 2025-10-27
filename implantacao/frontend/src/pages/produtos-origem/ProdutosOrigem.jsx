@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FaQuestionCircle } from 'react-icons/fa';
 import { useProdutosOrigemConsulta } from '../../hooks/useProdutosOrigemConsulta';
 import ProdutosOrigemStats from '../../components/produtos-origem/ProdutosOrigemStats';
-import ProdutoOrigemTable from '../../components/produtos-origem/ProdutoOrigemTable';
+import ProdutosOrigemTable from '../../components/produtos-origem/ProdutosOrigemTable';
 import ProdutoOrigemModal from '../../components/produtos-origem/ProdutoOrigemModal';
 import { Pagination, Button, CadastroFilterBar } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
@@ -118,7 +118,7 @@ const ProdutosOrigem = () => {
 
         {/* Tabela */}
       
-      <ProdutoOrigemTable
+      <ProdutosOrigemTable
         produtosOrigem={produtos}
         onView={handleViewProduto}
         onEdit={() => {}}
