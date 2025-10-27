@@ -45,9 +45,10 @@ const SubstituicoesTable = ({
   // Pré-selecionar produto padrão quando produtos genéricos forem carregados
   useEffect(() => {
     necessidades.forEach(necessidade => {
-      if (necessidade.produto_padrao_id && produtosGenericos[necessidade.codigo_origem] && !produtosPadraoSelecionados[necessidade.codigo_origem]) {
+      if (produtosGenericos[necessidade.codigo_origem] && !produtosPadraoSelecionados[necessidade.codigo_origem]) {
+        // Buscar produto com produto_padrao = 'Sim'
         const produtoPadrao = produtosGenericos[necessidade.codigo_origem].find(
-          p => p.id === necessidade.produto_padrao_id || p.codigo === necessidade.produto_padrao_id
+          p => p.produto_padrao === 'Sim'
         );
         
         if (produtoPadrao) {
