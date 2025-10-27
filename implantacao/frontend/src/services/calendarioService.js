@@ -110,6 +110,33 @@ const calendarioService = {
   buscarSemanaPorData: async (data) => {
     const response = await api.get(`/calendario/api/semana-por-data/${data}`);
     return response.data;
+  },
+
+  // Semana de consumo por semana de abastecimento
+  buscarSemanaPorAbastecimento: async (semanaAbast, ano) => {
+    try {
+      // Buscar todas as semanas de abastecimento e encontrar a relacionada
+      const response = await api.get(`/calendario/api/semanas-abastecimento/${ano}`);
+      if (response.data && response.data.success) {
+        const semana = response.data.data.find(s => s.semana_abastecimento === semanaAbast);
+        return semana ? { success: true, data: semana } : { success: false, data: null };
+      }
+      return { success: false, data: null };
+    } catch (error) {
+      console.error('Erro ao buscar semana por abastecimento:', error);
+      return { success: false, data: null };
+    }
+  },
+
+  // Buscar grupos com per capita
+  buscarGruposComPercapita: async () => {
+    try {
+      const response = await api.get('/produtos-per-capita/grupos-com-percapita');
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao buscar grupos:', error);
+      return { success: false, data: [] };
+    }
   }
 };
 

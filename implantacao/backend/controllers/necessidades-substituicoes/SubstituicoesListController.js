@@ -48,8 +48,12 @@ class SubstituicoesListController {
           n.produto_unidade as produto_origem_unidade,
           SUM(n.ajuste_coordenacao) as quantidade_total_origem,
           n.necessidade_id_grupo,
+          n.semana_abastecimento,
+          n.semana_consumo,
+          (SELECT ppc.grupo FROM produtos_per_capita ppc WHERE ppc.produto_id = n.produto_id LIMIT 1) as grupo,
           GROUP_CONCAT(
             DISTINCT CONCAT(
+              n.id, '|',
               n.escola_id, '|',
               n.escola, '|',
               n.ajuste_coordenacao
@@ -57,7 +61,7 @@ class SubstituicoesListController {
           ) as escolas_solicitantes
         FROM necessidades n
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY n.produto_id, n.produto, n.produto_unidade
+        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.necessidade_id_grupo, n.semana_abastecimento, n.semana_consumo, grupo
         ORDER BY n.produto ASC
       `, params);
 
@@ -87,8 +91,9 @@ class SubstituicoesListController {
           const escolas = necessidade.escolas_solicitantes
             .split('::')
             .map(escolaStr => {
-              const [escola_id, escola_nome, quantidade] = escolaStr.split('|');
+              const [necessidade_id, escola_id, escola_nome, quantidade] = escolaStr.split('|');
               return {
+                necessidade_id: parseInt(necessidade_id),
                 escola_id: parseInt(escola_id),
                 escola_nome,
                 quantidade_origem: parseFloat(quantidade)
