@@ -191,7 +191,6 @@ const RotasNutricionistasEscolasSelector = ({
         </div>
       )}
 
-      {/* Conteúdo principal */}
       {!watchedUsuarioId ? (
         <div className="text-center py-8 text-gray-500 bg-gray-100 rounded border border-gray-300">
           Selecione uma nutricionista para visualizar as escolas disponíveis
@@ -220,7 +219,7 @@ const RotasNutricionistasEscolasSelector = ({
         </div>
       ) : (
         <div className="flex gap-4">
-          {/* Lado Esquerdo: Escolas disponíveis */}
+          {/* Lado Esquerdo: 3 colunas de escolas disponíveis */}
           <div className="flex-1">
             <div className="text-xs font-medium text-gray-600 mb-2">
               Escolas Disponíveis ({escolasFiltradas.length})
@@ -252,9 +251,6 @@ const RotasNutricionistasEscolasSelector = ({
                       <div className="text-xs text-gray-500 truncate">
                         {escola.cidade}, {escola.estado}
                       </div>
-                      <div className="text-xs text-gray-400 truncate">
-                        {escola.codigo_teknisa}
-                      </div>
                     </div>
                   </div>
                 );
@@ -285,9 +281,6 @@ const RotasNutricionistasEscolasSelector = ({
                       <div className="text-xs text-gray-500 truncate">
                         {escola.cidade}, {escola.estado}
                       </div>
-                      <div className="text-xs text-gray-400 truncate">
-                        {escola.codigo_teknisa}
-                      </div>
                     </div>
                     {!isViewMode && (
                       <button
@@ -307,70 +300,6 @@ const RotasNutricionistasEscolasSelector = ({
         </div>
       )}
 
-      {/* Modo de visualização - mostrar escolas vinculadas */}
-      {isViewMode && (
-        <div className="mt-4">
-          <div className="text-xs font-medium text-gray-600 mb-2">
-            Escolas Vinculadas à Rota ({nomesEscolas.length})
-          </div>
-          <div className="max-h-96 overflow-y-auto border border-gray-300 rounded-md bg-white">
-            {loadingNomesEscolas ? (
-              <div className="text-sm text-gray-500 text-center py-8">Carregando escolas...</div>
-            ) : nomesEscolas.length > 0 ? (
-              <div className="divide-y divide-gray-200">
-                {nomesEscolas.map((escola, index) => (
-                  <div key={index} className="flex items-center p-3">
-                    <input
-                      type="checkbox"
-                      checked={true}
-                      disabled={true}
-                      className="mr-3 text-green-600 focus:ring-green-500 rounded border-gray-300"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900 truncate">
-                        {escola.nome}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Código: {escola.codigo}
-                      </div>
-                      {escola.cidade && (
-                        <div className="text-xs text-gray-400">
-                          {escola.cidade}, {escola.estado}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : rotaData.escolas_responsaveis ? (
-              <div className="divide-y divide-gray-200">
-                {rotaData.escolas_responsaveis.split(',').map((id, index) => (
-                  <div key={index} className="flex items-center p-3">
-                    <input
-                      type="checkbox"
-                      checked={true}
-                      disabled={true}
-                      className="mr-3 text-green-600 focus:ring-green-500 rounded border-gray-300"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900 truncate">
-                        Escola ID: {id.trim()}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        Nome não disponível
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-sm text-gray-500 text-center py-8">
-                Nenhuma escola vinculada a esta rota
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
