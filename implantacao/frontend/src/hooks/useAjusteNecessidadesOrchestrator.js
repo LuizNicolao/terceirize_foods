@@ -224,47 +224,38 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }
 
     try {
-      // Buscar valor original para cada necessidade usando chave composta
-      const necessidadesMap = {};
-      necessidades.forEach(nec => {
+      // Mapear todos os produtos, incluindo os que têm e não têm ajuste local
+      const itens = necessidades.map(nec => {
         const chave = `${nec.escola_id}_${nec.produto_id}`;
-        necessidadesMap[chave] = nec;
+        const ajusteLocal = ajustesLocais[chave];
+        
+        let valorFinal;
+        
+        if (ajusteLocal !== undefined && ajusteLocal !== '') {
+          // Tem ajuste local (foi digitado)
+          valorFinal = parseFloat(ajusteLocal) || 0;
+        } else {
+          // Não tem ajuste local, preservar valor existente no banco
+          if (activeTab === 'nutricionista') {
+            valorFinal = nec.ajuste || 0;
+          } else {
+            // Para coordenação, usar ajuste_coordenacao existente
+            valorFinal = nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
+          }
+        }
+
+        if (activeTab === 'coordenacao') {
+          return {
+            id: parseInt(nec.id),
+            ajuste: valorFinal
+          };
+        } else {
+          return {
+            necessidade_id: parseInt(nec.id),
+            ajuste_nutricionista: valorFinal
+          };
+        }
       });
-
-      const itens = Object.entries(ajustesLocais)
-        .filter(([chave]) => {
-          return necessidadesMap[chave]; // Apenas necessidades válidas
-        })
-        .map(([chave, ajuste]) => {
-          const nec = necessidadesMap[chave];
-          const valor = parseFloat(ajuste);
-          
-          // Se não tem valor no ajuste local, usar o valor original
-          let valorFinal;
-          if (isNaN(valor) || valor <= 0) {
-            // Para nutricionista: usar ajuste (quantidade gerada)
-            // Para coordenação: usar ajuste_nutricionista
-            if (activeTab === 'nutricionista') {
-              valorFinal = nec.ajuste || 0;
-            } else {
-              valorFinal = nec.ajuste_nutricionista || nec.ajuste || 0;
-            }
-          } else {
-            valorFinal = valor;
-          }
-
-          if (activeTab === 'coordenacao') {
-            return {
-              id: parseInt(nec.id),
-              ajuste: valorFinal
-            };
-          } else {
-            return {
-              necessidade_id: parseInt(nec.id),
-              ajuste_nutricionista: valorFinal
-            };
-          }
-        });
 
       const dadosParaSalvar = {
         escola_id: filtros.escola_id,
