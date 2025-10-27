@@ -95,11 +95,28 @@ export const useUnidadesEscolares = () => {
   }, []);
 
   /**
-   * Carrega estatísticas específicas das unidades escolares
+   * Carrega estatísticas específicas das unidades escolares (com filtros aplicados)
    */
-  const loadEstatisticasUnidades = useCallback(async () => {
+  const loadEstatisticasUnidades = useCallback(async (filtros = {}) => {
     try {
-      const result = await UnidadesEscolaresService.buscarEstatisticas();
+      const params = {
+        search: filtros.search || baseEntity.searchTerm || undefined,
+        status: filtros.status || baseEntity.statusFilter || undefined,
+        estado: filtros.estado || baseEntity.filters.estado || undefined,
+        cidade: filtros.cidade || baseEntity.filters.cidade || undefined,
+        centro_distribuicao: filtros.centro_distribuicao || baseEntity.filters.centro_distribuicao || undefined,
+        rota_id: filtros.rota_id || baseEntity.filters.rotaFilter || undefined,
+        filial_id: filtros.filial_id || baseEntity.filters.filialFilter || undefined
+      };
+
+      // Remover parâmetros undefined
+      Object.keys(params).forEach(key => {
+        if (params[key] === undefined || params[key] === 'todos') {
+          delete params[key];
+        }
+      });
+
+      const result = await UnidadesEscolaresService.buscarEstatisticas(params);
       if (result.success) {
         setEstatisticasUnidades(result.data || {
           total_unidades: 0,
@@ -113,7 +130,7 @@ export const useUnidadesEscolares = () => {
     } catch (error) {
       console.error('Erro ao carregar estatísticas:', error);
     }
-  }, []);
+  }, [baseEntity.searchTerm, baseEntity.statusFilter, baseEntity.filters]);
 
   // Funções loadDataWithFilters e loadDataWithRotaFilter removidas
   // useBaseEntity agora gerencia automaticamente os filtros através do getFilterParams
@@ -166,6 +183,11 @@ export const useUnidadesEscolares = () => {
     loadFiliais();
     loadEstatisticasUnidades();
   }, [loadRotas, loadFiliais, loadEstatisticasUnidades]);
+
+  // Recarregar estatísticas quando os filtros mudarem
+  useEffect(() => {
+    loadEstatisticasUnidades();
+  }, [baseEntity.searchTerm, baseEntity.statusFilter, baseEntity.filters.rotaFilter, baseEntity.filters.filialFilter, loadEstatisticasUnidades]);
 
   // useBaseEntity agora gerencia automaticamente os filtros customizados
   // Não é mais necessário useEffect ou override de loadData
