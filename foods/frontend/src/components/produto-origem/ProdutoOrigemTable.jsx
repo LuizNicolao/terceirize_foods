@@ -88,7 +88,7 @@ const ProdutoOrigemTable = ({
                   onSort={onSort}
                 />
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Produto Genérico
+                  Produto Genérico Padrão
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
@@ -164,7 +164,7 @@ const ProdutoOrigemTable = ({
                 </p>
                 {produto.produto_generico_padrao_nome && (
                   <p className="text-gray-500 text-xs">
-                    Genérico: {produto.produto_generico_padrao_codigo} - {produto.produto_generico_padrao_nome}
+                    Genérico Padrão: {produto.produto_generico_padrao_codigo} - {produto.produto_generico_padrao_nome}
                   </p>
                 )}
               </div>
