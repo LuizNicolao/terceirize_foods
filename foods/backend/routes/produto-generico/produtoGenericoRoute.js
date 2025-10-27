@@ -113,7 +113,7 @@ router.get('/padrao',
   ProdutoGenericoController.buscarProdutosGenericosPadrao
 );
 
-router.get('/export/xlsx', checkScreenPermission('produto_generico', 'visualizar'), ProdutoGenericoController.exportarXLSX);
-router.get('/export/pdf', checkScreenPermission('produto_generico', 'visualizar'), ProdutoGenericoController.exportarPDF);
+router.get('/exportar/xlsx', checkScreenPermission('produto_generico', 'visualizar'), ProdutoGenericoController.exportarXLSX);
+router.get('/exportar/pdf', checkScreenPermission('produto_generico', 'visualizar'), ProdutoGenericoController.exportarPDF);
 
 module.exports = router;
