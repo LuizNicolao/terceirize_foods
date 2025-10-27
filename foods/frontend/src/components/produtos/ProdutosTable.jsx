@@ -73,10 +73,10 @@ const ProdutosTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {produtos.map((produto) => (
                 <tr key={produto.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
                     {produto.codigo_produto || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {produto.nome}
                     </div>
@@ -86,13 +86,13 @@ const ProdutosTable = ({
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                     {getGrupoName(produto.grupo_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                     {getUnidadeName(produto.unidade_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                       produto.status === 1 
                         ? 'bg-green-100 text-green-800' 
@@ -101,7 +101,7 @@ const ProdutosTable = ({
                       {produto.status === 1 ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                     <ActionButtons
                       canView={!!onView}
                       canEdit={!!onEdit}

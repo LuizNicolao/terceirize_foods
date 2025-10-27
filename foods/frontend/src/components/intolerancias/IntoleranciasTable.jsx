@@ -53,15 +53,15 @@ const IntoleranciasTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {intolerancias.map((intolerancia) => (
                 <tr key={intolerancia.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {intolerancia.nome}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                     {intolerancia.unidades_escolares_count || 0}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                       intolerancia.status === 'ativo' 
                         ? 'bg-green-100 text-green-800' 
@@ -70,7 +70,7 @@ const IntoleranciasTable = ({
                       {intolerancia.status === 'ativo' ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                     <ActionButtons
                       canView={!!onView}
                       canEdit={!!onEdit}

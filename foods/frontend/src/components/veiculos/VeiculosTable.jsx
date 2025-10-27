@@ -48,11 +48,11 @@ const VeiculosTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {veiculos.map((veiculo) => (
               <tr key={veiculo.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{veiculo.placa}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{veiculo.placa}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {veiculo.marca} {veiculo.modelo}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                     veiculo.tipo_veiculo === 'caminhao' ? 'bg-blue-100 text-blue-800' :
                     veiculo.tipo_veiculo === 'van' ? 'bg-green-100 text-green-800' :
@@ -63,10 +63,10 @@ const VeiculosTable = ({
                     {getTipoVeiculoLabel(veiculo.tipo_veiculo)}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {getCategoriaLabel(veiculo.categoria)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                     veiculo.status === 'ativo' ? 'bg-green-100 text-green-800' :
                     veiculo.status === 'inativo' ? 'bg-red-100 text-red-800' :
@@ -76,7 +76,7 @@ const VeiculosTable = ({
                     {getStatusLabel(veiculo.status)}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <VeiculosActions
                     veiculo={veiculo}
                     canView={canView}

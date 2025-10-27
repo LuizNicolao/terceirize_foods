@@ -56,20 +56,20 @@ const EfetivosTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {efetivos.map((efetivo) => (
                 <tr key={efetivo.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     {getTipoEfetivoBadge(efetivo.tipo_efetivo)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {efetivo.quantidade}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {efetivo.intolerancia_nome || '-'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {efetivo.periodo_refeicao_nome || '-'}
                     </div>

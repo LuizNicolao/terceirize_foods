@@ -79,10 +79,10 @@ const ClassesTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {classes.map((classe) => (
                 <tr key={classe.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
                     {classe.codigo}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {classe.nome}
                     </div>
@@ -92,10 +92,10 @@ const ClassesTable = ({
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     {getSubgrupoNome(classe.subgrupo_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                       classe.status === 'ativo'
                         ? 'bg-green-100 text-green-800'
@@ -104,22 +104,22 @@ const ClassesTable = ({
                       {getStatusLabel(classe.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
                     <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
                       {classe.total_produtos_origem || 0}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
                     <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
                       {classe.total_produtos_genericos || 0}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
                     <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
                       {classe.total_produtos_finais || 0}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                     <ActionButtons
                       canView={canView('classes')}
                       canEdit={canEdit('classes')}

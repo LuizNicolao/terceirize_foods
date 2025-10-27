@@ -48,15 +48,15 @@ const UnidadesEscolaresTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {unidades.map((unidade) => (
               <tr key={unidade.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{unidade.codigo_teknisa}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.cidade}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.estado}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{unidade.filial_nome || '-'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{unidade.codigo_teknisa}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{unidade.nome_escola}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{unidade.cidade}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{unidade.estado}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{unidade.filial_nome || '-'}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {loadingRotas ? 'Carregando...' : getRotaName(unidade.rota_id)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 text-center">
                   {unidade.ordem_entrega > 0 ? (
                     <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-semibold">
                       {unidade.ordem_entrega}
@@ -65,14 +65,14 @@ const UnidadesEscolaresTable = ({
                     <span className="text-gray-400">-</span>
                   )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                     unidade.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                   }`}>
                     {unidade.status === 'ativo' ? 'Ativo' : 'Inativo'}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <UnidadesEscolaresActions
                     unidade={unidade}
                     canView={canView}

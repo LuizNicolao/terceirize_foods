@@ -103,7 +103,7 @@ const ReceitaTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {receitas.map((receita) => (
               <tr key={receita.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10">
                       <div className="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
@@ -123,7 +123,7 @@ const ReceitaTable = ({
                   </div>
                 </td>
                 
-                <td className="px-6 py-4">
+                <td className="px-3 py-2">
                   <div className="text-sm text-gray-900 font-medium">
                     {getNomePrincipal(receita.nome)}
                   </div>
@@ -132,14 +132,14 @@ const ReceitaTable = ({
                   </div>
                 </td>
                 
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex items-center">
                     {getStatusIcon(receita.status)}
                     {getStatusBadge(receita.status)}
                   </div>
                 </td>
                 
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                   <ActionButtons
                     item={receita}
                     canView={canView}

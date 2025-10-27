@@ -91,7 +91,7 @@ const PatrimoniosTable = ({
                   selectedPatrimonio?.id === patrimonio.id ? 'bg-blue-50' : ''
                 }`}
               >
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10">
                       <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
@@ -108,7 +108,7 @@ const PatrimoniosTable = ({
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-8 w-8">
                       <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
@@ -132,16 +132,16 @@ const PatrimoniosTable = ({
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {patrimonio.local_atual_nome}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   {getStatusBadge(patrimonio.status)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {patrimonio.data_aquisicao ? new Date(patrimonio.data_aquisicao).toLocaleDateString('pt-BR') : '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                   <div className="flex space-x-2">
                     {canView && (
                       <Button

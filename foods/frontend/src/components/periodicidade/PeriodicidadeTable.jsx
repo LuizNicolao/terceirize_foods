@@ -93,7 +93,7 @@ const PeriodicidadeTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {agrupamentos.map((agrupamento) => (
               <tr key={agrupamento.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-8 w-8">
                       <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
@@ -111,23 +111,23 @@ const PeriodicidadeTable = ({
                   </div>
                 </td>
                 
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                     {agrupamento.tipo_nome || 'N/A'}
                   </span>
                 </td>
                 
-                <td className="px-6 py-4">
+                <td className="px-3 py-2">
                   <div className="text-sm text-gray-900">
                     {truncateText(agrupamento.descricao)}
                   </div>
                 </td>
                 
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   {getStatusBadge(agrupamento.ativo)}
                 </td>
                 
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
                   <ActionButtons
                     canView={canView}
                     canEdit={canEdit}

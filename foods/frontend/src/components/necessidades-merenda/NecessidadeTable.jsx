@@ -101,7 +101,7 @@ const NecessidadeTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {necessidades.map((necessidade) => (
                 <tr key={necessidade.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {necessidade.unidade_escola_nome || 'N/A'}
                     </div>
@@ -109,7 +109,7 @@ const NecessidadeTable = ({
                       {necessidade.filial_nome || ''}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {necessidade.produto_nome || 'N/A'}
                     </div>
@@ -117,10 +117,10 @@ const NecessidadeTable = ({
                       {necessidade.receita_nome || ''}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     {formatDate(necessidade.data)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     <div>
                       <span className="font-medium">{necessidade.quantidade_total || 0}</span>
                       <span className="text-gray-500 ml-1">{necessidade.unidade_medida || ''}</span>
@@ -129,13 +129,13 @@ const NecessidadeTable = ({
                       {necessidade.quantidade_per_capita || 0} per capita
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     {getStatusBadge(necessidade.status)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     {formatCurrency(necessidade.valor_total)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
                     <ActionButtons
                       canView={canView}
                       canEdit={canEdit}

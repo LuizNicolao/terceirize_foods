@@ -67,16 +67,16 @@ const PeriodosRefeicaoTable = ({
                 const statusInfo = getStatusLabel(periodo.status);
                 return (
                   <tr key={periodo.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
                       {periodo.codigo || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                       {periodo.nome}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                       {periodo.descricao || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                       <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                         periodo.status === 'ativo'
                           ? 'bg-green-100 text-green-800'
@@ -85,7 +85,7 @@ const PeriodosRefeicaoTable = ({
                         {getStatusLabel(periodo.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                       <ActionButtons
                         canView={canView('periodos_refeicao')}
                         canEdit={canEdit('periodos_refeicao')}

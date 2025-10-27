@@ -54,10 +54,10 @@ const GruposTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {grupos.map((grupo) => (
                 <tr key={grupo.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
                     {grupo.codigo || '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {grupo.nome}
                     </div>
@@ -67,10 +67,10 @@ const GruposTable = ({
                       </div>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                     {grupo.subgrupos_count || 0}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <span className={`inline-flex px-1.5 py-0.5 text-xs font-semibold rounded-full ${
                       grupo.status === 'ativo' 
                         ? 'bg-green-100 text-green-800' 
@@ -79,7 +79,7 @@ const GruposTable = ({
                       {getStatusLabel(grupo.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                     <ActionButtons
                       canView={canView('grupos')}
                       canEdit={canEdit('grupos')}

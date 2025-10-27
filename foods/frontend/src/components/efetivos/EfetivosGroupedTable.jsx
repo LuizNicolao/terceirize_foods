@@ -73,20 +73,20 @@ const EfetivosGroupedTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {Object.values(groupedEfetivos).map((grupo, index) => (
               <tr key={index} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   {getTipoEfetivoBadge(grupo.tipo_efetivo)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     {grupo.quantidade}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
                     {grupo.intolerancia_nome || '-'}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
                     {Array.from(grupo.periodos).join(', ')}
                   </div>

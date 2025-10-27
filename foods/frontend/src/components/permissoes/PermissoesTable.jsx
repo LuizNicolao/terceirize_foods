@@ -220,12 +220,12 @@ const PermissoesTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {usuariosProcessados.map((usuario) => (
               <tr key={usuario.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.nome}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.nivel_de_acesso || '-'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{usuario.tipo_de_acesso || '-'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{usuario.id}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{usuario.nome}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{usuario.email}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{usuario.nivel_de_acesso || '-'}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{usuario.tipo_de_acesso || '-'}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                     usuario.status === 'ativo' 
                       ? 'bg-green-100 text-green-800' 
@@ -234,12 +234,12 @@ const PermissoesTable = ({
                     {getStatusLabel(usuario.status)}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                     {usuario.permissoes_count || 0} tela(s)
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <div className="flex gap-2">
                     <Button
                       variant="ghost"

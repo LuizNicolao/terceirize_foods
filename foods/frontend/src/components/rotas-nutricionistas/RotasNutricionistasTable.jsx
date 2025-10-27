@@ -57,7 +57,7 @@ const RotasNutricionistasTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {rotasNutricionistas.map((rota) => (
               <tr key={rota.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-8 w-8">
                       <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
@@ -69,7 +69,7 @@ const RotasNutricionistasTable = ({
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <div className="flex items-center">
                     <FaUser className="h-4 w-4 text-green-600 mr-2" />
                     <span>
@@ -77,7 +77,7 @@ const RotasNutricionistasTable = ({
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <div className="flex items-center">
                     <FaUserTie className="h-4 w-4 text-blue-600 mr-2" />
                     <span>
@@ -85,7 +85,7 @@ const RotasNutricionistasTable = ({
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <div className="flex items-center">
                     <FaUserGraduate className="h-4 w-4 text-purple-600 mr-2" />
                     <span>
@@ -93,10 +93,10 @@ const RotasNutricionistasTable = ({
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {getStatusBadge(rota.status)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                   <ActionButtons
                     canView={canView}
                     canEdit={canEdit}

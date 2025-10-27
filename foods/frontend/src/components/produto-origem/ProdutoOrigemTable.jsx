@@ -98,25 +98,25 @@ const ProdutoOrigemTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {produtosOrigem.map((produto) => (
                 <tr key={produto.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                     {produto.codigo ? produto.codigo.replace('ORIG-', '') : '-'}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     <div className="font-medium">{produto.nome}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     {getUnidadeMedidaSigla(produto.unidade_medida_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     {getGrupoName(produto.grupo_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     {getSubgrupoName(produto.subgrupo_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     {getClasseName(produto.classe_id)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       produto.status === 1
                         ? 'bg-green-100 text-green-800'
@@ -125,13 +125,13 @@ const ProdutoOrigemTable = ({
                       {produto.status === 1 ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     {produto.produto_generico_padrao_nome ? 
                       `${produto.produto_generico_padrao_codigo} - ${produto.produto_generico_padrao_nome}` : 
                       '-'
                     }
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end">
                       <ActionButtons
                         canView={canView}

@@ -47,12 +47,12 @@ const RotasTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {rotas.map((rota) => (
               <tr key={rota.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{rota.codigo}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{rota.nome}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{rota.codigo}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{rota.nome}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {loadingFiliais ? 'Carregando...' : getFilialName(rota.filial_id)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                     rota.tipo_rota === 'semanal' ? 'bg-blue-100 text-blue-800' :
                     rota.tipo_rota === 'quinzenal' ? 'bg-purple-100 text-purple-800' :
@@ -63,14 +63,14 @@ const RotasTable = ({
                     {formatTipoRota(rota.tipo_rota)}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                     rota.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                   }`}>
                     {rota.status === 'ativo' ? 'Ativo' : 'Inativo'}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <RotasActions
                     rota={rota}
                     canView={canView}

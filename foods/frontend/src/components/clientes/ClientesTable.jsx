@@ -63,7 +63,7 @@ const ClientesTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {clientes.map((cliente) => (
               <tr key={cliente.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex flex-col">
                     <div className="text-sm font-medium text-gray-900">
                       {cliente.razao_social || '-'}
@@ -75,10 +75,10 @@ const ClientesTable = ({
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {cliente.cnpj || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex flex-col">
                     <div className="text-sm text-gray-900">
                       {cliente.municipio || '-'}
@@ -88,7 +88,7 @@ const ClientesTable = ({
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="flex flex-col">
                     {cliente.email && (
                       <div className="text-sm text-gray-900">
@@ -105,13 +105,13 @@ const ClientesTable = ({
                     )}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   {getStatusBadge(cliente.status)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                   {formatDate(cliente.criado_em)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end">
                     <ActionButtons
                       canView={canView('clientes')}

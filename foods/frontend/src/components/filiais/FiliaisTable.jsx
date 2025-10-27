@@ -62,28 +62,28 @@ const FiliaisTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {filiais.map((filial) => (
               <tr key={filial.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">
                   {filial.codigo_filial || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {filial.cnpj || '-'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="text-sm font-medium text-gray-900">
                     {filial.filial}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   {filial.razao_social}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{filial.cidade}</div>
                   <div className="text-sm text-gray-500">{filial.estado}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-2 whitespace-nowrap">
                   {getStatusBadge(filial.status)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
                   <div className="flex justify-end">
                     <ActionButtons
                       canView={canView('filiais')}

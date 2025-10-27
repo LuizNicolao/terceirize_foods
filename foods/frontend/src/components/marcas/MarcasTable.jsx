@@ -41,9 +41,9 @@ const MarcasTable = ({
           <tbody className="bg-white divide-y divide-gray-200">
             {marcas.map((marca) => (
               <tr key={marca.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">{marca.marca}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{marca.fabricante}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 font-medium">{marca.marca}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">{marca.fabricante}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium ${
                     marca.status === 1 
                       ? 'bg-green-100 text-green-800' 
@@ -52,7 +52,7 @@ const MarcasTable = ({
                     {getStatusLabel(marca.status)}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                   <ActionButtons
                     canView={canView('marcas')}
                     canEdit={canEdit('marcas')}
