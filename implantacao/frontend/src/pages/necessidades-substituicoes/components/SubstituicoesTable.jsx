@@ -16,13 +16,6 @@ const SubstituicoesTable = ({
   const [quantidadesGenericos, setQuantidadesGenericos] = useState({});
   const [undGenericos, setUndGenericos] = useState({});
 
-  const handleToggleExpand = (codigo) => {
-    setExpandedRows(prev => ({
-      ...prev,
-      [codigo]: !prev[codigo]
-    }));
-  };
-
   const handleProdutoGenericoChange = (codigo, valor, quantidadeOrigem) => {
     if (!valor) {
       setSelectedProdutosGenericos(prev => ({ ...prev, [codigo]: '' }));
@@ -46,6 +39,32 @@ const SubstituicoesTable = ({
         setQuantidadesGenericos(prev => ({ ...prev, [codigo]: quantidadeCalculada }));
       }
     }
+  };
+
+  // Pré-selecionar produto padrão quando produtos genéricos forem carregados
+  useEffect(() => {
+    necessidades.forEach(necessidade => {
+      if (necessidade.produto_padrao_id && produtosGenericos[necessidade.codigo_origem]) {
+        const produtoPadrao = produtosGenericos[necessidade.codigo_origem].find(
+          p => p.id === necessidade.produto_padrao_id || p.codigo === necessidade.produto_padrao_id
+        );
+        
+        if (produtoPadrao && !selectedProdutosGenericos[necessidade.codigo_origem]) {
+          const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || produtoPadrao.unidade_medida || '';
+          const valor = `${produtoPadrao.id || produtoPadrao.codigo}|${produtoPadrao.nome}|${unidade}|${produtoPadrao.fator_conversao || 1}`;
+          
+          handleProdutoGenericoChange(necessidade.codigo_origem, valor, necessidade.quantidade_total_origem);
+        }
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [produtosGenericos, necessidades]);
+
+  const handleToggleExpand = (codigo) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [codigo]: !prev[codigo]
+    }));
   };
 
   const handleSaveConsolidated = async (necessidade) => {

@@ -75,6 +75,24 @@ class SubstituicoesListController {
       // Buscar substituições existentes para cada produto
       const produtosComSubstituicoes = await Promise.all(
         necessidades.map(async (necessidade) => {
+          // Buscar produto padrão do produto origem no Foods
+          let produtoPadraoId = null;
+          try {
+            const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+            const produtoOrigemResponse = await axios.get(`${foodsApiUrl}/produto-origem/${necessidade.codigo_origem}`, {
+              headers: {
+                'Authorization': req.headers.authorization
+              },
+              timeout: 5000
+            });
+
+            if (produtoOrigemResponse.data && produtoOrigemResponse.data.success) {
+              produtoPadraoId = produtoOrigemResponse.data.data.produto_padrao_id;
+            }
+          } catch (error) {
+            console.error(`Erro ao buscar produto padrão para produto origem ${necessidade.codigo_origem}:`, error.message);
+          }
+
           // Buscar substituições existentes
           const substituicoes = await executeQuery(`
             SELECT 
@@ -116,7 +134,8 @@ class SubstituicoesListController {
           return {
             ...necessidade,
             escolas,
-            substituicoes_existentes: substituicoes.length > 0
+            substituicoes_existentes: substituicoes.length > 0,
+            produto_padrao_id: produtoPadraoId
           };
         })
       );
