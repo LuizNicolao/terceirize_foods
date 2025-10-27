@@ -42,12 +42,11 @@ class SubstituicoesListController {
       // Buscar necessidades agrupadas por produto origem
       const necessidades = await executeQuery(`
         SELECT 
-          n.id,
           n.produto_id as codigo_origem,
           n.produto as produto_origem_nome,
           n.produto_unidade as produto_origem_unidade,
           SUM(n.ajuste_coordenacao) as quantidade_total_origem,
-          n.necessidade_id,
+          GROUP_CONCAT(DISTINCT n.necessidade_id) as necessidade_ids,
           n.semana_abastecimento,
           n.semana_consumo,
           (SELECT ppc.grupo FROM produtos_per_capita ppc WHERE ppc.produto_id = n.produto_id LIMIT 1) as grupo,
@@ -61,7 +60,7 @@ class SubstituicoesListController {
           ) as escolas_solicitantes
         FROM necessidades n
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.necessidade_id, n.semana_abastecimento, n.semana_consumo, grupo
+        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo
         ORDER BY n.produto ASC
       `, params);
 
