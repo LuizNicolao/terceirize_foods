@@ -183,57 +183,51 @@ class SubstituicoesListController {
       const { produto_origem_id, search } = req.query;
       const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
 
-      if (!produto_origem_id) {
-        return res.status(400).json({
-          success: false,
-          message: 'ID do produto origem é obrigatório'
-        });
-      }
+      console.log(`[Substituições] Buscando produtos genéricos. produto_origem_id: ${produto_origem_id}, search: ${search}`);
 
-      // Buscar produtos genéricos relacionados no Foods usando o endpoint correto
-      let url = `${foodsApiUrl}/api/produto-generico`;
+      // Construir URL com query params
+      let url = `${foodsApiUrl}/api/produto-generico?limit=10000&status=1`;
       
-      // Se tem search, usar como query param
+      if (produto_origem_id) {
+        url += `&produto_origem_id=${produto_origem_id}`;
+      }
+      
       if (search) {
-        url += `?search=${encodeURIComponent(search)}`;
+        url += `&search=${encodeURIComponent(search)}`;
       }
 
-      console.log(`[Substituições] Buscando produtos genéricos em: ${url}`);
+      console.log(`[Substituições] URL completa: ${url}`);
 
       const response = await axios.get(url, {
         headers: {
           'Authorization': req.headers.authorization
         },
-        timeout: 5000,
-        params: {
-          produto_origem_id
-        }
+        timeout: 5000
       });
 
-      console.log(`[Substituições] Resposta Foods:`, response.status, response.data?.data?.length || 0, 'produtos');
+      console.log(`[Substituições] Status: ${response.status}`);
+      console.log(`[Substituições] Response data keys:`, Object.keys(response.data || {}));
 
       // Extrair dados da resposta Foods (estrutura HATEOAS)
       let produtosGenericos = [];
       
       if (response.data) {
+        console.log(`[Substituições] response.data.data:`, typeof response.data.data, Array.isArray(response.data.data));
+        
         // Verificar estrutura HATEOAS
         if (response.data.data && response.data.data.items) {
+          console.log(`[Substituições] Estrutura HATEOAS com items`);
           produtosGenericos = response.data.data.items;
         } else if (response.data.data) {
+          console.log(`[Substituições] response.data.data é array?`, Array.isArray(response.data.data));
           produtosGenericos = Array.isArray(response.data.data) ? response.data.data : [];
         } else if (Array.isArray(response.data)) {
+          console.log(`[Substituições] response.data é array direto`);
           produtosGenericos = response.data;
         }
 
-        // Filtrar por produto_origem_id se necessário
-        if (produto_origem_id && produtosGenericos.length > 0) {
-          produtosGenericos = produtosGenericos.filter(pg => 
-            pg.produto_origem_id === parseInt(produto_origem_id)
-          );
-        }
+        console.log(`[Substituições] Total produtos extraídos:`, produtosGenericos.length);
       }
-
-      console.log(`[Substituições] Produtos filtrados:`, produtosGenericos.length);
 
       res.json({
         success: true,
@@ -241,6 +235,7 @@ class SubstituicoesListController {
       });
     } catch (error) {
       console.error('[Substituições] Erro ao buscar produtos genéricos:', error.message);
+      console.error('[Substituições] Stack:', error.stack);
       res.json({
         success: true,
         data: []
