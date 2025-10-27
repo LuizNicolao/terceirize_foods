@@ -213,6 +213,7 @@ class SubstituicoesListController {
       
       if (response.data) {
         console.log(`[Substituições] response.data.data:`, typeof response.data.data, Array.isArray(response.data.data));
+        console.log(`[Substituições] response.data.data completo:`, JSON.stringify(response.data.data).substring(0, 500));
         
         // Verificar estrutura HATEOAS
         if (response.data.data && response.data.data.items) {
@@ -227,6 +228,7 @@ class SubstituicoesListController {
         }
 
         console.log(`[Substituições] Total produtos extraídos:`, produtosGenericos.length);
+        console.log(`[Substituições] Primeiro produto (se existir):`, produtosGenericos[0]);
       }
 
       res.json({
