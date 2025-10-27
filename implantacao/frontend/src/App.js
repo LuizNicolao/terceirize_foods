@@ -22,6 +22,7 @@ import ProdutosPerCapita from './pages/produtos-per-capita/ProdutosPerCapita';
 import RegistrosDiarios from './pages/registros-diarios/RegistrosDiarios';
 import Necessidades from './pages/necessidades/Necessidades';
 import AjusteNecessidades from './pages/necessidades/AjusteNecessidades';
+import AnaliseSubstituicoes from './pages/necessidades-substituicoes';
 import CalendarioDashboard from './pages/calendario/CalendarioDashboard';
 import CalendarioVisualizacao from './pages/calendario/CalendarioVisualizacao';
 import CalendarioConfiguracao from './pages/calendario/CalendarioConfiguracao';
@@ -215,6 +216,15 @@ function App() {
                 element={
                   <AuthenticatedRoute>
                     <AjusteNecessidades />
+                  </AuthenticatedRoute>
+                } 
+              />
+
+              <Route 
+                path="/analise-substituicoes" 
+                element={
+                  <AuthenticatedRoute>
+                    <AnaliseSubstituicoes />
                   </AuthenticatedRoute>
                 } 
               />

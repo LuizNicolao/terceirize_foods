@@ -30,7 +30,8 @@ const PermissoesForm = ({
       { key: 'registros_diarios', label: 'Quantidade Servida' },
       { key: 'necessidades', label: 'Gerar Necessidades' },
       { key: 'calendario', label: 'Calendário' },
-      { key: 'analise_necessidades', label: 'Analise Necessidades' }
+      { key: 'analise_necessidades', label: 'Analise Necessidades' },
+      { key: 'analise_necessidades_substituicoes', label: 'Análise Substituições' }
     ],
     'Sistema': [
       { key: 'permissoes', label: 'Permissões' }

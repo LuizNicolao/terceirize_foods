@@ -23,6 +23,7 @@ const PERMISSOES_PADRAO = {
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -42,6 +43,7 @@ const PERMISSOES_PADRAO = {
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -60,6 +62,7 @@ const PERMISSOES_PADRAO = {
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -81,6 +84,7 @@ const PERMISSOES_PADRAO = {
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -100,6 +104,7 @@ const PERMISSOES_PADRAO = {
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -118,6 +123,7 @@ const PERMISSOES_PADRAO = {
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -235,6 +241,7 @@ const PERMISSOES_PADRAO = {
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -256,6 +263,7 @@ const PERMISSOES_PADRAO = {
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -275,6 +283,7 @@ const PERMISSOES_PADRAO = {
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -293,6 +302,7 @@ const PERMISSOES_PADRAO = {
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -314,6 +324,7 @@ const PERMISSOES_PADRAO = {
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -333,6 +344,7 @@ const PERMISSOES_PADRAO = {
       necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       calendario: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -351,6 +363,7 @@ const PERMISSOES_PADRAO = {
       registros_diarios: { visualizar: true, criar: true, editar: true, excluir: true },
       necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
+      analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   }
@@ -374,6 +387,7 @@ const TODAS_TELAS = [
   'necessidades',
   'calendario',
   'analise_necessidades',
+  'analise_necessidades_substituicoes',
   'permissoes'
 ];
 
@@ -412,6 +426,7 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'necessidades', descricao: 'Geração de Necessidades' },
   { nome: 'calendario', descricao: 'Gerenciamento de Calendário' },
   { nome: 'analise_necessidades', descricao: 'Analise de Necessidades' },
+  { nome: 'analise_necessidades_substituicoes', descricao: 'Análise de Substituições' },
   { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
 ];
 
