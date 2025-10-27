@@ -192,35 +192,12 @@ class SubstituicoesListController {
 
       console.log(`[Substituições] Buscando produtos genéricos. produto_origem_id: ${produto_origem_id}, grupo: ${grupo}, search: ${search}`);
 
-      let grupoId = null;
-
-      // 1. Buscar grupo_id do produto origem no Foods
-      if (produto_origem_id) {
-        try {
-          console.log(`[Substituições] Buscando produto origem ${produto_origem_id} no Foods`);
-          const produtoOrigemResponse = await axios.get(`${foodsApiUrl}/produto-origem/${produto_origem_id}`, {
-            headers: {
-              'Authorization': req.headers.authorization
-            },
-            timeout: 5000
-          });
-
-          if (produtoOrigemResponse.data && produtoOrigemResponse.data.success) {
-            const produtoOrigem = produtoOrigemResponse.data.data;
-            grupoId = produtoOrigem.grupo_id;
-            console.log(`[Substituições] Grupo ID encontrado: ${grupoId}`);
-          }
-        } catch (error) {
-          console.error(`[Substituições] Erro ao buscar produto origem:`, error.message);
-        }
-      }
-
-      // 2. Buscar produtos genéricos com filtro de grupo_id
+      // Buscar produtos genéricos vinculados ao produto origem específico
       let url = `${foodsApiUrl}/produto-generico?limit=10000&status=1`;
       
-      if (grupoId) {
-        url += `&grupo_id=${grupoId}`;
-        console.log(`[Substituições] Filtrando por grupo_id: ${grupoId}`);
+      if (produto_origem_id) {
+        url += `&produto_origem_id=${produto_origem_id}`;
+        console.log(`[Substituições] Filtrando por produto_origem_id: ${produto_origem_id}`);
       }
       
       if (search) {
