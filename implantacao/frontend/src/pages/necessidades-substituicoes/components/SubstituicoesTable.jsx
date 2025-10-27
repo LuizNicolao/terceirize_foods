@@ -289,10 +289,11 @@ const SubstituicoesTable = ({
                               const codigoProduto = partes[0] || '';
                               const nomeProduto = partes[1] || '';
                               const unidadeProduto = partes[2] || '';
-                              const fatorConversao = parseFloat(partes[3]) || 1;
+                              const fatorConversao = partes.length >= 4 ? parseFloat(partes[3]) : 0;
                               
                               // Calcular quantidade genérica: dividir pelo fator e arredondar para cima
-                              const quantidadeGenerica = fatorConversao > 0 && escola.quantidade_origem 
+                              // Só calcular se houver produto selecionado (partes.length >= 4)
+                              const quantidadeGenerica = produtoSelecionado && fatorConversao > 0 && escola.quantidade_origem 
                                 ? Math.ceil(parseFloat(escola.quantidade_origem) / fatorConversao)
                                 : '';
 
