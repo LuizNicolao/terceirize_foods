@@ -44,23 +44,35 @@ const SubstituicoesTable = ({
     }
   };
 
-  // Pré-selecionar produto padrão quando produtos genéricos forem carregados
+  // Pré-selecionar produto padrão ou produto já salvo quando produtos genéricos forem carregados
   useEffect(() => {
     necessidades.forEach(necessidade => {
       if (produtosGenericos[necessidade.codigo_origem] && !produtosPadraoSelecionados[necessidade.codigo_origem]) {
-        // Buscar produto com produto_padrao = 'Sim'
-        const produtoPadrao = produtosGenericos[necessidade.codigo_origem].find(
-          p => p.produto_padrao === 'Sim'
-        );
+        // Primeiro, verificar se já existe um produto salvo (substituição)
+        const produtoSalvo = necessidade.escolas.find(escola => escola.substituicao);
         
-        if (produtoPadrao) {
-          const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || produtoPadrao.unidade_medida || '';
-          const valor = `${produtoPadrao.id || produtoPadrao.codigo}|${produtoPadrao.nome}|${unidade}|${produtoPadrao.fator_conversao || 1}`;
+        let produtoParaSelecionar;
+        
+        if (produtoSalvo) {
+          // Se já existe substituição salva, usar esse produto como padrão
+          produtoParaSelecionar = produtosGenericos[necessidade.codigo_origem].find(
+            p => (p.id || p.codigo) == produtoSalvo.substituicao.produto_generico_id
+          );
+        } else {
+          // Caso contrário, buscar produto com produto_padrao = 'Sim'
+          produtoParaSelecionar = produtosGenericos[necessidade.codigo_origem].find(
+            p => p.produto_padrao === 'Sim'
+          );
+        }
+        
+        if (produtoParaSelecionar) {
+          const unidade = produtoParaSelecionar.unidade_medida_sigla || produtoParaSelecionar.unidade || produtoParaSelecionar.unidade_medida || '';
+          const valor = `${produtoParaSelecionar.id || produtoParaSelecionar.codigo}|${produtoParaSelecionar.nome}|${unidade}|${produtoParaSelecionar.fator_conversao || 1}`;
           
           setSelectedProdutosGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: valor }));
           setUndGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: unidade }));
           
-          const fatorConversao = produtoPadrao.fator_conversao || 1;
+          const fatorConversao = produtoParaSelecionar.fator_conversao || 1;
           if (necessidade.quantidade_total_origem && fatorConversao > 0) {
             const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
             setQuantidadesGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: quantidadeCalculada }));
@@ -69,7 +81,16 @@ const SubstituicoesTable = ({
           // Pré-selecionar para cada escola no estado selectedProdutosPorEscola
           necessidade.escolas.forEach(escola => {
             const chaveEscola = `${necessidade.codigo_origem}-${escola.escola_id}`;
-            setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
+            // Se a escola já tem substituição, usar ela; senão usar o produto padrão
+            const produtoEscola = escola.substituicao ? 
+              produtosGenericos[necessidade.codigo_origem].find(p => (p.id || p.codigo) == escola.substituicao.produto_generico_id) :
+              produtoParaSelecionar;
+              
+            if (produtoEscola) {
+              const unidadeEscola = produtoEscola.unidade_medida_sigla || produtoEscola.unidade || produtoEscola.unidade_medida || '';
+              const valorEscola = `${produtoEscola.id || produtoEscola.codigo}|${produtoEscola.nome}|${unidadeEscola}|${produtoEscola.fator_conversao || 1}`;
+              setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valorEscola }));
+            }
           });
           
           setProdutosPadraoSelecionados(prev => ({ ...prev, [necessidade.codigo_origem]: true }));
@@ -115,7 +136,17 @@ const SubstituicoesTable = ({
       }))
     };
 
-    await onSaveConsolidated(dados, necessidade.codigo_origem);
+    const response = await onSaveConsolidated(dados, necessidade.codigo_origem);
+    
+    // Se salvou com sucesso, atualizar o produto padrão para este produto
+    if (response && response.success) {
+      // Atualizar o produto padrão nos produtos genéricos
+      if (produtosGenericos[necessidade.codigo_origem]) {
+        produtosGenericos[necessidade.codigo_origem].forEach(produto => {
+          produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
+        });
+      }
+    }
   };
 
   const handleSaveIndividual = async (escola, necessidade) => {
@@ -145,7 +176,38 @@ const SubstituicoesTable = ({
       quantidade_generico: escola.selectedQuantidade || escola.quantidade_origem
     };
 
-    await onSaveIndividual(dados, escola.escola_id);
+    const response = await onSaveIndividual(dados, escola.escola_id);
+    
+    // Se salvou com sucesso, atualizar o produto padrão para este produto
+    if (response && response.success) {
+      // Atualizar o produto padrão nos produtos genéricos
+      if (produtosGenericos[necessidade.codigo_origem]) {
+        produtosGenericos[necessidade.codigo_origem].forEach(produto => {
+          produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
+        });
+      }
+      
+      // Atualizar também o produto selecionado consolidado
+      setSelectedProdutosGenericos(prev => ({ 
+        ...prev, 
+        [necessidade.codigo_origem]: escola.selectedProdutoGenerico 
+      }));
+      
+      // Atualizar unidade e quantidade genérica
+      const fatorConversao = parseFloat(partes[3]) || 1;
+      setUndGenericos(prev => ({ 
+        ...prev, 
+        [necessidade.codigo_origem]: produto_generico_unidade 
+      }));
+      
+      if (necessidade.quantidade_total_origem && fatorConversao > 0) {
+        const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
+        setQuantidadesGenericos(prev => ({ 
+          ...prev, 
+          [necessidade.codigo_origem]: quantidadeCalculada 
+        }));
+      }
+    }
   };
 
   if (necessidades.length === 0) {
