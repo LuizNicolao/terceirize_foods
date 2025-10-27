@@ -227,11 +227,6 @@ class SubstituicoesListController {
         }
       }
 
-      // Log para debug
-      if (produtosGenericos.length > 0) {
-        console.log('[Substituições] Primeiro produto retornado pela API:', JSON.stringify(produtosGenericos[0], null, 2));
-      }
-
       res.json({
         success: true,
         data: produtosGenericos

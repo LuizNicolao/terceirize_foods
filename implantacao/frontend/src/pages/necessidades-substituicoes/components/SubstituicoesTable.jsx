@@ -80,11 +80,14 @@ const SubstituicoesTable = ({
   };
 
   const handleSaveIndividual = async (escola, necessidade) => {
-    if (!escola.selectedProdutoGenerico) {
+    const chave = `${necessidade.codigo_origem}-${escola.escola_id}`;
+    const produtoParaSalvar = selectedProdutosPorEscola[chave] || escola.selectedProdutoGenerico;
+    
+    if (!produtoParaSalvar) {
       return;
     }
 
-    const partes = escola.selectedProdutoGenerico.split('|');
+    const partes = produtoParaSalvar.split('|');
     const [produto_generico_id, produto_generico_nome, produto_generico_unidade] = partes;
 
     const dados = {
@@ -256,17 +259,11 @@ const SubstituicoesTable = ({
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
                             {necessidade.escolas.map((escola, idx) => {
-                              const key = `${necessidade.codigo_origem}-${escola.escola_id}`;
-                              const produtoEstadoLocal = selectedProdutosPorEscola[key];
-                              const produtoSelecionado = produtoEstadoLocal || escola.selectedProdutoGenerico || (escola.substituicao ? 
+                              const chave = `${necessidade.codigo_origem}-${escola.escola_id}`;
+                              const produtoSalvo = escola.substituicao ? 
                                 `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade}` 
-                                : '');
-                              
-                              // Console para debug
-                              if (produtoSelecionado && !produtoSelecionado.startsWith('2|')) {
-                                console.log('🔍 [DEBUG] produtoSelecionado:', produtoSelecionado);
-                              }
-                              
+                                : '';
+                              const produtoSelecionado = selectedProdutosPorEscola[chave] || produtoSalvo || '';
                               const partes = produtoSelecionado ? produtoSelecionado.split('|') : [];
                               const codigoProduto = partes[0] || '-';
                               const unidadeProduto = partes[2] || '';
@@ -288,26 +285,13 @@ const SubstituicoesTable = ({
                                     <SearchableSelect
                                       value={produtoSelecionado}
                                       onChange={(value) => {
-                                        console.log('🔍 [DEBUG] onChange chamado com value:', value);
-                                        const chave = `${necessidade.codigo_origem}-${escola.escola_id}`;
-                                        console.log('🔍 [DEBUG] chave:', chave);
-                                        // Atualizar estado local para forçar re-render
-                                        setSelectedProdutosPorEscola(prev => {
-                                          const newState = { ...prev, [chave]: value };
-                                          console.log('🔍 [DEBUG] novo estado:', newState);
-                                          return newState;
-                                        });
-                                        // Também atualizar no objeto escola para salvar
+                                        setSelectedProdutosPorEscola(prev => ({ ...prev, [chave]: value }));
                                         escola.selectedProdutoGenerico = value;
                                       }}
-                                      options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
-                                        const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
-                                        console.log('🔍 [DEBUG] produto:', produto.id, produto.nome, 'unidade:', unidade);
-                                        return {
-                                          value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}`,
-                                          label: produto.nome
-                                        };
-                                      }) || []}
+                                      options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
+                                        value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}`,
+                                        label: produto.nome
+                                      })) || []}
                                       placeholder="Selecione..."
                                       className="text-xs"
                                       filterBy={(option, searchTerm) => {
