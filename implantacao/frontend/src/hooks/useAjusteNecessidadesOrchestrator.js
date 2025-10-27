@@ -106,12 +106,17 @@ export const useAjusteNecessidadesOrchestrator = () => {
   // Inicializar ajustes locais quando necessidades carregarem
   useEffect(() => {
     if (necessidades.length > 0) {
-      const ajustesIniciais = {};
-      necessidades.forEach(nec => {
-        // Sempre inicializar em branco para nutricionista e coordenação
-        ajustesIniciais[nec.id] = '';
+      setAjustesLocais(prev => {
+        // Preservar ajustes existentes e só adicionar novos produtos
+        const novosAjustes = { ...prev };
+        necessidades.forEach(nec => {
+          // Só inicializar se ainda não existir um valor para este produto
+          if (!(nec.id in novosAjustes)) {
+            novosAjustes[nec.id] = '';
+          }
+        });
+        return novosAjustes;
       });
-      setAjustesLocais(ajustesIniciais);
       setNecessidadeAtual(necessidades[0]);
       setNecessidadesFiltradas(necessidades);
     }
@@ -159,10 +164,15 @@ export const useAjusteNecessidadesOrchestrator = () => {
 
   const handleAjusteChange = useCallback((necessidadeId, valor) => {
     setAjustesLocais(prev => {
+      console.log('handleAjusteChange - necessidadeId:', necessidadeId, 'valor:', valor);
+      console.log('handleAjusteChange - prev:', prev);
+      
       const novosAjustes = { ...prev };
       
       // Apenas atualizar o valor do produto que foi alterado
       novosAjustes[necessidadeId] = valor === '' ? '' : parseFloat(valor) || '';
+      
+      console.log('handleAjusteChange - novosAjustes:', novosAjustes);
       
       return novosAjustes;
     });
