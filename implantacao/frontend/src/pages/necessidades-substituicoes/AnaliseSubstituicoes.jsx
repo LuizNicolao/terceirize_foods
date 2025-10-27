@@ -113,6 +113,9 @@ const AnaliseSubstituicoes = () => {
               necessidade_id_grupo: necessidade.necessidade_id_grupo,
               semana_abastecimento: necessidade.semana_abastecimento,
               semana_consumo: necessidade.semana_consumo,
+              // Campos obrigatórios para validação (valores consolidados)
+              quantidade_origem: necessidade.quantidade_total_origem,
+              quantidade_generico: Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao),
               escola_ids: necessidade.escolas.map(escola => {
                 const quantidadeGenerico = Math.ceil(parseFloat(escola.quantidade_origem) / fatorConversao);
                 return {
@@ -125,7 +128,7 @@ const AnaliseSubstituicoes = () => {
               })
             };
 
-            console.log('📤 Enviando dados para salvar:', dados);
+            console.log('📤 Enviando dados para salvar:', JSON.stringify(dados, null, 2));
             const response = await salvarSubstituicao(dados);
             console.log('✅ Resposta recebida:', response);
             return response;
