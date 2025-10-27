@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaPlusCircle, FaMinusCircle, FaSave } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaSave } from 'react-icons/fa';
 import { Button, Input, SearchableSelect } from '../../../components/ui';
 import toast from 'react-hot-toast';
 
@@ -146,9 +146,9 @@ const SubstituicoesTable = ({
                       className="text-green-600 hover:text-green-700 focus:outline-none transition-colors"
                     >
                       {expandedRows[necessidade.codigo_origem] ? (
-                        <FaMinusCircle className="w-4 h-4" />
+                        <FaChevronUp className="w-4 h-4" />
                       ) : (
-                        <FaPlusCircle className="w-4 h-4" />
+                        <FaChevronDown className="w-4 h-4" />
                       )}
                     </button>
                   </td>
