@@ -211,10 +211,10 @@ const SubstituicoesTable = ({
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <span className="text-xs text-cyan-600 font-semibold">
-                      {quantidadesGenericos[necessidade.codigo_origem] || (necessidade.quantidade_total_origem ? 
-                        parseFloat(necessidade.quantidade_total_origem).toFixed(3).replace('.', ',') : 
+                      {quantidadesGenericos[necessidade.codigo_origem] !== undefined ? 
+                        quantidadesGenericos[necessidade.codigo_origem] : 
                         '0,000'
-                      )}
+                      }
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
@@ -304,12 +304,7 @@ const SubstituicoesTable = ({
                                     </span>
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center text-xs font-semibold text-cyan-600">
-                                    {quantidadeGenerica || 
-                                      (escola.quantidade_origem ? 
-                                        parseFloat(escola.quantidade_origem).toFixed(3).replace('.', ',') : 
-                                        '0,000'
-                                      )
-                                    }
+                                    {quantidadeGenerica || '0,000'}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center">
                                     <Button
