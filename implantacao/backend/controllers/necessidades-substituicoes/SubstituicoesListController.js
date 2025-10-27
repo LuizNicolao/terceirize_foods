@@ -29,18 +29,22 @@ class SubstituicoesListController {
 
       // Filtro por semana de abastecimento
       if (semana_abastecimento) {
-        // Normalizar formato (remover /25 e parênteses)
+        // Normalizar formato (remover /25 e parênteses) e extrair data inicial
         const semanaAbastNormalizada = semana_abastecimento.replace(/[()]/g, '').replace(/\/25$/, '').trim();
+        // Extrair apenas a data inicial (ex: "30/12" de "30/12 a 03/01")
+        const dataInicial = semanaAbastNormalizada.split(' a ')[0].trim();
         whereConditions.push("n.semana_abastecimento LIKE ?");
-        params.push(`%${semanaAbastNormalizada}%`);
+        params.push(`${dataInicial}%`);
       }
 
       // Filtro por semana de consumo
       if (semana_consumo) {
-        // Normalizar formato (remover /25 e parênteses)
+        // Normalizar formato (remover /25 e parênteses) e extrair data inicial
         const semanaConsumoNormalizada = semana_consumo.replace(/[()]/g, '').replace(/\/25$/, '').trim();
+        // Extrair apenas a data inicial
+        const dataInicial = semanaConsumoNormalizada.split(' a ')[0].trim();
         whereConditions.push("n.semana_consumo LIKE ?");
-        params.push(`%${semanaConsumoNormalizada}%`);
+        params.push(`${dataInicial}%`);
       }
 
       // Buscar necessidades agrupadas por produto origem
@@ -145,8 +149,9 @@ class SubstituicoesListController {
         });
       }
 
-      // Normalizar formato (remover /25 e parênteses)
+      // Normalizar formato (remover /25 e parênteses) e extrair data inicial
       const semanaAbastNormalizada = semana_abastecimento.replace(/[()]/g, '').replace(/\/25$/, '').trim();
+      const dataInicial = semanaAbastNormalizada.split(' a ')[0].trim();
 
       // Buscar semana de consumo na tabela necessidades
       const result = await executeQuery(`
@@ -156,7 +161,7 @@ class SubstituicoesListController {
           AND semana_consumo IS NOT NULL
           AND semana_consumo != ''
         LIMIT 1
-      `, [`%${semanaAbastNormalizada}%`]);
+      `, [`${dataInicial}%`]);
 
       if (result.length > 0) {
         res.json({
