@@ -16,6 +16,7 @@ const SubstituicoesTable = ({
   const [quantidadesGenericos, setQuantidadesGenericos] = useState({});
   const [undGenericos, setUndGenericos] = useState({});
   const [produtosPadraoSelecionados, setProdutosPadraoSelecionados] = useState({});
+  const [selectedProdutosPorEscola, setSelectedProdutosPorEscola] = useState({});
 
   const handleProdutoGenericoChange = (codigo, valor, quantidadeOrigem) => {
     if (!valor) {
@@ -282,7 +283,8 @@ const SubstituicoesTable = ({
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
                             {necessidade.escolas.map((escola, idx) => {
-                              const produtoSelecionado = escola.selectedProdutoGenerico || (escola.substituicao ? 
+                              const chaveEscola = `${necessidade.codigo_origem}-${escola.escola_id}`;
+                              const produtoSelecionado = selectedProdutosPorEscola[chaveEscola] || (escola.substituicao ? 
                                 `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade}` 
                                 : '');
                               const partes = produtoSelecionado ? produtoSelecionado.split('|') : [];
@@ -312,8 +314,10 @@ const SubstituicoesTable = ({
                                     <SearchableSelect
                                       value={produtoSelecionado}
                                       onChange={(value) => {
+                                        const chave = `${necessidade.codigo_origem}-${escola.escola_id}`;
+                                        setSelectedProdutosPorEscola(prev => ({ ...prev, [chave]: value }));
+                                        // Também atualizar em escola para manter compatibilidade
                                         escola.selectedProdutoGenerico = value;
-                                        // Só atualizar o estado, não salvar automaticamente
                                       }}
                                       options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
                                         const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
