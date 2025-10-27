@@ -247,66 +247,91 @@ const SubstituicoesTable = ({
                         <table className="min-w-full divide-y divide-gray-200">
                           <thead>
                             <tr className="bg-gray-100">
-                              <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Código</th>
+                              <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Código Escola</th>
                               <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Unidade Escolar</th>
+                              <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Código</th>
                               <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Produto Genérico</th>
+                              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Unid. Medida</th>
                               <th style={{ width: '100px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Quantidade</th>
                               <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Ações</th>
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {necessidade.escolas.map((escola, idx) => (
-                              <tr key={`${escola.escola_id}-${idx}`}>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm font-semibold text-gray-600">
-                                  {escola.escola_id}
-                                </td>
-                                <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                  {escola.escola_nome}
-                                </td>
-                                <td className="px-4 py-2 whitespace-nowrap">
-                                  <SearchableSelect
-                                    value={escola.selectedProdutoGenerico || (escola.substituicao ? 
-                                      `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade}` 
-                                      : '')}
-                                    onChange={(value) => {
-                                      escola.selectedProdutoGenerico = value;
-                                      // Só atualizar o estado, não salvar automaticamente
-                                    }}
-                                    options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
-                                      const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
-                                      return {
-                                        value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}`,
-                                        label: `${produto.nome} (Cód: ${produto.id || produto.codigo} | Unid: ${unidade})`
-                                      };
-                                    }) || []}
-                                    placeholder="Selecione..."
-                                    filterBy={(option, searchTerm) => {
-                                      return option.label.toLowerCase().includes(searchTerm.toLowerCase());
-                                    }}
-                                  />
-                                </td>
-                                <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-semibold text-cyan-600">
-                                  {escola.selectedQuantidade || 
-                                    (escola.quantidade_origem ? 
-                                      parseFloat(escola.quantidade_origem).toFixed(3).replace('.', ',') : 
-                                      '0,000'
-                                    )
-                                  }
-                                </td>
-                                <td className="px-4 py-2 whitespace-nowrap text-center">
-                                  <Button
-                                    size="xs"
-                                    variant="success"
-                                    onClick={() => handleSaveIndividual(escola, necessidade)}
-                                    disabled={!escola.selectedProdutoGenerico}
-                                    className="flex items-center gap-1"
-                                  >
-                                    <FaSave className="w-3 h-3" />
-                                    Salvar
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
+                            {necessidade.escolas.map((escola, idx) => {
+                              const produtoSelecionado = escola.selectedProdutoGenerico || (escola.substituicao ? 
+                                `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade}` 
+                                : '');
+                              const partes = produtoSelecionado ? produtoSelecionado.split('|') : [];
+                              const codigoProduto = partes[0] || '-';
+                              const unidadeProduto = partes[2] || '';
+
+                              return (
+                                <tr key={`${escola.escola_id}-${idx}`}>
+                                  <td className="px-4 py-2 whitespace-nowrap text-xs font-semibold text-gray-600">
+                                    {escola.escola_id}
+                                  </td>
+                                  <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900">
+                                    {escola.escola_nome}
+                                  </td>
+                                  <td className="px-4 py-2 whitespace-nowrap">
+                                    <span className="text-xs text-purple-600">
+                                      {codigoProduto}
+                                    </span>
+                                  </td>
+                                  <td className="px-4 py-2 whitespace-nowrap">
+                                    <SearchableSelect
+                                      value={produtoSelecionado}
+                                      onChange={(value) => {
+                                        escola.selectedProdutoGenerico = value;
+                                        // Só atualizar o estado, não salvar automaticamente
+                                      }}
+                                      options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
+                                        value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}`,
+                                        label: produto.nome
+                                      })) || []}
+                                      placeholder="Selecione..."
+                                      className="text-xs"
+                                      filterBy={(option, searchTerm) => {
+                                        return option.label.toLowerCase().includes(searchTerm.toLowerCase());
+                                      }}
+                                    />
+                                  </td>
+                                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                                    <Input
+                                      type="text"
+                                      value={unidadeProduto}
+                                      readOnly
+                                      className="text-center bg-gray-100 text-gray-700 text-xs py-1"
+                                      style={{ width: '80px' }}
+                                    />
+                                  </td>
+                                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                                    <Input
+                                      type="number"
+                                      step="0.001"
+                                      value={escola.selectedQuantidade || escola.quantidade_origem || 0}
+                                      onChange={(e) => {
+                                        escola.selectedQuantidade = e.target.value;
+                                      }}
+                                      className="text-center text-xs py-1"
+                                      style={{ width: '100px' }}
+                                    />
+                                  </td>
+                                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                                    <Button
+                                      size="xs"
+                                      variant="success"
+                                      onClick={() => handleSaveIndividual(escola, necessidade)}
+                                      disabled={!escola.selectedProdutoGenerico}
+                                      className="flex items-center gap-1"
+                                    >
+                                      <FaSave className="w-3 h-3" />
+                                      Salvar
+                                    </Button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
