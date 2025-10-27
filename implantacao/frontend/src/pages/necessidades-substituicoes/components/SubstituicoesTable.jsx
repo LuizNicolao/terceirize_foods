@@ -15,6 +15,7 @@ const SubstituicoesTable = ({
   const [selectedProdutosGenericos, setSelectedProdutosGenericos] = useState({});
   const [quantidadesGenericos, setQuantidadesGenericos] = useState({});
   const [undGenericos, setUndGenericos] = useState({});
+  const [produtosPadraoSelecionados, setProdutosPadraoSelecionados] = useState({});
 
   const handleProdutoGenericoChange = (codigo, valor, quantidadeOrigem) => {
     if (!valor) {
@@ -44,21 +45,29 @@ const SubstituicoesTable = ({
   // Pré-selecionar produto padrão quando produtos genéricos forem carregados
   useEffect(() => {
     necessidades.forEach(necessidade => {
-      if (necessidade.produto_padrao_id && produtosGenericos[necessidade.codigo_origem]) {
+      if (necessidade.produto_padrao_id && produtosGenericos[necessidade.codigo_origem] && !produtosPadraoSelecionados[necessidade.codigo_origem]) {
         const produtoPadrao = produtosGenericos[necessidade.codigo_origem].find(
           p => p.id === necessidade.produto_padrao_id || p.codigo === necessidade.produto_padrao_id
         );
         
-        if (produtoPadrao && !selectedProdutosGenericos[necessidade.codigo_origem]) {
+        if (produtoPadrao) {
           const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || produtoPadrao.unidade_medida || '';
           const valor = `${produtoPadrao.id || produtoPadrao.codigo}|${produtoPadrao.nome}|${unidade}|${produtoPadrao.fator_conversao || 1}`;
           
-          handleProdutoGenericoChange(necessidade.codigo_origem, valor, necessidade.quantidade_total_origem);
+          setSelectedProdutosGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: valor }));
+          setUndGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: unidade }));
+          
+          const fatorConversao = produtoPadrao.fator_conversao || 1;
+          if (necessidade.quantidade_total_origem && fatorConversao > 0) {
+            const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
+            setQuantidadesGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: quantidadeCalculada }));
+          }
+          
+          setProdutosPadraoSelecionados(prev => ({ ...prev, [necessidade.codigo_origem]: true }));
         }
       }
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [produtosGenericos, necessidades]);
+  }, [produtosGenericos, necessidades, produtosPadraoSelecionados]);
 
   const handleToggleExpand = (codigo) => {
     setExpandedRows(prev => ({
