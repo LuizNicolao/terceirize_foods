@@ -125,7 +125,25 @@ export const useProdutoGenerico = () => {
 
   // Atualizar estatísticas quando os dados mudam
   useEffect(() => {
-    setEstatisticasProdutoGenerico(baseEntity.statistics || { total_produtos_genericos: 0, produtos_ativos: 0, produtos_inativos: 0 });
+    if (baseEntity.statistics) {
+      setEstatisticasProdutoGenerico({
+        total_produtos_genericos: baseEntity.statistics.total || baseEntity.statistics.total_produtos_genericos || 0,
+        produtos_ativos: baseEntity.statistics.ativos || baseEntity.statistics.produtos_ativos || 0,
+        produtos_inativos: baseEntity.statistics.inativos || baseEntity.statistics.produtos_inativos || 0,
+        produtos_padrao: baseEntity.statistics.produtos_padrao || 0,
+        com_produto_origem: baseEntity.statistics.com_produto_origem || 0,
+        total_produtos_vinculados: baseEntity.statistics.total_produtos_vinculados || 0
+      });
+    } else {
+      setEstatisticasProdutoGenerico({
+        total_produtos_genericos: 0,
+        produtos_ativos: 0,
+        produtos_inativos: 0,
+        produtos_padrao: 0,
+        com_produto_origem: 0,
+        total_produtos_vinculados: 0
+      });
+    }
   }, [baseEntity.statistics]);
 
   /**
