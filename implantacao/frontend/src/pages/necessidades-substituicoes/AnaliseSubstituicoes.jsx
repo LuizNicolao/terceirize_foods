@@ -35,18 +35,19 @@ const AnaliseSubstituicoes = () => {
   // Carregar produtos genéricos quando necessário
   useEffect(() => {
     if (necessidades.length > 0) {
-      // Extrair produtos origem únicos (remover sufixo do produto genérico)
+      // Extrair produtos origem únicos
       const produtosOrigemUnicos = [...new Set(necessidades.map(nec => {
-        // Se tem produto_generico_id, é uma linha de substituição existente
-        // Extrair o produto origem original (antes do _)
-        return nec.produto_generico_id ? nec.codigo_origem.split('_')[0] : nec.codigo_origem;
+        // Usar produto_origem_id se disponível, senão extrair do codigo_origem
+        return nec.produto_origem_id || 
+          (nec.produto_generico_id ? nec.codigo_origem.split('_')[0] : nec.codigo_origem);
       }))];
 
       produtosOrigemUnicos.forEach(produtoOrigemId => {
         if (!produtosGenericos[produtoOrigemId]) {
           // Buscar grupo do primeiro produto com este ID
           const primeiraNecessidade = necessidades.find(nec => 
-            (nec.produto_generico_id ? nec.codigo_origem.split('_')[0] : nec.codigo_origem) === produtoOrigemId
+            (nec.produto_origem_id || 
+              (nec.produto_generico_id ? nec.codigo_origem.split('_')[0] : nec.codigo_origem)) === produtoOrigemId
           );
           if (primeiraNecessidade?.grupo) {
             buscarProdutosGenericos(produtoOrigemId, primeiraNecessidade.grupo);

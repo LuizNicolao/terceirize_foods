@@ -164,7 +164,8 @@ class SubstituicoesListController {
 
               return {
                 ...necessidade,
-                codigo_origem: `${necessidade.codigo_origem}_${produtoGenerico.produto_generico_id}`, // Chave única
+                codigo_origem: `${necessidade.codigo_origem}_${produtoGenerico.produto_generico_id}`, // Chave única para frontend
+                produto_origem_id: necessidade.codigo_origem, // Manter produto origem original
                 produto_generico_id: produtoGenerico.produto_generico_id,
                 produto_generico_codigo: produtoGenerico.produto_generico_codigo,
                 produto_generico_nome: produtoGenerico.produto_generico_nome,

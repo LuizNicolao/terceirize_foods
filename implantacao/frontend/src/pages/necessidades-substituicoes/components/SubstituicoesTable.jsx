@@ -47,15 +47,31 @@ const SubstituicoesTable = ({
   // Pré-selecionar produto padrão ou produto já salvo quando produtos genéricos forem carregados
   useEffect(() => {
     necessidades.forEach(necessidade => {
-      // Se já tem substituição existente, não precisa pré-selecionar
+      // Se já tem substituição existente, pré-selecionar as escolas
       if (necessidade.substituicoes_existentes) {
+        const produtoGenerico = {
+          id: necessidade.produto_generico_id,
+          codigo: necessidade.produto_generico_codigo,
+          nome: necessidade.produto_generico_nome,
+          unidade_medida_sigla: necessidade.produto_generico_unidade
+        };
+        
+        const valor = `${produtoGenerico.id || produtoGenerico.codigo}|${produtoGenerico.nome}|${produtoGenerico.unidade_medida_sigla || ''}|1`;
+        
+        // Pré-selecionar para cada escola
+        necessidade.escolas?.forEach(escola => {
+          const chaveEscola = `${necessidade.codigo_origem}-${escola.escola_id}`;
+          setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
+          escola.selectedProdutoGenerico = valor;
+        });
         return;
       }
 
-      // Extrair produto origem original (sem sufixo do produto genérico)
-      const produtoOrigemId = necessidade.produto_generico_id ? 
-        necessidade.codigo_origem.split('_')[0] : 
-        necessidade.codigo_origem;
+      // Usar produto_origem_id se disponível, senão extrair do codigo_origem
+      const produtoOrigemId = necessidade.produto_origem_id || 
+        (necessidade.produto_generico_id ? 
+          necessidade.codigo_origem.split('_')[0] : 
+          necessidade.codigo_origem);
 
       if (produtosGenericos[produtoOrigemId] && !produtosPadraoSelecionados[necessidade.codigo_origem]) {
         // Buscar produto com produto_padrao = 'Sim'
@@ -80,6 +96,8 @@ const SubstituicoesTable = ({
           necessidade.escolas?.forEach(escola => {
             const chaveEscola = `${necessidade.codigo_origem}-${escola.escola_id}`;
             setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
+            // Também definir na escola para compatibilidade
+            escola.selectedProdutoGenerico = valor;
           });
           
           setProdutosPadraoSelecionados(prev => ({ ...prev, [necessidade.codigo_origem]: true }));
@@ -105,10 +123,11 @@ const SubstituicoesTable = ({
     const partes = produtoSelecionado.split('|');
     const [produto_generico_id, produto_generico_nome, produto_generico_unidade] = partes;
 
-    // Extrair produto origem original (sem sufixo do produto genérico)
-    const produtoOrigemId = necessidade.produto_generico_id ? 
-      necessidade.codigo_origem.split('_')[0] : 
-      necessidade.codigo_origem;
+    // Usar produto_origem_id se disponível, senão extrair do codigo_origem
+    const produtoOrigemId = necessidade.produto_origem_id || 
+      (necessidade.produto_generico_id ? 
+        necessidade.codigo_origem.split('_')[0] : 
+        necessidade.codigo_origem);
 
     const dados = {
       produto_origem_id: produtoOrigemId,
@@ -152,10 +171,11 @@ const SubstituicoesTable = ({
     const partes = escola.selectedProdutoGenerico.split('|');
     const [produto_generico_id, produto_generico_nome, produto_generico_unidade] = partes;
 
-    // Extrair produto origem original (sem sufixo do produto genérico)
-    const produtoOrigemId = necessidade.produto_generico_id ? 
-      necessidade.codigo_origem.split('_')[0] : 
-      necessidade.codigo_origem;
+    // Usar produto_origem_id se disponível, senão extrair do codigo_origem
+    const produtoOrigemId = necessidade.produto_origem_id || 
+      (necessidade.produto_generico_id ? 
+        necessidade.codigo_origem.split('_')[0] : 
+        necessidade.codigo_origem);
 
     const dados = {
       produto_origem_id: produtoOrigemId,
@@ -295,9 +315,10 @@ const SubstituicoesTable = ({
                       <SearchableSelect
                         value={selectedProdutosGenericos[necessidade.codigo_origem] || ''}
                         onChange={(value) => handleProdutoGenericoChange(necessidade.codigo_origem, value, necessidade.quantidade_total_origem)}
-                        options={produtosGenericos[necessidade.produto_generico_id ? 
-                          necessidade.codigo_origem.split('_')[0] : 
-                          necessidade.codigo_origem]?.map(produto => ({
+                        options={produtosGenericos[necessidade.produto_origem_id || 
+                          (necessidade.produto_generico_id ? 
+                            necessidade.codigo_origem.split('_')[0] : 
+                            necessidade.codigo_origem)]?.map(produto => ({
                           value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}|${produto.fator_conversao || 1}`,
                           label: produto.nome
                         })) || []}
@@ -404,9 +425,10 @@ const SubstituicoesTable = ({
                                         // Também atualizar em escola para manter compatibilidade
                                         escola.selectedProdutoGenerico = value;
                                       }}
-                                      options={produtosGenericos[necessidade.produto_generico_id ? 
-                                        necessidade.codigo_origem.split('_')[0] : 
-                                        necessidade.codigo_origem]?.map(produto => {
+                                      options={produtosGenericos[necessidade.produto_origem_id || 
+                                        (necessidade.produto_generico_id ? 
+                                          necessidade.codigo_origem.split('_')[0] : 
+                                          necessidade.codigo_origem)]?.map(produto => {
                                         const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
                                         return {
                                           value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}|${produto.fator_conversao || 1}`,
