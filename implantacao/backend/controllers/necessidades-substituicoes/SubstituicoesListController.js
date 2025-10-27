@@ -186,17 +186,20 @@ class SubstituicoesListController {
       console.log(`[Substituições] Buscando produtos genéricos. produto_origem_id: ${produto_origem_id}, search: ${search}`);
 
       // Construir URL com query params (foodsApiUrl já inclui /api)
+      // TESTE: Por enquanto buscar todos, sem filtrar por produto_origem_id
       let url = `${foodsApiUrl}/produto-generico?limit=10000&status=1`;
       
-      if (produto_origem_id) {
-        url += `&produto_origem_id=${produto_origem_id}`;
-      }
+      // COMENTADO TEMPORARIAMENTE PARA TESTE
+      // if (produto_origem_id) {
+      //   url += `&produto_origem_id=${produto_origem_id}`;
+      // }
       
       if (search) {
         url += `&search=${encodeURIComponent(search)}`;
       }
 
       console.log(`[Substituições] URL completa: ${url}`);
+      console.log(`[Substituições] ATENÇÃO: Buscando TODOS os produtos genéricos (filtro produto_origem_id desabilitado temporariamente)`);
 
       const response = await axios.get(url, {
         headers: {
