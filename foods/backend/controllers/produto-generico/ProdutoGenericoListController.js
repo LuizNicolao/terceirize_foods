@@ -29,6 +29,7 @@ class ProdutoGenericoListController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         um.nome as unidade_medida_nome,
+        um.sigla as unidade_medida_sigla,
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome,
         COUNT(p.id) as total_produtos
@@ -82,7 +83,7 @@ class ProdutoGenericoListController {
       params.push(produto_padrao);
     }
 
-    baseQuery += ' GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome, uc.nome, ua.nome ORDER BY pg.nome ASC';
+    baseQuery += ' GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome, um.sigla, uc.nome, ua.nome ORDER BY pg.nome ASC';
 
     // Aplicar paginação
     const limitNum = parseInt(limit);
@@ -146,6 +147,7 @@ class ProdutoGenericoListController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         um.nome as unidade_medida_nome,
+        um.sigla as unidade_medida_sigla,
         uc.nome as usuario_criador_nome,
         ua.nome as usuario_atualizador_nome,
         COUNT(p.id) as total_produtos
@@ -249,6 +251,7 @@ class ProdutoGenericoListController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         um.nome as unidade_medida_nome,
+        um.sigla as unidade_medida_sigla,
         COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
@@ -258,7 +261,7 @@ class ProdutoGenericoListController {
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
       LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.classe_id = ? AND pg.status = 1
-      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome, um.sigla
       ORDER BY pg.nome ASC`,
       [classe_id]
     );
@@ -281,6 +284,7 @@ class ProdutoGenericoListController {
         sg.nome as subgrupo_nome,
         c.nome as classe_nome,
         um.nome as unidade_medida_nome,
+        um.sigla as unidade_medida_sigla,
         COUNT(p.id) as total_produtos
       FROM produto_generico pg
       LEFT JOIN produto_origem po ON pg.produto_origem_id = po.id
@@ -290,7 +294,7 @@ class ProdutoGenericoListController {
       LEFT JOIN unidades_medida um ON pg.unidade_medida_id = um.id
       LEFT JOIN produtos p ON pg.id = p.nome_generico_id AND p.status = 1
       WHERE pg.produto_origem_id = ? AND pg.status = 1
-      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome
+      GROUP BY pg.id, pg.codigo, pg.nome, pg.referencia_mercado, pg.referencia_interna, pg.referencia_externa, pg.produto_origem_id, pg.grupo_id, pg.subgrupo_id, pg.classe_id, pg.unidade_medida_id, pg.produto_padrao, pg.fator_conversao, pg.status, pg.criado_em, pg.atualizado_em, pg.usuario_criador_id, pg.usuario_atualizador_id, po.nome, po.codigo, g.nome, sg.nome, c.nome, um.nome, um.sigla
       ORDER BY pg.nome ASC`,
       [produto_origem_id]
     );
