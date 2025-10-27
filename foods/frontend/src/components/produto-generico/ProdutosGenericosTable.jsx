@@ -54,19 +54,19 @@ const ProdutosGenericosTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Grupo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Subgrupo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Classe
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Padrão
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Origem
                 </th>
                 <SortableTableHeader
@@ -76,10 +76,10 @@ const ProdutosGenericosTable = ({
                   currentDirection={sortDirection}
                   onSort={onSort}
                 />
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Produtos Vinculados
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -87,39 +87,39 @@ const ProdutosGenericosTable = ({
             <tbody className="bg-white divide-y divide-gray-200">
               {produtosGenericos.map((produtoGenerico) => (
                 <tr key={produtoGenerico.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {produtoGenerico.codigo || '-'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">
                       {produtoGenerico.nome || '-'}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {getGrupoName ? getGrupoName(produtoGenerico.grupo_id) : (produtoGenerico.grupo_nome || '-')}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {getSubgrupoName ? getSubgrupoName(produtoGenerico.subgrupo_id) : (produtoGenerico.subgrupo_nome || '-')}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {getClasseName ? getClasseName(produtoGenerico.classe_id) : (produtoGenerico.classe_nome || '-')}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     {produtoGenerico.produto_padrao === 'Sim' ? (
                       <FaStar className="w-4 h-4 text-yellow-500" title="Produto Padrão" />
                     ) : (
                       <span className="text-gray-400">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     {produtoGenerico.produto_origem_id ? (
                       <div className="text-sm text-gray-900">
                         {produtoGenerico.produto_origem_codigo && produtoGenerico.produto_origem_nome ? 
@@ -131,15 +131,15 @@ const ProdutosGenericosTable = ({
                       <span className="text-gray-400">-</span>
                     )}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 py-2 whitespace-nowrap">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor ? getStatusColor(produtoGenerico.status) : 'bg-gray-100 text-gray-800'}`}>
                       {getStatusLabel ? getStatusLabel(produtoGenerico.status) : (produtoGenerico.status === 1 ? 'Ativo' : 'Inativo')}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                     {produtoGenerico.total_produtos || 0}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex justify-end">
                       <ActionButtons
                         canView={canView && onView}
