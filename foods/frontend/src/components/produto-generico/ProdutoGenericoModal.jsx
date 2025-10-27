@@ -385,7 +385,12 @@ const ProdutoGenericoModal = ({
                 label="Regra Palet"
                 type="number"
                 {...register('regra_palet', {
-                  min: { value: 1, message: 'Regra deve ser maior que 0' }
+                  validate: (value) => {
+                    if (value && value !== '' && (isNaN(value) || parseInt(value) < 1)) {
+                      return 'Regra deve ser um número inteiro positivo';
+                    }
+                    return true;
+                  }
                 })}
                 error={errors.regra_palet?.message}
                 disabled={viewMode}
