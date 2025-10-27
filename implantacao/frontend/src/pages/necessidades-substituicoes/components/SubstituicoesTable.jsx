@@ -23,27 +23,29 @@ const SubstituicoesTable = ({
     }));
   };
 
-  const handleProdutoGenericoChange = (codigo, valor) => {
+  const handleProdutoGenericoChange = (codigo, valor, quantidadeOrigem) => {
     if (!valor) {
       setSelectedProdutosGenericos(prev => ({ ...prev, [codigo]: '' }));
       setUndGenericos(prev => ({ ...prev, [codigo]: '' }));
+      setQuantidadesGenericos(prev => ({ ...prev, [codigo]: '' }));
       return;
     }
 
-    // Formato: "0001|AIPIM CONGELADO 1 KG|PC"
+    // Formato: "0001|AIPIM CONGELADO 1 KG|PC|fator_conversao"
     const partes = valor.split('|');
-    if (partes.length === 3) {
-      const [produto_id, nome, unidade] = partes;
+    if (partes.length >= 3) {
+      const [produto_id, nome, unidade, fatorConversaoStr] = partes;
+      const fatorConversao = parseFloat(fatorConversaoStr) || 1;
+      
       setSelectedProdutosGenericos(prev => ({ ...prev, [codigo]: valor }));
       setUndGenericos(prev => ({ ...prev, [codigo]: unidade }));
+      
+      // Calcular quantidade: dividir pelo fator de conversão e arredondar para cima
+      if (quantidadeOrigem && fatorConversao > 0) {
+        const quantidadeCalculada = Math.ceil(parseFloat(quantidadeOrigem) / fatorConversao);
+        setQuantidadesGenericos(prev => ({ ...prev, [codigo]: quantidadeCalculada }));
+      }
     }
-  };
-
-  const handleQuantidadeChange = (codigo, valor) => {
-    setQuantidadesGenericos(prev => ({
-      ...prev,
-      [codigo]: valor
-    }));
   };
 
   const handleSaveConsolidated = async (necessidade) => {
@@ -189,9 +191,9 @@ const SubstituicoesTable = ({
                   <td className="px-4 py-2 whitespace-nowrap">
                     <SearchableSelect
                       value={selectedProdutosGenericos[necessidade.codigo_origem] || ''}
-                      onChange={(value) => handleProdutoGenericoChange(necessidade.codigo_origem, value)}
+                      onChange={(value) => handleProdutoGenericoChange(necessidade.codigo_origem, value, necessidade.quantidade_total_origem)}
                       options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
-                        value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}`,
+                        value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}|${produto.fator_conversao || 1}`,
                         label: produto.nome
                       })) || []}
                       placeholder="Selecione..."
@@ -203,23 +205,17 @@ const SubstituicoesTable = ({
                     />
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
-                    <Input
-                      type="text"
-                      value={undGenericos[necessidade.codigo_origem] || ''}
-                      readOnly
-                      className="text-center bg-gray-100 text-gray-700 text-xs py-1"
-                      style={{ width: '80px' }}
-                    />
+                    <span className="text-xs text-gray-700">
+                      {undGenericos[necessidade.codigo_origem] || '-'}
+                    </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
-                    <Input
-                      type="number"
-                      step="0.001"
-                      value={quantidadesGenericos[necessidade.codigo_origem] || necessidade.quantidade_total_origem}
-                      onChange={(e) => handleQuantidadeChange(necessidade.codigo_origem, e.target.value)}
-                      className="text-center text-xs py-1"
-                      style={{ width: '100px' }}
-                    />
+                    <span className="text-xs text-cyan-600 font-semibold">
+                      {quantidadesGenericos[necessidade.codigo_origem] || (necessidade.quantidade_total_origem ? 
+                        parseFloat(necessidade.quantidade_total_origem).toFixed(3).replace('.', ',') : 
+                        '0,000'
+                      )}
+                    </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
                     <Button
@@ -264,6 +260,12 @@ const SubstituicoesTable = ({
                               const codigoProduto = partes[0] || '';
                               const nomeProduto = partes[1] || '';
                               const unidadeProduto = partes[2] || '';
+                              const fatorConversao = parseFloat(partes[3]) || 1;
+                              
+                              // Calcular quantidade genérica: dividir pelo fator e arredondar para cima
+                              const quantidadeGenerica = fatorConversao > 0 && escola.quantidade_origem 
+                                ? Math.ceil(parseFloat(escola.quantidade_origem) / fatorConversao)
+                                : '';
 
                               return (
                                 <tr key={`${escola.escola_id}-${idx}`}>
@@ -286,7 +288,7 @@ const SubstituicoesTable = ({
                                       options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
                                         const unidade = produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || '';
                                         return {
-                                          value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}`,
+                                          value: `${produto.id || produto.codigo}|${produto.nome}|${unidade}|${produto.fator_conversao || 1}`,
                                           label: produto.nome
                                         };
                                       }) || []}
@@ -297,16 +299,12 @@ const SubstituicoesTable = ({
                                     />
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center">
-                                    <Input
-                                      type="text"
-                                      value={unidadeProduto}
-                                      readOnly
-                                      className="text-center bg-gray-100 text-gray-700 text-xs py-1"
-                                      style={{ width: '80px' }}
-                                    />
+                                    <span className="text-xs text-gray-700">
+                                      {unidadeProduto || '-'}
+                                    </span>
                                   </td>
-                                  <td className="px-4 py-2 whitespace-nowrap text-right text-xs font-semibold text-cyan-600">
-                                    {escola.selectedQuantidade || 
+                                  <td className="px-4 py-2 whitespace-nowrap text-center text-xs font-semibold text-cyan-600">
+                                    {quantidadeGenerica || 
                                       (escola.quantidade_origem ? 
                                         parseFloat(escola.quantidade_origem).toFixed(3).replace('.', ',') : 
                                         '0,000'
