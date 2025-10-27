@@ -29,7 +29,8 @@ const ProdutosOrigem = () => {
     getGrupoName,
     getSubgrupoName,
     getClasseName,
-    getUnidadeMedidaName
+    getUnidadeMedidaName,
+    getUnidadeMedidaSigla
   } = useProdutosOrigemConsulta();
 
   // Debug logs removidos
@@ -130,6 +131,7 @@ const ProdutosOrigem = () => {
         getSubgrupoName={getSubgrupoName}
         getClasseName={getClasseName}
         getUnidadeMedidaName={getUnidadeMedidaName}
+        getUnidadeMedidaSigla={getUnidadeMedidaSigla}
         getProdutoGenericoPadraoName={() => 'N/A'}
       />
 

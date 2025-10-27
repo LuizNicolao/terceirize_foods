@@ -319,22 +319,30 @@ export const useProdutosOrigemConsulta = () => {
     checkConnection,
 
     // Funções auxiliares para obter nomes (os dados já vêm do Foods com os nomes)
-    getGrupoName: (produto) => {
-      if (!produto) return '-';
-      return produto.grupo_nome || '-';
+    getGrupoName: (id) => {
+      if (!id) return '-';
+      const produto = allProdutosData.find(p => p.grupo_id === id);
+      return produto?.grupo_nome || '-';
     },
-    getSubgrupoName: (produto) => {
-      if (!produto) return '-';
-      return produto.subgrupo_nome || '-';
+    getSubgrupoName: (id) => {
+      if (!id) return '-';
+      const produto = allProdutosData.find(p => p.subgrupo_id === id);
+      return produto?.subgrupo_nome || '-';
     },
-    getClasseName: (produto) => {
-      if (!produto) return '-';
-      return produto.classe_nome || '-';
+    getClasseName: (id) => {
+      if (!id) return '-';
+      const produto = allProdutosData.find(p => p.classe_id === id);
+      return produto?.classe_nome || '-';
     },
-    getUnidadeMedidaName: (produto) => {
-      if (!produto) return '-';
-      // Priorizar sigla (KG) ao invés do nome completo (QUILOGRAMA)
-      return produto.unidade_medida_sigla || produto.unidade_medida_nome || '-';
+    getUnidadeMedidaName: (id) => {
+      if (!id) return '-';
+      const produto = allProdutosData.find(p => p.unidade_medida_id === id);
+      return produto?.unidade_medida_sigla || produto?.unidade_medida_nome || '-';
+    },
+    getUnidadeMedidaSigla: (id) => {
+      if (!id) return '-';
+      const produto = allProdutosData.find(p => p.unidade_medida_id === id);
+      return produto?.unidade_medida_sigla || produto?.unidade_medida_nome || '-';
     }
   };
 };
