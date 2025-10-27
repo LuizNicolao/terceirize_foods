@@ -65,6 +65,12 @@ const SubstituicoesTable = ({
             setQuantidadesGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: quantidadeCalculada }));
           }
           
+          // Pré-selecionar para cada escola no estado selectedProdutosPorEscola
+          necessidade.escolas.forEach(escola => {
+            const chaveEscola = `${necessidade.codigo_origem}-${escola.escola_id}`;
+            setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
+          });
+          
           setProdutosPadraoSelecionados(prev => ({ ...prev, [necessidade.codigo_origem]: true }));
         }
       }
