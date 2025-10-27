@@ -103,8 +103,8 @@ export const useSubstituicoesNecessidades = () => {
   /**
    * Buscar produtos genéricos para um produto origem
    */
-  const buscarProdutosGenericos = useCallback(async (produtoOrigemId, search = '') => {
-    const key = `${produtoOrigemId}_${search}`;
+  const buscarProdutosGenericos = useCallback(async (produtoOrigemId, grupo, search = '') => {
+    const key = `${produtoOrigemId}_${grupo}_${search}`;
     
     // Se já está carregando, não fazer outra requisição
     if (loadingGenericos[key]) {
@@ -116,6 +116,7 @@ export const useSubstituicoesNecessidades = () => {
     try {
       const response = await SubstituicoesNecessidadesService.buscarProdutosGenericos({
         produto_origem_id: produtoOrigemId,
+        grupo,
         search
       });
 

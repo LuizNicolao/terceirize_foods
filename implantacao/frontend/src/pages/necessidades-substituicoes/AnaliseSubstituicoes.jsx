@@ -32,8 +32,9 @@ const AnaliseSubstituicoes = () => {
   useEffect(() => {
     if (necessidades.length > 0) {
       necessidades.forEach(necessidade => {
-        if (!produtosGenericos[necessidade.codigo_origem]) {
-          buscarProdutosGenericos(necessidade.codigo_origem);
+        const key = `${necessidade.codigo_origem}_${necessidade.grupo}`;
+        if (!produtosGenericos[necessidade.codigo_origem] && necessidade.grupo) {
+          buscarProdutosGenericos(necessidade.codigo_origem, necessidade.grupo);
         }
       });
     }
