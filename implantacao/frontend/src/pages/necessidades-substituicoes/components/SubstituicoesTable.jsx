@@ -283,7 +283,8 @@ const SubstituicoesTable = ({
                               <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Código</th>
                               <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-700 uppercase">Produto Genérico</th>
                               <th style={{ width: '100px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Unid. Med.</th>
-                              <th style={{ width: '100px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Quantidade</th>
+                              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Qtd Origem</th>
+                              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Qtd Genérico</th>
                               <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-700 uppercase">Ações</th>
                             </tr>
                           </thead>
@@ -340,11 +341,20 @@ const SubstituicoesTable = ({
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center">
                                     <span className="text-xs text-gray-700">
-                                      {unidadeProduto || '-'}
+                                      {escola.produto_origem_unidade || necessidade.produto_origem_unidade}
                                     </span>
                                   </td>
+                                  <td className="px-4 py-2 whitespace-nowrap text-center text-xs font-semibold text-gray-900">
+                                    {escola.quantidade_origem ? 
+                                      parseFloat(escola.quantidade_origem).toFixed(3).replace('.', ',') : 
+                                      '0,000'
+                                    }
+                                  </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center text-xs font-semibold text-cyan-600">
-                                    {quantidadeGenerica || '0,000'}
+                                    {quantidadeGenerica ? 
+                                      quantidadeGenerica.toLocaleString('pt-BR') : 
+                                      '0,000'
+                                    }
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center">
                                     <Button
