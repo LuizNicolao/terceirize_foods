@@ -128,6 +128,8 @@ const SubstituicoesTable = ({
               <th style={{ minWidth: '200px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Origem</th>
               <th style={{ width: '100px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid.</th>
               <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Origem</th>
+              <th style={{ width: '130px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Semana Abast.</th>
+              <th style={{ width: '130px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Semana Consumo</th>
               <th style={{ width: '100px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
               <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Genérico</th>
               <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid. Medida</th>
@@ -167,6 +169,16 @@ const SubstituicoesTable = ({
                         parseFloat(necessidade.quantidade_total_origem).toFixed(3).replace('.', ',') : 
                         '0,000'
                       }
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                    <span className="text-xs text-blue-600 font-medium">
+                      {necessidade.semana_abastecimento || '-'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap text-center">
+                    <span className="text-xs text-green-600 font-medium">
+                      {necessidade.semana_consumo || '-'}
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap">
@@ -226,7 +238,7 @@ const SubstituicoesTable = ({
                 {/* Linha Expandida (Detalhes) */}
                 {expandedRows[necessidade.codigo_origem] && (
                   <tr className="bg-gray-50">
-                    <td colSpan="10" className="px-6 py-4">
+                    <td colSpan="12" className="px-6 py-4">
                       <div className="bg-gray-50 border-l-4 border-green-600 p-4">
                         <h4 className="text-md font-semibold text-green-700 mb-4 flex items-center gap-2">
                           <span className="text-xl">🏢</span>
