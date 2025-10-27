@@ -54,6 +54,7 @@ const necessidadesCoordenacaoService = {
       if (filtros.grupo) params.append('grupo', filtros.grupo);
       if (filtros.escola_id) params.append('escola_id', filtros.escola_id);
       if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
+      if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
       if (filtros.search) params.append('search', filtros.search);
 
       const response = await api.get(`/necessidades/coordenacao/produtos-modal?${params.toString()}`);
