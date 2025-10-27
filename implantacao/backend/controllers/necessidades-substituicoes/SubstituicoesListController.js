@@ -47,12 +47,16 @@ class SubstituicoesListController {
         params.push(`${dataInicial}%`);
       }
 
-      // Buscar necessidades agrupadas por produto origem
+      // Buscar necessidades agrupadas por produto origem + produto genérico
       const necessidades = await executeQuery(`
         SELECT 
           n.produto_id as codigo_origem,
           n.produto as produto_origem_nome,
           n.produto_unidade as produto_origem_unidade,
+          COALESCE(ns.produto_generico_id, '') as produto_generico_id,
+          COALESCE(ns.produto_generico_codigo, '') as produto_generico_codigo,
+          COALESCE(ns.produto_generico_nome, '') as produto_generico_nome,
+          COALESCE(ns.produto_generico_unidade, '') as produto_generico_unidade,
           SUM(n.ajuste_coordenacao) as quantidade_total_origem,
           GROUP_CONCAT(DISTINCT n.necessidade_id) as necessidade_ids,
           n.semana_abastecimento,
@@ -67,9 +71,16 @@ class SubstituicoesListController {
             ) SEPARATOR '::'
           ) as escolas_solicitantes
         FROM necessidades n
+        LEFT JOIN necessidades_substituicoes ns ON (
+          ns.produto_origem_id = n.produto_id 
+          AND ns.ativo = 1 
+          AND ns.status IN ('pendente', 'aprovado')
+        )
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo
-        ORDER BY n.produto ASC
+        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, 
+                 COALESCE(ns.produto_generico_id, ''), COALESCE(ns.produto_generico_codigo, ''), 
+                 COALESCE(ns.produto_generico_nome, ''), COALESCE(ns.produto_generico_unidade, '')
+        ORDER BY n.produto ASC, COALESCE(ns.produto_generico_nome, '') ASC
       `, params);
 
       // Buscar substituições existentes para cada produto
@@ -93,7 +104,7 @@ class SubstituicoesListController {
             console.error(`Erro ao buscar produto padrão para produto origem ${necessidade.codigo_origem}:`, error.message);
           }
 
-          // Buscar substituições existentes
+          // Buscar substituições existentes para este produto genérico específico
           const substituicoes = await executeQuery(`
             SELECT 
               ns.id,
@@ -108,12 +119,13 @@ class SubstituicoesListController {
               ns.necessidade_id
             FROM necessidades_substituicoes ns
             WHERE ns.produto_origem_id = ? 
+              AND ns.produto_generico_id = ?
               AND ns.ativo = 1
               AND ns.status IN ('pendente', 'aprovado')
-          `, [necessidade.codigo_origem]);
+          `, [necessidade.codigo_origem, necessidade.produto_generico_id]);
 
           // Processar escolas solicitantes
-          const escolas = necessidade.escolas_solicitantes
+          let escolas = necessidade.escolas_solicitantes
             .split('::')
             .map(escolaStr => {
               const [necessidade_id, escola_id, escola_nome, quantidade] = escolaStr.split('|');
@@ -125,75 +137,30 @@ class SubstituicoesListController {
               };
             });
 
+          // Se há produto genérico específico, filtrar apenas escolas que usam esse produto
+          if (necessidade.produto_generico_id) {
+            const escolasComSubstituicao = substituicoes.map(s => s.escola_id);
+            escolas = escolas.filter(escola => escolasComSubstituicao.includes(escola.escola_id));
+          }
+
           // Verificar quais escolas já têm substituição
           escolas.forEach(escola => {
             const substituicao = substituicoes.find(s => s.escola_id === escola.escola_id);
             escola.substituicao = substituicao || null;
           });
 
-          // Se há substituições, criar uma linha para cada produto genérico diferente
-          if (substituicoes.length > 0) {
-            // Agrupar substituições por produto genérico
-            const substituicoesPorProduto = substituicoes.reduce((acc, sub) => {
-              const key = sub.produto_generico_id;
-              if (!acc[key]) {
-                acc[key] = {
-                  produto_generico_id: sub.produto_generico_id,
-                  produto_generico_codigo: sub.produto_generico_codigo,
-                  produto_generico_nome: sub.produto_generico_nome,
-                  produto_generico_unidade: sub.produto_generico_unidade,
-                  substituicoes: []
-                };
-              }
-              acc[key].substituicoes.push(sub);
-              return acc;
-            }, {});
-
-            // Criar uma linha para cada produto genérico
-            return Object.values(substituicoesPorProduto).map(produtoGenerico => {
-              // Filtrar escolas que usam este produto genérico
-              const escolasComEsteProduto = escolas.filter(escola => 
-                produtoGenerico.substituicoes.some(sub => sub.escola_id === escola.escola_id)
-              );
-
-              // Calcular quantidade total para este produto genérico
-              const quantidadeTotal = escolasComEsteProduto.reduce((sum, escola) => {
-                const sub = produtoGenerico.substituicoes.find(s => s.escola_id === escola.escola_id);
-                return sum + (sub ? sub.quantidade_generico : 0);
-              }, 0);
-
-              return {
-                ...necessidade,
-                codigo_origem: `${necessidade.codigo_origem}_${produtoGenerico.produto_generico_id}`, // Chave única para frontend
-                produto_origem_id: necessidade.codigo_origem, // Manter produto origem original
-                produto_generico_id: produtoGenerico.produto_generico_id,
-                produto_generico_codigo: produtoGenerico.produto_generico_codigo,
-                produto_generico_nome: produtoGenerico.produto_generico_nome,
-                produto_generico_unidade: produtoGenerico.produto_generico_unidade,
-                quantidade_total_generico: quantidadeTotal,
-                escolas: escolasComEsteProduto,
-                substituicoes_existentes: true,
-                produto_padrao_id: produtoPadraoId
-              };
-            });
-          } else {
-            // Se não há substituições, retornar linha normal
-            return {
-              ...necessidade,
-              escolas,
-              substituicoes_existentes: false,
-              produto_padrao_id: produtoPadraoId
-            };
-          }
+          return {
+            ...necessidade,
+            escolas,
+            substituicoes_existentes: substituicoes.length > 0,
+            produto_padrao_id: produtoPadraoId
+          };
         })
       );
 
-      // Achatar array de arrays
-      const necessidadesFlattened = produtosComSubstituicoes.flat();
-
       res.json({
         success: true,
-        data: necessidadesFlattened
+        data: produtosComSubstituicoes
       });
     } catch (error) {
       console.error('Erro ao listar necessidades para substituição:', error);
