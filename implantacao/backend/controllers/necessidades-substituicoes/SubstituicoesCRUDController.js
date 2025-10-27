@@ -96,7 +96,7 @@ class SubstituicoesCRUDController {
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendente', 1)
               `, [
                 necId,
-                necessidade_id_grupo,
+                necId, // necessidade_id_grupo usa o mesmo necessidade_id
                 produto_origem_id,
                 produto_origem_nome,
                 produto_origem_unidade,
@@ -169,7 +169,7 @@ class SubstituicoesCRUDController {
               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendente', 1)
             `, [
               necessidade_id,
-              necessidade_id_grupo,
+              necessidade_id, // necessidade_id_grupo usa o mesmo necessidade_id
               produto_origem_id,
               produto_origem_nome,
               produto_origem_unidade,

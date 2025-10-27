@@ -47,7 +47,7 @@ class SubstituicoesListController {
           n.produto as produto_origem_nome,
           n.produto_unidade as produto_origem_unidade,
           SUM(n.ajuste_coordenacao) as quantidade_total_origem,
-          n.necessidade_id_grupo,
+          n.necessidade_id,
           n.semana_abastecimento,
           n.semana_consumo,
           (SELECT ppc.grupo FROM produtos_per_capita ppc WHERE ppc.produto_id = n.produto_id LIMIT 1) as grupo,
@@ -61,7 +61,7 @@ class SubstituicoesListController {
           ) as escolas_solicitantes
         FROM necessidades n
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.necessidade_id_grupo, n.semana_abastecimento, n.semana_consumo, grupo
+        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.necessidade_id, n.semana_abastecimento, n.semana_consumo, grupo
         ORDER BY n.produto ASC
       `, params);
 
@@ -124,6 +124,54 @@ class SubstituicoesListController {
         success: false,
         error: 'Erro interno do servidor',
         message: 'Erro ao listar necessidades para substituição'
+      });
+    }
+  }
+
+  /**
+   * Buscar semana de consumo por semana de abastecimento
+   */
+  static async buscarSemanaConsumo(req, res) {
+    try {
+      const { semana_abastecimento } = req.query;
+
+      if (!semana_abastecimento) {
+        return res.status(400).json({
+          success: false,
+          message: 'Semana de abastecimento é obrigatória'
+        });
+      }
+
+      // Buscar semana de consumo na tabela necessidades
+      const result = await executeQuery(`
+        SELECT DISTINCT semana_consumo
+        FROM necessidades
+        WHERE semana_abastecimento = ?
+          AND semana_consumo IS NOT NULL
+          AND semana_consumo != ''
+        LIMIT 1
+      `, [semana_abastecimento]);
+
+      if (result.length > 0) {
+        res.json({
+          success: true,
+          data: {
+            semana_abastecimento,
+            semana_consumo: result[0].semana_consumo
+          }
+        });
+      } else {
+        res.json({
+          success: false,
+          message: 'Semana de consumo não encontrada para esta semana de abastecimento'
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao buscar semana de consumo:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Erro ao buscar semana de consumo'
       });
     }
   }

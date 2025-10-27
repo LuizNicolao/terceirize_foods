@@ -63,9 +63,8 @@ export const useSubstituicoesNecessidades = () => {
     }
 
     try {
-      // Buscar relação da semana de abastecimento no calendário
-      const ano = new Date().getFullYear();
-      const response = await calendarioService.buscarSemanaPorAbastecimento(semanaAbast, ano);
+      // Buscar semana de consumo diretamente da tabela necessidades
+      const response = await SubstituicoesNecessidadesService.buscarSemanaConsumo(semanaAbast);
       
       if (response.success && response.data && response.data.semana_consumo) {
         // Retornar apenas a semana de consumo relacionada

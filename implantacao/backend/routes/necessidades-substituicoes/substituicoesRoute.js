@@ -17,6 +17,14 @@ router.get(
   SubstituicoesController.listarParaSubstituicao
 );
 
+// GET /api/necessidades-substituicoes/buscar-semana-consumo
+// Busca semana de consumo por semana de abastecimento
+router.get(
+  '/buscar-semana-consumo',
+  checkScreenPermission('necessidades', 'visualizar'),
+  SubstituicoesController.buscarSemanaConsumo
+);
+
 // GET /api/necessidades-substituicoes/produtos-genericos
 // Busca produtos genéricos do Foods
 router.get(

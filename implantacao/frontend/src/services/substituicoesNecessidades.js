@@ -21,6 +21,15 @@ class SubstituicoesNecessidadesService {
   }
 
   /**
+   * Buscar semana de consumo por semana de abastecimento
+   * @param {String} semana_abastecimento - Semana de abastecimento
+   */
+  static async buscarSemanaConsumo(semana_abastecimento) {
+    const response = await api.get(`/necessidades-substituicoes/buscar-semana-consumo?semana_abastecimento=${semana_abastecimento}`);
+    return response.data;
+  }
+
+  /**
    * Buscar produtos genéricos do Foods
    * @param {Object} params - Parâmetros: produto_origem_id, search
    */
