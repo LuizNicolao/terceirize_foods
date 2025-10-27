@@ -195,14 +195,10 @@ const produtoGenericoValidations = {
       .withMessage('Tipo de registro deve ter no máximo 100 caracteres'),
     
     body('prazo_validade_padrao')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Prazo de validade padrão deve ser um número inteiro positivo'),
+      .optional(),
     
     body('unidade_validade')
-      .optional()
-      .isIn(['Dias', 'Semanas', 'Meses', 'Anos'])
-      .withMessage('Unidade de validade deve ser Dias, Semanas, Meses ou Anos'),
+      .optional(),
     
     body('integracao_senior')
       .optional()
@@ -308,14 +304,10 @@ const produtoGenericoValidations = {
       .withMessage('Tipo de registro deve ter no máximo 100 caracteres'),
     
     body('prazo_validade_padrao')
-      .optional()
-      .isInt({ min: 1 })
-      .withMessage('Prazo de validade padrão deve ser um número inteiro positivo'),
+      .optional(),
     
     body('unidade_validade')
-      .optional()
-      .isIn(['Dias', 'Semanas', 'Meses', 'Anos'])
-      .withMessage('Unidade de validade deve ser Dias, Semanas, Meses ou Anos'),
+      .optional(),
     
     body('integracao_senior')
       .optional()

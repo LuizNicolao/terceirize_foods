@@ -446,12 +446,10 @@ const ProdutoGenericoModal = ({
               <Input
                 label="Prazo de Validade Padrão"
                 type="number"
-                {...register('prazo_validade_padrao', {
-                  min: { value: 1, message: 'Prazo deve ser maior que 0' }
-                })}
+                {...register('prazo_validade_padrao')}
                 error={errors.prazo_validade_padrao?.message}
                 disabled={viewMode}
-                placeholder="Digite o prazo de validade"
+                placeholder="Digite o prazo de validade (opcional)"
               />
             </div>
 
