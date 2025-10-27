@@ -15,6 +15,7 @@ const SubstituicoesTable = ({
   const [selectedProdutosGenericos, setSelectedProdutosGenericos] = useState({});
   const [quantidadesGenericos, setQuantidadesGenericos] = useState({});
   const [undGenericos, setUndGenericos] = useState({});
+  const [selectedProdutosPorEscola, setSelectedProdutosPorEscola] = useState({});
 
   const handleToggleExpand = (codigo) => {
     setExpandedRows(prev => ({
@@ -255,7 +256,9 @@ const SubstituicoesTable = ({
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
                             {necessidade.escolas.map((escola, idx) => {
-                              const produtoSelecionado = escola.selectedProdutoGenerico || (escola.substituicao ? 
+                              const key = `${necessidade.codigo_origem}-${escola.escola_id}`;
+                              const produtoEstadoLocal = selectedProdutosPorEscola[key];
+                              const produtoSelecionado = produtoEstadoLocal || escola.selectedProdutoGenerico || (escola.substituicao ? 
                                 `${escola.substituicao.produto_generico_id}|${escola.substituicao.produto_generico_nome}|${escola.substituicao.produto_generico_unidade}` 
                                 : '');
                               const partes = produtoSelecionado ? produtoSelecionado.split('|') : [];
@@ -279,8 +282,14 @@ const SubstituicoesTable = ({
                                     <SearchableSelect
                                       value={produtoSelecionado}
                                       onChange={(value) => {
+                                        const chave = `${necessidade.codigo_origem}-${escola.escola_id}`;
+                                        // Atualizar estado local para forçar re-render
+                                        setSelectedProdutosPorEscola(prev => ({
+                                          ...prev,
+                                          [chave]: value
+                                        }));
+                                        // Também atualizar no objeto escola para salvar
                                         escola.selectedProdutoGenerico = value;
-                                        // Só atualizar o estado, não salvar automaticamente
                                       }}
                                       options={produtosGenericos[necessidade.codigo_origem]?.map(produto => ({
                                         value: `${produto.id || produto.codigo}|${produto.nome}|${produto.unidade_medida_sigla || produto.unidade || produto.unidade_medida || ''}`,
