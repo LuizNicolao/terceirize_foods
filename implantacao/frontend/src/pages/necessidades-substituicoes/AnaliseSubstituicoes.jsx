@@ -143,13 +143,17 @@ const AnaliseSubstituicoes = () => {
       
       if (erros > 0) {
         console.error('⚠️ Alguns ajustes falharam:', erros);
-        toast.error(`${sucessos} salvos com sucesso, ${erros} falharam`);
+        console.log('📋 Resultados completos:', resultados);
+        toast.error(`${sucessos} salvos com sucesso, ${erros} falharam. Veja o console para detalhes.`);
       } else {
         toast.success('Ajustes iniciados com sucesso!');
         setAjustesAtivados(true);
         
-        // Recarregar necessidades para atualizar os dados
-        window.location.reload();
+        // Recarregar necessidades para atualizar os dados (após delay para ver logs)
+        setTimeout(() => {
+          console.log('🔄 Recarregando página...');
+          window.location.reload();
+        }, 3000); // 3 segundos para ver os logs
       }
     } catch (error) {
       console.error('❌ Erro ao iniciar ajustes:', error);
