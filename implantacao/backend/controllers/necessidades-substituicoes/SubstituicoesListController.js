@@ -312,6 +312,7 @@ class SubstituicoesListController {
           produto_origem_nome,
           produto_origem_unidade,
           grupo,
+          grupo_id,
           semana_abastecimento,
           semana_consumo,
           SUM(quantidade_origem) as quantidade_total_origem,
@@ -321,7 +322,7 @@ class SubstituicoesListController {
           produto_generico_unidade
         FROM necessidades_substituicoes
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY produto_origem_id, produto_origem_nome, produto_origem_unidade, grupo,
+        GROUP BY produto_origem_id, produto_origem_nome, produto_origem_unidade, grupo, grupo_id,
                  semana_abastecimento, semana_consumo, produto_generico_id, 
                  produto_generico_codigo, produto_generico_nome, produto_generico_unidade
         ORDER BY produto_origem_nome ASC, produto_generico_nome ASC
