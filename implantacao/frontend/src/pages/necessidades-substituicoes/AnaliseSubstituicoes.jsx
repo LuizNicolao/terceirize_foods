@@ -38,8 +38,8 @@ const AnaliseSubstituicoes = () => {
   const [loadingGenericos, setLoadingGenericos] = useState({});
 
   // Verificar permissões
-  const canViewNutricionista = canView('necessidades_substituicoes_nutricionista');
-  const canViewCoordenacao = canView('necessidades_substituicoes_coordenacao');
+  const canViewNutricionista = canView('analise_necessidades_substituicoes');
+  const canViewCoordenacao = canView('analise_necessidades_substituicoes');
 
   // Determinar aba inicial baseada nas permissões
   useEffect(() => {
