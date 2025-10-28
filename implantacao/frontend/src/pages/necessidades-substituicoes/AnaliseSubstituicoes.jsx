@@ -10,8 +10,8 @@ const AnaliseSubstituicoes = () => {
   const [activeTab, setActiveTab] = useState('nutricionista');
 
   // Verificar permissões
-  const canViewSubstituicoes = canView('necessidades');
-  const canViewCoordenacao = canView('coordenacao') || canView('admin');
+  const canViewSubstituicoes = canView('necessidades-substituicoes') || canView('necessidades');
+  const canViewCoordenacao = canView('necessidades-substituicoes') || canView('necessidades') || canView('admin');
 
   if (permissionsLoading) {
     return <NecessidadesLoading />;
