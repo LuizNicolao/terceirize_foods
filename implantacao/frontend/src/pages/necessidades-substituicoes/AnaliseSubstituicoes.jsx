@@ -24,6 +24,7 @@ const AnaliseSubstituicoes = () => {
     semanasConsumo,
     loadingNecessidades,
     loadingGenericos,
+    loadingGrupos,
     loadingSemanasAbast,
     loadingSemanasConsumo,
     handleFiltrosChange,
@@ -98,6 +99,7 @@ const AnaliseSubstituicoes = () => {
         onFiltrosChange={handleFiltrosChange}
         semanasAbastecimento={semanasAbastecimento}
         semanasConsumo={semanasConsumo}
+        loading={loadingGrupos}
         loadingSemanasAbast={loadingSemanasAbast}
         loadingSemanasConsumo={loadingSemanasConsumo}
       />

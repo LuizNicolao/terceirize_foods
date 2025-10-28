@@ -4,6 +4,7 @@ import { useSemanasAbastecimento } from '../../../hooks/useSemanasAbastecimento'
 import { useSemanasConsumo } from '../../../hooks/useSemanasConsumo';
 import { useAuth } from '../../../contexts/AuthContext';
 import { usePermissions } from '../../../contexts/PermissionsContext';
+import necessidadesService from '../../../services/necessidadesService';
 
 export const useSubstituicoesOrchestrator = () => {
   const { user } = useAuth();
@@ -39,6 +40,7 @@ export const useSubstituicoesOrchestrator = () => {
   });
   
   const [grupos, setGrupos] = useState([]);
+  const [loadingGrupos, setLoadingGrupos] = useState(false);
   const [ajustesAtivados, setAjustesAtivados] = useState(false);
   const [activeTab, setActiveTab] = useState('nutricionista');
 
@@ -52,7 +54,10 @@ export const useSubstituicoesOrchestrator = () => {
     }
   }, [necessidades]);
 
-  // Carregar dados iniciais - semanas de abastecimento são carregadas automaticamente
+  // Carregar dados iniciais
+  useEffect(() => {
+    carregarGrupos();
+  }, [carregarGrupos]);
 
   // Carregar semanas de consumo quando semana de abastecimento mudar
   useEffect(() => {
@@ -77,6 +82,24 @@ export const useSubstituicoesOrchestrator = () => {
       });
     }
   }, [necessidades, carregarProdutosGenericos]);
+
+  const carregarGrupos = useCallback(async () => {
+    setLoadingGrupos(true);
+    try {
+      const response = await necessidadesService.buscarGruposComPercapita();
+      if (response.success) {
+        setGrupos(response.data || []);
+      } else {
+        console.error('Erro ao carregar grupos:', response.message);
+        setGrupos([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar grupos:', error);
+      setGrupos([]);
+    } finally {
+      setLoadingGrupos(false);
+    }
+  }, []);
 
   const handleFiltrosChange = useCallback((novosFiltros) => {
     setFiltros(prev => ({ ...prev, ...novosFiltros }));
@@ -175,6 +198,7 @@ export const useSubstituicoesOrchestrator = () => {
     // Loading states
     loadingNecessidades,
     loadingGenericos,
+    loadingGrupos,
     loadingSemanasAbast,
     loadingSemanasConsumo,
     
