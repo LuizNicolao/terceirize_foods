@@ -263,35 +263,36 @@ const importarExcel = async (req, res) => {
             }
           }
           
-          // Se ainda não encontrar, tentar buscar por qualquer coluna que contenha escola
+          // Se ainda não encontrar, tentar buscar usando a estrutura correta da tabela
           if (nutricionistaEscola.length === 0) {
             try {
-              // Tentar buscar todas as colunas da tabela para debug
-              const colunas = await executeQuery(`DESCRIBE foods_db.rotas_nutricionistas`);
-              console.log(`Colunas da tabela rotas_nutricionistas:`, colunas.map(c => c.Field));
+              // A tabela rotas_nutricionistas tem 'escolas_responsaveis' que pode conter o ID da escola
+              // Vamos buscar nutricionistas que tenham esta escola em suas responsabilidades
+              nutricionistaEscola = await executeQuery(`
+                SELECT 
+                  u.id as usuario_id,
+                  u.email as usuario_email
+                FROM foods_db.rotas_nutricionistas rn
+                JOIN implantacao_db.usuarios u ON u.id = rn.usuario_id
+                WHERE rn.escolas_responsaveis LIKE ?
+              `, [`%${necessidade.escola_id}%`]);
+              console.log(`Tentativa 3 (escolas_responsaveis LIKE): ${nutricionistaEscola.length} resultados`);
               
-              // Tentar com diferentes nomes de colunas
-              const possiveisColunas = ['escola_id', 'unidade_escolar_id', 'id_escola', 'escola', 'unidade_id'];
-              for (const coluna of possiveisColunas) {
-                try {
-                  nutricionistaEscola = await executeQuery(`
-                    SELECT 
-                      u.id as usuario_id,
-                      u.email as usuario_email
-                    FROM foods_db.rotas_nutricionistas rn
-                    JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
-                    WHERE rn.${coluna} = ?
-                  `, [necessidade.escola_id]);
-                  if (nutricionistaEscola.length > 0) {
-                    console.log(`✅ Encontrado com coluna ${coluna}: ${nutricionistaEscola.length} resultados`);
-                    break;
-                  }
-                } catch (error) {
-                  console.log(`Tentativa com ${coluna} falhou: ${error.message}`);
-                }
+              // Se não encontrar, tentar buscar por qualquer nutricionista ativo
+              if (nutricionistaEscola.length === 0) {
+                nutricionistaEscola = await executeQuery(`
+                  SELECT 
+                    u.id as usuario_id,
+                    u.email as usuario_email
+                  FROM foods_db.rotas_nutricionistas rn
+                  JOIN implantacao_db.usuarios u ON u.id = rn.usuario_id
+                  WHERE rn.status = 'ativo' OR rn.status = '1'
+                  LIMIT 1
+                `);
+                console.log(`Tentativa 4 (qualquer nutricionista ativo): ${nutricionistaEscola.length} resultados`);
               }
             } catch (error) {
-              console.log(`Erro ao buscar colunas: ${error.message}`);
+              console.log(`Erro ao buscar nutricionista: ${error.message}`);
             }
           }
           
