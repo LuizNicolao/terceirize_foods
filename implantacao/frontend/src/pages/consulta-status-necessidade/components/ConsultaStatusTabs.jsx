@@ -7,11 +7,6 @@ const ConsultaStatusTabs = ({
 }) => {
   const tabs = [
     {
-      id: 'lista',
-      label: '📋 Lista de Necessidades',
-      visible: true
-    },
-    {
       id: 'status',
       label: '⚙️ Status das Necessidades',
       visible: true

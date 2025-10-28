@@ -6,68 +6,28 @@ import { useConsultaStatusNecessidade } from '../../hooks/useConsultaStatusNeces
 import { 
   ConsultaStatusLayout,
   ConsultaStatusLoading,
-  ConsultaStatusStats,
-  ConsultaStatusFilters,
-  ConsultaStatusTable,
   ConsultaStatusHeader,
   ConsultaStatusTabs,
   RelatoriosConsultaStatus,
   StatusNecessidadesTab
 } from './components';
 import { ExportButtons } from '../../components/shared';
-import { Pagination } from '../../components/ui';
 import toast from 'react-hot-toast';
 
 const ConsultaStatusNecessidade = () => {
   const { canView } = usePermissions();
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('lista');
+  const [activeTab, setActiveTab] = useState('status');
 
   // Hook para gerenciar consulta de status
   const {
-    necessidades,
-    estatisticas,
-    loading,
-    error,
-    pagination,
-    filtros,
-    opcoesSemanasAbastecimento,
-    opcoesSemanasConsumo,
-    unidadesEscolares,
-    grupos,
-    produtos,
-    carregarNecessidades,
-    carregarEstatisticas,
-    atualizarFiltros,
-    limparFiltros,
-    atualizarPaginacao,
     exportarXLSX,
-    exportarPDF,
-    obterOpcoesStatus,
-    obterOpcoesStatusSubstituicao
+    exportarPDF
   } = useConsultaStatusNecessidade();
 
   // Verificar permissões
   const canViewConsulta = canView('consulta_status_necessidade');
 
-  // Handlers de paginação
-  const handlePageChange = (page) => {
-    atualizarPaginacao({ currentPage: page });
-  };
-
-  const handleItemsPerPageChange = (itemsPerPage) => {
-    atualizarPaginacao({ itemsPerPage, currentPage: 1 });
-  };
-
-  // Handlers de filtros
-  const handleFilterChange = (novosFiltros) => {
-    atualizarFiltros(novosFiltros);
-  };
-
-  const handleClearFilters = () => {
-    limparFiltros();
-    toast.success('Filtros limpos');
-  };
 
   // Handlers de exportação
   const handleExportXLSX = async () => {
@@ -111,14 +71,6 @@ const ConsultaStatusNecessidade = () => {
         loading={loading}
       />
 
-      {/* Estatísticas - apenas na aba Lista */}
-      {activeTab === 'lista' && (
-        <ConsultaStatusStats
-          necessidades={necessidades}
-          estatisticas={estatisticas}
-          filtros={filtros}
-        />
-      )}
 
       {/* Abas */}
       <ConsultaStatusTabs 
@@ -135,53 +87,6 @@ const ConsultaStatusNecessidade = () => {
         />
       </div>
 
-      {/* Conteúdo da aba Lista */}
-      {activeTab === 'lista' && (
-        <>
-          {/* Filtros */}
-          <ConsultaStatusFilters
-            filtros={filtros}
-            opcoesSemanasAbastecimento={opcoesSemanasAbastecimento}
-            opcoesSemanasConsumo={opcoesSemanasConsumo}
-            unidadesEscolares={unidadesEscolares}
-            grupos={grupos}
-            produtos={produtos}
-            opcoesStatus={obterOpcoesStatus()}
-            opcoesStatusSubstituicao={obterOpcoesStatusSubstituicao()}
-            onFilterChange={handleFilterChange}
-            onClearFilters={handleClearFilters}
-            loading={loading}
-          />
-
-          {/* Error Message */}
-          {error && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-4">
-              <p className="text-red-800">{error}</p>
-            </div>
-          )}
-
-          {/* Tabela de Necessidades */}
-          <ConsultaStatusTable
-            necessidades={necessidades || []}
-            loading={loading}
-            canView={canViewConsulta}
-          />
-
-          {/* Paginação */}
-          {pagination && pagination.totalPages > 1 && (
-            <div className="mt-6">
-              <Pagination
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                onPageChange={handlePageChange}
-                totalItems={pagination.totalItems}
-                itemsPerPage={pagination.itemsPerPage}
-                onItemsPerPageChange={handleItemsPerPageChange}
-              />
-            </div>
-          )}
-        </>
-      )}
 
       {/* Conteúdo da aba Status das Necessidades */}
       {activeTab === 'status' && (
