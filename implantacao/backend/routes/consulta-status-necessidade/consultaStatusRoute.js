@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../../middleware/auth');
-const { checkScreenPermission } = require('../../middleware/permissions');
+const { checkScreenPermission } = require('../../middleware/permissoes');
 const ConsultaStatusController = require('../../controllers/consulta-status-necessidade');
 
 // Middleware de autenticação para todas as rotas
