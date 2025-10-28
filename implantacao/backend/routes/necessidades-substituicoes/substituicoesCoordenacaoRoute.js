@@ -22,38 +22,16 @@ const canApprove = (req, res, next) => {
  * Status: 'conf' (aprovação e edição final)
  */
 
-// Middleware de autenticação para todas as rotas
-router.use(authenticateToken);
+// GET /necessidades-substituicoes/coordenacao - Listar necessidades para coordenação
+router.get('/', authenticateToken, canApprove, SubstituicoesCoordenacaoController.listarParaCoordenacao);
 
-// Middleware de permissão para coordenação
-router.use(canApprove);
+// PUT /necessidades-substituicoes/coordenacao/:id/aprovar - Aprovar substituição individual
+router.put('/:id/aprovar', authenticateToken, canApprove, SubstituicoesCoordenacaoController.aprovarSubstituicao);
 
-/**
- * @route GET /necessidades-substituicoes/coordenacao
- * @desc Listar necessidades para coordenação (status 'conf')
- * @access Private (Coordenação)
- */
-router.get('/', SubstituicoesCoordenacaoController.listarParaCoordenacao);
+// PUT /necessidades-substituicoes/coordenacao/:id/rejeitar - Rejeitar substituição individual
+router.put('/:id/rejeitar', authenticateToken, canApprove, SubstituicoesCoordenacaoController.rejeitarSubstituicao);
 
-/**
- * @route PUT /necessidades-substituicoes/coordenacao/:id/aprovar
- * @desc Aprovar substituição individual
- * @access Private (Coordenação)
- */
-router.put('/:id/aprovar', SubstituicoesCoordenacaoController.aprovarSubstituicao);
-
-/**
- * @route PUT /necessidades-substituicoes/coordenacao/:id/rejeitar
- * @desc Rejeitar substituição individual
- * @access Private (Coordenação)
- */
-router.put('/:id/rejeitar', SubstituicoesCoordenacaoController.rejeitarSubstituicao);
-
-/**
- * @route PUT /necessidades-substituicoes/coordenacao/aprovar-todas
- * @desc Aprovar todas as substituições
- * @access Private (Coordenação)
- */
-router.put('/aprovar-todas', SubstituicoesCoordenacaoController.aprovarTodas);
+// PUT /necessidades-substituicoes/coordenacao/aprovar-todas - Aprovar todas as substituições
+router.put('/aprovar-todas', authenticateToken, canApprove, SubstituicoesCoordenacaoController.aprovarTodas);
 
 module.exports = router;

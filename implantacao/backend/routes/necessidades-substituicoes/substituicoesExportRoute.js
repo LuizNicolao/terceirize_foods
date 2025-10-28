@@ -13,24 +13,10 @@ const canView = (req, res, next) => {
  * Rotas para exportação de substituições
  */
 
-// Middleware de autenticação para todas as rotas
-router.use(authenticateToken);
+// POST /necessidades-substituicoes/exportar/pdf - Exportar para PDF
+router.post('/pdf', authenticateToken, canView, SubstituicoesExportController.exportarPDF);
 
-// Middleware de permissão para visualização
-router.use(canView);
-
-/**
- * @route POST /necessidades-substituicoes/exportar/pdf
- * @desc Exportar substituições para PDF
- * @access Private
- */
-router.post('/pdf', SubstituicoesExportController.exportarPDF);
-
-/**
- * @route POST /necessidades-substituicoes/exportar/xlsx
- * @desc Exportar substituições para XLSX
- * @access Private
- */
-router.post('/xlsx', SubstituicoesExportController.exportarXLSX);
+// POST /necessidades-substituicoes/exportar/xlsx - Exportar para XLSX
+router.post('/xlsx', authenticateToken, canView, SubstituicoesExportController.exportarXLSX);
 
 module.exports = router;

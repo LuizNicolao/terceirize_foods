@@ -22,31 +22,13 @@ const hasAccessToAdjustment = (req, res, next) => {
  * Status: 'pendente' (criação e edição)
  */
 
-// Middleware de autenticação para todas as rotas
-router.use(authenticateToken);
+// GET /necessidades-substituicoes/nutricionista - Listar necessidades para nutricionista
+router.get('/', authenticateToken, hasAccessToAdjustment, SubstituicoesNutricionistaController.listarParaNutricionista);
 
-// Middleware de permissão para substituições do nutricionista
-router.use(hasAccessToAdjustment);
+// POST /necessidades-substituicoes/nutricionista/iniciar-ajustes - Iniciar ajustes
+router.post('/iniciar-ajustes', authenticateToken, hasAccessToAdjustment, SubstituicoesNutricionistaController.iniciarAjustes);
 
-/**
- * @route GET /necessidades-substituicoes/nutricionista
- * @desc Listar necessidades para nutricionista (sem substituições)
- * @access Private (Nutricionista)
- */
-router.get('/', SubstituicoesNutricionistaController.listarParaNutricionista);
-
-/**
- * @route POST /necessidades-substituicoes/nutricionista/iniciar-ajustes
- * @desc Iniciar ajustes (criar registros iniciais)
- * @access Private (Nutricionista)
- */
-router.post('/iniciar-ajustes', SubstituicoesNutricionistaController.iniciarAjustes);
-
-/**
- * @route PUT /necessidades-substituicoes/nutricionista/liberar-coordenacao
- * @desc Liberar para coordenação (mudar status para 'conf')
- * @access Private (Nutricionista)
- */
-router.put('/liberar-coordenacao', SubstituicoesNutricionistaController.liberarParaCoordenacao);
+// PUT /necessidades-substituicoes/nutricionista/liberar-coordenacao - Liberar para coordenação
+router.put('/liberar-coordenacao', authenticateToken, hasAccessToAdjustment, SubstituicoesNutricionistaController.liberarParaCoordenacao);
 
 module.exports = router;
