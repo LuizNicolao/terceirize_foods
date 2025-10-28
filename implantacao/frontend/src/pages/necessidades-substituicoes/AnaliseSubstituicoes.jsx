@@ -303,7 +303,7 @@ const AnaliseSubstituicoes = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                👩‍⚕️ Ajuste Nutricionista
+                👩‍⚕️ Análise de Necessidades
               </button>
             )}
             
@@ -316,7 +316,7 @@ const AnaliseSubstituicoes = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                👨‍💼 Ajuste Coordenação
+                👨‍💼 Análise de Necessidades - Coordenação
               </button>
             )}
           </nav>
