@@ -34,13 +34,9 @@ router.use(authenticateToken);
 router.post('/gerar', canCreate('necessidades'), validateGerarNecessidade, gerarNecessidade);
 router.get('/escolas-nutricionista/:usuarioId', canView('necessidades'), listarEscolasNutricionista);
 
-// ===== ROTAS CRUD =====
-router.get('/', canView('necessidades'), listar);
-router.get('/todas', canView('necessidades'), listarTodas);
-router.get('/:id', canView('necessidades'), buscarPorId);
-router.post('/', canCreate('necessidades'), validateCriarNecessidade, criar);
-router.put('/:id', canEdit('necessidades'), validateAtualizarNecessidade, atualizar);
-router.delete('/:id', canDelete('necessidades'), deletar);
+// ===== ROTAS DE IMPORTAÇÃO =====
+router.post('/importar', canCreate('necessidades'), uploadMiddleware, importarExcel);
+router.get('/modelo', canCreate('necessidades'), baixarModelo);
 
 // ===== ROTAS DE ESTATÍSTICAS =====
 router.get('/stats/estatisticas', canView('necessidades'), obterEstatisticas);
@@ -50,8 +46,12 @@ router.get('/stats/resumo', canView('necessidades'), obterResumo);
 router.get('/exportar/xlsx', canView('necessidades'), exportarXLSX);
 router.get('/exportar/pdf', canView('necessidades'), exportarPDF);
 
-// ===== ROTAS DE IMPORTAÇÃO =====
-router.post('/importar', canCreate('necessidades'), uploadMiddleware, importarExcel);
-router.get('/modelo', canCreate('necessidades'), baixarModelo);
+// ===== ROTAS CRUD =====
+router.get('/', canView('necessidades'), listar);
+router.get('/todas', canView('necessidades'), listarTodas);
+router.get('/:id', canView('necessidades'), buscarPorId);
+router.post('/', canCreate('necessidades'), validateCriarNecessidade, criar);
+router.put('/:id', canEdit('necessidades'), validateAtualizarNecessidade, atualizar);
+router.delete('/:id', canDelete('necessidades'), deletar);
 
 module.exports = router;
