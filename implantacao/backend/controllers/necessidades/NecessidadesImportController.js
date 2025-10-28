@@ -210,7 +210,7 @@ const importarExcel = async (req, res) => {
         // Buscar informações adicionais do produto no banco foods
         const produtoInfo = await executeQuery(`
           SELECT 
-            po.unidade_medida_nome as unidade_medida,
+            po.unidade_medida as unidade_medida,
             g.nome as grupo,
             g.id as grupo_id
           FROM foods_db.produto_origem po
