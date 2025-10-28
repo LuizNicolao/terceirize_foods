@@ -12,9 +12,9 @@ const AnaliseSubstituicoes = () => {
   const [activeTab, setActiveTab] = useState('nutricionista');
 
   // Verificar permissões baseado no tipo de acesso do usuário
-  const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador'];
+  const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador', 'administrativo'];
   const canViewSubstituicoes = canView('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
-  const canViewCoordenacao = ['coordenador', 'administrador'].includes(user.tipo_de_acesso);
+  const canViewCoordenacao = ['coordenador', 'administrador', 'administrativo'].includes(user.tipo_de_acesso);
 
   if (permissionsLoading) {
     return <NecessidadesLoading />;
