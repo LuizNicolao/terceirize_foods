@@ -216,6 +216,15 @@ const importarExcel = async (req, res) => {
 
         const produto = produtoInfo[0] || {};
         
+        // Buscar informações da escola (rota e código teknisa)
+        const escolaInfo = await executeQuery(`
+          SELECT rota, codigo_teknisa 
+          FROM unidades_escolares 
+          WHERE id = ?
+        `, [necessidade.escola_id]);
+
+        const escola = escolaInfo[0] || {};
+        
         // Gerar ID sequencial para esta necessidade
         const ultimoId = await executeQuery(`
           SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
@@ -241,8 +250,8 @@ const importarExcel = async (req, res) => {
           necessidade.usuario_email,
           necessidade.escola_id,
           necessidade.escola_nome,
-          null, // escola_rota - será preenchido posteriormente
-          null, // codigo_teknisa - será preenchido posteriormente
+          escola.rota || null, // escola_rota da tabela unidades_escolares
+          escola.codigo_teknisa || null, // codigo_teknisa da tabela unidades_escolares
           necessidade.produto_id,
           necessidade.produto_nome,
           produto.unidade_medida || null,
