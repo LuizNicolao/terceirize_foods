@@ -18,7 +18,7 @@ class ProdutoOrigemListController {
    * Listar produtos origem com paginação e busca
    */
   static listarProdutosOrigem = asyncHandler(async (req, res) => {
-    const { search, status, grupo_id, subgrupo_id, classe_id, page = 1, limit = 10 } = req.query;
+    const { search, status, grupo_id, subgrupo_id, classe_id, sortField, sortDirection, page = 1, limit = 10 } = req.query;
     
     let baseQuery = `
       SELECT 
@@ -71,7 +71,22 @@ class ProdutoOrigemListController {
       params.push(parseInt(classe_id));
     }
 
-    baseQuery += ' ORDER BY po.nome ASC';
+    // Aplicar ordenação
+    let orderBy = 'po.nome ASC';
+    if (sortField && sortDirection) {
+      const validFields = ['codigo', 'nome', 'status', 'grupo_id', 'subgrupo_id', 'classe_id', 'unidade_medida_id'];
+      if (validFields.includes(sortField)) {
+        const direction = sortDirection.toLowerCase() === 'desc' ? 'DESC' : 'ASC';
+        
+        // Ordenação especial para código (numérica)
+        if (sortField === 'codigo') {
+          orderBy = `CAST(po.codigo AS UNSIGNED) ${direction}`;
+        } else {
+          orderBy = `po.${sortField} ${direction}`;
+        }
+      }
+    }
+    baseQuery += ` ORDER BY ${orderBy}`;
 
     // Aplicar paginação
     const limitNum = parseInt(limit);

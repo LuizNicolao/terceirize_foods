@@ -26,15 +26,26 @@ export const useProdutoOrigem = () => {
   // Hook de ordenação híbrida
   const {
     sortedData: produtosOrigemOrdenados,
-    sortField,
-    sortDirection,
+    sortField: localSortField,
+    sortDirection: localSortDirection,
     handleSort,
     isSortingLocally
   } = useTableSort({
     data: baseEntity.items,
-    threshold: 100,
-    totalItems: baseEntity.totalItems
+    threshold: 50, // Reduzido para forçar mais ordenação no backend
+    totalItems: baseEntity.totalItems,
+    onBackendSort: (field, direction) => {
+      // Atualizar estados de ordenação no baseEntity
+      baseEntity.setSortField(field);
+      baseEntity.setSortDirection(direction);
+      // Recarregar dados com nova ordenação
+      baseEntity.loadData();
+    }
   });
+  
+  // Usar ordenação do baseEntity quando disponível, senão usar local
+  const sortField = baseEntity.sortField || localSortField;
+  const sortDirection = baseEntity.sortDirection || localSortDirection;
   
   // Estados locais
   const [loading, setLoading] = useState(false);

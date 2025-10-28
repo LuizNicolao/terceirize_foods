@@ -34,6 +34,10 @@ export const useBaseEntity = (entityName, service, options = {}) => {
   const [loading, setLoading] = useState(true);
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  
+  // Estados de ordenação
+  const [sortField, setSortField] = useState(null);
+  const [sortDirection, setSortDirection] = useState(null);
 
   // Estados de estatísticas
   const [estatisticas, setEstatisticas] = useState({});
@@ -49,6 +53,9 @@ export const useBaseEntity = (entityName, service, options = {}) => {
         ...filters.getFilterParams(),
         // Usar debouncedSearch se disponível, senão usar o searchTerm do filters
         search: debouncedSearch?.debouncedSearchTerm || filters.searchTerm || undefined,
+        // Adicionar parâmetros de ordenação
+        sortField: sortField,
+        sortDirection: sortDirection,
         ...customParams
       };
 
@@ -265,6 +272,12 @@ export const useBaseEntity = (entityName, service, options = {}) => {
     // Setters diretos (para casos específicos)
     setItems,
     setLoading,
-    setEstatisticas
+    setEstatisticas,
+    
+    // Funções de ordenação
+    sortField,
+    sortDirection,
+    setSortField,
+    setSortDirection
   };
 };
