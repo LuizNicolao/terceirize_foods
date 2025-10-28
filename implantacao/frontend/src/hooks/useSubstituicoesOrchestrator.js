@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSubstituicoesNecessidades } from './useSubstituicoesNecessidades';
-import { useSemanasAbastecimento } from '../../../hooks/useSemanasAbastecimento';
-import { useSemanasConsumo } from '../../../hooks/useSemanasConsumo';
-import { useAuth } from '../../../contexts/AuthContext';
-import { usePermissions } from '../../../contexts/PermissionsContext';
-import necessidadesService from '../../../services/necessidadesService';
+import { useSemanasAbastecimento } from './useSemanasAbastecimento';
+import { useSemanasConsumo } from './useSemanasConsumo';
+import { useAuth } from '../contexts/AuthContext';
+import { usePermissions } from '../contexts/PermissionsContext';
+import necessidadesService from '../services/necessidadesService';
 
 export const useSubstituicoesOrchestrator = () => {
   const { user } = useAuth();
