@@ -44,6 +44,24 @@ export const useSubstituicoesOrchestrator = () => {
   const [ajustesAtivados, setAjustesAtivados] = useState(false);
   const [activeTab, setActiveTab] = useState('nutricionista');
 
+  const carregarGrupos = useCallback(async () => {
+    setLoadingGrupos(true);
+    try {
+      const response = await necessidadesService.buscarGruposComPercapita();
+      if (response.success) {
+        setGrupos(response.data || []);
+      } else {
+        console.error('Erro ao carregar grupos:', response.message);
+        setGrupos([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar grupos:', error);
+      setGrupos([]);
+    } finally {
+      setLoadingGrupos(false);
+    }
+  }, []);
+
   // Verificar se ajustes estão ativados baseado nas necessidades
   useEffect(() => {
     if (necessidades.length > 0) {
@@ -82,24 +100,6 @@ export const useSubstituicoesOrchestrator = () => {
       });
     }
   }, [necessidades, carregarProdutosGenericos]);
-
-  const carregarGrupos = useCallback(async () => {
-    setLoadingGrupos(true);
-    try {
-      const response = await necessidadesService.buscarGruposComPercapita();
-      if (response.success) {
-        setGrupos(response.data || []);
-      } else {
-        console.error('Erro ao carregar grupos:', response.message);
-        setGrupos([]);
-      }
-    } catch (error) {
-      console.error('Erro ao carregar grupos:', error);
-      setGrupos([]);
-    } finally {
-      setLoadingGrupos(false);
-    }
-  }, []);
 
   const handleFiltrosChange = useCallback((novosFiltros) => {
     setFiltros(prev => ({ ...prev, ...novosFiltros }));
