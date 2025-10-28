@@ -37,7 +37,7 @@ const SubstituicoesFilters = ({
           <SearchableSelect
             value={filtros.grupo || ''}
             onChange={(value) => onFiltroChange({ grupo: value })}
-            options={grupos.map(grupo => ({
+            options={(grupos || []).map(grupo => ({
               value: grupo.nome,
               label: grupo.nome
             }))}
@@ -54,7 +54,7 @@ const SubstituicoesFilters = ({
           <SearchableSelect
             value={filtros.semana_abastecimento || ''}
             onChange={(value) => onFiltroChange({ semana_abastecimento: value })}
-            options={semanasAbastecimento.map(semana => ({
+            options={(semanasAbastecimento || []).map(semana => ({
               value: semana.semana_abastecimento,
               label: semana.semana_abastecimento
             }))}

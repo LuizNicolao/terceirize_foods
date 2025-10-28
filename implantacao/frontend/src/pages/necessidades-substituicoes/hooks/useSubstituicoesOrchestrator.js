@@ -38,6 +38,7 @@ export const useSubstituicoesOrchestrator = () => {
     semana_consumo: ''
   });
   
+  const [grupos, setGrupos] = useState([]);
   const [ajustesAtivados, setAjustesAtivados] = useState(false);
   const [activeTab, setActiveTab] = useState('nutricionista');
 
@@ -165,6 +166,7 @@ export const useSubstituicoesOrchestrator = () => {
     necessidades,
     produtosGenericos,
     filtros,
+    grupos,
     ajustesAtivados,
     activeTab,
     semanasAbastecimento,

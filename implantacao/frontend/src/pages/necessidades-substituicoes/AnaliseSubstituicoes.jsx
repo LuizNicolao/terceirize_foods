@@ -17,6 +17,7 @@ const AnaliseSubstituicoes = () => {
     necessidades,
     produtosGenericos,
     filtros,
+    grupos,
     ajustesAtivados,
     activeTab,
     semanasAbastecimento,
@@ -92,6 +93,7 @@ const AnaliseSubstituicoes = () => {
 
       {/* Filtros */}
       <SubstituicoesFilters
+        grupos={grupos}
         filtros={filtros}
         onFiltrosChange={handleFiltrosChange}
         semanasAbastecimento={semanasAbastecimento}
