@@ -179,6 +179,47 @@ const necessidadesService = {
       data: response.data,
       filename: `necessidades_nutricionista_${new Date().toISOString().split('T')[0]}.pdf`
     };
+  },
+
+  // Importar necessidades via Excel
+  importarExcel: async (formData) => {
+    try {
+      const response = await api.post('/necessidades/importar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return response.data;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Erro ao importar planilha'
+      };
+    }
+  },
+
+  // Baixar modelo de planilha
+  baixarModelo: async () => {
+    try {
+      const response = await api.get('/necessidades/modelo', {
+        responseType: 'blob'
+      });
+      
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'modelo_necessidades.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      throw new Error('Erro ao baixar modelo de planilha');
+    }
   }
 };
 

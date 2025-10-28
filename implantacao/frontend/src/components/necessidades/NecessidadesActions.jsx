@@ -1,10 +1,11 @@
 import React from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import { FaPlus, FaQuestionCircle, FaUpload } from 'react-icons/fa';
 import { Button } from '../ui';
 
 const NecessidadesActions = ({ 
   canCreate = false,
   onAdd,
+  onImport,
   onShowHelp,
   loading = false 
 }) => {
@@ -13,14 +14,25 @@ const NecessidadesActions = ({
       <div className="flex justify-end">
         <div className="flex space-x-3">
           {canCreate && (
-            <Button
-              onClick={onAdd}
-              disabled={loading}
-              className="flex items-center space-x-2"
-            >
-              <FaPlus size={14} />
-              <span>Gerar Necessidade</span>
-            </Button>
+            <>
+              <Button
+                onClick={onImport}
+                disabled={loading}
+                variant="outline"
+                className="flex items-center space-x-2"
+              >
+                <FaUpload size={14} />
+                <span>Importar</span>
+              </Button>
+              <Button
+                onClick={onAdd}
+                disabled={loading}
+                className="flex items-center space-x-2"
+              >
+                <FaPlus size={14} />
+                <span>Gerar Necessidade</span>
+              </Button>
+            </>
           )}
           <button
             onClick={onShowHelp}

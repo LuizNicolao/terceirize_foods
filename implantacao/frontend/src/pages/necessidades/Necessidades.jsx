@@ -9,7 +9,8 @@ import {
   NecessidadesLoading,
   NecessidadesStats,
   NecessidadesFilters,
-  NecessidadeModal
+  NecessidadeModal,
+  ImportNecessidadesModal
 } from '../../components/necessidades';
 import { ActionButtons, Modal } from '../../components/ui';
 import { ExportButtons } from '../../components/shared';
@@ -21,6 +22,7 @@ const Necessidades = () => {
   const [gerando, setGerando] = useState(false);
   const [modalAberto, setModalAberto] = useState(false);
   const [modalVisualizacaoAberto, setModalVisualizacaoAberto] = useState(false);
+  const [modalImportAberto, setModalImportAberto] = useState(false);
   const [necessidadeSelecionada, setNecessidadeSelecionada] = useState(null);
   
   // Hook para gerenciar necessidades
@@ -104,6 +106,22 @@ const Necessidades = () => {
     }
   };
 
+  // Handler para importar necessidades
+  const handleImportarNecessidades = () => {
+    if (!canCreateNecessidades) {
+      toast.error('Você não tem permissão para importar necessidades');
+      return;
+    }
+    setModalImportAberto(true);
+  };
+
+  // Handler para sucesso na importação
+  const handleImportSuccess = () => {
+    setModalImportAberto(false);
+    carregarNecessidades();
+    toast.success('Necessidades importadas com sucesso!');
+  };
+
   const handleVisualizarNecessidade = (grupo) => {
     setNecessidadeSelecionada(grupo);
     setModalVisualizacaoAberto(true);
@@ -117,6 +135,7 @@ const Necessidades = () => {
       <NecessidadesActions
         canCreate={canCreateNecessidades}
         onAdd={handleGerarNecessidade}
+        onImport={handleImportarNecessidades}
         onShowHelp={() => {}} // TODO: Implementar ajuda
         loading={loading}
       />
@@ -349,6 +368,13 @@ const Necessidades = () => {
           </div>
         )}
       </Modal>
+
+      {/* Modal de Importação */}
+      <ImportNecessidadesModal
+        isOpen={modalImportAberto}
+        onClose={() => setModalImportAberto(false)}
+        onImportSuccess={handleImportSuccess}
+      />
     </>
   );
 };
