@@ -37,6 +37,11 @@ class ConsultaStatusController {
       let whereConditions = [];
       let queryParams = [];
 
+      console.log('=== INÍCIO DA CONSTRUÇÃO ===');
+      console.log('whereConditions inicial:', whereConditions);
+      console.log('queryParams inicial:', queryParams);
+      console.log('=============================');
+
       // Filtros opcionais
       if (status) {
         whereConditions.push('n.status = ?');
@@ -78,6 +83,11 @@ class ConsultaStatusController {
         whereConditions.push('DATE(n.data_preenchimento) <= ?');
         queryParams.push(data_fim);
       }
+
+      console.log('=== APÓS FILTROS ===');
+      console.log('whereConditions após filtros:', whereConditions);
+      console.log('queryParams após filtros:', queryParams);
+      console.log('====================');
 
       const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
