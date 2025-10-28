@@ -77,7 +77,7 @@ class SubstituicoesListController {
           AND (ns.status IS NULL OR ns.status = 'conf')
         )
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, 
+        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, n.grupo,
                  COALESCE(ns.produto_generico_id, ''), COALESCE(ns.produto_generico_codigo, ''), 
                  COALESCE(ns.produto_generico_nome, ''), COALESCE(ns.produto_generico_unidade, '')
         ORDER BY n.produto ASC, COALESCE(ns.produto_generico_nome, '') ASC
