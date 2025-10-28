@@ -136,21 +136,23 @@ class ConsultaStatusController {
       `;
 
       const offset = (pageNum - 1) * limitNum;
-      queryParams.push(limitNum, offset);
+      
+      // Usar interpolação de string para LIMIT e OFFSET (como no recebimentos)
+      const limitClause = `LIMIT ${limitNum} OFFSET ${offset}`;
+      const necessidadesQueryFinal = necessidadesQuery.replace('LIMIT ? OFFSET ?', limitClause);
 
       // Debug: Log dos parâmetros antes da execução
       console.log('=== DEBUG CONSULTA STATUS NECESSIDADES ===');
-      console.log('Query SQL:', necessidadesQuery);
+      console.log('Query SQL original:', necessidadesQuery);
+      console.log('Query SQL final:', necessidadesQueryFinal);
       console.log('Parâmetros queryParams:', queryParams);
       console.log('Tipos dos parâmetros:', queryParams.map(p => typeof p));
       console.log('pageNum:', pageNum, 'limitNum:', limitNum, 'offset:', offset);
       console.log('whereClause:', whereClause);
-      console.log('queryParams.length:', queryParams.length);
-      console.log('queryParams[0]:', queryParams[0], 'tipo:', typeof queryParams[0]);
-      console.log('queryParams[1]:', queryParams[1], 'tipo:', typeof queryParams[1]);
+      console.log('limitClause:', limitClause);
       console.log('==========================================');
 
-      const necessidades = await executeQuery(necessidadesQuery, queryParams);
+      const necessidades = await executeQuery(necessidadesQueryFinal, queryParams);
 
       // Query para contar total de registros
       const countQuery = `
