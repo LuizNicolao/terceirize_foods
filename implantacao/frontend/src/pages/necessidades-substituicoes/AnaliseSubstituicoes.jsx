@@ -14,7 +14,7 @@ const AnaliseSubstituicoes = () => {
   // Verificar permissões baseado no tipo de acesso do usuário
   const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador'];
   const canViewSubstituicoes = canView('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
-  const canViewCoordenacao = ['coordenador', 'supervisor', 'administrador'].includes(user.tipo_de_acesso);
+  const canViewCoordenacao = ['coordenador', 'administrador'].includes(user.tipo_de_acesso);
 
   if (permissionsLoading) {
     return <NecessidadesLoading />;
