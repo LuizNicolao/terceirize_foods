@@ -29,10 +29,11 @@ class ConsultaStatusController {
         queryParams.push(status);
       }
 
-      if (grupo) {
-        whereConditions.push('n.grupo = ?');
-        queryParams.push(grupo);
-      }
+      // Filtro por grupo removido - coluna grupo não existe na tabela necessidades
+      // if (grupo) {
+      //   whereConditions.push('n.grupo = ?');
+      //   queryParams.push(grupo);
+      // }
 
       if (semana_abastecimento) {
         whereConditions.push('n.semana_abastecimento = ?');
@@ -55,12 +56,12 @@ class ConsultaStatusController {
       }
 
       if (data_inicio) {
-        whereConditions.push('DATE(n.data_criacao) >= ?');
+        whereConditions.push('DATE(n.data_preenchimento) >= ?');
         queryParams.push(data_inicio);
       }
 
       if (data_fim) {
-        whereConditions.push('DATE(n.data_criacao) <= ?');
+        whereConditions.push('DATE(n.data_preenchimento) <= ?');
         queryParams.push(data_fim);
       }
 
@@ -79,14 +80,9 @@ class ConsultaStatusController {
           n.semana_abastecimento,
           n.semana_consumo,
           n.status,
-          n.grupo,
-          n.grupo_id,
-          n.substituicao_processada,
-          n.data_criacao,
+          n.data_preenchimento as data_criacao,
           n.data_atualizacao,
-          n.usuario_id,
           n.usuario_email,
-          n.observacoes,
           -- Status da substituição
           ns.status as status_substituicao,
           ns.produto_generico_id,
@@ -103,7 +99,7 @@ class ConsultaStatusController {
           AND ns.ativo = 1
         )
         ${whereClause}
-        ORDER BY n.data_criacao DESC, n.escola ASC, n.produto ASC
+        ORDER BY n.data_preenchimento DESC, n.escola ASC, n.produto ASC
         LIMIT ? OFFSET ?
       `;
 
@@ -134,13 +130,12 @@ class ConsultaStatusController {
       const statsQuery = `
         SELECT 
           n.status,
-          n.grupo,
           COUNT(*) as quantidade,
           SUM(n.ajuste) as total_quantidade
         FROM necessidades n
         ${whereClause}
-        GROUP BY n.status, n.grupo
-        ORDER BY n.status, n.grupo
+        GROUP BY n.status
+        ORDER BY n.status
       `;
 
       const stats = await executeQuery(statsQuery, countParams);
@@ -207,10 +202,11 @@ class ConsultaStatusController {
       let whereConditions = [];
       let queryParams = [];
 
-      if (grupo) {
-        whereConditions.push('n.grupo = ?');
-        queryParams.push(grupo);
-      }
+      // Filtro por grupo removido - coluna grupo não existe na tabela necessidades
+      // if (grupo) {
+      //   whereConditions.push('n.grupo = ?');
+      //   queryParams.push(grupo);
+      // }
 
       if (semana_abastecimento) {
         whereConditions.push('n.semana_abastecimento = ?');
@@ -218,12 +214,12 @@ class ConsultaStatusController {
       }
 
       if (data_inicio) {
-        whereConditions.push('DATE(n.data_criacao) >= ?');
+        whereConditions.push('DATE(n.data_preenchimento) >= ?');
         queryParams.push(data_inicio);
       }
 
       if (data_fim) {
-        whereConditions.push('DATE(n.data_criacao) <= ?');
+        whereConditions.push('DATE(n.data_preenchimento) <= ?');
         queryParams.push(data_fim);
       }
 
@@ -235,7 +231,7 @@ class ConsultaStatusController {
           COUNT(*) as total_necessidades,
           COUNT(DISTINCT n.escola_id) as total_escolas,
           COUNT(DISTINCT n.produto_id) as total_produtos,
-          COUNT(DISTINCT n.grupo) as total_grupos,
+          -- COUNT(DISTINCT n.grupo) as total_grupos, -- coluna grupo não existe
           SUM(n.ajuste) as total_quantidade,
           AVG(n.ajuste) as media_quantidade
         FROM necessidades n
@@ -279,18 +275,19 @@ class ConsultaStatusController {
       const substituicaoStats = await executeQuery(substituicaoQuery, queryParams);
 
       // Grupos de produtos
-      const gruposQuery = `
-        SELECT 
-          n.grupo,
-          COUNT(*) as quantidade,
-          SUM(n.ajuste) as total_quantidade
-        FROM necessidades n
-        ${whereClause}
-        GROUP BY n.grupo
-        ORDER BY n.grupo
-      `;
+      // Query de grupos removida - coluna grupo não existe na tabela necessidades
+      // const gruposQuery = `
+      //   SELECT 
+      //     n.grupo,
+      //     COUNT(*) as quantidade,
+      //     SUM(n.ajuste) as total_quantidade
+      //   FROM necessidades n
+      //   ${whereClause}
+      //   GROUP BY n.grupo
+      //   ORDER BY n.grupo
+      // `;
 
-      const gruposStats = await executeQuery(gruposQuery, queryParams);
+      // const gruposStats = await executeQuery(gruposQuery, queryParams);
 
       res.json({
         success: true,
@@ -328,10 +325,11 @@ class ConsultaStatusController {
         queryParams.push(status);
       }
 
-      if (grupo) {
-        whereConditions.push('n.grupo = ?');
-        queryParams.push(grupo);
-      }
+      // Filtro por grupo removido - coluna grupo não existe na tabela necessidades
+      // if (grupo) {
+      //   whereConditions.push('n.grupo = ?');
+      //   queryParams.push(grupo);
+      // }
 
       if (semana_abastecimento) {
         whereConditions.push('n.semana_abastecimento = ?');
@@ -354,12 +352,12 @@ class ConsultaStatusController {
       }
 
       if (data_inicio) {
-        whereConditions.push('DATE(n.data_criacao) >= ?');
+        whereConditions.push('DATE(n.data_preenchimento) >= ?');
         queryParams.push(data_inicio);
       }
 
       if (data_fim) {
-        whereConditions.push('DATE(n.data_criacao) <= ?');
+        whereConditions.push('DATE(n.data_preenchimento) <= ?');
         queryParams.push(data_fim);
       }
 
@@ -377,11 +375,8 @@ class ConsultaStatusController {
           n.semana_abastecimento,
           n.semana_consumo,
           n.status,
-          n.grupo,
-          n.substituicao_processada,
-          n.data_criacao,
+          n.data_preenchimento as data_criacao,
           n.usuario_email,
-          n.observacoes,
           ns.status as status_substituicao,
           ns.produto_generico_nome,
           ns.quantidade_generico
@@ -394,7 +389,7 @@ class ConsultaStatusController {
           AND ns.ativo = 1
         )
         ${whereClause}
-        ORDER BY n.data_criacao DESC, n.escola ASC, n.produto ASC
+        ORDER BY n.data_preenchimento DESC, n.escola ASC, n.produto ASC
       `;
 
       const dados = await executeQuery(query, queryParams);
@@ -433,10 +428,11 @@ class ConsultaStatusController {
         queryParams.push(status);
       }
 
-      if (grupo) {
-        whereConditions.push('n.grupo = ?');
-        queryParams.push(grupo);
-      }
+      // Filtro por grupo removido - coluna grupo não existe na tabela necessidades
+      // if (grupo) {
+      //   whereConditions.push('n.grupo = ?');
+      //   queryParams.push(grupo);
+      // }
 
       if (semana_abastecimento) {
         whereConditions.push('n.semana_abastecimento = ?');
@@ -459,12 +455,12 @@ class ConsultaStatusController {
       }
 
       if (data_inicio) {
-        whereConditions.push('DATE(n.data_criacao) >= ?');
+        whereConditions.push('DATE(n.data_preenchimento) >= ?');
         queryParams.push(data_inicio);
       }
 
       if (data_fim) {
-        whereConditions.push('DATE(n.data_criacao) <= ?');
+        whereConditions.push('DATE(n.data_preenchimento) <= ?');
         queryParams.push(data_fim);
       }
 
@@ -482,11 +478,8 @@ class ConsultaStatusController {
           n.semana_abastecimento,
           n.semana_consumo,
           n.status,
-          n.grupo,
-          n.substituicao_processada,
-          n.data_criacao,
+          n.data_preenchimento as data_criacao,
           n.usuario_email,
-          n.observacoes,
           ns.status as status_substituicao,
           ns.produto_generico_nome,
           ns.quantidade_generico
@@ -499,7 +492,7 @@ class ConsultaStatusController {
           AND ns.ativo = 1
         )
         ${whereClause}
-        ORDER BY n.data_criacao DESC, n.escola ASC, n.produto ASC
+        ORDER BY n.data_preenchimento DESC, n.escola ASC, n.produto ASC
       `;
 
       const dados = await executeQuery(query, queryParams);
