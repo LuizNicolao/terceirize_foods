@@ -61,19 +61,19 @@ const StatusNecessidadesTab = () => {
       setLoadingOpcoes(true);
       
       // Carregar grupos de produtos
-      const gruposResponse = await FoodsApiService.getGruposProdutos();
+      const gruposResponse = await FoodsApiService.getGrupos();
       if (gruposResponse.success) {
         setGrupos(gruposResponse.data || []);
       }
 
       // Carregar escolas
-      const escolasResponse = await FoodsApiService.getEscolas();
+      const escolasResponse = await FoodsApiService.getUnidadesEscolares();
       if (escolasResponse.success) {
         setEscolas(escolasResponse.data || []);
       }
 
       // Carregar produtos
-      const produtosResponse = await FoodsApiService.getProdutos();
+      const produtosResponse = await FoodsApiService.getProdutosOrigem();
       if (produtosResponse.success) {
         setProdutos(produtosResponse.data || []);
       }
