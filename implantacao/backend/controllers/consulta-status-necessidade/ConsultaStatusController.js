@@ -19,9 +19,19 @@ class ConsultaStatusController {
         limit = 50
       } = req.query;
 
+      // Debug: Log dos parâmetros de entrada
+      console.log('=== PARÂMETROS DE ENTRADA ===');
+      console.log('req.query:', req.query);
+      console.log('page original:', page, 'tipo:', typeof page);
+      console.log('limit original:', limit, 'tipo:', typeof limit);
+      console.log('==============================');
+
       // Garantir que page e limit sejam números
       const pageNum = parseInt(page) || 1;
       const limitNum = parseInt(limit) || 50;
+
+      console.log('pageNum convertido:', pageNum, 'tipo:', typeof pageNum);
+      console.log('limitNum convertido:', limitNum, 'tipo:', typeof limitNum);
 
       // Construir query base
       let whereConditions = [];
@@ -71,6 +81,13 @@ class ConsultaStatusController {
 
       const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
+      // Debug: Log da construção da query
+      console.log('=== CONSTRUÇÃO DA QUERY ===');
+      console.log('whereConditions:', whereConditions);
+      console.log('queryParams antes do LIMIT/OFFSET:', queryParams);
+      console.log('whereClause:', whereClause);
+      console.log('============================');
+
       // Query principal para buscar necessidades
       const necessidadesQuery = `
         SELECT 
@@ -109,6 +126,15 @@ class ConsultaStatusController {
 
       const offset = (pageNum - 1) * limitNum;
       queryParams.push(limitNum, offset);
+
+      // Debug: Log dos parâmetros antes da execução
+      console.log('=== DEBUG CONSULTA STATUS NECESSIDADES ===');
+      console.log('Query SQL:', necessidadesQuery);
+      console.log('Parâmetros queryParams:', queryParams);
+      console.log('Tipos dos parâmetros:', queryParams.map(p => typeof p));
+      console.log('pageNum:', pageNum, 'limitNum:', limitNum, 'offset:', offset);
+      console.log('whereClause:', whereClause);
+      console.log('==========================================');
 
       const necessidades = await executeQuery(necessidadesQuery, queryParams);
 
