@@ -9,7 +9,9 @@ import {
   ConsultaStatusStats,
   ConsultaStatusFilters,
   ConsultaStatusTable,
-  ConsultaStatusHeader
+  ConsultaStatusHeader,
+  ConsultaStatusTabs,
+  RelatoriosConsultaStatus
 } from './components';
 import { ExportButtons } from '../../components/shared';
 import { Pagination } from '../../components/ui';
@@ -116,30 +118,11 @@ const ConsultaStatusNecessidade = () => {
       />
 
       {/* Abas */}
-      <div className="mb-6">
-        <nav className="flex space-x-8" aria-label="Tabs">
-          <button
-            onClick={() => setActiveTab('lista')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'lista'
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            📋 Lista de Necessidades
-          </button>
-          <button
-            onClick={() => setActiveTab('relatorios')}
-            className={`py-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'relatorios'
-                ? 'border-green-500 text-green-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            📊 Relatórios
-          </button>
-        </nav>
-      </div>
+      <ConsultaStatusTabs 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab}
+        userType={user?.tipo_de_acesso}
+      />
 
       {/* Ações de Exportação - sempre visíveis */}
       <div className="mb-4">
@@ -199,14 +182,7 @@ const ConsultaStatusNecessidade = () => {
 
       {/* Conteúdo da aba Relatórios */}
       {activeTab === 'relatorios' && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Relatórios de Status de Necessidades
-          </h3>
-          <p className="text-gray-600">
-            Funcionalidade de relatórios em desenvolvimento.
-          </p>
-        </div>
+        <RelatoriosConsultaStatus />
       )}
 
       {/* Loading Overlay */}

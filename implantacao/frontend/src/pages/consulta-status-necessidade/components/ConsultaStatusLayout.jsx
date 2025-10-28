@@ -2,8 +2,9 @@ import React from 'react';
 
 const ConsultaStatusLayout = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="p-4 sm:p-6">
+      {/* Conteúdo Principal */}
+      <div className="space-y-4 md:space-y-6">
         {children}
       </div>
     </div>
