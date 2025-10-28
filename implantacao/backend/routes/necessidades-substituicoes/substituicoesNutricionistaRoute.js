@@ -2,7 +2,20 @@ const express = require('express');
 const router = express.Router();
 const SubstituicoesNutricionistaController = require('../../controllers/necessidades-substituicoes/SubstituicoesNutricionistaController');
 const { authenticateToken } = require('../../middleware/auth');
-const { hasAccessToAdjustment } = require('../../middleware/permissoes');
+
+// Middleware para verificar se tem acesso à funcionalidade
+const hasAccessToAdjustment = (req, res, next) => {
+  const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador'];
+  
+  if (!tiposComAcesso.includes(req.user.tipo_de_acesso)) {
+    return res.status(403).json({
+      success: false,
+      error: 'Acesso negado',
+      message: 'Você não tem permissão para acessar esta funcionalidade'
+    });
+  }
+  next();
+};
 
 /**
  * Rotas para substituições do nutricionista
