@@ -213,6 +213,7 @@ const Classes = () => {
         onPageChange={handlePageChange}
         totalItems={totalItems}
         itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
       />
 
       {/* Modal de Confirmação de Exclusão */}
