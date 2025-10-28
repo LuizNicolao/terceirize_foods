@@ -19,6 +19,10 @@ class ConsultaStatusController {
         limit = 50
       } = req.query;
 
+      // Garantir que page e limit sejam números
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 50;
+
       // Construir query base
       let whereConditions = [];
       let queryParams = [];
@@ -103,8 +107,8 @@ class ConsultaStatusController {
         LIMIT ? OFFSET ?
       `;
 
-      const offset = (page - 1) * limit;
-      queryParams.push(parseInt(limit), parseInt(offset));
+      const offset = (pageNum - 1) * limitNum;
+      queryParams.push(limitNum, offset);
 
       const necessidades = await executeQuery(necessidadesQuery, queryParams);
 
@@ -174,11 +178,11 @@ class ConsultaStatusController {
           substituicoes: substituicaoStats
         },
         _links: {
-          self: { href: `/api/consulta-status-necessidade?page=${page}&limit=${limit}` },
-          first: { href: `/api/consulta-status-necessidade?page=1&limit=${limit}` },
-          last: { href: `/api/consulta-status-necessidade?page=${Math.ceil(total / limit)}&limit=${limit}` },
-          next: page < Math.ceil(total / limit) ? { href: `/api/consulta-status-necessidade?page=${parseInt(page) + 1}&limit=${limit}` } : null,
-          prev: page > 1 ? { href: `/api/consulta-status-necessidade?page=${parseInt(page) - 1}&limit=${limit}` } : null
+          self: { href: `/api/consulta-status-necessidade?page=${pageNum}&limit=${limitNum}` },
+          first: { href: `/api/consulta-status-necessidade?page=1&limit=${limitNum}` },
+          last: { href: `/api/consulta-status-necessidade?page=${Math.ceil(total / limitNum)}&limit=${limitNum}` },
+          next: pageNum < Math.ceil(total / limitNum) ? { href: `/api/consulta-status-necessidade?page=${pageNum + 1}&limit=${limitNum}` } : null,
+          prev: pageNum > 1 ? { href: `/api/consulta-status-necessidade?page=${pageNum - 1}&limit=${limitNum}` } : null
         }
       });
 
