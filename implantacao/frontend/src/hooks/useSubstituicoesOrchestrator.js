@@ -43,6 +43,7 @@ export const useSubstituicoesOrchestrator = () => {
   const [loadingGrupos, setLoadingGrupos] = useState(false);
   const [ajustesAtivados, setAjustesAtivados] = useState(false);
   const [activeTab, setActiveTab] = useState('nutricionista');
+  const [produtosCarregados, setProdutosCarregados] = useState(new Set());
 
   const carregarGrupos = useCallback(async () => {
     setLoadingGrupos(true);
@@ -91,18 +92,39 @@ export const useSubstituicoesOrchestrator = () => {
     }
   }, [filtros, carregarNecessidades]);
 
-  // Carregar produtos genéricos quando necessidades mudarem
+  // Carregar produtos genéricos quando necessidades mudarem (com debounce)
   useEffect(() => {
     if (necessidades.length > 0) {
       const produtosOrigem = [...new Set(necessidades.map(n => n.codigo_origem))];
-      produtosOrigem.forEach(produtoId => {
-        buscarProdutosGenericos(produtoId, filtros.grupo);
-      });
+      const produtosParaCarregar = produtosOrigem.filter(produtoId => 
+        !produtosCarregados.has(`${produtoId}_${filtros.grupo}`)
+      );
+      
+      if (produtosParaCarregar.length > 0) {
+        // Adicionar debounce para evitar muitas requisições
+        const timeoutId = setTimeout(() => {
+          produtosParaCarregar.forEach(produtoId => {
+            buscarProdutosGenericos(produtoId, filtros.grupo);
+            setProdutosCarregados(prev => new Set([...prev, `${produtoId}_${filtros.grupo}`]));
+          });
+        }, 500); // 500ms de debounce
+        
+        return () => clearTimeout(timeoutId);
+      }
     }
-  }, [necessidades, buscarProdutosGenericos, filtros.grupo]);
+  }, [necessidades, buscarProdutosGenericos, filtros.grupo, produtosCarregados]);
 
   const handleFiltrosChange = useCallback((novosFiltros) => {
-    setFiltros(prev => ({ ...prev, ...novosFiltros }));
+    setFiltros(prev => {
+      const novosFiltrosCompletos = { ...prev, ...novosFiltros };
+      
+      // Limpar cache de produtos carregados se o grupo mudou
+      if (novosFiltros.grupo && novosFiltros.grupo !== prev.grupo) {
+        setProdutosCarregados(new Set());
+      }
+      
+      return novosFiltrosCompletos;
+    });
   }, []);
 
   const handleIniciarAjustes = useCallback(async () => {
