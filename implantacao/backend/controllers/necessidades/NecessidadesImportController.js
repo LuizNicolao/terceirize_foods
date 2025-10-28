@@ -198,8 +198,8 @@ const importarExcel = async (req, res) => {
       }
     });
 
-    // Gerar ID sequencial para esta necessidade (buscar o último ID real)
-    console.log('=== GERANDO ID SEQUENCIAL ===');
+    // Gerar ID sequencial base para esta importação
+    console.log('=== GERANDO ID SEQUENCIAL BASE ===');
     const ultimoId = await executeQuery(`
       SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
       FROM necessidades 
@@ -207,10 +207,9 @@ const importarExcel = async (req, res) => {
     `);
     
     console.log('Último ID encontrado:', ultimoId);
-    const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
-    const necessidadeId = proximoId.toString().padStart(2, '0'); // Formato 01, 02, etc.
-    console.log(`Próximo ID gerado: ${proximoId} -> Formato: ${necessidadeId}`);
-    console.log('=== FIM GERAÇÃO ID ===');
+    let proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
+    console.log(`ID base para esta importação: ${proximoId}`);
+    console.log('=== FIM GERAÇÃO ID BASE ===');
 
     // Inserir necessidades no banco de dados
     const sucesso = [];
@@ -261,6 +260,38 @@ const importarExcel = async (req, res) => {
               console.log(`Tentativa 2 (unidade_escolar_id): ${nutricionistaEscola.length} resultados`);
             } catch (error) {
               console.log(`Tentativa 2 falhou: ${error.message}`);
+            }
+          }
+          
+          // Se ainda não encontrar, tentar buscar por qualquer coluna que contenha escola
+          if (nutricionistaEscola.length === 0) {
+            try {
+              // Tentar buscar todas as colunas da tabela para debug
+              const colunas = await executeQuery(`DESCRIBE foods_db.rotas_nutricionistas`);
+              console.log(`Colunas da tabela rotas_nutricionistas:`, colunas.map(c => c.Field));
+              
+              // Tentar com diferentes nomes de colunas
+              const possiveisColunas = ['escola_id', 'unidade_escolar_id', 'id_escola', 'escola', 'unidade_id'];
+              for (const coluna of possiveisColunas) {
+                try {
+                  nutricionistaEscola = await executeQuery(`
+                    SELECT 
+                      u.id as usuario_id,
+                      u.email as usuario_email
+                    FROM foods_db.rotas_nutricionistas rn
+                    JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
+                    WHERE rn.${coluna} = ?
+                  `, [necessidade.escola_id]);
+                  if (nutricionistaEscola.length > 0) {
+                    console.log(`✅ Encontrado com coluna ${coluna}: ${nutricionistaEscola.length} resultados`);
+                    break;
+                  }
+                } catch (error) {
+                  console.log(`Tentativa com ${coluna} falhou: ${error.message}`);
+                }
+              }
+            } catch (error) {
+              console.log(`Erro ao buscar colunas: ${error.message}`);
             }
           }
           
@@ -379,12 +410,17 @@ const importarExcel = async (req, res) => {
         } catch (error) {
           console.log('❌ Erro ao buscar dados da escola, usando valores padrão:', error.message);
         }
+        // Gerar ID sequencial para esta necessidade específica
+        const necessidadeId = proximoId.toString().padStart(2, '0'); // Formato 01, 02, etc.
         console.log(`\n--- DADOS FINAIS PARA INSERÇÃO ---`);
         console.log(`Usuário Final: ID=${nutricionista.usuario_id}, Email=${nutricionista.usuario_email}`);
         console.log(`Escola: ID=${necessidade.escola_id}, Nome=${necessidade.escola_nome}, Rota=${escola.rota}, Código=${escola.codigo_teknisa}`);
         console.log(`Produto: ID=${necessidade.produto_id}, Nome=${necessidade.produto_nome}, Unidade=${produto.unidade_medida}, Grupo=${produto.grupo}, GrupoID=${produto.grupo_id}`);
-        console.log(`Necessidade: ID=${necessidadeId}, Quantidade=${necessidade.quantidade}, Status=${necessidade.status}`);
+        console.log(`Necessidade: ID=${necessidadeId} (sequencial: ${proximoId}), Quantidade=${necessidade.quantidade}, Status=${necessidade.status}`);
         console.log(`Semanas: Abastecimento=${necessidade.semana_abastecimento}, Consumo=${necessidade.semana_consumo}`);
+        
+        // Incrementar para próxima necessidade
+        proximoId++;
 
         const query = `
           INSERT INTO necessidades (
