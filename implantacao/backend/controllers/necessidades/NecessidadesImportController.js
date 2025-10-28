@@ -174,21 +174,6 @@ const importarExcel = async (req, res) => {
           return semana;
         };
 
-        // Buscar nutricionista da escola
-        const nutricionistaEscola = await executeQuery(`
-          SELECT 
-            u.id as usuario_id,
-            u.email as usuario_email
-          FROM foods_db.rotas_nutricionistas rn
-          JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
-          WHERE rn.escola_id = ?
-        `, [parseInt(escolaId)]);
-
-        const nutricionista = nutricionistaEscola[0] || {
-          usuario_id: req.user.id,
-          usuario_email: req.user.email
-        };
-
         // Adicionar à lista de necessidades válidas
         necessidades.push({
           escola_id: parseInt(escolaId),
@@ -200,8 +185,8 @@ const importarExcel = async (req, res) => {
           semana_consumo: converterSemana(rowData[7]),
           observacoes: rowData[8] || null,
           status: 'NEC', // Status padrão para necessidades importadas
-          usuario_id: nutricionista.usuario_id,
-          usuario_email: nutricionista.usuario_email
+          usuario_id: req.user.id, // Será substituído pelo nutricionista da escola
+          usuario_email: req.user.email
         });
 
       } catch (error) {
@@ -217,11 +202,26 @@ const importarExcel = async (req, res) => {
     const sucesso = [];
     for (const necessidade of necessidades) {
       try {
+        // Buscar nutricionista da escola
+        const nutricionistaEscola = await executeQuery(`
+          SELECT 
+            u.id as usuario_id,
+            u.email as usuario_email
+          FROM foods_db.rotas_nutricionistas rn
+          JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
+          WHERE rn.escola_id = ?
+        `, [necessidade.escola_id]);
+
+        const nutricionista = nutricionistaEscola[0] || {
+          usuario_id: necessidade.usuario_id,
+          usuario_email: necessidade.usuario_email
+        };
+
         // Verificar se já existe necessidade duplicada
         const existing = await executeQuery(`
           SELECT id FROM necessidades 
           WHERE usuario_id = ? AND escola_id = ? AND produto_id = ? AND semana_consumo = ?
-        `, [necessidade.usuario_id, necessidade.escola_id, necessidade.produto_id, necessidade.semana_consumo]);
+        `, [nutricionista.usuario_id, necessidade.escola_id, necessidade.produto_id, necessidade.semana_consumo]);
 
         if (existing.length > 0) {
           erros.push({
@@ -296,8 +296,8 @@ const importarExcel = async (req, res) => {
         `;
         
         const params = [
-          necessidade.usuario_id,
-          necessidade.usuario_email,
+          nutricionista.usuario_id, // Usar nutricionista da escola
+          nutricionista.usuario_email, // Usar email da nutricionista
           necessidade.escola_id,
           necessidade.escola_nome,
           escola.rota || null, // escola_rota da tabela unidades_escolares
