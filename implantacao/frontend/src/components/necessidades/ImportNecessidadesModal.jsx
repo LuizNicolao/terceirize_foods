@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaUpload, FaDownload, FaTimes, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
 import { Modal, Button } from '../ui';
-import { necessidadesService } from '../../services/necessidadesService';
+import necessidadesService from '../../services/necessidadesService';
 
 const ImportNecessidadesModal = ({ isOpen, onClose, onImportSuccess }) => {
   const [arquivo, setArquivo] = useState(null);
