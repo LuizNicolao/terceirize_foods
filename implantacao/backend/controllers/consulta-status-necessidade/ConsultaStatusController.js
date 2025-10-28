@@ -20,7 +20,7 @@ class ConsultaStatusController {
       } = req.query;
 
       // Construir query base
-      let whereConditions = ['n.ativo = 1'];
+      let whereConditions = [];
       let queryParams = [];
 
       // Filtros opcionais
@@ -206,7 +206,7 @@ class ConsultaStatusController {
     try {
       const { grupo, semana_abastecimento, data_inicio, data_fim } = req.query;
 
-      let whereConditions = ['n.ativo = 1'];
+      let whereConditions = [];
       let queryParams = [];
 
       if (grupo) {
@@ -322,7 +322,7 @@ class ConsultaStatusController {
       const { status, grupo, semana_abastecimento, semana_consumo, escola_id, produto_id, data_inicio, data_fim } = req.query;
 
       // Reutilizar a mesma lógica de filtros da listagem
-      let whereConditions = ['n.ativo = 1'];
+      let whereConditions = [];
       let queryParams = [];
 
       if (status) {
@@ -429,7 +429,7 @@ class ConsultaStatusController {
       const { status, grupo, semana_abastecimento, semana_consumo, escola_id, produto_id, data_inicio, data_fim } = req.query;
 
       // Reutilizar a mesma lógica de filtros da listagem
-      let whereConditions = ['n.ativo = 1'];
+      let whereConditions = [];
       let queryParams = [];
 
       if (status) {
