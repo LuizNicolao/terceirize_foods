@@ -290,10 +290,11 @@ class SubstituicoesListController {
       let whereConditions = ['status = "conf log"', 'ativo = 1'];
       const params = [];
 
-      if (grupo) {
-        whereConditions.push('produto_origem_nome LIKE ?');
-        params.push(`%${grupo}%`);
-      }
+      // Filtro de grupo temporariamente desabilitado
+      // if (grupo) {
+      //   whereConditions.push('produto_origem_nome LIKE ?');
+      //   params.push(`%${grupo}%`);
+      // }
 
       if (semana_abastecimento) {
         whereConditions.push('semana_abastecimento = ?');
