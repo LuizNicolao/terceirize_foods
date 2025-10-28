@@ -4,7 +4,7 @@ import { useSemanasAbastecimento } from './useSemanasAbastecimento';
 import { useSemanasConsumo } from './useSemanasConsumo';
 import { useUnidadesEscolaresConsulta } from './useUnidadesEscolaresConsulta';
 import { useGruposConsulta } from './useGruposConsulta';
-import { useProdutosConsulta } from './useProdutosConsulta';
+import { useProdutosPerCapita } from './useProdutosPerCapita';
 import toast from 'react-hot-toast';
 
 export const useConsultaStatusNecessidade = () => {
@@ -37,7 +37,7 @@ export const useConsultaStatusNecessidade = () => {
   const { opcoes: opcoesSemanasConsumo, carregarPorSemanaAbastecimento } = useSemanasConsumo();
   const { unidadesEscolares, carregarUnidadesEscolares } = useUnidadesEscolaresConsulta();
   const { grupos, carregarGrupos } = useGruposConsulta();
-  const { produtos, carregarProdutos } = useProdutosConsulta();
+  const { produtos, carregarProdutos } = useProdutosPerCapita();
 
   // Carregar dados iniciais
   useEffect(() => {
