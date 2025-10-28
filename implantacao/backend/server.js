@@ -16,6 +16,7 @@ const recebimentosEscolasRoute = require('./routes/recebimentos-escolas');
 const registrosDiariosRoute = require('./routes/registros-diarios/registrosDiariosRoute');
 const necessidadesRoute = require('./routes/necessidades');
 const substituicoesRoute = require('./routes/necessidades-substituicoes/substituicoesRoute');
+const consultaStatusRoute = require('./routes/consulta-status-necessidade/consultaStatusRoute');
 const auditoriaRoute = require('./routes/auditoria/auditoriaRoute');
 const calendarioRoute = require('./routes/calendario/calendarioRoute');
 
@@ -36,6 +37,7 @@ const routes = [
   { path: '/registros-diarios', router: registrosDiariosRoute },
   { path: '/necessidades', router: necessidadesRoute },
   { path: '/necessidades-substituicoes', router: substituicoesRoute },
+  { path: '/consulta-status-necessidade', router: consultaStatusRoute },
   { path: '/auditoria', router: auditoriaRoute },
   { path: '/calendario', router: calendarioRoute }
 ];
