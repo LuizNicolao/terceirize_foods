@@ -6,7 +6,7 @@ import { useSubstituicoesCoordenacao } from '../../hooks/useSubstituicoesCoorden
 import { useExportSubstituicoes } from '../../hooks/useExportSubstituicoes';
 import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
-import { useGruposConsulta } from '../../hooks/useGruposConsulta';
+import useGruposConsulta from '../../hooks/useGruposConsulta';
 import substituicoesNecessidadesService from '../../services/substituicoesNecessidades';
 import toast from 'react-hot-toast';
 

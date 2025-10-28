@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, Input, SearchableSelect } from '../../../components/ui';
 import { useSemanasAbastecimento } from '../../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../../hooks/useSemanasConsumo';
-import { useGruposConsulta } from '../../../hooks/useGruposConsulta';
+import useGruposConsulta from '../../../hooks/useGruposConsulta';
 
 const SubstituicoesFilters = ({
   filtros,
