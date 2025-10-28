@@ -6,9 +6,12 @@ const { executeQuery } = require('../config/database');
 const canView = (screenName) => {
   return async (req, res, next) => {
     try {
+      console.log(`=== MIDDLEWARE PERMISSÕES - canView(${screenName}) ===`);
       const userId = req.user.id;
+      console.log('userId:', userId);
       
       // TEMPORÁRIO: Permitir acesso para teste
+      console.log('Permitindo acesso (temporário)');
       next();
       
       // TODO: Implementar verificação de permissões corretamente
