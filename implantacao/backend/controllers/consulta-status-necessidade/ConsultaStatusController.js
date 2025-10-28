@@ -75,7 +75,7 @@ class ConsultaStatusController {
           n.produto_unidade,
           n.ajuste as quantidade,
           n.escola_id,
-          n.escola_nome,
+          n.escola as escola_nome,
           n.semana_abastecimento,
           n.semana_consumo,
           n.status,
@@ -103,7 +103,7 @@ class ConsultaStatusController {
           AND ns.ativo = 1
         )
         ${whereClause}
-        ORDER BY n.data_criacao DESC, n.escola_nome ASC, n.produto ASC
+        ORDER BY n.data_criacao DESC, n.escola ASC, n.produto ASC
         LIMIT ? OFFSET ?
       `;
 
@@ -373,7 +373,7 @@ class ConsultaStatusController {
           n.produto_unidade,
           n.ajuste as quantidade,
           n.escola_id,
-          n.escola_nome,
+          n.escola as escola_nome,
           n.semana_abastecimento,
           n.semana_consumo,
           n.status,
@@ -394,7 +394,7 @@ class ConsultaStatusController {
           AND ns.ativo = 1
         )
         ${whereClause}
-        ORDER BY n.data_criacao DESC, n.escola_nome ASC, n.produto ASC
+        ORDER BY n.data_criacao DESC, n.escola ASC, n.produto ASC
       `;
 
       const dados = await executeQuery(query, queryParams);
@@ -478,7 +478,7 @@ class ConsultaStatusController {
           n.produto_unidade,
           n.ajuste as quantidade,
           n.escola_id,
-          n.escola_nome,
+          n.escola as escola_nome,
           n.semana_abastecimento,
           n.semana_consumo,
           n.status,
@@ -499,7 +499,7 @@ class ConsultaStatusController {
           AND ns.ativo = 1
         )
         ${whereClause}
-        ORDER BY n.data_criacao DESC, n.escola_nome ASC, n.produto ASC
+        ORDER BY n.data_criacao DESC, n.escola ASC, n.produto ASC
       `;
 
       const dados = await executeQuery(query, queryParams);
