@@ -103,6 +103,17 @@ const gerarNecessidade = async (req, res) => {
         });
       }
 
+      // Buscar grupo e grupo_id do produto
+      const grupoResult = await executeQuery(`
+        SELECT ppc.grupo, ppc.grupo_id 
+        FROM produtos_per_capita ppc 
+        WHERE ppc.produto_id = ? 
+        LIMIT 1
+      `, [produto_id]);
+      
+      const grupo = grupoResult.length > 0 ? grupoResult[0].grupo : null;
+      const grupo_id = grupoResult.length > 0 ? grupoResult[0].grupo_id : null;
+
       // Criar nova necessidade
       const result = await executeQuery(`
           INSERT INTO necessidades (
@@ -118,10 +129,12 @@ const gerarNecessidade = async (req, res) => {
             ajuste, 
             semana_consumo,
             semana_abastecimento,
+            grupo,
+            grupo_id,
             status,
             observacoes,
             necessidade_id
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [
           nutricionistaEscola.usuario_email, // Email da nutricionista vinculada à escola
           nutricionistaEscola.usuario_id,   // ID da nutricionista vinculada à escola
@@ -135,6 +148,8 @@ const gerarNecessidade = async (req, res) => {
           ajuste || 0, 
           semana_consumo,
           semana_abastecimento || null,
+          grupo,
+          grupo_id,
           'NEC',
           null,
           necessidadeId

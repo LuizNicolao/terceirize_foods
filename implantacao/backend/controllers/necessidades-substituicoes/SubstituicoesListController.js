@@ -61,7 +61,7 @@ class SubstituicoesListController {
           GROUP_CONCAT(DISTINCT n.necessidade_id) as necessidade_ids,
           n.semana_abastecimento,
           n.semana_consumo,
-          (SELECT ppc.grupo FROM produtos_per_capita ppc WHERE ppc.produto_id = n.produto_id LIMIT 1) as grupo,
+          n.grupo,
           GROUP_CONCAT(
             DISTINCT CONCAT(
               n.id, '|',
