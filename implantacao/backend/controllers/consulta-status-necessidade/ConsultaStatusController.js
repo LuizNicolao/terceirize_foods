@@ -74,7 +74,7 @@ class ConsultaStatusController {
           n.produto,
           n.produto_codigo,
           n.produto_unidade,
-          n.quantidade,
+          n.ajuste as quantidade,
           n.escola_id,
           n.escola_nome,
           n.escola_rota,
@@ -138,7 +138,7 @@ class ConsultaStatusController {
           n.status,
           n.grupo,
           COUNT(*) as quantidade,
-          SUM(n.quantidade) as total_quantidade
+          SUM(n.ajuste) as total_quantidade
         FROM necessidades n
         ${whereClause}
         GROUP BY n.status, n.grupo
@@ -238,8 +238,8 @@ class ConsultaStatusController {
           COUNT(DISTINCT n.escola_id) as total_escolas,
           COUNT(DISTINCT n.produto_id) as total_produtos,
           COUNT(DISTINCT n.grupo) as total_grupos,
-          SUM(n.quantidade) as total_quantidade,
-          AVG(n.quantidade) as media_quantidade
+          SUM(n.ajuste) as total_quantidade,
+          AVG(n.ajuste) as media_quantidade
         FROM necessidades n
         ${whereClause}
       `;
@@ -251,7 +251,7 @@ class ConsultaStatusController {
         SELECT 
           n.status,
           COUNT(*) as quantidade,
-          SUM(n.quantidade) as total_quantidade
+          SUM(n.ajuste) as total_quantidade
         FROM necessidades n
         ${whereClause}
         GROUP BY n.status
@@ -285,7 +285,7 @@ class ConsultaStatusController {
         SELECT 
           n.grupo,
           COUNT(*) as quantidade,
-          SUM(n.quantidade) as total_quantidade
+          SUM(n.ajuste) as total_quantidade
         FROM necessidades n
         ${whereClause}
         GROUP BY n.grupo
@@ -374,7 +374,7 @@ class ConsultaStatusController {
           n.produto_codigo,
           n.produto,
           n.produto_unidade,
-          n.quantidade,
+          n.ajuste as quantidade,
           n.escola_id,
           n.escola_nome,
           n.escola_rota,
@@ -481,7 +481,7 @@ class ConsultaStatusController {
           n.produto_codigo,
           n.produto,
           n.produto_unidade,
-          n.quantidade,
+          n.ajuste as quantidade,
           n.escola_id,
           n.escola_nome,
           n.escola_rota,
