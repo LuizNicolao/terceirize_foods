@@ -92,6 +92,40 @@ const AnaliseSubstituicoes = () => {
         </p>
       </div>
 
+      {/* Abas */}
+      <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8 px-6">
+            <button
+              onClick={() => handleTabChange('nutricionista')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'nutricionista'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <FaUserMd className="w-4 h-4" />
+                Ajuste Nutricionista
+              </div>
+            </button>
+            <button
+              onClick={() => handleTabChange('coordenacao')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'coordenacao'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <FaUserTie className="w-4 h-4" />
+                Ajuste Coordenação
+              </div>
+            </button>
+          </nav>
+        </div>
+      </div>
+
       {/* Filtros */}
       <SubstituicoesFilters
         grupos={grupos}
@@ -103,42 +137,6 @@ const AnaliseSubstituicoes = () => {
         loadingSemanasAbast={loadingSemanasAbast}
         loadingSemanasConsumo={loadingSemanasConsumo}
       />
-
-      {/* Abas */}
-      {necessidades.length > 0 && (
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 px-6">
-              <button
-                onClick={() => handleTabChange('nutricionista')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'nutricionista'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <FaUserMd className="w-4 h-4" />
-                  Ajuste Nutricionista
-                </div>
-              </button>
-              <button
-                onClick={() => handleTabChange('coordenacao')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'coordenacao'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <FaUserTie className="w-4 h-4" />
-                  Ajuste Coordenação
-                </div>
-              </button>
-            </nav>
-          </div>
-        </div>
-      )}
 
       {/* Botão Realizar Ajustes */}
       {necessidades.length > 0 && !ajustesAtivados && (

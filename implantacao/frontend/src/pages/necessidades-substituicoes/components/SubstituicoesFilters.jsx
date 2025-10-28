@@ -55,8 +55,8 @@ const SubstituicoesFilters = ({
             value={filtros.semana_abastecimento || ''}
             onChange={(value) => onFiltroChange({ semana_abastecimento: value })}
             options={(semanasAbastecimento || []).map(semana => ({
-              value: semana.semana_abastecimento,
-              label: semana.semana_abastecimento
+              value: semana.label || semana.semana_abastecimento,
+              label: semana.label || semana.semana_abastecimento
             }))}
             placeholder="Selecione a semana..."
             disabled={loading}
