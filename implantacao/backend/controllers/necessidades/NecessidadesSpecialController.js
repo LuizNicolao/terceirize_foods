@@ -103,16 +103,16 @@ const gerarNecessidade = async (req, res) => {
         });
       }
 
-      // Buscar grupo do produto
+      // Buscar grupo e grupo_id do produto
       const grupoResult = await executeQuery(`
-        SELECT ppc.grupo 
+        SELECT ppc.grupo, ppc.grupo_id 
         FROM produtos_per_capita ppc 
         WHERE ppc.produto_id = ? 
         LIMIT 1
       `, [produto_id]);
       
       const grupo = grupoResult.length > 0 ? grupoResult[0].grupo : null;
-      const grupo_id = null; // A tabela produtos_per_capita não tem grupo_id
+      const grupo_id = grupoResult.length > 0 ? grupoResult[0].grupo_id : null;
 
       // Criar nova necessidade
       const result = await executeQuery(`
