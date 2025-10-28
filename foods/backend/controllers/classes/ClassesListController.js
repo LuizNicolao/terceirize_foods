@@ -79,6 +79,16 @@ class ClassesListController {
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 
+    // Calcular estatísticas
+    const statsQuery = `SELECT 
+      COUNT(*) as total,
+      SUM(CASE WHEN c.status = 'ativo' THEN 1 ELSE 0 END) as ativos,
+      SUM(CASE WHEN c.status = 'inativo' THEN 1 ELSE 0 END) as inativos
+      FROM classes c WHERE 1=1${search ? ' AND c.nome LIKE ?' : ''}${status !== undefined ? ' AND c.status = ?' : ''}${subgrupo_id ? ' AND c.subgrupo_id = ?' : ''}`;
+    const statsParams = [...params];
+    const statsResult = await executeQuery(statsQuery, statsParams);
+    const statistics = statsResult[0];
+
     // Gerar metadados de paginação
     const queryParams = { ...req.query };
     delete queryParams.page;
@@ -96,6 +106,7 @@ class ClassesListController {
     // Retornar resposta no formato esperado pelo frontend
     return successResponse(res, classes, 'Classes listadas com sucesso', STATUS_CODES.OK, {
       ...meta,
+      statistics,
       actions,
       _links: res.addListLinks(classes, meta.pagination, queryParams)._links
     });

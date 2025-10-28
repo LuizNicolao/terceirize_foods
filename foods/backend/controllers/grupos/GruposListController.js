@@ -68,6 +68,19 @@ class GruposListController {
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 
+    // Calcular estatísticas
+    const statsQuery = `SELECT 
+      COUNT(*) as total,
+      SUM(CASE WHEN g.status = 'ativo' THEN 1 ELSE 0 END) as ativos,
+      SUM(CASE WHEN g.status = 'inativo' THEN 1 ELSE 0 END) as inativos
+      FROM grupos g WHERE 1=1${search ? ' AND (g.nome LIKE ? OR g.codigo LIKE ? OR g.descricao LIKE ?)' : ''}${status !== undefined ? ' AND g.status = ?' : ''}`;
+    const statsParams = search ? [`%${search}%`, `%${search}%`, `%${search}%`] : [];
+    if (status !== undefined) {
+      statsParams.push(status === 1 || status === '1' ? 'ativo' : 'inativo');
+    }
+    const statsResult = await executeQuery(statsQuery, statsParams);
+    const statistics = statsResult[0];
+
     // Gerar metadados de paginação
     const queryParams = { ...req.query };
     delete queryParams.page;
@@ -82,6 +95,7 @@ class GruposListController {
     // Retornar resposta no formato esperado pelo frontend
     return successResponse(res, grupos, 'Grupos listados com sucesso', STATUS_CODES.OK, {
       ...meta,
+      statistics,
       actions,
       _links: res.addListLinks(grupos, meta.pagination, queryParams)._links
     });

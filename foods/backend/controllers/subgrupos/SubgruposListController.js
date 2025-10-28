@@ -83,6 +83,22 @@ class SubgruposListController {
     const totalResult = await executeQuery(countQuery, countParams);
     const totalItems = totalResult[0].total;
 
+    // Calcular estatísticas
+    const statsQuery = `SELECT 
+      COUNT(*) as total,
+      SUM(CASE WHEN sg.status = 'ativo' THEN 1 ELSE 0 END) as ativos,
+      SUM(CASE WHEN sg.status = 'inativo' THEN 1 ELSE 0 END) as inativos
+      FROM subgrupos sg WHERE 1=1${search ? ' AND sg.nome LIKE ?' : ''}${grupo_id ? ' AND sg.grupo_id = ?' : ''}${status !== undefined ? ' AND sg.status = ?' : ''}`;
+    const statsParams = search ? [`%${search}%`] : [];
+    if (grupo_id) {
+      statsParams.push(grupo_id);
+    }
+    if (status !== undefined) {
+      statsParams.push(status === 1 || status === '1' ? 'ativo' : 'inativo');
+    }
+    const statsResult = await executeQuery(statsQuery, statsParams);
+    const statistics = statsResult[0];
+
     // Gerar metadados de paginação
     const queryParams = { ...req.query };
     delete queryParams.page;
@@ -97,6 +113,7 @@ class SubgruposListController {
     // Retornar resposta no formato esperado pelo frontend
     return successResponse(res, subgrupos, 'Subgrupos listados com sucesso', STATUS_CODES.OK, {
       ...meta,
+      statistics,
       actions,
       _links: res.addListLinks(subgrupos, meta.pagination, queryParams)._links
     });

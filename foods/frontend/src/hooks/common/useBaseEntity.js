@@ -96,7 +96,7 @@ export const useBaseEntity = (entityName, service, options = {}) => {
               inativos: response.statistics.inativos || 0
             });
           } else if (response.data && Array.isArray(response.data)) {
-            // Fallback: calcular localmente apenas se backend não enviar
+            // Fallback: usar totalItems da paginação para total, calcular ativos/inativos localmente
             const total = response.pagination?.totalItems || response.data.length;
             const ativos = response.data.filter(item => item.status === 1).length;
             const inativos = response.data.filter(item => item.status === 0).length;
