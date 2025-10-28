@@ -207,7 +207,7 @@ const Subgrupos = () => {
         onPageChange={handlePageChange}
         totalItems={totalItems}
         itemsPerPage={itemsPerPage}
-        onItemsPerPageChange={setItemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
       />
 
       {/* Modal de Confirmação de Exclusão */}
