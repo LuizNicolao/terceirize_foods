@@ -145,6 +145,9 @@ class ConsultaStatusController {
       console.log('Tipos dos parâmetros:', queryParams.map(p => typeof p));
       console.log('pageNum:', pageNum, 'limitNum:', limitNum, 'offset:', offset);
       console.log('whereClause:', whereClause);
+      console.log('queryParams.length:', queryParams.length);
+      console.log('queryParams[0]:', queryParams[0], 'tipo:', typeof queryParams[0]);
+      console.log('queryParams[1]:', queryParams[1], 'tipo:', typeof queryParams[1]);
       console.log('==========================================');
 
       const necessidades = await executeQuery(necessidadesQuery, queryParams);
