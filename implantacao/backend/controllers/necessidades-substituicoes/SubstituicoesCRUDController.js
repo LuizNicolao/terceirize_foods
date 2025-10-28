@@ -197,21 +197,6 @@ class SubstituicoesCRUDController {
         }
       }
 
-      // Se houve sucessos, marcar necessidades como processadas para substituição
-      if (sucessos > 0) {
-        try {
-          await executeQuery(`
-            UPDATE necessidades 
-            SET substituicao_processada = 1 
-            WHERE produto_id = ? 
-              AND semana_abastecimento = ? 
-              AND semana_consumo = ?
-          `, [produto_origem_id, semana_abastecimento, semana_consumo]);
-        } catch (error) {
-          console.error('Erro ao marcar necessidades como processadas:', error);
-          // Não falhar a operação principal por causa disso
-        }
-      }
 
       res.json({
         success: sucessos > 0,
@@ -285,6 +270,15 @@ class SubstituicoesCRUDController {
           AND semana_consumo = ?
           AND status = 'conf'
           AND ativo = 1
+      `, [produto_origem_id, semana_abastecimento, semana_consumo]);
+
+      // Marcar necessidades como processadas para substituição
+      await executeQuery(`
+        UPDATE necessidades 
+        SET substituicao_processada = 1 
+        WHERE produto_id = ? 
+          AND semana_abastecimento = ? 
+          AND semana_consumo = ?
       `, [produto_origem_id, semana_abastecimento, semana_consumo]);
 
       res.json({
