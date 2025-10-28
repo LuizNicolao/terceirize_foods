@@ -17,7 +17,7 @@ export const useSubstituicoesOrchestrator = () => {
     loadingNecessidades,
     loadingGenericos,
     carregarNecessidades,
-    carregarProdutosGenericos,
+    buscarProdutosGenericos,
     salvarSubstituicao
   } = useSubstituicoesNecessidades();
 
@@ -96,10 +96,10 @@ export const useSubstituicoesOrchestrator = () => {
     if (necessidades.length > 0) {
       const produtosOrigem = [...new Set(necessidades.map(n => n.codigo_origem))];
       produtosOrigem.forEach(produtoId => {
-        carregarProdutosGenericos({ produto_origem_id: produtoId });
+        buscarProdutosGenericos(produtoId, filtros.grupo);
       });
     }
-  }, [necessidades, carregarProdutosGenericos]);
+  }, [necessidades, buscarProdutosGenericos, filtros.grupo]);
 
   const handleFiltrosChange = useCallback((novosFiltros) => {
     setFiltros(prev => ({ ...prev, ...novosFiltros }));
