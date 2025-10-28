@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../../middleware/auth');
-const { checkScreenPermission } = require('../../middleware/permissoes');
+const { canView } = require('../../middleware/permissoes');
 const ConsultaStatusController = require('../../controllers/consulta-status-necessidade');
 
 // Middleware de autenticação para todas as rotas
 router.use(authenticateToken);
 
 // Middleware de permissão para a tela
-router.use(checkScreenPermission('consulta_status_necessidade'));
+router.use(canView('consulta_status_necessidade'));
 
 /**
  * @route GET /api/consulta-status-necessidade
