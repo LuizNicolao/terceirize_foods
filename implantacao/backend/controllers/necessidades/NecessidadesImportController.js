@@ -199,10 +199,14 @@ const importarExcel = async (req, res) => {
     });
 
     // Gerar ID sequencial base para esta importação
+    // Buscar o último ID que tenha exatamente 2 dígitos (01, 02, 03...)
     const ultimoId = await executeQuery(`
       SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
       FROM necessidades 
-      WHERE necessidade_id IS NOT NULL AND necessidade_id != '' AND necessidade_id REGEXP '^[0-9]+$'
+      WHERE necessidade_id IS NOT NULL 
+        AND necessidade_id != '' 
+        AND necessidade_id REGEXP '^[0-9]{1,2}$'
+        AND CAST(necessidade_id AS UNSIGNED) <= 99
     `);
     
     let proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
