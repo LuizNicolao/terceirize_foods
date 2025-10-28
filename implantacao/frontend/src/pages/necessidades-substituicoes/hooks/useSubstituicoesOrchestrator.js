@@ -21,9 +21,8 @@ export const useSubstituicoesOrchestrator = () => {
   } = useSubstituicoesNecessidades();
 
   const {
-    semanasAbastecimento,
-    loadingSemanasAbast,
-    carregarSemanasAbastecimento
+    opcoes: semanasAbastecimento,
+    loading: loadingSemanasAbast
   } = useSemanasAbastecimento();
 
   const {
@@ -52,10 +51,7 @@ export const useSubstituicoesOrchestrator = () => {
     }
   }, [necessidades]);
 
-  // Carregar dados iniciais
-  useEffect(() => {
-    carregarSemanasAbastecimento();
-  }, [carregarSemanasAbastecimento]);
+  // Carregar dados iniciais - semanas de abastecimento são carregadas automaticamente
 
   // Carregar semanas de consumo quando semana de abastecimento mudar
   useEffect(() => {
