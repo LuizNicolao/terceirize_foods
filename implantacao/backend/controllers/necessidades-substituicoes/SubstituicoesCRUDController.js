@@ -93,7 +93,7 @@ class SubstituicoesCRUDController {
                   escola_id, escola_nome,
                   semana_abastecimento, semana_consumo,
                   usuario_criador_id, status, ativo
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendente', 1)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
               `, [
                 necId,
                 necId, // necessidade_id_grupo usa o mesmo necessidade_id
@@ -166,7 +166,7 @@ class SubstituicoesCRUDController {
                 escola_id, escola_nome,
                 semana_abastecimento, semana_consumo,
                 usuario_criador_id, status, ativo
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pendente', 1)
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
             `, [
               necessidade_id,
               necessidade_id, // necessidade_id_grupo usa o mesmo necessidade_id
