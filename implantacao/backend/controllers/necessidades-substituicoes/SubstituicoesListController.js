@@ -279,7 +279,7 @@ class SubstituicoesListController {
   }
   /**
    * Listar necessidades para coordenação (status conf log)
-   * Lê diretamente da tabela necessidades_substituicoes
+   * Lê APENAS da tabela necessidades_substituicoes
    * Mostra apenas registros com status 'conf log'
    */
   static async listarParaCoordenacao(req, res) {
@@ -287,49 +287,43 @@ class SubstituicoesListController {
       const { grupo, semana_abastecimento, semana_consumo } = req.query;
 
       // Construir query base
-      let whereConditions = ['ns.status = "conf log"', 'ns.ativo = 1'];
+      let whereConditions = ['status = "conf log"', 'ativo = 1'];
       const params = [];
 
       if (grupo) {
-        whereConditions.push('n.grupo = ?');
-        params.push(grupo);
+        whereConditions.push('produto_origem_nome LIKE ?');
+        params.push(`%${grupo}%`);
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('ns.semana_abastecimento = ?');
+        whereConditions.push('semana_abastecimento = ?');
         params.push(semana_abastecimento);
       }
 
       if (semana_consumo) {
-        whereConditions.push('ns.semana_consumo = ?');
+        whereConditions.push('semana_consumo = ?');
         params.push(semana_consumo);
       }
 
       // Buscar necessidades agrupadas por produto origem e produto genérico
       const necessidades = await executeQuery(`
         SELECT 
-          ns.produto_origem_id as codigo_origem,
-          n.produto as produto_origem_nome,
-          n.produto_unidade as produto_origem_unidade,
-          n.grupo,
-          ns.semana_abastecimento,
-          ns.semana_consumo,
-          SUM(n.quantidade) as quantidade_total_origem,
-          ns.produto_generico_id,
-          ns.produto_generico_codigo,
-          ns.produto_generico_nome,
-          ns.produto_generico_unidade
-        FROM necessidades_substituicoes ns
-        INNER JOIN necessidades n ON (
-          n.produto_id = ns.produto_origem_id
-          AND n.semana_abastecimento = ns.semana_abastecimento
-          AND n.semana_consumo = ns.semana_consumo
-        )
+          produto_origem_id as codigo_origem,
+          produto_origem_nome,
+          produto_origem_unidade,
+          semana_abastecimento,
+          semana_consumo,
+          SUM(quantidade_origem) as quantidade_total_origem,
+          produto_generico_id,
+          produto_generico_codigo,
+          produto_generico_nome,
+          produto_generico_unidade
+        FROM necessidades_substituicoes
         WHERE ${whereConditions.join(' AND ')}
-        GROUP BY ns.produto_origem_id, n.produto, n.produto_unidade, n.grupo, 
-                 ns.semana_abastecimento, ns.semana_consumo, ns.produto_generico_id, 
-                 ns.produto_generico_codigo, ns.produto_generico_nome, ns.produto_generico_unidade
-        ORDER BY n.produto ASC, ns.produto_generico_nome ASC
+        GROUP BY produto_origem_id, produto_origem_nome, produto_origem_unidade, 
+                 semana_abastecimento, semana_consumo, produto_generico_id, 
+                 produto_generico_codigo, produto_generico_nome, produto_generico_unidade
+        ORDER BY produto_origem_nome ASC, produto_generico_nome ASC
       `, params);
 
       // Buscar substituições existentes para cada produto
