@@ -3,7 +3,7 @@ import consultaStatusNecessidadeService from '../services/consultaStatusNecessid
 import { useSemanasAbastecimento } from './useSemanasAbastecimento';
 import { useSemanasConsumo } from './useSemanasConsumo';
 import { useUnidadesEscolaresConsulta } from './useUnidadesEscolaresConsulta';
-import { useGruposConsulta } from './useGruposConsulta';
+import useGruposConsulta from './useGruposConsulta';
 import { useProdutosPerCapita } from './useProdutosPerCapita';
 import toast from 'react-hot-toast';
 
