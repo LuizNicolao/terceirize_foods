@@ -76,7 +76,7 @@ const baixarModelo = async (req, res) => {
 
   } catch (error) {
     console.error('Erro ao gerar modelo de planilha:', error);
-    res.status(500).json(errorResponse('Erro ao gerar modelo de planilha', error.message));
+    return errorResponse(res, 'Erro ao gerar modelo de planilha', 500, error.message);
   }
 };
 
@@ -87,7 +87,7 @@ const importarExcel = async (req, res) => {
   try {
     // Verificar se arquivo foi enviado
     if (!req.file) {
-      return res.status(400).json(errorResponse('Nenhum arquivo foi enviado'));
+      return errorResponse(res, 'Nenhum arquivo foi enviado', 400);
     }
 
     // Processar arquivo Excel
@@ -96,7 +96,7 @@ const importarExcel = async (req, res) => {
     
     const worksheet = workbook.getWorksheet(1);
     if (!worksheet) {
-      return res.status(400).json(errorResponse('Planilha não encontrada no arquivo'));
+      return errorResponse(res, 'Planilha não encontrada no arquivo', 400);
     }
 
     const necessidades = [];
@@ -188,6 +188,25 @@ const importarExcel = async (req, res) => {
     const sucesso = [];
     for (const necessidade of necessidades) {
       try {
+        // Verificar se já existe necessidade duplicada
+        const existing = await executeQuery(`
+          SELECT id FROM necessidades 
+          WHERE usuario_id = ? AND escola_id = ? AND produto_id = ? AND semana_consumo = ?
+        `, [necessidade.usuario_id, necessidade.escola_id, necessidade.produto_id, necessidade.semana_consumo]);
+
+        if (existing.length > 0) {
+          erros.push({
+            linha: linha,
+            erro: `Necessidade já existe para esta escola, produto e semana`,
+            dados: {
+              escola: necessidade.escola_nome,
+              produto: necessidade.produto_nome,
+              semana: necessidade.semana_consumo
+            }
+          });
+          continue;
+        }
+
         const query = `
           INSERT INTO necessidades (
             usuario_id, usuario_email, escola_id, escola, produto_id, produto,
@@ -230,15 +249,15 @@ const importarExcel = async (req, res) => {
     }
 
     // Resposta
-    res.json(successResponse({
+    return successResponse(res, {
       total: necessidades.length + erros.length,
       sucesso: sucesso,
       erros: erros
-    }, `Importação concluída: ${sucesso.length} necessidades criadas, ${erros.length} erros`));
+    }, `Importação concluída: ${sucesso.length} necessidades criadas, ${erros.length} erros`);
 
   } catch (error) {
     console.error('Erro ao importar necessidades:', error);
-    res.status(500).json(errorResponse('Erro ao processar arquivo Excel', error.message));
+    return errorResponse(res, 'Erro ao processar arquivo Excel', 500, error.message);
   }
 };
 
