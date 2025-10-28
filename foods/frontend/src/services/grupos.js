@@ -7,7 +7,8 @@ class GruposService {
       
       console.log('🔍 GRUPOS API RESPONSE:', {
         status: response.status,
-        data: response.data,
+        fullData: response.data,
+        data: response.data.data,
         pagination: response.data.pagination,
         meta: response.data._meta
       });
