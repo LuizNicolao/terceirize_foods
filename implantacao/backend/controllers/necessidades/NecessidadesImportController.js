@@ -160,6 +160,35 @@ const importarExcel = async (req, res) => {
           return;
         }
 
+        // Converter formato das semanas de YYYY-MM-DD para DD/MM
+        const converterSemana = (semana) => {
+          if (!semana) return null;
+          // Se já está no formato DD/MM, retornar como está
+          if (semana.includes('/')) return semana;
+          // Converter de YYYY-MM-DD a YYYY-MM-DD para DD/MM a DD/MM
+          const match = semana.match(/(\d{4})-(\d{2})-(\d{2}) a (\d{4})-(\d{2})-(\d{2})/);
+          if (match) {
+            const [, ano1, mes1, dia1, ano2, mes2, dia2] = match;
+            return `${dia1}/${mes1} a ${dia2}/${mes2}`;
+          }
+          return semana;
+        };
+
+        // Buscar nutricionista da escola
+        const nutricionistaEscola = await executeQuery(`
+          SELECT 
+            u.id as usuario_id,
+            u.email as usuario_email
+          FROM foods_db.rotas_nutricionistas rn
+          JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
+          WHERE rn.escola_id = ?
+        `, [parseInt(escolaId)]);
+
+        const nutricionista = nutricionistaEscola[0] || {
+          usuario_id: req.user.id,
+          usuario_email: req.user.email
+        };
+
         // Adicionar à lista de necessidades válidas
         necessidades.push({
           escola_id: parseInt(escolaId),
@@ -167,12 +196,12 @@ const importarExcel = async (req, res) => {
           produto_id: parseInt(produtoId),
           produto_nome: produtoNome,
           quantidade: qtd,
-          semana_abastecimento: rowData[6] || null,
-          semana_consumo: rowData[7] || null,
+          semana_abastecimento: converterSemana(rowData[6]),
+          semana_consumo: converterSemana(rowData[7]),
           observacoes: rowData[8] || null,
           status: 'NEC', // Status padrão para necessidades importadas
-          usuario_id: req.user.id,
-          usuario_email: req.user.email
+          usuario_id: nutricionista.usuario_id,
+          usuario_email: nutricionista.usuario_email
         });
 
       } catch (error) {
@@ -246,15 +275,15 @@ const importarExcel = async (req, res) => {
           console.log('Erro ao buscar dados da escola, usando valores padrão:', error.message);
         }
         
-        // Gerar ID sequencial para esta necessidade
+        // Gerar ID sequencial para esta necessidade (buscar o último ID real)
         const ultimoId = await executeQuery(`
           SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
           FROM necessidades 
-          WHERE necessidade_id REGEXP '^[0-9]+$'
+          WHERE necessidade_id IS NOT NULL AND necessidade_id != '' AND necessidade_id REGEXP '^[0-9]+$'
         `);
         
         const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
-        const necessidadeId = proximoId.toString();
+        const necessidadeId = proximoId.toString().padStart(2, '0'); // Formato 01, 02, etc.
 
         const query = `
           INSERT INTO necessidades (
