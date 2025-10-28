@@ -185,9 +185,9 @@ export const useSubstituicoesOrchestrator = () => {
     carregarNecessidades,
     
     // Permissões
-    canView: canView('necessidades_substituicoes'),
-    canEdit: canEdit('necessidades_substituicoes'),
-    canDelete: canDelete('necessidades_substituicoes'),
-    canCreate: canCreate('necessidades_substituicoes')
+    canView: canView('analise_necessidades_substituicoes'),
+    canEdit: canEdit('analise_necessidades_substituicoes'),
+    canDelete: canDelete('analise_necessidades_substituicoes'),
+    canCreate: canCreate('analise_necessidades_substituicoes')
   };
 };
