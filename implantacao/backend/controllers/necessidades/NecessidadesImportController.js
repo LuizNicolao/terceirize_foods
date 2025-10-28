@@ -208,29 +208,43 @@ const importarExcel = async (req, res) => {
         }
 
         // Buscar informações adicionais do produto no banco foods
-        const produtoInfo = await executeQuery(`
-          SELECT 
-            po.unidade_medida as unidade_medida,
-            g.nome as grupo,
-            g.id as grupo_id
-          FROM foods_db.produto_origem po
-          LEFT JOIN foods_db.grupos g ON po.grupo_id = g.id
-          WHERE po.id = ?
-        `, [necessidade.produto_id]);
-
-        const produto = produtoInfo[0] || {};
+        let produto = { unidade_medida: 'UN', grupo: null, grupo_id: null };
+        try {
+          const produtoInfo = await executeQuery(`
+            SELECT 
+              po.unidade_medida_nome as unidade_medida,
+              g.nome as grupo,
+              g.id as grupo_id
+            FROM foods_db.produto_origem po
+            LEFT JOIN foods_db.grupos g ON po.grupo_id = g.id
+            WHERE po.id = ?
+          `, [necessidade.produto_id]);
+          
+          if (produtoInfo.length > 0) {
+            produto = produtoInfo[0];
+          }
+        } catch (error) {
+          console.log('Erro ao buscar dados do produto, usando valores padrão:', error.message);
+        }
         
         // Buscar informações da escola no banco foods
-        const escolaInfo = await executeQuery(`
-          SELECT 
-            r.nome as rota,
-            ue.codigo_teknisa
-          FROM foods_db.unidades_escolares ue
-          LEFT JOIN foods_db.rotas r ON ue.rota_id = r.id
-          WHERE ue.id = ?
-        `, [necessidade.escola_id]);
-
-        const escola = escolaInfo[0] || {};
+        let escola = { rota: null, codigo_teknisa: null };
+        try {
+          const escolaInfo = await executeQuery(`
+            SELECT 
+              r.nome as rota,
+              ue.codigo_teknisa
+            FROM foods_db.unidades_escolares ue
+            LEFT JOIN foods_db.rotas r ON ue.rota_id = r.id
+            WHERE ue.id = ?
+          `, [necessidade.escola_id]);
+          
+          if (escolaInfo.length > 0) {
+            escola = escolaInfo[0];
+          }
+        } catch (error) {
+          console.log('Erro ao buscar dados da escola, usando valores padrão:', error.message);
+        }
         
         // Gerar ID sequencial para esta necessidade
         const ultimoId = await executeQuery(`
