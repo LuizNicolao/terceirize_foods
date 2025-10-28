@@ -12,6 +12,11 @@ const ConsultaStatusTabs = ({
       visible: true
     },
     {
+      id: 'status',
+      label: '⚙️ Status das Necessidades',
+      visible: true
+    },
+    {
       id: 'relatorios',
       label: '📊 Relatórios',
       visible: true // Temporário: mostrar para todos

@@ -11,7 +11,8 @@ import {
   ConsultaStatusTable,
   ConsultaStatusHeader,
   ConsultaStatusTabs,
-  RelatoriosConsultaStatus
+  RelatoriosConsultaStatus,
+  StatusNecessidadesTab
 } from './components';
 import { ExportButtons } from '../../components/shared';
 import { Pagination } from '../../components/ui';
@@ -178,6 +179,11 @@ const ConsultaStatusNecessidade = () => {
             </div>
           )}
         </>
+      )}
+
+      {/* Conteúdo da aba Status das Necessidades */}
+      {activeTab === 'status' && (
+        <StatusNecessidadesTab />
       )}
 
       {/* Conteúdo da aba Relatórios */}
