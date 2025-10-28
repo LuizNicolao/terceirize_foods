@@ -10,11 +10,19 @@ router.use(authenticateToken);
 // ===== ROTAS DE LISTAGEM =====
 
 // GET /api/necessidades-substituicoes/listar
-// Lista necessidades com status CONF agrupadas por produto origem
+// Lista necessidades com status CONF agrupadas por produto origem (Nutricionista)
 router.get(
   '/listar',
   checkScreenPermission('necessidades', 'visualizar'),
   SubstituicoesController.listarParaSubstituicao
+);
+
+// GET /api/necessidades-substituicoes/listar-coordenacao
+// Lista necessidades com status conf log agrupadas por produto origem (Coordenação)
+router.get(
+  '/listar-coordenacao',
+  checkScreenPermission('necessidades', 'visualizar'),
+  SubstituicoesController.listarParaCoordenacao
 );
 
 // GET /api/necessidades-substituicoes/buscar-semana-consumo

@@ -74,7 +74,7 @@ class SubstituicoesListController {
         LEFT JOIN necessidades_substituicoes ns ON (
           ns.produto_origem_id = n.produto_id 
           AND ns.ativo = 1 
-          AND ns.status IN ('pendente', 'aprovado', 'conf', 'conf log')
+          AND (ns.status IS NULL OR ns.status = 'conf')
         )
         WHERE ${whereConditions.join(' AND ')}
         GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, 
@@ -121,7 +121,7 @@ class SubstituicoesListController {
             WHERE ns.produto_origem_id = ? 
               AND ns.produto_generico_id = ?
               AND ns.ativo = 1
-              AND ns.status IN ('pendente', 'aprovado', 'conf', 'conf log')
+              AND (ns.status IS NULL OR ns.status = 'conf')
           `, [necessidade.codigo_origem, necessidade.produto_generico_id]);
 
           // Processar escolas solicitantes
@@ -274,6 +274,145 @@ class SubstituicoesListController {
       res.json({
         success: true,
         data: []
+      });
+    }
+  }
+  /**
+   * Listar necessidades para coordenação (status conf log)
+   * Agrupa por produto origem e produto genérico
+   * Mostra apenas registros com status 'conf log'
+   */
+  static async listarParaCoordenacao(req, res) {
+    try {
+      const { grupo, semana_abastecimento, semana_consumo } = req.query;
+
+      // Construir query base
+      let whereConditions = ['n.status = "CONF"'];
+      const params = [];
+
+      if (grupo) {
+        whereConditions.push('n.grupo = ?');
+        params.push(grupo);
+      }
+
+      if (semana_abastecimento) {
+        whereConditions.push('n.semana_abastecimento = ?');
+        params.push(semana_abastecimento);
+      }
+
+      if (semana_consumo) {
+        whereConditions.push('n.semana_consumo = ?');
+        params.push(semana_consumo);
+      }
+
+      // Buscar necessidades agrupadas por produto origem e produto genérico
+      const necessidades = await executeQuery(`
+        SELECT 
+          n.produto_id as codigo_origem,
+          n.produto as produto_origem_nome,
+          n.produto_unidade as produto_origem_unidade,
+          n.grupo,
+          n.semana_abastecimento,
+          n.semana_consumo,
+          SUM(n.quantidade) as quantidade_total_origem,
+          COALESCE(ns.produto_generico_id, '') as produto_generico_id,
+          COALESCE(ns.produto_generico_codigo, '') as produto_generico_codigo,
+          COALESCE(ns.produto_generico_nome, '') as produto_generico_nome,
+          COALESCE(ns.produto_generico_unidade, '') as produto_generico_unidade
+        FROM necessidades n
+        LEFT JOIN necessidades_substituicoes ns ON (
+          ns.produto_origem_id = n.produto_id
+          AND ns.ativo = 1
+          AND ns.status = 'conf log'
+        )
+        WHERE ${whereConditions.join(' AND ')}
+        GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, 
+                 COALESCE(ns.produto_generico_id, ''), COALESCE(ns.produto_generico_codigo, ''), 
+                 COALESCE(ns.produto_generico_nome, ''), COALESCE(ns.produto_generico_unidade, '')
+        ORDER BY n.produto ASC, COALESCE(ns.produto_generico_nome, '') ASC
+      `, params);
+
+      // Buscar substituições existentes para cada produto
+      const produtosComSubstituicoes = await Promise.all(
+        necessidades.map(async (necessidade) => {
+          // Buscar produto padrão do produto origem no Foods
+          let produtoPadraoId = null;
+          try {
+            const foodsApiUrl = process.env.FOODS_API_URL || 'http://localhost:3001';
+            const produtoOrigemResponse = await axios.get(`${foodsApiUrl}/produto-origem/${necessidade.codigo_origem}`, {
+              headers: {
+                'Authorization': req.headers.authorization
+              },
+              timeout: 5000
+            });
+
+            if (produtoOrigemResponse.data && produtoOrigemResponse.data.success) {
+              produtoPadraoId = produtoOrigemResponse.data.data.produto_padrao_id;
+            }
+          } catch (error) {
+            console.error(`Erro ao buscar produto padrão para produto origem ${necessidade.codigo_origem}:`, error.message);
+          }
+
+          // Buscar substituições existentes para este produto genérico específico
+          const substituicoes = await executeQuery(`
+            SELECT 
+              ns.id,
+              ns.necessidade_id,
+              ns.escola_id,
+              e.nome as escola_nome,
+              ns.quantidade_origem,
+              ns.quantidade_generico,
+              ns.status,
+              ns.data_criacao,
+              ns.data_atualizacao
+            FROM necessidades_substituicoes ns
+            LEFT JOIN unidades_escolares e ON e.id = ns.escola_id
+            WHERE ns.produto_origem_id = ?
+              AND ns.produto_generico_id = ?
+              AND ns.semana_abastecimento = ?
+              AND ns.semana_consumo = ?
+              AND ns.ativo = 1
+              AND ns.status = 'conf log'
+            ORDER BY e.nome ASC
+          `, [
+            necessidade.codigo_origem,
+            necessidade.produto_generico_id || '',
+            necessidade.semana_abastecimento,
+            necessidade.semana_consumo
+          ]);
+
+          return {
+            ...necessidade,
+            produto_padrao_id: produtoPadraoId,
+            escolas: substituicoes.map(sub => ({
+              necessidade_id: sub.necessidade_id,
+              escola_id: sub.escola_id,
+              escola_nome: sub.escola_nome,
+              quantidade_origem: sub.quantidade_origem,
+              quantidade_generico: sub.quantidade_generico,
+              substituicao: {
+                id: sub.id,
+                status: sub.status,
+                data_criacao: sub.data_criacao,
+                data_atualizacao: sub.data_atualizacao
+              }
+            }))
+          };
+        })
+      );
+
+      res.json({
+        success: true,
+        data: produtosComSubstituicoes,
+        total: produtosComSubstituicoes.length
+      });
+
+    } catch (error) {
+      console.error('Erro ao listar necessidades para coordenação:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Erro ao listar necessidades para coordenação'
       });
     }
   }

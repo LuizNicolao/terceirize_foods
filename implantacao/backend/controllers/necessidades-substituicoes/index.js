@@ -9,6 +9,7 @@ const SubstituicoesCRUDController = require('./SubstituicoesCRUDController');
 module.exports = {
   // List Operations
   listarParaSubstituicao: SubstituicoesListController.listarParaSubstituicao,
+  listarParaCoordenacao: SubstituicoesListController.listarParaCoordenacao,
   buscarSemanaConsumo: SubstituicoesListController.buscarSemanaConsumo,
   buscarProdutosGenericos: SubstituicoesListController.buscarProdutosGenericos,
 
