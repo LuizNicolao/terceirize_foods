@@ -27,9 +27,9 @@ export const useSubstituicoesOrchestrator = () => {
   } = useSemanasAbastecimento();
 
   const {
-    semanasConsumo,
-    loadingSemanasConsumo,
-    carregarSemanasConsumo
+    opcoes: semanasConsumo,
+    loading: loadingSemanasConsumo,
+    recarregar: carregarSemanasConsumo
   } = useSemanasConsumo();
 
   // Estados locais
