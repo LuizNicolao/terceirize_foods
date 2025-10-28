@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
 import { FaExchangeAlt, FaClipboardList } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { NecessidadesLayout, NecessidadesLoading } from '../../components/necessidades';
 import AnaliseNutricionista from './AnaliseNutricionista';
 import AnaliseCoordenacao from './AnaliseCoordenacao';
 
 const AnaliseSubstituicoes = () => {
+  const { user } = useAuth();
   const { canView, loading: permissionsLoading } = usePermissions();
   const [activeTab, setActiveTab] = useState('nutricionista');
 
-  // Verificar permissões
-  const canViewSubstituicoes = canView('necessidades-substituicoes') || canView('necessidades');
-  const canViewCoordenacao = canView('necessidades-substituicoes') || canView('necessidades') || canView('admin');
+  // Verificar permissões baseado no tipo de acesso do usuário
+  const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador'];
+  const canViewSubstituicoes = canView('analise_necessidades') || tiposComAcesso.includes(user.tipo_de_acesso);
+  const canViewCoordenacao = ['coordenador', 'supervisor', 'administrador'].includes(user.tipo_de_acesso);
 
   if (permissionsLoading) {
     return <NecessidadesLoading />;
