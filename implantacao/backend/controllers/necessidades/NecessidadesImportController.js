@@ -275,16 +275,16 @@ const importarExcel = async (req, res) => {
           escola.codigo_teknisa || null, // codigo_teknisa da tabela unidades_escolares
           necessidade.produto_id,
           necessidade.produto_nome,
-          produto.unidade_medida || null,
+          produto.unidade_medida || 'UN', // usar unidade do produto ou 'UN' como padrão
           necessidade.quantidade,
           necessidade.semana_abastecimento,
           necessidade.semana_consumo,
           necessidade.status,
           necessidade.observacoes,
           necessidadeId,
-          necessidade.quantidade, // ajuste_nutricionista = quantidade
-          necessidade.quantidade, // ajuste_coordenacao = quantidade
-          0, // substituicao_processada = 0 (não processada)
+          null, // ajuste_nutricionista = NULL (como no sistema)
+          null, // ajuste_coordenacao = NULL (como no sistema)
+          1, // substituicao_processada = 1 (como no sistema)
           produto.grupo || null,
           produto.grupo_id || null
         ];
