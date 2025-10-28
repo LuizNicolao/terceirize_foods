@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSubstituicoesNecessidades } from './useSubstituicoesNecessidades';
+import { useSubstituicoesNecessidades } from '../../../hooks/useSubstituicoesNecessidades';
 import { useSemanasAbastecimento } from '../../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../../hooks/useSemanasConsumo';
 import { useAuth } from '../../../contexts/AuthContext';
-import { usePermissions } from '../../../hooks/usePermissions';
+import { usePermissions } from '../../../contexts/PermissionsContext';
 
 export const useSubstituicoesOrchestrator = () => {
   const { user } = useAuth();
