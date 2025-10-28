@@ -17,9 +17,32 @@ class GruposSearchController {
    * Buscar grupos ativos
    */
   static buscarGruposAtivos = asyncHandler(async (req, res) => {
-    const pagination = req.pagination;
+    // Verificar se é para dropdown (sem paginação)
+    const isForDropdown = req.query.limit === '1000' || req.query.dropdown === 'true';
+    
+    if (isForDropdown) {
+      // Query simples para dropdown - sem paginação
+      const query = `
+        SELECT 
+          g.id, 
+          g.nome, 
+          g.codigo,
+          g.descricao,
+          g.status, 
+          g.data_cadastro as criado_em,
+          g.data_atualizacao as atualizado_em
+        FROM grupos g
+        WHERE g.status = 'ativo'
+        ORDER BY g.nome ASC
+      `;
+      
+      const grupos = await executeQuery(query, []);
+      
+      return successResponse(res, grupos, 'Grupos ativos listados com sucesso', STATUS_CODES.OK);
+    }
 
-    // Query base
+    // Query com paginação para listagem normal
+    const pagination = req.pagination;
     let baseQuery = `
       SELECT 
         g.id, 

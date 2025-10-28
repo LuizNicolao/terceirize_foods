@@ -17,9 +17,37 @@ class ClassesSearchController {
    * Buscar classes ativas
    */
   static buscarClassesAtivas = asyncHandler(async (req, res) => {
-    const pagination = req.pagination;
+    // Verificar se é para dropdown (sem paginação)
+    const isForDropdown = req.query.limit === '1000' || req.query.dropdown === 'true';
+    
+    if (isForDropdown) {
+      // Query simples para dropdown - sem paginação
+      const query = `
+        SELECT 
+          c.id, 
+          c.nome, 
+          c.codigo,
+          c.descricao,
+          c.subgrupo_id,
+          c.status, 
+          c.data_cadastro as criado_em,
+          c.data_atualizacao as atualizado_em,
+          s.nome as subgrupo_nome,
+          g.nome as grupo_nome
+        FROM classes c
+        LEFT JOIN subgrupos s ON c.subgrupo_id = s.id
+        LEFT JOIN grupos g ON s.grupo_id = g.id
+        WHERE c.status = 'ativo'
+        ORDER BY c.nome ASC
+      `;
+      
+      const classes = await executeQuery(query, []);
+      
+      return successResponse(res, classes, 'Classes ativas listadas com sucesso', STATUS_CODES.OK);
+    }
 
-    // Query base
+    // Query com paginação para listagem normal
+    const pagination = req.pagination;
     let baseQuery = `
       SELECT 
         c.id, 

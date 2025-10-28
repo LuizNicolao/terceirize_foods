@@ -17,9 +17,35 @@ class SubgruposSearchController {
    * Buscar subgrupos ativos
    */
   static buscarSubgruposAtivos = asyncHandler(async (req, res) => {
-    const pagination = req.pagination;
+    // Verificar se é para dropdown (sem paginação)
+    const isForDropdown = req.query.limit === '1000' || req.query.dropdown === 'true';
+    
+    if (isForDropdown) {
+      // Query simples para dropdown - sem paginação
+      const query = `
+        SELECT 
+          sg.id, 
+          sg.nome, 
+          sg.codigo,
+          sg.descricao,
+          sg.grupo_id,
+          sg.status, 
+          sg.data_cadastro as criado_em,
+          sg.data_atualizacao as atualizado_em,
+          g.nome as grupo_nome
+        FROM subgrupos sg
+        LEFT JOIN grupos g ON sg.grupo_id = g.id
+        WHERE sg.status = 'ativo'
+        ORDER BY sg.nome ASC
+      `;
+      
+      const subgrupos = await executeQuery(query, []);
+      
+      return successResponse(res, subgrupos, 'Subgrupos ativos listados com sucesso', STATUS_CODES.OK);
+    }
 
-    // Query base
+    // Query com paginação para listagem normal
+    const pagination = req.pagination;
     let baseQuery = `
       SELECT 
         sg.id, 
