@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { FaExchangeAlt, FaClipboardList, FaCheckCircle, FaUserMd, FaUserTie } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { useSubstituicoesOrchestrator } from './hooks/useSubstituicoesOrchestrator';
-import { useSubstituicoesNutricionista } from './hooks/useSubstituicoesNutricionista';
+import { useSubstituicoesOrchestrator } from '../../hooks/useSubstituicoesOrchestrator';
+import { useSubstituicoesNutricionista } from '../../hooks/useSubstituicoesNutricionista';
 import { NecessidadesLayout, NecessidadesLoading } from '../../components/necessidades';
 import { SubstituicoesFilters } from './components';
 import SubstituicoesTableNutricionista from './components/SubstituicoesTableNutricionista';

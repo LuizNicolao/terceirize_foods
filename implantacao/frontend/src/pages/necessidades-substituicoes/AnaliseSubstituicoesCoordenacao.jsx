@@ -1,6 +1,6 @@
 import React from 'react';
-import { useSubstituicoesOrchestrator } from './hooks/useSubstituicoesOrchestrator';
-import { useSubstituicoesCoordenacao } from './hooks/useSubstituicoesCoordenacao';
+import { useSubstituicoesOrchestrator } from '../../hooks/useSubstituicoesOrchestrator';
+import { useSubstituicoesCoordenacao } from '../../hooks/useSubstituicoesCoordenacao';
 import SubstituicoesFilters from './components/SubstituicoesFilters';
 import SubstituicoesTableCoordenacao from './components/SubstituicoesTableCoordenacao';
 import ExportButtons from './components/ExportButtons';
