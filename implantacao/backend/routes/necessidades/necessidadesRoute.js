@@ -13,8 +13,12 @@ const {
   gerarNecessidade,
   listarEscolasNutricionista,
   exportarXLSX,
-  exportarPDF
+  exportarPDF,
+  importarExcel,
+  baixarModelo
 } = require('../../controllers/necessidades');
+
+const { uploadMiddleware } = require('../../controllers/necessidades/NecessidadesImportController');
 const { 
   validateCriarNecessidade, 
   validateGerarNecessidade, 
@@ -45,5 +49,9 @@ router.get('/stats/resumo', canView('necessidades'), obterResumo);
 // ===== ROTAS DE EXPORTAÇÃO =====
 router.get('/exportar/xlsx', canView('necessidades'), exportarXLSX);
 router.get('/exportar/pdf', canView('necessidades'), exportarPDF);
+
+// ===== ROTAS DE IMPORTAÇÃO =====
+router.post('/importar', canCreate('necessidades'), uploadMiddleware, importarExcel);
+router.get('/modelo', canCreate('necessidades'), baixarModelo);
 
 module.exports = router;

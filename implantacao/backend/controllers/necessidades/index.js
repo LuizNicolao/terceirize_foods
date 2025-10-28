@@ -21,6 +21,7 @@ const {
 } = require('./NecessidadesSpecialController');
 
 const NecessidadesExportController = require('./NecessidadesExportController');
+const NecessidadesImportController = require('./NecessidadesImportController');
 
 module.exports = {
   // CRUD Operations
@@ -43,6 +44,10 @@ module.exports = {
   
   // Export Operations
   exportarXLSX: NecessidadesExportController.exportarXLSX,
-  exportarPDF: NecessidadesExportController.exportarPDF
+  exportarPDF: NecessidadesExportController.exportarPDF,
+  
+  // Import Operations
+  importarExcel: NecessidadesImportController.importarExcel,
+  baixarModelo: NecessidadesImportController.baixarModelo
 };
 
