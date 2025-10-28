@@ -49,11 +49,10 @@ class ConsultaStatusController {
         queryParams.push(status);
       }
 
-      // Filtro por grupo removido - coluna grupo não existe na tabela necessidades
-      // if (grupo) {
-      //   whereConditions.push('n.grupo = ?');
-      //   queryParams.push(grupo);
-      // }
+      if (grupo) {
+        whereConditions.push('n.grupo = ?');
+        queryParams.push(grupo);
+      }
 
       if (semana_abastecimento) {
         whereConditions.push('n.semana_abastecimento = ?');
@@ -115,6 +114,8 @@ class ConsultaStatusController {
           n.data_preenchimento as data_criacao,
           n.data_atualizacao,
           n.usuario_email,
+          n.grupo,
+          n.grupo_id,
           -- Status da substituição
           ns.status as status_substituicao,
           ns.produto_generico_id,
@@ -251,11 +252,10 @@ class ConsultaStatusController {
       let whereConditions = [];
       let queryParams = [];
 
-      // Filtro por grupo removido - coluna grupo não existe na tabela necessidades
-      // if (grupo) {
-      //   whereConditions.push('n.grupo = ?');
-      //   queryParams.push(grupo);
-      // }
+      if (grupo) {
+        whereConditions.push('n.grupo = ?');
+        queryParams.push(grupo);
+      }
 
       if (semana_abastecimento) {
         whereConditions.push('n.semana_abastecimento = ?');
@@ -280,7 +280,7 @@ class ConsultaStatusController {
           COUNT(*) as total_necessidades,
           COUNT(DISTINCT n.escola_id) as total_escolas,
           COUNT(DISTINCT n.produto_id) as total_produtos,
-          -- COUNT(DISTINCT n.grupo) as total_grupos, -- coluna grupo não existe
+          COUNT(DISTINCT n.grupo) as total_grupos,
           SUM(n.ajuste) as total_quantidade,
           AVG(n.ajuste) as media_quantidade
         FROM necessidades n
@@ -324,27 +324,26 @@ class ConsultaStatusController {
       const substituicaoStats = await executeQuery(substituicaoQuery, queryParams);
 
       // Grupos de produtos
-      // Query de grupos removida - coluna grupo não existe na tabela necessidades
-      // const gruposQuery = `
-      //   SELECT 
-      //     n.grupo,
-      //     COUNT(*) as quantidade,
-      //     SUM(n.ajuste) as total_quantidade
-      //   FROM necessidades n
-      //   ${whereClause}
-      //   GROUP BY n.grupo
-      //   ORDER BY n.grupo
-      // `;
+      const gruposQuery = `
+        SELECT 
+          n.grupo,
+          COUNT(*) as quantidade,
+          SUM(n.ajuste) as total_quantidade
+        FROM necessidades n
+        ${whereClause}
+        GROUP BY n.grupo
+        ORDER BY n.grupo
+      `;
 
-      // const gruposStats = await executeQuery(gruposQuery, queryParams);
+      const gruposStats = await executeQuery(gruposQuery, queryParams);
 
       res.json({
         success: true,
         data: {
           geral: stats[0],
           status: statusStats,
-          substituicoes: substituicaoStats
-          // grupos: gruposStats - removido pois coluna grupo não existe
+          substituicoes: substituicaoStats,
+          grupos: gruposStats
         }
       });
 
@@ -374,11 +373,10 @@ class ConsultaStatusController {
         queryParams.push(status);
       }
 
-      // Filtro por grupo removido - coluna grupo não existe na tabela necessidades
-      // if (grupo) {
-      //   whereConditions.push('n.grupo = ?');
-      //   queryParams.push(grupo);
-      // }
+      if (grupo) {
+        whereConditions.push('n.grupo = ?');
+        queryParams.push(grupo);
+      }
 
       if (semana_abastecimento) {
         whereConditions.push('n.semana_abastecimento = ?');
@@ -477,11 +475,10 @@ class ConsultaStatusController {
         queryParams.push(status);
       }
 
-      // Filtro por grupo removido - coluna grupo não existe na tabela necessidades
-      // if (grupo) {
-      //   whereConditions.push('n.grupo = ?');
-      //   queryParams.push(grupo);
-      // }
+      if (grupo) {
+        whereConditions.push('n.grupo = ?');
+        queryParams.push(grupo);
+      }
 
       if (semana_abastecimento) {
         whereConditions.push('n.semana_abastecimento = ?');

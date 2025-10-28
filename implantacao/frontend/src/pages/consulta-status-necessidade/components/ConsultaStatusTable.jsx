@@ -144,9 +144,6 @@ const ConsultaStatusTable = ({ necessidades, loading, canView }) => {
                 Qtd. Genérico
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Data Criação
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Usuário
               </th>
             </tr>
@@ -209,9 +206,6 @@ const ConsultaStatusTable = ({ necessidades, loading, canView }) => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {necessidade.quantidade_generico ? formatarQuantidade(necessidade.quantidade_generico) : '-'}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {formatarData(necessidade.data_criacao)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {necessidade.usuario_email || '-'}
