@@ -111,12 +111,14 @@ const ConsultaStatusNecessidade = () => {
         loading={loading}
       />
 
-      {/* Estatísticas - sempre visíveis */}
-      <ConsultaStatusStats
-        necessidades={necessidades}
-        estatisticas={estatisticas}
-        filtros={filtros}
-      />
+      {/* Estatísticas - apenas na aba Lista */}
+      {activeTab === 'lista' && (
+        <ConsultaStatusStats
+          necessidades={necessidades}
+          estatisticas={estatisticas}
+          filtros={filtros}
+        />
+      )}
 
       {/* Abas */}
       <ConsultaStatusTabs 
