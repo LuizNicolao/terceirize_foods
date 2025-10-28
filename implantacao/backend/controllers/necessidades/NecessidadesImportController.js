@@ -209,7 +209,7 @@ const importarExcel = async (req, res) => {
             u.email as usuario_email
           FROM foods_db.rotas_nutricionistas rn
           JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
-          WHERE rn.escola_id = ?
+          WHERE rn.unidade_escolar_id = ?
         `, [necessidade.escola_id]);
 
         const nutricionista = nutricionistaEscola[0] || {
