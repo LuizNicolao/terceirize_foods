@@ -66,11 +66,8 @@ const StatusNecessidadesTab = () => {
         setGrupos(gruposResponse.data || []);
       }
 
-      // Carregar escolas
-      const escolasResponse = await FoodsApiService.getUnidadesEscolares();
-      if (escolasResponse.success) {
-        setEscolas(escolasResponse.data || []);
-      }
+      // Carregar escolas baseado no tipo de usuário
+      await carregarEscolas();
 
       // Carregar produtos
       const produtosResponse = await FoodsApiService.getProdutosOrigem();
@@ -82,6 +79,35 @@ const StatusNecessidadesTab = () => {
       toast.error('Erro ao carregar opções de filtros');
     } finally {
       setLoadingOpcoes(false);
+    }
+  };
+
+  // Carregar escolas baseado no tipo de usuário
+  const carregarEscolas = async () => {
+    try {
+      if (isNutricionista && user?.id) {
+        // Para nutricionistas, carregar apenas escolas das suas rotas
+        const response = await fetch(`/implantacao/api/recebimentos-escolas/escolas-nutricionista/${user.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setEscolas(data.data || []);
+          }
+        }
+      } else {
+        // Para outros tipos de usuário, carregar todas as escolas
+        const escolasResponse = await FoodsApiService.getUnidadesEscolares();
+        if (escolasResponse.success) {
+          setEscolas(escolasResponse.data || []);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar escolas:', error);
+      // Fallback para carregar todas as escolas
+      const escolasResponse = await FoodsApiService.getUnidadesEscolares();
+      if (escolasResponse.success) {
+        setEscolas(escolasResponse.data || []);
+      }
     }
   };
 
@@ -331,7 +357,14 @@ const StatusNecessidadesTab = () => {
       {/* Filtros */}
       <div className="bg-gray-50 rounded-lg p-4">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium text-gray-900">🔍 Filtros</h3>
+          <div>
+            <h3 className="text-lg font-medium text-gray-900">🔍 Filtros</h3>
+            {isNutricionista && (
+              <p className="text-sm text-blue-600 mt-1">
+                📍 Visualizando apenas suas {escolas.length} escolas
+              </p>
+            )}
+          </div>
           <div className="flex gap-2">
             {temFiltrosAtivos && (
               <button
@@ -399,17 +432,17 @@ const StatusNecessidadesTab = () => {
           {/* Filtro por Escola */}
           <div>
             <SearchableSelect
-              label="Escola"
+              label={isNutricionista ? "Escola (Suas Rotas)" : "Escola"}
               value={filtros.escola_id}
               onChange={(value) => handleFiltroChange('escola_id', value)}
               options={[
-                { value: '', label: 'Todas as escolas' },
+                { value: '', label: isNutricionista ? 'Todas as minhas escolas' : 'Todas as escolas' },
                 ...escolas.map(escola => ({ 
                   value: escola.id.toString(), 
                   label: `${escola.nome_escola || escola.escola_nome} (${escola.rota || escola.escola_rota})` 
                 }))
               ]}
-              placeholder="Selecione uma escola..."
+              placeholder={isNutricionista ? "Selecione uma das suas escolas..." : "Selecione uma escola..."}
               disabled={loading || loadingOpcoes}
             />
           </div>
