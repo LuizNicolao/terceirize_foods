@@ -377,7 +377,7 @@ const StatusNecessidadesTab = () => {
               onChange={(value) => handleFiltroChange('grupo', value)}
               options={[
                 { value: '', label: 'Todos os grupos' },
-                ...grupos.map(grupo => ({ value: grupo.grupo, label: grupo.grupo }))
+                ...grupos.map(grupo => ({ value: grupo.nome, label: grupo.nome }))
               ]}
               placeholder="Selecione o grupo..."
               disabled={loading || loadingOpcoes}
