@@ -369,11 +369,8 @@ const importarExcel = async (req, res) => {
         } catch (error) {
           // Usar valores padrão em caso de erro
         }
-        // Gerar ID sequencial para esta necessidade específica
+        // Usar o mesmo ID para todas as necessidades desta importação
         const necessidadeId = proximoId.toString().padStart(2, '0'); // Formato 01, 02, etc.
-        
-        // Incrementar para próxima necessidade
-        proximoId++;
 
         const query = `
           INSERT INTO necessidades (
