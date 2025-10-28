@@ -44,10 +44,10 @@ const Grupos = () => {
     handleCloseModal,
     handleCloseValidationModal,
     handlePageChange,
+    handleItemsPerPageChange,
     setSearchTerm,
     handleKeyPress,
     setStatusFilter,
-    setItemsPerPage,
     handleClearFilters,
     formatDate,
     getStatusLabel

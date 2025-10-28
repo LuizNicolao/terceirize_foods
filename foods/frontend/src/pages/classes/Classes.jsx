@@ -54,6 +54,7 @@ const Classes = () => {
 
     // Funções de paginação
     handlePageChange,
+    handleItemsPerPageChange,
 
     // Funções de filtros
     setSearchTerm,
