@@ -355,21 +355,20 @@ class SubstituicoesListController {
               ns.id,
               ns.necessidade_id,
               ns.escola_id,
-              e.nome as escola_nome,
+              ns.escola_nome,
               ns.quantidade_origem,
               ns.quantidade_generico,
               ns.status,
               ns.data_criacao,
               ns.data_atualizacao
             FROM necessidades_substituicoes ns
-            LEFT JOIN unidades_escolares e ON e.id = ns.escola_id
             WHERE ns.produto_origem_id = ?
               AND ns.produto_generico_id = ?
               AND ns.semana_abastecimento = ?
               AND ns.semana_consumo = ?
               AND ns.ativo = 1
               AND ns.status = 'conf log'
-            ORDER BY e.nome ASC
+            ORDER BY ns.escola_nome ASC
           `, [
             necessidade.codigo_origem,
             necessidade.produto_generico_id || '',
