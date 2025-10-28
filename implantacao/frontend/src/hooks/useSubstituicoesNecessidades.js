@@ -179,7 +179,29 @@ export const useSubstituicoesNecessidades = () => {
   }, [carregarNecessidades]);
 
   /**
-   * Aprovar substituição
+   * Liberar análise (conf → conf log)
+   */
+  const liberarAnalise = useCallback(async (dados) => {
+    try {
+      const response = await SubstituicoesNecessidadesService.liberarAnalise(dados);
+      
+      if (response.success) {
+        toast.success(response.message || 'Análise liberada com sucesso!');
+        carregarNecessidades();
+        return response;
+      } else {
+        toast.error(response.message || 'Erro ao liberar análise');
+        return response;
+      }
+    } catch (error) {
+      console.error('Erro ao liberar análise:', error);
+      toast.error('Erro ao liberar análise');
+      return { success: false, error: error.message };
+    }
+  }, [carregarNecessidades]);
+
+  /**
+   * Aprovar substituição (conf log → aprovado)
    */
   const aprovarSubstituicao = useCallback(async (id) => {
     try {
@@ -258,6 +280,7 @@ export const useSubstituicoesNecessidades = () => {
     buscarProdutosGenericos,
     salvarSubstituicao,
     deletarSubstituicao,
+    liberarAnalise,
     aprovarSubstituicao,
     atualizarFiltros,
     limparFiltros

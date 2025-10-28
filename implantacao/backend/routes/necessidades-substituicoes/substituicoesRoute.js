@@ -51,8 +51,16 @@ router.delete(
   SubstituicoesController.deletarSubstituicao
 );
 
+// POST /api/necessidades-substituicoes/liberar-analise
+// Liberar análise (conf → conf log)
+router.post(
+  '/liberar-analise',
+  checkScreenPermission('necessidades', 'editar'),
+  SubstituicoesController.liberarAnalise
+);
+
 // PUT /api/necessidades-substituicoes/:id/aprovar
-// Aprovar substituição
+// Aprovar substituição (conf log → aprovado)
 router.put(
   '/:id/aprovar',
   checkScreenPermission('necessidades', 'editar'),

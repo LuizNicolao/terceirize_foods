@@ -74,7 +74,7 @@ class SubstituicoesListController {
         LEFT JOIN necessidades_substituicoes ns ON (
           ns.produto_origem_id = n.produto_id 
           AND ns.ativo = 1 
-          AND ns.status IN ('pendente', 'aprovado', 'conf')
+          AND ns.status IN ('pendente', 'aprovado', 'conf', 'conf log')
         )
         WHERE ${whereConditions.join(' AND ')}
         GROUP BY n.produto_id, n.produto, n.produto_unidade, n.semana_abastecimento, n.semana_consumo, 
@@ -121,7 +121,7 @@ class SubstituicoesListController {
             WHERE ns.produto_origem_id = ? 
               AND ns.produto_generico_id = ?
               AND ns.ativo = 1
-              AND ns.status IN ('pendente', 'aprovado', 'conf')
+              AND ns.status IN ('pendente', 'aprovado', 'conf', 'conf log')
           `, [necessidade.codigo_origem, necessidade.produto_generico_id]);
 
           // Processar escolas solicitantes

@@ -62,7 +62,16 @@ class SubstituicoesNecessidadesService {
   }
 
   /**
-   * Aprovar substituição
+   * Liberar análise (conf → conf log)
+   * @param {Object} dados - Dados: produto_origem_id, semana_abastecimento, semana_consumo
+   */
+  static async liberarAnalise(dados) {
+    const response = await api.post('/necessidades-substituicoes/liberar-analise', dados);
+    return response.data;
+  }
+
+  /**
+   * Aprovar substituição (conf log → aprovado)
    * @param {Number} id - ID da substituição
    */
   static async aprovarSubstituicao(id) {

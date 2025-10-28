@@ -244,7 +244,53 @@ class SubstituicoesCRUDController {
   }
 
   /**
-   * Aprovar substituição
+   * Liberar análise (conf → conf log)
+   */
+  static async liberarAnalise(req, res) {
+    try {
+      const { produto_origem_id, semana_abastecimento, semana_consumo } = req.body;
+      const usuario_id = req.user.id;
+
+      if (!produto_origem_id || !semana_abastecimento || !semana_consumo) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dados obrigatórios: produto origem, semana abastecimento e semana consumo'
+        });
+      }
+
+      // Atualizar status de 'conf' para 'conf log' para todas as substituições do produto origem
+      const result = await executeQuery(`
+        UPDATE necessidades_substituicoes 
+        SET 
+          status = 'conf log',
+          usuario_liberador_id = ?,
+          data_liberacao = NOW(),
+          data_atualizacao = NOW()
+        WHERE produto_origem_id = ? 
+          AND semana_abastecimento = ? 
+          AND semana_consumo = ?
+          AND status = 'conf'
+          AND ativo = 1
+      `, [usuario_id, produto_origem_id, semana_abastecimento, semana_consumo]);
+
+      res.json({
+        success: true,
+        message: 'Análise liberada com sucesso',
+        affectedRows: result.affectedRows
+      });
+
+    } catch (error) {
+      console.error('Erro ao liberar análise:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Erro interno do servidor',
+        message: 'Erro ao liberar análise'
+      });
+    }
+  }
+
+  /**
+   * Aprovar substituição (conf log → aprovado)
    */
   static async aprovarSubstituicao(req, res) {
     try {
