@@ -229,8 +229,8 @@ const importarExcel = async (req, res) => {
         // Verificar se já existe necessidade duplicada
         const existing = await executeQuery(`
           SELECT id FROM necessidades 
-          WHERE usuario_id = ? AND escola_id = ? AND produto_id = ? AND semana_consumo = ?
-        `, [nutricionista.usuario_id, necessidade.escola_id, necessidade.produto_id, necessidade.semana_consumo]);
+          WHERE escola_id = ? AND produto_id = ? AND semana_consumo = ?
+        `, [necessidade.escola_id, necessidade.produto_id, necessidade.semana_consumo]);
 
         if (existing.length > 0) {
           erros.push({
@@ -250,7 +250,7 @@ const importarExcel = async (req, res) => {
         try {
           const produtoInfo = await executeQuery(`
             SELECT 
-              po.unidade_medida_nome as unidade_medida,
+              po.unidade_medida as unidade_medida,
               g.nome as grupo,
               g.id as grupo_id
             FROM foods_db.produto_origem po
