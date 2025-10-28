@@ -1,7 +1,7 @@
 const multer = require('multer');
 const ExcelJS = require('exceljs');
 const { executeQuery } = require('../../config/database');
-const { successResponse, errorResponse } = require('../../utils/responseUtils');
+const { successResponse, errorResponse } = require('../../middleware/responseHandler');
 
 // Configuração do multer para upload de arquivos
 const upload = multer({
