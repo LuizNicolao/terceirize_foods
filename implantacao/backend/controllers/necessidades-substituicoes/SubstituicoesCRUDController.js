@@ -31,10 +31,26 @@ class SubstituicoesCRUDController {
       const usuario_id = req.user.id;
 
       // Validar dados obrigatórios
-      if (!produto_origem_id || !produto_generico_id || !quantidade_origem || !quantidade_generico) {
+      if (!produto_origem_id || !produto_generico_id) {
         return res.status(400).json({
           success: false,
-          message: 'Dados obrigatórios: produto origem, produto genérico e quantidades'
+          message: 'Dados obrigatórios: produto origem e produto genérico'
+        });
+      }
+
+      // Para salvamento consolidado, validar se escola_ids foi fornecido
+      if (escola_ids && Array.isArray(escola_ids) && escola_ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Lista de escolas não pode estar vazia'
+        });
+      }
+
+      // Para salvamento individual, validar quantidades
+      if (!escola_ids && (!quantidade_origem || !quantidade_generico)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dados obrigatórios: quantidades origem e genérico'
         });
       }
 
