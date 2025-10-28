@@ -199,36 +199,26 @@ const importarExcel = async (req, res) => {
     });
 
     // Gerar ID sequencial base para esta importação
-    console.log('=== GERANDO ID SEQUENCIAL BASE ===');
     const ultimoId = await executeQuery(`
       SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
       FROM necessidades 
       WHERE necessidade_id IS NOT NULL AND necessidade_id != '' AND necessidade_id REGEXP '^[0-9]+$'
     `);
     
-    console.log('Último ID encontrado:', ultimoId);
     let proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
-    console.log(`ID base para esta importação: ${proximoId}`);
-    console.log('=== FIM GERAÇÃO ID BASE ===');
 
     // Inserir necessidades no banco de dados
     const sucesso = [];
     for (const necessidade of necessidades) {
       try {
-        console.log(`\n=== PROCESSANDO NECESSIDADE ${necessidade.escola_nome} - ${necessidade.produto_nome} ===`);
-        
         // Buscar nutricionista da escola (usar fallback se não encontrar)
         let nutricionista = {
           usuario_id: necessidade.usuario_id,
           usuario_email: necessidade.usuario_email
         };
 
-        console.log(`Usuário inicial (quem está importando): ID=${necessidade.usuario_id}, Email=${necessidade.usuario_email}`);
-
         try {
-          // Tentar buscar nutricionista da escola usando uma consulta mais simples
-          console.log(`Buscando nutricionista para escola ID: ${necessidade.escola_id}`);
-          
+          // Tentar buscar nutricionista da escola usando a estrutura correta da tabela
           let nutricionistaEscola = [];
           
           // Primeiro, tentar buscar por escola_id (coluna mais comum)
@@ -241,9 +231,8 @@ const importarExcel = async (req, res) => {
               JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
               WHERE rn.escola_id = ?
             `, [necessidade.escola_id]);
-            console.log(`Tentativa 1 (escola_id): ${nutricionistaEscola.length} resultados`);
           } catch (error) {
-            console.log(`Tentativa 1 falhou: ${error.message}`);
+            // Ignorar erro e tentar próxima opção
           }
           
           // Se não encontrar, tentar com unidade_escolar_id
@@ -257,9 +246,8 @@ const importarExcel = async (req, res) => {
                 JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
                 WHERE rn.unidade_escolar_id = ?
               `, [necessidade.escola_id]);
-              console.log(`Tentativa 2 (unidade_escolar_id): ${nutricionistaEscola.length} resultados`);
             } catch (error) {
-              console.log(`Tentativa 2 falhou: ${error.message}`);
+              // Ignorar erro e tentar próxima opção
             }
           }
           
@@ -267,7 +255,6 @@ const importarExcel = async (req, res) => {
           if (nutricionistaEscola.length === 0) {
             try {
               // A tabela rotas_nutricionistas tem 'escolas_responsaveis' que pode conter o ID da escola
-              // Vamos buscar nutricionistas que tenham esta escola em suas responsabilidades
               nutricionistaEscola = await executeQuery(`
                 SELECT 
                   u.id as usuario_id,
@@ -276,7 +263,6 @@ const importarExcel = async (req, res) => {
                 JOIN implantacao_db.usuarios u ON u.id = rn.usuario_id
                 WHERE rn.escolas_responsaveis LIKE ?
               `, [`%${necessidade.escola_id}%`]);
-              console.log(`Tentativa 3 (escolas_responsaveis LIKE): ${nutricionistaEscola.length} resultados`);
               
               // Se não encontrar, tentar buscar por qualquer nutricionista ativo
               if (nutricionistaEscola.length === 0) {
@@ -289,22 +275,17 @@ const importarExcel = async (req, res) => {
                   WHERE rn.status = 'ativo' OR rn.status = '1'
                   LIMIT 1
                 `);
-                console.log(`Tentativa 4 (qualquer nutricionista ativo): ${nutricionistaEscola.length} resultados`);
               }
             } catch (error) {
-              console.log(`Erro ao buscar nutricionista: ${error.message}`);
+              // Ignorar erro e usar usuário atual
             }
           }
           
-          console.log(`Resultado da busca do nutricionista:`, nutricionistaEscola);
           if (nutricionistaEscola.length > 0) {
             nutricionista = nutricionistaEscola[0];
-            console.log(`✅ Nutricionista encontrado: ID=${nutricionista.usuario_id}, Email=${nutricionista.usuario_email}`);
-          } else {
-            console.log(`❌ Nutricionista não encontrado, usando usuário atual`);
           }
         } catch (error) {
-          console.log('❌ Erro ao buscar nutricionista da escola, usando usuário atual:', error.message);
+          // Usar usuário atual em caso de erro
         }
 
         // Verificar se já existe necessidade duplicada
@@ -329,10 +310,6 @@ const importarExcel = async (req, res) => {
         // Buscar informações adicionais do produto no banco foods
         let produto = { unidade_medida: 'UN', grupo: null, grupo_id: null };
         try {
-          console.log(`\n--- BUSCANDO DADOS DO PRODUTO ---`);
-          console.log(`Produto ID: ${necessidade.produto_id}`);
-          console.log(`Produto Nome: ${necessidade.produto_nome}`);
-          
           let produtoInfo = [];
           
           // Tentar diferentes nomes de colunas para unidade_medida
@@ -346,9 +323,8 @@ const importarExcel = async (req, res) => {
               LEFT JOIN foods_db.grupos g ON po.grupo_id = g.id
               WHERE po.id = ?
             `, [necessidade.produto_id]);
-            console.log(`Tentativa 1 (unidade_medida_nome): ${produtoInfo.length} resultados`);
           } catch (error) {
-            console.log(`Tentativa 1 falhou: ${error.message}`);
+            // Ignorar erro e tentar próxima opção
           }
           
           // Se não funcionar, tentar sem unidade_medida
@@ -363,33 +339,21 @@ const importarExcel = async (req, res) => {
                 LEFT JOIN foods_db.grupos g ON po.grupo_id = g.id
                 WHERE po.id = ?
               `, [necessidade.produto_id]);
-              console.log(`Tentativa 2 (sem unidade_medida): ${produtoInfo.length} resultados`);
             } catch (error) {
-              console.log(`Tentativa 2 falhou: ${error.message}`);
+              // Ignorar erro e usar valores padrão
             }
           }
           
-          console.log(`Resultado da busca do produto:`, produtoInfo);
           if (produtoInfo.length > 0) {
             produto = produtoInfo[0];
-            console.log(`✅ Produto encontrado:`);
-            console.log(`   - Unidade: ${produto.unidade_medida}`);
-            console.log(`   - Grupo: ${produto.grupo}`);
-            console.log(`   - Grupo ID: ${produto.grupo_id}`);
-          } else {
-            console.log(`❌ Produto não encontrado no foods_db`);
           }
         } catch (error) {
-          console.log('❌ Erro ao buscar dados do produto, usando valores padrão:', error.message);
+          // Usar valores padrão em caso de erro
         }
         
         // Buscar informações da escola no banco foods
         let escola = { rota: null, codigo_teknisa: null };
         try {
-          console.log(`\n--- BUSCANDO DADOS DA ESCOLA ---`);
-          console.log(`Escola ID: ${necessidade.escola_id}`);
-          console.log(`Escola Nome: ${necessidade.escola_nome}`);
-          
           const escolaInfo = await executeQuery(`
             SELECT 
               r.nome as rota,
@@ -399,26 +363,14 @@ const importarExcel = async (req, res) => {
             WHERE ue.id = ?
           `, [necessidade.escola_id]);
           
-          console.log(`Resultado da busca da escola:`, escolaInfo);
           if (escolaInfo.length > 0) {
             escola = escolaInfo[0];
-            console.log(`✅ Escola encontrada:`);
-            console.log(`   - Rota: ${escola.rota}`);
-            console.log(`   - Código Teknisa: ${escola.codigo_teknisa}`);
-          } else {
-            console.log(`❌ Escola não encontrada no foods_db`);
           }
         } catch (error) {
-          console.log('❌ Erro ao buscar dados da escola, usando valores padrão:', error.message);
+          // Usar valores padrão em caso de erro
         }
         // Gerar ID sequencial para esta necessidade específica
         const necessidadeId = proximoId.toString().padStart(2, '0'); // Formato 01, 02, etc.
-        console.log(`\n--- DADOS FINAIS PARA INSERÇÃO ---`);
-        console.log(`Usuário Final: ID=${nutricionista.usuario_id}, Email=${nutricionista.usuario_email}`);
-        console.log(`Escola: ID=${necessidade.escola_id}, Nome=${necessidade.escola_nome}, Rota=${escola.rota}, Código=${escola.codigo_teknisa}`);
-        console.log(`Produto: ID=${necessidade.produto_id}, Nome=${necessidade.produto_nome}, Unidade=${produto.unidade_medida}, Grupo=${produto.grupo}, GrupoID=${produto.grupo_id}`);
-        console.log(`Necessidade: ID=${necessidadeId} (sequencial: ${proximoId}), Quantidade=${necessidade.quantidade}, Status=${necessidade.status}`);
-        console.log(`Semanas: Abastecimento=${necessidade.semana_abastecimento}, Consumo=${necessidade.semana_consumo}`);
         
         // Incrementar para próxima necessidade
         proximoId++;
@@ -457,13 +409,6 @@ const importarExcel = async (req, res) => {
         ];
 
         const result = await executeQuery(query, params);
-        
-        console.log(`✅ NECESSIDADE INSERIDA COM SUCESSO!`);
-        console.log(`   - ID inserido: ${result.insertId}`);
-        console.log(`   - Necessidade ID: ${necessidadeId}`);
-        console.log(`   - Usuário: ${nutricionista.usuario_email}`);
-        console.log(`   - Grupo: ${produto.grupo} (ID: ${produto.grupo_id})`);
-        console.log(`=== FIM PROCESSAMENTO NECESSIDADE ===\n`);
         
         sucesso.push({
           id: result.insertId,
