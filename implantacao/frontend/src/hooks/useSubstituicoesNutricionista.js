@@ -21,7 +21,7 @@ export const useSubstituicoesNutricionista = () => {
     setError(null);
     
     try {
-      const response = await substituicoesNecessidadesService.listarParaSubstituicao(filtros);
+      const response = await substituicoesNecessidadesService.listarParaNutricionista(filtros);
       
       if (response.success) {
         // Filtrar apenas necessidades sem substituições (status pendente)

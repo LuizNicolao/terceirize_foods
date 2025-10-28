@@ -91,6 +91,21 @@ class SubstituicoesNecessidadesService {
   }
 
   /**
+   * Listar necessidades para nutricionista (status 'pendente')
+   * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo
+   */
+  static async listarParaNutricionista(filtros) {
+    const params = new URLSearchParams();
+    
+    if (filtros.grupo) params.append('grupo', filtros.grupo);
+    if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
+    if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
+
+    const response = await api.get(`/necessidades-substituicoes/nutricionista?${params.toString()}`);
+    return response.data;
+  }
+
+  /**
    * Listar necessidades para coordenação (status 'conf')
    * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo
    */
