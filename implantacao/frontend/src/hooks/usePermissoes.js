@@ -151,6 +151,7 @@ export const usePermissoes = () => {
         'calendario',
         'analise_necessidades',
         'analise_necessidades_substituicoes',
+        'consulta_status_necessidade',
         'permissoes'
       ];
       
