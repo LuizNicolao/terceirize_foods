@@ -1,92 +1,136 @@
 import React from 'react';
-import { FaSearch, FaEraser } from 'react-icons/fa';
-import { Button, SearchableSelect } from '../../../components/ui';
+import { Button, Input, SearchableSelect } from '../../../components/ui';
+import { useSemanasAbastecimento } from '../../../hooks/useSemanasAbastecimento';
+import { useSemanasConsumo } from '../../../hooks/useSemanasConsumo';
+import { useGruposConsulta } from '../../../hooks/useGruposConsulta';
 
 const SubstituicoesFilters = ({
-  grupos,
-  semanasAbastecimento,
-  semanasConsumo,
   filtros,
-  loading,
-  onFiltroChange,
-  onLimparFiltros
+  onFiltrosChange,
+  onBuscar,
+  onLimpar,
+  loading = false
 }) => {
+  const { grupos, loading: loadingGrupos } = useGruposConsulta();
+  const { semanasAbastecimento, loading: loadingSemanasAbast } = useSemanasAbastecimento();
+  const { semanasConsumo, loading: loadingSemanasConsumo, buscarPorSemanaAbastecimento } = useSemanasConsumo();
+
+  const handleGrupoChange = (grupo) => {
+    onFiltrosChange({ grupo });
+  };
+
+  const handleSemanaAbastecimentoChange = async (semana) => {
+    onFiltrosChange({ semana_abastecimento: semana });
+    
+    // Auto-popular semana de consumo
+    if (semana) {
+      try {
+        const semanaConsumo = await buscarPorSemanaAbastecimento(semana);
+        if (semanaConsumo) {
+          onFiltrosChange({ 
+            semana_abastecimento: semana,
+            semana_consumo: semanaConsumo 
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao buscar semana de consumo:', error);
+      }
+    }
+  };
+
+  const handleSemanaConsumoChange = (semana) => {
+    onFiltrosChange({ semana_consumo: semana });
+  };
+
+  const handleBuscar = () => {
+    onBuscar();
+  };
+
+  const handleLimpar = () => {
+    onFiltrosChange({
+      grupo: '',
+      semana_abastecimento: '',
+      semana_consumo: ''
+    });
+    onLimpar();
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">Filtros</h3>
-        <div className="flex gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onLimparFiltros}
-            className="flex items-center"
-          >
-            <FaEraser className="mr-2" />
-            Limpar
-          </Button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Filtros</h3>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Grupo de Produtos */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Grupo de Produtos
           </label>
           <SearchableSelect
             value={filtros.grupo || ''}
-            onChange={(value) => onFiltroChange({ grupo: value })}
+            onChange={handleGrupoChange}
             options={grupos.map(grupo => ({
-              value: grupo.nome,
-              label: grupo.nome
+              value: grupo.grupo,
+              label: grupo.grupo
             }))}
-            placeholder="Todos os grupos"
-            disabled={loading}
+            placeholder="Selecione o grupo..."
+            disabled={loadingGrupos}
+            className="w-full"
           />
         </div>
 
         {/* Semana de Abastecimento */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Semana de Abastecimento
           </label>
           <SearchableSelect
             value={filtros.semana_abastecimento || ''}
-            onChange={(value) => onFiltroChange({ semana_abastecimento: value })}
+            onChange={handleSemanaAbastecimentoChange}
             options={semanasAbastecimento.map(semana => ({
               value: semana.semana_abastecimento,
               label: semana.semana_abastecimento
             }))}
             placeholder="Selecione a semana..."
-            disabled={loading}
+            disabled={loadingSemanasAbast}
+            className="w-full"
           />
         </div>
 
         {/* Semana de Consumo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Semana de Consumo
           </label>
-          <input
+          <Input
             type="text"
             value={filtros.semana_consumo || ''}
-            readOnly
-            className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700 cursor-not-allowed"
-            placeholder="Será preenchido automaticamente..."
+            onChange={(e) => handleSemanaConsumoChange(e.target.value)}
+            placeholder="Preenchido automaticamente"
+            disabled={true}
+            className="w-full bg-gray-100"
           />
         </div>
-      </div>
 
-      {/* Hint */}
-      <div className="mt-4 text-sm text-gray-600 bg-blue-50 border border-blue-200 rounded-md p-3">
-        <p className="flex items-start">
-          <FaSearch className="mr-2 mt-0.5 flex-shrink-0" />
-          <span>
-            Selecione os filtros acima para visualizar as necessidades disponíveis para substituição. 
-            Ao selecionar a semana de abastecimento, a semana de consumo será preenchida automaticamente.
-          </span>
-        </p>
+        {/* Botões de Ação */}
+        <div className="flex items-end gap-2">
+          <Button
+            variant="primary"
+            onClick={handleBuscar}
+            disabled={loading}
+            className="flex-1"
+          >
+            {loading ? 'Buscando...' : 'Buscar'}
+          </Button>
+          
+          <Button
+            variant="secondary"
+            onClick={handleLimpar}
+            disabled={loading}
+            className="flex-1"
+          >
+            Limpar
+          </Button>
+        </div>
       </div>
     </div>
   );
