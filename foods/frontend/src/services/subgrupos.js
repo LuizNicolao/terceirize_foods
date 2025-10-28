@@ -11,12 +11,14 @@ class SubgruposService {
       // Extrair dados da estrutura HATEOAS
       let subgrupos = [];
       let pagination = null;
+      let statistics = null;
       
       if (response.data.data) {
         // Se tem data.items (estrutura HATEOAS)
         if (response.data.data.items) {
           subgrupos = response.data.data.items;
           pagination = response.data.data._meta?.pagination;
+          statistics = response.data.data._meta?.statistics;
         } else {
           // Se data é diretamente um array
           subgrupos = response.data.data;
@@ -26,10 +28,19 @@ class SubgruposService {
         subgrupos = response.data;
       }
       
+      // Se não conseguiu extrair paginação da estrutura HATEOAS, usar diretamente da resposta
+      if (!pagination) {
+        pagination = response.data.pagination || response.data.meta?.pagination;
+      }
+      if (!statistics) {
+        statistics = response.data.statistics || response.data.meta?.statistics;
+      }
+      
       return {
         success: true,
         data: subgrupos,
-        pagination: pagination || response.data.pagination
+        pagination: pagination || response.data.pagination || response.data.meta?.pagination,
+        statistics: statistics || response.data.statistics || response.data.meta?.statistics
       };
     } catch (error) {
       return {

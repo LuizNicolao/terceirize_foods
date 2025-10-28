@@ -16,12 +16,14 @@ class GruposService {
       // Extrair dados da estrutura HATEOAS
       let grupos = [];
       let pagination = null;
+      let statistics = null;
       
       if (response.data.data) {
         // Se tem data.items (estrutura HATEOAS)
         if (response.data.data.items) {
           grupos = response.data.data.items;
           pagination = response.data.data._meta?.pagination;
+          statistics = response.data.data._meta?.statistics;
         } else {
           // Se data é diretamente um array
           grupos = response.data.data;
@@ -31,15 +33,26 @@ class GruposService {
         grupos = response.data;
       }
       
+      // Se não conseguiu extrair paginação da estrutura HATEOAS, usar diretamente da resposta
+      if (!pagination) {
+        pagination = response.data.pagination || response.data.meta?.pagination;
+      }
+      if (!statistics) {
+        statistics = response.data.statistics || response.data.meta?.statistics;
+      }
+      
       console.log('🔍 GRUPOS PROCESSED:', {
         grupos: grupos.length,
-        pagination: pagination || response.data.pagination
+        pagination: pagination,
+        responsePagination: response.data.pagination,
+        responseMeta: response.data.meta
       });
       
       return {
         success: true,
         data: grupos,
-        pagination: pagination || response.data.pagination
+        pagination: pagination || response.data.pagination || response.data.meta?.pagination,
+        statistics: statistics || response.data.statistics || response.data.meta?.statistics
       };
     } catch (error) {
       return {
