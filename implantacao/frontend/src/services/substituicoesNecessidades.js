@@ -6,7 +6,7 @@ import api from './api';
  */
 class SubstituicoesNecessidadesService {
   /**
-   * Listar necessidades para substituição
+   * Listar necessidades para substituição (Nutricionista)
    * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo
    */
   static async listarParaSubstituicao(filtros) {
@@ -17,6 +17,21 @@ class SubstituicoesNecessidadesService {
     if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
 
     const response = await api.get(`/necessidades-substituicoes/listar?${params.toString()}`);
+    return response.data;
+  }
+
+  /**
+   * Listar necessidades para coordenação (status conf log)
+   * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo
+   */
+  static async listarParaCoordenacao(filtros) {
+    const params = new URLSearchParams();
+    
+    if (filtros.grupo) params.append('grupo', filtros.grupo);
+    if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
+    if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
+
+    const response = await api.get(`/necessidades-substituicoes/listar-coordenacao?${params.toString()}`);
     return response.data;
   }
 

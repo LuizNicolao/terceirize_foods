@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 /**
  * Hook para gerenciar substituições de necessidades
  */
-export const useSubstituicoesNecessidades = () => {
+export const useSubstituicoesNecessidades = (tipo = 'nutricionista') => {
   const [necessidades, setNecessidades] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -85,7 +85,9 @@ export const useSubstituicoesNecessidades = () => {
     setError(null);
 
     try {
-      const response = await SubstituicoesNecessidadesService.listarParaSubstituicao(filtros);
+      const response = tipo === 'coordenacao' 
+        ? await SubstituicoesNecessidadesService.listarParaCoordenacao(filtros)
+        : await SubstituicoesNecessidadesService.listarParaSubstituicao(filtros);
       
       if (response.success) {
         setNecessidades(response.data || []);
@@ -98,7 +100,7 @@ export const useSubstituicoesNecessidades = () => {
     } finally {
       setLoading(false);
     }
-  }, [filtros]);
+  }, [filtros, tipo]);
 
   /**
    * Buscar produtos genéricos para um produto origem

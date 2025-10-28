@@ -22,9 +22,10 @@ const AnaliseCoordenacao = () => {
     loadingGenericos,
     buscarProdutosGenericos,
     salvarSubstituicao,
+    aprovarSubstituicao,
     atualizarFiltros,
     limparFiltros
-  } = useSubstituicoesNecessidades();
+  } = useSubstituicoesNecessidades('coordenacao');
 
   // Carregar produtos genéricos quando necessário
   useEffect(() => {
@@ -56,10 +57,24 @@ const AnaliseCoordenacao = () => {
     setSalvandoAjustes(true);
     
     try {
-      // Aqui implementar a lógica para mudar status de 'conf' para 'aprovado'
-      // Por enquanto, vou simular
-      toast.success('Análise aprovada com sucesso!');
-      setAjustesAtivados(false); // Reset para mostrar que foi aprovado
+      // Aprovar todas as substituições
+      const resultados = await Promise.allSettled(
+        necessidades.flatMap(necessidade => 
+          necessidade.escolas
+            .filter(escola => escola.substituicao)
+            .map(escola => aprovarSubstituicao(escola.substituicao.id))
+        )
+      );
+
+      const sucessos = resultados.filter(r => r.status === 'fulfilled').length;
+      const erros = resultados.filter(r => r.status === 'rejected').length;
+
+      if (erros > 0) {
+        toast.error(`${sucessos} substituições aprovadas com sucesso, ${erros} falharam`);
+      } else {
+        toast.success('Análise aprovada com sucesso!');
+        setAjustesAtivados(false); // Reset para mostrar que foi aprovado
+      }
     } catch (error) {
       toast.error(`Erro ao aprovar análise: ${error.message}`);
     } finally {
@@ -90,14 +105,14 @@ const AnaliseCoordenacao = () => {
         onLimparFiltros={limparFiltros}
       />
 
-      {/* Botões de Exportação e Aprovar quando ajustes ativados */}
-      {necessidades.length > 0 && ajustesAtivados && (
-        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      {/* Ações (Botões de Exportar e Aprovar) */}
+      {necessidades.length > 0 && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-800">
-              Produtos para Substituição ({necessidades.length})
+              Produtos para Aprovação ({necessidades.length})
             </h2>
-            <div className="flex gap-3">
+            <div className="flex items-center gap-2">
               <ExportButtons
                 onExportXLSX={() => console.log('Export XLSX')}
                 onExportPDF={() => console.log('Export PDF')}
@@ -107,21 +122,12 @@ const AnaliseCoordenacao = () => {
               />
               <Button
                 variant="success"
+                size="sm"
                 onClick={handleAprovarAnalise}
                 disabled={salvandoAjustes}
-                className="flex items-center gap-2"
+                icon={<FaCheckCircle />}
               >
-                {salvandoAjustes ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Aprovando...
-                  </>
-                ) : (
-                  <>
-                    <FaCheckCircle className="w-4 h-4" />
-                    Aprovar
-                  </>
-                )}
+                {salvandoAjustes ? 'Aprovando...' : 'Aprovar'}
               </Button>
             </div>
           </div>
@@ -164,7 +170,7 @@ const AnaliseCoordenacao = () => {
             Nenhuma necessidade encontrada
           </h3>
           <p className="text-gray-600">
-            Não há necessidades com status CONF para os filtros selecionados.
+            Não há necessidades liberadas para coordenação com os filtros selecionados.
           </p>
         </div>
       )}
@@ -177,7 +183,7 @@ const AnaliseCoordenacao = () => {
             Selecione os filtros para buscar necessidades
           </h3>
           <p className="text-gray-600">
-            Use os filtros acima para visualizar as necessidades disponíveis para substituição.
+            Use os filtros acima para visualizar as necessidades liberadas para coordenação.
           </p>
         </div>
       )}
