@@ -209,7 +209,10 @@ const importarExcel = async (req, res) => {
         AND CAST(necessidade_id AS UNSIGNED) <= 99
     `);
     
+    console.log('DEBUG - Último ID encontrado (2 dígitos):', ultimoId);
+    
     let proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
+    console.log('DEBUG - Próximo ID calculado:', proximoId);
 
     // Inserir necessidades no banco de dados
     const sucesso = [];
