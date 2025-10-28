@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import SubstituicoesNecessidadesService from '../../../services/substituicoesNecessidades';
+import SubstituicoesNecessidadesService from '../services/substituicoesNecessidades';
 import toast from 'react-hot-toast';
 
 export const useSubstituicoesNutricionista = () => {
