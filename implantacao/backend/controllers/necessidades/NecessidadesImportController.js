@@ -202,20 +202,29 @@ const importarExcel = async (req, res) => {
     const sucesso = [];
     for (const necessidade of necessidades) {
       try {
-        // Buscar nutricionista da escola
-        const nutricionistaEscola = await executeQuery(`
-          SELECT 
-            u.id as usuario_id,
-            u.email as usuario_email
-          FROM foods_db.rotas_nutricionistas rn
-          JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
-          WHERE rn.unidade_escolar_id = ?
-        `, [necessidade.escola_id]);
-
-        const nutricionista = nutricionistaEscola[0] || {
+        // Buscar nutricionista da escola (usar fallback se não encontrar)
+        let nutricionista = {
           usuario_id: necessidade.usuario_id,
           usuario_email: necessidade.usuario_email
         };
+
+        try {
+          // Tentar buscar nutricionista da escola
+          const nutricionistaEscola = await executeQuery(`
+            SELECT 
+              u.id as usuario_id,
+              u.email as usuario_email
+            FROM foods_db.rotas_nutricionistas rn
+            JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
+            WHERE rn.escola_id = ?
+          `, [necessidade.escola_id]);
+          
+          if (nutricionistaEscola.length > 0) {
+            nutricionista = nutricionistaEscola[0];
+          }
+        } catch (error) {
+          console.log('Erro ao buscar nutricionista da escola, usando usuário atual:', error.message);
+        }
 
         // Verificar se já existe necessidade duplicada
         const existing = await executeQuery(`
