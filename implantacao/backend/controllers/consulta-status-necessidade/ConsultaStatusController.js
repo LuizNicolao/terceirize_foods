@@ -5,6 +5,7 @@ class ConsultaStatusController {
    * Listar status das necessidades com filtros
    */
   static async listarStatusNecessidades(req, res) {
+    console.log('=== FUNÇÃO LISTAR STATUS NECESSIDADES CHAMADA ===');
     try {
       const {
         status,
@@ -223,7 +224,10 @@ class ConsultaStatusController {
       });
 
     } catch (error) {
+      console.error('=== ERRO CAPTURADO NO CATCH ===');
       console.error('Erro ao listar status das necessidades:', error);
+      console.error('Stack trace:', error.stack);
+      console.error('================================');
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor',
