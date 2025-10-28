@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaExchangeAlt } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useSubstituicoesNutricionista } from '../../hooks/useSubstituicoesNutricionista';
@@ -9,6 +10,8 @@ import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import useGruposConsulta from '../../hooks/useGruposConsulta';
 import substituicoesNecessidadesService from '../../services/substituicoesNecessidades';
 import toast from 'react-hot-toast';
+import { NecessidadesLayout, NecessidadesLoading } from '../../components/necessidades';
+import { ExportButtons } from '../../components/shared';
 
 // Componentes
 import SubstituicoesFilters from './components/SubstituicoesFilters';
@@ -49,6 +52,23 @@ const AnaliseSubstituicoes = () => {
       setActiveTab('nutricionista');
     }
   }, [canViewNutricionista, canViewCoordenacao]);
+
+  // Verificar se pode visualizar
+  if (!canViewNutricionista && !canViewCoordenacao) {
+    return (
+      <NecessidadesLayout>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+            Acesso Restrito
+          </h2>
+          <p className="text-gray-600">
+            Você não tem permissão para visualizar a análise de substituições.
+          </p>
+        </div>
+      </NecessidadesLayout>
+    );
+  }
 
   // Carregar produtos genéricos quando necessidades mudarem
   useEffect(() => {
@@ -220,86 +240,106 @@ const AnaliseSubstituicoes = () => {
     nec.escolas.some(escola => escola.substituicao)
   );
 
-  if (!canViewNutricionista && !canViewCoordenacao) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Acesso Negado</h1>
-          <p className="text-gray-600">Você não tem permissão para acessar esta funcionalidade.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Análise de Necessidades</h1>
-          <p className="mt-2 text-gray-600">
-            Gerencie as substituições de produtos genéricos por nutricionistas e coordenação.
+    <NecessidadesLayout hideHeader={true}>
+      {/* Header Personalizado */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
+            <FaExchangeAlt className="mr-2 sm:mr-3 text-blue-600" />
+            Análise de Necessidades
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Gerencie as substituições de produtos genéricos por nutricionistas e coordenação
           </p>
         </div>
+      </div>
 
-        {/* Filtros */}
-        <SubstituicoesFilters
-          filtros={filtros}
-          onFiltrosChange={handleFiltrosChange}
-          onBuscar={handleBuscar}
-          onLimpar={handleLimpar}
-          loading={loading}
-        />
+      {/* Filtros */}
+      <SubstituicoesFilters
+        filtros={filtros}
+        onFiltrosChange={handleFiltrosChange}
+        onBuscar={handleBuscar}
+        onLimpar={handleLimpar}
+        loading={loading}
+      />
 
-        {/* Abas */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 px-6">
-              {canViewNutricionista && (
-                <button
-                  onClick={() => setActiveTab('nutricionista')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'nutricionista'
-                      ? 'border-green-500 text-green-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  👩‍⚕️ Ajuste Nutricionista
-                </button>
-              )}
-              
-              {canViewCoordenacao && (
-                <button
-                  onClick={() => setActiveTab('coordenacao')}
-                  className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                    activeTab === 'coordenacao'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  👨‍💼 Ajuste Coordenação
-                </button>
-              )}
-            </nav>
-          </div>
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <p className="text-red-800">{error}</p>
+        </div>
+      )}
 
-          <div className="p-6">
-            {/* Ações */}
-            <SubstituicoesActions
-              necessidades={necessidades}
-              ajustesAtivados={ajustesAtivados}
-              onIniciarAjustes={handleIniciarAjustes}
-              onLiberarCoordenacao={handleLiberarCoordenacao}
-              onAprovarTodas={handleAprovarTodas}
-              onExportarPDF={handleExportarPDF}
-              onExportarXLSX={handleExportarXLSX}
-              loading={loading}
-              exportando={exportacao.exportando}
-              tipo={activeTab}
+      {/* Ações (Botões de Exportar) */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-gray-800">
+            Substituições de Produtos ({necessidades.length})
+          </h2>
+          <div className="flex items-center gap-2">
+            <ExportButtons
+              onExportXLSX={() => handleExportarXLSX(necessidades, activeTab)}
+              onExportPDF={() => handleExportarPDF(necessidades, activeTab)}
+              size="sm"
+              variant="outline"
+              showLabels={true}
+              disabled={necessidades.length === 0}
             />
+          </div>
+        </div>
+      </div>
 
-            {/* Tabela */}
-            {activeTab === 'nutricionista' ? (
+      {/* Abas */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div className="border-b border-gray-200">
+          <nav className="-mb-px flex space-x-8 px-6">
+            {canViewNutricionista && (
+              <button
+                onClick={() => setActiveTab('nutricionista')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'nutricionista'
+                    ? 'border-green-500 text-green-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                👩‍⚕️ Ajuste Nutricionista
+              </button>
+            )}
+            
+            {canViewCoordenacao && (
+              <button
+                onClick={() => setActiveTab('coordenacao')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'coordenacao'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                👨‍💼 Ajuste Coordenação
+              </button>
+            )}
+          </nav>
+        </div>
+
+        <div className="p-6">
+          {/* Ações */}
+          <SubstituicoesActions
+            necessidades={necessidades}
+            ajustesAtivados={ajustesAtivados}
+            onIniciarAjustes={handleIniciarAjustes}
+            onLiberarCoordenacao={handleLiberarCoordenacao}
+            onAprovarTodas={handleAprovarTodas}
+            onExportarPDF={handleExportarPDF}
+            onExportarXLSX={handleExportarXLSX}
+            loading={loading}
+            exportando={exportacao.exportando}
+            tipo={activeTab}
+          />
+
+          {/* Tabela */}
+          {necessidades.length > 0 ? (
+            activeTab === 'nutricionista' ? (
               <SubstituicoesTableNutricionista
                 necessidades={necessidades}
                 produtosGenericos={produtosGenericos}
@@ -322,18 +362,21 @@ const AnaliseSubstituicoes = () => {
                 onAprovarTodas={handleAprovarTodas}
                 loading={loading}
               />
-            )}
-
-            {/* Mensagem de erro */}
-            {error && (
-              <div className="mt-4 bg-red-50 border border-red-200 rounded-md p-4">
-                <p className="text-red-800">{error}</p>
-              </div>
-            )}
-          </div>
+            )
+          ) : !loading && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+              <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                Nenhuma substituição encontrada
+              </h3>
+              <p className="text-gray-600">
+                Selecione os filtros e clique em "Buscar" para carregar as substituições.
+              </p>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </NecessidadesLayout>
   );
 };
 

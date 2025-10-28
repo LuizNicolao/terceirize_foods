@@ -154,10 +154,14 @@ export const useSubstituicoesCoordenacao = () => {
     setFiltros(prev => ({ ...prev, ...novosFiltros }));
   }, []);
 
-  // Carregar dados iniciais
+  // Carregar dados apenas quando filtros estiverem preenchidos
   useEffect(() => {
-    carregarNecessidades();
-  }, [carregarNecessidades]);
+    if (filtros.grupo && filtros.semana_abastecimento) {
+      carregarNecessidades();
+    } else {
+      setNecessidades([]);
+    }
+  }, [filtros, carregarNecessidades]);
 
   return {
     // Estado
