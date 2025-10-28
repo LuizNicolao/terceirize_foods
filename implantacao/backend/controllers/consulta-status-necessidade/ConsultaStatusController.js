@@ -104,7 +104,7 @@ class ConsultaStatusController {
       `;
 
       const offset = (page - 1) * limit;
-      queryParams.push(parseInt(limit), offset);
+      queryParams.push(parseInt(limit), parseInt(offset));
 
       const necessidades = await executeQuery(necessidadesQuery, queryParams);
 
@@ -294,8 +294,8 @@ class ConsultaStatusController {
         data: {
           geral: stats[0],
           status: statusStats,
-          substituicoes: substituicaoStats,
-          grupos: gruposStats
+          substituicoes: substituicaoStats
+          // grupos: gruposStats - removido pois coluna grupo não existe
         }
       });
 
