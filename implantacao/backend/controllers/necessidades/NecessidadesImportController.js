@@ -207,20 +207,27 @@ const importarExcel = async (req, res) => {
           continue;
         }
 
-        // Buscar informações adicionais do produto
+        // Buscar informações adicionais do produto no banco foods
         const produtoInfo = await executeQuery(`
-          SELECT unidade_medida, grupo, grupo_id 
-          FROM produtos 
-          WHERE id = ?
+          SELECT 
+            po.unidade_medida_nome as unidade_medida,
+            g.nome as grupo,
+            g.id as grupo_id
+          FROM foods_db.produto_origem po
+          LEFT JOIN foods_db.grupos g ON po.grupo_id = g.id
+          WHERE po.id = ?
         `, [necessidade.produto_id]);
 
         const produto = produtoInfo[0] || {};
         
-        // Buscar informações da escola (rota e código teknisa)
+        // Buscar informações da escola no banco foods
         const escolaInfo = await executeQuery(`
-          SELECT rota, codigo_teknisa 
-          FROM unidades_escolares 
-          WHERE id = ?
+          SELECT 
+            r.nome as rota,
+            ue.codigo_teknisa
+          FROM foods_db.unidades_escolares ue
+          LEFT JOIN foods_db.rotas r ON ue.rota_id = r.id
+          WHERE ue.id = ?
         `, [necessidade.escola_id]);
 
         const escola = escolaInfo[0] || {};
