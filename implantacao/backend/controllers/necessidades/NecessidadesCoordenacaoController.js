@@ -359,7 +359,7 @@ class NecessidadesCoordenacaoController {
       }
 
       const produtoQuery = `
-        SELECT ppc.produto_nome, ppc.produto_codigo, ppc.unidade_medida
+        SELECT ppc.produto_nome, ppc.produto_codigo, ppc.unidade_medida, ppc.grupo, ppc.grupo_id
         FROM produtos_per_capita ppc
         WHERE ppc.produto_id = ? AND ppc.grupo = ?
       `;
@@ -378,9 +378,9 @@ class NecessidadesCoordenacaoController {
         INSERT INTO necessidades (
           usuario_email, usuario_id, produto_id, produto, produto_unidade,
           escola_id, escola, escola_rota, codigo_teknisa, ajuste,
-          semana_consumo, semana_abastecimento, status, necessidade_id,
+          semana_consumo, semana_abastecimento, grupo, grupo_id, status, necessidade_id,
           observacoes, data_preenchimento
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `;
 
       const values = [
@@ -396,6 +396,8 @@ class NecessidadesCoordenacaoController {
         0, // ajuste inicial
         semana_consumo || escolaData[0].semana_consumo,
         semana_abastecimento || escolaData[0].semana_abastecimento,
+        produto[0].grupo,
+        produto[0].grupo_id,
         'NEC COORD',
         escolaData[0].necessidade_id,
         'Produto extra incluído pela coordenação'
