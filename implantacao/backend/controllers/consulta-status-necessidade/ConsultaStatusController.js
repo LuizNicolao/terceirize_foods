@@ -5,7 +5,6 @@ class ConsultaStatusController {
    * Listar status das necessidades com filtros
    */
   static async listarStatusNecessidades(req, res) {
-    console.log('=== FUNÇÃO LISTAR STATUS NECESSIDADES CHAMADA ===');
     try {
       const {
         status,
@@ -20,28 +19,13 @@ class ConsultaStatusController {
         limit = 50
       } = req.query;
 
-      // Debug: Log dos parâmetros de entrada
-      console.log('=== PARÂMETROS DE ENTRADA ===');
-      console.log('req.query:', req.query);
-      console.log('page original:', page, 'tipo:', typeof page);
-      console.log('limit original:', limit, 'tipo:', typeof limit);
-      console.log('==============================');
-
       // Garantir que page e limit sejam números
       const pageNum = parseInt(page) || 1;
       const limitNum = parseInt(limit) || 50;
 
-      console.log('pageNum convertido:', pageNum, 'tipo:', typeof pageNum);
-      console.log('limitNum convertido:', limitNum, 'tipo:', typeof limitNum);
-
       // Construir query base
       let whereConditions = [];
       let queryParams = [];
-
-      console.log('=== INÍCIO DA CONSTRUÇÃO ===');
-      console.log('whereConditions inicial:', whereConditions);
-      console.log('queryParams inicial:', queryParams);
-      console.log('=============================');
 
       // Filtros opcionais
       if (status) {
@@ -84,19 +68,7 @@ class ConsultaStatusController {
         queryParams.push(data_fim);
       }
 
-      console.log('=== APÓS FILTROS ===');
-      console.log('whereConditions após filtros:', whereConditions);
-      console.log('queryParams após filtros:', queryParams);
-      console.log('====================');
-
       const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
-
-      // Debug: Log da construção da query
-      console.log('=== CONSTRUÇÃO DA QUERY ===');
-      console.log('whereConditions:', whereConditions);
-      console.log('queryParams antes do LIMIT/OFFSET:', queryParams);
-      console.log('whereClause:', whereClause);
-      console.log('============================');
 
       // Query principal para buscar necessidades
       const necessidadesQuery = `
@@ -143,15 +115,6 @@ class ConsultaStatusController {
       const necessidadesQueryFinal = necessidadesQuery.replace('LIMIT ? OFFSET ?', limitClause);
 
       // Debug: Log dos parâmetros antes da execução
-      console.log('=== DEBUG CONSULTA STATUS NECESSIDADES ===');
-      console.log('Query SQL original:', necessidadesQuery);
-      console.log('Query SQL final:', necessidadesQueryFinal);
-      console.log('Parâmetros queryParams:', queryParams);
-      console.log('Tipos dos parâmetros:', queryParams.map(p => typeof p));
-      console.log('pageNum:', pageNum, 'limitNum:', limitNum, 'offset:', offset);
-      console.log('whereClause:', whereClause);
-      console.log('limitClause:', limitClause);
-      console.log('==========================================');
 
       const necessidades = await executeQuery(necessidadesQueryFinal, queryParams);
 

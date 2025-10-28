@@ -16,11 +16,6 @@ router.use(canView('consulta_status_necessidade'));
  * @access Private
  */
 router.get('/', (req, res, next) => {
-  console.log('=== ROTA CONSULTA STATUS NECESSIDADES CHAMADA ===');
-  console.log('req.url:', req.url);
-  console.log('req.method:', req.method);
-  console.log('req.query:', req.query);
-  console.log('================================================');
   next();
 }, ConsultaStatusController.listarStatusNecessidades);
 

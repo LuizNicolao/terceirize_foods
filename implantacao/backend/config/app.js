@@ -55,11 +55,6 @@ app.use(cookieParser());
 
 // Middleware de log global para debug
 app.use((req, res, next) => {
-  console.log(`=== REQUISIÇÃO RECEBIDA ===`);
-  console.log(`Método: ${req.method}`);
-  console.log(`URL: ${req.url}`);
-  console.log(`Query:`, req.query);
-  console.log(`========================`);
   next();
 });
 

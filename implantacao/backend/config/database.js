@@ -34,14 +34,6 @@ const testConnection = async () => {
 // Função para executar queries
 const executeQuery = async (query, params = []) => {
   try {
-    // Debug: Log dos parâmetros antes da execução
-    console.log('=== EXECUTE QUERY DEBUG ===');
-    console.log('Query:', query);
-    console.log('Params:', params);
-    console.log('Params length:', params.length);
-    console.log('Params types:', params.map(p => typeof p));
-    console.log('===========================');
-    
     const [rows] = await pool.execute(query, params);
     return rows;
   } catch (error) {
