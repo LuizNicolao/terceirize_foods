@@ -12,7 +12,7 @@ const SubstituicoesFilters = ({
   loading = false
 }) => {
   const { grupos, loading: loadingGrupos } = useGruposConsulta();
-  const { semanasAbastecimento, loading: loadingSemanasAbast } = useSemanasAbastecimento();
+  const { semanas: semanasAbastecimento, loading: loadingSemanasAbast } = useSemanasAbastecimento();
   const { semanasConsumo, loading: loadingSemanasConsumo, buscarPorSemanaAbastecimento } = useSemanasConsumo();
 
   const handleGrupoChange = (grupo) => {
@@ -68,9 +68,9 @@ const SubstituicoesFilters = ({
           <SearchableSelect
             value={filtros.grupo || ''}
             onChange={handleGrupoChange}
-            options={grupos.map(grupo => ({
-              value: grupo.grupo,
-              label: grupo.grupo
+            options={(grupos || []).map(grupo => ({
+              value: grupo.grupo || grupo.nome,
+              label: grupo.grupo || grupo.nome
             }))}
             placeholder="Selecione o grupo..."
             disabled={loadingGrupos}
@@ -86,9 +86,9 @@ const SubstituicoesFilters = ({
           <SearchableSelect
             value={filtros.semana_abastecimento || ''}
             onChange={handleSemanaAbastecimentoChange}
-            options={semanasAbastecimento.map(semana => ({
-              value: semana.semana_abastecimento,
-              label: semana.semana_abastecimento
+            options={(semanasAbastecimento || []).map(semana => ({
+              value: semana.semana_abastecimento || semana.label || semana,
+              label: semana.semana_abastecimento || semana.label || semana
             }))}
             placeholder="Selecione a semana..."
             disabled={loadingSemanasAbast}
