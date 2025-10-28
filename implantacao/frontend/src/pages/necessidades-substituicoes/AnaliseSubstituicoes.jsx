@@ -3,7 +3,8 @@ import { FaExchangeAlt, FaClipboardList, FaCheckCircle } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useSubstituicoesNecessidades } from '../../hooks/useSubstituicoesNecessidades';
 import { NecessidadesLayout, NecessidadesLoading } from '../../components/necessidades';
-import { SubstituicoesFilters, SubstituicoesTable } from './components';
+import { SubstituicoesFilters } from './components';
+import SubstituicoesTabs from './components/SubstituicoesTabs';
 import { ExportButtons } from '../../components/shared';
 import { Button } from '../../components/ui';
 import toast from 'react-hot-toast';
@@ -161,6 +162,25 @@ const AnaliseSubstituicoes = () => {
     return response;
   };
 
+  const handleLiberarParaCoordenacao = async (necessidades) => {
+    // Implementar lógica para liberar para coordenação
+    // Mudar status de 'pendente' para 'conf'
+    console.log('Liberar para coordenação:', necessidades);
+    return { success: true };
+  };
+
+  const handleAprovar = async (necessidade) => {
+    // Implementar lógica para aprovar
+    console.log('Aprovar:', necessidade);
+    return { success: true };
+  };
+
+  const handleRejeitar = async (necessidade) => {
+    // Implementar lógica para rejeitar
+    console.log('Rejeitar:', necessidade);
+    return { success: true };
+  };
+
   return (
     <NecessidadesLayout hideHeader={true}>
       {/* Header Personalizado */}
@@ -246,16 +266,19 @@ const AnaliseSubstituicoes = () => {
         </div>
       )}
 
-      {/* Tabela */}
+      {/* Abas de Substituições */}
       {!loading && necessidades.length > 0 && (
-        <SubstituicoesTable
+        <SubstituicoesTabs
           necessidades={necessidades}
           produtosGenericos={produtosGenericos}
           loadingGenericos={loadingGenericos}
-          ajustesAtivados={ajustesAtivados}
-          onExpand={() => {}}
           onSaveConsolidated={handleSaveConsolidated}
           onSaveIndividual={handleSaveIndividual}
+          onLiberarParaCoordenacao={handleLiberarParaCoordenacao}
+          onAprovar={handleAprovar}
+          onRejeitar={handleRejeitar}
+          canEdit={canViewSubstituicoes}
+          canApprove={canViewSubstituicoes}
         />
       )}
 
