@@ -14,7 +14,7 @@ class SubstituicoesListController {
     try {
       const { grupo, semana_abastecimento, semana_consumo } = req.query;
 
-      let whereConditions = ["n.status = 'CONF'"];
+      let whereConditions = ["n.status = 'CONF'", "n.substituicao_processada = 0"];
       let params = [];
 
       // Filtro por grupo
