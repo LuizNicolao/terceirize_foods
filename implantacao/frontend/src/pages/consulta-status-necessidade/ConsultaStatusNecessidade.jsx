@@ -68,7 +68,7 @@ const ConsultaStatusNecessidade = () => {
       <ConsultaStatusHeader
         canView={canViewConsulta}
         onShowHelp={() => {}} // TODO: Implementar ajuda
-        loading={loading}
+        loading={false}
       />
 
 
@@ -98,8 +98,7 @@ const ConsultaStatusNecessidade = () => {
         <RelatoriosConsultaStatus />
       )}
 
-      {/* Loading Overlay */}
-      {loading && <ConsultaStatusLoading />}
+      {/* Loading Overlay - gerenciado pelos componentes filhos */}
     </ConsultaStatusLayout>
   );
 };
