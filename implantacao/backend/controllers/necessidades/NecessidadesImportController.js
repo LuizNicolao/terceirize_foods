@@ -207,12 +207,33 @@ const importarExcel = async (req, res) => {
           continue;
         }
 
+        // Buscar informações adicionais do produto
+        const produtoInfo = await executeQuery(`
+          SELECT unidade_medida, grupo, grupo_id 
+          FROM produtos 
+          WHERE id = ?
+        `, [necessidade.produto_id]);
+
+        const produto = produtoInfo[0] || {};
+        
+        // Gerar ID sequencial para esta necessidade
+        const ultimoId = await executeQuery(`
+          SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
+          FROM necessidades 
+          WHERE necessidade_id REGEXP '^[0-9]+$'
+        `);
+        
+        const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
+        const necessidadeId = proximoId.toString();
+
         const query = `
           INSERT INTO necessidades (
-            usuario_id, usuario_email, escola_id, escola, produto_id, produto,
-            ajuste, semana_abastecimento, semana_consumo, status, observacoes,
+            usuario_id, usuario_email, escola_id, escola, escola_rota, codigo_teknisa,
+            produto_id, produto, produto_unidade, ajuste, semana_abastecimento, 
+            semana_consumo, status, observacoes, necessidade_id, ajuste_nutricionista,
+            ajuste_coordenacao, substituicao_processada, grupo, grupo_id,
             data_preenchimento, data_atualizacao
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
         `;
         
         const params = [
@@ -220,13 +241,22 @@ const importarExcel = async (req, res) => {
           necessidade.usuario_email,
           necessidade.escola_id,
           necessidade.escola_nome,
+          null, // escola_rota - será preenchido posteriormente
+          null, // codigo_teknisa - será preenchido posteriormente
           necessidade.produto_id,
           necessidade.produto_nome,
+          produto.unidade_medida || null,
           necessidade.quantidade,
           necessidade.semana_abastecimento,
           necessidade.semana_consumo,
           necessidade.status,
-          necessidade.observacoes
+          necessidade.observacoes,
+          necessidadeId,
+          necessidade.quantidade, // ajuste_nutricionista = quantidade
+          necessidade.quantidade, // ajuste_coordenacao = quantidade
+          0, // substituicao_processada = 0 (não processada)
+          produto.grupo || null,
+          produto.grupo_id || null
         ];
 
         const result = await executeQuery(query, params);
