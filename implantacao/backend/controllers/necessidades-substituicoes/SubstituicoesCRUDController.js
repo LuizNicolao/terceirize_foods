@@ -263,15 +263,13 @@ class SubstituicoesCRUDController {
         UPDATE necessidades_substituicoes 
         SET 
           status = 'conf log',
-          usuario_liberador_id = ?,
-          data_liberacao = NOW(),
           data_atualizacao = NOW()
         WHERE produto_origem_id = ? 
           AND semana_abastecimento = ? 
           AND semana_consumo = ?
           AND status = 'conf'
           AND ativo = 1
-      `, [usuario_id, produto_origem_id, semana_abastecimento, semana_consumo]);
+      `, [produto_origem_id, semana_abastecimento, semana_consumo]);
 
       res.json({
         success: true,
