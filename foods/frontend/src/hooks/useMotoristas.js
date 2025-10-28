@@ -49,7 +49,7 @@ export const useMotoristas = () => {
    */
   const loadFiliais = useCallback(async () => {
     try {
-      const result = await FiliaisService.buscarAtivas();
+      const result = await FiliaisService.buscarAtivas({ limit: 1000 });
       if (result.success) {
         setFiliais(result.data);
       }

@@ -72,7 +72,7 @@ export const useSubgrupos = () => {
   const loadAuxiliaryData = useCallback(async () => {
     try {
       setLoadingGrupos(true);
-      const result = await GruposService.buscarAtivos();
+      const result = await GruposService.buscarAtivos({ limit: 1000 });
       if (result.success) {
         setGrupos(result.data || []);
       }
