@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSubstituicoesNecessidades } from './useSubstituicoesNecessidades';
-import { useSemanasAbastecimento } from './useSemanasAbastecimento';
-import { useSemanasConsumo } from './useSemanasConsumo';
-import { useAuth } from '../contexts/AuthContext';
-import { usePermissions } from '../contexts/PermissionsContext';
-import necessidadesService from '../services/necessidadesService';
+import { useSubstituicoesNecessidades } from '../../../hooks/useSubstituicoesNecessidades';
+import { useSemanasAbastecimento } from '../../../hooks/useSemanasAbastecimento';
+import { useSemanasConsumo } from '../../../hooks/useSemanasConsumo';
+import { useAuth } from '../../../contexts/AuthContext';
+import { usePermissions } from '../../../contexts/PermissionsContext';
+import necessidadesService from '../../../services/necessidadesService';
 
 export const useSubstituicoesOrchestrator = () => {
   const { user } = useAuth();
@@ -17,7 +17,7 @@ export const useSubstituicoesOrchestrator = () => {
     loadingNecessidades,
     loadingGenericos,
     carregarNecessidades,
-    buscarProdutosGenericos,
+    carregarProdutosGenericos,
     salvarSubstituicao
   } = useSubstituicoesNecessidades();
 
@@ -27,9 +27,9 @@ export const useSubstituicoesOrchestrator = () => {
   } = useSemanasAbastecimento();
 
   const {
-    opcoes: semanasConsumo,
-    loading: loadingSemanasConsumo,
-    recarregar: carregarSemanasConsumo
+    semanasConsumo,
+    loadingSemanasConsumo,
+    carregarSemanasConsumo
   } = useSemanasConsumo();
 
   // Estados locais
@@ -43,7 +43,6 @@ export const useSubstituicoesOrchestrator = () => {
   const [loadingGrupos, setLoadingGrupos] = useState(false);
   const [ajustesAtivados, setAjustesAtivados] = useState(false);
   const [activeTab, setActiveTab] = useState('nutricionista');
-  const [produtosCarregados, setProdutosCarregados] = useState(new Set());
 
   const carregarGrupos = useCallback(async () => {
     setLoadingGrupos(true);
@@ -92,39 +91,18 @@ export const useSubstituicoesOrchestrator = () => {
     }
   }, [filtros, carregarNecessidades]);
 
-  // Carregar produtos genéricos quando necessidades mudarem (com debounce)
+  // Carregar produtos genéricos quando necessidades mudarem
   useEffect(() => {
     if (necessidades.length > 0) {
       const produtosOrigem = [...new Set(necessidades.map(n => n.codigo_origem))];
-      const produtosParaCarregar = produtosOrigem.filter(produtoId => 
-        !produtosCarregados.has(`${produtoId}_${filtros.grupo}`)
-      );
-      
-      if (produtosParaCarregar.length > 0) {
-        // Adicionar debounce para evitar muitas requisições
-        const timeoutId = setTimeout(() => {
-          produtosParaCarregar.forEach(produtoId => {
-            buscarProdutosGenericos(produtoId, filtros.grupo);
-            setProdutosCarregados(prev => new Set([...prev, `${produtoId}_${filtros.grupo}`]));
-          });
-        }, 500); // 500ms de debounce
-        
-        return () => clearTimeout(timeoutId);
-      }
+      produtosOrigem.forEach(produtoId => {
+        carregarProdutosGenericos({ produto_origem_id: produtoId });
+      });
     }
-  }, [necessidades, buscarProdutosGenericos, filtros.grupo, produtosCarregados]);
+  }, [necessidades, carregarProdutosGenericos]);
 
   const handleFiltrosChange = useCallback((novosFiltros) => {
-    setFiltros(prev => {
-      const novosFiltrosCompletos = { ...prev, ...novosFiltros };
-      
-      // Limpar cache de produtos carregados se o grupo mudou
-      if (novosFiltros.grupo && novosFiltros.grupo !== prev.grupo) {
-        setProdutosCarregados(new Set());
-      }
-      
-      return novosFiltrosCompletos;
-    });
+    setFiltros(prev => ({ ...prev, ...novosFiltros }));
   }, []);
 
   const handleIniciarAjustes = useCallback(async () => {

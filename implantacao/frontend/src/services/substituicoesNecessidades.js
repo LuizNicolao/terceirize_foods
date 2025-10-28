@@ -69,26 +69,6 @@ class SubstituicoesNecessidadesService {
     const response = await api.put(`/necessidades-substituicoes/${id}/aprovar`);
     return response.data;
   }
-
-  /**
-   * Rejeitar substituição
-   * @param {Number} id - ID da substituição
-   */
-  static async rejeitarSubstituicao(id) {
-    const response = await api.put(`/necessidades-substituicoes/${id}/rejeitar`);
-    return response.data;
-  }
-
-  /**
-   * Liberar substituições para coordenação (mudar status de pendente para conf)
-   * @param {String} produto_origem_id - ID do produto origem
-   */
-  static async liberarParaCoordenacao(produto_origem_id) {
-    const response = await api.put(`/necessidades-substituicoes/liberar-coordenacao`, {
-      produto_origem_id
-    });
-    return response.data;
-  }
 }
 
 export default SubstituicoesNecessidadesService;

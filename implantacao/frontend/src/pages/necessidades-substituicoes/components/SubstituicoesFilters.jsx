@@ -8,7 +8,7 @@ const SubstituicoesFilters = ({
   semanasConsumo,
   filtros,
   loading,
-  onFiltrosChange,
+  onFiltroChange,
   onLimparFiltros
 }) => {
   return (
@@ -36,8 +36,8 @@ const SubstituicoesFilters = ({
           </label>
           <SearchableSelect
             value={filtros.grupo || ''}
-            onChange={(value) => onFiltrosChange({ grupo: value })}
-            options={(grupos || []).map(grupo => ({
+            onChange={(value) => onFiltroChange({ grupo: value })}
+            options={grupos.map(grupo => ({
               value: grupo.nome,
               label: grupo.nome
             }))}
@@ -53,10 +53,10 @@ const SubstituicoesFilters = ({
           </label>
           <SearchableSelect
             value={filtros.semana_abastecimento || ''}
-            onChange={(value) => onFiltrosChange({ semana_abastecimento: value })}
-            options={(semanasAbastecimento || []).map(semana => ({
-              value: semana.label || semana.semana_abastecimento,
-              label: semana.label || semana.semana_abastecimento
+            onChange={(value) => onFiltroChange({ semana_abastecimento: value })}
+            options={semanasAbastecimento.map(semana => ({
+              value: semana.semana_abastecimento,
+              label: semana.semana_abastecimento
             }))}
             placeholder="Selecione a semana..."
             disabled={loading}

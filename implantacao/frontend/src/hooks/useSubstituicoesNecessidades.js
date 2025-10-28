@@ -17,7 +17,6 @@ export const useSubstituicoesNecessidades = () => {
   
   const [produtosGenericos, setProdutosGenericos] = useState({});
   const [loadingGenericos, setLoadingGenericos] = useState({});
-  const [ultimaRequisicao, setUltimaRequisicao] = useState(0);
   
   const [filtros, setFiltros] = useState({
     grupo: '',
@@ -112,18 +111,7 @@ export const useSubstituicoesNecessidades = () => {
       return;
     }
 
-    // Rate limiting: aguardar pelo menos 1 segundo entre requisições
-    const agora = Date.now();
-    const tempoDesdeUltimaRequisicao = agora - ultimaRequisicao;
-    const tempoMinimoEntreRequisicoes = 1000; // 1 segundo
-
-    if (tempoDesdeUltimaRequisicao < tempoMinimoEntreRequisicoes) {
-      const tempoAguardar = tempoMinimoEntreRequisicoes - tempoDesdeUltimaRequisicao;
-      await new Promise(resolve => setTimeout(resolve, tempoAguardar));
-    }
-
     setLoadingGenericos(prev => ({ ...prev, [key]: true }));
-    setUltimaRequisicao(Date.now());
 
     try {
       const response = await SubstituicoesNecessidadesService.buscarProdutosGenericos({
@@ -143,7 +131,7 @@ export const useSubstituicoesNecessidades = () => {
     } finally {
       setLoadingGenericos(prev => ({ ...prev, [key]: false }));
     }
-  }, [loadingGenericos, ultimaRequisicao]);
+  }, [loadingGenericos]);
 
   /**
    * Salvar substituição
