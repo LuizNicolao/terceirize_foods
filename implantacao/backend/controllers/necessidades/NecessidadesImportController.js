@@ -84,6 +84,7 @@ const baixarModelo = async (req, res) => {
  * Importar necessidades via Excel
  */
 const importarExcel = async (req, res) => {
+  console.log('🚀 INICIANDO IMPORTAÇÃO DE NECESSIDADES');
   try {
     // Verificar se arquivo foi enviado
     if (!req.file) {
