@@ -83,6 +83,16 @@ class SubstituicoesCRUDController {
                 necId
               ]);
             } else {
+              // Buscar grupo do produto origem
+              const grupoResult = await executeQuery(`
+                SELECT ppc.grupo 
+                FROM produtos_per_capita ppc 
+                WHERE ppc.produto_id = ? 
+                LIMIT 1
+              `, [produto_origem_id]);
+              
+              const grupo = grupoResult.length > 0 ? grupoResult[0].grupo : null;
+
               // Criar nova
               result = await executeQuery(`
                 INSERT INTO necessidades_substituicoes (
@@ -92,8 +102,8 @@ class SubstituicoesCRUDController {
                   quantidade_origem, quantidade_generico,
                   escola_id, escola_nome,
                   semana_abastecimento, semana_consumo,
-                  usuario_criador_id, status, ativo
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
+                  grupo, usuario_criador_id, status, ativo
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'conf', 1)
               `, [
                 necId,
                 necId, // necessidade_id_grupo usa o mesmo necessidade_id
@@ -110,6 +120,7 @@ class SubstituicoesCRUDController {
                 escNome,
                 semana_abastecimento,
                 semana_consumo,
+                grupo,
                 usuario_id
               ]);
             }
