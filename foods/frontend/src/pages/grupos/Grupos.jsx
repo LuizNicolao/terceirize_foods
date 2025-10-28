@@ -180,7 +180,6 @@ const Grupos = () => {
       />
 
       {/* Paginação */}
-      {console.log('DEBUG PAGINATION:', { currentPage, totalPages, totalItems, itemsPerPage })}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

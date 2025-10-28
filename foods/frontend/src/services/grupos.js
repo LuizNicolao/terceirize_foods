@@ -5,13 +5,6 @@ class GruposService {
     try {
       const response = await api.get('/grupos', { params });
       
-      console.log('🔍 GRUPOS API RESPONSE:', {
-        status: response.status,
-        fullData: response.data,
-        data: response.data.data,
-        pagination: response.data.pagination,
-        meta: response.data._meta
-      });
       
       // Extrair dados da estrutura HATEOAS
       let grupos = [];
@@ -41,12 +34,6 @@ class GruposService {
         statistics = response.data.statistics || response.data.meta?.statistics;
       }
       
-      console.log('🔍 GRUPOS PROCESSED:', {
-        grupos: grupos.length,
-        pagination: pagination,
-        responsePagination: response.data.pagination,
-        responseMeta: response.data.meta
-      });
       
       return {
         success: true,
