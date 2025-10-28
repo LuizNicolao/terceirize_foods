@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const SubstituicoesNutricionistaController = require('../../controllers/necessidades-substituicoes/SubstituicoesNutricionistaController');
 const { authenticateToken } = require('../../middleware/auth');
-const { hasAccessToAdjustment } = require('../../middleware/permissions');
+const { hasAccessToAdjustment } = require('../../middleware/permissoes');
 
 /**
  * Rotas para substituições do nutricionista

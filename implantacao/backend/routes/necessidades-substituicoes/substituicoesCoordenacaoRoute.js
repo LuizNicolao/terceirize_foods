@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const SubstituicoesCoordenacaoController = require('../../controllers/necessidades-substituicoes/SubstituicoesCoordenacaoController');
 const { authenticateToken } = require('../../middleware/auth');
-const { canApprove } = require('../../middleware/permissions');
+const { canApprove } = require('../../middleware/permissoes');
 
 /**
  * Rotas para substituições da coordenação

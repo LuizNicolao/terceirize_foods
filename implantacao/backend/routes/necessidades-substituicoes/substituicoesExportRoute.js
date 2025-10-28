@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const SubstituicoesExportController = require('../../controllers/necessidades-substituicoes/SubstituicoesExportController');
 const { authenticateToken } = require('../../middleware/auth');
-const { canView } = require('../../middleware/permissions');
+const { canView } = require('../../middleware/permissoes');
 
 /**
  * Rotas para exportação de substituições
