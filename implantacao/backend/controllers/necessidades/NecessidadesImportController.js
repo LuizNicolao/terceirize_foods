@@ -198,6 +198,16 @@ const importarExcel = async (req, res) => {
       }
     });
 
+    // Gerar ID sequencial para esta necessidade (buscar o último ID real)
+    const ultimoId = await executeQuery(`
+      SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
+      FROM necessidades 
+      WHERE necessidade_id IS NOT NULL AND necessidade_id != '' AND necessidade_id REGEXP '^[0-9]+$'
+    `);
+    
+    const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
+    const necessidadeId = proximoId.toString().padStart(2, '0'); // Formato 01, 02, etc.
+
     // Inserir necessidades no banco de dados
     const sucesso = [];
     for (const necessidade of necessidades) {
@@ -210,17 +220,20 @@ const importarExcel = async (req, res) => {
 
         try {
           // Tentar buscar nutricionista da escola
+          console.log(`Buscando nutricionista para escola ID: ${necessidade.escola_id}`);
           const nutricionistaEscola = await executeQuery(`
             SELECT 
               u.id as usuario_id,
               u.email as usuario_email
             FROM foods_db.rotas_nutricionistas rn
             JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
-            WHERE rn.escola_id = ?
+            WHERE rn.unidade_escolar_id = ?
           `, [necessidade.escola_id]);
           
+          console.log(`Resultado da busca do nutricionista:`, nutricionistaEscola);
           if (nutricionistaEscola.length > 0) {
             nutricionista = nutricionistaEscola[0];
+            console.log(`Nutricionista encontrado:`, nutricionista);
           }
         } catch (error) {
           console.log('Erro ao buscar nutricionista da escola, usando usuário atual:', error.message);
@@ -248,6 +261,7 @@ const importarExcel = async (req, res) => {
         // Buscar informações adicionais do produto no banco foods
         let produto = { unidade_medida: 'UN', grupo: null, grupo_id: null };
         try {
+          console.log(`Buscando dados do produto ID: ${necessidade.produto_id}`);
           const produtoInfo = await executeQuery(`
             SELECT 
               po.unidade_medida as unidade_medida,
@@ -258,8 +272,10 @@ const importarExcel = async (req, res) => {
             WHERE po.id = ?
           `, [necessidade.produto_id]);
           
+          console.log(`Resultado da busca do produto:`, produtoInfo);
           if (produtoInfo.length > 0) {
             produto = produtoInfo[0];
+            console.log(`Produto encontrado:`, produto);
           }
         } catch (error) {
           console.log('Erro ao buscar dados do produto, usando valores padrão:', error.message);
@@ -284,15 +300,6 @@ const importarExcel = async (req, res) => {
           console.log('Erro ao buscar dados da escola, usando valores padrão:', error.message);
         }
         
-        // Gerar ID sequencial para esta necessidade (buscar o último ID real)
-        const ultimoId = await executeQuery(`
-          SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
-          FROM necessidades 
-          WHERE necessidade_id IS NOT NULL AND necessidade_id != '' AND necessidade_id REGEXP '^[0-9]+$'
-        `);
-        
-        const proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
-        const necessidadeId = proximoId.toString().padStart(2, '0'); // Formato 01, 02, etc.
 
         const query = `
           INSERT INTO necessidades (
