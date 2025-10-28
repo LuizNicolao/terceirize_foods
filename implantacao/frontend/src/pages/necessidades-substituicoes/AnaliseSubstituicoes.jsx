@@ -106,7 +106,7 @@ const AnaliseSubstituicoes = () => {
             >
               <div className="flex items-center gap-2">
                 <FaUserMd className="w-4 h-4" />
-                Análise de Necessidades (para administração)
+                Análise de Necessidades
               </div>
             </button>
             <button
@@ -119,7 +119,7 @@ const AnaliseSubstituicoes = () => {
             >
               <div className="flex items-center gap-2">
                 <FaUserTie className="w-4 h-4" />
-                👨‍💼 Análise de Necessidades - Coordenação (para coordenação)
+                👨‍💼 Análise de Necessidades - Coordenação
               </div>
             </button>
           </nav>
