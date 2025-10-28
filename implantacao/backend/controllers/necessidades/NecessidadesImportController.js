@@ -227,16 +227,30 @@ const importarExcel = async (req, res) => {
         console.log(`Usuário inicial (quem está importando): ID=${necessidade.usuario_id}, Email=${necessidade.usuario_email}`);
 
         try {
-          // Tentar buscar nutricionista da escola
+          // Tentar buscar nutricionista da escola usando uma consulta mais simples
           console.log(`Buscando nutricionista para escola ID: ${necessidade.escola_id}`);
-          const nutricionistaEscola = await executeQuery(`
+          
+          // Primeiro, tentar buscar por escola_id (coluna mais comum)
+          let nutricionistaEscola = await executeQuery(`
             SELECT 
               u.id as usuario_id,
               u.email as usuario_email
             FROM foods_db.rotas_nutricionistas rn
             JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
-            WHERE rn.unidade_escolar_id = ?
+            WHERE rn.escola_id = ?
           `, [necessidade.escola_id]);
+          
+          // Se não encontrar, tentar com unidade_escolar_id
+          if (nutricionistaEscola.length === 0) {
+            nutricionistaEscola = await executeQuery(`
+              SELECT 
+                u.id as usuario_id,
+                u.email as usuario_email
+              FROM foods_db.rotas_nutricionistas rn
+              JOIN implantacao_db.usuarios u ON u.email = rn.email_nutricionista
+              WHERE rn.unidade_escolar_id = ?
+            `, [necessidade.escola_id]);
+          }
           
           console.log(`Resultado da busca do nutricionista:`, nutricionistaEscola);
           if (nutricionistaEscola.length > 0) {
@@ -275,15 +289,29 @@ const importarExcel = async (req, res) => {
           console.log(`Produto ID: ${necessidade.produto_id}`);
           console.log(`Produto Nome: ${necessidade.produto_nome}`);
           
-          const produtoInfo = await executeQuery(`
+          // Tentar diferentes nomes de colunas para unidade_medida
+          let produtoInfo = await executeQuery(`
             SELECT 
-              po.unidade_medida as unidade_medida,
+              po.unidade_medida_nome as unidade_medida,
               g.nome as grupo,
               g.id as grupo_id
             FROM foods_db.produto_origem po
             LEFT JOIN foods_db.grupos g ON po.grupo_id = g.id
             WHERE po.id = ?
           `, [necessidade.produto_id]);
+          
+          // Se não funcionar, tentar sem unidade_medida
+          if (produtoInfo.length === 0) {
+            produtoInfo = await executeQuery(`
+              SELECT 
+                'UN' as unidade_medida,
+                g.nome as grupo,
+                g.id as grupo_id
+              FROM foods_db.produto_origem po
+              LEFT JOIN foods_db.grupos g ON po.grupo_id = g.id
+              WHERE po.id = ?
+            `, [necessidade.produto_id]);
+          }
           
           console.log(`Resultado da busca do produto:`, produtoInfo);
           if (produtoInfo.length > 0) {
