@@ -287,7 +287,7 @@ class SubstituicoesListController {
       const { grupo, semana_abastecimento, semana_consumo } = req.query;
 
       // Construir query base
-      let whereConditions = ['n.status = "CONF"'];
+      let whereConditions = ['n.status = "CONF"', 'n.substituicao_processada = 1'];
       const params = [];
 
       if (grupo) {
