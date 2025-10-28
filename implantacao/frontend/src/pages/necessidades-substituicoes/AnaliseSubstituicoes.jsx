@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { usePermissions } from '../../hooks/usePermissions';
+import { usePermissions } from '../../contexts/PermissionsContext';
 import { useSubstituicoesNutricionista } from '../../hooks/useSubstituicoesNutricionista';
 import { useSubstituicoesCoordenacao } from '../../hooks/useSubstituicoesCoordenacao';
 import { useExportSubstituicoes } from '../../hooks/useExportSubstituicoes';
