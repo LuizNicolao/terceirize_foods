@@ -2,6 +2,11 @@ const express = require('express');
 const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const SubstituicoesController = require('../../controllers/necessidades-substituicoes');
 
+// Importar rotas separadas
+const substituicoesNutricionistaRoute = require('./substituicoesNutricionistaRoute');
+const substituicoesCoordenacaoRoute = require('./substituicoesCoordenacaoRoute');
+const substituicoesExportRoute = require('./substituicoesExportRoute');
+
 const router = express.Router();
 
 // Aplicar middleware de autenticação em todas as rotas
@@ -58,5 +63,16 @@ router.put(
   checkScreenPermission('necessidades', 'editar'),
   SubstituicoesController.aprovarSubstituicao
 );
+
+// ===== ROTAS SEPARADAS POR PERFIL =====
+
+// Rotas do nutricionista
+router.use('/nutricionista', substituicoesNutricionistaRoute);
+
+// Rotas da coordenação
+router.use('/coordenacao', substituicoesCoordenacaoRoute);
+
+// Rotas de exportação
+router.use('/exportar', substituicoesExportRoute);
 
 module.exports = router;

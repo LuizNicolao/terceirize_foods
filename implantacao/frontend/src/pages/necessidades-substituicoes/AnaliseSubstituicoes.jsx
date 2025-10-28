@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useSubstituicoesNutricionista } from '../../hooks/useSubstituicoesNutricionista';
 import { useSubstituicoesCoordenacao } from '../../hooks/useSubstituicoesCoordenacao';
@@ -7,7 +7,7 @@ import { useExportSubstituicoes } from '../../hooks/useExportSubstituicoes';
 import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
 import { useGruposConsulta } from '../../hooks/useGruposConsulta';
-import { substituicoesNecessidadesService } from '../../services/substituicoesNecessidades';
+import substituicoesNecessidadesService from '../../services/substituicoesNecessidades';
 import toast from 'react-hot-toast';
 
 // Componentes

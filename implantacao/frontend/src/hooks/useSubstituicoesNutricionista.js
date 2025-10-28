@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { substituicoesNecessidadesService } from '../services/substituicoesNecessidades';
+import substituicoesNecessidadesService from '../services/substituicoesNecessidades';
 
 /**
  * Hook para gerenciar substituições do nutricionista

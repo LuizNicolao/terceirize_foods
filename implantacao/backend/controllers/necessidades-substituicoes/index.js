@@ -5,6 +5,9 @@
 
 const SubstituicoesListController = require('./SubstituicoesListController');
 const SubstituicoesCRUDController = require('./SubstituicoesCRUDController');
+const SubstituicoesNutricionistaController = require('./SubstituicoesNutricionistaController');
+const SubstituicoesCoordenacaoController = require('./SubstituicoesCoordenacaoController');
+const SubstituicoesExportController = require('./SubstituicoesExportController');
 
 module.exports = {
   // List Operations
@@ -15,5 +18,20 @@ module.exports = {
   // CRUD Operations
   salvarSubstituicao: SubstituicoesCRUDController.salvarSubstituicao,
   deletarSubstituicao: SubstituicoesCRUDController.deletarSubstituicao,
-  aprovarSubstituicao: SubstituicoesCRUDController.aprovarSubstituicao
+  aprovarSubstituicao: SubstituicoesCRUDController.aprovarSubstituicao,
+
+  // Nutricionista Operations
+  listarParaNutricionista: SubstituicoesNutricionistaController.listarParaNutricionista,
+  iniciarAjustes: SubstituicoesNutricionistaController.iniciarAjustes,
+  liberarParaCoordenacao: SubstituicoesNutricionistaController.liberarParaCoordenacao,
+
+  // Coordenação Operations
+  listarParaCoordenacao: SubstituicoesCoordenacaoController.listarParaCoordenacao,
+  aprovarSubstituicaoCoordenacao: SubstituicoesCoordenacaoController.aprovarSubstituicao,
+  rejeitarSubstituicao: SubstituicoesCoordenacaoController.rejeitarSubstituicao,
+  aprovarTodas: SubstituicoesCoordenacaoController.aprovarTodas,
+
+  // Export Operations
+  exportarPDF: SubstituicoesExportController.exportarPDF,
+  exportarXLSX: SubstituicoesExportController.exportarXLSX
 };
