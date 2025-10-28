@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useSubstituicoesNecessidades } from '../../../hooks/useSubstituicoesNecessidades';
+import { useSubstituicoesNecessidades } from './useSubstituicoesNecessidades';
 import { useSemanasAbastecimento } from '../../../hooks/useSemanasAbastecimento';
 import { useSemanasConsumo } from '../../../hooks/useSemanasConsumo';
 import { useAuth } from '../../../contexts/AuthContext';
