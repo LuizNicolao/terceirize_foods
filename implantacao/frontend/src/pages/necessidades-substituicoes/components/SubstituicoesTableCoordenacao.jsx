@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaChevronDown, FaChevronUp, FaSave, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaChevronDown, FaChevronUp, FaSave, FaCheckCircle, FaTimes } from 'react-icons/fa';
 import { Button, Input, SearchableSelect } from '../../../components/ui';
 import toast from 'react-hot-toast';
 
@@ -7,12 +7,12 @@ const SubstituicoesTableCoordenacao = ({
   necessidades,
   produtosGenericos,
   loadingGenericos,
+  ajustesAtivados = false,
+  onExpand,
   onSaveConsolidated,
   onSaveIndividual,
-  onAprovar,
-  onRejeitar,
-  onAprovarTodas,
-  loading = false
+  onAprovarSubstituicao,
+  onRejeitarSubstituicao
 }) => {
   const [expandedRows, setExpandedRows] = useState({});
   const [selectedProdutosGenericos, setSelectedProdutosGenericos] = useState({});
@@ -29,6 +29,7 @@ const SubstituicoesTableCoordenacao = ({
       return;
     }
 
+    // Formato: "0001|AIPIM CONGELADO 1 KG|PC|fator_conversao"
     const partes = valor.split('|');
     if (partes.length >= 3) {
       const [produto_id, nome, unidade, fatorConversaoStr] = partes;
@@ -37,6 +38,7 @@ const SubstituicoesTableCoordenacao = ({
       setSelectedProdutosGenericos(prev => ({ ...prev, [codigo]: valor }));
       setUndGenericos(prev => ({ ...prev, [codigo]: unidade }));
       
+      // Calcular quantidade: dividir pelo fator de conversão e arredondar para cima
       if (quantidadeOrigem && fatorConversao > 0) {
         const quantidadeCalculada = Math.ceil(parseFloat(quantidadeOrigem) / fatorConversao);
         setQuantidadesGenericos(prev => ({ ...prev, [codigo]: quantidadeCalculada }));
@@ -44,9 +46,10 @@ const SubstituicoesTableCoordenacao = ({
     }
   };
 
-  // Pré-selecionar produto já salvo quando produtos genéricos forem carregados
+  // Pré-selecionar produto padrão ou produto já salvo quando produtos genéricos forem carregados
   useEffect(() => {
     necessidades.forEach(necessidade => {
+      // Criar chave única: produto_origem + produto_generico
       const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
       
       if (produtosGenericos[necessidade.codigo_origem] && !produtosPadraoSelecionados[chaveUnica]) {
@@ -69,6 +72,32 @@ const SubstituicoesTableCoordenacao = ({
               setQuantidadesGenericos(prev => ({ ...prev, [chaveUnica]: quantidadeCalculada }));
             }
             
+            // Pré-selecionar para cada escola
+            necessidade.escolas.forEach(escola => {
+              const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
+              setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
+            });
+          }
+        } else {
+          // Caso contrário, buscar produto com produto_padrao = 'Sim'
+          const produtoPadrao = produtosGenericos[necessidade.codigo_origem].find(
+            p => p.produto_padrao === 'Sim'
+          );
+          
+          if (produtoPadrao) {
+            const unidade = produtoPadrao.unidade_medida_sigla || produtoPadrao.unidade || produtoPadrao.unidade_medida || '';
+            const valor = `${produtoPadrao.id || produtoPadrao.codigo}|${produtoPadrao.nome}|${unidade}|${produtoPadrao.fator_conversao || 1}`;
+            
+            setSelectedProdutosGenericos(prev => ({ ...prev, [chaveUnica]: valor }));
+            setUndGenericos(prev => ({ ...prev, [chaveUnica]: unidade }));
+            
+            const fatorConversao = produtoPadrao.fator_conversao || 1;
+            if (necessidade.quantidade_total_origem && fatorConversao > 0) {
+              const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
+              setQuantidadesGenericos(prev => ({ ...prev, [chaveUnica]: quantidadeCalculada }));
+            }
+            
+            // Pré-selecionar para cada escola
             necessidade.escolas.forEach(escola => {
               const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
               setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
@@ -120,7 +149,17 @@ const SubstituicoesTableCoordenacao = ({
       }))
     };
 
-    await onSaveConsolidated(dados, chaveUnica);
+    const response = await onSaveConsolidated(dados, chaveUnica);
+    
+    // Se salvou com sucesso, atualizar o produto padrão para este produto
+    if (response && response.success) {
+      // Atualizar o produto padrão nos produtos genéricos
+      if (produtosGenericos[necessidade.codigo_origem]) {
+        produtosGenericos[necessidade.codigo_origem].forEach(produto => {
+          produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
+        });
+      }
+    }
   };
 
   const handleSaveIndividual = async (escola, necessidade) => {
@@ -151,15 +190,38 @@ const SubstituicoesTableCoordenacao = ({
       quantidade_generico: escola.selectedQuantidade || escola.quantidade_origem
     };
 
-    await onSaveIndividual(dados, escola.escola_id);
-  };
-
-  const handleAprovar = async (substituicaoId) => {
-    await onAprovar(substituicaoId);
-  };
-
-  const handleRejeitar = async (substituicaoId) => {
-    await onRejeitar(substituicaoId);
+    const response = await onSaveIndividual(dados, escola.escola_id);
+    
+    // Se salvou com sucesso, atualizar o produto padrão para este produto
+    if (response && response.success) {
+      // Atualizar o produto padrão nos produtos genéricos
+      if (produtosGenericos[necessidade.codigo_origem]) {
+        produtosGenericos[necessidade.codigo_origem].forEach(produto => {
+          produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
+        });
+      }
+      
+      // Atualizar também o produto selecionado consolidado
+      setSelectedProdutosGenericos(prev => ({ 
+        ...prev, 
+        [chaveUnica]: escola.selectedProdutoGenerico 
+      }));
+      
+      // Atualizar unidade e quantidade genérica
+      const fatorConversao = parseFloat(partes[3]) || 1;
+      setUndGenericos(prev => ({ 
+        ...prev, 
+        [chaveUnica]: produto_generico_unidade 
+      }));
+      
+      if (necessidade.quantidade_total_origem && fatorConversao > 0) {
+        const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
+        setQuantidadesGenericos(prev => ({ 
+          ...prev, 
+          [chaveUnica]: quantidadeCalculada 
+        }));
+      }
+    }
   };
 
   if (necessidades.length === 0) {
@@ -187,7 +249,7 @@ const SubstituicoesTableCoordenacao = ({
               <th style={{ minWidth: '250px' }} className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto Genérico</th>
               <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Unid. Medida</th>
               <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qtd Genérico</th>
-              <th style={{ width: '120px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+              <th style={{ width: '200px' }} className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -250,7 +312,7 @@ const SubstituicoesTableCoordenacao = ({
                         label: produto.nome
                       })) || []}
                       placeholder="Selecione..."
-                      disabled={loadingGenericos[necessidade.codigo_origem]}
+                      disabled={!ajustesAtivados || loadingGenericos[necessidade.codigo_origem]}
                       className="text-xs"
                       filterBy={(option, searchTerm) => {
                         return option.label.toLowerCase().includes(searchTerm.toLowerCase());
@@ -271,15 +333,35 @@ const SubstituicoesTableCoordenacao = ({
                     </span>
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-center">
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 justify-center">
+                      {ajustesAtivados && (
+                        <Button
+                          size="xs"
+                          variant="success"
+                          onClick={() => handleSaveConsolidated(necessidade)}
+                          className="flex items-center gap-1"
+                        >
+                          <FaSave className="w-3 h-3" />
+                          Salvar
+                        </Button>
+                      )}
                       <Button
                         size="xs"
                         variant="success"
-                        onClick={() => handleSaveConsolidated(necessidade)}
+                        onClick={() => onAprovarSubstituicao(necessidade)}
                         className="flex items-center gap-1"
                       >
-                        <FaSave className="w-3 h-3" />
-                        Salvar
+                        <FaCheckCircle className="w-3 h-3" />
+                        Aprovar
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="danger"
+                        onClick={() => onRejeitarSubstituicao(necessidade)}
+                        className="flex items-center gap-1"
+                      >
+                        <FaTimes className="w-3 h-3" />
+                        Rejeitar
                       </Button>
                     </div>
                   </td>
@@ -289,8 +371,8 @@ const SubstituicoesTableCoordenacao = ({
                 {expandedRows[chaveUnica] && (
                   <tr className="bg-gray-50">
                     <td colSpan="12" className="px-6 py-4">
-                      <div className="bg-gray-50 border-l-4 border-blue-600 p-4">
-                        <h4 className="text-md font-semibold text-blue-700 mb-4 flex items-center gap-2">
+                      <div className="bg-gray-50 border-l-4 border-green-600 p-4">
+                        <h4 className="text-md font-semibold text-green-700 mb-4 flex items-center gap-2">
                           <span className="text-xl">🏢</span>
                           Unidades Solicitantes {necessidade.produto_generico_nome && `(${necessidade.produto_generico_nome})`}
                         </h4>
@@ -318,6 +400,8 @@ const SubstituicoesTableCoordenacao = ({
                               const unidadeProduto = partes[2] || '';
                               const fatorConversao = partes.length >= 4 ? parseFloat(partes[3]) : 0;
                               
+                              // Calcular quantidade genérica: dividir pelo fator e arredondar para cima
+                              // Só calcular se houver produto selecionado (partes.length >= 4)
                               const quantidadeGenerica = produtoSelecionado && fatorConversao > 0 && escola.quantidade_origem 
                                 ? Math.ceil(parseFloat(escola.quantidade_origem) / fatorConversao)
                                 : '';
@@ -338,6 +422,7 @@ const SubstituicoesTableCoordenacao = ({
                                       value={produtoSelecionado}
                                       onChange={(value) => {
                                         setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: value }));
+                                        // Também atualizar em escola para manter compatibilidade
                                         escola.selectedProdutoGenerico = value;
                                       }}
                                       options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {
@@ -348,6 +433,7 @@ const SubstituicoesTableCoordenacao = ({
                                         };
                                       }) || []}
                                       placeholder="Selecione..."
+                                      disabled={!ajustesAtivados}
                                       filterBy={(option, searchTerm) => {
                                         return option.label.toLowerCase().includes(searchTerm.toLowerCase());
                                       }}
@@ -362,42 +448,36 @@ const SubstituicoesTableCoordenacao = ({
                                     {quantidadeGenerica || '0,000'}
                                   </td>
                                   <td className="px-4 py-2 whitespace-nowrap text-center">
-                                    <div className="flex gap-1">
+                                    <div className="flex gap-1 justify-center">
+                                      {ajustesAtivados && (
+                                        <Button
+                                          size="xs"
+                                          variant="success"
+                                          onClick={() => handleSaveIndividual(escola, necessidade)}
+                                          className="flex items-center gap-1"
+                                        >
+                                          <FaSave className="w-3 h-3" />
+                                          Salvar
+                                        </Button>
+                                      )}
                                       <Button
                                         size="xs"
                                         variant="success"
-                                        onClick={() => handleSaveIndividual(escola, necessidade)}
+                                        onClick={() => onAprovarSubstituicao(escola)}
                                         className="flex items-center gap-1"
                                       >
-                                        <FaSave className="w-3 h-3" />
-                                        Salvar
+                                        <FaCheckCircle className="w-3 h-3" />
+                                        Aprovar
                                       </Button>
-                                      
-                                      {escola.substituicao && (
-                                        <>
-                                          <Button
-                                            size="xs"
-                                            variant="primary"
-                                            onClick={() => handleAprovar(escola.substituicao.id)}
-                                            className="flex items-center gap-1"
-                                            disabled={escola.substituicao.status === 'aprovado'}
-                                          >
-                                            <FaCheck className="w-3 h-3" />
-                                            Aprovar
-                                          </Button>
-                                          
-                                          <Button
-                                            size="xs"
-                                            variant="danger"
-                                            onClick={() => handleRejeitar(escola.substituicao.id)}
-                                            className="flex items-center gap-1"
-                                            disabled={escola.substituicao.status === 'rejeitado'}
-                                          >
-                                            <FaTimes className="w-3 h-3" />
-                                            Rejeitar
-                                          </Button>
-                                        </>
-                                      )}
+                                      <Button
+                                        size="xs"
+                                        variant="danger"
+                                        onClick={() => onRejeitarSubstituicao(escola)}
+                                        className="flex items-center gap-1"
+                                      >
+                                        <FaTimes className="w-3 h-3" />
+                                        Rejeitar
+                                      </Button>
                                     </div>
                                   </td>
                                 </tr>

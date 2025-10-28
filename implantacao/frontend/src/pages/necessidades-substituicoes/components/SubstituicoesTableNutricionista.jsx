@@ -8,10 +8,10 @@ const SubstituicoesTableNutricionista = ({
   produtosGenericos,
   loadingGenericos,
   ajustesAtivados = false,
+  onExpand,
   onSaveConsolidated,
   onSaveIndividual,
-  onLiberarCoordenacao,
-  loading = false
+  onLiberarCoordenacao
 }) => {
   const [expandedRows, setExpandedRows] = useState({});
   const [selectedProdutosGenericos, setSelectedProdutosGenericos] = useState({});
@@ -28,6 +28,7 @@ const SubstituicoesTableNutricionista = ({
       return;
     }
 
+    // Formato: "0001|AIPIM CONGELADO 1 KG|PC|fator_conversao"
     const partes = valor.split('|');
     if (partes.length >= 3) {
       const [produto_id, nome, unidade, fatorConversaoStr] = partes;
@@ -36,6 +37,7 @@ const SubstituicoesTableNutricionista = ({
       setSelectedProdutosGenericos(prev => ({ ...prev, [codigo]: valor }));
       setUndGenericos(prev => ({ ...prev, [codigo]: unidade }));
       
+      // Calcular quantidade: dividir pelo fator de conversão e arredondar para cima
       if (quantidadeOrigem && fatorConversao > 0) {
         const quantidadeCalculada = Math.ceil(parseFloat(quantidadeOrigem) / fatorConversao);
         setQuantidadesGenericos(prev => ({ ...prev, [codigo]: quantidadeCalculada }));
@@ -43,12 +45,14 @@ const SubstituicoesTableNutricionista = ({
     }
   };
 
-  // Pré-selecionar produto padrão quando produtos genéricos forem carregados
+  // Pré-selecionar produto padrão ou produto já salvo quando produtos genéricos forem carregados
   useEffect(() => {
     necessidades.forEach(necessidade => {
+      // Criar chave única: produto_origem + produto_generico
       const chaveUnica = `${necessidade.codigo_origem}_${necessidade.produto_generico_id || 'novo'}`;
       
       if (produtosGenericos[necessidade.codigo_origem] && !produtosPadraoSelecionados[chaveUnica]) {
+        // Se já tem produto genérico específico, usar ele
         if (necessidade.produto_generico_id) {
           const produtoEspecifico = produtosGenericos[necessidade.codigo_origem].find(
             p => (p.id || p.codigo) == necessidade.produto_generico_id
@@ -67,12 +71,14 @@ const SubstituicoesTableNutricionista = ({
               setQuantidadesGenericos(prev => ({ ...prev, [chaveUnica]: quantidadeCalculada }));
             }
             
+            // Pré-selecionar para cada escola
             necessidade.escolas.forEach(escola => {
               const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
               setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
             });
           }
         } else {
+          // Caso contrário, buscar produto com produto_padrao = 'Sim'
           const produtoPadrao = produtosGenericos[necessidade.codigo_origem].find(
             p => p.produto_padrao === 'Sim'
           );
@@ -90,6 +96,7 @@ const SubstituicoesTableNutricionista = ({
               setQuantidadesGenericos(prev => ({ ...prev, [chaveUnica]: quantidadeCalculada }));
             }
             
+            // Pré-selecionar para cada escola
             necessidade.escolas.forEach(escola => {
               const chaveEscola = `${chaveUnica}-${escola.escola_id}`;
               setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: valor }));
@@ -141,7 +148,17 @@ const SubstituicoesTableNutricionista = ({
       }))
     };
 
-    await onSaveConsolidated(dados, chaveUnica);
+    const response = await onSaveConsolidated(dados, chaveUnica);
+    
+    // Se salvou com sucesso, atualizar o produto padrão para este produto
+    if (response && response.success) {
+      // Atualizar o produto padrão nos produtos genéricos
+      if (produtosGenericos[necessidade.codigo_origem]) {
+        produtosGenericos[necessidade.codigo_origem].forEach(produto => {
+          produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
+        });
+      }
+    }
   };
 
   const handleSaveIndividual = async (escola, necessidade) => {
@@ -172,7 +189,38 @@ const SubstituicoesTableNutricionista = ({
       quantidade_generico: escola.selectedQuantidade || escola.quantidade_origem
     };
 
-    await onSaveIndividual(dados, escola.escola_id);
+    const response = await onSaveIndividual(dados, escola.escola_id);
+    
+    // Se salvou com sucesso, atualizar o produto padrão para este produto
+    if (response && response.success) {
+      // Atualizar o produto padrão nos produtos genéricos
+      if (produtosGenericos[necessidade.codigo_origem]) {
+        produtosGenericos[necessidade.codigo_origem].forEach(produto => {
+          produto.produto_padrao = (produto.id || produto.codigo) == produto_generico_id ? 'Sim' : 'Não';
+        });
+      }
+      
+      // Atualizar também o produto selecionado consolidado
+      setSelectedProdutosGenericos(prev => ({ 
+        ...prev, 
+        [chaveUnica]: escola.selectedProdutoGenerico 
+      }));
+      
+      // Atualizar unidade e quantidade genérica
+      const fatorConversao = parseFloat(partes[3]) || 1;
+      setUndGenericos(prev => ({ 
+        ...prev, 
+        [chaveUnica]: produto_generico_unidade 
+      }));
+      
+      if (necessidade.quantidade_total_origem && fatorConversao > 0) {
+        const quantidadeCalculada = Math.ceil(parseFloat(necessidade.quantidade_total_origem) / fatorConversao);
+        setQuantidadesGenericos(prev => ({ 
+          ...prev, 
+          [chaveUnica]: quantidadeCalculada 
+        }));
+      }
+    }
   };
 
   if (necessidades.length === 0) {
@@ -331,6 +379,8 @@ const SubstituicoesTableNutricionista = ({
                               const unidadeProduto = partes[2] || '';
                               const fatorConversao = partes.length >= 4 ? parseFloat(partes[3]) : 0;
                               
+                              // Calcular quantidade genérica: dividir pelo fator e arredondar para cima
+                              // Só calcular se houver produto selecionado (partes.length >= 4)
                               const quantidadeGenerica = produtoSelecionado && fatorConversao > 0 && escola.quantidade_origem 
                                 ? Math.ceil(parseFloat(escola.quantidade_origem) / fatorConversao)
                                 : '';
@@ -351,6 +401,7 @@ const SubstituicoesTableNutricionista = ({
                                       value={produtoSelecionado}
                                       onChange={(value) => {
                                         setSelectedProdutosPorEscola(prev => ({ ...prev, [chaveEscola]: value }));
+                                        // Também atualizar em escola para manter compatibilidade
                                         escola.selectedProdutoGenerico = value;
                                       }}
                                       options={produtosGenericos[necessidade.codigo_origem]?.map(produto => {

@@ -1,64 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import { FaExchangeAlt } from 'react-icons/fa';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useEffect, useState } from 'react';
+import { FaExchangeAlt, FaClipboardList, FaCheckCircle, FaUserMd, FaUserTie } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
-import { useSubstituicoesNutricionista } from '../../hooks/useSubstituicoesNutricionista';
-import { useSubstituicoesCoordenacao } from '../../hooks/useSubstituicoesCoordenacao';
-import { useExportSubstituicoes } from '../../hooks/useExportSubstituicoes';
-import { useSemanasAbastecimento } from '../../hooks/useSemanasAbastecimento';
-import { useSemanasConsumo } from '../../hooks/useSemanasConsumo';
-import useGruposConsulta from '../../hooks/useGruposConsulta';
-import substituicoesNecessidadesService from '../../services/substituicoesNecessidades';
-import toast from 'react-hot-toast';
+import { useSubstituicoesOrchestrator } from './hooks/useSubstituicoesOrchestrator';
+import { useSubstituicoesNutricionista } from './hooks/useSubstituicoesNutricionista';
 import { NecessidadesLayout, NecessidadesLoading } from '../../components/necessidades';
-import { ExportButtons } from '../../components/shared';
-
-// Componentes
-import SubstituicoesFilters from './components/SubstituicoesFilters';
+import { SubstituicoesFilters } from './components';
 import SubstituicoesTableNutricionista from './components/SubstituicoesTableNutricionista';
-import SubstituicoesTableCoordenacao from './components/SubstituicoesTableCoordenacao';
-import SubstituicoesActions from './components/SubstituicoesActions';
+import { ExportButtons } from '../../components/shared';
+import { Button } from '../../components/ui';
+import toast from 'react-hot-toast';
 
 const AnaliseSubstituicoes = () => {
-  const { user } = useAuth();
-  const { canView } = usePermissions();
+  const { canView, loading: permissionsLoading } = usePermissions();
   
-  // Estados das abas
-  const [activeTab, setActiveTab] = useState('nutricionista');
-  
-  // Hooks específicos por aba
-  const nutricionista = useSubstituicoesNutricionista();
-  const coordenacao = useSubstituicoesCoordenacao();
-  const exportacao = useExportSubstituicoes();
-  
-  // Hooks para filtros
-  const { grupos } = useGruposConsulta();
-  const { semanasAbastecimento } = useSemanasAbastecimento();
-  const { buscarPorSemanaAbastecimento } = useSemanasConsumo();
-  
-  // Estados para produtos genéricos
-  const [produtosGenericos, setProdutosGenericos] = useState({});
-  const [loadingGenericos, setLoadingGenericos] = useState({});
+  const {
+    necessidades,
+    produtosGenericos,
+    filtros,
+    ajustesAtivados,
+    activeTab,
+    semanasAbastecimento,
+    semanasConsumo,
+    loadingNecessidades,
+    loadingGenericos,
+    loadingSemanasAbast,
+    loadingSemanasConsumo,
+    handleFiltrosChange,
+    handleIniciarAjustes,
+    handleTabChange,
+    getTabelaParaUsuario,
+    salvarSubstituicao,
+    canView: canViewSubstituicoes,
+    canEdit
+  } = useSubstituicoesOrchestrator();
 
-  // Verificar permissões
-  const canViewNutricionista = canView('analise_necessidades_substituicoes');
-  const canViewCoordenacao = canView('analise_necessidades_substituicoes');
+  const {
+    salvarSubstituicao: salvarNutricionista,
+    liberarParaCoordenacao,
+    loading: loadingNutricionista,
+    salvando: salvandoNutricionista
+  } = useSubstituicoesNutricionista();
 
-  // Determinar aba inicial baseada nas permissões
-  useEffect(() => {
-    if (canViewCoordenacao && !canViewNutricionista) {
-      setActiveTab('coordenacao');
-    } else if (canViewNutricionista && !canViewCoordenacao) {
-      setActiveTab('nutricionista');
+  const handleSaveConsolidated = async (dados, chaveUnica) => {
+    return await salvarNutricionista(dados);
+  };
+
+  const handleSaveIndividual = async (dados, escolaId) => {
+    return await salvarNutricionista(dados);
+  };
+
+  const handleLiberarCoordenacao = async () => {
+    const response = await liberarParaCoordenacao(necessidades);
+    if (response.success) {
+      // Recarregar necessidades para atualizar status
+      window.location.reload();
     }
-  }, [canViewNutricionista, canViewCoordenacao]);
+  };
 
-  // Verificar se pode visualizar
-  if (!canViewNutricionista && !canViewCoordenacao) {
+  if (permissionsLoading) {
+    return <NecessidadesLoading />;
+  }
+
+  if (!canViewSubstituicoes) {
     return (
       <NecessidadesLayout>
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-          <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <FaClipboardList className="mx-auto h-12 w-12 text-gray-400 mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
             Acesso Restrito
           </h2>
@@ -70,312 +77,193 @@ const AnaliseSubstituicoes = () => {
     );
   }
 
-  // Carregar produtos genéricos quando necessidades mudarem
-  useEffect(() => {
-    const carregarProdutosGenericos = async () => {
-      const necessidades = activeTab === 'nutricionista' ? nutricionista.necessidades : coordenacao.necessidades;
-      
-      for (const necessidade of necessidades) {
-        if (!produtosGenericos[necessidade.codigo_origem] && !loadingGenericos[necessidade.codigo_origem]) {
-          setLoadingGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: true }));
-          
-          try {
-            const response = await substituicoesNecessidadesService.buscarProdutosGenericos({
-              produto_origem_id: necessidade.codigo_origem
-            });
-            
-            if (response.success) {
-              setProdutosGenericos(prev => ({
-                ...prev,
-                [necessidade.codigo_origem]: response.data
-              }));
-            }
-          } catch (error) {
-            console.error(`Erro ao carregar produtos genéricos para ${necessidade.codigo_origem}:`, error);
-          } finally {
-            setLoadingGenericos(prev => ({ ...prev, [necessidade.codigo_origem]: false }));
-          }
-        }
-      }
-    };
-
-    carregarProdutosGenericos();
-  }, [activeTab, nutricionista.necessidades, coordenacao.necessidades, produtosGenericos, loadingGenericos]);
-
-  // Handlers para filtros
-  const handleFiltrosChange = (novosFiltros) => {
-    if (activeTab === 'nutricionista') {
-      nutricionista.atualizarFiltros(novosFiltros);
-    } else {
-      coordenacao.atualizarFiltros(novosFiltros);
-    }
-  };
-
-  const handleBuscar = () => {
-    if (activeTab === 'nutricionista') {
-      nutricionista.carregarNecessidades();
-    } else {
-      coordenacao.carregarNecessidades();
-    }
-  };
-
-  const handleLimpar = () => {
-    if (activeTab === 'nutricionista') {
-      nutricionista.atualizarFiltros({
-        grupo: '',
-        semana_abastecimento: '',
-        semana_consumo: ''
-      });
-    } else {
-      coordenacao.atualizarFiltros({
-        grupo: '',
-        semana_abastecimento: '',
-        semana_consumo: ''
-      });
-    }
-  };
-
-  // Handlers para ações
-  const handleIniciarAjustes = async () => {
-    try {
-      const response = await nutricionista.iniciarAjustes();
-      toast.success(response.message);
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
-  const handleLiberarCoordenacao = async () => {
-    try {
-      const response = await nutricionista.liberarParaCoordenacao();
-      toast.success(response.message);
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
-  const handleAprovarTodas = async () => {
-    try {
-      const response = await coordenacao.aprovarTodas();
-      toast.success(response.message);
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
-  // Handlers para salvamento
-  const handleSaveConsolidated = async (dados, chaveUnica) => {
-    try {
-      if (activeTab === 'nutricionista') {
-        await nutricionista.salvarAjusteConsolidado(dados);
-      } else {
-        await coordenacao.salvarAjusteConsolidado(dados);
-      }
-      toast.success('Ajuste salvo com sucesso!');
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
-  const handleSaveIndividual = async (dados, escolaId) => {
-    try {
-      if (activeTab === 'nutricionista') {
-        await nutricionista.salvarAjusteIndividual(dados);
-      } else {
-        await coordenacao.salvarAjusteIndividual(dados);
-      }
-      toast.success('Ajuste individual salvo com sucesso!');
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
-  // Handlers para aprovação/rejeição
-  const handleAprovar = async (substituicaoId) => {
-    try {
-      await coordenacao.aprovarSubstituicao(substituicaoId);
-      toast.success('Substituição aprovada!');
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
-  const handleRejeitar = async (substituicaoId) => {
-    try {
-      await coordenacao.rejeitarSubstituicao(substituicaoId);
-      toast.success('Substituição rejeitada!');
-    } catch (error) {
-      toast.error(error.message);
-    }
-  };
-
-  // Handlers para exportação
-  const handleExportarPDF = async (necessidades, tipo) => {
-    try {
-      await exportacao.exportarPDF(necessidades, tipo);
-      toast.success('PDF exportado com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao exportar PDF');
-    }
-  };
-
-  const handleExportarXLSX = async (necessidades, tipo) => {
-    try {
-      await exportacao.exportarXLSX(necessidades, tipo);
-      toast.success('XLSX exportado com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao exportar XLSX');
-    }
-  };
-
-  // Dados atuais baseados na aba ativa
-  const dadosAtuais = activeTab === 'nutricionista' ? nutricionista : coordenacao;
-  const necessidades = dadosAtuais.necessidades;
-  const loading = dadosAtuais.loading;
-  const error = dadosAtuais.error;
-  const filtros = dadosAtuais.filtros;
-
-  // Verificar se ajustes estão ativados
-  const ajustesAtivados = necessidades.some(nec => 
-    nec.escolas.some(escola => escola.substituicao)
-  );
-
   return (
     <NecessidadesLayout hideHeader={true}>
       {/* Header Personalizado */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
-            <FaExchangeAlt className="mr-2 sm:mr-3 text-blue-600" />
-            Análise de Necessidades
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Gerencie as substituições de produtos genéricos por nutricionistas e coordenação
-          </p>
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <FaExchangeAlt className="text-blue-600 text-2xl" />
+          <h1 className="text-2xl font-bold text-gray-900">Análise de Necessidades</h1>
         </div>
+        <p className="text-gray-600">
+          Gerencie substituições de produtos solicitados por produtos genéricos disponíveis em estoque
+        </p>
       </div>
 
       {/* Filtros */}
       <SubstituicoesFilters
         filtros={filtros}
         onFiltrosChange={handleFiltrosChange}
-        onBuscar={handleBuscar}
-        onLimpar={handleLimpar}
-        loading={loading}
+        semanasAbastecimento={semanasAbastecimento}
+        semanasConsumo={semanasConsumo}
+        loadingSemanasAbast={loadingSemanasAbast}
+        loadingSemanasConsumo={loadingSemanasConsumo}
       />
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <p className="text-red-800">{error}</p>
+      {/* Abas */}
+      {necessidades.length > 0 && (
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8 px-6">
+              <button
+                onClick={() => handleTabChange('nutricionista')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'nutricionista'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <FaUserMd className="w-4 h-4" />
+                  Ajuste Nutricionista
+                </div>
+              </button>
+              <button
+                onClick={() => handleTabChange('coordenacao')}
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'coordenacao'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <FaUserTie className="w-4 h-4" />
+                  Ajuste Coordenação
+                </div>
+              </button>
+            </nav>
+          </div>
         </div>
       )}
 
-      {/* Ações (Botões de Exportar) */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Substituições de Produtos ({necessidades.length})
-          </h2>
-          <div className="flex items-center gap-2">
+      {/* Botão Realizar Ajustes */}
+      {necessidades.length > 0 && !ajustesAtivados && (
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Produtos para Substituição ({necessidades.length})
+            </h2>
+            <Button
+              variant="primary"
+              onClick={handleIniciarAjustes}
+              disabled={loadingNutricionista || !necessidades.length}
+            >
+              {loadingNutricionista ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <FaCheckCircle className="mr-2" />
+                  Realizar Ajustes
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Botões de Exportação e Liberar para Coordenação */}
+      {necessidades.length > 0 && ajustesAtivados && activeTab === 'nutricionista' && (
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Produtos para Substituição ({necessidades.length})
+            </h2>
+            <div className="flex gap-3">
+              <ExportButtons
+                onExportXLSX={() => console.log('Export XLSX')}
+                onExportPDF={() => console.log('Export PDF')}
+                size="sm"
+                variant="outline"
+                showLabels={true}
+              />
+              <Button
+                variant="success"
+                onClick={handleLiberarCoordenacao}
+                disabled={loadingNutricionista}
+              >
+                {loadingNutricionista ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Liberando...
+                  </>
+                ) : (
+                  <>
+                    <FaCheckCircle className="mr-2" />
+                    Liberar para Coordenação
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Botões de Exportação para Coordenação */}
+      {necessidades.length > 0 && ajustesAtivados && activeTab === 'coordenacao' && (
+        <div className="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Substituições para Aprovação ({necessidades.length})
+            </h2>
             <ExportButtons
-              onExportXLSX={() => handleExportarXLSX(necessidades, activeTab)}
-              onExportPDF={() => handleExportarPDF(necessidades, activeTab)}
+              onExportXLSX={() => console.log('Export XLSX')}
+              onExportPDF={() => console.log('Export PDF')}
               size="sm"
               variant="outline"
               showLabels={true}
-              disabled={necessidades.length === 0}
             />
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Abas */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-        <div className="border-b border-gray-200">
-          <nav className="-mb-px flex space-x-8 px-6">
-            {canViewNutricionista && (
-              <button
-                onClick={() => setActiveTab('nutricionista')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'nutricionista'
-                    ? 'border-green-500 text-green-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                👩‍⚕️ Análise de Necessidades
-              </button>
-            )}
-            
-            {canViewCoordenacao && (
-              <button
-                onClick={() => setActiveTab('coordenacao')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'coordenacao'
-                    ? 'border-green-500 text-green-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                👨‍💼 Análise de Necessidades - Coordenação
-              </button>
-            )}
-          </nav>
+      {/* Loading State */}
+      {loadingNecessidades && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando necessidades...</p>
         </div>
+      )}
 
-        <div className="p-6">
-          {/* Ações */}
-          <SubstituicoesActions
-            necessidades={necessidades}
-            ajustesAtivados={ajustesAtivados}
-            onIniciarAjustes={handleIniciarAjustes}
-            onLiberarCoordenacao={handleLiberarCoordenacao}
-            onAprovarTodas={handleAprovarTodas}
-            onExportarPDF={handleExportarPDF}
-            onExportarXLSX={handleExportarXLSX}
-            loading={loading}
-            exportando={exportacao.exportando}
-            tipo={activeTab}
-          />
+      {/* Tabela Nutricionista */}
+      {!loadingNecessidades && necessidades.length > 0 && activeTab === 'nutricionista' && (
+        <SubstituicoesTableNutricionista
+          necessidades={necessidades}
+          produtosGenericos={produtosGenericos}
+          loadingGenericos={loadingGenericos}
+          ajustesAtivados={ajustesAtivados}
+          onSaveConsolidated={handleSaveConsolidated}
+          onSaveIndividual={handleSaveIndividual}
+        />
+      )}
 
-          {/* Tabela */}
-          {necessidades.length > 0 ? (
-            activeTab === 'nutricionista' ? (
-              <SubstituicoesTableNutricionista
-                necessidades={necessidades}
-                produtosGenericos={produtosGenericos}
-                loadingGenericos={loadingGenericos}
-                ajustesAtivados={ajustesAtivados}
-                onSaveConsolidated={handleSaveConsolidated}
-                onSaveIndividual={handleSaveIndividual}
-                onLiberarCoordenacao={handleLiberarCoordenacao}
-                loading={loading}
-              />
-            ) : (
-              <SubstituicoesTableCoordenacao
-                necessidades={necessidades}
-                produtosGenericos={produtosGenericos}
-                loadingGenericos={loadingGenericos}
-                onSaveConsolidated={handleSaveConsolidated}
-                onSaveIndividual={handleSaveIndividual}
-                onAprovar={handleAprovar}
-                onRejeitar={handleRejeitar}
-                onAprovarTodas={handleAprovarTodas}
-                loading={loading}
-              />
-            )
-          ) : !loading && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-              <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Nenhuma substituição encontrada
-              </h3>
-              <p className="text-gray-600">
-                Selecione os filtros e clique em "Buscar" para carregar as substituições.
-              </p>
-            </div>
-          )}
+      {/* Empty State */}
+      {!loadingNecessidades && necessidades.length === 0 && (filtros.grupo || filtros.semana_abastecimento) && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Nenhuma necessidade encontrada
+          </h3>
+          <p className="text-gray-600">
+            Não há necessidades com status CONF para os filtros selecionados.
+          </p>
         </div>
-      </div>
+      )}
+
+      {/* Initial State */}
+      {!loadingNecessidades && necessidades.length === 0 && !filtros.grupo && !filtros.semana_abastecimento && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <FaExchangeAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Selecione os filtros para buscar necessidades
+          </h3>
+          <p className="text-gray-600">
+            Use os filtros acima para visualizar as necessidades disponíveis para substituição.
+          </p>
+        </div>
+      )}
     </NecessidadesLayout>
   );
 };

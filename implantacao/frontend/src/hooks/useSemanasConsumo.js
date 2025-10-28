@@ -72,29 +72,12 @@ export const useSemanasConsumo = (ano = new Date().getFullYear()) => {
     carregarSemanasConsumo(ano);
   }, [ano, carregarSemanasConsumo]);
 
-  /**
-   * Busca semana de consumo por semana de abastecimento
-   */
-  const buscarPorSemanaAbastecimento = useCallback(async (semanaAbastecimento) => {
-    try {
-      const response = await calendarioService.buscarSemanaPorAbastecimento(semanaAbastecimento, ano);
-      if (response.success && response.data) {
-        return response.data.semana_consumo;
-      }
-      return null;
-    } catch (error) {
-      console.error('Erro ao buscar semana de consumo:', error);
-      return null;
-    }
-  }, [ano]);
-
   return {
     opcoes,
     semanas,
     loading,
     error,
     recarregar,
-    obterValorPadrao,
-    buscarPorSemanaAbastecimento
+    obterValorPadrao
   };
 };

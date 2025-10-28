@@ -94,46 +94,9 @@ const canDelete = (screenName) => {
   };
 };
 
-/**
- * Middleware para verificar se tem acesso à funcionalidade de ajuste
- */
-const hasAccessToAdjustment = (req, res, next) => {
-  const tiposComAcesso = ['nutricionista', 'coordenador', 'supervisor', 'administrador'];
-  
-  if (!tiposComAcesso.includes(req.user.tipo_de_acesso)) {
-    return res.status(403).json({
-      success: false,
-      error: 'Acesso negado',
-      message: 'Você não tem permissão para acessar esta funcionalidade'
-    });
-  }
-  next();
-};
-
-/**
- * Middleware para verificar se tem permissão para aprovar
- */
-const canApprove = (screenName) => {
-  return async (req, res, next) => {
-    try {
-      const userId = req.user.id;
-      
-      // TEMPORÁRIO: Permitir acesso para teste
-      next();
-      
-      // TODO: Implementar verificação de permissões corretamente
-    } catch (error) {
-      console.error('Erro ao verificar permissão de aprovação:', error);
-      res.status(500).json({ error: 'Erro interno do servidor' });
-    }
-  };
-};
-
 module.exports = {
   canView,
   canCreate,
   canEdit,
-  canDelete,
-  hasAccessToAdjustment,
-  canApprove
+  canDelete
 };

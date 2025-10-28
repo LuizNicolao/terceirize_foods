@@ -80,74 +80,14 @@ class SubstituicoesNecessidadesService {
   }
 
   /**
-   * Liberar para coordenação (mudar status para 'conf')
-   * @param {Array} substituicaoIds - IDs das substituições
+   * Liberar substituições para coordenação (mudar status de pendente para conf)
+   * @param {String} produto_origem_id - ID do produto origem
    */
-  static async liberarParaCoordenacao(substituicaoIds) {
-    const response = await api.put('/necessidades-substituicoes/liberar-coordenacao', {
-      substituicao_ids: substituicaoIds
+  static async liberarParaCoordenacao(produto_origem_id) {
+    const response = await api.put(`/necessidades-substituicoes/liberar-coordenacao`, {
+      produto_origem_id
     });
     return response.data;
-  }
-
-  /**
-   * Listar necessidades para nutricionista (status 'pendente')
-   * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo
-   */
-  static async listarParaNutricionista(filtros) {
-    const params = new URLSearchParams();
-    
-    if (filtros.grupo) params.append('grupo', filtros.grupo);
-    if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
-    if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
-
-    const response = await api.get(`/necessidades-substituicoes/nutricionista?${params.toString()}`);
-    return response.data;
-  }
-
-  /**
-   * Listar necessidades para coordenação (status 'conf')
-   * @param {Object} filtros - Filtros: grupo, semana_abastecimento, semana_consumo
-   */
-  static async listarParaCoordenacao(filtros) {
-    const params = new URLSearchParams();
-    
-    if (filtros.grupo) params.append('grupo', filtros.grupo);
-    if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
-    if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
-
-    const response = await api.get(`/necessidades-substituicoes/coordenacao?${params.toString()}`);
-    return response.data;
-  }
-
-  /**
-   * Exportar para PDF
-   * @param {Array} necessidades - Dados das necessidades
-   * @param {String} tipo - Tipo: 'nutricionista' ou 'coordenacao'
-   */
-  static async exportarPDF(necessidades, tipo = 'nutricionista') {
-    const response = await api.post('/necessidades-substituicoes/exportar/pdf', {
-      necessidades,
-      tipo
-    }, {
-      responseType: 'blob'
-    });
-    return response;
-  }
-
-  /**
-   * Exportar para XLSX
-   * @param {Array} necessidades - Dados das necessidades
-   * @param {String} tipo - Tipo: 'nutricionista' ou 'coordenacao'
-   */
-  static async exportarXLSX(necessidades, tipo = 'nutricionista') {
-    const response = await api.post('/necessidades-substituicoes/exportar/xlsx', {
-      necessidades,
-      tipo
-    }, {
-      responseType: 'blob'
-    });
-    return response;
   }
 }
 
