@@ -108,8 +108,9 @@ const listar = async (req, res) => {
     // Filtro por semana de abastecimento
     if (semana_abastecimento && semana_abastecimento !== 'todas') {
       try {
-        // Parse da semana no formato "DD/MM a DD/MM"
-        const [inicioStr, fimStr] = semana_abastecimento.split(' a ');
+        // Parse da semana no formato "(DD/MM a DD/MM/YY)"
+        const semanaLimpa = semana_abastecimento.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
+        const [inicioStr, fimStr] = semanaLimpa.split(' a ');
         const [diaInicio, mesInicio] = inicioStr.split('/');
         const [diaFim, mesFim] = fimStr.split('/');
         
@@ -354,8 +355,9 @@ const listarTodas = async (req, res) => {
     // Filtro por semana de abastecimento
     if (semana_abastecimento && semana_abastecimento !== 'todas') {
       try {
-        // Parse da semana no formato "DD/MM a DD/MM"
-        const [inicioStr, fimStr] = semana_abastecimento.split(' a ');
+        // Parse da semana no formato "(DD/MM a DD/MM/YY)"
+        const semanaLimpa = semana_abastecimento.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
+        const [inicioStr, fimStr] = semanaLimpa.split(' a ');
         const [diaInicio, mesInicio] = inicioStr.split('/');
         const [diaFim, mesFim] = fimStr.split('/');
         
