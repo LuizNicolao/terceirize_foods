@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input } from '../ui';
+import { Modal, Button, Input, Pagination } from '../ui';
 import { FaPlus } from 'react-icons/fa';
 import FoodsApiService from '../../services/FoodsApiService';
 import toast from 'react-hot-toast';
@@ -16,6 +16,8 @@ const AdicionarProdutoModal = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [produtosSelecionados, setProdutosSelecionados] = useState([]);
   const [filtrados, setFiltrados] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   // Carregar produtos do grupo quando modal abrir
   useEffect(() => {
@@ -35,6 +37,7 @@ const AdicionarProdutoModal = ({
     } else {
       setFiltrados(produtos);
     }
+    setCurrentPage(1); // Reset para primeira página ao filtrar
   }, [searchTerm, produtos]);
 
   const carregarProdutos = async () => {
@@ -128,7 +131,18 @@ const AdicionarProdutoModal = ({
   const handleClose = () => {
     setSearchTerm('');
     setProdutosSelecionados([]);
+    setCurrentPage(1);
     onClose();
+  };
+
+  // Calcular produtos da página atual
+  const totalPages = Math.ceil(filtrados.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const produtosDaPagina = filtrados.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -136,7 +150,7 @@ const AdicionarProdutoModal = ({
       isOpen={isOpen}
       onClose={handleClose}
       title="Incluir Produtos"
-      size="xl"
+      size="5xl"
     >
       <div className="p-6 space-y-4">
         <div>
@@ -201,7 +215,7 @@ const AdicionarProdutoModal = ({
                   </td>
                 </tr>
               ) : (
-                filtrados.map((produto) => {
+                produtosDaPagina.map((produto) => {
                   const isSelected = produtosSelecionados.find(p => p.produto_id === produto.id);
                   return (
                     <tr 
@@ -237,6 +251,18 @@ const AdicionarProdutoModal = ({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Paginação */}
+        <div className="flex justify-center pt-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            showInfo={true}
+            totalItems={filtrados.length}
+            itemsPerPage={itemsPerPage}
+          />
         </div>
 
         <div className="flex justify-end space-x-3 pt-4">

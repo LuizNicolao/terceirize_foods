@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaPlus } from 'react-icons/fa';
-import { Modal, Button, Input } from '../../ui';
+import { Modal, Button, Input, Pagination } from '../../ui';
 
 const ModalProdutoExtra = ({
   isOpen,
@@ -14,8 +14,27 @@ const ModalProdutoExtra = ({
   searchProduto,
   onSearchChange
 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+
+  // Reset página quando modal abrir ou produtos mudarem
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [isOpen, produtosDisponiveis]);
+
   const handleClose = () => {
+    setCurrentPage(1);
     onClose();
+  };
+
+  // Calcular produtos da página atual
+  const totalPages = Math.ceil(produtosDisponiveis.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const produtosDaPagina = produtosDisponiveis.slice(startIndex, endIndex);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
   };
 
   return (
@@ -74,7 +93,7 @@ const ModalProdutoExtra = ({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {produtosDisponiveis.map((produto) => {
+              {produtosDaPagina.map((produto) => {
                 const isSelected = produtosSelecionados.find(p => p.produto_id === produto.produto_id);
                 return (
                   <tr 
@@ -109,6 +128,18 @@ const ModalProdutoExtra = ({
               })}
             </tbody>
           </table>
+        </div>
+
+        {/* Paginação */}
+        <div className="flex justify-center pt-4">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            showInfo={true}
+            totalItems={produtosDisponiveis.length}
+            itemsPerPage={itemsPerPage}
+          />
         </div>
 
         <div className="flex justify-end space-x-3 pt-4">
