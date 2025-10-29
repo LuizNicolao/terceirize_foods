@@ -31,40 +31,7 @@ export const useSubgrupos = () => {
   const [grupos, setGrupos] = useState([]);
   const [loadingGrupos, setLoadingGrupos] = useState(false);
 
-  // Estados de estatísticas específicas dos subgrupos
-  const [estatisticasSubgrupos, setEstatisticasSubgrupos] = useState({
-    total_subgrupos: 0,
-    subgrupos_ativos: 0,
-    subgrupos_inativos: 0,
-    produtos_total: 0
-  });
-
-  /**
-   * Calcula estatísticas específicas dos subgrupos
-   */
-  const calculateEstatisticas = useCallback((subgrupos) => {
-    if (!subgrupos || subgrupos.length === 0) {
-      setEstatisticasSubgrupos({
-        total_subgrupos: 0,
-        subgrupos_ativos: 0,
-        subgrupos_inativos: 0,
-        produtos_total: 0
-      });
-      return;
-    }
-
-    const total = subgrupos.length;
-    const ativos = subgrupos.filter(sg => sg.status === 'ativo').length;
-    const inativos = subgrupos.filter(sg => sg.status === 'inativo').length;
-    const produtos = subgrupos.reduce((acc, subgrupo) => acc + (subgrupo.total_produtos || 0), 0);
-
-    setEstatisticasSubgrupos({
-      total_subgrupos: total,
-      subgrupos_ativos: ativos,
-      subgrupos_inativos: inativos,
-      produtos_total: produtos
-    });
-  }, []);
+  // Estatísticas vêm do baseEntity (padrão)
 
   /**
    * Carrega dados auxiliares (grupos)
@@ -143,10 +110,7 @@ export const useSubgrupos = () => {
 
   // useEffect removidos - useBaseEntity já gerencia filtros e paginação automaticamente
 
-  // Recalcular estatísticas quando os dados mudam
-  useEffect(() => {
-    calculateEstatisticas(baseEntity.items);
-  }, [baseEntity.items, calculateEstatisticas]);
+  // Estatísticas são gerenciadas automaticamente pelo baseEntity
 
   return {
     // Estados principais (do hook base)
@@ -159,7 +123,7 @@ export const useSubgrupos = () => {
     isSortingLocally,
     
     // Estados de busca
-    estatisticas: estatisticasSubgrupos, // Usar estatísticas específicas dos subgrupos
+    estatisticas: baseEntity.estatisticas, // Usar estatísticas do baseEntity (padrão)
     
     // Estados de modal (do hook base)
     showModal: baseEntity.showModal,

@@ -32,40 +32,7 @@ export const useGrupos = () => {
 
   // Hook de busca com debounce
 
-  // Estados de estatísticas específicas dos grupos
-  const [estatisticasGrupos, setEstatisticasGrupos] = useState({
-    total_grupos: 0,
-    grupos_ativos: 0,
-    grupos_inativos: 0,
-    subgrupos_total: 0
-  });
-
-  /**
-   * Calcula estatísticas específicas dos grupos
-   */
-  const calculateEstatisticas = useCallback((grupos) => {
-    if (!grupos || grupos.length === 0) {
-      setEstatisticasGrupos({
-        total_grupos: 0,
-        grupos_ativos: 0,
-        grupos_inativos: 0,
-        subgrupos_total: 0
-      });
-      return;
-    }
-
-    const total = grupos.length;
-    const ativos = grupos.filter(g => g.status === 'ativo').length;
-    const inativos = grupos.filter(g => g.status === 'inativo').length;
-    const subgrupos = grupos.reduce((acc, grupo) => acc + (grupo.subgrupos_count || 0), 0);
-
-    setEstatisticasGrupos({
-          total_grupos: total,
-          grupos_ativos: ativos,
-          grupos_inativos: inativos,
-          subgrupos_total: subgrupos
-        });
-  }, []);
+  // Estatísticas vêm do baseEntity (padrão)
 
   /**
    * Carrega dados com filtros customizados
@@ -127,10 +94,7 @@ export const useGrupos = () => {
     loadDataWithFilters();
   }, [baseEntity.currentPage, baseEntity.itemsPerPage]);
 
-  // Recalcular estatísticas quando os dados mudam
-  useEffect(() => {
-    calculateEstatisticas(baseEntity.items);
-  }, [baseEntity.items, calculateEstatisticas]);
+  // Estatísticas são gerenciadas automaticamente pelo baseEntity
 
   return {
     // Estados principais (do hook base)
@@ -143,7 +107,7 @@ export const useGrupos = () => {
     isSortingLocally,
     
     // Estados de busca
-    estatisticas: estatisticasGrupos, // Usar estatísticas específicas dos grupos
+    estatisticas: baseEntity.estatisticas, // Usar estatísticas do baseEntity (padrão)
     
     // Estados de modal (do hook base)
     showModal: baseEntity.showModal,
