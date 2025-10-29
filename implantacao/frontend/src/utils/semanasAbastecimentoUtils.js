@@ -48,7 +48,8 @@ export const calcularSemanaAbastecimento = (dataConsumo) => {
       return `${dia}/${mes}`;
     };
     
-    const resultado = `${formatarDataSemana(inicioSemanaAnterior)} a ${formatarDataSemana(fimSemanaAnterior)}`;
+    const ano = fimSemanaAnterior.getFullYear().toString().slice(-2);
+    const resultado = `(${formatarDataSemana(inicioSemanaAnterior)} a ${formatarDataSemana(fimSemanaAnterior)}/${ano})`;
     return resultado;
   } catch (error) {
     console.error('Erro ao calcular semana de abastecimento:', error);
@@ -80,9 +81,10 @@ export const gerarSemanasAbastecimento = (ano = new Date().getFullYear()) => {
     
     // Só adicionar se a semana não ultrapassar o ano
     if (fimSemana.getFullYear() === ano) {
+      const anoFormatado = fimSemana.getFullYear().toString().slice(-2);
       semanas.push({
         id: semanas.length + 1,
-        label: `${formatarData(inicioSemana)} a ${formatarData(fimSemana)}`,
+        label: `(${formatarData(inicioSemana)} a ${formatarData(fimSemana)}/${anoFormatado})`,
         dataInicio: inicioSemana.toISOString().split('T')[0],
         dataFim: fimSemana.toISOString().split('T')[0],
         ano: ano
@@ -194,8 +196,9 @@ export const filtrarPorSemana = (dados, semanaSelecionada, campoData = 'data_rec
     return dados;
   }
   
-  // Extrair datas da semana selecionada
-  const [inicioStr, fimStr] = semanaSelecionada.split(' a ');
+  // Extrair datas da semana selecionada (remover parênteses e ano se existirem)
+  const semanaLimpa = semanaSelecionada.replace(/[()]/g, '').replace(/\/\d{2}$/, '');
+  const [inicioStr, fimStr] = semanaLimpa.split(' a ');
   const [diaInicio, mesInicio] = inicioStr.split('/');
   const [diaFim, mesFim] = fimStr.split('/');
   
