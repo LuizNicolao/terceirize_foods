@@ -65,17 +65,20 @@ const PedidoMensal = () => {
           filial_id: filtros.filial, 
           limit: 1000 
         });
-        if (response.success) {
+        if (response.success && response.data && response.data.data) {
           setEscolas(response.data.data.map(e => ({ 
             value: e.id, 
             label: e.nome_escola 
           })));
         } else {
+          console.warn('Resposta de escolas inválida:', response);
+          setEscolas([]);
           toast.error('Erro ao carregar escolas');
         }
       } catch (error) {
         console.error('Erro ao carregar escolas:', error);
         toast.error('Erro ao carregar escolas');
+        setEscolas([]);
       } finally {
         setLoadingFiltros(false);
       }
@@ -88,24 +91,32 @@ const PedidoMensal = () => {
     try {
       // Carregar filiais
       const filiaisResponse = await FoodsApiService.getFiliais({ limit: 1000 });
-      if (filiaisResponse.success) {
+      if (filiaisResponse.success && filiaisResponse.data && filiaisResponse.data.data) {
         setFiliais(filiaisResponse.data.data.map(f => ({ 
           value: f.id, 
           label: f.nome 
         })));
+      } else {
+        console.warn('Resposta de filiais inválida:', filiaisResponse);
+        setFiliais([]);
       }
 
       // Carregar grupos
       const gruposResponse = await FoodsApiService.getGruposProdutos({ limit: 1000 });
-      if (gruposResponse.success) {
+      if (gruposResponse.success && gruposResponse.data && gruposResponse.data.data) {
         setGrupos(gruposResponse.data.data.map(g => ({ 
           value: g.id, 
           label: g.nome 
         })));
+      } else {
+        console.warn('Resposta de grupos inválida:', gruposResponse);
+        setGrupos([]);
       }
     } catch (error) {
       console.error('Erro ao carregar dados iniciais:', error);
       toast.error('Erro ao carregar dados iniciais');
+      setFiliais([]);
+      setGrupos([]);
     } finally {
       setLoading(false);
     }
