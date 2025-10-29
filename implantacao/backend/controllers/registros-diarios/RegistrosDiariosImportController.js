@@ -32,7 +32,6 @@ class RegistrosDiariosImportController {
       const escolasQuery = `
         SELECT id, nome_escola 
         FROM foods_db.unidades_escolares 
-        WHERE ativo = 1 
         LIMIT 5
       `;
       const escolas = await executeQuery(escolasQuery);
@@ -211,7 +210,7 @@ class RegistrosDiariosImportController {
           const escolaQuery = `
             SELECT id, nome_escola 
             FROM foods_db.unidades_escolares 
-            WHERE nome_escola = ? AND ativo = 1
+            WHERE nome_escola = ?
             LIMIT 1
           `;
           const escolas = await executeQuery(escolaQuery, [registro.escola]);
