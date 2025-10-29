@@ -28,25 +28,47 @@ const ModalValidacaoExclusao = ({
       setLoading(true);
       const response = await RegistrosDiariosService.listarHistorico(escolaId);
       
-      if (response.success) {
-        // Agrupar por data e pegar apenas as datas únicas
-        const diasUnicos = response.data.map(registro => ({
-          data: registro.data,
-          dataFormatada: new Date(registro.data).toLocaleDateString('pt-BR'),
-          totalRegistros: 5, // Cada data tem 5 registros (um por tipo de refeição)
-          lanche_manha: registro.lanche_manha || 0,
-          almoco: registro.almoco || 0,
-          lanche_tarde: registro.lanche_tarde || 0,
-          parcial: registro.parcial || 0,
-          eja: registro.eja || 0
-        }));
+      if (response.success && response.data) {
+        console.log('📊 Dados recebidos do backend:', response.data);
         
+        // Criar um mapa para agrupar por data única
+        const diasMap = new Map();
+        
+        response.data.forEach(registro => {
+          const data = registro.data; // Formato YYYY-MM-DD
+          console.log('📅 Processando registro:', { data, registro });
+          
+          // Se já existe, mantém os valores; se não, cria novo
+          if (!diasMap.has(data)) {
+            diasMap.set(data, {
+              data: data,
+              dataFormatada: new Date(data + 'T00:00:00').toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+              }),
+              lanche_manha: Number(registro.lanche_manha) || 0,
+              almoco: Number(registro.almoco) || 0,
+              lanche_tarde: Number(registro.lanche_tarde) || 0,
+              parcial: Number(registro.parcial) || 0,
+              eja: Number(registro.eja) || 0
+            });
+          }
+        });
+        
+        // Converter map para array e ordenar por data (mais recente primeiro)
+        const diasUnicos = Array.from(diasMap.values()).sort((a, b) => {
+          return new Date(b.data) - new Date(a.data);
+        });
+        
+        console.log('✅ Dias únicos processados:', diasUnicos);
         setDiasComRegistros(diasUnicos);
       } else {
         toast.error('Erro ao carregar registros');
       }
     } catch (error) {
       console.error('Erro ao carregar dias com registros:', error);
+      console.error('Detalhes do erro:', error.response?.data);
       toast.error('Erro ao carregar registros');
     } finally {
       setLoading(false);
@@ -117,7 +139,14 @@ const ModalValidacaoExclusao = ({
   };
 
   const calcularTotalRefeicoes = (dia) => {
-    return dia.lanche_manha + dia.almoco + dia.lanche_tarde + dia.parcial + dia.eja;
+    // Garantir que os valores sejam números
+    const lanche_manha = Number(dia.lanche_manha) || 0;
+    const almoco = Number(dia.almoco) || 0;
+    const lanche_tarde = Number(dia.lanche_tarde) || 0;
+    const parcial = Number(dia.parcial) || 0;
+    const eja = Number(dia.eja) || 0;
+    
+    return lanche_manha + almoco + lanche_tarde + parcial + eja;
   };
 
   return (
