@@ -287,7 +287,6 @@ export const useNecessidades = () => {
 
     setLoading(true);
     try {
-      console.log('📤 Dados sendo enviados para gerar necessidade:', dadosParaEnviar);
       const response = await necessidadesService.gerarNecessidade(dadosParaEnviar);
       
       if (response.success) {
