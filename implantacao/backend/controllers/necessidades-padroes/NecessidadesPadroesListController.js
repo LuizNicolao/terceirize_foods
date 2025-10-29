@@ -69,10 +69,15 @@ class NecessidadesPadroesListController {
 
       // Debug dos parâmetros
       console.log('=== DEBUG NECESSIDADES PADRÕES ===');
+      console.log('WhereClause:', whereClause);
       console.log('Query:', query);
       console.log('QueryParams:', queryParams);
       console.log('QueryParams length:', queryParams.length);
       console.log('QueryParams types:', queryParams.map(p => typeof p));
+      
+      // Contar placeholders na query
+      const placeholderCount = (query.match(/\?/g) || []).length;
+      console.log('Placeholders na query:', placeholderCount);
       console.log('===================================');
 
       const resultados = await executeQuery(query, queryParams);
