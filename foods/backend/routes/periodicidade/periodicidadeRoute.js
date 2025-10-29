@@ -112,6 +112,12 @@ router.get('/produtos/grupo/:grupoId',
   PeriodicidadeController.buscarProdutosPorGrupo
 );
 
+// GET /api/periodicidade/produtos/contagem-grupos - Buscar contagem de produtos por todos os grupos
+router.get('/produtos/contagem-grupos', 
+  checkPermission('visualizar'),
+  PeriodicidadeController.buscarContagemProdutosPorGrupo
+);
+
 // GET /api/periodicidade/escolas/:escolaId/agrupamentos - Buscar agrupamentos vinculados a uma escola
 router.get('/escolas/:escolaId/agrupamentos', 
   checkPermission('visualizar'),

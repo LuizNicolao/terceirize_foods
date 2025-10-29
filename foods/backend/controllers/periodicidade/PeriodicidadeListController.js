@@ -329,13 +329,49 @@ const buscarProdutosPorGrupo = async (req, res) => {
       ORDER BY po.nome ASC
     `, [grupoId]);
 
+    // Obter contagem total de produtos no grupo
+    const contagem = await executeQuery(`
+      SELECT COUNT(*) as total
+      FROM produto_origem po
+      WHERE po.grupo_id = ? AND po.status = 1
+    `, [grupoId]);
+
     res.json({
       success: true,
       data: produtos,
+      total: contagem[0].total,
       message: 'Produtos do grupo listados com sucesso'
     });
   } catch (error) {
     console.error('Erro ao buscar produtos por grupo:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
+/**
+ * Buscar contagem de produtos por todos os grupos
+ */
+const buscarContagemProdutosPorGrupo = async (req, res) => {
+  try {
+    const contagens = await executeQuery(`
+      SELECT 
+        g.id as grupo_id,
+        g.nome as grupo_nome,
+        COUNT(po.id) as total_produtos
+      FROM grupos g
+      LEFT JOIN produto_origem po ON g.id = po.grupo_id AND po.status = 1
+      WHERE g.status = 'ativo'
+      GROUP BY g.id, g.nome
+      ORDER BY g.nome ASC
+    `);
+
+    res.json({
+      success: true,
+      data: contagens,
+      message: 'Contagem de produtos por grupo obtida com sucesso'
+    });
+  } catch (error) {
+    console.error('Erro ao buscar contagem de produtos por grupo:', error);
     res.status(500).json({ error: 'Erro interno do servidor' });
   }
 };
@@ -347,5 +383,6 @@ module.exports = {
   buscarProdutosVinculados,
   buscarHistoricoAplicacoes,
   buscarEstatisticas,
-  buscarProdutosPorGrupo
+  buscarProdutosPorGrupo,
+  buscarContagemProdutosPorGrupo
 };
