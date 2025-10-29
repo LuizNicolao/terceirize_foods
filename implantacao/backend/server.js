@@ -17,6 +17,7 @@ const registrosDiariosRoute = require('./routes/registros-diarios/registrosDiari
 const necessidadesRoute = require('./routes/necessidades');
 const substituicoesRoute = require('./routes/necessidades-substituicoes/substituicoesRoute');
 const consultaStatusRoute = require('./routes/consulta-status-necessidade/consultaStatusRoute');
+const necessidadesPadroesRoute = require('./routes/necessidades-padroes/necessidadesPadroesRoute');
 const auditoriaRoute = require('./routes/auditoria/auditoriaRoute');
 const calendarioRoute = require('./routes/calendario/calendarioRoute');
 
@@ -38,6 +39,7 @@ const routes = [
   { path: '/necessidades', router: necessidadesRoute },
   { path: '/necessidades-substituicoes', router: substituicoesRoute },
   { path: '/consulta-status-necessidade', router: consultaStatusRoute },
+  { path: '/necessidades-padroes', router: necessidadesPadroesRoute },
   { path: '/auditoria', router: auditoriaRoute },
   { path: '/calendario', router: calendarioRoute }
 ];
@@ -62,6 +64,8 @@ app.get('/', (req, res) => {
       registrosDiarios: `${basePath}/registros-diarios`,
       necessidades: `${basePath}/necessidades`,
       substituicoes: `${basePath}/necessidades-substituicoes`,
+      consultaStatus: `${basePath}/consulta-status-necessidade`,
+      necessidadesPadroes: `${basePath}/necessidades-padroes`,
       calendario: `${basePath}/calendario`
     }
   });

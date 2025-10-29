@@ -152,6 +152,7 @@ export const usePermissoes = () => {
         'analise_necessidades',
         'analise_necessidades_substituicoes',
         'consulta_status_necessidade',
+        'necessidades_padroes',
         'permissoes'
       ];
       
