@@ -51,13 +51,15 @@ class ConsultaStatusController {
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ?)');
+        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ? OR c.semana_abastecimento = ?)');
+        queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
       }
 
       if (semana_consumo) {
-        whereConditions.push('(n.semana_consumo = ? OR ns.semana_consumo = ?)');
+        whereConditions.push('(n.semana_consumo = ? OR ns.semana_consumo = ? OR c.semana_consumo = ?)');
+        queryParams.push(semana_consumo);
         queryParams.push(semana_consumo);
         queryParams.push(semana_consumo);
       }
@@ -116,6 +118,10 @@ class ConsultaStatusController {
           AND n.escola_id = ns.escola_id
           AND ns.ativo = 1
         )
+        LEFT JOIN calendario c ON (
+          n.semana_abastecimento = c.semana_abastecimento
+          OR n.semana_consumo = c.semana_consumo
+        )
         ${whereClause}
         ORDER BY n.data_preenchimento DESC, n.escola ASC, n.produto ASC
         LIMIT ? OFFSET ?
@@ -140,6 +146,10 @@ class ConsultaStatusController {
           AND n.escola_id = ns.escola_id
           AND ns.ativo = 1
         )
+        LEFT JOIN calendario c ON (
+          n.semana_abastecimento = c.semana_abastecimento
+          OR n.semana_consumo = c.semana_consumo
+        )
         ${whereClause}
       `;
 
@@ -160,6 +170,10 @@ class ConsultaStatusController {
           AND n.escola_id = ns.escola_id
           AND ns.ativo = 1
         )
+        LEFT JOIN calendario c ON (
+          n.semana_abastecimento = c.semana_abastecimento
+          OR n.semana_consumo = c.semana_consumo
+        )
         ${whereClause}
         GROUP BY n.status
         ORDER BY n.status
@@ -179,6 +193,10 @@ class ConsultaStatusController {
           AND n.semana_consumo = ns.semana_consumo
           AND n.escola_id = ns.escola_id
           AND ns.ativo = 1
+        )
+        LEFT JOIN calendario c ON (
+          n.semana_abastecimento = c.semana_abastecimento
+          OR n.semana_consumo = c.semana_consumo
         )
         ${whereClause}
         GROUP BY COALESCE(ns.status, 'sem_substituicao')
@@ -238,7 +256,8 @@ class ConsultaStatusController {
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ?)');
+        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ? OR c.semana_abastecimento = ?)');
+        queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
       }
@@ -272,6 +291,10 @@ class ConsultaStatusController {
           AND n.escola_id = ns.escola_id
           AND ns.ativo = 1
         )
+        LEFT JOIN calendario c ON (
+          n.semana_abastecimento = c.semana_abastecimento
+          OR n.semana_consumo = c.semana_consumo
+        )
         ${whereClause}
       `;
 
@@ -290,6 +313,10 @@ class ConsultaStatusController {
           AND n.semana_consumo = ns.semana_consumo
           AND n.escola_id = ns.escola_id
           AND ns.ativo = 1
+        )
+        LEFT JOIN calendario c ON (
+          n.semana_abastecimento = c.semana_abastecimento
+          OR n.semana_consumo = c.semana_consumo
         )
         ${whereClause}
         GROUP BY n.status
@@ -311,6 +338,10 @@ class ConsultaStatusController {
           AND n.escola_id = ns.escola_id
           AND ns.ativo = 1
         )
+        LEFT JOIN calendario c ON (
+          n.semana_abastecimento = c.semana_abastecimento
+          OR n.semana_consumo = c.semana_consumo
+        )
         ${whereClause}
         GROUP BY COALESCE(ns.status, 'sem_substituicao')
         ORDER BY status_substituicao
@@ -331,6 +362,10 @@ class ConsultaStatusController {
           AND n.semana_consumo = ns.semana_consumo
           AND n.escola_id = ns.escola_id
           AND ns.ativo = 1
+        )
+        LEFT JOIN calendario c ON (
+          n.semana_abastecimento = c.semana_abastecimento
+          OR n.semana_consumo = c.semana_consumo
         )
         ${whereClause}
         GROUP BY n.grupo
@@ -381,13 +416,15 @@ class ConsultaStatusController {
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ?)');
+        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ? OR c.semana_abastecimento = ?)');
+        queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
       }
 
       if (semana_consumo) {
-        whereConditions.push('(n.semana_consumo = ? OR ns.semana_consumo = ?)');
+        whereConditions.push('(n.semana_consumo = ? OR ns.semana_consumo = ? OR c.semana_consumo = ?)');
+        queryParams.push(semana_consumo);
         queryParams.push(semana_consumo);
         queryParams.push(semana_consumo);
       }
@@ -439,6 +476,10 @@ class ConsultaStatusController {
           AND n.escola_id = ns.escola_id
           AND ns.ativo = 1
         )
+        LEFT JOIN calendario c ON (
+          n.semana_abastecimento = c.semana_abastecimento
+          OR n.semana_consumo = c.semana_consumo
+        )
         ${whereClause}
         ORDER BY n.data_preenchimento DESC, n.escola ASC, n.produto ASC
       `;
@@ -485,13 +526,15 @@ class ConsultaStatusController {
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ?)');
+        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ? OR c.semana_abastecimento = ?)');
+        queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
       }
 
       if (semana_consumo) {
-        whereConditions.push('(n.semana_consumo = ? OR ns.semana_consumo = ?)');
+        whereConditions.push('(n.semana_consumo = ? OR ns.semana_consumo = ? OR c.semana_consumo = ?)');
+        queryParams.push(semana_consumo);
         queryParams.push(semana_consumo);
         queryParams.push(semana_consumo);
       }
@@ -542,6 +585,10 @@ class ConsultaStatusController {
           AND n.semana_consumo = ns.semana_consumo
           AND n.escola_id = ns.escola_id
           AND ns.ativo = 1
+        )
+        LEFT JOIN calendario c ON (
+          n.semana_abastecimento = c.semana_abastecimento
+          OR n.semana_consumo = c.semana_consumo
         )
         ${whereClause}
         ORDER BY n.data_preenchimento DESC, n.escola ASC, n.produto ASC

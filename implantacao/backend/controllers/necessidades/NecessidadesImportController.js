@@ -55,8 +55,8 @@ const baixarModelo = async (req, res) => {
       produto_id: 1,
       produto_nome: 'Exemplo: Arroz Integral 1kg',
       quantidade: 10.500,
-      semana_abastecimento: '2024-01-01 a 2024-01-07',
-      semana_consumo: '2024-01-08 a 2024-01-14',
+      semana_abastecimento: '(01/01 a 07/01/24)',
+      semana_consumo: '(08/01 a 14/01/24)',
       observacoes: 'Exemplo: Observações sobre a necessidade'
     });
 
@@ -164,16 +164,26 @@ const importarExcel = async (req, res) => {
           return;
         }
 
-        // Converter formato das semanas de YYYY-MM-DD para DD/MM
+        // Converter formato das semanas de YYYY-MM-DD para (DD/MM a DD/MM/YY)
         const converterSemana = (semana) => {
           if (!semana) return null;
-          // Se já está no formato DD/MM, retornar como está
-          if (semana.includes('/')) return semana;
-          // Converter de YYYY-MM-DD a YYYY-MM-DD para DD/MM a DD/MM
+          // Se já está no formato (DD/MM a DD/MM/YY), retornar como está
+          if (semana.includes('(') && semana.includes(')')) return semana;
+          // Se está no formato DD/MM a DD/MM, adicionar parênteses e ano
+          if (semana.includes('/') && !semana.includes('(')) {
+            const match = semana.match(/(\d{1,2})\/(\d{1,2}) a (\d{1,2})\/(\d{1,2})/);
+            if (match) {
+              const [, dia1, mes1, dia2, mes2] = match;
+              const ano = new Date().getFullYear().toString().slice(-2);
+              return `(${dia1}/${mes1} a ${dia2}/${mes2}/${ano})`;
+            }
+          }
+          // Converter de YYYY-MM-DD a YYYY-MM-DD para (DD/MM a DD/MM/YY)
           const match = semana.match(/(\d{4})-(\d{2})-(\d{2}) a (\d{4})-(\d{2})-(\d{2})/);
           if (match) {
             const [, ano1, mes1, dia1, ano2, mes2, dia2] = match;
-            return `${dia1}/${mes1} a ${dia2}/${mes2}`;
+            const ano = ano2.toString().slice(-2);
+            return `(${dia1}/${mes1} a ${dia2}/${mes2}/${ano})`;
           }
           return semana;
         };
