@@ -88,26 +88,6 @@ class RegistrosDiariosImportController {
         worksheet.addRow(exemplo);
       });
 
-      // Adicionar instruções
-      worksheet.addRow([]);
-      worksheet.addRow(['INSTRUÇÕES:']);
-      worksheet.addRow(['1. Use o nome exato da escola conforme cadastrado no sistema']);
-      worksheet.addRow(['2. Data deve estar no formato YYYY-MM-DD (ex: 2025-01-15)']);
-      worksheet.addRow(['3. Quantidades devem ser números inteiros (ex: 150, 200)']);
-      worksheet.addRow(['4. Deixe 0 para refeições não servidas']);
-      worksheet.addRow(['5. Registros duplicados (mesma escola/data) serão atualizados']);
-
-      // Estilizar instruções
-      const instrucoesRow = worksheet.rowCount;
-      for (let i = instrucoesRow - 5; i <= instrucoesRow; i++) {
-        worksheet.getRow(i).font = { italic: true, size: 10 };
-        worksheet.getRow(i).fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFF0F8FF' }
-        };
-      }
-
       // Configurar resposta
       res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
       res.setHeader('Content-Disposition', 'attachment; filename="modelo_registros_diarios.xlsx"');
