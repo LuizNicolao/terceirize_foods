@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Input, Checkbox } from '../ui';
+import { Modal, Button, Input } from '../ui';
 import { FaSearch, FaPlus, FaTimes } from 'react-icons/fa';
 import FoodsApiService from '../../services/FoodsApiService';
 import toast from 'react-hot-toast';
@@ -179,9 +179,11 @@ const AdicionarProdutoModal = ({
               {filtrados.map((produto) => (
                 <div key={produto.id} className="p-4 hover:bg-gray-50">
                   <div className="flex items-center space-x-3">
-                    <Checkbox
+                    <input
+                      type="checkbox"
                       checked={!!produtosSelecionados[produto.id]}
                       onChange={(e) => handleSelecionarProduto(produto.id, e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-gray-900">
