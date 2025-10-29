@@ -259,6 +259,12 @@ const StatusNecessidadesTab = () => {
         const processadas = necessidadesData.filter(n => n.status_substituicao && n.status_substituicao !== '');
         const naoProcessadas = necessidadesData.filter(n => !n.status_substituicao || n.status_substituicao === '');
         
+        console.log('🔍 DEBUG - Separação de necessidades:');
+        console.log('Total de necessidades:', necessidadesData.length);
+        console.log('Processadas:', processadas.length);
+        console.log('Não processadas:', naoProcessadas.length);
+        console.log('Primeira necessidade:', necessidadesData[0]);
+        
         setNecessidadesProcessadas(processadas);
         setNecessidadesNaoProcessadas(naoProcessadas);
         setUltimaAtualizacao(new Date());
