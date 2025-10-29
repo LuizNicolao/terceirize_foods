@@ -60,8 +60,6 @@ export const useConsultaStatusNecessidade = () => {
   // Carregar semana de consumo quando semana de abastecimento mudar
   useEffect(() => {
     if (filtros.semana_abastecimento) {
-      carregarPorSemanaAbastecimento(filtros.semana_abastecimento);
-      
       // Auto-preencher semana de consumo se não estiver definida
       if (!filtros.semana_consumo) {
         const semanaConsumo = obterSemanaAbastecimentoPadrao(filtros.semana_abastecimento);
@@ -70,7 +68,7 @@ export const useConsultaStatusNecessidade = () => {
         }
       }
     }
-  }, [filtros.semana_abastecimento, carregarPorSemanaAbastecimento, obterSemanaAbastecimentoPadrao]);
+  }, [filtros.semana_abastecimento, obterSemanaAbastecimentoPadrao]);
 
   // Carregar produtos quando grupo mudar
   useEffect(() => {

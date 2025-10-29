@@ -100,7 +100,6 @@ class ConsultaStatusController {
           n.usuario_email,
           n.grupo,
           n.grupo_id,
-          -- Status da substituição
           ns.status as status_substituicao,
           ns.produto_generico_id,
           ns.produto_generico_nome,
@@ -126,7 +125,8 @@ class ConsultaStatusController {
       const limitClause = `LIMIT ${limitNum} OFFSET ${offset}`;
       const necessidadesQueryFinal = necessidadesQuery.replace('LIMIT ? OFFSET ?', limitClause);
 
-      // Debug: Log dos parâmetros antes da execução
+      console.log('🔍 Query necessidades:', necessidadesQueryFinal);
+      console.log('🔍 Parâmetros:', queryParams);
 
       const necessidades = await executeQuery(necessidadesQueryFinal, queryParams);
 
@@ -144,8 +144,10 @@ class ConsultaStatusController {
         ${whereClause}
       `;
 
-      const countParams = queryParams.slice(0, -2); // Remove limit e offset
-      const countResult = await executeQuery(countQuery, countParams);
+      console.log('🔍 Query count:', countQuery);
+      console.log('🔍 Parâmetros count:', queryParams);
+
+      const countResult = await executeQuery(countQuery, queryParams);
       const total = countResult[0].total;
 
       // Agrupar necessidades por status para estatísticas
