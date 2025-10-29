@@ -48,7 +48,7 @@ class NecessidadesPadroesListController {
           np.data_criacao,
           np.data_atualizacao,
           np.usuario_id,
-          e.nome as escola_nome,
+          e.nome_escola as escola_nome,
           g.nome as grupo_nome,
           po.nome as produto_nome,
           po.codigo as produto_codigo,
