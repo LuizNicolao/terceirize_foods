@@ -27,7 +27,8 @@ import {
   FaCalculator,
   FaCalendarAlt,
   FaEdit,
-  FaExchangeAlt
+  FaExchangeAlt,
+  FaShoppingCart
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -59,6 +60,7 @@ const menuGroups = [
               { path: '/necessidades', icon: FaCalculator, label: 'Gerar Necessidades', screen: 'necessidades' },
               { path: '/ajuste-necessidade', icon: FaEdit, label: 'Ajustar Necessidades', screen: 'analise_necessidades' },
               { path: '/analise-substituicoes', icon: FaExchangeAlt, label: 'Análise de Substituições', screen: 'analise_necessidades_substituicoes' },
+              { path: '/pedido-mensal', icon: FaShoppingCart, label: 'Pedido Mensal', screen: 'necessidades_padroes' },
               { path: '/consulta-status-necessidade', icon: FaClipboardList, label: 'Consulta Status Necessidade', screen: 'consulta_status_necessidade' },
             ]
           },

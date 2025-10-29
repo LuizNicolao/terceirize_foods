@@ -19,6 +19,7 @@ const substituicoesRoute = require('./routes/necessidades-substituicoes/substitu
 const consultaStatusRoute = require('./routes/consulta-status-necessidade/consultaStatusRoute');
 const auditoriaRoute = require('./routes/auditoria/auditoriaRoute');
 const calendarioRoute = require('./routes/calendario/calendarioRoute');
+const necessidadesPadroesRoute = require('./routes/necessidades-padroes/necessidadesPadroesRoute');
 
 // Definir rotas com seus middlewares
 const routes = [
@@ -39,7 +40,8 @@ const routes = [
   { path: '/necessidades-substituicoes', router: substituicoesRoute },
   { path: '/consulta-status-necessidade', router: consultaStatusRoute },
   { path: '/auditoria', router: auditoriaRoute },
-  { path: '/calendario', router: calendarioRoute }
+  { path: '/calendario', router: calendarioRoute },
+  { path: '/necessidades-padroes', router: necessidadesPadroesRoute }
 ];
 
 // Aplicar rotas com prefixos automaticamente (desenvolvimento e produção)
