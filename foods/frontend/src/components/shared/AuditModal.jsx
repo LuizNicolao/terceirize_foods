@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa';
-import { Button, Input, Modal } from '../ui';
+import { Button, Input, Modal, Pagination } from '../ui';
 import ExportButtons from './ExportButtons';
 
 const AuditModal = ({
@@ -17,7 +17,11 @@ const AuditModal = ({
   onExportPDF,
   onSetFilters,
   onFilterChange, // Adicionar suporte para onFilterChange
-  title // Adicionar suporte para title
+  title, // Adicionar suporte para title
+  // Props de paginação
+  auditPagination,
+  onPageChange,
+  onItemsPerPageChange
 }) => {
   const [expandedDetails, setExpandedDetails] = useState({});
 
@@ -303,6 +307,20 @@ const AuditModal = ({
             </div>
           )}
         </div>
+
+        {/* Paginação */}
+        {auditPagination && onPageChange && onItemsPerPageChange && (
+          <div className="p-6 border-t border-gray-200">
+            <Pagination
+              currentPage={auditPagination.currentPage}
+              totalPages={auditPagination.totalPages}
+              totalItems={auditPagination.totalItems}
+              itemsPerPage={auditPagination.itemsPerPage}
+              onPageChange={onPageChange}
+              onItemsPerPageChange={onItemsPerPageChange}
+            />
+          </div>
+        )}
       </div>
     </Modal>
   );

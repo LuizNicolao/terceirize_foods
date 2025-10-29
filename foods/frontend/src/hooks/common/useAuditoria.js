@@ -14,13 +14,25 @@ export const useAuditoria = (recurso) => {
     usuario_id: '',
     periodo: ''
   });
+  
+  // Estados de paginação
+  const [auditPagination, setAuditPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 20
+  });
 
   // Carregar logs de auditoria
-  const loadAuditLogs = async () => {
+  const loadAuditLogs = async (page = auditPagination.currentPage) => {
     try {
       setAuditLoading(true);
       
       const params = new URLSearchParams();
+      
+      // Parâmetros de paginação
+      params.append('page', page);
+      params.append('limit', auditPagination.itemsPerPage);
       
       // Aplicar filtro de período se selecionado
       if (auditFilters.periodo) {
@@ -65,7 +77,19 @@ export const useAuditoria = (recurso) => {
       params.append('recurso', recurso);
       
       const response = await api.get(`/auditoria?${params.toString()}`);
+      
+      // Atualizar logs e paginação
       setAuditLogs(response.data.data || []);
+      
+      if (response.data.pagination) {
+        setAuditPagination(prev => ({
+          ...prev,
+          currentPage: response.data.pagination.page,
+          totalPages: response.data.pagination.totalPages,
+          totalItems: response.data.pagination.total,
+          itemsPerPage: response.data.pagination.limit
+        }));
+      }
     } catch (error) {
       console.error('Erro ao carregar logs de auditoria:', error);
       toast.error('Erro ao carregar logs de auditoria');
@@ -95,7 +119,23 @@ export const useAuditoria = (recurso) => {
 
   // Aplicar filtros de auditoria
   const handleApplyAuditFilters = () => {
-    loadAuditLogs();
+    setAuditPagination(prev => ({ ...prev, currentPage: 1 }));
+    loadAuditLogs(1);
+  };
+
+  // Funções de paginação
+  const handleAuditPageChange = (page) => {
+    setAuditPagination(prev => ({ ...prev, currentPage: page }));
+    loadAuditLogs(page);
+  };
+
+  const handleAuditItemsPerPageChange = (itemsPerPage) => {
+    setAuditPagination(prev => ({ 
+      ...prev, 
+      itemsPerPage: parseInt(itemsPerPage),
+      currentPage: 1 
+    }));
+    loadAuditLogs(1);
   };
 
   // Exportar auditoria para XLSX
@@ -238,12 +278,15 @@ export const useAuditoria = (recurso) => {
     auditLogs,
     auditLoading,
     auditFilters,
+    auditPagination,
 
     // Funções
     loadAuditLogs,
     handleOpenAuditModal,
     handleCloseAuditModal,
     handleApplyAuditFilters,
+    handleAuditPageChange,
+    handleAuditItemsPerPageChange,
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
