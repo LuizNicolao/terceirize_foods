@@ -31,8 +31,8 @@ const PedidoMensal = () => {
   } = useNecessidadesPadroes();
 
   // Verificar permissões específicas
-  const canViewPedidoMensal = canView('necessidades-padroes');
-  const canCreatePedidoMensal = canCreate('necessidades-padroes');
+  const canViewPedidoMensal = canView('necessidades_padroes');
+  const canCreatePedidoMensal = canCreate('necessidades_padroes');
 
   // Carregar padrões existentes quando filtros mudarem
   useEffect(() => {
