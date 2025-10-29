@@ -203,58 +203,60 @@ class RegistrosDiariosImportController {
           const escola = escolas[0];
           const nutricionistaId = req.user?.id || 1; // Usar ID do usuário logado
 
-          // Verificar se já existe registro para esta escola/data
-          const existeQuery = `
-            SELECT id FROM registros_diarios 
-            WHERE escola_id = ? AND data = ? AND ativo = 1
-            LIMIT 1
-          `;
-          const existentes = await executeQuery(existeQuery, [escola.id, registro.data]);
+          // Processar cada tipo de média (cada linha gera 5 registros)
+          const tiposMedia = [
+            { tipo: 'lanche_manha', valor: registro.lanche_manha || 0 },
+            { tipo: 'almoco', valor: registro.almoco || 0 },
+            { tipo: 'lanche_tarde', valor: registro.lanche_tarde || 0 },
+            { tipo: 'parcial', valor: registro.parcial || 0 },
+            { tipo: 'eja', valor: registro.eja || 0 }
+          ];
 
-          if (existentes.length > 0) {
-            // Atualizar registro existente
-            const updateQuery = `
-              UPDATE registros_diarios 
-              SET 
-                lanche_manha = ?,
-                almoco = ?,
-                lanche_tarde = ?,
-                parcial = ?,
-                eja = ?,
-                data_atualizacao = NOW()
-              WHERE escola_id = ? AND data = ? AND ativo = 1
+          for (const tipoMedia of tiposMedia) {
+            // Verificar se já existe registro para esta escola/data/tipo_media
+            const existeQuery = `
+              SELECT id FROM registros_diarios 
+              WHERE escola_id = ? AND data = ? AND tipo_media = ? AND ativo = 1
+              LIMIT 1
             `;
-            await executeQuery(updateQuery, [
-              registro.lanche_manha,
-              registro.almoco,
-              registro.lanche_tarde,
-              registro.parcial,
-              registro.eja,
+            const existentes = await executeQuery(existeQuery, [
               escola.id,
-              registro.data
-            ]);
-            atualizados++;
-          } else {
-            // Inserir novo registro
-            const insertQuery = `
-              INSERT INTO registros_diarios (
-                escola_id, escola_nome, nutricionista_id, data,
-                lanche_manha, almoco, lanche_tarde, parcial, eja,
-                data_criacao, data_atualizacao, ativo
-              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), 1)
-            `;
-            await executeQuery(insertQuery, [
-              escola.id,
-              escola.nome_escola,
-              nutricionistaId,
               registro.data,
-              registro.lanche_manha,
-              registro.almoco,
-              registro.lanche_tarde,
-              registro.parcial,
-              registro.eja
+              tipoMedia.tipo
             ]);
-            importados++;
+
+            if (existentes.length > 0) {
+              // Atualizar registro existente
+              const updateQuery = `
+                UPDATE registros_diarios 
+                SET 
+                  valor = ?,
+                  data_atualizacao = NOW()
+                WHERE escola_id = ? AND data = ? AND tipo_media = ? AND ativo = 1
+              `;
+              await executeQuery(updateQuery, [
+                tipoMedia.valor,
+                escola.id,
+                registro.data,
+                tipoMedia.tipo
+              ]);
+              atualizados++;
+            } else {
+              // Inserir novo registro
+              const insertQuery = `
+                INSERT INTO registros_diarios (
+                  escola_id, nutricionista_id, data, tipo_media, valor, ativo
+                ) VALUES (?, ?, ?, ?, ?, 1)
+              `;
+              await executeQuery(insertQuery, [
+                escola.id,
+                nutricionistaId,
+                registro.data,
+                tipoMedia.tipo,
+                tipoMedia.valor
+              ]);
+              importados++;
+            }
           }
 
           // Chamar procedimento para calcular médias
