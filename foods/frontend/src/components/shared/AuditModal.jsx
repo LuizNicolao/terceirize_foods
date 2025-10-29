@@ -219,6 +219,61 @@ const AuditModal = ({
                             <div className="max-w-full">
                               {typeof log.detalhes === 'object' ? (
                                 <div className="space-y-3">
+                                  {/* Dados de criação (requestBody) */}
+                                  {log.detalhes.requestBody && (
+                                    <div>
+                                      <h4 className="font-medium text-gray-700 mb-2">Dados Criados:</h4>
+                                      <div className="bg-white p-3 rounded border">
+                                        <div className="space-y-3">
+                                          {Object.entries(log.detalhes.requestBody).map(([field, value], idx) => {
+                                            // Traduzir nomes de campos comuns
+                                            const fieldTranslations = {
+                                              'razao_social': 'Razão Social',
+                                              'nome_fantasia': 'Nome Fantasia',
+                                              'cnpj': 'CNPJ',
+                                              'inscricao_estadual': 'Inscrição Estadual',
+                                              'endereco': 'Endereço',
+                                              'cidade': 'Cidade',
+                                              'uf': 'UF',
+                                              'cep': 'CEP',
+                                              'telefone': 'Telefone',
+                                              'email': 'Email',
+                                              'contato': 'Contato',
+                                              'status': 'Status',
+                                              'nome': 'Nome',
+                                              'descricao': 'Descrição',
+                                              'codigo': 'Código',
+                                              'preco': 'Preço',
+                                              'estoque': 'Estoque',
+                                              'grupo_id': 'Grupo ID',
+                                              'subgrupo_id': 'Subgrupo ID',
+                                              'classe_id': 'Classe ID'
+                                            };
+                                            
+                                            const displayField = fieldTranslations[field] || field;
+                                            const displayValue = value === null ? 'Nulo' : String(value);
+                                            
+                                            return (
+                                              <div key={idx} className="border-l-4 border-green-200 pl-3">
+                                                <div className="flex flex-col">
+                                                  <span className="text-sm font-medium text-gray-700 mb-1">
+                                                    {displayField}
+                                                  </span>
+                                                  <div className="text-sm">
+                                                    <span className="text-green-600 bg-green-50 px-2 py-1 rounded">
+                                                      {displayValue}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Mudanças de edição (changes) */}
                                   {log.detalhes.changes && (
                                     <div>
                                       <h4 className="font-medium text-gray-700 mb-2">Mudanças Realizadas:</h4>
@@ -243,7 +298,10 @@ const AuditModal = ({
                                               'descricao': 'Descrição',
                                               'codigo': 'Código',
                                               'preco': 'Preço',
-                                              'estoque': 'Estoque'
+                                              'estoque': 'Estoque',
+                                              'grupo_id': 'Grupo ID',
+                                              'subgrupo_id': 'Subgrupo ID',
+                                              'classe_id': 'Classe ID'
                                             };
                                             
                                             const displayField = fieldTranslations[field] || field;
@@ -273,14 +331,53 @@ const AuditModal = ({
                                       </div>
                                     </div>
                                   )}
-                                  {log.detalhes.recurso && (
+
+                                  {/* Informações da requisição */}
+                                  {(log.detalhes.url || log.detalhes.method || log.detalhes.statusCode) && (
                                     <div>
-                                      <h4 className="font-medium text-gray-700 mb-1">Recurso:</h4>
-                                      <div className="bg-white p-2 rounded border text-sm text-gray-600">
-                                        {log.detalhes.recurso}
+                                      <h4 className="font-medium text-gray-700 mb-2">Informações da Requisição:</h4>
+                                      <div className="bg-white p-3 rounded border">
+                                        <div className="space-y-2">
+                                          {log.detalhes.url && (
+                                            <div className="flex justify-between">
+                                              <span className="text-sm font-medium text-gray-600">URL:</span>
+                                              <span className="text-sm text-gray-900">{log.detalhes.url}</span>
+                                            </div>
+                                          )}
+                                          {log.detalhes.method && (
+                                            <div className="flex justify-between">
+                                              <span className="text-sm font-medium text-gray-600">Método:</span>
+                                              <span className="text-sm text-gray-900">{log.detalhes.method}</span>
+                                            </div>
+                                          )}
+                                          {log.detalhes.statusCode && (
+                                            <div className="flex justify-between">
+                                              <span className="text-sm font-medium text-gray-600">Status:</span>
+                                              <span className={`text-sm px-2 py-1 rounded ${
+                                                log.detalhes.statusCode >= 200 && log.detalhes.statusCode < 300 
+                                                  ? 'bg-green-100 text-green-800' 
+                                                  : 'bg-red-100 text-red-800'
+                                              }`}>
+                                                {log.detalhes.statusCode}
+                                              </span>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
                                   )}
+
+                                  {/* User Agent */}
+                                  {log.detalhes.userAgent && (
+                                    <div>
+                                      <h4 className="font-medium text-gray-700 mb-1">User Agent:</h4>
+                                      <div className="bg-white p-2 rounded border text-sm text-gray-600">
+                                        {log.detalhes.userAgent}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* IP Address */}
                                   {log.detalhes.ip_address && (
                                     <div>
                                       <h4 className="font-medium text-gray-700 mb-1">Endereço IP:</h4>
