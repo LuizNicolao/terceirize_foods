@@ -53,18 +53,16 @@ export const useGrupos = () => {
    */
   const onSubmitCustom = useCallback(async (data) => {
     await baseEntity.onSubmit(data);
-    // Recalcular estatísticas após salvar
-    calculateEstatisticas(baseEntity.items);
-  }, [baseEntity, calculateEstatisticas]);
+    // Estatísticas são gerenciadas automaticamente pelo baseEntity
+  }, [baseEntity]);
 
   /**
    * Exclusão customizada que recarrega dados
    */
   const handleDeleteCustom = useCallback(async () => {
     await baseEntity.handleConfirmDelete();
-    // Recalcular estatísticas após excluir
-    calculateEstatisticas(baseEntity.items);
-  }, [baseEntity, calculateEstatisticas]);
+    // Estatísticas são gerenciadas automaticamente pelo baseEntity
+  }, [baseEntity]);
 
   /**
    * Funções auxiliares
