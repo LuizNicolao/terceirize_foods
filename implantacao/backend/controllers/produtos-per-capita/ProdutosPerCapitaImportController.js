@@ -166,7 +166,7 @@ const importarExcel = async (req, res) => {
              po.subgrupo_id,
              po.classe_id,
              po.unidade_medida_id,
-             um.nome as unidade_medida,
+             um.sigla as unidade_medida,
              g.nome as grupo,
              sg.nome as subgrupo,
              c.nome as classe
