@@ -26,13 +26,9 @@ export const useUnidadesEscolares = (unidadesSelecionadas, onUnidadesChange) => 
       
       // Buscar filiais do usuário
       const userResult = await UsuariosService.buscarPorId(user.id);
-      console.log('🔍 Usuário result:', userResult.data);
-      
       if (userResult.success && userResult.data?.filiais) {
-        console.log('✅ Filiais encontradas:', userResult.data.filiais);
         setFiliais(userResult.data.filiais);
       } else {
-        console.log('❌ Nenhuma filial encontrada ou estrutura incorreta');
         setFiliais([]);
       }
     } catch (error) {

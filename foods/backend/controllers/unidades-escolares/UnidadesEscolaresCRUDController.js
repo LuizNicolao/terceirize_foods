@@ -342,11 +342,15 @@ class UnidadesEscolaresCRUDController {
       }
       if (lat !== undefined) {
         updateFields.push('lat = ?');
-        updateParams.push(lat);
+        // Converter string vazia para null, caso contrário converter para número
+        const latValue = (lat === '' || lat === null) ? null : parseFloat(lat);
+        updateParams.push(latValue);
       }
       if (long !== undefined) {
         updateFields.push('`long` = ?');
-        updateParams.push(long);
+        // Converter string vazia para null, caso contrário converter para número
+        const longValue = (long === '' || long === null) ? null : parseFloat(long);
+        updateParams.push(longValue);
       }
       if (filial_id !== undefined) {
         updateFields.push('filial_id = ?');
