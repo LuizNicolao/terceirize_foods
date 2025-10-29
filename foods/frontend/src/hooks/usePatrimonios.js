@@ -3,13 +3,11 @@ import PatrimoniosService from '../services/patrimonios';
 import FiliaisService from '../services/filiais';
 import { useAuth } from '../contexts/AuthContext';
 import { useDebouncedSearch } from './common/useDebouncedSearch';
+import useTableSort from './common/useTableSort';
 import toast from 'react-hot-toast';
 
 export const usePatrimonios = () => {
   const { user } = useAuth();
-  
-  // Hook de busca com debounce
-  const debouncedSearch = useDebouncedSearch(500);
   
   // Estados principais
   const [patrimonios, setPatrimonios] = useState([]);
@@ -87,6 +85,22 @@ export const usePatrimonios = () => {
   // Estados para modal de confirmação de exclusão
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [patrimonioToDelete, setPatrimonioToDelete] = useState(null);
+
+  // Hook de busca com debounce
+  const debouncedSearch = useDebouncedSearch(500);
+
+  // Hook de ordenação
+  const {
+    sortedData: patrimoniosOrdenados,
+    sortField,
+    sortDirection,
+    handleSort,
+    isSortingLocally
+  } = useTableSort({
+    data: patrimonios,
+    threshold: 100,
+    totalItems: pagination.total
+  });
 
   // Carregar filiais ativas
   const loadFiliais = useCallback(async () => {
