@@ -106,7 +106,7 @@ const UnidadesEscolaresTab = ({
               filiais.map((filial) => {
                 const isChecked = filiaisSelecionadas.includes(filial.id);
                 return (
-                  <label key={filial.id} className="flex items-center cursor-pointer hover:bg-gray-100 p-2 rounded border">
+                  <label key={filial.id} className={`flex items-center cursor-pointer p-2 rounded border transition-all duration-200 ${isChecked ? 'bg-green-50 border-green-300' : 'bg-white border-gray-200 hover:bg-gray-100'}`}>
                     <input
                       type="checkbox"
                       checked={isChecked}
