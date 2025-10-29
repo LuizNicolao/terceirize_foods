@@ -15,14 +15,14 @@ const { canView, canCreate, canEdit, canDelete } = require('../../middleware/per
 router.use(authenticateToken);
 
 // Rotas CRUD
-router.get('/', canView('necessidades-padroes'), NecessidadesPadroesListController.listar);
-router.get('/:id', canView('necessidades-padroes'), NecessidadesPadroesCRUDController.buscarPorId);
-router.post('/', canCreate('necessidades-padroes'), NecessidadesPadroesCRUDController.criar);
-router.put('/:id', canEdit('necessidades-padroes'), NecessidadesPadroesCRUDController.atualizar);
-router.delete('/:id', canDelete('necessidades-padroes'), NecessidadesPadroesCRUDController.excluir);
+router.get('/', canView('necessidades_padroes'), NecessidadesPadroesListController.listar);
+router.get('/:id', canView('necessidades_padroes'), NecessidadesPadroesCRUDController.buscarPorId);
+router.post('/', canCreate('necessidades_padroes'), NecessidadesPadroesCRUDController.criar);
+router.put('/:id', canEdit('necessidades_padroes'), NecessidadesPadroesCRUDController.atualizar);
+router.delete('/:id', canDelete('necessidades_padroes'), NecessidadesPadroesCRUDController.excluir);
 
 // Rotas específicas
-router.get('/escola/:escola_id/grupo/:grupo_id', canView('necessidades-padroes'), NecessidadesPadroesListController.buscarPorEscolaGrupo);
-router.post('/salvar-padrao', canCreate('necessidades-padroes'), NecessidadesPadroesCRUDController.salvarPadrao);
+router.get('/escola/:escola_id/grupo/:grupo_id', canView('necessidades_padroes'), NecessidadesPadroesListController.buscarPorEscolaGrupo);
+router.post('/salvar-padrao', canCreate('necessidades_padroes'), NecessidadesPadroesCRUDController.salvarPadrao);
 
 module.exports = router;
