@@ -175,8 +175,16 @@ const StatusNecessidadesTab = () => {
   const carregarStatusNecessidades = async () => {
     setLoading(true);
     try {
-      // Aplicar filtros
-      const params = { ...filtros };
+      // Mapear filtros para o formato esperado pelo hook
+      const params = {
+        status_necessidade: filtros.status_necessidade,
+        status_substituicao: filtros.status_substituicao,
+        grupo: filtros.grupo,
+        semana_abastecimento: filtros.semana_abastecimento,
+        semana_consumo: filtros.semana_consumo,
+        escola_id: filtros.escola_id,
+        produto_id: filtros.produto_id
+      };
       
       // Remover filtros vazios
       Object.keys(params).forEach(key => {
@@ -329,12 +337,12 @@ const StatusNecessidadesTab = () => {
   const limparFiltros = () => {
     setFiltros({
       status_necessidade: '',
+      status_substituicao: '',
       grupo: '',
       semana_abastecimento: '',
       semana_consumo: '',
       escola_id: '',
-      produto_id: '',
-      status_substituicao: ''
+      produto_id: ''
     });
   };
 
@@ -389,7 +397,7 @@ const StatusNecessidadesTab = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           {/* Filtro por Status da Necessidade */}
           <div>
             <SearchableSelect
@@ -397,6 +405,18 @@ const StatusNecessidadesTab = () => {
               value={filtros.status_necessidade}
               onChange={(value) => handleFiltroChange('status_necessidade', value)}
               options={opcoesStatusNecessidade}
+              placeholder="Selecione o status..."
+              disabled={loading}
+            />
+          </div>
+
+          {/* Filtro por Status da Substituição */}
+          <div>
+            <SearchableSelect
+              label="Status da Substituição"
+              value={filtros.status_substituicao}
+              onChange={(value) => handleFiltroChange('status_substituicao', value)}
+              options={opcoesStatusSubstituicao}
               placeholder="Selecione o status..."
               disabled={loading}
             />

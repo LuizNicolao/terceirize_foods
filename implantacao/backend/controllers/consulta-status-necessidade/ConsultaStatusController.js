@@ -8,6 +8,8 @@ class ConsultaStatusController {
     try {
       const {
         status,
+        status_necessidade,
+        status_substituicao,
         grupo,
         semana_abastecimento,
         semana_consumo,
@@ -28,9 +30,19 @@ class ConsultaStatusController {
       let queryParams = [];
 
       // Filtros opcionais
-      if (status) {
+      if (status || status_necessidade) {
+        const statusFiltro = status || status_necessidade;
         whereConditions.push('n.status = ?');
-        queryParams.push(status);
+        queryParams.push(statusFiltro);
+      }
+
+      if (status_substituicao) {
+        if (status_substituicao === 'sem_substituicao') {
+          whereConditions.push('ns.status IS NULL');
+        } else {
+          whereConditions.push('ns.status = ?');
+          queryParams.push(status_substituicao);
+        }
       }
 
       if (grupo) {

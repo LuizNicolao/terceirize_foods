@@ -23,6 +23,8 @@ export const useConsultaStatusNecessidade = () => {
   // Estados para filtros
   const [filtros, setFiltros] = useState({
     status: '',
+    status_necessidade: '',
+    status_substituicao: '',
     grupo: '',
     semana_abastecimento: '',
     semana_consumo: '',
@@ -140,6 +142,8 @@ export const useConsultaStatusNecessidade = () => {
   const limparFiltros = useCallback(() => {
     setFiltros({
       status: '',
+      status_necessidade: '',
+      status_substituicao: '',
       grupo: '',
       semana_abastecimento: '',
       semana_consumo: '',
