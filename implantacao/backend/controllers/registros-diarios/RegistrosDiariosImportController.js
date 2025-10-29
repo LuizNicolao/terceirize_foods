@@ -215,7 +215,7 @@ class RegistrosDiariosImportController {
           for (const tipoMedia of tiposMedia) {
             // Verificar se já existe registro para esta escola/data/tipo_media
             const existeQuery = `
-              SELECT id FROM registros_diarios 
+              SELECT id FROM implantacao_db.registros_diarios 
               WHERE escola_id = ? AND data = ? AND tipo_media = ? AND ativo = 1
               LIMIT 1
             `;
@@ -228,7 +228,7 @@ class RegistrosDiariosImportController {
             if (existentes.length > 0) {
               // Atualizar registro existente
               const updateQuery = `
-                UPDATE registros_diarios 
+                UPDATE implantacao_db.registros_diarios 
                 SET 
                   valor = ?,
                   data_atualizacao = NOW()
@@ -244,7 +244,7 @@ class RegistrosDiariosImportController {
             } else {
               // Inserir novo registro
               const insertQuery = `
-                INSERT INTO registros_diarios (
+                INSERT INTO implantacao_db.registros_diarios (
                   escola_id, nutricionista_id, data, tipo_media, valor, ativo
                 ) VALUES (?, ?, ?, ?, ?, 1)
               `;
