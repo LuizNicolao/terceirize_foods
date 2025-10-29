@@ -184,10 +184,10 @@ const GruposProdutosTab = ({
                      <div
                        key={grupo.id}
                        className={`p-2 mb-1 rounded border cursor-pointer transition-all duration-200 ${
-                         grupoSelecionado?.id === grupo.id
+                         isCompleto
+                           ? 'border-green-500 bg-green-50'
+                           : grupoSelecionado?.id === grupo.id
                            ? 'border-blue-500 bg-blue-50'
-                           : isCompleto
-                           ? 'border-green-300 bg-green-50'
                            : isParcial
                            ? 'border-yellow-300 bg-yellow-50'
                            : 'border-gray-200 bg-white hover:bg-gray-50'
