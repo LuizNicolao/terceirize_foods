@@ -277,15 +277,15 @@ const NecessidadeModal = ({ isOpen, onClose, onSave, escolas = [], grupos = [], 
     let semanaFormatada = formData.data;
     
     // Se a semana não tem o formato completo (DD/MM a DD/MM/YY), adicionar o ano no final
-    if (semanaFormatada.includes(' a ') && !semanaFormatada.match(/^\d{2}\/\d{2} a \d{2}\/\d{2}\/\d{2}\)$/)) {
+    if (semanaFormatada.includes(' a ') && !semanaFormatada.match(/^\(\d{2}\/\d{2} a \d{2}\/\d{2}\/\d{2}\)$/)) {
       // Extrair o mês da primeira data e aplicar na segunda
       const partes = semanaFormatada.replace(/[()]/g, '').split(' a ');
       if (partes.length === 2) {
         const primeiraData = partes[0]; // ex: "06/01"
-        const segundaData = partes[1]; // ex: "12"
+        const segundaData = partes[1]; // ex: "12/01"
         const mes = primeiraData.split('/')[1]; // ex: "01"
         const ano = new Date().getFullYear().toString().slice(-2);
-        semanaFormatada = `(${primeiraData} a ${segundaData}/${mes}/${ano})`;
+        semanaFormatada = `(${primeiraData} a ${segundaData}/${ano})`;
       }
     }
     
