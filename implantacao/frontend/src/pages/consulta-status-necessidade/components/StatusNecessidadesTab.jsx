@@ -43,16 +43,16 @@ const StatusNecessidadesTab = () => {
   const opcoesStatusNecessidade = [
     { value: '', label: 'Todos os status' },
     { value: 'NEC', label: 'NEC - Necessidade Criada' },
-    { value: 'APROVADA', label: 'APROVADA - Aprovada pela Coordenação' },
-    { value: 'REJEITADA', label: 'REJEITADA - Rejeitada pela Coordenação' },
-    { value: 'PROCESSADA', label: 'PROCESSADA - Processada para Substituição' }
+    { value: 'NEC NUTRI', label: 'NEC NUTRI - Necessidade Ajustada pela Nutricionista' },
+    { value: 'NEC COORD', label: 'NEC COORD - Necessidade Ajustada pela Coordenação' },
+    { value: 'CONF', label: 'CONF - Confirmada' }
   ];
 
   const opcoesStatusSubstituicao = [
     { value: '', label: 'Todos os status' },
     { value: 'conf', label: 'CONF - Aguardando Confirmação' },
-    { value: 'aprovado', label: 'APROVADO - Aprovado' },
-    { value: 'conf log', label: 'CONF LOG - Confirmado com Log' }
+    { value: 'conf log', label: 'CONF LOG - Confirmado com Log' },
+    { value: 'aprovado', label: 'APROVADO - Aprovado' }
   ];
 
   // Carregar opções de filtros
@@ -145,9 +145,9 @@ const StatusNecessidadesTab = () => {
   const getStatusNecessidadeLabel = (status) => {
     const statusMap = {
       'NEC': 'NEC - Necessidade Criada',
-      'APROVADA': 'APROVADA - Aprovada pela Coordenação',
-      'REJEITADA': 'REJEITADA - Rejeitada pela Coordenação',
-      'PROCESSADA': 'PROCESSADA - Processada para Substituição'
+      'NEC NUTRI': 'NEC NUTRI - Necessidade Ajustada pela Nutricionista',
+      'NEC COORD': 'NEC COORD - Necessidade Ajustada pela Coordenação',
+      'CONF': 'CONF - Confirmada'
     };
     return statusMap[status] || status;
   };
@@ -156,8 +156,8 @@ const StatusNecessidadesTab = () => {
   const getStatusSubstituicaoLabel = (status) => {
     const statusMap = {
       'conf': 'CONF - Aguardando Confirmação',
-      'aprovado': 'APROVADO - Aprovado',
-      'conf log': 'CONF LOG - Confirmado com Log'
+      'conf log': 'CONF LOG - Confirmado com Log',
+      'aprovado': 'APROVADO - Aprovado'
     };
     return statusMap[status] || status;
   };
