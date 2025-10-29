@@ -9,7 +9,7 @@ const {
 
 // Middleware de autenticação e permissões
 const { authenticateToken } = require('../../middleware/auth');
-const { canView, canCreate, canEdit, canDelete } = require('../../middleware/permissions');
+const { canView, canCreate, canEdit, canDelete } = require('../../middleware/permissoes');
 
 // Aplicar autenticação em todas as rotas
 router.use(authenticateToken);
