@@ -42,17 +42,31 @@ const AdicionarProdutoModal = ({
     
     setLoading(true);
     try {
-      const response = await FoodsApiService.getProdutos({ grupo_id: grupoId });
+      const response = await FoodsApiService.getProdutosOrigem({ grupo_id: grupoId });
       
-      if (response.success) {
-        // Filtrar produtos que já foram adicionados
-        const produtosDisponiveis = response.data.filter(produto => 
-          !produtosJaAdicionados.some(adicionado => adicionado.produto_id === produto.id)
-        );
-        setProdutos(produtosDisponiveis);
-        setFiltrados(produtosDisponiveis);
+      if (response.success && response.data) {
+        // A resposta pode ter data direto ou data.data
+        const produtosData = Array.isArray(response.data) 
+          ? response.data 
+          : response.data.data;
+        
+        if (Array.isArray(produtosData)) {
+          // Filtrar produtos que já foram adicionados
+          const produtosDisponiveis = produtosData.filter(produto => 
+            !produtosJaAdicionados.some(adicionado => adicionado.produto_id === produto.id)
+          );
+          setProdutos(produtosDisponiveis);
+          setFiltrados(produtosDisponiveis);
+        } else {
+          console.warn('Dados de produtos não são um array:', produtosData);
+          setProdutos([]);
+          setFiltrados([]);
+        }
       } else {
+        console.warn('Resposta de produtos inválida:', response);
         toast.error('Erro ao carregar produtos');
+        setProdutos([]);
+        setFiltrados([]);
       }
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
