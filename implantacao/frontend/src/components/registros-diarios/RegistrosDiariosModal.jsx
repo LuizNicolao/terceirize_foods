@@ -95,6 +95,9 @@ const RegistrosDiariosModal = ({
     carregarTodasEscolas();
   }, [isOpen]);
   
+  // Estado para controlar se já carregou os dados iniciais
+  const [dadosIniciaisCarregados, setDadosIniciaisCarregados] = useState(false);
+
   // Carregar dados do registro ao editar
   useEffect(() => {
     if (registro && isOpen) {
@@ -110,6 +113,7 @@ const RegistrosDiariosModal = ({
           eja: registro.eja || 0
         }
       });
+      setDadosIniciaisCarregados(true);
     } else if (!registro && isOpen) {
       // Resetar para novo registro com data atual
       setFormData({
@@ -124,29 +128,53 @@ const RegistrosDiariosModal = ({
           eja: 0
         }
       });
+      setDadosIniciaisCarregados(false);
     }
   }, [registro, isOpen, user]);
-  
+
+  // Armazenar valores iniciais da escola e data para comparação
+  const [escolaInicial, setEscolaInicial] = useState(null);
+  const [dataInicial, setDataInicial] = useState(null);
+
+  // Atualizar valores iniciais quando registro carregar
+  useEffect(() => {
+    if (registro && isOpen) {
+      setEscolaInicial(registro.escola_id);
+      setDataInicial(registro.data);
+    } else {
+      setEscolaInicial(null);
+      setDataInicial(null);
+    }
+  }, [registro, isOpen]);
+
   // Carregar registros existentes quando escola e data forem selecionados
   useEffect(() => {
     const carregarRegistrosExistentes = async () => {
-      if (formData.escola_id && formData.data && !registro) {
-        const result = await RegistrosDiariosService.buscarPorEscolaData(
-          formData.escola_id,
-          formData.data
-        );
+      if (formData.escola_id && formData.data) {
+        // Se está criando novo registro, sempre busca
+        // Se está editando, só busca se escola ou data mudaram
+        const deveBuscar = !registro || 
+          (dadosIniciaisCarregados && 
+           (formData.escola_id !== escolaInicial || formData.data !== dataInicial));
         
-        if (result.success && result.data?.quantidades) {
-          setFormData(prev => ({
-            ...prev,
-            quantidades: result.data.quantidades
-          }));
+        if (deveBuscar) {
+          const result = await RegistrosDiariosService.buscarPorEscolaData(
+            formData.escola_id,
+            formData.data
+          );
+          
+          if (result.success && result.data?.quantidades) {
+            setFormData(prev => ({
+              ...prev,
+              quantidades: result.data.quantidades
+            }));
+          }
         }
       }
     };
     
     carregarRegistrosExistentes();
-  }, [formData.escola_id, formData.data, registro]);
+  }, [formData.escola_id, formData.data, registro, dadosIniciaisCarregados, escolaInicial, dataInicial]);
   
   // Carregar médias quando aba de médias for ativada (apenas em modo visualização)
   useEffect(() => {
