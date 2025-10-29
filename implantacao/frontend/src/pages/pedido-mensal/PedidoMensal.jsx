@@ -1,32 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { FaShoppingCart, FaPlus, FaSave, FaEye } from 'react-icons/fa';
+import { FaShoppingCart, FaPlus, FaSave, FaFilter } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useNecessidadesPadroes } from '../../hooks/useNecessidadesPadroes';
 import {
   PedidoMensalTable,
-  AdicionarProdutoModal,
-  PedidoMensalFilters
+  AdicionarProdutoModal
 } from '../../components/necessidades-padroes';
-import { Button, Modal } from '../../components/ui';
+import { Button, Modal, Input } from '../../components/ui';
+import FoodsApiService from '../../services/FoodsApiService';
+import NecessidadesPadroesService from '../../services/necessidadesPadroes';
 import toast from 'react-hot-toast';
 
 const PedidoMensal = () => {
   const { canView, canCreate, loading: permissionsLoading } = usePermissions();
-  const [showAdicionarModal, setShowAdicionarModal] = useState(false);
-  const [showVisualizarModal, setShowVisualizarModal] = useState(false);
-  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  
+  // Estados para filtros
+  const [filtros, setFiltros] = useState({
+    filial: '',
+    escola: '',
+    grupo: ''
+  });
+  
+  // Estados para dados
+  const [filiais, setFiliais] = useState([]);
+  const [escolas, setEscolas] = useState([]);
+  const [grupos, setGrupos] = useState([]);
   const [produtos, setProdutos] = useState([]);
+  
+  // Estados para UI
+  const [showAdicionarModal, setShowAdicionarModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingFiltros, setLoadingFiltros] = useState(false);
 
   // Hook para gerenciar padrões
   const {
-    padroes,
-    loading: loadingPadroes,
-    error,
-    filtros,
-    atualizarFiltros,
-    limparFiltros,
-    buscarPorEscolaGrupo,
     salvarPadrao
   } = useNecessidadesPadroes();
 
@@ -34,39 +41,98 @@ const PedidoMensal = () => {
   const canViewPedidoMensal = canView('necessidades_padroes');
   const canCreatePedidoMensal = canCreate('necessidades_padroes');
 
-  // Carregar padrões existentes quando filtros mudarem
+  // Carregar dados iniciais
   useEffect(() => {
-    if (filtros.escola_id && filtros.grupo_id) {
-      carregarPadroesExistentes();
+    carregarDadosIniciais();
+  }, []);
+
+  // Carregar escolas quando filial mudar
+  useEffect(() => {
+    if (filtros.filial) {
+      carregarEscolasPorFilial(filtros.filial);
+    } else {
+      setEscolas([]);
+      setFiltros(prev => ({ ...prev, escola: '' }));
+    }
+  }, [filtros.filial]);
+
+  // Carregar produtos quando escola e grupo mudarem
+  useEffect(() => {
+    if (filtros.escola && filtros.grupo) {
+      carregarProdutosExistentes();
     } else {
       setProdutos([]);
     }
-  }, [filtros.escola_id, filtros.grupo_id]);
+  }, [filtros.escola, filtros.grupo]);
 
-  const carregarPadroesExistentes = async () => {
-    if (!filtros.escola_id || !filtros.grupo_id) return;
+  const carregarDadosIniciais = async () => {
+    setLoadingFiltros(true);
+    try {
+      // Carregar filiais
+      const filiaisResponse = await FoodsApiService.getFiliais();
+      if (filiaisResponse.success) {
+        setFiliais(filiaisResponse.data || []);
+      }
+
+      // Carregar grupos
+      const gruposResponse = await FoodsApiService.getGruposProdutos();
+      if (gruposResponse.success) {
+        setGrupos(gruposResponse.data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados iniciais:', error);
+      toast.error('Erro ao carregar dados iniciais');
+    } finally {
+      setLoadingFiltros(false);
+    }
+  };
+
+  const carregarEscolasPorFilial = async (filialId) => {
+    try {
+      const response = await FoodsApiService.getUnidadesEscolares({ 
+        filial_id: filialId,
+        limit: 1000 
+      });
+      if (response.success) {
+        setEscolas(response.data || []);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar escolas:', error);
+      toast.error('Erro ao carregar escolas');
+    }
+  };
+
+  const carregarProdutosExistentes = async () => {
+    if (!filtros.escola || !filtros.grupo) return;
 
     setLoading(true);
     try {
-      const padroesExistentes = await buscarPorEscolaGrupo(filtros.escola_id, filtros.grupo_id);
-      
-      // Converter padrões para formato da tabela
-      const produtosFormatados = padroesExistentes.map(padrao => ({
-        id: padrao.id,
-        produto_id: padrao.produto_id,
-        produto_nome: padrao.produto_nome,
-        produto_codigo: padrao.produto_codigo,
-        unidade_medida: padrao.unidade_medida,
-        quantidade: padrao.quantidade
-      }));
-
-      setProdutos(produtosFormatados);
+      const response = await NecessidadesPadroesService.buscarPorEscolaGrupo(filtros.escola, filtros.grupo);
+      if (response.success) {
+        setProdutos(response.data || []);
+      }
     } catch (error) {
-      console.error('Erro ao carregar padrões existentes:', error);
-      toast.error('Erro ao carregar padrões existentes');
+      console.error('Erro ao carregar produtos existentes:', error);
+      toast.error('Erro ao carregar produtos existentes');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFiltroChange = (campo, valor) => {
+    setFiltros(prev => {
+      const novosFiltros = { ...prev, [campo]: valor };
+      
+      // Limpar dependências quando necessário
+      if (campo === 'filial') {
+        novosFiltros.escola = '';
+        novosFiltros.grupo = '';
+      } else if (campo === 'escola') {
+        novosFiltros.grupo = '';
+      }
+      
+      return novosFiltros;
+    });
   };
 
   const handleAdicionarProdutos = (novosProdutos) => {
@@ -87,13 +153,8 @@ const PedidoMensal = () => {
     toast.success('Produto removido');
   };
 
-  const handleVisualizarProduto = (produto) => {
-    setProdutoSelecionado(produto);
-    setShowVisualizarModal(true);
-  };
-
   const handleSalvarPadrao = async () => {
-    if (!filtros.escola_id || !filtros.grupo_id) {
+    if (!filtros.escola || !filtros.grupo) {
       toast.error('Selecione uma escola e um grupo');
       return;
     }
@@ -103,157 +164,212 @@ const PedidoMensal = () => {
       return;
     }
 
-    // Validar se todas as quantidades foram preenchidas
-    const produtosSemQuantidade = produtos.filter(produto => !produto.quantidade || produto.quantidade <= 0);
-    if (produtosSemQuantidade.length > 0) {
-      toast.error('Preencha a quantidade de todos os produtos');
-      return;
-    }
+    setLoading(true);
+    try {
+      const dadosPadrao = {
+        escola_id: filtros.escola,
+        grupo_id: filtros.grupo,
+        produtos: produtos.map(produto => ({
+          produto_id: produto.produto_id,
+          quantidade: produto.quantidade || 0
+        }))
+      };
 
-    const dados = {
-      escola_id: parseInt(filtros.escola_id),
-      grupo_id: parseInt(filtros.grupo_id),
-      produtos: produtos.map(produto => ({
-        produto_id: produto.produto_id,
-        quantidade: parseFloat(produto.quantidade)
-      }))
-    };
-
-    const resultado = await salvarPadrao(dados);
-    
-    if (resultado.success) {
-      toast.success('Padrão salvo com sucesso!');
+      const response = await NecessidadesPadroesService.salvarPadrao(dadosPadrao);
+      
+      if (response.success) {
+        toast.success('Padrão salvo com sucesso!');
+        setProdutos([]);
+        setFiltros({ filial: '', escola: '', grupo: '' });
+      } else {
+        toast.error(response.message || 'Erro ao salvar padrão');
+      }
+    } catch (error) {
+      console.error('Erro ao salvar padrão:', error);
+      toast.error('Erro ao salvar padrão');
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Verificar se pode visualizar
+  const handleLimparFiltros = () => {
+    setFiltros({ filial: '', escola: '', grupo: '' });
+    setProdutos([]);
+  };
+
+  const podeIncluirProdutos = filtros.escola && filtros.grupo;
+
   if (permissionsLoading) {
     return (
-      <div className="p-4 sm:p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-32 bg-gray-200 rounded mb-4"></div>
-          <div className="h-64 bg-gray-200 rounded"></div>
-        </div>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   if (!canViewPedidoMensal) {
     return (
-      <div className="p-4 sm:p-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-          <FaShoppingCart className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Acesso Restrito
-          </h2>
-          <p className="text-gray-600">
-            Você não tem permissão para visualizar o pedido mensal.
-          </p>
-        </div>
+      <div className="flex flex-col items-center justify-center h-64 text-gray-500">
+        <FaShoppingCart className="h-16 w-16 mb-4" />
+        <h2 className="text-xl font-semibold mb-2">Acesso Restrito</h2>
+        <p>Você não tem permissão para visualizar o pedido mensal.</p>
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
-            <FaShoppingCart className="mr-2 sm:mr-3 text-green-600" />
-            Pedido Mensal
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Defina padrões de produtos para pedidos mensais por escola e grupo
-          </p>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center space-x-3 mb-2">
+          <FaShoppingCart className="h-6 w-6 text-blue-600" />
+          <h1 className="text-2xl font-bold text-gray-900">Pedido Mensal</h1>
         </div>
-        <div className="flex items-center space-x-3">
-          <Button
-            onClick={() => setShowAdicionarModal(true)}
-            disabled={!filtros.escola_id || !filtros.grupo_id || !canCreatePedidoMensal}
-            className="flex items-center"
-          >
-            <FaPlus className="w-4 h-4 mr-2" />
-            Adicionar Produtos
-          </Button>
-          <Button
-            onClick={handleSalvarPadrao}
-            disabled={produtos.length === 0 || loading}
-            variant="primary"
-            className="flex items-center"
-          >
-            <FaSave className="w-4 h-4 mr-2" />
-            Salvar Padrão
-          </Button>
-        </div>
+        <p className="text-gray-600">Defina padrões de produtos para pedidos mensais por escola e grupo</p>
       </div>
 
       {/* Filtros */}
-      <div className="mb-6">
-        <PedidoMensalFilters
-          filtros={filtros}
-          onFilterChange={atualizarFiltros}
-          onClearFilters={limparFiltros}
-          loading={loading}
-        />
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center space-x-2 mb-4">
+          <FaFilter className="h-5 w-5 text-gray-600" />
+          <h2 className="text-lg font-semibold text-gray-900">Filtros</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Filial */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Filial *
+            </label>
+            <select
+              value={filtros.filial}
+              onChange={(e) => handleFiltroChange('filial', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={loadingFiltros}
+            >
+              <option value="">Digite para buscar a filial...</option>
+              {filiais.map(filial => (
+                <option key={filial.id} value={filial.id}>
+                  {filial.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Escola */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Escola
+            </label>
+            <select
+              value={filtros.escola}
+              onChange={(e) => handleFiltroChange('escola', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={!filtros.filial || loadingFiltros}
+            >
+              <option value="">Digite para buscar uma escola...</option>
+              {escolas.map(escola => (
+                <option key={escola.id} value={escola.id}>
+                  {escola.nome_escola}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Grupo */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Grupo de Produtos *
+            </label>
+            <select
+              value={filtros.grupo}
+              onChange={(e) => handleFiltroChange('grupo', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              disabled={loadingFiltros}
+            >
+              <option value="">Digite para buscar um grupo...</option>
+              {grupos.map(grupo => (
+                <option key={grupo.id} value={grupo.id}>
+                  {grupo.nome}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex justify-end space-x-3 mt-4">
+          <Button
+            variant="outline"
+            onClick={handleLimparFiltros}
+            disabled={loadingFiltros}
+          >
+            Limpar Filtros
+          </Button>
+        </div>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
-          <p className="text-red-800">{error}</p>
+      {/* Botão Incluir Produto */}
+      {podeIncluirProdutos && (
+        <div className="flex justify-end">
+          <Button
+            onClick={() => setShowAdicionarModal(true)}
+            disabled={!canCreatePedidoMensal}
+            className="flex items-center space-x-2"
+          >
+            <FaPlus className="h-4 w-4" />
+            <span>Incluir Produto</span>
+          </Button>
         </div>
       )}
 
       {/* Tabela de Produtos */}
-      <div className="mb-6">
-        <PedidoMensalTable
-          produtos={produtos}
-          onEdit={handleEditarProduto}
-          onDelete={handleRemoverProduto}
-          onView={handleVisualizarProduto}
-          loading={loading}
-        />
-      </div>
+      {podeIncluirProdutos && (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Produtos do Padrão
+            </h3>
+            
+            {produtos.length > 0 ? (
+              <PedidoMensalTable
+                produtos={produtos}
+                onEditar={handleEditarProduto}
+                onRemover={handleRemoverProduto}
+                loading={loading}
+              />
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <FaShoppingCart className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>Nenhum produto adicionado ainda</p>
+                <p className="text-sm">Clique em "Incluir Produto" para começar</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
-      {/* Modal de Adicionar Produtos */}
+      {/* Botão Salvar */}
+      {podeIncluirProdutos && (
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSalvarPadrao}
+            disabled={!canCreatePedidoMensal || produtos.length === 0 || loading}
+            className="flex items-center space-x-2"
+          >
+            <FaSave className="h-4 w-4" />
+            <span>Salvar Padrão</span>
+          </Button>
+        </div>
+      )}
+
+      {/* Modal Adicionar Produto */}
       <AdicionarProdutoModal
         isOpen={showAdicionarModal}
         onClose={() => setShowAdicionarModal(false)}
         onAdicionarProdutos={handleAdicionarProdutos}
-        grupoId={filtros.grupo_id}
+        grupoId={filtros.grupo}
         produtosJaAdicionados={produtos}
       />
-
-      {/* Modal de Visualizar Produto */}
-      <Modal
-        isOpen={showVisualizarModal}
-        onClose={() => setShowVisualizarModal(false)}
-        title="Detalhes do Produto"
-        size="md"
-      >
-        {produtoSelecionado && (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Nome</label>
-              <p className="mt-1 text-sm text-gray-900">{produtoSelecionado.produto_nome}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Código</label>
-              <p className="mt-1 text-sm text-gray-900">{produtoSelecionado.produto_codigo}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Unidade</label>
-              <p className="mt-1 text-sm text-gray-900">{produtoSelecionado.unidade_medida}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Quantidade</label>
-              <p className="mt-1 text-sm text-gray-900">{produtoSelecionado.quantidade || '0'}</p>
-            </div>
-          </div>
-        )}
-      </Modal>
     </div>
   );
 };
