@@ -260,9 +260,9 @@ class RegistrosDiariosImportController {
             }
           }
 
-          // Chamar procedimento para calcular médias
-          const calcularMediasQuery = `CALL CalcularMediaEscola(?)`;
-          await executeQuery(calcularMediasQuery, [escola.id]);
+          // TODO: Implementar procedimento CalcularMediaEscola quando necessário
+          // const calcularMediasQuery = `CALL CalcularMediaEscola(?)`;
+          // await executeQuery(calcularMediasQuery, [escola.id]);
 
         } catch (error) {
           console.error(`Erro ao processar registro da linha ${linha}:`, error);
