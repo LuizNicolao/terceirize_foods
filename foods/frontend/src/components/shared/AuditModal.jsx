@@ -219,8 +219,8 @@ const AuditModal = ({
                             <div className="max-w-full">
                               {typeof log.detalhes === 'object' ? (
                                 <div className="space-y-3">
-                                  {/* Dados de criação (requestBody) */}
-                                  {log.detalhes.requestBody && (
+                                  {/* Dados de criação (requestBody) - apenas para ações de criação */}
+                                  {log.detalhes.requestBody && log.acao === 'create' && (
                                     <div>
                                       <h4 className="font-medium text-gray-700 mb-2">Dados Criados:</h4>
                                       <div className="bg-white p-3 rounded border">
@@ -261,6 +261,60 @@ const AuditModal = ({
                                                   </span>
                                                   <div className="text-sm">
                                                     <span className="text-green-600 bg-green-50 px-2 py-1 rounded">
+                                                      {displayValue}
+                                                    </span>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Dados de edição (requestBody) - para ações de edição */}
+                                  {log.detalhes.requestBody && log.acao === 'update' && (
+                                    <div>
+                                      <h4 className="font-medium text-gray-700 mb-2">Dados Editados:</h4>
+                                      <div className="bg-white p-3 rounded border">
+                                        <div className="space-y-3">
+                                          {Object.entries(log.detalhes.requestBody).map(([field, value], idx) => {
+                                            // Traduzir nomes de campos comuns
+                                            const fieldTranslations = {
+                                              'razao_social': 'Razão Social',
+                                              'nome_fantasia': 'Nome Fantasia',
+                                              'cnpj': 'CNPJ',
+                                              'inscricao_estadual': 'Inscrição Estadual',
+                                              'endereco': 'Endereço',
+                                              'cidade': 'Cidade',
+                                              'uf': 'UF',
+                                              'cep': 'CEP',
+                                              'telefone': 'Telefone',
+                                              'email': 'Email',
+                                              'contato': 'Contato',
+                                              'status': 'Status',
+                                              'nome': 'Nome',
+                                              'descricao': 'Descrição',
+                                              'codigo': 'Código',
+                                              'preco': 'Preço',
+                                              'estoque': 'Estoque',
+                                              'grupo_id': 'Grupo ID',
+                                              'subgrupo_id': 'Subgrupo ID',
+                                              'classe_id': 'Classe ID'
+                                            };
+                                            
+                                            const displayField = fieldTranslations[field] || field;
+                                            const displayValue = value === null ? 'Nulo' : String(value);
+                                            
+                                            return (
+                                              <div key={idx} className="border-l-4 border-yellow-200 pl-3">
+                                                <div className="flex flex-col">
+                                                  <span className="text-sm font-medium text-gray-700 mb-1">
+                                                    {displayField}
+                                                  </span>
+                                                  <div className="text-sm">
+                                                    <span className="text-yellow-600 bg-yellow-50 px-2 py-1 rounded">
                                                       {displayValue}
                                                     </span>
                                                   </div>
