@@ -16,28 +16,46 @@ class NecessidadesPadroesListController {
         ativo = 1
       } = req.query;
 
-      const offset = (page - 1) * limit;
-      const queryParams = [];
-
-      // Query principal
       let whereClause = 'WHERE np.ativo = ?';
-      queryParams.push(ativo);
+      let params = [ativo];
 
       if (escola_id) {
         whereClause += ' AND np.escola_id = ?';
-        queryParams.push(escola_id);
+        params.push(escola_id);
       }
 
       if (grupo_id) {
         whereClause += ' AND np.grupo_id = ?';
-        queryParams.push(grupo_id);
+        params.push(grupo_id);
       }
 
       if (produto_id) {
         whereClause += ' AND np.produto_id = ?';
-        queryParams.push(produto_id);
+        params.push(produto_id);
       }
 
+      // Calcular paginação com validação
+      const pageNum = parseInt(page) || 1;
+      const limitNum = parseInt(limit) || 50;
+      
+      // Garantir que os valores sejam números válidos e positivos
+      const validPageNum = isNaN(pageNum) || pageNum < 1 ? 1 : pageNum;
+      const validLimitNum = isNaN(limitNum) || limitNum < 1 ? 50 : limitNum;
+      
+      const offset = (validPageNum - 1) * validLimitNum;
+
+      // Query para contar total de registros
+      const countQuery = `
+        SELECT COUNT(*) as total
+        FROM necessidades_padroes np
+        ${whereClause}
+      `;
+      
+      const countResult = await executeQuery(countQuery, params);
+      const totalItems = countResult && countResult.length > 0 && countResult[0] ? countResult[0].total : 0;
+      const totalPages = Math.ceil(totalItems / validLimitNum);
+
+      // Query principal com paginação usando interpolação (como no NecessidadesListController)
       const query = `
         SELECT 
           np.id,
@@ -62,52 +80,20 @@ class NecessidadesPadroesListController {
         LEFT JOIN usuarios u ON np.usuario_id = u.id
         ${whereClause}
         ORDER BY np.data_atualizacao DESC
-        LIMIT ? OFFSET ?
+        LIMIT ${validLimitNum} OFFSET ${offset}
       `;
 
-      queryParams.push(parseInt(limit), parseInt(offset));
-
-      // Debug dos parâmetros
-      console.log('=== DEBUG NECESSIDADES PADRÕES ===');
-      console.log('WhereClause:', whereClause);
-      console.log('Query:', query);
-      console.log('QueryParams:', queryParams);
-      console.log('QueryParams length:', queryParams.length);
-      console.log('QueryParams types:', queryParams.map(p => typeof p));
-      
-      // Contar placeholders na query
-      const placeholderCount = (query.match(/\?/g) || []).length;
-      console.log('Placeholders na query:', placeholderCount);
-      console.log('===================================');
-
-      const resultados = await executeQuery(query, queryParams);
-
-      // Query para contar total
-      const countQuery = `
-        SELECT COUNT(*) as total
-        FROM necessidades_padroes np
-        ${whereClause}
-      `;
-
-      // Parâmetros para contagem (sem limit e offset)
-      const countParams = [];
-      if (ativo !== undefined) countParams.push(ativo);
-      if (escola_id) countParams.push(escola_id);
-      if (grupo_id) countParams.push(grupo_id);
-      if (produto_id) countParams.push(produto_id);
-
-      const countResult = await executeQuery(countQuery, countParams);
-      const total = countResult[0]?.total || 0;
-
-      const totalPages = Math.ceil(total / limit);
+      const resultados = await executeQuery(query, params);
 
       const response = {
         data: resultados,
         pagination: {
-          currentPage: parseInt(page),
+          currentPage: validPageNum,
           totalPages,
-          totalItems: total,
-          itemsPerPage: parseInt(limit)
+          totalItems,
+          itemsPerPage: validLimitNum,
+          hasNextPage: validPageNum < totalPages,
+          hasPrevPage: validPageNum > 1
         }
       };
 
