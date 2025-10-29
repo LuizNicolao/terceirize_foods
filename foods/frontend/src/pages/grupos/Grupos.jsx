@@ -6,7 +6,7 @@ import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import GruposService from '../../services/grupos';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
-import { CadastroFilterBar } from '../../components/ui';
+import { CadastroFilterBarSearchable } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { GrupoModal } from '../../components/grupos';
 import GruposStats from '../../components/grupos/GruposStats';
@@ -112,7 +112,7 @@ const Grupos = () => {
       <GruposStats estatisticas={estatisticas} />
 
       {/* Filtros */}
-      <CadastroFilterBar
+      <CadastroFilterBarSearchable
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
@@ -120,6 +120,7 @@ const Grupos = () => {
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}
         placeholder="Buscar por nome, código ou descrição..."
+        useSearchableSelect={false}
       />
 
       {/* Ações de Exportação */}

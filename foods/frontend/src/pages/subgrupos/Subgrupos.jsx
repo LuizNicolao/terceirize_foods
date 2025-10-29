@@ -6,7 +6,7 @@ import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import SubgruposService from '../../services/subgrupos';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
-import { CadastroFilterBar } from '../../components/ui';
+import { CadastroFilterBarSearchable } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { SubgrupoModal } from '../../components/subgrupos';
 import SubgruposStats from '../../components/subgrupos/SubgruposStats';
@@ -122,7 +122,7 @@ const Subgrupos = () => {
       <SubgruposStats estatisticas={estatisticas} />
 
       {/* Filtros */}
-      <CadastroFilterBar
+      <CadastroFilterBarSearchable
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
@@ -130,6 +130,7 @@ const Subgrupos = () => {
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}
         placeholder="Buscar por nome..."
+        useSearchableSelect={true}
         additionalFilters={[
           {
             label: 'Grupo',
@@ -139,7 +140,8 @@ const Subgrupos = () => {
               { value: 'todos', label: 'Todos os Grupos' },
               ...grupos.map(grupo => ({
                 value: grupo.id.toString(),
-                label: grupo.nome
+                label: grupo.nome,
+                description: grupo.descricao || ''
               }))
             ]
           }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
+import SearchableSelect from '../ui/SearchableSelect';
 import ClassesService from '../../services/classes';
 
 const ClasseModal = ({ 
@@ -77,21 +78,48 @@ const ClasseModal = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Input
-            label="Subgrupo *"
-            name="subgrupo_id"
-            type="select"
-            defaultValue={classe?.subgrupo_id?.toString()}
-            disabled={isViewMode}
-            required
-          >
-            <option value="">Selecione um subgrupo</option>
-            {subgrupos.map((subgrupo) => (
-              <option key={subgrupo.id} value={subgrupo.id}>
-                {subgrupo.nome}
-              </option>
-            ))}
-          </Input>
+          <div>
+            <SearchableSelect
+              label="Subgrupo *"
+              value={classe?.subgrupo_id?.toString() || ''}
+              onChange={(value) => {
+                // Atualizar o valor no formulário
+                const form = document.querySelector('form');
+                if (form) {
+                  const subgrupoInput = form.querySelector('input[name="subgrupo_id"]');
+                  if (subgrupoInput) {
+                    subgrupoInput.value = value;
+                  }
+                }
+              }}
+              options={[
+                { value: '', label: 'Selecione um subgrupo' },
+                ...subgrupos.map((subgrupo) => ({
+                  value: subgrupo.id.toString(),
+                  label: subgrupo.nome,
+                  description: subgrupo.descricao || subgrupo.grupo_nome || ''
+                }))
+              ]}
+              placeholder="Digite para buscar um subgrupo..."
+              disabled={isViewMode}
+              filterBy={(option, searchTerm) => {
+                const label = option.label.toLowerCase();
+                const description = option.description?.toLowerCase() || '';
+                const term = searchTerm.toLowerCase();
+                return label.includes(term) || description.includes(term);
+              }}
+              renderOption={(option) => (
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-900">{option.label}</span>
+                  {option.description && (
+                    <span className="text-xs text-gray-500 mt-1">{option.description}</span>
+                  )}
+                </div>
+              )}
+            />
+            {/* Campo hidden para o formulário */}
+            <input type="hidden" name="subgrupo_id" value={classe?.subgrupo_id?.toString() || ''} />
+          </div>
           <Input
             label="Status"
             name="status"

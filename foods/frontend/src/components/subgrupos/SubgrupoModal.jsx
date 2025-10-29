@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Input, Button } from '../ui';
+import SearchableSelect from '../ui/SearchableSelect';
 import SubgruposService from '../../services/subgrupos';
 
 const SubgrupoModal = ({ 
@@ -77,21 +78,48 @@ const SubgrupoModal = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Input
-            label="Grupo *"
-            name="grupo_id"
-            type="select"
-            defaultValue={subgrupo?.grupo_id?.toString()}
-            disabled={isViewMode}
-            required
-          >
-            <option value="">Selecione um grupo</option>
-            {grupos.map((grupo) => (
-              <option key={grupo.id} value={grupo.id}>
-                {grupo.nome}
-              </option>
-            ))}
-          </Input>
+          <div>
+            <SearchableSelect
+              label="Grupo *"
+              value={subgrupo?.grupo_id?.toString() || ''}
+              onChange={(value) => {
+                // Atualizar o valor no formulário
+                const form = document.querySelector('form');
+                if (form) {
+                  const grupoInput = form.querySelector('input[name="grupo_id"]');
+                  if (grupoInput) {
+                    grupoInput.value = value;
+                  }
+                }
+              }}
+              options={[
+                { value: '', label: 'Selecione um grupo' },
+                ...grupos.map((grupo) => ({
+                  value: grupo.id.toString(),
+                  label: grupo.nome,
+                  description: grupo.descricao || ''
+                }))
+              ]}
+              placeholder="Digite para buscar um grupo..."
+              disabled={isViewMode}
+              filterBy={(option, searchTerm) => {
+                const label = option.label.toLowerCase();
+                const description = option.description?.toLowerCase() || '';
+                const term = searchTerm.toLowerCase();
+                return label.includes(term) || description.includes(term);
+              }}
+              renderOption={(option) => (
+                <div className="flex flex-col">
+                  <span className="font-medium text-gray-900">{option.label}</span>
+                  {option.description && (
+                    <span className="text-xs text-gray-500 mt-1">{option.description}</span>
+                  )}
+                </div>
+              )}
+            />
+            {/* Campo hidden para o formulário */}
+            <input type="hidden" name="grupo_id" value={subgrupo?.grupo_id?.toString() || ''} />
+          </div>
           <Input
             label="Status"
             name="status"

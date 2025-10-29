@@ -11,6 +11,7 @@ export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as Pagination } from './Pagination';
 export { default as ErrorModal } from './ErrorModal';
 export { default as CadastroFilterBar } from './CadastroFilterBar';
+export { default as CadastroFilterBarSearchable } from './CadastroFilterBarSearchable';
 export { default as Logo } from './Logo';
 export { default as EmptyState } from './EmptyState';
 export { default as ConfirmModal } from './ConfirmModal';

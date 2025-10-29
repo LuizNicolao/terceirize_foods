@@ -6,7 +6,7 @@ import { useAuditoria } from '../../hooks/common/useAuditoria';
 import { useExport } from '../../hooks/common/useExport';
 import ClassesService from '../../services/classes';
 import { Button, ValidationErrorModal, ConfirmModal } from '../../components/ui';
-import { CadastroFilterBar } from '../../components/ui';
+import { CadastroFilterBarSearchable } from '../../components/ui';
 import { Pagination } from '../../components/ui';
 import { ClasseModal } from '../../components/classes';
 import ClassesStats from '../../components/classes/ClassesStats';
@@ -125,7 +125,7 @@ const Classes = () => {
       <ClassesStats estatisticas={estatisticas} />
 
       {/* Filtros */}
-      <CadastroFilterBar
+      <CadastroFilterBarSearchable
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onKeyPress={handleKeyPress}
@@ -133,6 +133,7 @@ const Classes = () => {
         onStatusFilterChange={setStatusFilter}
         onClear={handleClearFilters}
         placeholder="Buscar por nome..."
+        useSearchableSelect={true}
         additionalFilters={[
           {
             label: 'Subgrupo',
@@ -142,7 +143,8 @@ const Classes = () => {
               { value: 'todos', label: 'Todos os Subgrupos' },
               ...subgrupos.map(subgrupo => ({
                 value: subgrupo.id.toString(),
-                label: subgrupo.nome
+                label: subgrupo.nome,
+                description: subgrupo.descricao || subgrupo.grupo_nome || ''
               }))
             ]
           }
