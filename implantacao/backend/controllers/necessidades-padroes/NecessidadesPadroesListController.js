@@ -84,7 +84,13 @@ class NecessidadesPadroesListController {
         ${whereClause}
       `;
 
-      const countParams = queryParams.slice(0, -2); // Remove limit e offset
+      // Parâmetros para contagem (sem limit e offset)
+      const countParams = [];
+      if (ativo !== undefined) countParams.push(ativo);
+      if (escola_id) countParams.push(escola_id);
+      if (grupo_id) countParams.push(grupo_id);
+      if (produto_id) countParams.push(produto_id);
+
       const countResult = await executeQuery(countQuery, countParams);
       const total = countResult[0]?.total || 0;
 
