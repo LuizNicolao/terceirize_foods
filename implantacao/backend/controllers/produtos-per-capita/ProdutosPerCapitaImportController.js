@@ -119,14 +119,13 @@ const importarExcel = async (req, res) => {
       erros: [],
       total: 0
     };
-
-    let linhaIndex = 0;
     
     // Processar cada linha (pular cabeçalho)
-    worksheet.eachRow((row, rowNumber) => {
-      if (rowNumber === 1) return; // Pular cabeçalho
+    const totalRows = worksheet.rowCount;
+    
+    for (let rowNumber = 2; rowNumber <= totalRows; rowNumber++) {
+      const row = worksheet.getRow(rowNumber);
       
-      linhaIndex++;
       resultados.total++;
 
       try {
@@ -143,8 +142,8 @@ const importarExcel = async (req, res) => {
         const produto_id = valores.produto_id ? parseInt(valores.produto_id) : null;
         const produto_nome = valores.produto_nome?.toString()?.trim() || '';
         const produto_codigo = valores.produto_codigo?.toString()?.trim() || '';
-        const unidade_medida = valores.unidade_medida?.toString()?.trim() || '';
-        const grupo = valores.grupo?.toString()?.trim() || '';
+        let unidade_medida = valores.unidade_medida?.toString()?.trim() || '';
+        let grupo = valores.grupo?.toString()?.trim() || '';
         const subgrupo = valores.subgrupo?.toString()?.trim() || '';
         const classe = valores.classe?.toString()?.trim() || '';
         const per_capita_parcial = valores.per_capita_parcial ? parseFloat(valores.per_capita_parcial) : 0;
@@ -162,7 +161,7 @@ const importarExcel = async (req, res) => {
             produto: produto_nome || 'N/A',
             erro: 'produto_id é obrigatório'
           });
-          return;
+          continue;
         }
 
         if (!produto_nome) {
@@ -171,7 +170,7 @@ const importarExcel = async (req, res) => {
             produto: produto_id.toString(),
             erro: 'produto_nome é obrigatório'
           });
-          return;
+          continue;
         }
 
         // Verificar se produto existe no foods_db
@@ -191,10 +190,10 @@ const importarExcel = async (req, res) => {
           
           // Atualizar dados do produto se necessário
           if (!unidade_medida && produtoExiste[0].unidade_medida) {
-            valores.unidade_medida = produtoExiste[0].unidade_medida;
+            unidade_medida = produtoExiste[0].unidade_medida;
           }
           if (!grupo && produtoExiste[0].grupo) {
-            valores.grupo = produtoExiste[0].grupo;
+            grupo = produtoExiste[0].grupo;
           }
         } else {
           // Tentar buscar por código
@@ -317,7 +316,7 @@ const importarExcel = async (req, res) => {
           erro: error.message || 'Erro desconhecido'
         });
       }
-    });
+    }
 
     console.log(`✅ IMPORTAÇÃO CONCLUÍDA: ${resultados.sucesso.length} sucesso, ${resultados.erros.length} erros`);
 
