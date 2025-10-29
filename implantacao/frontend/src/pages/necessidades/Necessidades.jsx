@@ -173,68 +173,76 @@ const Necessidades = () => {
         </div>
       )}
 
-      {/* Lista de Necessidades Agrupadas por Escola */}
+      {/* Grid de Necessidades */}
       {necessidades && necessidades.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div>
-            {(() => {
-              // Agrupar necessidades por necessidade_id (se disponível) ou por escola e data
-              const agrupadas = necessidades.reduce((acc, necessidade) => {
-                // Usar necessidade_id se disponível, senão usar escola-data como fallback
-                const chave = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}`;
-                if (!acc[chave]) {
-                  acc[chave] = {
-                    necessidade_id: necessidade.necessidade_id,
-                    escola: necessidade.escola,
-                    rota: necessidade.escola_rota,
-                    data_consumo: necessidade.semana_consumo,
-                    data_preenchimento: necessidade.data_preenchimento,
-                    produtos: []
-                  };
-                }
-                acc[chave].produtos.push(necessidade);
-                return acc;
-              }, {});
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {(() => {
+            // Agrupar necessidades por necessidade_id (se disponível) ou por escola e data
+            const agrupadas = necessidades.reduce((acc, necessidade) => {
+              // Usar necessidade_id se disponível, senão usar escola-data como fallback
+              const chave = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}`;
+              if (!acc[chave]) {
+                acc[chave] = {
+                  necessidade_id: necessidade.necessidade_id,
+                  escola: necessidade.escola,
+                  rota: necessidade.escola_rota,
+                  data_consumo: necessidade.semana_consumo,
+                  data_preenchimento: necessidade.data_preenchimento,
+                  produtos: []
+                };
+              }
+              acc[chave].produtos.push(necessidade);
+              return acc;
+            }, {});
 
-              return Object.values(agrupadas).map((grupo, index) => (
-                <div key={index} className="p-4 border-b border-gray-100 last:border-b-0">
-                  {/* Cabeçalho da Escola - Layout Compacto */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-3 mb-1">
-                        <h4 className="text-base font-semibold text-gray-900 truncate">
-                          {grupo.escola}
-                        </h4>
-                        {grupo.necessidade_id && (
-                          <span className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
-                            ID: {grupo.necessidade_id}
-                          </span>
-                        )}
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                          {grupo.produtos.length} produtos
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
-                        <span>Rota: {grupo.rota}</span>
-                        <span>•</span>
-                        <span>Consumo: {grupo.data_consumo}</span>
-                        <span>•</span>
-                        <span>Gerado: {new Date(grupo.data_preenchimento).toLocaleDateString('pt-BR')}</span>
-                      </div>
-                    </div>
-                    <div className="flex-shrink-0 ml-4">
-                      <ActionButtons
-                        canView={true}
-                        onView={handleVisualizarNecessidade}
-                        item={grupo}
-                        size="sm"
-                      />
+            return Object.values(agrupadas).map((grupo, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                {/* Cabeçalho da Escola */}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-base font-semibold text-gray-900 truncate mb-1">
+                      {grupo.escola}
+                    </h4>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
+                      <span>Rota: {grupo.rota}</span>
+                      <span>•</span>
+                      <span>Consumo: {grupo.data_consumo}</span>
                     </div>
                   </div>
+                  <div className="flex-shrink-0 ml-2">
+                    <ActionButtons
+                      canView={true}
+                      onView={handleVisualizarNecessidade}
+                      item={grupo}
+                      size="sm"
+                    />
+                  </div>
                 </div>
-              ));
-            })()}
-          </div>
+
+                {/* Informações da Necessidade */}
+                <div className="space-y-2">
+                  {grupo.necessidade_id && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-500">ID:</span>
+                      <span className="font-medium text-gray-900">{grupo.necessidade_id}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Produtos:</span>
+                    <span className="font-medium text-blue-600">{grupo.produtos.length}</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-500">Gerado:</span>
+                    <span className="font-medium text-gray-900">
+                      {new Date(grupo.data_preenchimento).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ));
+          })()}
         </div>
       )}
 
