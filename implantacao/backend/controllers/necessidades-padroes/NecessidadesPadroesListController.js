@@ -67,6 +67,14 @@ class NecessidadesPadroesListController {
 
       queryParams.push(parseInt(limit), offset);
 
+      // Debug dos parâmetros
+      console.log('=== DEBUG NECESSIDADES PADRÕES ===');
+      console.log('Query:', query);
+      console.log('QueryParams:', queryParams);
+      console.log('QueryParams length:', queryParams.length);
+      console.log('QueryParams types:', queryParams.map(p => typeof p));
+      console.log('===================================');
+
       const resultados = await executeQuery(query, queryParams);
 
       // Query para contar total
