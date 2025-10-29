@@ -25,6 +25,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -46,6 +47,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -66,6 +68,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: true },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: true },
       permissoes: { visualizar: true, criar: true, editar: true, excluir: true }
     }
   },
@@ -89,6 +92,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -110,6 +114,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -130,6 +135,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: true },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -153,6 +159,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -174,6 +181,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -195,6 +203,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -218,6 +227,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -239,6 +249,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -259,6 +270,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: true },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -282,6 +294,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -303,6 +316,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -323,6 +337,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: true },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: true },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     }
   },
@@ -346,6 +361,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     II: {
@@ -367,6 +383,7 @@ const PERMISSOES_PADRAO = {
       analise_necessidades: { visualizar: true, criar: true, editar: true, excluir: false },
       analise_necessidades_substituicoes: { visualizar: true, criar: true, editar: true, excluir: false },
       consulta_status_necessidade: { visualizar: true, criar: false, editar: false, excluir: false },
+      necessidades_padroes: { visualizar: true, criar: true, editar: true, excluir: false },
       permissoes: { visualizar: false, criar: false, editar: false, excluir: false }
     },
     III: {
@@ -412,6 +429,7 @@ const TODAS_TELAS = [
   'analise_necessidades',
   'analise_necessidades_substituicoes',
   'consulta_status_necessidade',
+  'necessidades_padroes',
   'permissoes'
 ];
 
@@ -452,6 +470,7 @@ const TELAS_COM_DESCRICOES = [
   { nome: 'analise_necessidades', descricao: 'Analise de Necessidades' },
   { nome: 'analise_necessidades_substituicoes', descricao: 'Análise de Substituições' },
   { nome: 'consulta_status_necessidade', descricao: 'Consulta Status Necessidade' },
+  { nome: 'necessidades_padroes', descricao: 'Pedido Mensal' },
   { nome: 'permissoes', descricao: 'Gerenciamento de Permissões' }
 ];
 
