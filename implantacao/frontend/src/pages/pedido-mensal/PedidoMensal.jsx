@@ -109,10 +109,9 @@ const PedidoMensal = () => {
           : filiaisResponse.data.data;
         
         if (Array.isArray(filiaisData)) {
-          console.log('Dados de filiais recebidos:', filiaisData);
           setFiliais(filiaisData.map(f => ({ 
             value: f.id, 
-            label: f.nome || f.nome_filial || f.descricao || `Filial ${f.id}`
+            label: f.filial || f.nome || f.razao_social || `Filial ${f.id}`
           })));
         } else {
           console.warn('Dados de filiais não são um array:', filiaisData);
@@ -132,7 +131,6 @@ const PedidoMensal = () => {
           : gruposResponse.data.data;
         
         if (Array.isArray(gruposData)) {
-          console.log('Dados de grupos recebidos:', gruposData);
           setGrupos(gruposData.map(g => ({ 
             value: g.id, 
             label: g.nome || g.descricao || `Grupo ${g.id}`
