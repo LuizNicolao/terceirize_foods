@@ -210,15 +210,18 @@ const PedidoMensal = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="p-3 sm:p-6">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2 flex items-center">
-          <FaShoppingCart className="mr-3" /> Pedido Mensal
-        </h1>
-        <p className="text-gray-600">
-          Defina padrões de produtos para pedidos mensais por escola e grupo.
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-4">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center">
+            <FaShoppingCart className="mr-2 sm:mr-3 text-green-600" />
+            Pedido Mensal
+          </h1>
+          <p className="text-gray-600 mt-1">
+            Defina padrões de produtos para pedidos mensais por escola e grupo.
+          </p>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -229,10 +232,10 @@ const PedidoMensal = () => {
 
       {/* Conteúdo das Abas */}
       {activeTab === 'criar' && (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
           {/* Filtros */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4 flex items-center">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
               <FaFilter className="mr-2" /> Filtros
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
@@ -274,6 +277,7 @@ const PedidoMensal = () => {
                 color="green"
                 icon={<FaPlus />}
                 disabled={!podeIncluirProduto || loading}
+                size="sm"
               >
                 Incluir Produto
               </Button>
@@ -281,16 +285,25 @@ const PedidoMensal = () => {
           </div>
 
           {/* Tabela de Produtos */}
-          <div className="bg-white shadow-md rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Produtos do Padrão</h2>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4">Produtos do Padrão</h2>
             {loading ? (
               <div className="text-center py-4">Carregando produtos...</div>
             ) : produtos.length === 0 ? (
-              <div className="text-center py-4 text-gray-500">
-                {podeIncluirProduto 
-                  ? 'Nenhum produto adicionado. Clique em "Incluir Produto" para começar.' 
-                  : 'Selecione a Filial, Escola e Grupo para adicionar produtos.'
-                }
+              <div className="text-center py-8 text-gray-500">
+                <FaPlus className="text-4xl mx-auto mb-4 text-gray-300" />
+                <p className="text-lg font-medium mb-2">
+                  {podeIncluirProduto 
+                    ? 'Nenhum produto adicionado' 
+                    : 'Selecione os filtros para começar'
+                  }
+                </p>
+                <p className="text-sm">
+                  {podeIncluirProduto 
+                    ? 'Clique em "Incluir Produto" para adicionar produtos ao padrão.' 
+                    : 'Selecione a Filial, Escola e Grupo para adicionar produtos.'
+                  }
+                </p>
               </div>
             ) : (
               <PedidoMensalTable
@@ -300,12 +313,13 @@ const PedidoMensal = () => {
               />
             )}
             {produtos.length > 0 && (
-              <div className="flex justify-end mt-6">
+              <div className="flex justify-end mt-6 pt-4 border-t border-gray-200">
                 <Button
                   onClick={handleSalvarPadrao}
                   color="blue"
                   icon={<FaSave />}
                   disabled={loading || !canCreatePedidoMensal}
+                  size="sm"
                 >
                   Salvar Padrão
                 </Button>
@@ -316,13 +330,14 @@ const PedidoMensal = () => {
       )}
 
       {activeTab === 'gerenciar' && (
-        <div className="bg-white shadow-md rounded-lg p-6">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">
             Gerenciar Padrões Existentes
           </h2>
           <div className="text-center py-8 text-gray-500">
-            <FaCog className="text-4xl mx-auto mb-4" />
-            <p>Funcionalidade em desenvolvimento...</p>
+            <FaCog className="text-4xl mx-auto mb-4 text-gray-300" />
+            <p className="text-lg font-medium mb-2">Funcionalidade em desenvolvimento</p>
+            <p className="text-sm">Esta funcionalidade será implementada em breve.</p>
           </div>
         </div>
       )}
