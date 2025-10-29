@@ -162,7 +162,7 @@ class ConsultaStatusController {
         ORDER BY n.status
       `;
 
-      const stats = await executeQuery(statsQuery, countParams);
+      const stats = await executeQuery(statsQuery, queryParams);
 
       // Agrupar por status de substituição
       const substituicaoStatsQuery = `
@@ -182,7 +182,7 @@ class ConsultaStatusController {
         ORDER BY status_substituicao
       `;
 
-      const substituicaoStats = await executeQuery(substituicaoStatsQuery, countParams);
+      const substituicaoStats = await executeQuery(substituicaoStatsQuery, queryParams);
 
       res.json({
         success: true,
