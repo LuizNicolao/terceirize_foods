@@ -8,7 +8,7 @@ const { authenticateToken, checkPermission, checkScreenPermission } = require('.
 const { subgrupoValidations, commonValidations } = require('./subgrupoValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
-const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const SubgruposController = require('../../controllers/subgrupos');
 
 const router = express.Router();
@@ -75,7 +75,7 @@ router.post('/',
 // PUT /api/subgrupos/:id - Atualizar subgrupo
 router.put('/:id', 
   checkPermission('editar'),
-  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'subgrupos'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'subgrupos'),
   subgrupoValidations.update,
   SubgruposController.atualizarSubgrupo
 );

@@ -8,7 +8,7 @@ const { authenticateToken, checkPermission, checkScreenPermission } = require('.
 const { grupoValidations, commonValidations } = require('./grupoValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
-const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const GruposController = require('../../controllers/grupos');
 
 const router = express.Router();
@@ -75,7 +75,7 @@ router.post('/',
 // PUT /api/grupos/:id - Atualizar grupo
 router.put('/:id', 
   checkPermission('editar'),
-  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'grupos'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'grupos'),
   grupoValidations.update,
   GruposController.atualizarGrupo
 );

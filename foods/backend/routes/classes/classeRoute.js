@@ -8,7 +8,7 @@ const { authenticateToken, checkPermission, checkScreenPermission } = require('.
 const { classeValidations, commonValidations } = require('./classeValidator');
 const { paginationMiddleware } = require('../../middleware/pagination');
 const { hateoasMiddleware } = require('../../middleware/hateoas');
-const { auditMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
+const { auditMiddleware, auditChangesMiddleware, AUDIT_ACTIONS } = require('../../utils/audit');
 const ClassesController = require('../../controllers/classes');
 
 const router = express.Router();
@@ -75,7 +75,7 @@ router.post('/',
 // PUT /api/classes/:id - Atualizar classe
 router.put('/:id', 
   checkPermission('editar'),
-  auditMiddleware(AUDIT_ACTIONS.UPDATE, 'classes'),
+  auditChangesMiddleware(AUDIT_ACTIONS.UPDATE, 'classes'),
   classeValidations.update,
   ClassesController.atualizarClasse
 );
