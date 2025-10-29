@@ -9,7 +9,8 @@ import {
   RegistrosDiariosModal, 
   RegistrosDiariosTable, 
   RegistrosDiariosStats,
-  RegistrosDiariosFilters
+  RegistrosDiariosFilters,
+  ModalValidacaoExclusao
 } from '../../components/registros-diarios';
 import ImportRegistrosModal from '../../components/registros-diarios/ImportRegistrosModal';
 
@@ -45,10 +46,13 @@ const RegistrosDiarios = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingRegistro, setDeletingRegistro] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showValidacaoExclusao, setShowValidacaoExclusao] = useState(false);
+  const [escolaParaExclusao, setEscolaParaExclusao] = useState(null);
   
-  const handleDeleteClick = (escolaId, data) => {
-    setDeletingRegistro({ escolaId, data });
-    setShowDeleteConfirm(true);
+  const handleDeleteClick = (escolaId, data, escolaNome) => {
+    // Usar o novo modal de validação em vez do modal simples
+    setEscolaParaExclusao({ id: escolaId, nome: escolaNome });
+    setShowValidacaoExclusao(true);
   };
   
   const confirmDelete = () => {
@@ -79,6 +83,17 @@ const RegistrosDiarios = () => {
       // Recarregar a página para mostrar os novos dados
       window.location.reload();
     }
+  };
+
+  const handleConfirmExclusao = () => {
+    // Recarregar dados após exclusão
+    loadRegistros();
+    loadEstatisticas();
+  };
+
+  const handleCloseValidacaoExclusao = () => {
+    setShowValidacaoExclusao(false);
+    setEscolaParaExclusao(null);
   };
   
   return (
@@ -182,6 +197,15 @@ const RegistrosDiarios = () => {
         isOpen={showImportModal}
         onClose={() => setShowImportModal(false)}
         onImportSuccess={handleImportSuccess}
+      />
+
+      {/* Modal de Validação de Exclusão */}
+      <ModalValidacaoExclusao
+        isOpen={showValidacaoExclusao}
+        onClose={handleCloseValidacaoExclusao}
+        escolaId={escolaParaExclusao?.id}
+        escolaNome={escolaParaExclusao?.nome}
+        onConfirmExclusao={handleConfirmExclusao}
       />
     </div>
   );

@@ -88,7 +88,7 @@ const RegistrosDiariosTable = ({
                       canDelete={canDelete}
                       onView={() => onView(registro)}
                       onEdit={() => onEdit(registro)}
-                      onDelete={() => onDelete(registro.escola_id, registro.data)}
+                      onDelete={() => onDelete(registro.escola_id, registro.data, registro.escola_nome)}
                       item={registro}
                       size="xs"
                     />
@@ -115,7 +115,7 @@ const RegistrosDiariosTable = ({
                 canDelete={canDelete}
                 onView={() => onView(registro)}
                 onEdit={() => onEdit(registro)}
-                onDelete={() => onDelete(registro.escola_id, registro.data)}
+                onDelete={() => onDelete(registro.escola_id, registro.data, registro.escola_nome)}
                 item={registro}
                 size="xs"
                 className="p-2"
