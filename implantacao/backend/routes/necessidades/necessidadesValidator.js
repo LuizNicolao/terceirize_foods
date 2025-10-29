@@ -33,6 +33,7 @@ const gerarNecessidadeSchema = yup.object().shape({
     .required('Semana de consumo é obrigatória'),
   
   semana_abastecimento: yup.string()
+    .matches(/^\(\d{2}\/\d{2} a \d{2}\/\d{2}\/\d{2}\)$/, 'Semana de abastecimento deve estar no formato (DD/MM a DD/MM/YY)')
     .nullable()
     .optional(),
   
