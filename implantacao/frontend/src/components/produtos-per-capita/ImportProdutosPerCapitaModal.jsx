@@ -112,6 +112,7 @@ const ImportProdutosPerCapitaModal = ({ isOpen, onClose, onImportSuccess }) => {
             <li>Preencha os dados conforme o exemplo fornecido</li>
             <li>Os campos <strong>produto_id</strong> e <strong>produto_nome</strong> são obrigatórios</li>
             <li>Certifique-se de que os produtos existem no sistema Foods</li>
+            <li>Dados do produto (código, unidade, grupo, etc.) serão preenchidos automaticamente</li>
             <li>Se o produto já tiver per capita ativo, ele será atualizado</li>
             <li>Valores de per capita devem ser números decimais (ex: 0.100, 0.150)</li>
           </ul>

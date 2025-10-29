@@ -34,40 +34,28 @@ const baixarModelo = async (req, res) => {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Produtos Per Capita');
 
-    // Definir colunas
+    // Definir colunas (apenas campos essenciais)
     worksheet.columns = [
       { header: 'produto_id', key: 'produto_id', width: 15 },
       { header: 'produto_nome', key: 'produto_nome', width: 40 },
-      { header: 'produto_codigo', key: 'produto_codigo', width: 20 },
-      { header: 'unidade_medida', key: 'unidade_medida', width: 15 },
-      { header: 'grupo', key: 'grupo', width: 20 },
-      { header: 'subgrupo', key: 'subgrupo', width: 20 },
-      { header: 'classe', key: 'classe', width: 20 },
       { header: 'per_capita_parcial', key: 'per_capita_parcial', width: 18 },
       { header: 'per_capita_lanche_manha', key: 'per_capita_lanche_manha', width: 22 },
       { header: 'per_capita_lanche_tarde', key: 'per_capita_lanche_tarde', width: 22 },
       { header: 'per_capita_almoco', key: 'per_capita_almoco', width: 18 },
       { header: 'per_capita_eja', key: 'per_capita_eja', width: 15 },
-      { header: 'descricao', key: 'descricao', width: 40 },
-      { header: 'ativo', key: 'ativo', width: 10 }
+      { header: 'descricao', key: 'descricao', width: 40 }
     ];
 
     // Adicionar linha de exemplo
     worksheet.addRow({
       produto_id: 1,
       produto_nome: 'Exemplo: Arroz Integral 1kg',
-      produto_codigo: 'EX001',
-      unidade_medida: 'KG',
-      grupo: 'SECOS',
-      subgrupo: 'Grãos',
-      classe: 'Cereais',
       per_capita_parcial: 0.100,
       per_capita_lanche_manha: 0.000,
       per_capita_lanche_tarde: 0.000,
       per_capita_almoco: 0.150,
       per_capita_eja: 0.000,
-      descricao: 'Exemplo: Observações sobre o produto per capita',
-      ativo: 1
+      descricao: 'Exemplo: Observações sobre o produto per capita'
     });
 
     // Estilizar cabeçalho
@@ -138,21 +126,15 @@ const importarExcel = async (req, res) => {
           }
         });
 
-        // Extrair valores
+        // Extrair valores (apenas campos essenciais)
         const produto_id = valores.produto_id ? parseInt(valores.produto_id) : null;
         const produto_nome = valores.produto_nome?.toString()?.trim() || '';
-        const produto_codigo = valores.produto_codigo?.toString()?.trim() || '';
-        let unidade_medida = valores.unidade_medida?.toString()?.trim() || '';
-        let grupo = valores.grupo?.toString()?.trim() || '';
-        const subgrupo = valores.subgrupo?.toString()?.trim() || '';
-        const classe = valores.classe?.toString()?.trim() || '';
         const per_capita_parcial = valores.per_capita_parcial ? parseFloat(valores.per_capita_parcial) : 0;
         const per_capita_lanche_manha = valores.per_capita_lanche_manha ? parseFloat(valores.per_capita_lanche_manha) : 0;
         const per_capita_lanche_tarde = valores.per_capita_lanche_tarde ? parseFloat(valores.per_capita_lanche_tarde) : 0;
         const per_capita_almoco = valores.per_capita_almoco ? parseFloat(valores.per_capita_almoco) : 0;
         const per_capita_eja = valores.per_capita_eja ? parseFloat(valores.per_capita_eja) : 0;
         const descricao = valores.descricao?.toString()?.trim() || null;
-        const ativo = valores.ativo !== undefined ? (valores.ativo === 1 || valores.ativo === '1' || valores.ativo === true || valores.ativo?.toString()?.toLowerCase() === 'sim') ? 1 : 0 : 1;
 
         // Validações básicas
         if (!produto_id) {
@@ -173,7 +155,7 @@ const importarExcel = async (req, res) => {
           continue;
         }
 
-        // Verificar se produto existe no foods_db
+        // Verificar se produto existe no foods_db e buscar dados completos
         const produtoExiste = await executeQuery(
           `SELECT id, nome, codigo, unidade_medida, grupo, subgrupo, classe, grupo_id
            FROM foods_db.produtos 
@@ -183,33 +165,27 @@ const importarExcel = async (req, res) => {
 
         let produto_origem_id = null;
         let grupo_id = null;
+        let produto_codigo = null;
+        let unidade_medida = null;
+        let grupo = null;
+        let subgrupo = null;
+        let classe = null;
 
         if (produtoExiste.length > 0) {
           produto_origem_id = produtoExiste[0].id;
           grupo_id = produtoExiste[0].grupo_id || null;
-          
-          // Atualizar dados do produto se necessário
-          if (!unidade_medida && produtoExiste[0].unidade_medida) {
-            unidade_medida = produtoExiste[0].unidade_medida;
-          }
-          if (!grupo && produtoExiste[0].grupo) {
-            grupo = produtoExiste[0].grupo;
-          }
+          produto_codigo = produtoExiste[0].codigo || null;
+          unidade_medida = produtoExiste[0].unidade_medida || null;
+          grupo = produtoExiste[0].grupo || null;
+          subgrupo = produtoExiste[0].subgrupo || null;
+          classe = produtoExiste[0].classe || null;
         } else {
-          // Tentar buscar por código
-          if (produto_codigo) {
-            const produtoPorCodigo = await executeQuery(
-              `SELECT id, nome, codigo, unidade_medida, grupo, subgrupo, classe, grupo_id
-               FROM foods_db.produtos 
-               WHERE codigo = ?`,
-              [produto_codigo]
-            );
-            
-            if (produtoPorCodigo.length > 0) {
-              produto_origem_id = produtoPorCodigo[0].id;
-              grupo_id = produtoPorCodigo[0].grupo_id || null;
-            }
-          }
+          resultados.erros.push({
+            linha: rowNumber,
+            produto: produto_nome || produto_id.toString(),
+            erro: 'Produto não encontrado no sistema Foods'
+          });
+          continue;
         }
 
         // Verificar se já existe per capita ativo para este produto
