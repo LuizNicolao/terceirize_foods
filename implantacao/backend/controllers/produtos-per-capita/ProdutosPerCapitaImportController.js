@@ -157,9 +157,26 @@ const importarExcel = async (req, res) => {
 
         // Verificar se produto existe no foods_db e buscar dados completos
         const produtoExiste = await executeQuery(
-          `SELECT id, nome, codigo, unidade_medida, grupo, subgrupo, classe, grupo_id
-           FROM foods_db.produtos 
-           WHERE id = ?`,
+          `SELECT 
+             p.id, 
+             p.nome, 
+             p.codigo_produto,
+             p.grupo_id,
+             p.subgrupo_id,
+             p.classe_id,
+             p.unidade_id,
+             po.codigo as codigo_origem,
+             um.nome as unidade_medida,
+             g.nome as grupo,
+             sg.nome as subgrupo,
+             c.nome as classe
+           FROM foods_db.produtos p
+           LEFT JOIN foods_db.produto_origem po ON p.produto_origem_id = po.id
+           LEFT JOIN foods_db.unidades_medida um ON p.unidade_id = um.id
+           LEFT JOIN foods_db.grupos g ON p.grupo_id = g.id
+           LEFT JOIN foods_db.subgrupos sg ON p.subgrupo_id = sg.id
+           LEFT JOIN foods_db.classes c ON p.classe_id = c.id
+           WHERE p.id = ? AND p.status = 1`,
           [produto_id]
         );
 
@@ -174,7 +191,7 @@ const importarExcel = async (req, res) => {
         if (produtoExiste.length > 0) {
           produto_origem_id = produtoExiste[0].id;
           grupo_id = produtoExiste[0].grupo_id || null;
-          produto_codigo = produtoExiste[0].codigo || null;
+          produto_codigo = produtoExiste[0].codigo_produto || produtoExiste[0].codigo_origem || null;
           unidade_medida = produtoExiste[0].unidade_medida || null;
           grupo = produtoExiste[0].grupo || null;
           subgrupo = produtoExiste[0].subgrupo || null;
