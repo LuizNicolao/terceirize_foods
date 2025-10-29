@@ -173,76 +173,115 @@ const Necessidades = () => {
         </div>
       )}
 
-      {/* Grid de Necessidades */}
+      {/* Tabela de Necessidades */}
       {necessidades && necessidades.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {(() => {
-            // Agrupar necessidades por necessidade_id (se disponível) ou por escola e data
-            const agrupadas = necessidades.reduce((acc, necessidade) => {
-              // Usar necessidade_id se disponível, senão usar escola-data como fallback
-              const chave = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}`;
-              if (!acc[chave]) {
-                acc[chave] = {
-                  necessidade_id: necessidade.necessidade_id,
-                  escola: necessidade.escola,
-                  rota: necessidade.escola_rota,
-                  data_consumo: necessidade.semana_consumo,
-                  data_preenchimento: necessidade.data_preenchimento,
-                  produtos: []
-                };
-              }
-              acc[chave].produtos.push(necessidade);
-              return acc;
-            }, {});
-
-            return Object.values(agrupadas).map((grupo, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
-                {/* Cabeçalho da Escola */}
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-base font-semibold text-gray-900 truncate mb-1">
-                      {grupo.escola}
-                    </h4>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-500">
-                      <span>Rota: {grupo.rota}</span>
-                      <span>•</span>
-                      <span>Consumo: {grupo.data_consumo}</span>
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0 ml-2">
-                    <ActionButtons
-                      canView={true}
-                      onView={handleVisualizarNecessidade}
-                      item={grupo}
-                      size="sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Informações da Necessidade */}
-                <div className="space-y-2">
-                  {grupo.necessidade_id && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500">ID:</span>
-                      <span className="font-medium text-gray-900">{grupo.necessidade_id}</span>
-                    </div>
-                  )}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Escola
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Rota
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Produto
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Quantidade
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Grupo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Semana Consumo
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Semana Abastecimento
+                  </th>
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ações
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {necessidades.map((necessidade, index) => {
+                  // Agrupar por necessidade_id para identificar registros únicos
+                  const grupoKey = necessidade.necessidade_id || `${necessidade.escola}-${necessidade.semana_consumo}`;
+                  const isFirstInGroup = index === 0 || 
+                    (necessidades[index - 1]?.necessidade_id !== necessidade.necessidade_id && 
+                     `${necessidades[index - 1]?.escola}-${necessidades[index - 1]?.semana_consumo}` !== grupoKey);
                   
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">Produtos:</span>
-                    <span className="font-medium text-blue-600">{grupo.produtos.length}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500">Gerado:</span>
-                    <span className="font-medium text-gray-900">
-                      {new Date(grupo.data_preenchimento).toLocaleDateString('pt-BR')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ));
-          })()}
+                  return (
+                    <tr key={`${necessidade.id || index}`} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {necessidade.necessidade_id || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {necessidade.escola || '-'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {necessidade.escola_rota || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {necessidade.produto || necessidade.produto_nome || '-'}
+                        </div>
+                        {necessidade.produto_unidade && (
+                          <div className="text-xs text-gray-500">
+                            {necessidade.produto_unidade}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                        {necessidade.quantidade ? Number(necessidade.quantidade).toFixed(3).replace('.', ',') : '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {necessidade.grupo || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {necessidade.semana_consumo || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {necessidade.semana_abastecimento || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                        {isFirstInGroup && (
+                          <ActionButtons
+                            canView={true}
+                            onView={() => {
+                              // Agrupar produtos da mesma necessidade
+                              const grupo = {
+                                necessidade_id: necessidade.necessidade_id,
+                                escola: necessidade.escola,
+                                rota: necessidade.escola_rota,
+                                data_consumo: necessidade.semana_consumo,
+                                data_preenchimento: necessidade.data_preenchimento,
+                                produtos: necessidades.filter(n => {
+                                  const key = n.necessidade_id || `${n.escola}-${n.semana_consumo}`;
+                                  return key === grupoKey;
+                                })
+                              };
+                              handleVisualizarNecessidade(grupo);
+                            }}
+                            item={necessidade}
+                            size="sm"
+                          />
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
