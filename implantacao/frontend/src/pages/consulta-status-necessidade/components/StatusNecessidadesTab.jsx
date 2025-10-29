@@ -181,20 +181,52 @@ const StatusNecessidadesTab = () => {
   const carregarStatusNecessidades = async () => {
     setLoading(true);
     try {
-      // Atualizar filtros no hook
-      atualizarFiltros({
-        status_necessidade: filtros.status_necessidade,
-        status_substituicao: filtros.status_substituicao,
-        grupo: filtros.grupo,
-        semana_abastecimento: filtros.semana_abastecimento,
-        semana_consumo: filtros.semana_consumo,
-        escola_id: filtros.escola_id,
-        produto_id: filtros.produto_id
-      });
+      // Buscar necessidades com filtros (sem paginação, como no StatusEntregaTab)
+      const params = {};
       
+      // Aplicar filtros apenas se estiverem selecionados
+      if (filtros.status_necessidade) {
+        params.status_necessidade = filtros.status_necessidade;
+      }
+      if (filtros.status_substituicao) {
+        params.status_substituicao = filtros.status_substituicao;
+      }
+      if (filtros.grupo) {
+        params.grupo = filtros.grupo;
+      }
+      if (filtros.semana_abastecimento) {
+        params.semana_abastecimento = filtros.semana_abastecimento;
+      }
+      if (filtros.semana_consumo) {
+        params.semana_consumo = filtros.semana_consumo;
+      }
+      if (filtros.escola_id) {
+        params.escola_id = filtros.escola_id;
+      }
+      if (filtros.produto_id) {
+        params.produto_id = filtros.produto_id;
+      }
+
+      const response = await consultaStatusNecessidadeService.listar(params);
+      
+      if (response.success) {
+        const necessidadesData = response.data || [];
+        
+        // Separar necessidades processadas e não processadas
+        // Processadas = têm status_substituicao (não null/undefined)
+        const processadas = necessidadesData.filter(n => n.status_substituicao && n.status_substituicao !== '');
+        const naoProcessadas = necessidadesData.filter(n => !n.status_substituicao || n.status_substituicao === '');
+        
+        setNecessidadesProcessadas(processadas);
+        setNecessidadesNaoProcessadas(naoProcessadas);
+        setUltimaAtualizacao(new Date());
+      } else {
+        toast.error('Erro ao carregar dados');
+      }
     } catch (error) {
       console.error('Erro ao carregar status das necessidades:', error);
       toast.error('Erro ao carregar status das necessidades');
+    } finally {
       setLoading(false);
     }
   };
@@ -347,19 +379,7 @@ const StatusNecessidadesTab = () => {
     }
   }, [filtros, inicializado]);
 
-  // Atualizar listas quando as necessidades mudarem
-  useEffect(() => {
-    if (necessidades) {
-      // Separar necessidades processadas e não processadas
-      const processadas = necessidades.filter(n => n.status_substituicao);
-      const naoProcessadas = necessidades.filter(n => !n.status_substituicao);
-      
-      setNecessidadesProcessadas(processadas);
-      setNecessidadesNaoProcessadas(naoProcessadas);
-      setUltimaAtualizacao(new Date());
-      setLoading(false);
-    }
-  }, [necessidades]);
+  // Remover useEffect conflitante - agora a separação é feita diretamente em carregarStatusNecessidades
 
   return (
     <div className="space-y-6">
