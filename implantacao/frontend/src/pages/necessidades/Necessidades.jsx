@@ -130,7 +130,7 @@ const Necessidades = () => {
 
   return (
     <>
-    <NecessidadesLayout hideHeader={true}>
+    <NecessidadesLayout>
       {/* Botão de Adicionar */}
       <NecessidadesActions
         canCreate={canCreateNecessidades}
@@ -176,12 +176,12 @@ const Necessidades = () => {
       {/* Lista de Necessidades Agrupadas por Escola */}
       {necessidades && necessidades.length > 0 && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">
+          <div className="px-4 py-3 border-b border-gray-200">
+            <h3 className="text-base font-semibold text-gray-900">
               Necessidades Geradas ({necessidades.length} produtos)
             </h3>
           </div>
-          <div className="divide-y divide-gray-200">
+          <div>
             {(() => {
               // Agrupar necessidades por necessidade_id (se disponível) ou por escola e data
               const agrupadas = necessidades.reduce((acc, necessidade) => {
@@ -202,32 +202,32 @@ const Necessidades = () => {
               }, {});
 
               return Object.values(agrupadas).map((grupo, index) => (
-                <div key={index} className="p-6">
-                  {/* Cabeçalho da Escola */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900">
-                        {grupo.escola}
-                      </h4>
-                        <div className="flex items-center space-x-4 text-sm text-gray-500">
-                          <span>Rota: {grupo.rota}</span>
-                          <span>•</span>
-                          <span>Semana de Consumo: {grupo.data_consumo}</span>
-                          <span>•</span>
-                          <span>Gerado em: {new Date(grupo.data_preenchimento).toLocaleString('pt-BR')}</span>
-                        </div>
+                <div key={index} className="p-4 border-b border-gray-100 last:border-b-0">
+                  {/* Cabeçalho da Escola - Layout Compacto */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center space-x-3 mb-1">
+                        <h4 className="text-base font-semibold text-gray-900 truncate">
+                          {grupo.escola}
+                        </h4>
                         {grupo.necessidade_id && (
-                          <div className="mt-1">
-                            <span className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
-                              ID: {grupo.necessidade_id}
-                            </span>
-                          </div>
+                          <span className="inline-flex px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
+                            ID: {grupo.necessidade_id}
+                          </span>
                         )}
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                          {grupo.produtos.length} produtos
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+                        <span>Rota: {grupo.rota}</span>
+                        <span>•</span>
+                        <span>Consumo: {grupo.data_consumo}</span>
+                        <span>•</span>
+                        <span>Gerado: {new Date(grupo.data_preenchimento).toLocaleDateString('pt-BR')}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
-                        {grupo.produtos.length} produtos
-                      </span>
+                    <div className="flex-shrink-0 ml-4">
                       <ActionButtons
                         canView={true}
                         onView={handleVisualizarNecessidade}
@@ -237,14 +237,14 @@ const Necessidades = () => {
                     </div>
                   </div>
 
-                  {/* Resumo da Escola */}
-                  <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                    <div className="flex items-center justify-between text-sm">
+                  {/* Resumo da Escola - Layout Compacto */}
+                  <div className="bg-gray-50 rounded-md p-3">
+                    <div className="flex items-center justify-between text-xs">
                       <span className="text-gray-600">
-                        Total de produtos com ajuste: {grupo.produtos.filter(p => Number(p.ajuste) > 0).length}
+                        Produtos com ajuste: {grupo.produtos.filter(p => Number(p.ajuste) > 0).length}
                       </span>
                       <span className="font-medium text-gray-900">
-                        Soma dos ajustes: {grupo.produtos.reduce((sum, p) => sum + Number(p.ajuste), 0).toFixed(3).replace('.', ',')}
+                        Total ajustes: {grupo.produtos.reduce((sum, p) => sum + Number(p.ajuste), 0).toFixed(3).replace('.', ',')}
                       </span>
                     </div>
                   </div>
