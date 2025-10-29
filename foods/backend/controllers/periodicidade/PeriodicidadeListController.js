@@ -339,6 +339,44 @@ const buscarProdutosPorGrupo = async (req, res) => {
   }
 };
 
+/**
+ * Buscar contagem de produtos por grupo
+ */
+const buscarContagemProdutosPorGrupo = async (req, res) => {
+  try {
+    const contagens = await executeQuery(`
+      SELECT 
+        g.id as grupo_id,
+        g.nome as grupo_nome,
+        COUNT(p.id) as total_produtos
+      FROM grupos g
+      LEFT JOIN produtos p ON g.id = p.grupo_id AND p.status = 1
+      WHERE g.status = 'ativo'
+      GROUP BY g.id, g.nome
+      ORDER BY g.nome ASC
+    `);
+
+    // Transformar em objeto chave-valor para fácil acesso
+    const contagensPorGrupo = {};
+    contagens.forEach(item => {
+      contagensPorGrupo[item.grupo_id] = {
+        grupo_id: item.grupo_id,
+        grupo_nome: item.grupo_nome,
+        total: parseInt(item.total_produtos)
+      };
+    });
+
+    res.json({
+      success: true,
+      data: contagensPorGrupo,
+      message: 'Contagem de produtos por grupo listada com sucesso'
+    });
+  } catch (error) {
+    console.error('Erro ao buscar contagem de produtos por grupo:', error);
+    res.status(500).json({ error: 'Erro interno do servidor' });
+  }
+};
+
 module.exports = {
   listarAgrupamentos,
   listarTipos,
@@ -346,5 +384,6 @@ module.exports = {
   buscarProdutosVinculados,
   buscarHistoricoAplicacoes,
   buscarEstatisticas,
-  buscarProdutosPorGrupo
+  buscarProdutosPorGrupo,
+  buscarContagemProdutosPorGrupo
 };
