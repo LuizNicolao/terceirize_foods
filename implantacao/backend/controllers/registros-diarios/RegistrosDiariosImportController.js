@@ -30,7 +30,7 @@ class RegistrosDiariosImportController {
 
       // Buscar algumas escolas para exemplo
       const escolasQuery = `
-        SELECT id, nome_escola, rota 
+        SELECT id, nome_escola 
         FROM foods_db.unidades_escolares 
         WHERE ativo = 1 
         LIMIT 5
