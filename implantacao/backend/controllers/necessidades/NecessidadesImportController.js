@@ -36,6 +36,7 @@ const baixarModelo = async (req, res) => {
 
     // Definir colunas
     worksheet.columns = [
+      { header: 'necessidade_id', key: 'necessidade_id', width: 15 },
       { header: 'escola_id', key: 'escola_id', width: 15 },
       { header: 'escola_nome', key: 'escola_nome', width: 30 },
       { header: 'produto_id', key: 'produto_id', width: 15 },
@@ -48,6 +49,7 @@ const baixarModelo = async (req, res) => {
 
     // Adicionar linha de exemplo
     worksheet.addRow({
+      necessidade_id: 12,
       escola_id: 1,
       escola_nome: 'Exemplo: Escola Municipal João Silva',
       produto_id: 1,
@@ -113,17 +115,18 @@ const importarExcel = async (req, res) => {
 
       try {
         // Validar dados obrigatórios
-        const escolaId = rowData[1]; // escola_id
-        const escolaNome = rowData[2]; // escola_nome
-        const produtoId = rowData[3]; // produto_id
-        const produtoNome = rowData[4]; // produto_nome
-        const quantidade = rowData[5]; // quantidade
+        const necessidadeId = rowData[1]; // necessidade_id
+        const escolaId = rowData[2]; // escola_id
+        const escolaNome = rowData[3]; // escola_nome
+        const produtoId = rowData[4]; // produto_id
+        const produtoNome = rowData[5]; // produto_nome
+        const quantidade = rowData[6]; // quantidade
 
-        if (!escolaId || !produtoId || !quantidade) {
+        if (!necessidadeId || !escolaId || !produtoId || !quantidade) {
           erros.push({
             linha: linha,
-            erro: 'Campos obrigatórios não preenchidos (escola_id, produto_id, quantidade)',
-            dados: { escolaId, produtoId, quantidade }
+            erro: 'Campos obrigatórios não preenchidos (necessidade_id, escola_id, produto_id, quantidade)',
+            dados: { necessidadeId, escolaId, produtoId, quantidade }
           });
           return;
         }
@@ -177,14 +180,15 @@ const importarExcel = async (req, res) => {
 
         // Adicionar à lista de necessidades válidas
         necessidades.push({
+          necessidade_id: necessidadeId.toString().padStart(2, '0'), // Usar o ID da planilha
           escola_id: parseInt(escolaId),
           escola_nome: escolaNome,
           produto_id: parseInt(produtoId),
           produto_nome: produtoNome,
           quantidade: qtd,
-          semana_abastecimento: converterSemana(rowData[6]),
-          semana_consumo: converterSemana(rowData[7]),
-          observacoes: rowData[8] || null,
+          semana_abastecimento: converterSemana(rowData[7]),
+          semana_consumo: converterSemana(rowData[8]),
+          observacoes: rowData[9] || null,
           status: 'NEC', // Status padrão para necessidades importadas
           usuario_id: req.user.id, // Será substituído pelo nutricionista da escola
           usuario_email: req.user.email
@@ -198,25 +202,6 @@ const importarExcel = async (req, res) => {
         });
       }
     });
-
-    // Gerar ID sequencial base para esta importação
-    console.log('DEBUG - Iniciando geração de ID sequencial...');
-    
-    // Buscar o último ID que tenha exatamente 2 dígitos (01, 02, 03...)
-    const ultimoId = await executeQuery(`
-      SELECT COALESCE(MAX(CAST(necessidade_id AS UNSIGNED)), 0) as ultimo_id 
-      FROM necessidades 
-      WHERE necessidade_id IS NOT NULL 
-        AND necessidade_id != '' 
-        AND necessidade_id REGEXP '^[0-9]{1,2}$'
-        AND CAST(necessidade_id AS UNSIGNED) <= 99
-    `);
-    
-    console.log('DEBUG - Último ID encontrado (2 dígitos):', ultimoId);
-    
-    let proximoId = (ultimoId[0]?.ultimo_id || 0) + 1;
-    console.log('DEBUG - Próximo ID calculado:', proximoId);
-    console.log('DEBUG - Próximo ID formatado:', proximoId.toString().padStart(2, '0'));
 
     // Inserir necessidades no banco de dados
     const sucesso = [];
