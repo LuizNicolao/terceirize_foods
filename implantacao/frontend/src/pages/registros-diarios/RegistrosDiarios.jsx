@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaFileImport } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRegistrosDiarios } from '../../hooks/useRegistrosDiarios';
 import { Button, ConfirmModal } from '../../components/ui';
@@ -11,6 +11,7 @@ import {
   RegistrosDiariosStats,
   RegistrosDiariosFilters
 } from '../../components/registros-diarios';
+import ImportRegistrosModal from '../../components/registros-diarios/ImportRegistrosModal';
 
 const RegistrosDiarios = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
@@ -43,6 +44,7 @@ const RegistrosDiarios = () => {
   
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingRegistro, setDeletingRegistro] = useState(null);
+  const [showImportModal, setShowImportModal] = useState(false);
   
   const handleDeleteClick = (escolaId, data) => {
     setDeletingRegistro({ escolaId, data });
@@ -66,6 +68,19 @@ const RegistrosDiarios = () => {
     // TODO: Implementar exportação para PDF
     console.log('Exportar para PDF');
   };
+
+  const handleImportClick = () => {
+    setShowImportModal(true);
+  };
+
+  const handleImportSuccess = (data) => {
+    // Recarregar registros após importação bem-sucedida
+    if (data && data.importados > 0) {
+      // O hook já tem a função loadRegistros, mas precisamos acessá-la
+      // Por enquanto, vamos recarregar a página ou usar window.location.reload()
+      window.location.reload();
+    }
+  };
   
   return (
     <div className="p-6">
@@ -80,11 +95,18 @@ const RegistrosDiarios = () => {
         
         <div className="flex items-center gap-2 mt-4 sm:mt-0">
           {canCreate('registros_diarios') && (
-            <Button onClick={handleAddRegistro} size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Novo Registro</span>
-              <span className="sm:hidden">Novo</span>
-            </Button>
+            <>
+              <Button onClick={handleImportClick} size="sm" variant="outline">
+                <FaFileImport className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Importar</span>
+                <span className="sm:hidden">Import</span>
+              </Button>
+              <Button onClick={handleAddRegistro} size="sm">
+                <FaPlus className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Novo Registro</span>
+                <span className="sm:hidden">Novo</span>
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -155,6 +177,13 @@ const RegistrosDiarios = () => {
         message="Tem certeza que deseja excluir todos os registros desta data?"
         confirmText="Excluir"
         cancelText="Cancelar"
+      />
+
+      {/* Modal de Import */}
+      <ImportRegistrosModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={handleImportSuccess}
       />
     </div>
   );

@@ -145,6 +145,50 @@ class RegistrosDiariosService {
       };
     }
   }
+
+  /**
+   * Baixar modelo de planilha para importação
+   */
+  static async baixarModelo() {
+    try {
+      const response = await api.get('/registros-diarios/modelo', {
+        responseType: 'blob'
+      });
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao baixar modelo'
+      };
+    }
+  }
+
+  /**
+   * Importar registros diários via Excel
+   */
+  static async importar(formData) {
+    try {
+      const response = await api.post('/registros-diarios/importar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return {
+        success: true,
+        data: response.data.data || null,
+        message: response.data.message || 'Importação realizada com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro na importação',
+        data: error.response?.data?.data || null
+      };
+    }
+  }
 }
 
 export default RegistrosDiariosService;

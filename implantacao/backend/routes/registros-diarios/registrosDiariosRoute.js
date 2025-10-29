@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticateToken, checkScreenPermission } = require('../../middleware/auth');
 const { registrosDiariosValidations, handleValidationErrors } = require('./registrosDiariosValidator');
 const RegistrosDiariosController = require('../../controllers/registros-diarios');
+const { RegistrosDiariosImportController, upload } = require('../../controllers/registros-diarios/RegistrosDiariosImportController');
 
 const router = express.Router();
 
@@ -46,6 +47,19 @@ router.get('/buscar',
   registrosDiariosValidations.buscarPorEscolaData,
   handleValidationErrors,
   RegistrosDiariosController.buscarPorEscolaData
+);
+
+// GET /api/registros-diarios/modelo - Baixar modelo de planilha para importação
+router.get('/modelo',
+  checkScreenPermission('registros_diarios', 'criar'),
+  RegistrosDiariosImportController.baixarModelo
+);
+
+// POST /api/registros-diarios/importar - Importar registros diários via Excel
+router.post('/importar',
+  checkScreenPermission('registros_diarios', 'criar'),
+  upload.single('file'),
+  RegistrosDiariosImportController.importar
 );
 
 // POST /api/registros-diarios - Criar/atualizar registros diários
