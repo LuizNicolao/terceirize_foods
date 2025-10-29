@@ -5,6 +5,7 @@ import { useSemanasAbastecimento } from '../../../hooks/useSemanasAbastecimento'
 import { useAuth } from '../../../contexts/AuthContext';
 import { useConsultaStatusNecessidade } from '../../../hooks/useConsultaStatusNecessidade';
 import FoodsApiService from '../../../services/FoodsApiService';
+import consultaStatusNecessidadeService from '../../../services/consultaStatusNecessidade';
 import toast from 'react-hot-toast';
 import jsPDF from 'jspdf';
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaPlus, FaFileImport } from 'react-icons/fa';
+import { FaPlus, FaUpload } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useRegistrosDiarios } from '../../hooks/useRegistrosDiarios';
 import { Button, ConfirmModal } from '../../components/ui';
@@ -75,9 +75,8 @@ const RegistrosDiarios = () => {
 
   const handleImportSuccess = (data) => {
     // Recarregar registros após importação bem-sucedida
-    if (data && data.importados > 0) {
-      // O hook já tem a função loadRegistros, mas precisamos acessá-la
-      // Por enquanto, vamos recarregar a página ou usar window.location.reload()
+    if (data && (data.importados > 0 || data.atualizados > 0)) {
+      // Recarregar a página para mostrar os novos dados
       window.location.reload();
     }
   };
@@ -96,10 +95,9 @@ const RegistrosDiarios = () => {
         <div className="flex items-center gap-2 mt-4 sm:mt-0">
           {canCreate('registros_diarios') && (
             <>
-              <Button onClick={handleImportClick} size="sm" variant="outline">
-                <FaFileImport className="mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Importar</span>
-                <span className="sm:hidden">Import</span>
+              <Button onClick={handleImportClick} size="sm" variant="outline" className="flex items-center space-x-2">
+                <FaUpload size={14} />
+                <span>Importar</span>
               </Button>
               <Button onClick={handleAddRegistro} size="sm">
                 <FaPlus className="mr-1 sm:mr-2" />
@@ -183,7 +181,7 @@ const RegistrosDiarios = () => {
       <ImportRegistrosModal
         isOpen={showImportModal}
         onClose={() => setShowImportModal(false)}
-        onImport={handleImportSuccess}
+        onImportSuccess={handleImportSuccess}
       />
     </div>
   );

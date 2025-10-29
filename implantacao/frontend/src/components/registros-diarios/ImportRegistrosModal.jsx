@@ -1,22 +1,36 @@
 import React, { useState } from 'react';
+import { FaUpload, FaDownload, FaTimes, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
 import { Modal, Button } from '../ui';
-import { FaFileExcel, FaDownload, FaUpload, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import RegistrosDiariosService from '../../services/registrosDiarios';
-import toast from 'react-hot-toast';
 
-const ImportRegistrosModal = ({ isOpen, onClose, onImport }) => {
+const ImportRegistrosModal = ({ isOpen, onClose, onImportSuccess }) => {
+  const [arquivo, setArquivo] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState(null);
-  const [importing, setImporting] = useState(false);
+  const [resultado, setResultado] = useState(null);
+  const [erro, setErro] = useState(null);
 
-  const handleClose = () => {
-    setFile(null);
-    setPreview(null);
-    onClose();
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validar tipo de arquivo
+      const validTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel'
+      ];
+      
+      if (!validTypes.includes(file.type) && !file.name.match(/\.(xlsx|xls)$/)) {
+        setErro('Por favor, selecione um arquivo Excel válido (.xlsx ou .xls)');
+        setArquivo(null);
+        return;
+      }
+
+      setArquivo(file);
+      setErro(null);
+      setResultado(null);
+    }
   };
 
-  const handleDownloadTemplate = async () => {
+  const handleDownloadModelo = async () => {
     try {
       setLoading(true);
       const response = await RegistrosDiariosService.baixarModelo();
@@ -31,65 +45,55 @@ const ImportRegistrosModal = ({ isOpen, onClose, onImport }) => {
         link.click();
         link.remove();
         window.URL.revokeObjectURL(url);
-        
-        toast.success('Modelo baixado com sucesso!');
       } else {
-        toast.error(response.error || 'Erro ao baixar modelo');
+        setErro(response.error || 'Erro ao baixar modelo');
       }
     } catch (error) {
       console.error('Erro ao baixar modelo:', error);
-      toast.error('Erro ao baixar modelo');
+      setErro('Erro ao baixar modelo');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile) {
-      if (selectedFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
-          selectedFile.name.endsWith('.xlsx')) {
-        setFile(selectedFile);
-        setPreview({
-          name: selectedFile.name,
-          size: selectedFile.size,
-          type: selectedFile.type
-        });
-      } else {
-        toast.error('Por favor, selecione um arquivo Excel (.xlsx)');
-      }
-    }
-  };
-
   const handleImport = async () => {
-    if (!file) {
-      toast.error('Selecione um arquivo para importar');
+    if (!arquivo) {
+      setErro('Selecione um arquivo para importar');
       return;
     }
 
     try {
-      setImporting(true);
+      setLoading(true);
+      setErro(null);
+      
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', arquivo);
 
       const response = await RegistrosDiariosService.importar(formData);
       
       if (response.success) {
-        toast.success(`Importação realizada com sucesso! ${response.data?.importados || 0} registros importados.`);
-        onImport(response.data);
-        handleClose();
+        setResultado({
+          importados: response.data?.importados || 0,
+          atualizados: response.data?.atualizados || 0,
+          erros: response.data?.erros || []
+        });
+        onImportSuccess(response.data);
       } else {
-        toast.error(response.error || 'Erro na importação');
-        if (response.data?.erros && response.data.erros.length > 0) {
-          console.error('Erros de importação:', response.data.erros);
-        }
+        setErro(response.error || 'Erro na importação');
       }
     } catch (error) {
       console.error('Erro na importação:', error);
-      toast.error('Erro na importação');
+      setErro('Erro na importação');
     } finally {
-      setImporting(false);
+      setLoading(false);
     }
+  };
+
+  const handleClose = () => {
+    setArquivo(null);
+    setResultado(null);
+    setErro(null);
+    onClose();
   };
 
   return (
@@ -97,97 +101,134 @@ const ImportRegistrosModal = ({ isOpen, onClose, onImport }) => {
       isOpen={isOpen}
       onClose={handleClose}
       title="Importar Registros Diários"
-      size="lg"
+      size="3xl"
     >
       <div className="space-y-6">
         {/* Instruções */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-lg font-semibold text-blue-800 mb-2 flex items-center">
-            <FaFileExcel className="mr-2" />
-            Instruções de Importação
-          </h3>
-          <div className="text-sm text-blue-700 space-y-2">
-            <p>📋 <strong>Passo 1:</strong> Baixe o modelo de planilha clicando no botão abaixo</p>
-            <p>📝 <strong>Passo 2:</strong> Preencha os dados conforme o exemplo fornecido</p>
-            <p>📊 <strong>Passo 3:</strong> As quantidades devem ser números inteiros (ex: 150, 200)</p>
-            <p>📅 <strong>Passo 4:</strong> A data deve estar no formato YYYY-MM-DD (ex: 2025-01-15)</p>
-            <p>🏫 <strong>Passo 5:</strong> Use o nome exato da escola conforme cadastrado no sistema</p>
-            <p>⚠️ <strong>Importante:</strong> Registros duplicados (mesma escola/data) serão atualizados</p>
-          </div>
+          <h3 className="font-semibold text-blue-900 mb-2">📋 Instruções:</h3>
+          <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
+            <li>Baixe o modelo de planilha clicando no botão abaixo</li>
+            <li>Preencha os dados conforme o exemplo fornecido</li>
+            <li>Use o <strong>nome exato da escola</strong> conforme cadastrado no sistema</li>
+            <li>A <strong>data</strong> deve estar no formato YYYY-MM-DD (ex: 2025-01-15)</li>
+            <li>As <strong>quantidades</strong> devem ser números inteiros (ex: 150, 200)</li>
+            <li>Deixe <strong>0</strong> para refeições não servidas</li>
+            <li>Registros duplicados (mesma escola/data) serão atualizados</li>
+          </ul>
         </div>
 
-        {/* Download do Template */}
+        {/* Botão para baixar modelo */}
         <div className="flex justify-center">
           <Button
-            onClick={handleDownloadTemplate}
-            disabled={loading}
+            onClick={handleDownloadModelo}
             variant="outline"
-            className="flex items-center"
+            className="flex items-center gap-2"
+            disabled={loading}
           >
-            <FaDownload className="mr-2" />
+            <FaDownload />
             {loading ? 'Gerando...' : 'Baixar Modelo de Planilha'}
           </Button>
         </div>
 
-        {/* Upload do Arquivo */}
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-          <div className="space-y-4">
-            <FaUpload className="mx-auto text-4xl text-gray-400" />
-            <div>
-              <label htmlFor="file-upload" className="cursor-pointer">
-                <span className="text-lg font-medium text-gray-700">
-                  {file ? 'Arquivo Selecionado' : 'Selecionar Arquivo Excel'}
-                </span>
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept=".xlsx"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </label>
-              <p className="text-sm text-gray-500 mt-1">
-                Apenas arquivos .xlsx são aceitos
-              </p>
-            </div>
-            
-            {preview && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <div className="flex items-center justify-center text-green-700">
-                  <FaCheckCircle className="mr-2" />
-                  <span className="font-medium">{preview.name}</span>
-                </div>
-                <p className="text-sm text-green-600 mt-1">
-                  Tamanho: {(preview.size / 1024).toFixed(1)} KB
-                </p>
+        {/* Upload de arquivo */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Selecionar Arquivo Excel
+          </label>
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors">
+            <div className="space-y-1 text-center">
+              <FaUpload className="mx-auto h-12 w-12 text-gray-400" />
+              <div className="flex text-sm text-gray-600">
+                <label
+                  htmlFor="file-upload"
+                  className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                >
+                  <span>Selecionar arquivo</span>
+                  <input
+                    id="file-upload"
+                    name="file-upload"
+                    type="file"
+                    className="sr-only"
+                    accept=".xlsx,.xls"
+                    onChange={handleFileChange}
+                  />
+                </label>
+                <p className="pl-1">ou arraste e solte aqui</p>
               </div>
-            )}
+              <p className="text-xs text-gray-500">XLSX, XLS até 10MB</p>
+            </div>
           </div>
         </div>
 
-        {/* Botões de Ação */}
+        {/* Arquivo selecionado */}
+        {arquivo && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+            <div className="flex items-center">
+              <FaCheckCircle className="text-green-400 mr-2" />
+              <span className="text-sm font-medium text-green-800">{arquivo.name}</span>
+            </div>
+            <p className="text-xs text-green-600 mt-1">
+              Tamanho: {(arquivo.size / 1024).toFixed(1)} KB
+            </p>
+          </div>
+        )}
+
+        {/* Erro */}
+        {erro && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+            <div className="flex items-center">
+              <FaExclamationTriangle className="text-red-400 mr-2" />
+              <span className="text-sm font-medium text-red-800">{erro}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Resultado */}
+        {resultado && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <h4 className="font-semibold text-green-900 mb-2">✅ Importação Concluída!</h4>
+            <div className="text-sm text-green-800 space-y-1">
+              <p>• {resultado.importados} registros importados</p>
+              <p>• {resultado.atualizados} registros atualizados</p>
+              {resultado.erros && resultado.erros.length > 0 && (
+                <div className="mt-2">
+                  <p className="font-medium">Erros encontrados:</p>
+                  <ul className="list-disc list-inside ml-4">
+                    {resultado.erros.map((erro, index) => (
+                      <li key={index} className="text-red-600">{erro}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Botões de ação */}
         <div className="flex justify-end space-x-3">
           <Button
             onClick={handleClose}
             variant="outline"
-            disabled={importing}
+            disabled={loading}
           >
+            <FaTimes className="mr-2" />
             Cancelar
           </Button>
           <Button
             onClick={handleImport}
-            disabled={!file || importing}
-            className="flex items-center"
+            disabled={!arquivo || loading}
+            className="flex items-center space-x-2"
           >
-            {importing ? (
+            {loading ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Importando...
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Importando...</span>
               </>
             ) : (
               <>
-                <FaUpload className="mr-2" />
-                Importar Registros
+                <FaUpload />
+                <span>Importar Registros</span>
               </>
             )}
           </Button>
