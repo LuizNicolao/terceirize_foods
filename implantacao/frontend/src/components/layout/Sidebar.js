@@ -27,7 +27,8 @@ import {
   FaCalculator,
   FaCalendarAlt,
   FaEdit,
-  FaExchangeAlt
+  FaExchangeAlt,
+  FaShoppingCart
 } from 'react-icons/fa';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePermissions } from '../../contexts/PermissionsContext';
@@ -54,6 +55,7 @@ const menuGroups = [
               { path: '/subgrupos', icon: FaTags, label: 'Subgrupos', screen: 'subgrupos' },
               { path: '/classes', icon: FaList, label: 'Classes', screen: 'classes' },
               { path: '/produtos-per-capita', icon: FaChartLine, label: 'Produtos Per Capita', screen: 'produtos_per_capita' },
+              { path: '/pedido-mensal', icon: FaShoppingCart, label: 'Pedido Mensal', screen: 'necessidades_padroes' },
               { path: '/recebimentos-escolas', icon: FaClipboardCheck, label: 'Recebimentos Escolas', screen: 'recebimentos_escolas' },
               { path: '/registros-diarios', icon: FaCalendarCheck, label: 'Quantidade Servida', screen: 'registros_diarios' },
               { path: '/necessidades', icon: FaCalculator, label: 'Gerar Necessidades', screen: 'necessidades' },

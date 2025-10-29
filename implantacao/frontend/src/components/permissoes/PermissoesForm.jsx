@@ -29,10 +29,12 @@ const PermissoesForm = ({
       { key: 'recebimentos_escolas', label: 'Recebimentos Escolas' },
       { key: 'registros_diarios', label: 'Quantidade Servida' },
       { key: 'necessidades', label: 'Gerar Necessidades' },
+      { key: 'necessidades_padroes', label: 'Pedido Mensal' },
       { key: 'calendario', label: 'Calendário' },
       { key: 'analise_necessidades', label: 'Analise Necessidades' },
       { key: 'analise_necessidades_substituicoes', label: 'Análise Substituições' },
       { key: 'consulta_status_necessidade', label: 'Consulta Status Necessidade' }
+      
     ],
     'Sistema': [
       { key: 'permissoes', label: 'Permissões' }
