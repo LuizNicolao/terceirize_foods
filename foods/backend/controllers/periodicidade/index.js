@@ -15,7 +15,6 @@ module.exports = {
   buscarHistoricoAplicacoes: PeriodicidadeListController.buscarHistoricoAplicacoes,
   buscarEstatisticas: PeriodicidadeListController.buscarEstatisticas,
   buscarProdutosPorGrupo: PeriodicidadeListController.buscarProdutosPorGrupo,
-  buscarContagemProdutosPorGrupo: PeriodicidadeListController.buscarContagemProdutosPorGrupo,
   
   // Métodos CRUD
   buscarTipoPorId: PeriodicidadeCRUDController.buscarTipoPorId,

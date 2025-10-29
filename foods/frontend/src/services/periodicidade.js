@@ -300,26 +300,6 @@ class PeriodicidadeService {
       };
     }
   }
-
-  /**
-   * Buscar contagem de produtos por grupo
-   */
-  static async buscarContagemProdutosPorGrupo() {
-    try {
-      const response = await api.get(`/periodicidade/produtos/contagem-grupos`);
-      
-      return {
-        success: true,
-        data: response.data.data || {},
-        message: response.data.message || 'Contagem carregada com sucesso'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.error || 'Erro ao carregar contagem de produtos por grupo'
-      };
-    }
-  }
 }
 
 export default PeriodicidadeService;

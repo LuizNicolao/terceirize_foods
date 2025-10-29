@@ -6,7 +6,6 @@ export const useGruposProdutos = (produtosIndividuais, onProdutosIndividuaisChan
   // Estados para Grupos e Produtos
   const [gruposProdutos, setGruposProdutos] = useState([]);
   const [produtosPorGrupo, setProdutosPorGrupo] = useState({});
-  const [contagemProdutosPorGrupo, setContagemProdutosPorGrupo] = useState({});
   const [loadingGrupos, setLoadingGrupos] = useState(false);
   const [loadingProdutos, setLoadingProdutos] = useState({});
   
@@ -32,19 +31,6 @@ export const useGruposProdutos = (produtosIndividuais, onProdutosIndividuaisChan
       setGruposProdutos([]);
     } finally {
       setLoadingGrupos(false);
-    }
-  }, []);
-
-  // Carregar contagem de produtos por grupo
-  const carregarContagemProdutosPorGrupo = useCallback(async () => {
-    try {
-      const result = await PeriodicidadeService.buscarContagemProdutosPorGrupo();
-      if (result.success) {
-        setContagemProdutosPorGrupo(result.data || {});
-      }
-    } catch (error) {
-      console.error('Erro ao carregar contagem de produtos por grupo:', error);
-      setContagemProdutosPorGrupo({});
     }
   }, []);
 
@@ -132,16 +118,6 @@ export const useGruposProdutos = (produtosIndividuais, onProdutosIndividuaisChan
       produtosIndividuaisLocal.includes(produto.id)
     ).length;
   }, [produtosPorGrupo, produtosIndividuaisLocal]);
-
-  // Obter total de produtos de um grupo
-  const obterTotalProdutosGrupo = useCallback((grupoId) => {
-    // Priorizar contagem carregada, se disponível
-    if (contagemProdutosPorGrupo[grupoId]?.total !== undefined) {
-      return contagemProdutosPorGrupo[grupoId].total;
-    }
-    // Fallback para produtos carregados
-    return produtosPorGrupo[grupoId]?.length || 0;
-  }, [produtosPorGrupo, contagemProdutosPorGrupo]);
 
   const isGrupoCompleto = useCallback((grupoId) => {
     return gruposCompletos.includes(grupoId);
@@ -233,8 +209,7 @@ export const useGruposProdutos = (produtosIndividuais, onProdutosIndividuaisChan
   // Carregar dados quando o componente montar
   useEffect(() => {
     carregarGruposProdutos();
-    carregarContagemProdutosPorGrupo();
-  }, [carregarGruposProdutos, carregarContagemProdutosPorGrupo]);
+  }, [carregarGruposProdutos]);
 
   return {
     // Estados
@@ -264,7 +239,6 @@ export const useGruposProdutos = (produtosIndividuais, onProdutosIndividuaisChan
     calcularTotalProdutosFinais,
     isProdutoEmGrupoCompleto,
     contarProdutosSelecionadosNoGrupo,
-    obterTotalProdutosGrupo,
     isGrupoCompleto,
     isGrupoParcial,
     filtrarGrupos
