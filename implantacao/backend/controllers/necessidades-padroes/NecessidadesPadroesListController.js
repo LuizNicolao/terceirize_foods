@@ -65,7 +65,7 @@ class NecessidadesPadroesListController {
         LIMIT ? OFFSET ?
       `;
 
-      queryParams.push(parseInt(limit), offset);
+      queryParams.push(parseInt(limit), parseInt(offset));
 
       // Debug dos parâmetros
       console.log('=== DEBUG NECESSIDADES PADRÕES ===');
