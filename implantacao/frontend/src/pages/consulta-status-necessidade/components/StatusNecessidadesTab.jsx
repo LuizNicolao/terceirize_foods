@@ -20,13 +20,16 @@ const StatusNecessidadesTab = () => {
     semana_consumo: '',
     escola_id: '',
     produto_id: '',
-    status_substituicao: ''
+    status_substituicao: '',
+    filial: ''
   });
   
   // Estado para opções de filtros
   const [grupos, setGrupos] = useState([]);
   const [escolas, setEscolas] = useState([]);
   const [produtos, setProdutos] = useState([]);
+  const [filiais, setFiliais] = useState([]);
+  const [loadingFiliais, setLoadingFiliais] = useState(false);
   const [loadingOpcoes, setLoadingOpcoes] = useState(false);
 
   // Verificar se é nutricionista
@@ -55,6 +58,32 @@ const StatusNecessidadesTab = () => {
     { value: 'aprovado', label: 'APROVADO - Aprovado' }
   ];
 
+  // Carregar filiais
+  const carregarFiliais = async () => {
+    try {
+      setLoadingFiliais(true);
+      const result = await FoodsApiService.getFiliais();
+      
+      if (result.success && Array.isArray(result.data)) {
+        const filiaisFormatadas = [
+          { value: '', label: 'Todas as filiais' },
+          ...result.data.map(filial => ({
+            value: filial.id.toString(),
+            label: filial.filial || filial.nome || filial.razao_social || `Filial ${filial.id}`
+          }))
+        ];
+        setFiliais(filiaisFormatadas);
+      } else {
+        setFiliais([{ value: '', label: 'Todas as filiais' }]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar filiais:', error);
+      setFiliais([{ value: '', label: 'Todas as filiais' }]);
+    } finally {
+      setLoadingFiliais(false);
+    }
+  };
+
   // Carregar opções de filtros
   const carregarOpcoesFiltros = async () => {
     try {
@@ -65,6 +94,9 @@ const StatusNecessidadesTab = () => {
       if (gruposResponse.success) {
         setGrupos(gruposResponse.data || []);
       }
+
+      // Carregar filiais
+      await carregarFiliais();
 
       // Carregar escolas baseado no tipo de usuário
       await carregarEscolas();
@@ -210,7 +242,16 @@ const StatusNecessidadesTab = () => {
       const response = await consultaStatusNecessidadeService.listar(params);
       
       if (response.success) {
-        const necessidadesData = response.data || [];
+        let necessidadesData = response.data || [];
+        
+        // Aplicar filtro de filial se selecionado
+        if (filtros.filial) {
+          necessidadesData = necessidadesData.filter(necessidade => {
+            // Buscar a escola correspondente para verificar a filial
+            const escola = escolas.find(e => e.id === necessidade.escola_id);
+            return escola && escola.filial_id?.toString() === filtros.filial;
+          });
+        }
         
         // Separar necessidades processadas e não processadas
         // Processadas = têm status_substituicao (não null/undefined)
@@ -361,7 +402,8 @@ const StatusNecessidadesTab = () => {
       semana_abastecimento: '',
       semana_consumo: '',
       escola_id: '',
-      produto_id: ''
+      produto_id: '',
+      filial: ''
     });
   };
 
@@ -489,6 +531,18 @@ const StatusNecessidadesTab = () => {
               ]}
               placeholder={isNutricionista ? "Selecione uma das suas escolas..." : "Selecione uma escola..."}
               disabled={loading || loadingOpcoes}
+            />
+          </div>
+
+          {/* Filtro por Filial */}
+          <div>
+            <SearchableSelect
+              label="Filial"
+              value={filtros.filial}
+              onChange={(value) => handleFiltroChange('filial', value)}
+              options={filiais}
+              placeholder="Selecione uma filial..."
+              disabled={loading || loadingFiliais}
             />
           </div>
         </div>
