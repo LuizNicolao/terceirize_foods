@@ -15,9 +15,9 @@ const necessidadesService = {
           value = value.nome_escola;
         } else if (key === 'grupo' && typeof value === 'object' && value && value.id) {
           value = value.id;
-        } else if (key === 'data' && typeof value === 'string' && value.includes('(')) {
-          // Remover parênteses da semana de consumo
-          value = value.replace(/[()]/g, '');
+        } else if (key === 'data' && typeof value === 'string') {
+          // Manter o formato da semana de consumo (DD/MM a DD/MM/YY)
+          value = value;
         }
         
         params.append(key, value);
