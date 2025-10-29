@@ -125,9 +125,6 @@ class ConsultaStatusController {
       const limitClause = `LIMIT ${limitNum} OFFSET ${offset}`;
       const necessidadesQueryFinal = necessidadesQuery.replace('LIMIT ? OFFSET ?', limitClause);
 
-      console.log('🔍 Query necessidades:', necessidadesQueryFinal);
-      console.log('🔍 Parâmetros:', queryParams);
-
       const necessidades = await executeQuery(necessidadesQueryFinal, queryParams);
 
       // Query para contar total de registros
@@ -143,9 +140,6 @@ class ConsultaStatusController {
         )
         ${whereClause}
       `;
-
-      console.log('🔍 Query count:', countQuery);
-      console.log('🔍 Parâmetros count:', queryParams);
 
       const countResult = await executeQuery(countQuery, queryParams);
       const total = countResult[0].total;

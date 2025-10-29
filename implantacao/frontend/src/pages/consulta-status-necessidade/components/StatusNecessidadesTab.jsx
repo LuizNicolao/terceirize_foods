@@ -181,8 +181,6 @@ const StatusNecessidadesTab = () => {
   const carregarStatusNecessidades = async () => {
     setLoading(true);
     try {
-      console.log('🔍 Aplicando filtros:', filtros);
-      
       // Atualizar filtros no hook
       atualizarFiltros({
         status_necessidade: filtros.status_necessidade,
@@ -460,10 +458,14 @@ const StatusNecessidadesTab = () => {
               onChange={(value) => handleFiltroChange('escola_id', value)}
               options={[
                 { value: '', label: isNutricionista ? 'Todas as minhas escolas' : 'Todas as escolas' },
-                ...escolas.map(escola => ({ 
-                  value: escola.id.toString(), 
-                  label: `${escola.nome_escola || escola.escola_nome} (${escola.rota || escola.escola_rota})` 
-                }))
+                ...escolas.map(escola => {
+                  const nomeEscola = escola.nome_escola || escola.escola_nome || 'Escola sem nome';
+                  const rota = escola.rota || escola.escola_rota || 'Sem rota';
+                  return {
+                    value: escola.id.toString(), 
+                    label: `${nomeEscola} (${rota})` 
+                  };
+                })
               ]}
               placeholder={isNutricionista ? "Selecione uma das suas escolas..." : "Selecione uma escola..."}
               disabled={loading || loadingOpcoes}
