@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Input } from '../ui';
-import { FaSearch, FaPlus, FaTimes } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
 import FoodsApiService from '../../services/FoodsApiService';
 import toast from 'react-hot-toast';
 
@@ -14,7 +14,7 @@ const AdicionarProdutoModal = ({
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [produtosSelecionados, setProdutosSelecionados] = useState({});
+  const [produtosSelecionados, setProdutosSelecionados] = useState([]);
   const [filtrados, setFiltrados] = useState([]);
 
   // Carregar produtos do grupo quando modal abrir
@@ -76,157 +76,183 @@ const AdicionarProdutoModal = ({
     }
   };
 
-  const handleSelecionarProduto = (produtoId, selecionado) => {
-    setProdutosSelecionados(prev => ({
-      ...prev,
-      [produtoId]: selecionado
-    }));
+  const handleToggleProduto = (produto) => {
+    const isSelected = produtosSelecionados.find(p => p.produto_id === produto.id);
+    if (isSelected) {
+      setProdutosSelecionados(prev => prev.filter(p => p.produto_id !== produto.id));
+    } else {
+      setProdutosSelecionados(prev => [...prev, {
+        produto_id: produto.id,
+        produto_nome: produto.nome,
+        produto_codigo: produto.codigo,
+        unidade_medida: produto.unidade_medida
+      }]);
+    }
   };
 
   const handleSelecionarTodos = () => {
-    const todosSelecionados = filtrados.reduce((acc, produto) => {
-      acc[produto.id] = true;
-      return acc;
-    }, {});
+    const todosSelecionados = filtrados.map(produto => ({
+      produto_id: produto.id,
+      produto_nome: produto.nome,
+      produto_codigo: produto.codigo,
+      unidade_medida: produto.unidade_medida
+    }));
     setProdutosSelecionados(todosSelecionados);
   };
 
   const handleDesmarcarTodos = () => {
-    setProdutosSelecionados({});
+    setProdutosSelecionados([]);
   };
 
   const handleAdicionar = () => {
-    const produtosParaAdicionar = filtrados.filter(produto => 
-      produtosSelecionados[produto.id]
-    );
-
-    if (produtosParaAdicionar.length === 0) {
+    if (produtosSelecionados.length === 0) {
       toast.error('Selecione pelo menos um produto');
       return;
     }
 
     // Formatar produtos para o formato esperado
-    const produtosFormatados = produtosParaAdicionar.map(produto => ({
-      id: `temp_${Date.now()}_${produto.id}`,
-      produto_id: produto.id,
-      produto_nome: produto.nome,
-      produto_codigo: produto.codigo,
+    const produtosFormatados = produtosSelecionados.map(produto => ({
+      id: `temp_${Date.now()}_${produto.produto_id}`,
+      produto_id: produto.produto_id,
+      produto_nome: produto.produto_nome,
+      produto_codigo: produto.produto_codigo,
       unidade_medida: produto.unidade_medida,
       quantidade: 0
     }));
 
     onAdicionarProdutos(produtosFormatados);
-    setProdutosSelecionados({});
+    setProdutosSelecionados([]);
     onClose();
   };
 
   const handleClose = () => {
     setSearchTerm('');
-    setProdutosSelecionados({});
+    setProdutosSelecionados([]);
     onClose();
   };
-
-  const produtosSelecionadosCount = Object.values(produtosSelecionados).filter(Boolean).length;
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={handleClose}
-      title="Adicionar Produtos"
-      size="4xl"
+      title="Incluir Produtos"
+      size="xl"
     >
-      <div className="space-y-4">
-        {/* Barra de busca */}
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <FaSearch className="h-4 w-4 text-gray-400" />
-          </div>
+      <div className="p-6 space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Buscar Produto
+          </label>
           <Input
             type="text"
-            placeholder="Buscar produtos por nome ou código..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+            placeholder="Digite o nome ou código do produto..."
           />
         </div>
 
         {/* Controles de seleção */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-gray-600">
+            {produtosSelecionados.length} produto(s) selecionado(s)
+          </div>
+          <div className="space-x-2">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={handleSelecionarTodos}
               disabled={loading || filtrados.length === 0}
             >
-              <FaPlus className="w-4 h-4 mr-1" />
               Selecionar Todos
             </Button>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={handleDesmarcarTodos}
-              disabled={loading}
+              disabled={produtosSelecionados.length === 0}
             >
-              <FaTimes className="w-4 h-4 mr-1" />
               Desmarcar Todos
             </Button>
           </div>
-          <div className="text-sm text-gray-600">
-            {produtosSelecionadosCount} de {filtrados.length} selecionados
-          </div>
         </div>
 
-        {/* Lista de produtos */}
-        <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-              <p className="mt-2 text-gray-600">Carregando produtos...</p>
-            </div>
-          ) : filtrados.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              {searchTerm ? 'Nenhum produto encontrado' : 'Nenhum produto disponível'}
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {filtrados.map((produto) => (
-                <div key={produto.id} className="p-4 hover:bg-gray-50">
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      checked={!!produtosSelecionados[produto.id]}
-                      onChange={(e) => handleSelecionarProduto(produto.id, e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium text-gray-900">
+        <div className="max-h-96 overflow-y-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Selecionar</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unidade</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan="4" className="px-4 py-8 text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                    <p className="mt-2 text-gray-600">Carregando produtos...</p>
+                  </td>
+                </tr>
+              ) : filtrados.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="px-4 py-8 text-center text-gray-500">
+                    {searchTerm ? 'Nenhum produto encontrado' : 'Nenhum produto disponível'}
+                  </td>
+                </tr>
+              ) : (
+                filtrados.map((produto) => {
+                  const isSelected = produtosSelecionados.find(p => p.produto_id === produto.id);
+                  return (
+                    <tr 
+                      key={produto.id} 
+                      className={`hover:bg-gray-50 transition-colors cursor-pointer ${
+                        isSelected 
+                          ? 'bg-green-50 border-l-4 border-green-500' 
+                          : 'bg-white'
+                      }`}
+                      onClick={() => handleToggleProduto(produto)}
+                    >
+                      <td className="px-4 py-2 text-center">
+                        <input
+                          type="checkbox"
+                          checked={!!isSelected}
+                          onChange={() => handleToggleProduto(produto)}
+                          onClick={(e) => e.stopPropagation()}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      </td>
+                      <td className={`px-4 py-2 text-sm ${isSelected ? 'text-green-900 font-medium' : 'text-gray-900'}`}>
+                        {produto.codigo || 'N/A'}
+                      </td>
+                      <td className={`px-4 py-2 text-sm font-medium ${isSelected ? 'text-green-900' : 'text-gray-900'}`}>
                         {produto.nome}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        Código: {produto.codigo} • Unidade: {produto.unidade_medida}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                      </td>
+                      <td className={`px-4 py-2 text-sm ${isSelected ? 'text-green-700' : 'text-gray-500'}`}>
+                        {produto.unidade_medida}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
 
-        {/* Botões de ação */}
-        <div className="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+        <div className="flex justify-end space-x-3 pt-4">
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={handleClose}
           >
             Cancelar
           </Button>
           <Button
+            variant="primary"
             onClick={handleAdicionar}
-            disabled={produtosSelecionadosCount === 0}
+            disabled={produtosSelecionados.length === 0}
+            icon={<FaPlus />}
           >
-            Adicionar {produtosSelecionadosCount > 0 && `(${produtosSelecionadosCount})`}
+            Incluir {produtosSelecionados.length} Produto(s)
           </Button>
         </div>
       </div>
