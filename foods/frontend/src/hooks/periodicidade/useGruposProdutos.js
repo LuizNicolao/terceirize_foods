@@ -6,6 +6,7 @@ export const useGruposProdutos = (produtosIndividuais, onProdutosIndividuaisChan
   // Estados para Grupos e Produtos
   const [gruposProdutos, setGruposProdutos] = useState([]);
   const [produtosPorGrupo, setProdutosPorGrupo] = useState({});
+  const [contagemProdutosPorGrupo, setContagemProdutosPorGrupo] = useState({});
   const [loadingGrupos, setLoadingGrupos] = useState(false);
   const [loadingProdutos, setLoadingProdutos] = useState({});
   
@@ -25,6 +26,16 @@ export const useGruposProdutos = (produtosIndividuais, onProdutosIndividuaisChan
       const result = await GruposService.buscarAtivos();
       if (result.success) {
         setGruposProdutos(result.data || []);
+        
+        // Carregar contagem de produtos por grupo
+        const contagemResult = await PeriodicidadeService.buscarContagemProdutosPorGrupo();
+        if (contagemResult.success && contagemResult.data) {
+          const contagemMap = {};
+          contagemResult.data.forEach(item => {
+            contagemMap[item.grupo_id] = item.total_produtos;
+          });
+          setContagemProdutosPorGrupo(contagemMap);
+        }
       }
     } catch (error) {
       console.error('Erro ao carregar grupos de produtos:', error);
@@ -215,6 +226,7 @@ export const useGruposProdutos = (produtosIndividuais, onProdutosIndividuaisChan
     // Estados
     gruposProdutos,
     produtosPorGrupo,
+    contagemProdutosPorGrupo,
     loadingGrupos,
     loadingProdutos,
     gruposCompletos,

@@ -14,6 +14,7 @@ const GruposProdutosTab = ({
   const {
     gruposProdutos,
     produtosPorGrupo,
+    contagemProdutosPorGrupo,
     loadingGrupos,
     loadingProdutos,
     gruposCompletos,
@@ -175,7 +176,7 @@ const GruposProdutosTab = ({
               <div className="p-2">
                 {filtrarGrupos().map(grupo => {
                   const produtosSelecionados = contarProdutosSelecionadosNoGrupo(grupo.id);
-                  const totalProdutos = produtosPorGrupo[grupo.id]?.length || 0;
+                  const totalProdutos = produtosPorGrupo[grupo.id]?.length || contagemProdutosPorGrupo[grupo.id] || 0;
                   const isCompleto = isGrupoCompleto(grupo.id);
                   const isParcial = isGrupoParcial(grupo.id);
                   
