@@ -34,7 +34,7 @@ const StatusNecessidadesTab = () => {
 
   // Hooks
   const { opcoes: opcoesSemanas, obterValorPadrao } = useSemanasAbastecimento();
-  const { carregarNecessidades, necessidades, estatisticas } = useConsultaStatusNecessidade();
+  const { carregarNecessidades, necessidades, estatisticas, atualizarFiltros } = useConsultaStatusNecessidade();
   
   // Estado para controle de atualização automática
   const [ultimaAtualizacao, setUltimaAtualizacao] = useState(null);
@@ -96,7 +96,10 @@ const StatusNecessidadesTab = () => {
         }
       } else {
         // Para outros tipos de usuário, carregar todas as escolas
-        const escolasResponse = await FoodsApiService.getUnidadesEscolares();
+        const escolasResponse = await FoodsApiService.getUnidadesEscolares({ 
+          limit: 1000, // Buscar mais escolas
+          ativo: true 
+        });
         if (escolasResponse.success) {
           setEscolas(escolasResponse.data || []);
         }
@@ -104,7 +107,10 @@ const StatusNecessidadesTab = () => {
     } catch (error) {
       console.error('Erro ao carregar escolas:', error);
       // Fallback para carregar todas as escolas
-      const escolasResponse = await FoodsApiService.getUnidadesEscolares();
+      const escolasResponse = await FoodsApiService.getUnidadesEscolares({ 
+        limit: 1000,
+        ativo: true 
+      });
       if (escolasResponse.success) {
         setEscolas(escolasResponse.data || []);
       }
@@ -175,8 +181,10 @@ const StatusNecessidadesTab = () => {
   const carregarStatusNecessidades = async () => {
     setLoading(true);
     try {
-      // Mapear filtros para o formato esperado pelo hook
-      const params = {
+      console.log('🔍 Aplicando filtros:', filtros);
+      
+      // Atualizar filtros no hook
+      atualizarFiltros({
         status_necessidade: filtros.status_necessidade,
         status_substituicao: filtros.status_substituicao,
         grupo: filtros.grupo,
@@ -184,30 +192,11 @@ const StatusNecessidadesTab = () => {
         semana_consumo: filtros.semana_consumo,
         escola_id: filtros.escola_id,
         produto_id: filtros.produto_id
-      };
-      
-      // Remover filtros vazios
-      Object.keys(params).forEach(key => {
-        if (params[key] === '' || params[key] === null || params[key] === undefined) {
-          delete params[key];
-        }
       });
-
-      await carregarNecessidades(params);
       
-      if (necessidades) {
-        // Separar necessidades processadas e não processadas
-        const processadas = necessidades.filter(n => n.status_substituicao);
-        const naoProcessadas = necessidades.filter(n => !n.status_substituicao);
-        
-        setNecessidadesProcessadas(processadas);
-        setNecessidadesNaoProcessadas(naoProcessadas);
-        setUltimaAtualizacao(new Date());
-      }
     } catch (error) {
       console.error('Erro ao carregar status das necessidades:', error);
       toast.error('Erro ao carregar status das necessidades');
-    } finally {
       setLoading(false);
     }
   };
@@ -359,6 +348,20 @@ const StatusNecessidadesTab = () => {
       carregarStatusNecessidades();
     }
   }, [filtros, inicializado]);
+
+  // Atualizar listas quando as necessidades mudarem
+  useEffect(() => {
+    if (necessidades) {
+      // Separar necessidades processadas e não processadas
+      const processadas = necessidades.filter(n => n.status_substituicao);
+      const naoProcessadas = necessidades.filter(n => !n.status_substituicao);
+      
+      setNecessidadesProcessadas(processadas);
+      setNecessidadesNaoProcessadas(naoProcessadas);
+      setUltimaAtualizacao(new Date());
+      setLoading(false);
+    }
+  }, [necessidades]);
 
   return (
     <div className="space-y-6">
