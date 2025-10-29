@@ -135,6 +135,7 @@ const importarExcel = async (req, res) => {
         const per_capita_almoco = valores.per_capita_almoco ? parseFloat(valores.per_capita_almoco) : 0;
         const per_capita_eja = valores.per_capita_eja ? parseFloat(valores.per_capita_eja) : 0;
         const descricao = valores.descricao?.toString()?.trim() || null;
+        const ativo = 1; // Sempre ativo por padrão
 
         // Validações básicas
         if (!produto_id) {
