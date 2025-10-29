@@ -65,11 +65,22 @@ const PedidoMensal = () => {
           filial_id: filtros.filial, 
           limit: 1000 
         });
-        if (response.success && response.data && response.data.data) {
-          setEscolas(response.data.data.map(e => ({ 
-            value: e.id, 
-            label: e.nome_escola 
-          })));
+        if (response.success && response.data) {
+          // A resposta pode ter data direto ou data.data
+          const escolasData = Array.isArray(response.data) 
+            ? response.data 
+            : response.data.data;
+          
+          if (Array.isArray(escolasData)) {
+            setEscolas(escolasData.map(e => ({ 
+              value: e.id, 
+              label: e.nome_escola 
+            })));
+          } else {
+            console.warn('Dados de escolas não são um array:', escolasData);
+            setEscolas([]);
+            toast.error('Erro ao carregar escolas');
+          }
         } else {
           console.warn('Resposta de escolas inválida:', response);
           setEscolas([]);
@@ -91,23 +102,43 @@ const PedidoMensal = () => {
     try {
       // Carregar filiais
       const filiaisResponse = await FoodsApiService.getFiliais({ limit: 1000 });
-      if (filiaisResponse.success && filiaisResponse.data && filiaisResponse.data.data) {
-        setFiliais(filiaisResponse.data.data.map(f => ({ 
-          value: f.id, 
-          label: f.nome 
-        })));
+      if (filiaisResponse.success && filiaisResponse.data) {
+        // A resposta pode ter data direto ou data.data
+        const filiaisData = Array.isArray(filiaisResponse.data) 
+          ? filiaisResponse.data 
+          : filiaisResponse.data.data;
+        
+        if (Array.isArray(filiaisData)) {
+          setFiliais(filiaisData.map(f => ({ 
+            value: f.id, 
+            label: f.nome 
+          })));
+        } else {
+          console.warn('Dados de filiais não são um array:', filiaisData);
+          setFiliais([]);
+        }
       } else {
         console.warn('Resposta de filiais inválida:', filiaisResponse);
         setFiliais([]);
       }
 
       // Carregar grupos
-      const gruposResponse = await FoodsApiService.getGruposProdutos({ limit: 1000 });
-      if (gruposResponse.success && gruposResponse.data && gruposResponse.data.data) {
-        setGrupos(gruposResponse.data.data.map(g => ({ 
-          value: g.id, 
-          label: g.nome 
-        })));
+      const gruposResponse = await FoodsApiService.getGrupos({ limit: 1000 });
+      if (gruposResponse.success && gruposResponse.data) {
+        // A resposta pode ter data direto ou data.data
+        const gruposData = Array.isArray(gruposResponse.data) 
+          ? gruposResponse.data 
+          : gruposResponse.data.data;
+        
+        if (Array.isArray(gruposData)) {
+          setGrupos(gruposData.map(g => ({ 
+            value: g.id, 
+            label: g.nome 
+          })));
+        } else {
+          console.warn('Dados de grupos não são um array:', gruposData);
+          setGrupos([]);
+        }
       } else {
         console.warn('Resposta de grupos inválida:', gruposResponse);
         setGrupos([]);
