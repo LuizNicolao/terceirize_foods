@@ -204,21 +204,14 @@ const auditChangesMiddleware = (action, resource) => {
             }
           } else {
             // Para outros recursos, comparar campos simples
-            console.log('🔍 AUDIT DEBUG - Comparando dados:');
-            console.log('Original:', originalData);
-            console.log('Novo:', sanitizedBody);
-            
             Object.keys(sanitizedBody).forEach(key => {
-              if (originalData && originalData[key] !== sanitizedBody[key]) {
+              if (originalData[key] !== sanitizedBody[key]) {
                 changes[key] = {
                   from: originalData[key],
                   to: sanitizedBody[key]
                 };
-                console.log(`✅ Mudança detectada: ${key} = ${originalData[key]} → ${sanitizedBody[key]}`);
               }
             });
-            
-            console.log('📝 Changes final:', changes);
           }
           
           details.requestBody = sanitizedBody;

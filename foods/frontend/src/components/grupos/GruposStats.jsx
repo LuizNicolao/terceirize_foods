@@ -7,25 +7,25 @@ const GruposStats = ({ estatisticas }) => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       <StatCard
         title="Total de Grupos"
-        value={estatisticas.total_grupos}
+        value={estatisticas.total}
         icon={FaLayerGroup}
         color="blue"
       />
       <StatCard
         title="Grupos Ativos"
-        value={estatisticas.grupos_ativos}
+        value={estatisticas.ativos}
         icon={FaCheckCircle}
         color="green"
       />
       <StatCard
         title="Grupos Inativos"
-        value={estatisticas.grupos_inativos}
+        value={estatisticas.inativos}
         icon={FaTimesCircle}
         color="red"
       />
       <StatCard
         title="Total de Subgrupos"
-        value={estatisticas.subgrupos_total}
+        value={estatisticas.subgrupos_total || 0}
         icon={FaTags}
         color="purple"
       />
