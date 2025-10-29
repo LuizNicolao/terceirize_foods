@@ -265,6 +265,13 @@ class ConsultaStatusController {
           SUM(n.ajuste) as total_quantidade,
           AVG(n.ajuste) as media_quantidade
         FROM necessidades n
+        LEFT JOIN necessidades_substituicoes ns ON (
+          n.produto_id = ns.produto_origem_id 
+          AND n.semana_abastecimento = ns.semana_abastecimento
+          AND n.semana_consumo = ns.semana_consumo
+          AND n.escola_id = ns.escola_id
+          AND ns.ativo = 1
+        )
         ${whereClause}
       `;
 
@@ -277,6 +284,13 @@ class ConsultaStatusController {
           COUNT(*) as quantidade,
           SUM(n.ajuste) as total_quantidade
         FROM necessidades n
+        LEFT JOIN necessidades_substituicoes ns ON (
+          n.produto_id = ns.produto_origem_id 
+          AND n.semana_abastecimento = ns.semana_abastecimento
+          AND n.semana_consumo = ns.semana_consumo
+          AND n.escola_id = ns.escola_id
+          AND ns.ativo = 1
+        )
         ${whereClause}
         GROUP BY n.status
         ORDER BY n.status
