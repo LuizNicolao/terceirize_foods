@@ -98,15 +98,8 @@ const ProdutosPerCapitaTable = ({
               return (
                 <tr key={produto.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {produto.nome_produto}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {produto.codigo_produto}
-                        </div>
-                      </div>
+                    <div className="text-sm font-medium text-gray-900">
+                      {`${produto.nome_produto || '-'} - ${produto.codigo_produto || '-'} - ${produto.unidade_medida || '-'} - ${produto.grupo || '-'}`}
                     </div>
                   </td>
                   

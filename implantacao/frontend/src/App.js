@@ -24,7 +24,6 @@ import Necessidades from './pages/necessidades/Necessidades';
 import AjusteNecessidades from './pages/necessidades/AjusteNecessidades';
 import AnaliseSubstituicoes from './pages/necessidades-substituicoes';
 import ConsultaStatusNecessidade from './pages/consulta-status-necessidade';
-import { PedidoMensal } from './pages/pedido-mensal';
 import CalendarioDashboard from './pages/calendario/CalendarioDashboard';
 import CalendarioVisualizacao from './pages/calendario/CalendarioVisualizacao';
 import CalendarioConfiguracao from './pages/calendario/CalendarioConfiguracao';
@@ -236,15 +235,6 @@ function App() {
                 element={
                   <AuthenticatedRoute>
                     <ConsultaStatusNecessidade />
-                  </AuthenticatedRoute>
-                } 
-              />
-
-              <Route 
-                path="/pedido-mensal" 
-                element={
-                  <AuthenticatedRoute>
-                    <PedidoMensal />
                   </AuthenticatedRoute>
                 } 
               />

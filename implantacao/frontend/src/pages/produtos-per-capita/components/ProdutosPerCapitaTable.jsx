@@ -132,16 +132,8 @@ const ProdutosPerCapitaTable = ({
             {produtosOrdenados.map((produto) => (
               <tr key={produto.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">
-                      {produto.produto_nome || produto.nome_produto || '-'}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {produto.produto_codigo || produto.codigo || '-'}
-                    </div>
-                    <div className="text-xs text-gray-400">
-                      {produto.unidade_medida || '-'} - {produto.grupo || '-'}
-                    </div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {`${produto.produto_nome || produto.nome_produto || '-'} - ${produto.produto_codigo || produto.codigo || '-'} - ${produto.unidade_medida || '-'} - ${produto.grupo || '-'}`}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
