@@ -1,5 +1,5 @@
-import React from 'react';
-import { FaPlus, FaQuestionCircle } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaPlus, FaQuestionCircle, FaUpload } from 'react-icons/fa';
 import { usePermissions } from '../../contexts/PermissionsContext';
 import { useProdutosPerCapita } from '../../hooks/useProdutosPerCapita';
 import { useAuditoria } from '../../hooks/common/useAuditoria';
@@ -12,7 +12,7 @@ import {
   ProdutosPerCapitaTable
 } from './components';
 import ProdutosPerCapitaFilters from './components/ProdutosPerCapitaFilters';
-import { ProdutoPerCapitaModal } from '../../components/produtos-per-capita';
+import { ProdutoPerCapitaModal, ImportProdutosPerCapitaModal } from '../../components/produtos-per-capita';
 import { AuditModal } from '../../components/shared';
 
 /**
@@ -21,6 +21,7 @@ import { AuditModal } from '../../components/shared';
  */
 const ProdutosPerCapita = () => {
   const { canCreate, canEdit, canDelete, canView } = usePermissions();
+  const [showImportModal, setShowImportModal] = useState(false);
   
   // Hook principal para produtos per capita
   const {
@@ -65,6 +66,11 @@ const ProdutosPerCapita = () => {
 
   const { handleExportXLSX, handleExportPDF } = useExport(ProdutosPerCapitaService);
 
+  const handleImportSuccess = () => {
+    // Recarregar a lista de produtos per capita após importação
+    window.location.reload();
+  };
+
   const {
     showAuditModal,
     auditLogs,
@@ -105,11 +111,23 @@ const ProdutosPerCapita = () => {
             <span className="hidden sm:inline">Auditoria</span>
           </Button>
           {canCreate('produtos_per_capita') && (
-            <Button onClick={handleAdd} size="sm">
-              <FaPlus className="mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Adicionar Produto</span>
-              <span className="sm:hidden">Adicionar</span>
-            </Button>
+            <>
+              <Button 
+                onClick={() => setShowImportModal(true)} 
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <FaUpload className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Importar</span>
+                <span className="sm:hidden">Importar</span>
+              </Button>
+              <Button onClick={handleAdd} size="sm">
+                <FaPlus className="mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Adicionar Produto</span>
+                <span className="sm:hidden">Adicionar</span>
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -211,6 +229,13 @@ const ProdutosPerCapita = () => {
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
+      />
+
+      {/* Modal de Importação */}
+      <ImportProdutosPerCapitaModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImportSuccess={handleImportSuccess}
       />
     </div>
   );

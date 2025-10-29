@@ -303,6 +303,62 @@ class ProdutosPerCapitaService {
       };
     }
   }
+
+  /**
+   * Baixar modelo de planilha para importação
+   */
+  static async baixarModelo() {
+    try {
+      const response = await api.get('/produtos-per-capita/modelo', {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'modelo_produtos_per_capita.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      
+      return {
+        success: true,
+        message: 'Modelo baixado com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao baixar modelo de planilha',
+        message: 'Erro ao baixar modelo de planilha'
+      };
+    }
+  }
+
+  /**
+   * Importar produtos per capita via Excel
+   */
+  static async importar(formData) {
+    try {
+      const response = await api.post('/produtos-per-capita/importar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      return {
+        success: true,
+        data: response.data.data || null,
+        message: response.data.message || 'Importação realizada com sucesso'
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Erro ao processar importação',
+        message: error.response?.data?.message || 'Erro ao processar importação'
+      };
+    }
+  }
 }
 
 export default ProdutosPerCapitaService;

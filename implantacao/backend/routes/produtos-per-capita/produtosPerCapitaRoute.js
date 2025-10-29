@@ -7,6 +7,7 @@ const { produtosLimiter } = require('../../middleware/rateLimiter');
 const { createEntityValidationHandler } = require('../../middleware/validationHandler');
 const { commonValidations, produtosPerCapitaValidations } = require('./produtosPerCapitaValidator');
 const ProdutosPerCapitaController = require('../../controllers/produtos-per-capita');
+const { baixarModelo, importarExcel, uploadMiddleware } = require('../../controllers/produtos-per-capita/ProdutosPerCapitaImportController');
 
 const router = express.Router();
 
@@ -58,6 +59,18 @@ router.get('/exportar/xlsx',
 router.get('/exportar/pdf',
   checkScreenPermission('produtos_per_capita', 'visualizar'),
   ProdutosPerCapitaController.exportarPDF
+);
+
+// ===== ROTAS DE IMPORTAÇÃO =====
+router.get('/modelo',
+  checkScreenPermission('produtos_per_capita', 'criar'),
+  baixarModelo
+);
+
+router.post('/importar',
+  checkScreenPermission('produtos_per_capita', 'criar'),
+  uploadMiddleware,
+  importarExcel
 );
 
 // ===== ROTAS CRUD =====
