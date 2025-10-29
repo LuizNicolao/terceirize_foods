@@ -203,8 +203,8 @@ class RegistrosDiariosImportController {
           const escola = escolas[0];
           const nutricionistaId = req.user?.id || 1; // Usar ID do usuário logado
 
-          // Processar cada tipo de média (cada linha gera 5 registros)
-          const tiposMedia = [
+          // Processar cada tipo de refeição (cada linha gera 5 registros)
+          const tiposRefeicao = [
             { tipo: 'lanche_manha', valor: registro.lanche_manha || 0 },
             { tipo: 'almoco', valor: registro.almoco || 0 },
             { tipo: 'lanche_tarde', valor: registro.lanche_tarde || 0 },
@@ -212,17 +212,17 @@ class RegistrosDiariosImportController {
             { tipo: 'eja', valor: registro.eja || 0 }
           ];
 
-          for (const tipoMedia of tiposMedia) {
-            // Verificar se já existe registro para esta escola/data/tipo_media
+          for (const tipoRefeicao of tiposRefeicao) {
+            // Verificar se já existe registro para esta escola/data/tipo_refeicao
             const existeQuery = `
               SELECT id FROM implantacao_db.registros_diarios 
-              WHERE escola_id = ? AND data = ? AND tipo_media = ? AND ativo = 1
+              WHERE escola_id = ? AND data = ? AND tipo_refeicao = ? AND ativo = 1
               LIMIT 1
             `;
             const existentes = await executeQuery(existeQuery, [
               escola.id,
               registro.data,
-              tipoMedia.tipo
+              tipoRefeicao.tipo
             ]);
 
             if (existentes.length > 0) {
@@ -232,28 +232,29 @@ class RegistrosDiariosImportController {
                 SET 
                   valor = ?,
                   data_atualizacao = NOW()
-                WHERE escola_id = ? AND data = ? AND tipo_media = ? AND ativo = 1
+                WHERE escola_id = ? AND data = ? AND tipo_refeicao = ? AND ativo = 1
               `;
               await executeQuery(updateQuery, [
-                tipoMedia.valor,
+                tipoRefeicao.valor,
                 escola.id,
                 registro.data,
-                tipoMedia.tipo
+                tipoRefeicao.tipo
               ]);
               atualizados++;
             } else {
               // Inserir novo registro
               const insertQuery = `
                 INSERT INTO implantacao_db.registros_diarios (
-                  escola_id, nutricionista_id, data, tipo_media, valor, ativo
-                ) VALUES (?, ?, ?, ?, ?, 1)
+                  escola_id, escola_nome, nutricionista_id, data, tipo_refeicao, valor, ativo
+                ) VALUES (?, ?, ?, ?, ?, ?, 1)
               `;
               await executeQuery(insertQuery, [
                 escola.id,
+                escola.nome_escola,
                 nutricionistaId,
                 registro.data,
-                tipoMedia.tipo,
-                tipoMedia.valor
+                tipoRefeicao.tipo,
+                tipoRefeicao.valor
               ]);
               importados++;
             }
