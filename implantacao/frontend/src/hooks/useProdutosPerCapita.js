@@ -243,7 +243,8 @@ export const useProdutosPerCapita = () => {
     
     // Funções de paginação
     handlePageChange: baseEntity.handlePageChange,
-    handleLimitChange: baseEntity.handleItemsPerPageChange,
+    handleItemsPerPageChange: baseEntity.handleItemsPerPageChange,
+    handleLimitChange: baseEntity.handleItemsPerPageChange, // Alias para compatibilidade
     
     // Estados específicos
     produtosDisponiveis,

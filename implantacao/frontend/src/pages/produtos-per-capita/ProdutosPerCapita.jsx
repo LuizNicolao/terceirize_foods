@@ -76,9 +76,12 @@ const ProdutosPerCapita = () => {
     auditLogs,
     auditLoading,
     auditFilters,
+    auditPagination,
     handleOpenAuditModal,
     handleCloseAuditModal,
     handleApplyAuditFilters,
+    handleAuditPageChange,
+    handleAuditItemsPerPageChange,
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
@@ -175,16 +178,14 @@ const ProdutosPerCapita = () => {
       />
 
       {/* Paginação */}
-      {totalPages > 1 && (
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          totalItems={totalItems}
-          itemsPerPage={itemsPerPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
-        />
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
+        totalItems={totalItems}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={handleItemsPerPageChange}
+      />
 
       {/* Modal de Produto Per Capita */}
       <ProdutoPerCapitaModal
@@ -205,7 +206,10 @@ const ProdutosPerCapita = () => {
         logs={auditLogs}
         loading={auditLoading}
         filters={auditFilters}
+        auditPagination={auditPagination}
         onApplyFilters={handleApplyAuditFilters}
+        onPageChange={handleAuditPageChange}
+        onItemsPerPageChange={handleAuditItemsPerPageChange}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onSetFilters={setAuditFilters}
