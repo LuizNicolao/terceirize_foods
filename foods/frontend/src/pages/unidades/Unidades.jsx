@@ -56,9 +56,12 @@ const Unidades = () => {
     auditLogs,
     auditLoading,
     auditFilters,
+    auditPagination,
     handleOpenAuditModal,
     handleCloseAuditModal,
     handleApplyAuditFilters,
+    handleAuditPageChange,
+    handleAuditItemsPerPageChange,
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
@@ -165,7 +168,10 @@ const Unidades = () => {
         auditLogs={auditLogs}
         auditLoading={auditLoading}
         auditFilters={auditFilters}
+        auditPagination={auditPagination}
         onApplyFilters={handleApplyAuditFilters}
+        onPageChange={handleAuditPageChange}
+        onItemsPerPageChange={handleAuditItemsPerPageChange}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}

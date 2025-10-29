@@ -62,9 +62,12 @@ const Usuarios = () => {
     auditLogs,
     auditLoading,
     auditFilters,
+    auditPagination,
     handleOpenAuditModal,
     handleCloseAuditModal,
     handleApplyAuditFilters,
+    handleAuditPageChange,
+    handleAuditItemsPerPageChange,
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
@@ -163,7 +166,10 @@ const Usuarios = () => {
         logs={auditLogs}
         loading={auditLoading}
         filters={auditFilters}
+        auditPagination={auditPagination}
         onApplyFilters={handleApplyAuditFilters}
+        onPageChange={handleAuditPageChange}
+        onItemsPerPageChange={handleAuditItemsPerPageChange}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onSetFilters={setAuditFilters}

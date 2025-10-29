@@ -65,9 +65,12 @@ const Fornecedores = () => {
     auditLogs,
     auditLoading,
     auditFilters,
+    auditPagination,
     handleOpenAuditModal,
     handleCloseAuditModal,
     handleApplyAuditFilters,
+    handleAuditPageChange,
+    handleAuditItemsPerPageChange,
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
@@ -174,8 +177,11 @@ const Fornecedores = () => {
         auditLogs={auditLogs}
         auditLoading={auditLoading}
         auditFilters={auditFilters}
+        auditPagination={auditPagination}
         onFilterChange={handleAuditFilterChange}
         onApplyFilters={handleApplyAuditFilters}
+        onPageChange={handleAuditPageChange}
+        onItemsPerPageChange={handleAuditItemsPerPageChange}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         entityName="fornecedores"

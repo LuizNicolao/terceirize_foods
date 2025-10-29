@@ -61,9 +61,12 @@ const Clientes = () => {
     auditLogs,
     auditLoading,
     auditFilters,
+    auditPagination,
     handleOpenAuditModal,
     handleCloseAuditModal,
     handleApplyAuditFilters,
+    handleAuditPageChange,
+    handleAuditItemsPerPageChange,
     handleExportAuditXLSX,
     handleExportAuditPDF,
     setAuditFilters
@@ -199,7 +202,10 @@ const Clientes = () => {
         auditLogs={auditLogs}
         auditLoading={auditLoading}
         auditFilters={auditFilters}
+        auditPagination={auditPagination}
         onApplyFilters={handleApplyAuditFilters}
+        onPageChange={handleAuditPageChange}
+        onItemsPerPageChange={handleAuditItemsPerPageChange}
         onExportXLSX={handleExportAuditXLSX}
         onExportPDF={handleExportAuditPDF}
         onFilterChange={(field, value) => setAuditFilters(prev => ({ ...prev, [field]: value }))}
