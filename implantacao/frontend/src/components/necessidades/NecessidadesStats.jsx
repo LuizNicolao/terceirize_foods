@@ -16,23 +16,20 @@ const NecessidadesStats = ({
 
   const statsCards = [
     {
-      title: 'Total de Produtos',
+      title: 'Produtos',
       value: stats.totalProdutos,
-      subtitle: 'Produtos disponíveis',
       icon: FaBox,
       color: 'blue'
     },
     {
       title: 'Com Ajuste',
       value: stats.produtosComAjuste,
-      subtitle: 'Produtos com ajuste definido',
       icon: FaClipboardList,
       color: 'orange'
     },
     {
       title: 'Total Ajustado',
       value: Number(stats.totalAjustado).toFixed(3),
-      subtitle: 'Soma dos ajustes finais',
       icon: FaClipboardList,
       color: 'green'
     }
@@ -48,7 +45,6 @@ const NecessidadesStats = ({
               key={index}
               title={card.title}
               value={card.value}
-              subtitle={card.subtitle}
               icon={card.icon}
               color={card.color}
             />
