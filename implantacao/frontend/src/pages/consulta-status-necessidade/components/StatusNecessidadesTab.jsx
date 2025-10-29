@@ -51,7 +51,7 @@ const StatusNecessidadesTab = () => {
   const opcoesStatusSubstituicao = [
     { value: '', label: 'Todos os status' },
     { value: 'conf', label: 'CONF - Aguardando Confirmação' },
-    { value: 'conf log', label: 'CONF LOG - Confirmado com Log' },
+    { value: 'conf log', label: 'CONF LOG - Confirmado pela Logística' },
     { value: 'aprovado', label: 'APROVADO - Aprovado' }
   ];
 
@@ -156,7 +156,7 @@ const StatusNecessidadesTab = () => {
   const getStatusSubstituicaoLabel = (status) => {
     const statusMap = {
       'conf': 'CONF - Aguardando Confirmação',
-      'conf log': 'CONF LOG - Confirmado com Log',
+      'conf log': 'CONF LOG - Confirmado pela Logística',
       'aprovado': 'APROVADO - Aprovado'
     };
     return statusMap[status] || status;
