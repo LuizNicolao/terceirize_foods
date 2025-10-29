@@ -176,11 +176,6 @@ const Necessidades = () => {
       {/* Lista de Necessidades Agrupadas por Escola */}
       {necessidades && necessidades.length > 0 && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-200">
-            <h3 className="text-base font-semibold text-gray-900">
-              Necessidades Geradas ({necessidades.length} produtos)
-            </h3>
-          </div>
           <div>
             {(() => {
               // Agrupar necessidades por necessidade_id (se disponível) ou por escola e data
@@ -234,18 +229,6 @@ const Necessidades = () => {
                         item={grupo}
                         size="sm"
                       />
-                    </div>
-                  </div>
-
-                  {/* Resumo da Escola - Layout Compacto */}
-                  <div className="bg-gray-50 rounded-md p-3">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-600">
-                        Produtos com ajuste: {grupo.produtos.filter(p => Number(p.ajuste) > 0).length}
-                      </span>
-                      <span className="font-medium text-gray-900">
-                        Total ajustes: {grupo.produtos.reduce((sum, p) => sum + Number(p.ajuste), 0).toFixed(3).replace('.', ',')}
-                      </span>
                     </div>
                   </div>
                 </div>
