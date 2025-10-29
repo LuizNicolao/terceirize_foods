@@ -51,12 +51,14 @@ class ConsultaStatusController {
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('n.semana_abastecimento = ?');
+        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ?)');
+        queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
       }
 
       if (semana_consumo) {
-        whereConditions.push('n.semana_consumo = ?');
+        whereConditions.push('(n.semana_consumo = ? OR ns.semana_consumo = ?)');
+        queryParams.push(semana_consumo);
         queryParams.push(semana_consumo);
       }
 
@@ -236,7 +238,8 @@ class ConsultaStatusController {
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('n.semana_abastecimento = ?');
+        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ?)');
+        queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
       }
 
@@ -357,12 +360,14 @@ class ConsultaStatusController {
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('n.semana_abastecimento = ?');
+        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ?)');
+        queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
       }
 
       if (semana_consumo) {
-        whereConditions.push('n.semana_consumo = ?');
+        whereConditions.push('(n.semana_consumo = ? OR ns.semana_consumo = ?)');
+        queryParams.push(semana_consumo);
         queryParams.push(semana_consumo);
       }
 
@@ -459,12 +464,14 @@ class ConsultaStatusController {
       }
 
       if (semana_abastecimento) {
-        whereConditions.push('n.semana_abastecimento = ?');
+        whereConditions.push('(n.semana_abastecimento = ? OR ns.semana_abastecimento = ?)');
+        queryParams.push(semana_abastecimento);
         queryParams.push(semana_abastecimento);
       }
 
       if (semana_consumo) {
-        whereConditions.push('n.semana_consumo = ?');
+        whereConditions.push('(n.semana_consumo = ? OR ns.semana_consumo = ?)');
+        queryParams.push(semana_consumo);
         queryParams.push(semana_consumo);
       }
 
