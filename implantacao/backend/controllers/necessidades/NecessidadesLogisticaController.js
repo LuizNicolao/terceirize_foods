@@ -155,8 +155,23 @@ class NecessidadesLogisticaController {
         }
       }
 
-      // Não mudar status automaticamente aqui
-      // A transição NEC LOG → CONF NUTRI deve ser feita via botão "Liberar para Nutri"
+      // Após salvar os ajustes, mudar status de NEC LOG para CONF NUTRI
+      // E copiar ajuste_logistica para ajuste_conf_nutri
+      if (necessidade_ids.size > 0 && sucessos > 0) {
+        for (const necessidade_id of necessidade_ids) {
+          try {
+            await executeQuery(`
+              UPDATE necessidades 
+              SET status = 'CONF NUTRI', 
+                  ajuste_conf_nutri = COALESCE(ajuste_logistica, ajuste_conf_nutri),
+                  data_atualizacao = NOW()
+              WHERE necessidade_id = ? AND status = 'NEC LOG'
+            `, [necessidade_id]);
+          } catch (error) {
+            console.error(`Erro ao atualizar status para CONF NUTRI: ${necessidade_id}:`, error);
+          }
+        }
+      }
 
       res.json({
         success: true,
@@ -233,72 +248,6 @@ class NecessidadesLogisticaController {
 
     } catch (error) {
       console.error('Erro ao liberar para nutri confirmar:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
-    }
-  }
-
-  // Confirmar para coordenação (mudar de CONF NUTRI para CONF COORD)
-  static async confirmarParaCoordenacao(req, res) {
-    try {
-      const { necessidade_ids } = req.body;
-
-      if (!necessidade_ids || !Array.isArray(necessidade_ids)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Lista de IDs de necessidade é obrigatória'
-        });
-      }
-
-      let sucessos = 0;
-      let erros = 0;
-
-      for (const necessidade_id of necessidade_ids) {
-        try {
-          // Verificar quantos produtos precisam ser atualizados
-          const countQuery = `
-            SELECT COUNT(*) as total
-            FROM necessidades
-            WHERE necessidade_id = ? AND status = 'CONF NUTRI'
-          `;
-          const countResult = await executeQuery(countQuery, [necessidade_id]);
-
-          if (countResult[0].total === 0) {
-            erros++;
-            continue;
-          }
-
-          // Atualizar status de CONF NUTRI para CONF COORD
-          // E copiar ajuste_conf_nutri para ajuste_conf_coord
-          const updateQuery = `
-            UPDATE necessidades 
-            SET status = 'CONF COORD', 
-                ajuste_conf_coord = COALESCE(ajuste_conf_nutri, ajuste_conf_coord),
-                data_atualizacao = NOW()
-            WHERE necessidade_id = ? AND status = 'CONF NUTRI'
-          `;
-          
-          const result = await executeQuery(updateQuery, [necessidade_id]);
-          if (result.affectedRows > 0) sucessos++; else erros++;
-
-        } catch (error) {
-          console.error(`Erro ao confirmar necessidade ${necessidade_id}:`, error);
-          erros++;
-        }
-      }
-
-      res.json({
-        success: true,
-        message: `Necessidades confirmadas: ${sucessos} sucessos, ${erros} erros`,
-        sucessos,
-        erros
-      });
-
-    } catch (error) {
-      console.error('Erro ao confirmar para coordenação:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor',

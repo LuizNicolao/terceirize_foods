@@ -70,7 +70,7 @@ const AjusteActions = ({
                 {activeTab === 'nutricionista'
                   ? 'Liberar para Coordenação'
                   : activeTab === 'logistica'
-                  ? (statusAtual === 'CONF NUTRI' ? 'Liberar para Coordenação (CONF COORD)' : 'Liberar para Nutri')
+                  ? (statusAtual === 'CONF NUTRI' ? 'Confirmar (CONF)' : 'Liberar para Nutri')
                   : (statusAtual === 'NEC COORD' ? 'Enviar para Nutri (CONF NUTRI)'
                     : (statusAtual === 'CONF COORD' ? 'Confirmar (CONF)' : 'Liberar'))}
               </Button>

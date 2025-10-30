@@ -83,7 +83,6 @@ export const useAjusteNecessidadesOrchestrator = () => {
     carregarNutricionistas: carregarNutricionistasLogistica,
     salvarAjustes: salvarAjustesLogistica,
     liberarParaNutriConfirma,
-    confirmarParaCoordenacao,
     buscarProdutosParaModal: buscarProdutosParaModalLogistica,
     incluirProdutoExtra: incluirProdutoExtraLogistica,
     atualizarFiltros: atualizarFiltrosLogistica,
@@ -345,8 +344,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
             // Para coordenação, considerar ajuste_conf_nutri primeiro (último valor da nutri)
             valorFinal = nec.ajuste_conf_nutri || nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
           } else if (activeTab === 'logistica') {
-            // Para logística, considerar ajuste_coordenacao primeiro
-            valorFinal = nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste_logistica || nec.ajuste || 0;
+            // Para logística, considerar ajuste_logistica primeiro
+            valorFinal = nec.ajuste_logistica || nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
           }
         }
 
@@ -437,16 +436,17 @@ export const useAjusteNecessidadesOrchestrator = () => {
           resultado = await liberarParaLogistica([necessidadeAtual.necessidade_id]);
         }
       } else if (activeTab === 'logistica') {
-        // Logística: NEC LOG -> CONF NUTRI; CONF NUTRI -> CONF COORD
+        // Logística: NEC LOG -> CONF NUTRI; CONF NUTRI -> CONF
         const status = necessidades[0]?.status;
         if (!filtros.escola_id) {
           toast.error('Selecione uma escola para liberar na logística');
           return;
         }
-        if (status === 'NEC LOG') {
+        if (status === 'CONF NUTRI') {
           resultado = await liberarParaNutriConfirma([necessidadeAtual.necessidade_id]);
-        } else if (status === 'CONF NUTRI') {
-          resultado = await confirmarParaCoordenacao([necessidadeAtual.necessidade_id]);
+        } else {
+          // Fallback para NEC LOG
+          resultado = await liberarParaNutriConfirma([necessidadeAtual.necessidade_id]);
         }
       }
       
@@ -462,7 +462,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
         } else if (activeTab === 'logistica') {
           const status = necessidades[0]?.status;
           mensagem = status === 'CONF NUTRI'
-            ? 'Necessidades liberadas para coordenação (CONF COORD)!'
+            ? 'Necessidades confirmadas (CONF)!'
             : 'Liberado para Nutri (CONF NUTRI)!';
         }
         toast.success(mensagem);
@@ -472,7 +472,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
       console.error('Erro ao liberar para coordenação:', error);
       toast.error('Erro ao liberar para coordenação');
     }
-  }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, confirmarNutri, confirmarFinal, liberarParaLogistica, liberarParaNutriConfirma, confirmarParaCoordenacao, handleCarregarNecessidades, necessidades]);
+  }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, confirmarNutri, confirmarFinal, liberarParaLogistica, liberarParaNutriConfirma, handleCarregarNecessidades, necessidades]);
 
   const handleAbrirModalProdutoExtra = useCallback(async () => {
     if (activeTab === 'coordenacao' || activeTab === 'logistica') {
