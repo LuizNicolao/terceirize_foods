@@ -1,4 +1,4 @@
-const { executeQuery } = require('../../config/database');
+const { executeQuery, pool } = require('../../config/database');
 const { successResponse, errorResponse } = require('../../middleware/responseHandler');
 
 class NecessidadesPadroesCRUDController {
@@ -137,41 +137,76 @@ class NecessidadesPadroesCRUDController {
    * Salvar padrão completo (múltiplos produtos)
    */
   static async salvarPadrao(req, res) {
+    const connection = await pool.getConnection();
+    
     try {
       const { escola_id, grupo_id, produtos } = req.body;
       const usuario_id = req.user?.id;
 
       // Iniciar transação
-      await executeQuery('START TRANSACTION');
+      await connection.beginTransaction();
 
       try {
+        // Buscar dados para preencher os nomes
+        const [escolaData] = await connection.execute(
+          'SELECT nome_escola FROM foods_db.unidades_escolares WHERE id = ?',
+          [escola_id]
+        );
+        const [grupoData] = await connection.execute(
+          'SELECT nome FROM foods_db.grupos WHERE id = ?',
+          [grupo_id]
+        );
+
         // Excluir padrões existentes para esta escola/grupo
-        await executeQuery(
+        await connection.execute(
           'UPDATE necessidades_padroes SET ativo = 0 WHERE escola_id = ? AND grupo_id = ?',
           [escola_id, grupo_id]
         );
 
-        // Inserir novos padrões
+        // Inserir novos padrões com nomes
         for (const produto of produtos) {
+          // Buscar dados do produto
+          const [produtoData] = await connection.execute(
+            `SELECT po.nome, um.sigla 
+             FROM foods_db.produto_origem po 
+             LEFT JOIN foods_db.unidades_medida um ON po.unidade_medida_id = um.id 
+             WHERE po.id = ?`,
+            [produto.produto_id]
+          );
+
           const insertQuery = `
-            INSERT INTO necessidades_padroes (escola_id, grupo_id, produto_id, quantidade, usuario_id)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO necessidades_padroes 
+            (escola_id, grupo_id, produto_id, quantidade, usuario_id, escola_nome, grupo_nome, produto_nome, unidade_medida_sigla)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
           `;
-          await executeQuery(insertQuery, [escola_id, grupo_id, produto.produto_id, produto.quantidade, usuario_id]);
+          
+          await connection.execute(insertQuery, [
+            escola_id, 
+            grupo_id, 
+            produto.produto_id, 
+            produto.quantidade, 
+            usuario_id,
+            escolaData[0]?.nome_escola || '',
+            grupoData[0]?.nome || '',
+            produtoData[0]?.nome || '',
+            produtoData[0]?.sigla || ''
+          ]);
         }
 
         // Confirmar transação
-        await executeQuery('COMMIT');
+        await connection.commit();
 
         return successResponse(res, { escola_id, grupo_id, produtos_salvos: produtos.length }, 'Padrão salvo com sucesso');
       } catch (error) {
         // Reverter transação em caso de erro
-        await executeQuery('ROLLBACK');
+        await connection.rollback();
         throw error;
       }
     } catch (error) {
       console.error('Erro ao salvar padrão:', error);
       return errorResponse(res, 'Erro interno do servidor', 500);
+    } finally {
+      connection.release();
     }
   }
 }
