@@ -35,6 +35,7 @@ const PermissoesForm = ({
       { key: 'analise_necessidades_substituicoes', label: 'Análise Substituições' },
       { key: 'consulta_status_necessidade', label: 'Consulta Status Necessidade' }
       
+      
     ],
     'Sistema': [
       { key: 'permissoes', label: 'Permissões' }
@@ -300,3 +301,4 @@ const PermissoesForm = ({
 };
 
 export default PermissoesForm;
+// fix: garantir necessidades_padroes
