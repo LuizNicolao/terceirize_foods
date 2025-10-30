@@ -65,7 +65,7 @@ const AjusteTabelaNutricionista = ({
                   min="0"
                   step="0.001"
                   className="w-20 text-center text-xs py-1"
-                  disabled={necessidade.status === 'NEC NUTRI' || !canEdit}
+                  disabled={!canEdit}
                 />
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
