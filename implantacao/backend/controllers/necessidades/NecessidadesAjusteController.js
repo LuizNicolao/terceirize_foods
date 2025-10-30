@@ -26,7 +26,7 @@ const listarParaAjuste = async (req, res) => {
         n.status,
         n.data_preenchimento
       FROM necessidades n
-      WHERE n.status IN ('NEC', 'NEC NUTRI')
+      WHERE n.status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
     `;
 
     const params = [];
@@ -167,7 +167,7 @@ const salvarAjustes = async (req, res) => {
           await executeQuery(`
             UPDATE necessidades 
             SET ajuste_nutricionista = ?, data_atualizacao = CURRENT_TIMESTAMP
-            WHERE id = ? AND escola_id = ? AND status IN ('NEC', 'NEC NUTRI')
+            WHERE id = ? AND escola_id = ? AND status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
           `, [newValue, necessidade_id, escola_id]);
           
           updatedCount++;
