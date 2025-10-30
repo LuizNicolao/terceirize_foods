@@ -388,12 +388,19 @@ const liberarCoordenacao = async (req, res) => {
       });
     }
 
-    // Atualizar status para 'NEC COORD'
-    let query = `
+  // Atualizar status conforme fluxo:
+  // - De NEC/NEC NUTRI -> NEC COORD
+  // - De CONF NUTRI -> CONF COORD
+  let query = `
       UPDATE necessidades 
-      SET status = 'NEC COORD', data_atualizacao = CURRENT_TIMESTAMP
+      SET status = CASE 
+          WHEN status IN ('NEC', 'NEC NUTRI') THEN 'NEC COORD'
+          WHEN status = 'CONF NUTRI' THEN 'CONF COORD'
+          ELSE status
+        END,
+        data_atualizacao = CURRENT_TIMESTAMP
       WHERE escola_id = ? 
-        AND status IN ('NEC', 'NEC NUTRI')
+        AND status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
         AND produto_id IN (
           SELECT DISTINCT ppc.produto_id 
           FROM produtos_per_capita ppc

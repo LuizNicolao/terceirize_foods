@@ -456,4 +456,65 @@ class NecessidadesCoordenacaoController {
   }
 }
 
+// Novos métodos de transição de status na coordenação
+NecessidadesCoordenacaoController.confirmarNutri = async (req, res) => {
+  try {
+    const { escola_id, grupo, periodo } = req.body;
+
+    if (!escola_id || !grupo) {
+      return res.status(400).json({ success: false, message: 'escola_id e grupo são obrigatórios' });
+    }
+
+    // Atualiza NEC COORD -> CONF NUTRI para o conjunto da escola/grupo/período
+    let query = `
+      UPDATE necessidades
+      SET status = 'CONF NUTRI', data_atualizacao = NOW()
+      WHERE escola_id = ? 
+        AND status = 'NEC COORD'
+        AND produto_id IN (
+          SELECT DISTINCT ppc.produto_id FROM produtos_per_capita ppc WHERE ppc.grupo = ?
+        )
+    `;
+    const params = [escola_id, grupo];
+
+    if (periodo && periodo.consumo_de && periodo.consumo_ate) {
+      query += ` AND semana_consumo BETWEEN ? AND ?`;
+      params.push(periodo.consumo_de, periodo.consumo_ate);
+    }
+
+    const result = await executeQuery(query, params);
+    return res.json({ success: true, message: 'Enviado para Nutri (CONF NUTRI)', affectedRows: result.affectedRows });
+  } catch (error) {
+    console.error('Erro ao confirmar para Nutri:', error);
+    return res.status(500).json({ success: false, message: 'Erro interno do servidor', error: error.message });
+  }
+};
+
+NecessidadesCoordenacaoController.confirmarFinal = async (req, res) => {
+  try {
+    const { necessidade_ids } = req.body;
+    if (!necessidade_ids || !Array.isArray(necessidade_ids)) {
+      return res.status(400).json({ success: false, message: 'Lista de IDs de necessidade é obrigatória' });
+    }
+
+    let sucessos = 0;
+    let erros = 0;
+    for (const necessidade_id of necessidade_ids) {
+      try {
+        const result = await executeQuery(`
+          UPDATE necessidades
+          SET status = 'CONF', data_atualizacao = NOW()
+          WHERE necessidade_id = ? AND status = 'CONF COORD'
+        `, [necessidade_id]);
+        if (result.affectedRows > 0) sucessos++; else erros++;
+      } catch (e) { erros++; }
+    }
+
+    return res.json({ success: true, message: `Confirmadas: ${sucessos} sucesso(s), ${erros} erro(s)`, sucessos, erros });
+  } catch (error) {
+    console.error('Erro ao confirmar final:', error);
+    return res.status(500).json({ success: false, message: 'Erro interno do servidor', error: error.message });
+  }
+};
+
 module.exports = NecessidadesCoordenacaoController;

@@ -30,6 +30,12 @@ router.put('/coordenacao/ajustes', NecessidadesCoordenacaoController.salvarAjust
 // Liberar para logística
 router.post('/coordenacao/liberar-logistica', NecessidadesCoordenacaoController.liberarParaLogistica);
 
+// Novo: NEC COORD -> CONF NUTRI (devolver para Nutri confirmar)
+router.post('/coordenacao/confirmar-nutri', NecessidadesCoordenacaoController.confirmarNutri);
+
+// Novo: CONF COORD -> CONF (confirmação final)
+router.post('/coordenacao/confirmar-final', NecessidadesCoordenacaoController.confirmarFinal);
+
 // Buscar produtos para modal
 router.get('/coordenacao/produtos-modal', NecessidadesCoordenacaoController.buscarProdutosParaModal);
 
