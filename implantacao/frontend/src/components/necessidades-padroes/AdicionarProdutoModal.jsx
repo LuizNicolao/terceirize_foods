@@ -55,9 +55,18 @@ const AdicionarProdutoModal = ({
         
         if (Array.isArray(produtosData)) {
           // Filtrar produtos que já foram adicionados
-          const produtosDisponiveis = produtosData.filter(produto => 
-            !produtosJaAdicionados.some(adicionado => adicionado.produto_id === produto.id)
-          );
+          const produtosDisponiveis = produtosData.filter(produto => {
+            // Verificar se produto já foi adicionado
+            const jaAdicionado = produtosJaAdicionados.some(adicionado => {
+              // Se adicionado é um objeto com produto_id
+              if (typeof adicionado === 'object' && adicionado.produto_id) {
+                return adicionado.produto_id === produto.id;
+              }
+              // Se adicionado é apenas o ID (number ou string)
+              return adicionado === produto.id || adicionado === String(produto.id);
+            });
+            return !jaAdicionado;
+          });
           setProdutos(produtosDisponiveis);
           setFiltrados(produtosDisponiveis);
         } else {
