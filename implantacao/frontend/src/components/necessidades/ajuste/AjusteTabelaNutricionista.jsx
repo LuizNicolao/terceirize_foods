@@ -35,13 +35,13 @@ const AjusteTabelaNutricionista = ({
               Produto
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Quantidade anterior
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Unidade
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               Quantidade (gerada)
+            </th>
+            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Quantidade anterior
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               Ajuste
@@ -60,9 +60,6 @@ const AjusteTabelaNutricionista = ({
               <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
                 {necessidade.produto}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
-                {getQuantidadeAnterior(necessidade)}
-              </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">
                 {necessidade.produto_unidade}
               </td>
@@ -72,6 +69,9 @@ const AjusteTabelaNutricionista = ({
                   : (necessidade.status === 'NEC NUTRI'
                       ? (necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0)
                       : (necessidade.ajuste ?? 0))}
+              </td>
+              <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
+                {getQuantidadeAnterior(necessidade)}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                 <Input
