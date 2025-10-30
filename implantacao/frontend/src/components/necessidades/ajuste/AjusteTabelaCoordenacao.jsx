@@ -59,10 +59,7 @@ const AjusteTabelaCoordenacao = ({
                 {necessidade.produto_unidade}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                {necessidade.ajuste_coordenacao 
-                  ? (necessidade.ajuste_coordenacao)
-                  : (necessidade.ajuste_nutricionista || necessidade.ajuste || 0)
-                }
+                {necessidade.ajuste_conf_nutri ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                 <Input

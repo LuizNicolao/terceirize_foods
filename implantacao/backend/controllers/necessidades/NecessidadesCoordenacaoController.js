@@ -50,6 +50,8 @@ class NecessidadesCoordenacaoController {
           n.ajuste,
           n.ajuste_nutricionista,
           n.ajuste_coordenacao,
+          n.ajuste_conf_nutri,
+          n.ajuste_conf_coord,
           n.semana_consumo,
           n.semana_abastecimento,
           n.status,
@@ -109,7 +111,7 @@ class NecessidadesCoordenacaoController {
           const currentQuery = `
             SELECT ajuste_coordenacao 
             FROM necessidades 
-            WHERE id = ? AND status = 'NEC COORD'
+            WHERE id = ? AND status IN ('NEC COORD','CONF COORD')
           `;
           const currentResult = await executeQuery(currentQuery, [id]);
           
@@ -124,12 +126,13 @@ class NecessidadesCoordenacaoController {
           // Sempre atualizar (não verificar se mudou para permitir atualização de NULL)
           const updateQuery = `
             UPDATE necessidades 
-            SET ajuste_coordenacao = ?, 
+            SET ajuste_coordenacao = ?,
+                ajuste_conf_coord = ?,
                 data_atualizacao = NOW()
-            WHERE id = ? AND status = 'NEC COORD'
+            WHERE id = ? AND status IN ('NEC COORD','CONF COORD')
           `;
           
-          await executeQuery(updateQuery, [newValue, id]);
+          await executeQuery(updateQuery, [newValue, newValue, id]);
           sucessos++;
 
         } catch (error) {
