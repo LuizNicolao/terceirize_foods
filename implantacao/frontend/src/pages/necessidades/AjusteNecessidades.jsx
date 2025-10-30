@@ -12,6 +12,7 @@ import AjusteHeader from '../../components/necessidades/ajuste/AjusteHeader';
 import AjusteFiltros from '../../components/necessidades/ajuste/AjusteFiltros';
 import AjusteTabelaNutricionista from '../../components/necessidades/ajuste/AjusteTabelaNutricionista';
 import AjusteTabelaCoordenacao from '../../components/necessidades/ajuste/AjusteTabelaCoordenacao';
+import AjusteTabelaLogistica from '../../components/necessidades/ajuste/AjusteTabelaLogistica';
 import ModalProdutoExtra from '../../components/necessidades/ajuste/ModalProdutoExtra';
 import AjusteActions from '../../components/necessidades/ajuste/AjusteActions';
 import AjusteEmptyStates from '../../components/necessidades/ajuste/AjusteEmptyStates';
@@ -176,6 +177,14 @@ const AjusteNecessidades = () => {
             {/* Tabela de Produtos */}
             {activeTab === 'coordenacao' ? (
               <AjusteTabelaCoordenacao
+                necessidades={necessidadesFiltradas}
+                ajustesLocais={ajustesLocais}
+                onAjusteChange={handleAjusteChange}
+                onExcluirNecessidade={handleExcluirNecessidade}
+                canEdit={canEditAjuste}
+              />
+            ) : activeTab === 'logistica' ? (
+              <AjusteTabelaLogistica
                 necessidades={necessidadesFiltradas}
                 ajustesLocais={ajustesLocais}
                 onAjusteChange={handleAjusteChange}

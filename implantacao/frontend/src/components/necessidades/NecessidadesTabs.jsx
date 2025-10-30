@@ -15,6 +15,11 @@ const NecessidadesTabs = ({
       id: 'coordenacao',
       label: '👨‍💼 Ajuste Coordenação',
       visible: ['coordenador', 'supervisor', 'administrador'].includes(userType)
+    },
+    {
+      id: 'logistica',
+      label: '🚚 Ajuste Logística',
+      visible: ['supervisor', 'administrador'].includes(userType)
     }
   ];
 
