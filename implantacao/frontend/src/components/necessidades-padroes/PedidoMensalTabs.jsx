@@ -13,7 +13,7 @@ const PedidoMensalTabs = ({
     },
     {
       id: 'gerenciar',
-      label: 'Gerenciar Padrões',
+      label: 'Gerar Necessidade Padrão',
       icon: <FaCog className="mr-2" />
     }
   ];

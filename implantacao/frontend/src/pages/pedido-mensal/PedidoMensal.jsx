@@ -400,7 +400,7 @@ const PedidoMensal = () => {
       {activeTab === 'gerenciar' && (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-gray-800 mb-4">
-            Gerenciar Padrões Existentes
+            Gerar Necessidade Padrão
           </h2>
           <div className="text-center py-8 text-gray-500">
             <FaCog className="text-4xl mx-auto mb-4 text-gray-300" />
