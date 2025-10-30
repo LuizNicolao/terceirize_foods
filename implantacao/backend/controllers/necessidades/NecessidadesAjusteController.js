@@ -18,6 +18,7 @@ const listarParaAjuste = async (req, res) => {
         n.produto_unidade,
         n.ajuste,
         n.ajuste_nutricionista,
+        n.ajuste_coordenacao,
         n.necessidade_id,
         n.escola_id,
         n.escola,
