@@ -80,7 +80,7 @@ const PedidoMensalTable = ({
                       step="0.001"
                       min="0"
                       value={produto.quantidade || 0}
-                      onChange={(e) => onEditQuantity(produto.produto_id, e.target.value)}
+                      onChange={(e) => onEditQuantity && onEditQuantity(produto.produto_id, e.target.value)}
                       className="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-center"
                       placeholder="0.000"
                     />
@@ -91,7 +91,7 @@ const PedidoMensalTable = ({
                     canView={false}
                     canEdit={false}
                     canDelete={true}
-                    onDelete={() => onRemove(produto.produto_id)}
+                    onDelete={() => onRemove && onRemove(produto.produto_id)}
                   />
                 </td>
               </tr>
