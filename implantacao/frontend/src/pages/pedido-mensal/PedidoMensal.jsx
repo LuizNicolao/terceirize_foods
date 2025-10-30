@@ -97,6 +97,32 @@ const PedidoMensal = () => {
     loadEscolas();
   }, [filtros.filial]);
 
+  // Carregar produtos padrão existentes quando escola e grupo forem selecionados
+  useEffect(() => {
+    const carregarProdutosPadrao = async () => {
+      if (filtros.escola && filtros.grupo) {
+        setLoading(true);
+        try {
+          const produtosExistentes = await buscarPorEscolaGrupo(filtros.escola, filtros.grupo);
+          if (produtosExistentes && produtosExistentes.length > 0) {
+            setProdutos(produtosExistentes);
+          } else {
+            setProdutos([]);
+          }
+        } catch (error) {
+          console.error('Erro ao carregar produtos padrão:', error);
+          setProdutos([]);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setProdutos([]);
+      }
+    };
+    
+    carregarProdutosPadrao();
+  }, [filtros.escola, filtros.grupo, buscarPorEscolaGrupo]);
+
   const carregarDadosIniciais = async () => {
     setLoading(true);
     try {
