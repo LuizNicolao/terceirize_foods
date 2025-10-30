@@ -11,7 +11,7 @@ class NecessidadesCoordenacaoController {
         nutricionista_id 
       } = req.query;
 
-      let whereConditions = ["n.status = 'NEC COORD'"];
+      let whereConditions = ["n.status IN ('NEC COORD','CONF COORD')"];
       let queryParams = [];
 
       if (escola_id) {
@@ -434,7 +434,7 @@ class NecessidadesCoordenacaoController {
           n.usuario_email as email
         FROM necessidades n
         LEFT JOIN usuarios u ON n.usuario_id = u.id
-        WHERE n.status = 'NEC COORD'
+        WHERE n.status IN ('NEC COORD','CONF COORD')
         ORDER BY u.nome
       `;
 
