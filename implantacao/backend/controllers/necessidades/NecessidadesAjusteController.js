@@ -19,6 +19,8 @@ const listarParaAjuste = async (req, res) => {
         n.ajuste,
         n.ajuste_nutricionista,
         n.ajuste_coordenacao,
+        n.ajuste_conf_nutri,
+        n.ajuste_conf_coord,
         n.necessidade_id,
         n.escola_id,
         n.escola,
@@ -301,14 +303,21 @@ const incluirProdutoExtra = async (req, res) => {
       usuario_id: escolaExistente[0].usuario_id
     };
 
-    // Determinar status (NEC se conjunto ainda não foi ajustado, senão manter NEC NUTRI)
+    // Determinar status baseado no status atual do conjunto
     const statusConjunto = await executeQuery(`
       SELECT DISTINCT status FROM necessidades 
-      WHERE escola_id = ? AND status IN ('NEC', 'NEC NUTRI')
+      WHERE escola_id = ? AND status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
       LIMIT 1
     `, [escola_id]);
 
-    const novoStatus = statusConjunto.length > 0 && statusConjunto[0].status === 'NEC NUTRI' ? 'NEC NUTRI' : 'NEC';
+    // Manter o status atual ou usar NEC como padrão
+    let novoStatus = 'NEC';
+    if (statusConjunto.length > 0) {
+      const statusAtual = statusConjunto[0].status;
+      if (statusAtual === 'NEC NUTRI' || statusAtual === 'CONF NUTRI') {
+        novoStatus = statusAtual;
+      }
+    }
 
     // Criar nova necessidade com o mesmo necessidade_id
     const result = await executeQuery(`
@@ -330,8 +339,10 @@ const incluirProdutoExtra = async (req, res) => {
         status,
         observacoes,
         necessidade_id,
-        ajuste_nutricionista
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ajuste_nutricionista,
+        ajuste_conf_nutri,
+        ajuste_conf_coord
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       escolaData.usuario_email,
       escolaData.usuario_id,
@@ -350,7 +361,9 @@ const incluirProdutoExtra = async (req, res) => {
       novoStatus,
       'Produto extra incluído pela nutricionista',
       escolaData.necessidade_id, // Usar o mesmo necessidade_id
-      null // ajuste_nutricionista inicialmente null
+      null, // ajuste_nutricionista inicialmente null
+      0, // ajuste_conf_nutri inicialmente 0
+      null // ajuste_conf_coord inicialmente null
     ]);
 
     res.status(201).json({

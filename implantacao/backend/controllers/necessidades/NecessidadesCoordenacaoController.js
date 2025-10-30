@@ -376,14 +376,26 @@ class NecessidadesCoordenacaoController {
         });
       }
 
+      // Determinar o status baseado no status atual do conjunto
+      const statusConjunto = await executeQuery(`
+        SELECT DISTINCT status FROM necessidades 
+        WHERE escola_id = ? AND status IN ('NEC COORD', 'CONF COORD')
+        LIMIT 1
+      `, [escola_id]);
+
+      let novoStatus = 'NEC COORD';
+      if (statusConjunto.length > 0 && statusConjunto[0].status === 'CONF COORD') {
+        novoStatus = 'CONF COORD';
+      }
+
       // Inserir novo produto
       const insertQuery = `
         INSERT INTO necessidades (
           usuario_email, usuario_id, produto_id, produto, produto_unidade,
           escola_id, escola, escola_rota, codigo_teknisa, ajuste,
           semana_consumo, semana_abastecimento, grupo, grupo_id, status, necessidade_id,
-          observacoes, data_preenchimento
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+          observacoes, data_preenchimento, ajuste_conf_nutri, ajuste_conf_coord
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)
       `;
 
       const values = [
@@ -401,9 +413,11 @@ class NecessidadesCoordenacaoController {
         semana_abastecimento || escolaData[0].semana_abastecimento,
         produto[0].grupo,
         produto[0].grupo_id,
-        'NEC COORD',
+        novoStatus,
         escolaData[0].necessidade_id,
-        'Produto extra incluído pela coordenação'
+        'Produto extra incluído pela coordenação',
+        0, // ajuste_conf_nutri inicialmente 0
+        0 // ajuste_conf_coord inicialmente 0
       ];
 
       await executeQuery(insertQuery, values);
