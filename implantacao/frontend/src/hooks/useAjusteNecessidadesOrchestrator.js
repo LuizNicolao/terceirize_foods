@@ -216,6 +216,27 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }
 
     try {
+      // Validar produtos extras zerados
+      const produtosExtrasZerados = necessidades.filter(nec => {
+        const chave = `${nec.escola_id}_${nec.produto_id}`;
+        const ajusteLocal = ajustesLocais[chave];
+        const isExtra = nec.observacoes && nec.observacoes.includes('Produto extra');
+        
+        // Produto extra com valor zerado ou sem ajuste
+        if (isExtra) {
+          if (ajusteLocal === undefined || ajusteLocal === '' || parseFloat(ajusteLocal) === 0) {
+            return true;
+          }
+        }
+        return false;
+      });
+
+      if (produtosExtrasZerados.length > 0) {
+        const nomesProdutos = produtosExtrasZerados.map(p => p.produto).join(', ');
+        toast.error(`Produtos extra devem ter quantidade maior que zero: ${nomesProdutos}`);
+        return;
+      }
+
       // Mapear todos os produtos, incluindo os que têm e não têm ajuste local
       const itens = necessidades.map(nec => {
         const chave = `${nec.escola_id}_${nec.produto_id}`;
