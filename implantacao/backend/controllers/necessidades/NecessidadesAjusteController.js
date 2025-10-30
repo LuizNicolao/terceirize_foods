@@ -333,7 +333,7 @@ const incluirProdutoExtra = async (req, res) => {
 
     // Determinar em qual coluna salvar baseado no status
     const qtdFinal = quantidade || 0;
-    let ajuste = null;
+    let ajuste = 0;  // ajuste sempre deve ter um valor (NOT NULL)
     let ajuste_nutricionista = null;
     let ajuste_conf_nutri = null;
 

@@ -431,7 +431,7 @@ class NecessidadesCoordenacaoController {
         escolaData[0].escola,
         escolaData[0].escola_rota,
         escolaData[0].codigo_teknisa,
-        null, // ajuste null para coordenação
+        0, // ajuste sempre 0 para coordenação (NOT NULL)
         semana_consumo || escolaData[0].semana_consumo,
         semana_abastecimento || escolaData[0].semana_abastecimento,
         produto[0].grupo,
