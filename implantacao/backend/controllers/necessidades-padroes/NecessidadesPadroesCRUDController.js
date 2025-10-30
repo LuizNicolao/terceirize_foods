@@ -157,13 +157,7 @@ class NecessidadesPadroesCRUDController {
           [grupo_id]
         );
 
-        // Excluir padrões existentes para esta escola/grupo
-        await connection.execute(
-          'UPDATE necessidades_padroes SET ativo = 0 WHERE escola_id = ? AND grupo_id = ?',
-          [escola_id, grupo_id]
-        );
-
-        // Inserir novos padrões com nomes
+        // Inserir/atualizar padrões com nomes
         for (const produto of produtos) {
           // Buscar dados do produto
           const [produtoData] = await connection.execute(
@@ -176,8 +170,17 @@ class NecessidadesPadroesCRUDController {
 
           const insertQuery = `
             INSERT INTO necessidades_padroes 
-            (escola_id, grupo_id, produto_id, quantidade, usuario_id, escola_nome, grupo_nome, produto_nome, unidade_medida_sigla)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (escola_id, grupo_id, produto_id, quantidade, usuario_id, escola_nome, grupo_nome, produto_nome, unidade_medida_sigla, ativo)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+            ON DUPLICATE KEY UPDATE
+              quantidade = VALUES(quantidade),
+              usuario_id = VALUES(usuario_id),
+              escola_nome = VALUES(escola_nome),
+              grupo_nome = VALUES(grupo_nome),
+              produto_nome = VALUES(produto_nome),
+              unidade_medida_sigla = VALUES(unidade_medida_sigla),
+              ativo = 1,
+              updated_at = NOW()
           `;
           
           await connection.execute(insertQuery, [
