@@ -59,13 +59,13 @@ const AjusteTabelaCoordenacao = ({
               Produto
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Quantidade anterior
-            </th>
-            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               Unidade de Medida
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               Quantidade
+            </th>
+            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Quantidade anterior
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               Ajuste
@@ -94,9 +94,6 @@ const AjusteTabelaCoordenacao = ({
                 {necessidade.produto}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
-                {getQuantidadeAnterior(necessidade)}
-              </td>
-              <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
                 {necessidade.produto_unidade}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
@@ -105,6 +102,9 @@ const AjusteTabelaCoordenacao = ({
                   : necessidade.status === 'NEC COORD'
                   ? (necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0)
                   : (necessidade.ajuste_nutricionista ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste ?? 0)}
+              </td>
+              <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
+                {getQuantidadeAnterior(necessidade)}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                 <Input
