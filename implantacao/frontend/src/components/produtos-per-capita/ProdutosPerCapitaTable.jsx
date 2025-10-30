@@ -69,101 +69,184 @@ const ProdutosPerCapitaTable = ({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Produto
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Per Capita
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Criado em
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {produtos.map((produto) => {
-              const periodos = obterPeriodosComPerCapita(produto);
+    <>
+      {/* Versão Desktop - Tabela completa */}
+      <div className="hidden xl:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Produto
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Per Capita
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Criado em
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {produtos.map((produto) => {
+                const periodos = obterPeriodosComPerCapita(produto);
+                
+                return (
+                  <tr key={produto.id} className="hover:bg-gray-50">
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">
+                        {produto.nome_produto || '-'}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {produto.codigo_produto || '-'} - {produto.unidade_medida || '-'} - {produto.grupo || '-'}
+                      </div>
+                    </td>
+                    
+                    <td className="px-3 py-2">
+                      <div className="space-y-1">
+                        {periodos.length > 0 ? (
+                          periodos.map((periodo) => (
+                            <div key={periodo.periodo} className="text-sm">
+                              <span className="text-gray-600">{periodo.nome}:</span>
+                              <span className="ml-1 font-medium text-gray-900">
+                                {formatarPerCapita(periodo.valor)}g
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-sm text-gray-400">Nenhum per capita definido</span>
+                        )}
+                      </div>
+                    </td>
+                    
+                    <td className="px-3 py-2 whitespace-nowrap">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        produto.ativo 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {produto.ativo ? (
+                          <>
+                            <FaCheckCircle className="w-3 h-3 mr-1" />
+                            Ativo
+                          </>
+                        ) : (
+                          <>
+                            <FaTimesCircle className="w-3 h-3 mr-1" />
+                            Inativo
+                          </>
+                        )}
+                      </span>
+                    </td>
+                    
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                      {formatDate(produto.created_at)}
+                    </td>
+                    
+                    <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
+                      <ActionButtons
+                        canView={canView}
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                        onView={() => onView(produto)}
+                        onEdit={() => onEdit(produto)}
+                        onDelete={() => onDelete(produto)}
+                        size="xs"
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Versão Mobile e Tablet - Cards */}
+      <div className="xl:hidden space-y-3">
+        {produtos.map((produto) => {
+          const periodos = obterPeriodosComPerCapita(produto);
+          
+          return (
+            <div key={produto.id} className="bg-white rounded-lg shadow-sm p-4 border">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 text-sm">{produto.nome_produto || '-'}</h3>
+                  <p className="text-gray-600 text-xs">
+                    {produto.codigo_produto || '-'} - {produto.unidade_medida || '-'} - {produto.grupo || '-'}
+                  </p>
+                </div>
+                <ActionButtons
+                  canView={canView}
+                  canEdit={canEdit}
+                  canDelete={canDelete}
+                  onView={() => onView(produto)}
+                  onEdit={() => onEdit(produto)}
+                  onDelete={() => onDelete(produto)}
+                  size="xs"
+                  className="p-2"
+                />
+              </div>
               
-              return (
-                <tr key={produto.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">
-                      {`${produto.nome_produto || '-'} - ${produto.codigo_produto || '-'} - ${produto.unidade_medida || '-'} - ${produto.grupo || '-'}`}
-                    </div>
-                  </td>
-                  
-                  <td className="px-6 py-4">
-                    <div className="space-y-1">
-                      {periodos.length > 0 ? (
-                        periodos.map((periodo) => (
-                          <div key={periodo.periodo} className="text-sm">
-                            <span className="text-gray-600">{periodo.nome}:</span>
-                            <span className="ml-1 font-medium text-gray-900">
-                              {formatarPerCapita(periodo.valor)}g
-                            </span>
-                          </div>
-                        ))
-                      ) : (
-                        <span className="text-sm text-gray-400">Nenhum per capita definido</span>
-                      )}
-                    </div>
-                  </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      produto.ativo 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {produto.ativo ? (
-                        <>
-                          <FaCheckCircle className="w-3 h-3 mr-1" />
-                          Ativo
-                        </>
-                      ) : (
-                        <>
-                          <FaTimesCircle className="w-3 h-3 mr-1" />
-                          Inativo
-                        </>
-                      )}
-                    </span>
-                  </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(produto.created_at)}
-                  </td>
-                  
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <ActionButtons
-                      canView={canView}
-                      canEdit={canEdit}
-                      canDelete={canDelete}
-                      onView={() => onView(produto)}
-                      onEdit={() => onEdit(produto)}
-                      onDelete={() => onDelete(produto)}
-                    />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+              <div className="space-y-2 text-xs">
+                <div>
+                  <span className="text-gray-500 font-medium">Per Capita:</span>
+                  <div className="mt-1 space-y-1">
+                    {periodos.length > 0 ? (
+                      periodos.map((periodo) => (
+                        <div key={periodo.periodo} className="flex justify-between">
+                          <span className="text-gray-600">{periodo.nome}:</span>
+                          <span className="font-medium text-gray-900">
+                            {formatarPerCapita(periodo.valor)}g
+                          </span>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-gray-400">Nenhum per capita definido</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-3 flex justify-between items-center">
+                <div>
+                  <span className="text-gray-500 text-xs">Status:</span>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ml-2 ${
+                    produto.ativo 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {produto.ativo ? (
+                      <>
+                        <FaCheckCircle className="w-3 h-3 mr-1" />
+                        Ativo
+                      </>
+                    ) : (
+                      <>
+                        <FaTimesCircle className="w-3 h-3 mr-1" />
+                        Inativo
+                      </>
+                    )}
+                  </span>
+                </div>
+                <div className="text-gray-500 text-xs">
+                  {formatDate(produto.created_at)}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Paginação */}
       {pagination.totalPages > 1 && (
-        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => onPageChange(pagination.currentPage - 1)}
@@ -230,7 +313,7 @@ const ProdutosPerCapitaTable = ({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
