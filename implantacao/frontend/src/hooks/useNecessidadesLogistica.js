@@ -103,6 +103,31 @@ const useNecessidadesLogistica = () => {
     }
   }, [carregarNecessidades]);
 
+  // Confirmar para coordenação
+  const confirmarParaCoordenacao = useCallback(async (necessidadeIds) => {
+    setLoading(true);
+    
+    try {
+      const response = await necessidadesLogisticaService.confirmarParaCoordenacao(necessidadeIds);
+      
+      if (response.success) {
+        toast.success(response.message);
+        // Recarregar necessidades após confirmar
+        await carregarNecessidades();
+        return true;
+      } else {
+        toast.error(response.message || 'Erro ao confirmar para coordenação');
+        return false;
+      }
+    } catch (error) {
+      console.error('Erro ao confirmar para coordenação:', error);
+      toast.error('Erro ao confirmar para coordenação');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [carregarNecessidades]);
+
   // Buscar produtos para modal
   const buscarProdutosParaModal = useCallback(async (filtrosModal) => {
     try {
@@ -167,6 +192,7 @@ const useNecessidadesLogistica = () => {
     carregarNutricionistas,
     salvarAjustes,
     liberarParaNutriConfirma,
+    confirmarParaCoordenacao,
     buscarProdutosParaModal,
     incluirProdutoExtra,
     atualizarFiltros,

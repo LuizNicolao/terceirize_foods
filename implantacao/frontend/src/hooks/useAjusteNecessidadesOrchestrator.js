@@ -83,6 +83,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
     carregarNutricionistas: carregarNutricionistasLogistica,
     salvarAjustes: salvarAjustesLogistica,
     liberarParaNutriConfirma,
+    confirmarParaCoordenacao,
     buscarProdutosParaModal: buscarProdutosParaModalLogistica,
     incluirProdutoExtra: incluirProdutoExtraLogistica,
     atualizarFiltros: atualizarFiltrosLogistica,
@@ -436,17 +437,16 @@ export const useAjusteNecessidadesOrchestrator = () => {
           resultado = await liberarParaLogistica([necessidadeAtual.necessidade_id]);
         }
       } else if (activeTab === 'logistica') {
-        // Logística: NEC LOG -> CONF NUTRI; CONF NUTRI -> CONF
+        // Logística: NEC LOG -> CONF NUTRI; CONF NUTRI -> CONF COORD
         const status = necessidades[0]?.status;
         if (!filtros.escola_id) {
           toast.error('Selecione uma escola para liberar na logística');
           return;
         }
-        if (status === 'CONF NUTRI') {
+        if (status === 'NEC LOG') {
           resultado = await liberarParaNutriConfirma([necessidadeAtual.necessidade_id]);
-        } else {
-          // Fallback para NEC LOG
-          resultado = await liberarParaNutriConfirma([necessidadeAtual.necessidade_id]);
+        } else if (status === 'CONF NUTRI') {
+          resultado = await confirmarParaCoordenacao([necessidadeAtual.necessidade_id]);
         }
       }
       
@@ -462,7 +462,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
         } else if (activeTab === 'logistica') {
           const status = necessidades[0]?.status;
           mensagem = status === 'CONF NUTRI'
-            ? 'Necessidades confirmadas (CONF)!'
+            ? 'Necessidades liberadas para coordenação (CONF COORD)!'
             : 'Liberado para Nutri (CONF NUTRI)!';
         }
         toast.success(mensagem);
@@ -472,7 +472,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
       console.error('Erro ao liberar para coordenação:', error);
       toast.error('Erro ao liberar para coordenação');
     }
-  }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, confirmarNutri, confirmarFinal, liberarParaLogistica, liberarParaNutriConfirma, handleCarregarNecessidades, necessidades]);
+  }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, confirmarNutri, confirmarFinal, liberarParaLogistica, liberarParaNutriConfirma, confirmarParaCoordenacao, handleCarregarNecessidades, necessidades]);
 
   const handleAbrirModalProdutoExtra = useCallback(async () => {
     if (activeTab === 'coordenacao' || activeTab === 'logistica') {

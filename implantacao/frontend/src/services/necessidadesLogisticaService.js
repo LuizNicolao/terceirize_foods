@@ -46,6 +46,19 @@ const necessidadesLogisticaService = {
     }
   },
 
+  // Confirmar para coordenação
+  async confirmarParaCoordenacao(necessidadeIds) {
+    try {
+      const response = await api.post('/necessidades/logistica/confirmar-coord', {
+        necessidade_ids: necessidadeIds
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao confirmar para coordenação:', error);
+      throw error;
+    }
+  },
+
   // Buscar produtos para modal
   async buscarProdutosParaModal(filtros) {
     try {

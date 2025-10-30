@@ -30,6 +30,9 @@ router.put('/logistica/ajustes', NecessidadesLogisticaController.salvarAjustesLo
 // Liberar para nutri confirmar (CONF NUTRI)
 router.post('/logistica/liberar-nutri', NecessidadesLogisticaController.liberarParaNutriConfirma);
 
+// Confirmar para coordenação (CONF COORD)
+router.post('/logistica/confirmar-coord', NecessidadesLogisticaController.confirmarParaCoordenacao);
+
 // Buscar produtos para modal
 router.get('/logistica/produtos-modal', NecessidadesLogisticaController.buscarProdutosParaModal);
 
