@@ -350,7 +350,7 @@ class NecessidadesCoordenacaoController {
         escolaQuery = `
           SELECT escola, escola_rota, codigo_teknisa, necessidade_id, usuario_id, usuario_email, semana_consumo, semana_abastecimento
           FROM necessidades 
-          WHERE escola_id = ? AND semana_consumo = ? AND status = 'NEC COORD'
+          WHERE escola_id = ? AND semana_consumo = ? AND status IN ('NEC COORD', 'CONF COORD')
           LIMIT 1
         `;
         queryParams = [escola_id, semana_consumo];
@@ -358,7 +358,7 @@ class NecessidadesCoordenacaoController {
         escolaQuery = `
           SELECT escola, escola_rota, codigo_teknisa, necessidade_id, usuario_id, usuario_email, semana_consumo, semana_abastecimento
           FROM necessidades 
-          WHERE escola_id = ? AND status = 'NEC COORD'
+          WHERE escola_id = ? AND status IN ('NEC COORD', 'CONF COORD')
           LIMIT 1
         `;
         queryParams = [escola_id];
