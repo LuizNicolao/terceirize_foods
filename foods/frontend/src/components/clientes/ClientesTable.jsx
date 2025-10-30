@@ -31,88 +31,99 @@ const ClientesTable = ({
     );
   };
 
+  if (clientes.length === 0) {
+    return (
+      <EmptyState
+        title="Nenhum cliente encontrado"
+        description="Tente ajustar os filtros de busca ou adicionar um novo cliente"
+        icon="clientes"
+      />
+    );
+  }
+
   return (
-    <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Cliente
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                CNPJ
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Localização
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Contato
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Criado em
-              </th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Ações
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {clientes.map((cliente) => (
-              <tr key={cliente.id} className="hover:bg-gray-50">
-                <td className="px-3 py-2 whitespace-nowrap">
-                  <div className="flex flex-col">
-                    <div className="text-sm font-medium text-gray-900">
-                      {cliente.razao_social || '-'}
-                    </div>
-                    {cliente.nome_fantasia && (
-                      <div className="text-sm text-gray-500">
-                        {cliente.nome_fantasia}
+    <>
+      {/* Versão Desktop - Tabela completa */}
+      <div className="hidden xl:block bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Cliente
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  CNPJ
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Localização
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contato
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Criado em
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Ações
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {clientes.map((cliente) => (
+                <tr key={cliente.id} className="hover:bg-gray-50">
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      <div className="text-sm font-medium text-gray-900">
+                        {cliente.razao_social || '-'}
                       </div>
-                    )}
-                  </div>
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
-                  {cliente.cnpj || '-'}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap">
-                  <div className="flex flex-col">
-                    <div className="text-sm text-gray-900">
-                      {cliente.municipio || '-'}
+                      {cliente.nome_fantasia && (
+                        <div className="text-sm text-gray-500">
+                          {cliente.nome_fantasia}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {cliente.uf || '-'}
-                    </div>
-                  </div>
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap">
-                  <div className="flex flex-col">
-                    {cliente.email && (
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
+                    {cliente.cnpj || '-'}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <div className="flex flex-col">
                       <div className="text-sm text-gray-900">
-                        {cliente.email}
+                        {cliente.municipio || '-'}
                       </div>
-                    )}
-                    {cliente.telefone && (
                       <div className="text-sm text-gray-500">
-                        {cliente.telefone}
+                        {cliente.uf || '-'}
                       </div>
-                    )}
-                    {!cliente.email && !cliente.telefone && (
-                      <div className="text-sm text-gray-400">-</div>
-                    )}
-                  </div>
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap">
-                  {getStatusBadge(cliente.status)}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
-                  {formatDate(cliente.criado_em)}
-                </td>
-                <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
-                  <div className="flex justify-end">
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    <div className="flex flex-col">
+                      {cliente.email && (
+                        <div className="text-sm text-gray-900">
+                          {cliente.email}
+                        </div>
+                      )}
+                      {cliente.telefone && (
+                        <div className="text-sm text-gray-500">
+                          {cliente.telefone}
+                        </div>
+                      )}
+                      {!cliente.email && !cliente.telefone && (
+                        <div className="text-sm text-gray-400">-</div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {getStatusBadge(cliente.status)}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                    {formatDate(cliente.criado_em)}
+                  </td>
+                  <td className="px-3 py-2 whitespace-nowrap text-sm font-medium">
                     <ActionButtons
                       canView={canView('clientes')}
                       canEdit={canEdit('clientes')}
@@ -121,24 +132,80 @@ const ClientesTable = ({
                       onEdit={onEdit}
                       onDelete={onDelete}
                       item={cliente}
-                      size="sm"
+                      size="xs"
                     />
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-      
-      {clientes.length === 0 && (
-        <EmptyState
-          title="Nenhum cliente encontrado"
-          description="Tente ajustar os filtros de busca ou adicionar um novo cliente"
-          icon="clientes"
-        />
-      )}
-    </div>
+
+      {/* Versão Mobile e Tablet - Cards */}
+      <div className="xl:hidden space-y-3">
+        {clientes.map((cliente) => (
+          <div key={cliente.id} className="bg-white rounded-lg shadow-sm p-4 border">
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 text-sm">{cliente.razao_social || '-'}</h3>
+                {cliente.nome_fantasia && (
+                  <p className="text-gray-600 text-xs">{cliente.nome_fantasia}</p>
+                )}
+              </div>
+              <ActionButtons
+                canView={canView('clientes')}
+                canEdit={canEdit('clientes')}
+                canDelete={canDelete('clientes')}
+                onView={onView}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                item={cliente}
+                size="xs"
+                className="p-2"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <span className="text-gray-500">CNPJ:</span>
+                <p className="font-medium">{cliente.cnpj || '-'}</p>
+              </div>
+              <div>
+                <span className="text-gray-500">UF:</span>
+                <p className="font-medium">{cliente.uf || '-'}</p>
+              </div>
+              <div className="col-span-2">
+                <span className="text-gray-500">Cidade:</span>
+                <p className="font-medium">{cliente.municipio || '-'}</p>
+              </div>
+              {cliente.email && (
+                <div className="col-span-2">
+                  <span className="text-gray-500">Email:</span>
+                  <p className="font-medium truncate">{cliente.email}</p>
+                </div>
+              )}
+              {cliente.telefone && (
+                <div className="col-span-2">
+                  <span className="text-gray-500">Telefone:</span>
+                  <p className="font-medium">{cliente.telefone}</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-3 flex justify-between items-center">
+              <div>
+                <span className="text-gray-500 text-xs">Status:</span>
+                {getStatusBadge(cliente.status)}
+              </div>
+              <div className="text-gray-500 text-xs">
+                {formatDate(cliente.criado_em)}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 };
 
