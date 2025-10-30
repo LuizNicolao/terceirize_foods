@@ -45,7 +45,7 @@ const AdicionarProdutoModal = ({
     
     setLoading(true);
     try {
-      const response = await FoodsApiService.getProdutosOrigem({ grupo_id: grupoId, limit: 1000 });
+      const response = await FoodsApiService.getProdutosOrigem({ grupo_id: grupoId });
       
       if (response.success && response.data) {
         // A resposta pode ter data direto ou data.data
@@ -88,7 +88,7 @@ const AdicionarProdutoModal = ({
         produto_id: produto.id,
         produto_nome: produto.nome,
         produto_codigo: produto.codigo,
-        unidade_medida: produto.unidade_medida_sigla || produto.unidade_medida
+        unidade_medida: produto.unidade_medida
       }]);
     }
   };
@@ -98,7 +98,7 @@ const AdicionarProdutoModal = ({
       produto_id: produto.id,
       produto_nome: produto.nome,
       produto_codigo: produto.codigo,
-      unidade_medida: produto.unidade_medida_sigla || produto.unidade_medida
+      unidade_medida: produto.unidade_medida
     }));
     setProdutosSelecionados(todosSelecionados);
   };
@@ -243,7 +243,7 @@ const AdicionarProdutoModal = ({
                         {produto.nome}
                       </td>
                       <td className={`px-4 py-2 text-sm ${isSelected ? 'text-green-700' : 'text-gray-500'}`}>
-                        {produto.unidade_medida_sigla || produto.unidade_medida || 'N/A'}
+                        {produto.unidade_medida}
                       </td>
                     </tr>
                   );

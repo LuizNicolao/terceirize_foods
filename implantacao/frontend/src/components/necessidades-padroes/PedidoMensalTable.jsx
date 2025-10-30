@@ -1,12 +1,10 @@
 import React from 'react';
-import { FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import { ActionButtons } from '../ui';
 
 const PedidoMensalTable = ({ 
   produtos, 
-  onEdit, 
-  onDelete, 
-  onView,
+  onRemove, 
+  onEditQuantity,
   loading = false 
 }) => {
   if (loading) {
@@ -82,29 +80,19 @@ const PedidoMensalTable = ({
                       step="0.001"
                       min="0"
                       value={produto.quantidade || 0}
-                      onChange={(e) => onEdit(produto.id || index, 'quantidade', e.target.value)}
+                      onChange={(e) => onEditQuantity(produto.produto_id, e.target.value)}
                       className="w-24 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-center"
                       placeholder="0.000"
                     />
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                  <div className="flex items-center justify-center space-x-2">
-                    <button
-                      onClick={() => onView(produto)}
-                      className="text-blue-600 hover:text-blue-900 p-1"
-                      title="Visualizar"
-                    >
-                      <FaEye className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(produto.id || index)}
-                      className="text-red-600 hover:text-red-900 p-1"
-                      title="Remover"
-                    >
-                      <FaTrash className="w-4 h-4" />
-                    </button>
-                  </div>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <ActionButtons
+                    canView={false}
+                    canEdit={false}
+                    canDelete={true}
+                    onDelete={() => onRemove(produto.produto_id)}
+                  />
                 </td>
               </tr>
             ))}
