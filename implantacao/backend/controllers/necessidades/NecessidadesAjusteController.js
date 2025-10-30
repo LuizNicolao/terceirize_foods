@@ -168,14 +168,16 @@ const salvarAjustes = async (req, res) => {
         
         // Se status for CONF NUTRI, atualizar ajuste_conf_nutri também
         if (currentStatus === 'CONF NUTRI') {
-          const valorRastreado = (newValue !== null ? newValue : currentValue);
+          // Para CONF NUTRI, sempre replicar o valor em ajuste_conf_nutri
+          // Usar newValue se digitado, senão manter currentValue
+          const valorFinal = newValue !== null ? newValue : currentValue;
           await executeQuery(`
             UPDATE necessidades 
             SET ajuste_nutricionista = COALESCE(?, ajuste_nutricionista),
-                ajuste_conf_nutri = COALESCE(?, ajuste_nutricionista, ajuste),
+                ajuste_conf_nutri = ?,
                 data_atualizacao = CURRENT_TIMESTAMP
             WHERE id = ? AND escola_id = ? AND status = 'CONF NUTRI'
-          `, [newValue, valorRastreado, necessidade_id, escola_id]);
+          `, [newValue, valorFinal, necessidade_id, escola_id]);
         } else {
           // Se status for NEC ou NEC NUTRI, atualizar apenas ajuste_nutricionista
           await executeQuery(`

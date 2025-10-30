@@ -229,7 +229,14 @@ export const useAjusteNecessidadesOrchestrator = () => {
         } else {
           // Não tem ajuste local, preservar valor existente no banco
           if (activeTab === 'nutricionista') {
-            valorFinal = nec.ajuste || 0;
+            // Para nutricionista, considerar status
+            if (nec.status === 'CONF NUTRI') {
+              // Se CONF NUTRI, manter ajuste_coordenacao ou ajuste_nutricionista
+              valorFinal = nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
+            } else {
+              // Para NEC ou NEC NUTRI, manter ajuste_nutricionista
+              valorFinal = nec.ajuste_nutricionista || nec.ajuste || 0;
+            }
           } else {
             // Para coordenação, usar ajuste_coordenacao existente
             valorFinal = nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
