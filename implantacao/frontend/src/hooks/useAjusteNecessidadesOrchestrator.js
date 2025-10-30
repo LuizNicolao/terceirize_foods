@@ -297,10 +297,22 @@ export const useAjusteNecessidadesOrchestrator = () => {
       let resultado;
       if (activeTab === 'nutricionista') {
         // Nutri: NEC/NEC NUTRI -> NEC COORD
+        if (!filtros.escola_id || !filtros.grupo) {
+          toast.error('Selecione Escola e Grupo para liberar');
+          return;
+        }
         resultado = await liberarCoordenacao(dadosParaLiberar);
       } else {
         // Coordenação: NEC COORD -> CONF NUTRI; CONF COORD -> CONF
         const status = necessidades[0]?.status;
+        if (!filtros.escola_id) {
+          toast.error('Selecione uma escola para liberar na coordenação');
+          return;
+        }
+        if (!filtros.grupo) {
+          toast.error('Selecione um grupo para liberar na coordenação');
+          return;
+        }
         if (status === 'NEC COORD') {
           resultado = await confirmarNutri(dadosParaLiberar);
         } else if (status === 'CONF COORD') {

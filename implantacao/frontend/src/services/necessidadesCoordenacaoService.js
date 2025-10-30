@@ -49,8 +49,17 @@ const necessidadesCoordenacaoService = {
   // Novo: marcar como CONF NUTRI (devolve para Nutri confirmar)
   async confirmarNutri(dados) {
     try {
-      // dados: { escola_id, grupo, periodo: { consumo_de, consumo_ate } }
-      const response = await api.post('/necessidades/coordenacao/confirmar-nutri', dados);
+      // Normalizar grupo: aceitar string, objeto {id|value|label}
+      let grupo = dados.grupo;
+      if (typeof grupo === 'object' && grupo) {
+        grupo = grupo.value || grupo.label || grupo.id || grupo.nome || grupo.nome_grupo || '';
+      }
+      const payload = {
+        escola_id: dados.escola_id,
+        grupo,
+        periodo: dados.periodo
+      };
+      const response = await api.post('/necessidades/coordenacao/confirmar-nutri', payload);
       return response.data;
     } catch (error) {
       console.error('Erro ao confirmar para Nutri (CONF NUTRI):', error);
