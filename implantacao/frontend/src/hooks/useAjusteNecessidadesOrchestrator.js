@@ -108,21 +108,15 @@ export const useAjusteNecessidadesOrchestrator = () => {
   // Inicializar ajustes locais quando necessidades carregarem
   useEffect(() => {
     if (necessidades.length > 0) {
-      setAjustesLocais(prev => {
-        // Preservar ajustes existentes e só adicionar novos produtos
-        const novosAjustes = { ...prev };
-        necessidades.forEach(nec => {
-          // Usar chave composta (escola_id + produto_id)
-          const chave = `${nec.escola_id}_${nec.produto_id}`;
-          // Só inicializar se ainda não existir um valor para este produto
-          if (!(chave in novosAjustes)) {
-            // Usar ajuste_nutricionista se existir, senão string vazia
-            const valorInicial = nec.ajuste_nutricionista ?? '';
-            novosAjustes[chave] = valorInicial;
-          }
-        });
-        return novosAjustes;
+      // Limpar ajustes locais completamente ao consultar
+      const novosAjustes = {};
+      necessidades.forEach(nec => {
+        // Usar chave composta (escola_id + produto_id)
+        const chave = `${nec.escola_id}_${nec.produto_id}`;
+        // Campo ajuste sempre fica vazio ao consultar
+        novosAjustes[chave] = '';
       });
+      setAjustesLocais(novosAjustes);
       setNecessidadeAtual(necessidades[0]);
       setNecessidadesFiltradas(necessidades);
     }
