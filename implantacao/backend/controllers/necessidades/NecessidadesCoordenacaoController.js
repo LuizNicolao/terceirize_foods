@@ -107,9 +107,9 @@ class NecessidadesCoordenacaoController {
             continue;
           }
 
-          // Buscar valor atual do ajuste_coordenacao
+          // Buscar valor atual do ajuste_coordenacao e status
           const currentQuery = `
-            SELECT ajuste_coordenacao 
+            SELECT ajuste_coordenacao, status 
             FROM necessidades 
             WHERE id = ? AND status IN ('NEC COORD','CONF COORD')
           `;
@@ -121,18 +121,30 @@ class NecessidadesCoordenacaoController {
           }
 
           const currentValue = currentResult[0].ajuste_coordenacao;
+          const currentStatus = currentResult[0].status;
           const newValue = parseFloat(ajuste) || 0;
 
-          // Sempre atualizar (não verificar se mudou para permitir atualização de NULL)
-          const updateQuery = `
-            UPDATE necessidades 
-            SET ajuste_coordenacao = ?,
-                ajuste_conf_coord = ?,
-                data_atualizacao = NOW()
-            WHERE id = ? AND status IN ('NEC COORD','CONF COORD')
-          `;
+          // Se status for CONF COORD, atualizar ajuste_conf_coord também
+          if (currentStatus === 'CONF COORD') {
+            const updateQuery = `
+              UPDATE necessidades 
+              SET ajuste_coordenacao = ?,
+                  ajuste_conf_coord = ?,
+                  data_atualizacao = NOW()
+              WHERE id = ? AND status = 'CONF COORD'
+            `;
+            await executeQuery(updateQuery, [newValue, newValue, id]);
+          } else {
+            // Se status for NEC COORD, atualizar apenas ajuste_coordenacao
+            const updateQuery = `
+              UPDATE necessidades 
+              SET ajuste_coordenacao = ?,
+                  data_atualizacao = NOW()
+              WHERE id = ? AND status = 'NEC COORD'
+            `;
+            await executeQuery(updateQuery, [newValue, id]);
+          }
           
-          await executeQuery(updateQuery, [newValue, newValue, id]);
           sucessos++;
 
         } catch (error) {
@@ -416,8 +428,8 @@ class NecessidadesCoordenacaoController {
         novoStatus,
         escolaData[0].necessidade_id,
         'Produto extra incluído pela coordenação',
-        0, // ajuste_conf_nutri inicialmente 0
-        0 // ajuste_conf_coord inicialmente 0
+        null, // ajuste_conf_nutri inicialmente null
+        null // ajuste_conf_coord só será preenchido quando status for CONF COORD
       ];
 
       await executeQuery(insertQuery, values);

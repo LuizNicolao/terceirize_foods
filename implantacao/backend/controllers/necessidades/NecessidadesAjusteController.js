@@ -155,25 +155,36 @@ const salvarAjustes = async (req, res) => {
 
       if (!necessidade_id) continue;
 
-      // Só atualizar se o valor for diferente do atual
+      // Buscar registro atual incluindo o status
       const currentRecord = await executeQuery(`
-        SELECT ajuste_nutricionista, ajuste FROM necessidades 
+        SELECT ajuste_nutricionista, ajuste, status FROM necessidades 
         WHERE id = ? AND escola_id = ? AND status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
       `, [necessidade_id, escola_id]);
 
       if (currentRecord.length > 0) {
         const currentValue = currentRecord[0].ajuste_nutricionista;
         const newValue = ajuste_nutricionista || null;
+        const currentStatus = currentRecord[0].status;
         
-        // Sempre registrar ajuste_conf_nutri com o valor atual (novo ou anterior)
-        const valorRastreado = (newValue !== null ? newValue : currentValue);
-        await executeQuery(`
-          UPDATE necessidades 
-          SET ajuste_nutricionista = COALESCE(?, ajuste_nutricionista),
-              ajuste_conf_nutri = COALESCE(?, ajuste_nutricionista, ajuste),
-              data_atualizacao = CURRENT_TIMESTAMP
-          WHERE id = ? AND escola_id = ? AND status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
-        `, [newValue, valorRastreado, necessidade_id, escola_id]);
+        // Se status for CONF NUTRI, atualizar ajuste_conf_nutri também
+        if (currentStatus === 'CONF NUTRI') {
+          const valorRastreado = (newValue !== null ? newValue : currentValue);
+          await executeQuery(`
+            UPDATE necessidades 
+            SET ajuste_nutricionista = COALESCE(?, ajuste_nutricionista),
+                ajuste_conf_nutri = COALESCE(?, ajuste_nutricionista, ajuste),
+                data_atualizacao = CURRENT_TIMESTAMP
+            WHERE id = ? AND escola_id = ? AND status = 'CONF NUTRI'
+          `, [newValue, valorRastreado, necessidade_id, escola_id]);
+        } else {
+          // Se status for NEC ou NEC NUTRI, atualizar apenas ajuste_nutricionista
+          await executeQuery(`
+            UPDATE necessidades 
+            SET ajuste_nutricionista = COALESCE(?, ajuste_nutricionista),
+                data_atualizacao = CURRENT_TIMESTAMP
+            WHERE id = ? AND escola_id = ? AND status IN ('NEC', 'NEC NUTRI')
+          `, [newValue, necessidade_id, escola_id]);
+        }
         
         updatedCount++;
       }
@@ -320,6 +331,7 @@ const incluirProdutoExtra = async (req, res) => {
     }
 
     // Criar nova necessidade com o mesmo necessidade_id
+    // ajuste_conf_nutri só é preenchido se status for CONF NUTRI
     const result = await executeQuery(`
       INSERT INTO necessidades (
         usuario_email,
@@ -362,7 +374,7 @@ const incluirProdutoExtra = async (req, res) => {
       'Produto extra incluído pela nutricionista',
       escolaData.necessidade_id, // Usar o mesmo necessidade_id
       null, // ajuste_nutricionista inicialmente null
-      0, // ajuste_conf_nutri inicialmente 0
+      null, // ajuste_conf_nutri só será preenchido quando status for CONF NUTRI
       null // ajuste_conf_coord inicialmente null
     ]);
 
