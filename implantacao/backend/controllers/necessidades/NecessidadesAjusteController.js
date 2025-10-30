@@ -331,8 +331,21 @@ const incluirProdutoExtra = async (req, res) => {
       }
     }
 
+    // Determinar em qual coluna salvar baseado no status
+    const qtdFinal = quantidade || 0;
+    let ajuste = null;
+    let ajuste_nutricionista = null;
+    let ajuste_conf_nutri = null;
+
+    if (novoStatus === 'NEC') {
+      ajuste = qtdFinal;
+    } else if (novoStatus === 'NEC NUTRI') {
+      ajuste_nutricionista = qtdFinal;
+    } else if (novoStatus === 'CONF NUTRI') {
+      ajuste_conf_nutri = qtdFinal;
+    }
+
     // Criar nova necessidade com o mesmo necessidade_id
-    // ajuste_conf_nutri só é preenchido se status for CONF NUTRI
     const result = await executeQuery(`
       INSERT INTO necessidades (
         usuario_email,
@@ -366,7 +379,7 @@ const incluirProdutoExtra = async (req, res) => {
       escolaData.nome_escola,
       escolaData.rota || '',
       escolaData.codigo_teknisa || '',
-      quantidade || 0, // usar quantidade passada ou 0
+      ajuste,
       escolaData.semana_consumo,
       escolaData.semana_abastecimento,
       produto.grupo,
@@ -374,8 +387,8 @@ const incluirProdutoExtra = async (req, res) => {
       novoStatus,
       'Produto extra incluído pela nutricionista',
       escolaData.necessidade_id, // Usar o mesmo necessidade_id
-      null, // ajuste_nutricionista inicialmente null
-      null, // ajuste_conf_nutri só será preenchido quando status for CONF NUTRI
+      ajuste_nutricionista,
+      ajuste_conf_nutri,
       null // ajuste_conf_coord inicialmente null
     ]);
 

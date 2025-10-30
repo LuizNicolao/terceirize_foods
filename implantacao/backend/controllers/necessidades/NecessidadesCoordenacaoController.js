@@ -400,14 +400,25 @@ class NecessidadesCoordenacaoController {
         novoStatus = 'CONF COORD';
       }
 
+      // Determinar em qual coluna salvar baseado no status
+      const qtdFinal = quantidade || 0;
+      let ajuste_coordenacao = null;
+      let ajuste_conf_coord = null;
+
+      if (novoStatus === 'NEC COORD') {
+        ajuste_coordenacao = qtdFinal;
+      } else if (novoStatus === 'CONF COORD') {
+        ajuste_conf_coord = qtdFinal;
+      }
+
       // Inserir novo produto
       const insertQuery = `
         INSERT INTO necessidades (
           usuario_email, usuario_id, produto_id, produto, produto_unidade,
           escola_id, escola, escola_rota, codigo_teknisa, ajuste,
           semana_consumo, semana_abastecimento, grupo, grupo_id, status, necessidade_id,
-          observacoes, data_preenchimento, ajuste_conf_nutri, ajuste_conf_coord
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)
+          observacoes, data_preenchimento, ajuste_nutricionista, ajuste_coordenacao, ajuste_conf_nutri, ajuste_conf_coord
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)
       `;
 
       const values = [
@@ -420,7 +431,7 @@ class NecessidadesCoordenacaoController {
         escolaData[0].escola,
         escolaData[0].escola_rota,
         escolaData[0].codigo_teknisa,
-        quantidade || 0, // usar quantidade passada ou 0
+        null, // ajuste null para coordenação
         semana_consumo || escolaData[0].semana_consumo,
         semana_abastecimento || escolaData[0].semana_abastecimento,
         produto[0].grupo,
@@ -428,8 +439,10 @@ class NecessidadesCoordenacaoController {
         novoStatus,
         escolaData[0].necessidade_id,
         'Produto extra incluído pela coordenação',
-        null, // ajuste_conf_nutri inicialmente null
-        null // ajuste_conf_coord só será preenchido quando status for CONF COORD
+        null, // ajuste_nutricionista null
+        ajuste_coordenacao,
+        null, // ajuste_conf_nutri null
+        ajuste_conf_coord
       ];
 
       await executeQuery(insertQuery, values);
