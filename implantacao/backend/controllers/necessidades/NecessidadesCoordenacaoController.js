@@ -128,12 +128,11 @@ class NecessidadesCoordenacaoController {
           if (currentStatus === 'CONF COORD') {
             const updateQuery = `
               UPDATE necessidades 
-              SET ajuste_coordenacao = ?,
-                  ajuste_conf_coord = ?,
+              SET ajuste_conf_coord = ?,
                   data_atualizacao = NOW()
               WHERE id = ? AND status = 'CONF COORD'
             `;
-            await executeQuery(updateQuery, [newValue, newValue, id]);
+            await executeQuery(updateQuery, [newValue, id]);
           } else {
             // Se status for NEC COORD, atualizar apenas ajuste_coordenacao
             const updateQuery = `
