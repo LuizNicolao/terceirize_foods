@@ -45,7 +45,7 @@ const AdicionarProdutoModal = ({
     
     setLoading(true);
     try {
-      const response = await FoodsApiService.getProdutosOrigem({ grupo_id: grupoId });
+      const response = await FoodsApiService.getProdutosOrigem({ grupo_id: grupoId, limit: 1000 });
       
       if (response.success && response.data) {
         // A resposta pode ter data direto ou data.data
