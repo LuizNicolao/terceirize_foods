@@ -9,6 +9,20 @@ const AjusteTabelaNutricionista = ({
   onExcluirNecessidade,
   canEdit
 }) => {
+  // Função para calcular quantidade anterior baseado no status
+  const getQuantidadeAnterior = (necessidade) => {
+    // Para CONF NUTRI, mostrar ajuste_coordenacao
+    if (necessidade.status === 'CONF NUTRI') {
+      return necessidade.ajuste_coordenacao ?? 0;
+    }
+    // Para NEC NUTRI, mostrar ajuste
+    if (necessidade.status === 'NEC NUTRI') {
+      return necessidade.ajuste ?? 0;
+    }
+    // Para outros status, não há anterior
+    return 0;
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -19,6 +33,9 @@ const AjusteTabelaNutricionista = ({
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Produto
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Quantidade anterior
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Unidade
@@ -42,6 +59,9 @@ const AjusteTabelaNutricionista = ({
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
                 {necessidade.produto}
+              </td>
+              <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
+                {getQuantidadeAnterior(necessidade)}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500">
                 {necessidade.produto_unidade}
