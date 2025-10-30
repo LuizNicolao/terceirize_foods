@@ -179,8 +179,7 @@ class NecessidadesPadroesCRUDController {
               grupo_nome = VALUES(grupo_nome),
               produto_nome = VALUES(produto_nome),
               unidade_medida_sigla = VALUES(unidade_medida_sigla),
-              ativo = 1,
-              updated_at = NOW()
+              ativo = 1
           `;
           
           await connection.execute(insertQuery, [
