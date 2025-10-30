@@ -238,8 +238,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
               valorFinal = nec.ajuste_nutricionista || nec.ajuste || 0;
             }
           } else {
-            // Para coordenação, usar ajuste_coordenacao existente
-            valorFinal = nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
+            // Para coordenação, considerar ajuste_conf_nutri primeiro (último valor da nutri)
+            valorFinal = nec.ajuste_conf_nutri || nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
           }
         }
 
