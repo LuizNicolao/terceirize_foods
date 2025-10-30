@@ -23,6 +23,24 @@ const AjusteTabelaNutricionista = ({
     return 0;
   };
 
+  // Função para calcular quantidade atual baseado no status
+  const getQuantidadeAtual = (necessidade) => {
+    if (necessidade.status === 'CONF NUTRI') {
+      return necessidade.ajuste_conf_nutri ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
+    }
+    if (necessidade.status === 'NEC NUTRI') {
+      return necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
+    }
+    return necessidade.ajuste ?? 0;
+  };
+
+  // Função para calcular a diferença
+  const getDiferenca = (necessidade) => {
+    const atual = getQuantidadeAtual(necessidade);
+    const anterior = getQuantidadeAnterior(necessidade);
+    return atual - anterior;
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -45,6 +63,9 @@ const AjusteTabelaNutricionista = ({
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               Ajuste
+            </th>
+            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Diferença
             </th>
             <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
               Ações
@@ -87,6 +108,13 @@ const AjusteTabelaNutricionista = ({
                   className="w-20 text-center text-xs py-1"
                   disabled={!canEdit}
                 />
+              </td>
+              <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center font-semibold">
+                {getDiferenca(necessidade) !== 0 && (
+                  <span className={getDiferenca(necessidade) > 0 ? 'text-green-600' : 'text-red-600'}>
+                    {getDiferenca(necessidade) > 0 ? '+' : ''}{getDiferenca(necessidade)}
+                  </span>
+                )}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                 <button
