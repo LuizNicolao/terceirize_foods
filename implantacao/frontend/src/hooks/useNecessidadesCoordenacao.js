@@ -103,6 +103,50 @@ const useNecessidadesCoordenacao = () => {
     }
   }, [carregarNecessidades]);
 
+  // Novo: CONF NUTRI (coordenação devolve para Nutri confirmar)
+  const confirmarNutri = useCallback(async (dados) => {
+    setLoading(true);
+    try {
+      const response = await necessidadesCoordenacaoService.confirmarNutri(dados);
+      if (response.success) {
+        toast.success(response.message || 'Enviado para Nutri (CONF NUTRI)');
+        await carregarNecessidades();
+        return true;
+      } else {
+        toast.error(response.message || 'Erro ao confirmar para Nutri');
+        return false;
+      }
+    } catch (error) {
+      console.error('Erro ao confirmar para Nutri:', error);
+      toast.error('Erro ao confirmar para Nutri');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [carregarNecessidades]);
+
+  // Novo: confirmação final (CONF)
+  const confirmarFinal = useCallback(async (necessidadeIds) => {
+    setLoading(true);
+    try {
+      const response = await necessidadesCoordenacaoService.confirmarFinal(necessidadeIds);
+      if (response.success) {
+        toast.success(response.message || 'Necessidades confirmadas');
+        await carregarNecessidades();
+        return true;
+      } else {
+        toast.error(response.message || 'Erro ao confirmar');
+        return false;
+      }
+    } catch (error) {
+      console.error('Erro ao confirmar final:', error);
+      toast.error('Erro ao confirmar');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [carregarNecessidades]);
+
   // Buscar produtos para modal
   const buscarProdutosParaModal = useCallback(async (filtrosModal) => {
     try {
@@ -167,6 +211,8 @@ const useNecessidadesCoordenacao = () => {
     carregarNutricionistas,
     salvarAjustes,
     liberarParaLogistica,
+    confirmarNutri,
+    confirmarFinal,
     buscarProdutosParaModal,
     incluirProdutoExtra,
     atualizarFiltros,

@@ -46,6 +46,31 @@ const necessidadesCoordenacaoService = {
     }
   },
 
+  // Novo: marcar como CONF NUTRI (devolve para Nutri confirmar)
+  async confirmarNutri(dados) {
+    try {
+      // dados: { escola_id, grupo, periodo: { consumo_de, consumo_ate } }
+      const response = await api.post('/necessidades/coordenacao/confirmar-nutri', dados);
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao confirmar para Nutri (CONF NUTRI):', error);
+      throw error;
+    }
+  },
+
+  // Novo: confirmação final (CONF) a partir de CONF COORD
+  async confirmarFinal(necessidadeIds) {
+    try {
+      const response = await api.post('/necessidades/coordenacao/confirmar-final', {
+        necessidade_ids: necessidadeIds
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Erro ao confirmar final (CONF):', error);
+      throw error;
+    }
+  },
+
   // Buscar produtos para modal
   async buscarProdutosParaModal(filtros) {
     try {

@@ -59,6 +59,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
     carregarNutricionistas,
     salvarAjustes: salvarAjustesCoordenacao,
     liberarParaLogistica,
+    confirmarNutri,
+    confirmarFinal,
     buscarProdutosParaModal: buscarProdutosParaModalCoordenacao,
     incluirProdutoExtra: incluirProdutoExtraCoordenacao,
     atualizarFiltros: atualizarFiltrosCoordenacao,
@@ -292,14 +294,33 @@ export const useAjusteNecessidadesOrchestrator = () => {
         }
       };
 
-      const resultado = activeTab === 'nutricionista' 
-        ? await liberarCoordenacao(dadosParaLiberar)
-        : await liberarParaLogistica([necessidadeAtual.necessidade_id]);
+      let resultado;
+      if (activeTab === 'nutricionista') {
+        // Nutri: NEC/NEC NUTRI -> NEC COORD
+        resultado = await liberarCoordenacao(dadosParaLiberar);
+      } else {
+        // Coordenação: NEC COORD -> CONF NUTRI; CONF COORD -> CONF
+        const status = necessidades[0]?.status;
+        if (status === 'NEC COORD') {
+          resultado = await confirmarNutri(dadosParaLiberar);
+        } else if (status === 'CONF COORD') {
+          resultado = await confirmarFinal([necessidadeAtual.necessidade_id]);
+        } else {
+          // Fallback legacy
+          resultado = await liberarParaLogistica([necessidadeAtual.necessidade_id]);
+        }
+      }
       
       if (resultado.success) {
-        const mensagem = activeTab === 'nutricionista' 
-          ? 'Necessidades liberadas para coordenação!'
-          : 'Necessidades liberadas para logística!';
+        let mensagem;
+        if (activeTab === 'nutricionista') {
+          mensagem = 'Necessidades liberadas para coordenação (NEC COORD)!';
+        } else {
+          const status = necessidades[0]?.status;
+          mensagem = status === 'NEC COORD'
+            ? 'Enviado para Nutri (CONF NUTRI)!'
+            : (status === 'CONF COORD' ? 'Necessidades confirmadas (CONF)!' : 'Necessidades liberadas!');
+        }
         toast.success(mensagem);
         handleCarregarNecessidades();
       }
@@ -307,7 +328,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
       console.error('Erro ao liberar para coordenação:', error);
       toast.error('Erro ao liberar para coordenação');
     }
-  }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, liberarParaLogistica, handleCarregarNecessidades]);
+  }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, confirmarNutri, confirmarFinal, liberarParaLogistica, handleCarregarNecessidades, necessidades]);
 
   const handleAbrirModalProdutoExtra = useCallback(async () => {
     if (activeTab === 'coordenacao') {

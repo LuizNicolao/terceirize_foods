@@ -67,7 +67,10 @@ const AjusteActions = ({
                 icon={<FaPaperPlane />}
                 disabled={disabledLiberar}
               >
-                {activeTab === 'nutricionista' ? 'Liberar para Coordenação' : 'Liberar para Logística'}
+                {activeTab === 'nutricionista'
+                  ? 'Liberar para Coordenação'
+                  : (statusAtual === 'NEC COORD' ? 'Enviar para Nutri (CONF NUTRI)'
+                    : (statusAtual === 'CONF COORD' ? 'Confirmar (CONF)' : 'Liberar'))}
               </Button>
             </div>
           )}
