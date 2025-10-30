@@ -238,7 +238,7 @@ const salvarAjustes = async (req, res) => {
 // Incluir produto extra
 const incluirProdutoExtra = async (req, res) => {
   try {
-    const { escola_id, grupo, periodo, produto_id } = req.body;
+    const { escola_id, grupo, periodo, produto_id, quantidade } = req.body;
 
     // Validar dados obrigatórios
     if (!escola_id || !grupo || !produto_id) {
@@ -366,7 +366,7 @@ const incluirProdutoExtra = async (req, res) => {
       escolaData.nome_escola,
       escolaData.rota || '',
       escolaData.codigo_teknisa || '',
-      0, // ajuste zerado para produtos extras
+      quantidade || 0, // usar quantidade passada ou 0
       escolaData.semana_consumo,
       escolaData.semana_abastecimento,
       produto.grupo,

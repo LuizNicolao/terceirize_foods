@@ -416,8 +416,10 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }
   }, [activeTab, filtros, necessidadeAtual, buscarProdutosParaModalNutricionista, buscarProdutosParaModalCoordenacao]);
 
-  const handleIncluirProdutosExtra = useCallback(async () => {
-    if (produtosSelecionados.length === 0) {
+  const handleIncluirProdutosExtra = useCallback(async (produtosComQuantidade) => {
+    const produtosAIncluir = produtosComQuantidade || produtosSelecionados;
+    
+    if (produtosAIncluir.length === 0) {
       toast.error('Selecione pelo menos um produto');
       return;
     }
@@ -430,7 +432,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
         ? incluirProdutoExtraNutricionista
         : incluirProdutoExtraCoordenacao;
 
-      for (const produto of produtosSelecionados) {
+      for (const produto of produtosAIncluir) {
         try {
           const dadosParaIncluir = {
             escola_id: filtros.escola_id,
@@ -439,7 +441,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
               consumo_de: filtros.consumo_de,
               consumo_ate: filtros.consumo_ate
             },
-            produto_id: produto.produto_id
+            produto_id: produto.produto_id,
+            quantidade: produto.quantidade || 0  // Incluir quantidade se existir
           };
 
           const resultado = await incluirProduto(dadosParaIncluir);

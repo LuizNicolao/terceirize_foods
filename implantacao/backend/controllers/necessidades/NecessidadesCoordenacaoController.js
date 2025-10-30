@@ -330,7 +330,8 @@ class NecessidadesCoordenacaoController {
         grupo, 
         semana_consumo, 
         semana_abastecimento,
-        produto_id 
+        produto_id,
+        quantidade 
       } = req.body;
 
       if (!escola_id || !grupo || !produto_id) {
@@ -419,7 +420,7 @@ class NecessidadesCoordenacaoController {
         escolaData[0].escola,
         escolaData[0].escola_rota,
         escolaData[0].codigo_teknisa,
-        0, // ajuste inicial
+        quantidade || 0, // usar quantidade passada ou 0
         semana_consumo || escolaData[0].semana_consumo,
         semana_abastecimento || escolaData[0].semana_abastecimento,
         produto[0].grupo,

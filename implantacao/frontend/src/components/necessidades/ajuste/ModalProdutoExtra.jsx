@@ -16,6 +16,7 @@ const ModalProdutoExtra = ({
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
+  const [quantidades, setQuantidades] = useState({});
 
   // Reset página quando modal abrir ou produtos mudarem
   useEffect(() => {
@@ -24,7 +25,38 @@ const ModalProdutoExtra = ({
 
   const handleClose = () => {
     setCurrentPage(1);
+    setQuantidades({});
     onClose();
+  };
+
+  const handleQuantidadeChange = (produto_id, valor) => {
+    setQuantidades(prev => ({
+      ...prev,
+      [produto_id]: valor
+    }));
+  };
+
+  const handleIncluirProdutos = () => {
+    // Validar se todos os produtos selecionados têm quantidade > 0
+    const produtosSemQuantidade = produtosSelecionados.filter(p => {
+      const qtd = quantidades[p.produto_id];
+      return !qtd || qtd === '' || parseFloat(qtd) === 0;
+    });
+
+    if (produtosSemQuantidade.length > 0) {
+      const nomes = produtosSemQuantidade.map(p => p.produto_nome).join(', ');
+      alert(`Produtos devem ter quantidade maior que zero: ${nomes}`);
+      return;
+    }
+
+    // Incluir quantidades nos produtos selecionados
+    const produtosComQuantidade = produtosSelecionados.map(p => ({
+      ...p,
+      quantidade: parseFloat(quantidades[p.produto_id]) || 0
+    }));
+
+    onIncluirProdutos(produtosComQuantidade);
+    setQuantidades({});
   };
 
   // Calcular produtos da página atual
@@ -90,6 +122,7 @@ const ModalProdutoExtra = ({
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
                 <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unidade</th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Quantidade</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
@@ -123,6 +156,18 @@ const ModalProdutoExtra = ({
                     <td className={`px-4 py-2 text-sm ${isSelected ? 'text-green-700' : 'text-gray-500'}`}>
                       {produto.unidade_medida}
                     </td>
+                    <td className="px-4 py-2" onClick={(e) => e.stopPropagation()}>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.001"
+                        value={quantidades[produto.produto_id] || ''}
+                        onChange={(e) => handleQuantidadeChange(produto.produto_id, e.target.value)}
+                        disabled={!isSelected}
+                        className="w-24 text-sm"
+                        placeholder="0.000"
+                      />
+                    </td>
                   </tr>
                 );
               })}
@@ -151,7 +196,7 @@ const ModalProdutoExtra = ({
           </Button>
           <Button
             variant="primary"
-            onClick={onIncluirProdutos}
+            onClick={handleIncluirProdutos}
             disabled={produtosSelecionados.length === 0}
             icon={<FaPlus />}
           >
