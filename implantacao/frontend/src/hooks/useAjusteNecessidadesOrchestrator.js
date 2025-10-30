@@ -116,7 +116,9 @@ export const useAjusteNecessidadesOrchestrator = () => {
           const chave = `${nec.escola_id}_${nec.produto_id}`;
           // Só inicializar se ainda não existir um valor para este produto
           if (!(chave in novosAjustes)) {
-            novosAjustes[chave] = '';
+            // Usar ajuste_nutricionista se existir, senão string vazia
+            const valorInicial = nec.ajuste_nutricionista ?? '';
+            novosAjustes[chave] = valorInicial;
           }
         });
         return novosAjustes;
