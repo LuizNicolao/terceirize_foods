@@ -119,17 +119,20 @@ class SubstituicoesListController {
           `, [necessidade.codigo_origem, necessidade.produto_generico_id]);
 
           // Processar escolas solicitantes
-          let escolas = necessidade.escolas_solicitantes
-            .split('::')
-            .map(escolaStr => {
-              const [necessidade_id, escola_id, escola_nome, quantidade] = escolaStr.split('|');
-              return {
-                necessidade_id: parseInt(necessidade_id),
-                escola_id: parseInt(escola_id),
-                escola_nome,
-                quantidade_origem: parseFloat(quantidade)
-              };
-            });
+          let escolas = [];
+          if (necessidade.escolas_solicitantes) {
+            escolas = necessidade.escolas_solicitantes
+              .split('::')
+              .map(escolaStr => {
+                const [necessidade_id, escola_id, escola_nome, quantidade] = escolaStr.split('|');
+                return {
+                  necessidade_id: parseInt(necessidade_id),
+                  escola_id: parseInt(escola_id),
+                  escola_nome,
+                  quantidade_origem: parseFloat(quantidade)
+                };
+              });
+          }
 
           // Se há produto genérico específico, filtrar apenas escolas que usam esse produto
           if (necessidade.produto_generico_id) {
