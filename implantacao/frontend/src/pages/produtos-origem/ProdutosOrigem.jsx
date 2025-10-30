@@ -20,18 +20,24 @@ const ProdutosOrigem = () => {
     produtos,
     loading,
     error,
+    connectionStatus,
     pagination,
     filters,
     stats,
     atualizarFiltros,
     atualizarPaginacao,
     limparFiltros,
+    recarregar,
     getGrupoName,
     getSubgrupoName,
     getClasseName,
     getUnidadeMedidaName,
     getUnidadeMedidaSigla
   } = useProdutosOrigemConsulta();
+
+  // Verificar se não está conectado
+  const isConnected = connectionStatus?.connected !== false;
+  const hasError = error !== null;
 
   // Debug logs removidos
 
@@ -72,6 +78,31 @@ const ProdutosOrigem = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
           <p className="text-gray-600">Carregando produtos origem...</p>
+          {!isConnected && (
+            <p className="text-orange-600 text-sm mt-2">
+              Verificando conexão com o sistema Foods
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (hasError && !isConnected) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-50">
+        <div className="text-center max-w-md">
+          <FaQuestionCircle className="text-red-500 text-4xl mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Erro de Conexão</h2>
+          <p className="text-gray-600 mb-4">
+            Não foi possível conectar ao sistema Foods. Verifique sua conexão e tente novamente.
+          </p>
+          <p className="text-sm text-gray-500 mb-4">
+            {connectionStatus?.message || 'Erro desconhecido'}
+          </p>
+          <Button onClick={recarregar} variant="primary">
+            Tentar Novamente
+          </Button>
         </div>
       </div>
     );
