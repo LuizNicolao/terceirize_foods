@@ -56,6 +56,7 @@ const necessidadesCoordenacaoService = {
       if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
       if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
       if (filtros.search) params.append('search', filtros.search);
+      params.append('limit', '1000'); // Buscar todos os produtos
 
       const response = await api.get(`/necessidades/coordenacao/produtos-modal?${params.toString()}`);
       return response.data;

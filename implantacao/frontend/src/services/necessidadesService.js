@@ -134,6 +134,7 @@ const necessidadesService = {
     if (filtros.search) params.append('search', filtros.search);
     if (filtros.semana_consumo) params.append('semana_consumo', filtros.semana_consumo);
     if (filtros.semana_abastecimento) params.append('semana_abastecimento', filtros.semana_abastecimento);
+    params.append('limit', '1000'); // Buscar todos os produtos
     
     const response = await api.get(`/necessidades/produtos-modal?${params.toString()}`);
     return response.data;
