@@ -499,7 +499,7 @@ const buscarProdutosParaModal = async (req, res) => {
       query += ` AND ppc.produto_id NOT IN (
         SELECT DISTINCT n.produto_id 
         FROM necessidades n
-        WHERE n.escola_id = ? AND n.semana_consumo = ?
+        WHERE n.escola_id = ? AND n.semana_consumo = ? AND n.status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
       )`;
       params.push(escola_id, semana_consumo);
     } else if (escola_id && consumo_de && consumo_ate) {
@@ -507,7 +507,7 @@ const buscarProdutosParaModal = async (req, res) => {
       query += ` AND ppc.produto_id NOT IN (
         SELECT DISTINCT n.produto_id 
         FROM necessidades n
-        WHERE n.escola_id = ? AND n.semana_consumo BETWEEN ? AND ?
+        WHERE n.escola_id = ? AND n.semana_consumo BETWEEN ? AND ? AND n.status IN ('NEC', 'NEC NUTRI', 'CONF NUTRI')
       )`;
       params.push(escola_id, consumo_de, consumo_ate);
     }

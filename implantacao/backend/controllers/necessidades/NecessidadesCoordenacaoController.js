@@ -255,7 +255,7 @@ class NecessidadesCoordenacaoController {
           WHERE n.escola_id = ? 
             AND n.semana_consumo = ?
             AND n.semana_abastecimento = ?
-            AND n.status = 'NEC COORD'
+            AND n.status IN ('NEC COORD', 'CONF COORD')
         `;
         queryParams = [escola_id, semana_consumo, semana_abastecimento];
       } else if (semana_consumo) {
@@ -264,7 +264,7 @@ class NecessidadesCoordenacaoController {
           FROM necessidades n
           WHERE n.escola_id = ? 
             AND n.semana_consumo = ?
-            AND n.status = 'NEC COORD'
+            AND n.status IN ('NEC COORD', 'CONF COORD')
         `;
         queryParams = [escola_id, semana_consumo];
       } else {
@@ -273,7 +273,7 @@ class NecessidadesCoordenacaoController {
           SELECT DISTINCT n.produto_id
           FROM necessidades n
           WHERE n.escola_id = ? 
-            AND n.status = 'NEC COORD'
+            AND n.status IN ('NEC COORD', 'CONF COORD')
         `;
         queryParams = [escola_id];
       }
