@@ -547,7 +547,7 @@ const excluirProdutoAjuste = async (req, res) => {
         produto,
         semana_consumo
       FROM necessidades 
-      WHERE id = ? AND status IN ('NEC', 'NEC NUTRI', 'NEC COORD')
+      WHERE id = ? AND status NOT IN ('EXCLUÍDO', 'CONF')
     `, [id]);
 
     if (produto.length === 0) {
@@ -568,7 +568,7 @@ const excluirProdutoAjuste = async (req, res) => {
       
       if (produtoData.status === 'NEC') {
         // Qualquer nutricionista pode excluir produtos não ajustados
-      } else if (produtoData.status === 'NEC NUTRI') {
+      } else if (['NEC NUTRI', 'CONF NUTRI'].includes(produtoData.status)) {
         // Verificar se a nutricionista tem acesso à escola
         const temAcesso = await executeQuery(`
           SELECT 1 FROM rotas_nutricionistas 
@@ -591,8 +591,8 @@ const excluirProdutoAjuste = async (req, res) => {
         });
       }
     } else if (tipo_usuario === 'coordenador' || tipo_usuario === 'supervisor' || tipo_usuario === 'administrador') {
-      // Coordenador/supervisor/admin pode excluir produtos em NEC COORD
-      if (!['NEC', 'NEC NUTRI', 'NEC COORD'].includes(produtoData.status)) {
+      // Coordenador/supervisor/admin pode excluir produtos em NEC COORD, CONF COORD, etc.
+      if (!['NEC', 'NEC NUTRI', 'NEC COORD', 'CONF NUTRI', 'CONF COORD'].includes(produtoData.status)) {
         return res.status(403).json({
           success: false,
           error: 'Sem permissão',
@@ -607,9 +607,10 @@ const excluirProdutoAjuste = async (req, res) => {
       });
     }
 
-    // Deletar produto
+    // Alterar status para EXCLUÍDO (não deletar fisicamente)
     await executeQuery(`
-      DELETE FROM necessidades 
+      UPDATE necessidades 
+      SET status = 'EXCLUÍDO', data_atualizacao = NOW()
       WHERE id = ?
     `, [id]);
 
