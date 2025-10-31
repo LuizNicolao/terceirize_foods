@@ -72,7 +72,7 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
   }, [usarCalendario]);
 
   // Carregar semanas quando o ano mudar ou usarCalendario mudar
-  // Usar stringify para comparar filtros de forma estável
+  // Usar stringify para comparar filtros de forma estável e evitar loop
   const filtrosString = JSON.stringify(filtros);
   useEffect(() => {
     if (usarCalendario) {
@@ -80,7 +80,6 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
     } else {
       carregarSemanasConsumo(null, false, null);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ano, usarCalendario, filtrosString, carregarSemanasConsumo]);
 
   /**
