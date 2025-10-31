@@ -346,6 +346,8 @@ export const useRotas = () => {
     // Estados específicos das rotas
     filiais,
     loadingFiliais,
+    tiposRota,
+    loadingTiposRota,
     unidadesEscolares,
     loadingUnidades,
     showUnidades,
