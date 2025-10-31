@@ -244,7 +244,7 @@ class ReceitasCRUDController {
       // Importar dependências necessárias
       const pdf = require('pdf-parse');
       const PDFProcessor = require('../../utils/pdfProcessor');
-      const OpenAIService = require('../../services/openaiService');
+      const openaiService = require('../../services/openaiService');
 
       console.log('📄 Iniciando processamento de PDF de receita...');
       console.log('📊 Tamanho do arquivo:', req.file.size, 'bytes');
@@ -262,7 +262,6 @@ class ReceitasCRUDController {
       let nomeReceita = '';
       let descricao = '';
 
-      const openaiService = new OpenAIService();
       if (openaiService.isReady()) {
         try {
           console.log('🤖 Tentando extrair ingredientes usando OpenAI...');
