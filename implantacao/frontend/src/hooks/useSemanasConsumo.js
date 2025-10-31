@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import calendarioService from '../services/calendarioService';
 import necessidadesService from '../services/necessidadesService';
 
@@ -13,9 +13,17 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
   const [semanas, setSemanas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Usar ref para armazenar filtros e evitar loop infinito
+  const filtrosRef = useRef(filtros);
+  useEffect(() => {
+    filtrosRef.current = filtros;
+  }, [filtros]);
 
   // Carregar semanas de consumo
-  const carregarSemanasConsumo = useCallback(async (anoSelecionado, usarCalend = usarCalendario, filtrosData = filtros) => {
+  const carregarSemanasConsumo = useCallback(async (anoSelecionado, usarCalend = usarCalendario, filtrosData = null) => {
+    // Usar filtros do ref se não foram passados
+    const filtrosParaUsar = filtrosData !== null ? filtrosData : filtrosRef.current;
     setLoading(true);
     setError(null);
     
@@ -27,7 +35,7 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
         response = await calendarioService.buscarSemanasConsumo(anoSelecionado);
       } else {
         // Usar endpoint da tabela necessidades
-        response = await necessidadesService.buscarSemanasConsumoDisponiveis(filtrosData);
+        response = await necessidadesService.buscarSemanasConsumoDisponiveis(filtrosParaUsar);
       }
       
       if (response.success && response.data) {
@@ -61,16 +69,19 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
     } finally {
       setLoading(false);
     }
-  }, [usarCalendario, filtros]);
+  }, [usarCalendario]);
 
-  // Carregar semanas quando o ano mudar ou filtros mudarem
+  // Carregar semanas quando o ano mudar ou usarCalendario mudar
+  // Usar stringify para comparar filtros de forma estável
+  const filtrosString = JSON.stringify(filtros);
   useEffect(() => {
     if (usarCalendario) {
       carregarSemanasConsumo(ano, true, {});
     } else {
-      carregarSemanasConsumo(null, false, filtros);
+      carregarSemanasConsumo(null, false, null);
     }
-  }, [ano, usarCalendario, filtros, carregarSemanasConsumo]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ano, usarCalendario, filtrosString, carregarSemanasConsumo]);
 
   /**
    * Obtém o valor padrão para o estado inicial
@@ -87,9 +98,9 @@ export const useSemanasConsumo = (ano = new Date().getFullYear(), usarCalendario
     if (usarCalendario) {
       carregarSemanasConsumo(ano, true, {});
     } else {
-      carregarSemanasConsumo(null, false, filtros);
+      carregarSemanasConsumo(null, false, null);
     }
-  }, [ano, usarCalendario, filtros, carregarSemanasConsumo]);
+  }, [ano, usarCalendario, carregarSemanasConsumo]);
 
   return {
     opcoes,
