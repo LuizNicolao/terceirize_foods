@@ -37,9 +37,11 @@ const RotaModal = ({
   const filialId = watch('filial_id');
   const tipoRotaId = watch('tipo_rota_id');
   
-  // Buscar grupo_id do tipo de rota selecionado
+  // Buscar grupos do tipo de rota selecionado
   const tipoRotaSelecionado = tiposRota.find(t => t.id === parseInt(tipoRotaId));
-  const grupoId = tipoRotaSelecionado?.grupo_id || null;
+  const gruposIds = tipoRotaSelecionado?.grupos_id || (tipoRotaSelecionado?.grupo_id ? [tipoRotaSelecionado.grupo_id] : []);
+  // Para compatibilidade com código que ainda espera grupoId (primeiro grupo)
+  const grupoId = gruposIds.length > 0 ? gruposIds[0] : null;
 
   // Carregar frequências do ENUM
   const loadFrequencias = React.useCallback(async () => {
@@ -209,7 +211,9 @@ const RotaModal = ({
       // Só carregar se ainda não carregou para esta combinação
       if (unidadesCarregadasRef.current !== chaveUnidades) {
         const tipoSelecionado = tiposRota.find(t => t.id === parseInt(tipoRotaId));
-        const grupoIdDoTipo = tipoSelecionado?.grupo_id || null;
+        // Para compatibilidade: passar primeiro grupo ou null
+        const gruposIdsDoTipo = tipoSelecionado?.grupos_id || (tipoSelecionado?.grupo_id ? [tipoSelecionado.grupo_id] : []);
+        const grupoIdDoTipo = gruposIdsDoTipo.length > 0 ? gruposIdsDoTipo[0] : null;
         const rotaIdParaBusca = rota?.id || null;
         
         unidadesCarregadasRef.current = chaveUnidades;
@@ -429,7 +433,9 @@ const RotaModal = ({
                     // Recarregar unidades quando tipo de rota mudar (para atualizar grupo)
                     if (filialId && !isViewMode) {
                       const tipoSelecionado = tiposRota.find(t => t.id === parseInt(e.target.value));
-                      const novoGrupoId = tipoSelecionado?.grupo_id || null;
+                      // Para compatibilidade: passar primeiro grupo ou null
+                      const novosGruposIds = tipoSelecionado?.grupos_id || (tipoSelecionado?.grupo_id ? [tipoSelecionado.grupo_id] : []);
+                      const novoGrupoId = novosGruposIds.length > 0 ? novosGruposIds[0] : null;
                       const rotaIdParaBusca = rota?.id || null;
                       onFilialChange && onFilialChange(filialId, novoGrupoId, rotaIdParaBusca);
                     }

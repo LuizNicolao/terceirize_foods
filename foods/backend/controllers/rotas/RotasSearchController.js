@@ -399,18 +399,19 @@ class RotasSearchController {
         });
       }
 
-      // Se grupoId não for fornecido, buscar grupo da rota atual
-      let grupoIdFinal = grupoId;
-      if (!grupoIdFinal && rotaId) {
-        const rotaQuery = `
-          SELECT tr.grupo_id
+      // Se grupoId não for fornecido, buscar todos os grupos do tipo de rota da rota atual
+      let gruposIds = grupoId ? [grupoId] : [];
+      if (gruposIds.length === 0 && rotaId) {
+        // Buscar todos os grupos do tipo de rota vinculado a esta rota
+        const tipoRotaQuery = `
+          SELECT DISTINCT tr.grupo_id
           FROM rotas r
-          LEFT JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
-          WHERE r.id = ?
+          INNER JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
+          WHERE r.id = ? AND tr.grupo_id IS NOT NULL
         `;
-        const rotaResult = await executeQuery(rotaQuery, [rotaId]);
-        if (rotaResult.length > 0 && rotaResult[0].grupo_id) {
-          grupoIdFinal = rotaResult[0].grupo_id;
+        const tipoRotaResult = await executeQuery(tipoRotaQuery, [rotaId]);
+        if (tipoRotaResult.length > 0) {
+          gruposIds = tipoRotaResult.map(tr => tr.grupo_id);
         }
       }
 
@@ -435,8 +436,8 @@ class RotasSearchController {
 
       const params = [filialId];
 
-      // Se temos um grupoId, aplicar filtro de grupo
-      if (grupoIdFinal) {
+      // Se temos gruposIds, aplicar filtro de grupo
+      if (gruposIds.length > 0) {
         query += `
           AND (
             -- Unidades não vinculadas a nenhuma rota
@@ -452,18 +453,20 @@ class RotasSearchController {
           params.push(rotaId);
         }
         
+        // Construir condição para verificar se a escola está em uma rota com grupo diferente
+        const gruposPlaceholders = gruposIds.map(() => '?').join(',');
         query += `
             OR
-            -- Unidades vinculadas a rotas que NÃO são do mesmo grupo
+            -- Unidades vinculadas a rotas que NÃO têm nenhum grupo em comum
             -- (ou seja, de outros grupos ou sem tipo_rota definido)
             NOT EXISTS (
               SELECT 1 
               FROM rotas r
               INNER JOIN tipo_rota tr ON r.tipo_rota_id = tr.id
               WHERE r.id = ue.rota_id 
-                AND tr.grupo_id = ?
+                AND tr.grupo_id IN (${gruposPlaceholders})
         `;
-        params.push(grupoIdFinal);
+        params.push(...gruposIds);
         
         if (rotaId) {
           query += `

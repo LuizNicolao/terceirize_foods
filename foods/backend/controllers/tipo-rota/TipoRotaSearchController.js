@@ -71,15 +71,48 @@ class TipoRotaSearchController {
         SELECT 
           tr.id, tr.nome, tr.status, tr.filial_id, tr.grupo_id,
           f.filial as filial_nome,
-          g.nome as grupo_nome
+          g.nome as grupo_nome,
+          g.id as grupo_id_valor
         FROM tipo_rota tr
         LEFT JOIN filiais f ON tr.filial_id = f.id
         LEFT JOIN grupos g ON tr.grupo_id = g.id
         WHERE tr.filial_id = ? AND tr.status = 'ativo'
-        ORDER BY tr.nome ASC
+        ORDER BY tr.nome ASC, g.nome ASC
       `;
 
-      const tipoRotas = await executeQuery(query, [filialId]);
+      const tipoRotasRaw = await executeQuery(query, [filialId]);
+
+      // Agrupar por nome para consolidar múltiplos grupos
+      const tipoRotasAgrupados = {};
+      
+      tipoRotasRaw.forEach(tr => {
+        const chave = tr.nome;
+        
+        if (!tipoRotasAgrupados[chave]) {
+          tipoRotasAgrupados[chave] = {
+            id: tr.id, // Primeiro ID
+            nome: tr.nome,
+            filial_id: tr.filial_id,
+            filial_nome: tr.filial_nome,
+            status: tr.status,
+            grupos: [],
+            grupos_id: []
+          };
+        }
+        
+        // Adicionar grupo se não existir
+        const grupoJaExiste = tipoRotasAgrupados[chave].grupos.some(g => g.id === tr.grupo_id_valor);
+        if (!grupoJaExiste && tr.grupo_id_valor) {
+          tipoRotasAgrupados[chave].grupos.push({
+            id: tr.grupo_id_valor,
+            nome: tr.grupo_nome
+          });
+          tipoRotasAgrupados[chave].grupos_id.push(tr.grupo_id_valor);
+        }
+      });
+
+      const tipoRotas = Object.values(tipoRotasAgrupados)
+        .sort((a, b) => a.nome.localeCompare(b.nome));
 
       res.json({
         success: true,

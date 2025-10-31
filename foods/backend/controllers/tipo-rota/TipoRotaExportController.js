@@ -18,7 +18,7 @@ class TipoRotaExportController {
         { header: 'ID', key: 'id', width: 10 },
         { header: 'Nome', key: 'nome', width: 40 },
         { header: 'Filial', key: 'filial_nome', width: 30 },
-        { header: 'Grupo', key: 'grupo_nome', width: 30 },
+        { header: 'Grupos', key: 'grupos_nome', width: 50 },
         { header: 'Total Unidades', key: 'total_unidades', width: 15 },
         { header: 'Status', key: 'status', width: 15 }
       ];
@@ -64,27 +64,59 @@ class TipoRotaExportController {
           tr.id,
           tr.nome,
           tr.status,
+          tr.filial_id,
           f.filial as filial_nome,
           g.nome as grupo_nome,
+          g.id as grupo_id_valor,
           (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.tipo_rota_id = tr.id) as total_unidades
         FROM tipo_rota tr
         LEFT JOIN filiais f ON tr.filial_id = f.id
         LEFT JOIN grupos g ON tr.grupo_id = g.id
         ${whereClause}
-        ORDER BY tr.nome ASC
-        LIMIT ${parseInt(limit)}
+        ORDER BY tr.nome ASC, g.nome ASC
       `;
 
-      const tipoRotas = await executeQuery(query, params);
+      const tipoRotasRaw = await executeQuery(query, params);
+
+      // Agrupar por nome + filial_id
+      const tipoRotasAgrupados = {};
+      
+      tipoRotasRaw.forEach(tr => {
+        const chave = `${tr.nome}|${tr.filial_id}`;
+        
+        if (!tipoRotasAgrupados[chave]) {
+          tipoRotasAgrupados[chave] = {
+            id: tr.id,
+            nome: tr.nome,
+            filial_nome: tr.filial_nome || 'Sem filial',
+            grupos: [],
+            total_unidades: 0,
+            status: tr.status
+          };
+        }
+        
+        if (tr.grupo_nome && !tipoRotasAgrupados[chave].grupos.includes(tr.grupo_nome)) {
+          tipoRotasAgrupados[chave].grupos.push(tr.grupo_nome);
+        }
+        
+        tipoRotasAgrupados[chave].total_unidades = Math.max(
+          tipoRotasAgrupados[chave].total_unidades,
+          tr.total_unidades || 0
+        );
+      });
+
+      const tipoRotas = Object.values(tipoRotasAgrupados)
+        .sort((a, b) => a.nome.localeCompare(b.nome))
+        .slice(0, parseInt(limit));
 
       // Adicionar dados
       tipoRotas.forEach(tipoRota => {
         worksheet.addRow({
           id: tipoRota.id,
           nome: tipoRota.nome,
-          filial_nome: tipoRota.filial_nome || 'Sem filial',
-          grupo_nome: tipoRota.grupo_nome || 'Sem grupo',
-          total_unidades: tipoRota.total_unidades || 0,
+          filial_nome: tipoRota.filial_nome,
+          grupos_nome: tipoRota.grupos.join(', ') || 'Sem grupo',
+          total_unidades: tipoRota.total_unidades,
           status: tipoRota.status === 'ativo' ? 'Ativo' : 'Inativo'
         });
       });
@@ -157,18 +189,50 @@ class TipoRotaExportController {
           tr.id,
           tr.nome,
           tr.status,
+          tr.filial_id,
           f.filial as filial_nome,
           g.nome as grupo_nome,
+          g.id as grupo_id_valor,
           (SELECT COUNT(*) FROM unidades_escolares ue WHERE ue.tipo_rota_id = tr.id) as total_unidades
         FROM tipo_rota tr
         LEFT JOIN filiais f ON tr.filial_id = f.id
         LEFT JOIN grupos g ON tr.grupo_id = g.id
         ${whereClause}
-        ORDER BY tr.nome ASC
-        LIMIT ${parseInt(limit)}
+        ORDER BY tr.nome ASC, g.nome ASC
       `;
 
-      const tipoRotas = await executeQuery(query, params);
+      const tipoRotasRaw = await executeQuery(query, params);
+
+      // Agrupar por nome + filial_id
+      const tipoRotasAgrupados = {};
+      
+      tipoRotasRaw.forEach(tr => {
+        const chave = `${tr.nome}|${tr.filial_id}`;
+        
+        if (!tipoRotasAgrupados[chave]) {
+          tipoRotasAgrupados[chave] = {
+            id: tr.id,
+            nome: tr.nome,
+            filial_nome: tr.filial_nome || 'Sem filial',
+            grupos: [],
+            total_unidades: 0,
+            status: tr.status
+          };
+        }
+        
+        if (tr.grupo_nome && !tipoRotasAgrupados[chave].grupos.includes(tr.grupo_nome)) {
+          tipoRotasAgrupados[chave].grupos.push(tr.grupo_nome);
+        }
+        
+        tipoRotasAgrupados[chave].total_unidades = Math.max(
+          tipoRotasAgrupados[chave].total_unidades,
+          tr.total_unidades || 0
+        );
+      });
+
+      const tipoRotas = Object.values(tipoRotasAgrupados)
+        .sort((a, b) => a.nome.localeCompare(b.nome))
+        .slice(0, parseInt(limit));
 
       // Adicionar tipos de rota ao PDF
       tipoRotas.forEach((tipoRota, index) => {
@@ -181,8 +245,10 @@ class TipoRotaExportController {
           doc.text(`Filial: ${tipoRota.filial_nome}`);
         }
         
-        if (tipoRota.grupo_nome) {
-          doc.text(`Grupo: ${tipoRota.grupo_nome}`);
+        if (tipoRota.grupos && tipoRota.grupos.length > 0) {
+          doc.text(`Grupos: ${tipoRota.grupos.join(', ')}`);
+        } else {
+          doc.text(`Grupos: Sem grupo`);
         }
         
         doc.text(`Total de Unidades: ${tipoRota.total_unidades || 0}`);

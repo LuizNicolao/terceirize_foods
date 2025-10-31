@@ -49,9 +49,19 @@ const tipoRotaValidations = {
       .notEmpty().withMessage('Filial é obrigatória')
       .isInt({ min: 1 }).withMessage('ID da filial deve ser um número inteiro positivo'),
     
-    body('grupo_id')
-      .notEmpty().withMessage('Grupo é obrigatório')
-      .isInt({ min: 1 }).withMessage('ID do grupo deve ser um número inteiro positivo'),
+    body('grupos_id')
+      .notEmpty().withMessage('Ao menos um grupo é obrigatório')
+      .isArray({ min: 1 }).withMessage('grupos_id deve ser um array com pelo menos um grupo')
+      .custom((value) => {
+        if (!Array.isArray(value) || value.length === 0) {
+          throw new Error('É necessário selecionar ao menos um grupo');
+        }
+        const allValid = value.every(id => Number.isInteger(id) && id > 0);
+        if (!allValid) {
+          throw new Error('Todos os IDs de grupo devem ser números inteiros positivos');
+        }
+        return true;
+      }),
     
     body('status')
       .optional()
@@ -72,9 +82,21 @@ const tipoRotaValidations = {
       .optional()
       .isInt({ min: 1 }).withMessage('ID da filial deve ser um número inteiro positivo'),
     
-    body('grupo_id')
+    body('grupos_id')
       .optional()
-      .isInt({ min: 1 }).withMessage('ID do grupo deve ser um número inteiro positivo'),
+      .isArray({ min: 1 }).withMessage('grupos_id deve ser um array com pelo menos um grupo')
+      .custom((value) => {
+        if (value !== undefined && (!Array.isArray(value) || value.length === 0)) {
+          throw new Error('Se fornecido, grupos_id deve ser um array com pelo menos um grupo');
+        }
+        if (Array.isArray(value)) {
+          const allValid = value.every(id => Number.isInteger(id) && id > 0);
+          if (!allValid) {
+            throw new Error('Todos os IDs de grupo devem ser números inteiros positivos');
+          }
+        }
+        return true;
+      }),
     
     body('status')
       .optional()
