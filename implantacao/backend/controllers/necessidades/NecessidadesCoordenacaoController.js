@@ -98,7 +98,6 @@ class NecessidadesCoordenacaoController {
 
       let sucessos = 0;
       let erros = 0;
-      const necessidade_ids = new Set();
 
       for (const item of itens) {
         try {
@@ -111,7 +110,7 @@ class NecessidadesCoordenacaoController {
 
           // Buscar valor atual do ajuste_coordenacao e status
           const currentQuery = `
-            SELECT ajuste_coordenacao, status, necessidade_id 
+            SELECT ajuste_coordenacao, status 
             FROM necessidades 
             WHERE id = ? AND status IN ('NEC COORD','CONF COORD')
           `;
@@ -125,10 +124,6 @@ class NecessidadesCoordenacaoController {
           const currentValue = currentResult[0].ajuste_coordenacao;
           const currentStatus = currentResult[0].status;
           const newValue = parseFloat(ajuste) || 0;
-          
-          if (currentResult[0].necessidade_id) {
-            necessidade_ids.add(currentResult[0].necessidade_id);
-          }
 
           // Se status for CONF COORD, atualizar ajuste_conf_coord também
           if (currentStatus === 'CONF COORD') {
@@ -155,21 +150,6 @@ class NecessidadesCoordenacaoController {
         } catch (error) {
           console.error(`Erro ao salvar ajuste para item ${item.id}:`, error);
           erros++;
-        }
-      }
-
-      // Após salvar os ajustes, mudar status de NEC COORD para NEC LOG
-      if (necessidade_ids.size > 0 && sucessos > 0) {
-        for (const necessidade_id of necessidade_ids) {
-          try {
-            await executeQuery(`
-              UPDATE necessidades 
-              SET status = 'NEC LOG', data_atualizacao = NOW()
-              WHERE necessidade_id = ? AND status = 'NEC COORD'
-            `, [necessidade_id]);
-          } catch (error) {
-            console.error(`Erro ao atualizar status para NEC LOG: ${necessidade_id}:`, error);
-          }
         }
       }
 
@@ -209,7 +189,7 @@ class NecessidadesCoordenacaoController {
         try {
           const updateQuery = `
             UPDATE necessidades 
-            SET status = 'CONF', 
+            SET status = 'NEC LOG', 
                 data_atualizacao = NOW()
             WHERE necessidade_id = ? AND status = 'NEC COORD'
           `;
@@ -438,8 +418,8 @@ class NecessidadesCoordenacaoController {
           usuario_email, usuario_id, produto_id, produto, produto_unidade,
           escola_id, escola, escola_rota, codigo_teknisa, ajuste,
           semana_consumo, semana_abastecimento, grupo, grupo_id, status, necessidade_id,
-          observacoes, data_preenchimento, ajuste_nutricionista, ajuste_coordenacao, ajuste_logistica, ajuste_conf_nutri, ajuste_conf_coord
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)
+          observacoes, data_preenchimento, ajuste_nutricionista, ajuste_coordenacao, ajuste_conf_nutri, ajuste_conf_coord
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?)
       `;
 
       const values = [
@@ -462,7 +442,6 @@ class NecessidadesCoordenacaoController {
         'Produto extra incluído pela coordenação',
         null, // ajuste_nutricionista null
         ajuste_coordenacao,
-        null, // ajuste_logistica null
         null, // ajuste_conf_nutri null
         ajuste_conf_coord
       ];

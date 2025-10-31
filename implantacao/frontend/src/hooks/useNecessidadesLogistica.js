@@ -1,182 +1,178 @@
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import necessidadesLogisticaService from '../services/necessidadesLogisticaService';
+import escolasService from '../services/escolasService';
+import produtosPerCapita from '../services/produtosPerCapita';
 import toast from 'react-hot-toast';
+import { useAuth } from '../contexts/AuthContext';
 import { useExport } from './common/useExport';
 
-const useNecessidadesLogistica = () => {
+export const useNecessidadesLogistica = () => {
+  const { user } = useAuth();
   const [necessidades, setNecessidades] = useState([]);
-  const [nutricionistas, setNutricionistas] = useState([]);
+  const [escolas, setEscolas] = useState([]);
+  const [grupos, setGrupos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Estados para filtros
+  // Filtros para busca
   const [filtros, setFiltros] = useState({
     escola_id: null,
     grupo: null,
-    semana_consumo: null,
-    semana_abastecimento: null,
-    nutricionista_id: null
+    semana_consumo: '',
+    semana_abastecimento: ''
   });
 
-  // Carregar necessidades
-  const carregarNecessidades = useCallback(async (filtrosAtualizados = filtros) => {
+  // Carregar necessidades para logística automaticamente
+  const carregarNecessidades = useCallback(async (filtrosAdicionais = {}) => {
     setLoading(true);
     setError(null);
-    
     try {
-      const response = await necessidadesLogisticaService.listarParaLogistica(filtrosAtualizados);
+      const response = await necessidadesLogisticaService.listarParaLogistica({
+        ...filtros,
+        ...filtrosAdicionais
+      });
       
       if (response.success) {
-        setNecessidades(response.data);
-        setFiltros(filtrosAtualizados);
+        setNecessidades(response.data || []);
       } else {
         setError(response.message || 'Erro ao carregar necessidades');
+        setNecessidades([]);
       }
-    } catch (error) {
-      console.error('Erro ao carregar necessidades:', error);
-      setError('Erro ao carregar necessidades');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erro ao carregar necessidades');
+      console.error('Erro ao carregar necessidades:', err);
+      setNecessidades([]);
     } finally {
       setLoading(false);
     }
   }, [filtros]);
 
-  // Carregar nutricionistas
-  const carregarNutricionistas = useCallback(async () => {
+  // Carregar escolas disponíveis
+  const carregarEscolas = useCallback(async () => {
+    setLoading(true);
     try {
-      const response = await necessidadesLogisticaService.listarNutricionistas();
-      
+      const response = await escolasService.listar({}, user);
       if (response.success) {
-        setNutricionistas(response.data);
+        setEscolas(response.data);
+      } else {
+        toast.error(response.message || 'Erro ao carregar escolas');
       }
-    } catch (error) {
-      console.error('Erro ao carregar nutricionistas:', error);
+    } catch (err) {
+      console.error('Erro ao carregar escolas:', err);
+      toast.error('Erro ao carregar escolas');
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Carregar grupos de produtos
+  const carregarGrupos = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await produtosPerCapita.listarGrupos();
+      if (response.success) {
+        setGrupos(response.data);
+      } else {
+        toast.error(response.message || 'Erro ao carregar grupos');
+      }
+    } catch (err) {
+      console.error('Erro ao carregar grupos:', err);
+      toast.error('Erro ao carregar grupos');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  // Salvar ajustes
-  const salvarAjustes = useCallback(async (ajustes) => {
+  // Salvar ajustes da logística
+  const salvarAjustes = useCallback(async (dados) => {
     setLoading(true);
-    
     try {
-      const response = await necessidadesLogisticaService.salvarAjustesLogistica(ajustes);
-      
-      if (response.success) {
-        toast.success(response.message);
-        // Recarregar necessidades após salvar
-        await carregarNecessidades();
-        return true;
-      } else {
-        toast.error(response.message || 'Erro ao salvar ajustes');
-        return false;
-      }
-    } catch (error) {
-      console.error('Erro ao salvar ajustes:', error);
-      toast.error('Erro ao salvar ajustes');
-      return false;
+      const response = await necessidadesLogisticaService.salvarAjustesLogistica(dados);
+      return response;
+    } catch (err) {
+      console.error('Erro ao salvar ajustes:', err);
+      throw err;
     } finally {
       setLoading(false);
     }
-  }, [carregarNecessidades]);
+  }, []);
 
-  // Liberar para nutri confirmar
-  const liberarParaNutriConfirma = useCallback(async (necessidadeIds) => {
+  // Incluir produto extra
+  const incluirProdutoExtra = useCallback(async (dados) => {
     setLoading(true);
-    
     try {
-      const response = await necessidadesLogisticaService.liberarParaNutriConfirma(necessidadeIds);
-      
+      const response = await necessidadesLogisticaService.incluirProdutoExtra(dados);
       if (response.success) {
-        toast.success(response.message);
-        // Recarregar necessidades após liberar
-        await carregarNecessidades();
+        toast.success(response.message || 'Produto incluído com sucesso');
         return true;
       } else {
-        toast.error(response.message || 'Erro ao liberar para nutri confirmar');
+        toast.error(response.message || 'Erro ao incluir produto');
         return false;
       }
-    } catch (error) {
-      console.error('Erro ao liberar para nutri confirmar:', error);
-      toast.error('Erro ao liberar para nutri confirmar');
+    } catch (err) {
+      console.error('Erro ao incluir produto extra:', err);
+      toast.error('Erro ao incluir produto extra');
       return false;
     } finally {
       setLoading(false);
     }
-  }, [carregarNecessidades]);
+  }, []);
+
+  // Enviar para confirmação da nutricionista
+  const enviarParaNutricionista = useCallback(async (dados) => {
+    setLoading(true);
+    try {
+      const response = await necessidadesLogisticaService.enviarParaNutricionista(dados);
+      return response;
+    } catch (err) {
+      console.error('Erro ao enviar para nutricionista:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Buscar produtos para modal
   const buscarProdutosParaModal = useCallback(async (filtrosModal) => {
     try {
       const response = await necessidadesLogisticaService.buscarProdutosParaModal(filtrosModal);
       return response;
-    } catch (error) {
-      console.error('Erro ao buscar produtos para modal:', error);
-      throw error;
+    } catch (err) {
+      console.error('Erro ao buscar produtos para modal:', err);
+      throw err;
     }
   }, []);
-
-  // Incluir produto extra
-  const incluirProdutoExtra = useCallback(async (dados) => {
-    try {
-      const response = await necessidadesLogisticaService.incluirProdutoExtra(dados);
-      
-      if (response.success) {
-        toast.success(response.message);
-        // Recarregar necessidades após incluir
-        await carregarNecessidades();
-        return true;
-      } else {
-        toast.error(response.message || 'Erro ao incluir produto');
-        return false;
-      }
-    } catch (error) {
-      console.error('Erro ao incluir produto extra:', error);
-      toast.error('Erro ao incluir produto extra');
-      return false;
-    }
-  }, [carregarNecessidades]);
 
   // Atualizar filtros
   const atualizarFiltros = useCallback((novosFiltros) => {
     setFiltros(prev => ({ ...prev, ...novosFiltros }));
   }, []);
 
-  // Limpar filtros
-  const limparFiltros = useCallback(() => {
-    setFiltros({
-      escola_id: null,
-      grupo: null,
-      semana_consumo: null,
-      semana_abastecimento: null,
-      nutricionista_id: null
-    });
-  }, []);
-
-  // Hook de exportação padronizado
-  const { handleExportXLSX, handleExportPDF } = useExport(necessidadesLogisticaService);
+  // Carregar dados iniciais
+  useEffect(() => {
+    carregarEscolas();
+    carregarGrupos();
+  }, [carregarEscolas, carregarGrupos]);
 
   return {
     // Estados
     necessidades,
-    nutricionistas,
+    escolas,
+    grupos,
     filtros,
     loading,
     error,
-    
+
     // Ações
     carregarNecessidades,
-    carregarNutricionistas,
     salvarAjustes,
-    liberarParaNutriConfirma,
-    buscarProdutosParaModal,
     incluirProdutoExtra,
+    enviarParaNutricionista,
+    buscarProdutosParaModal,
     atualizarFiltros,
-    limparFiltros,
 
-    // Exportação
-    exportarXLSX: handleExportXLSX,
-    exportarPDF: handleExportPDF
+    // Dados auxiliares
+    carregarEscolas,
+    carregarGrupos
   };
 };
-
-export default useNecessidadesLogistica;
-

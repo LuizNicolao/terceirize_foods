@@ -13,11 +13,15 @@ const AjusteHeader = ({
           <FaEdit className="mr-2 sm:mr-3 text-blue-600" />
           {activeTab === 'nutricionista' 
             ? 'Ajuste de Necessidade por Nutricionista' 
+            : activeTab === 'logistica'
+            ? 'Ajuste de Necessidade por Logística'
             : 'Ajuste de Necessidade por Coordenação'}
         </h1>
         <p className="text-gray-600 mt-1">
           {activeTab === 'nutricionista' 
             ? 'Visualize, edite e ajuste necessidades geradas' 
+            : activeTab === 'logistica'
+            ? 'Visualize, edite e ajuste necessidades para logística'
             : 'Visualize, edite e ajuste necessidades para coordenação'}
         </p>
       </div>

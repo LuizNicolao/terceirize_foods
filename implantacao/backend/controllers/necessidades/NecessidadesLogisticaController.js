@@ -11,7 +11,7 @@ class NecessidadesLogisticaController {
         nutricionista_id 
       } = req.query;
 
-      let whereConditions = ["n.status IN ('NEC LOG','CONF NUTRI')"];
+      let whereConditions = ["n.status = 'NEC LOG'"];
       let queryParams = [];
 
       if (escola_id) {
@@ -95,7 +95,6 @@ class NecessidadesLogisticaController {
 
       let sucessos = 0;
       let erros = 0;
-      const necessidade_ids = new Set();
 
       for (const item of itens) {
         try {
@@ -106,11 +105,11 @@ class NecessidadesLogisticaController {
             continue;
           }
 
-          // Buscar valor atual do ajuste_logistica e status
+          // Buscar valor atual do ajuste_coordenacao e status
           const currentQuery = `
-            SELECT ajuste_logistica, status, necessidade_id 
+            SELECT ajuste_coordenacao, status 
             FROM necessidades 
-            WHERE id = ? AND status IN ('NEC LOG','CONF NUTRI')
+            WHERE id = ? AND status = 'NEC LOG'
           `;
           const currentResult = await executeQuery(currentQuery, [id]);
           
@@ -119,57 +118,22 @@ class NecessidadesLogisticaController {
             continue;
           }
 
-          const currentValue = currentResult[0].ajuste_logistica;
-          const currentStatus = currentResult[0].status;
           const newValue = parseFloat(ajuste) || 0;
-          
-          if (currentResult[0].necessidade_id) {
-            necessidade_ids.add(currentResult[0].necessidade_id);
-          }
 
-          // Se status for CONF NUTRI, atualizar ajuste_conf_nutri
-          if (currentStatus === 'CONF NUTRI') {
-            const updateQuery = `
-              UPDATE necessidades 
-              SET ajuste_conf_nutri = ?,
-                  data_atualizacao = NOW()
-              WHERE id = ? AND status = 'CONF NUTRI'
-            `;
-            await executeQuery(updateQuery, [newValue, id]);
-          } else {
-            // Se status for NEC LOG, atualizar apenas ajuste_logistica
-            const updateQuery = `
-              UPDATE necessidades 
-              SET ajuste_logistica = ?,
-                  data_atualizacao = NOW()
-              WHERE id = ? AND status = 'NEC LOG'
-            `;
-            await executeQuery(updateQuery, [newValue, id]);
-          }
+          // Para NEC LOG, atualizar ajuste_logistica
+          const updateQuery = `
+            UPDATE necessidades 
+            SET ajuste_logistica = ?,
+                data_atualizacao = NOW()
+            WHERE id = ? AND status = 'NEC LOG'
+          `;
+          await executeQuery(updateQuery, [newValue, id]);
           
           sucessos++;
 
         } catch (error) {
           console.error(`Erro ao salvar ajuste para item ${item.id}:`, error);
           erros++;
-        }
-      }
-
-      // Após salvar os ajustes, mudar status de NEC LOG para CONF NUTRI
-      // E copiar ajuste_logistica para ajuste_conf_nutri
-      if (necessidade_ids.size > 0 && sucessos > 0) {
-        for (const necessidade_id of necessidade_ids) {
-          try {
-            await executeQuery(`
-              UPDATE necessidades 
-              SET status = 'CONF NUTRI', 
-                  ajuste_conf_nutri = COALESCE(ajuste_logistica, ajuste_conf_nutri),
-                  data_atualizacao = NOW()
-              WHERE necessidade_id = ? AND status = 'NEC LOG'
-            `, [necessidade_id]);
-          } catch (error) {
-            console.error(`Erro ao atualizar status para CONF NUTRI: ${necessidade_id}:`, error);
-          }
         }
       }
 
@@ -190,64 +154,44 @@ class NecessidadesLogisticaController {
     }
   }
 
-  // Liberar para nutri confirmar (mudar de NEC LOG para CONF NUTRI)
-  static async liberarParaNutriConfirma(req, res) {
+  // Enviar para confirmação da nutricionista (mudar status para CONF NUTRI)
+  static async enviarParaNutricionista(req, res) {
     try {
-      const { necessidade_ids } = req.body;
+      const { necessidade_id, escola_id } = req.body;
 
-      if (!necessidade_ids || !Array.isArray(necessidade_ids)) {
+      if (!necessidade_id) {
         return res.status(400).json({
           success: false,
-          message: 'Lista de IDs de necessidade é obrigatória'
+          message: 'necessidade_id é obrigatório'
         });
       }
 
-      let sucessos = 0;
-      let erros = 0;
+      // Atualizar status para CONF NUTRI
+      // Replicar ajuste_logistica para todos os produtos da necessidade
+      const updateQuery = `
+        UPDATE necessidades 
+        SET status = 'CONF NUTRI',
+            data_atualizacao = NOW()
+        WHERE necessidade_id = ? AND status = 'NEC LOG'
+      `;
+      
+      await executeQuery(updateQuery, [necessidade_id]);
 
-      for (const necessidade_id of necessidade_ids) {
-        try {
-          // Verificar quantos produtos precisam ser atualizados
-          const countQuery = `
-            SELECT COUNT(*) as total
-            FROM necessidades
-            WHERE necessidade_id = ? AND status = 'NEC LOG'
-          `;
-          const countResult = await executeQuery(countQuery, [necessidade_id]);
-
-          if (countResult[0].total === 0) {
-            erros++;
-            continue;
-          }
-
-          // Atualizar status de NEC LOG para CONF NUTRI
-          // E copiar ajuste_logistica para ajuste_conf_nutri
-          const updateQuery = `
-            UPDATE necessidades 
-            SET status = 'CONF NUTRI', 
-                ajuste_conf_nutri = COALESCE(ajuste_logistica, ajuste_conf_nutri),
-                data_atualizacao = NOW()
-            WHERE necessidade_id = ? AND status = 'NEC LOG'
-          `;
-          
-          const result = await executeQuery(updateQuery, [necessidade_id]);
-          if (result.affectedRows > 0) sucessos++; else erros++;
-
-        } catch (error) {
-          console.error(`Erro ao liberar necessidade ${necessidade_id}:`, error);
-          erros++;
-        }
-      }
+      // Replicar ajuste_logistica para ajuste_conf_nutri em todos os produtos
+      const replicateQuery = `
+        UPDATE necessidades
+        SET ajuste_conf_nutri = ajuste_logistica
+        WHERE necessidade_id = ? AND status = 'CONF NUTRI'
+      `;
+      await executeQuery(replicateQuery, [necessidade_id]);
 
       res.json({
         success: true,
-        message: `Necessidades liberadas: ${sucessos} sucessos, ${erros} erros`,
-        sucessos,
-        erros
+        message: 'Necessidade enviada para confirmação da nutricionista'
       });
 
     } catch (error) {
-      console.error('Erro ao liberar para nutri confirmar:', error);
+      console.error('Erro ao enviar para nutricionista:', error);
       res.status(500).json({
         success: false,
         message: 'Erro interno do servidor',
@@ -275,7 +219,7 @@ class NecessidadesLogisticaController {
         });
       }
 
-      // Buscar dados da escola e produto
+      // Buscar dados da escola
       let escolaQuery;
       let queryParams;
 
@@ -283,7 +227,7 @@ class NecessidadesLogisticaController {
         escolaQuery = `
           SELECT escola, escola_rota, codigo_teknisa, necessidade_id, usuario_id, usuario_email, semana_consumo, semana_abastecimento
           FROM necessidades 
-          WHERE escola_id = ? AND semana_consumo = ? AND status IN ('NEC LOG', 'CONF NUTRI')
+          WHERE escola_id = ? AND semana_consumo = ? AND status = 'NEC LOG'
           LIMIT 1
         `;
         queryParams = [escola_id, semana_consumo];
@@ -291,7 +235,7 @@ class NecessidadesLogisticaController {
         escolaQuery = `
           SELECT escola, escola_rota, codigo_teknisa, necessidade_id, usuario_id, usuario_email, semana_consumo, semana_abastecimento
           FROM necessidades 
-          WHERE escola_id = ? AND status IN ('NEC LOG', 'CONF NUTRI')
+          WHERE escola_id = ? AND status = 'NEC LOG'
           LIMIT 1
         `;
         queryParams = [escola_id];
@@ -321,30 +265,7 @@ class NecessidadesLogisticaController {
         });
       }
 
-      // Determinar o status baseado no status atual do conjunto
-      const statusConjunto = await executeQuery(`
-        SELECT DISTINCT status FROM necessidades 
-        WHERE escola_id = ? AND status IN ('NEC LOG', 'CONF NUTRI')
-        LIMIT 1
-      `, [escola_id]);
-
-      let novoStatus = 'NEC LOG';
-      if (statusConjunto.length > 0 && statusConjunto[0].status === 'CONF NUTRI') {
-        novoStatus = 'CONF NUTRI';
-      }
-
-      // Determinar em qual coluna salvar baseado no status
-      const qtdFinal = quantidade || 0;
-      let ajuste_logistica = null;
-      let ajuste_conf_nutri = null;
-
-      if (novoStatus === 'NEC LOG') {
-        ajuste_logistica = qtdFinal;
-      } else if (novoStatus === 'CONF NUTRI') {
-        ajuste_conf_nutri = qtdFinal;
-      }
-
-      // Inserir novo produto
+      // Inserir novo produto com status NEC LOG
       const insertQuery = `
         INSERT INTO necessidades (
           usuario_email, usuario_id, produto_id, produto, produto_unidade,
@@ -353,6 +274,8 @@ class NecessidadesLogisticaController {
           observacoes, data_preenchimento, ajuste_nutricionista, ajuste_coordenacao, ajuste_logistica, ajuste_conf_nutri, ajuste_conf_coord
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)
       `;
+
+      const qtdFinal = quantidade || 0;
 
       const values = [
         escolaData[0].usuario_email,
@@ -369,13 +292,13 @@ class NecessidadesLogisticaController {
         semana_abastecimento || escolaData[0].semana_abastecimento,
         produto[0].grupo,
         produto[0].grupo_id,
-        novoStatus,
+        'NEC LOG',
         escolaData[0].necessidade_id,
         'Produto extra incluído pela logística',
         null, // ajuste_nutricionista null
         null, // ajuste_coordenacao null
-        ajuste_logistica,
-        ajuste_conf_nutri,
+        qtdFinal, // ajuste_logistica
+        null, // ajuste_conf_nutri null
         null // ajuste_conf_coord null
       ];
 
@@ -400,25 +323,19 @@ class NecessidadesLogisticaController {
     }
   }
 
-  // Buscar produtos para modal
+  // Buscar produtos para modal (produtos disponíveis não incluídos)
   static async buscarProdutosParaModal(req, res) {
     try {
-      const { 
-        grupo, 
-        escola_id, 
-        semana_consumo,
-        semana_abastecimento, 
-        search 
-      } = req.query;
+      const { escola_id, grupo, semana_consumo, semana_abastecimento } = req.query;
 
-      if (!grupo || !escola_id) {
+      if (!escola_id || !grupo) {
         return res.status(400).json({
           success: false,
-          message: 'Grupo e escola são obrigatórios'
+          message: 'Escola e grupo são obrigatórios'
         });
       }
 
-      // Buscar produtos já incluídos na necessidade
+      // Buscar produtos já existentes para filtrar
       let produtosExistentesQuery;
       let queryParams;
 
@@ -429,7 +346,7 @@ class NecessidadesLogisticaController {
           WHERE n.escola_id = ? 
             AND n.semana_consumo = ?
             AND n.semana_abastecimento = ?
-            AND n.status IN ('NEC LOG', 'CONF NUTRI')
+            AND n.status = 'NEC LOG'
         `;
         queryParams = [escola_id, semana_consumo, semana_abastecimento];
       } else if (semana_consumo) {
@@ -438,7 +355,7 @@ class NecessidadesLogisticaController {
           FROM necessidades n
           WHERE n.escola_id = ? 
             AND n.semana_consumo = ?
-            AND n.status IN ('NEC LOG', 'CONF NUTRI')
+            AND n.status = 'NEC LOG'
         `;
         queryParams = [escola_id, semana_consumo];
       } else {
@@ -446,7 +363,7 @@ class NecessidadesLogisticaController {
           SELECT DISTINCT n.produto_id
           FROM necessidades n
           WHERE n.escola_id = ? 
-            AND n.status IN ('NEC LOG', 'CONF NUTRI')
+            AND n.status = 'NEC LOG'
         `;
         queryParams = [escola_id];
       }
@@ -459,20 +376,15 @@ class NecessidadesLogisticaController {
       let produtosQueryParams = [grupo];
 
       if (idsExistentes.length > 0) {
-        whereConditions.push(`ppc.produto_id NOT IN (${idsExistentes.map(() => '?').join(',')})`);
-        produtosQueryParams.push(...idsExistentes);
-      }
-
-      if (search) {
-        whereConditions.push("(ppc.produto_nome LIKE ? OR ppc.produto_codigo LIKE ?)");
-        produtosQueryParams.push(`%${search}%`, `%${search}%`);
+        whereConditions.push("ppc.produto_id NOT IN (?)");
+        produtosQueryParams.push(idsExistentes);
       }
 
       const query = `
-        SELECT DISTINCT 
-          ppc.produto_id, 
-          ppc.produto_codigo, 
-          ppc.produto_nome, 
+        SELECT 
+          ppc.produto_id,
+          ppc.produto_nome,
+          ppc.produto_codigo,
           ppc.unidade_medida
         FROM produtos_per_capita ppc
         WHERE ${whereConditions.join(' AND ')}
@@ -495,38 +407,6 @@ class NecessidadesLogisticaController {
       });
     }
   }
-
-  // Listar nutricionistas para filtro
-  static async listarNutricionistas(req, res) {
-    try {
-      const query = `
-        SELECT DISTINCT 
-          n.usuario_id as id,
-          u.nome as nome,
-          n.usuario_email as email
-        FROM necessidades n
-        LEFT JOIN usuarios u ON n.usuario_id = u.id
-        WHERE n.status IN ('NEC LOG','CONF NUTRI')
-        ORDER BY u.nome
-      `;
-
-      const nutricionistas = await executeQuery(query);
-
-      res.json({
-        success: true,
-        data: nutricionistas
-      });
-
-    } catch (error) {
-      console.error('Erro ao listar nutricionistas:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Erro interno do servidor',
-        error: error.message
-      });
-    }
-  }
 }
 
 module.exports = NecessidadesLogisticaController;
-

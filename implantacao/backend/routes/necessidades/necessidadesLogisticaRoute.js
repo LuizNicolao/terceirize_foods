@@ -3,14 +3,14 @@ const router = express.Router();
 const NecessidadesLogisticaController = require('../../controllers/necessidades/NecessidadesLogisticaController');
 const { authenticateToken } = require('../../middleware/auth');
 
-// Middleware para verificar se é logística, supervisor ou admin
+// Middleware para verificar se é logística, coordenador ou supervisor
 const hasAccessToLogistica = (req, res, next) => {
   const userType = req.user.tipo_de_acesso;
   
-  if (!['administrador', 'supervisor'].includes(userType)) {
+  if (!['logistica', 'coordenador', 'supervisor', 'administrador'].includes(userType)) {
     return res.status(403).json({
       success: false,
-      message: 'Apenas administradores e supervisores podem acessar esta funcionalidade'
+      message: 'Apenas logística, coordenadores e supervisores podem acessar esta funcionalidade'
     });
   }
   
@@ -27,8 +27,8 @@ router.get('/logistica', NecessidadesLogisticaController.listarParaLogistica);
 // Salvar ajustes da logística
 router.put('/logistica/ajustes', NecessidadesLogisticaController.salvarAjustesLogistica);
 
-// Liberar para nutri confirmar (CONF NUTRI)
-router.post('/logistica/liberar-nutri', NecessidadesLogisticaController.liberarParaNutriConfirma);
+// Enviar para confirmação da nutricionista
+router.post('/logistica/enviar-nutri', NecessidadesLogisticaController.enviarParaNutricionista);
 
 // Buscar produtos para modal
 router.get('/logistica/produtos-modal', NecessidadesLogisticaController.buscarProdutosParaModal);
@@ -36,8 +36,4 @@ router.get('/logistica/produtos-modal', NecessidadesLogisticaController.buscarPr
 // Incluir produto extra
 router.post('/logistica/produto-extra', NecessidadesLogisticaController.incluirProdutoExtra);
 
-// Listar nutricionistas para filtro
-router.get('/logistica/nutricionistas', NecessidadesLogisticaController.listarNutricionistas);
-
 module.exports = router;
-

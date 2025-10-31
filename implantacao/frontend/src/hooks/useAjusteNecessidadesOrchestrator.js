@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNecessidadesAjuste } from './useNecessidadesAjuste';
 import useNecessidadesCoordenacao from './useNecessidadesCoordenacao';
-import useNecessidadesLogistica from './useNecessidadesLogistica';
+import { useNecessidadesLogistica } from './useNecessidadesLogistica';
 import { useSemanasAbastecimento } from './useSemanasAbastecimento';
 import { useSemanasConsumo } from './useSemanasConsumo';
 import necessidadesService from '../services/necessidadesService';
@@ -15,9 +15,6 @@ export const useAjusteNecessidadesOrchestrator = () => {
   const getInitialTab = () => {
     if (user?.tipo_de_acesso === 'coordenador') {
       return 'coordenacao';
-    }
-    if (user?.tipo_de_acesso === 'supervisor' || user?.tipo_de_acesso === 'administrador') {
-      return 'logistica';
     }
     return 'nutricionista';
   };
@@ -75,61 +72,40 @@ export const useAjusteNecessidadesOrchestrator = () => {
   // Hooks para logística
   const {
     necessidades: necessidadesLogistica,
-    nutricionistas: nutricionistasLogistica,
     filtros: filtrosLogistica,
     loading: loadingLogistica,
     error: errorLogistica,
     carregarNecessidades: carregarNecessidadesLogistica,
-    carregarNutricionistas: carregarNutricionistasLogistica,
     salvarAjustes: salvarAjustesLogistica,
-    liberarParaNutriConfirma,
+    enviarParaNutricionista,
     buscarProdutosParaModal: buscarProdutosParaModalLogistica,
     incluirProdutoExtra: incluirProdutoExtraLogistica,
-    atualizarFiltros: atualizarFiltrosLogistica,
-    exportarXLSX: exportarXLSXLogistica,
-    exportarPDF: exportarPDFLogistica
+    atualizarFiltros: atualizarFiltrosLogistica
   } = useNecessidadesLogistica();
 
   // Hooks para semanas
   const { opcoes: opcoesSemanasAbastecimento } = useSemanasAbastecimento();
   const { opcoes: opcoesSemanasConsumo } = useSemanasConsumo();
 
-  // Nutricionistas unificados (coordenação e logística)
-  const nutricionistasUnificados = activeTab === 'logistica' ? nutricionistasLogistica : nutricionistas;
-
   // Dados baseados na aba ativa
-  const necessidades = activeTab === 'nutricionista' 
-    ? necessidadesNutricionista 
-    : activeTab === 'coordenacao' 
-    ? necessidadesCoordenacao 
-    : necessidadesLogistica;
+  const getActiveData = () => {
+    if (activeTab === 'nutricionista') {
+      return { necessidades: necessidadesNutricionista, filtros: filtrosNutricionista, loading: loadingNutricionista, error: errorNutricionista };
+    } else if (activeTab === 'coordenacao') {
+      return { necessidades: necessidadesCoordenacao, filtros: filtrosCoordenacao, loading: loadingCoordenacao, error: errorCoordenacao };
+    } else if (activeTab === 'logistica') {
+      return { necessidades: necessidadesLogistica, filtros: filtrosLogistica, loading: loadingLogistica, error: errorLogistica };
+    }
+  };
   
-  const filtros = activeTab === 'nutricionista' 
-    ? filtrosNutricionista 
-    : activeTab === 'coordenacao' 
-    ? filtrosCoordenacao 
-    : filtrosLogistica;
-  
-  const loading = activeTab === 'nutricionista' 
-    ? loadingNutricionista 
-    : activeTab === 'coordenacao' 
-    ? loadingCoordenacao 
-    : loadingLogistica;
-  
-  const error = activeTab === 'nutricionista' 
-    ? errorNutricionista 
-    : activeTab === 'coordenacao' 
-    ? errorCoordenacao 
-    : errorLogistica;
+  const { necessidades, filtros, loading, error } = getActiveData();
 
-  // Carregar nutricionistas quando aba de coordenação ou logística for ativada
+  // Carregar nutricionistas quando aba de coordenação for ativada
   useEffect(() => {
     if (activeTab === 'coordenacao') {
       carregarNutricionistas();
-    } else if (activeTab === 'logistica') {
-      carregarNutricionistasLogistica();
     }
-  }, [activeTab, carregarNutricionistas, carregarNutricionistasLogistica]);
+  }, [activeTab, carregarNutricionistas]);
 
   // Limpar filtros quando muda de aba
   useEffect(() => {
@@ -145,8 +121,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
         escola_id: null,
         grupo: null,
         semana_consumo: null,
-        semana_abastecimento: null,
-        nutricionista_id: null
+        semana_abastecimento: null
       });
     } else if (activeTab === 'coordenacao') {
       atualizarFiltrosNutricionista({
@@ -159,8 +134,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
         escola_id: null,
         grupo: null,
         semana_consumo: null,
-        semana_abastecimento: null,
-        nutricionista_id: null
+        semana_abastecimento: null
       });
     } else if (activeTab === 'logistica') {
       atualizarFiltrosNutricionista({
@@ -226,7 +200,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
       }
       carregarNecessidadesCoordenacao();
     } else if (activeTab === 'logistica') {
-      if (!filtros.escola_id && !filtros.nutricionista_id && !filtros.grupo && !filtros.semana_consumo && !filtros.semana_abastecimento) {
+      if (!filtros.escola_id && !filtros.grupo && !filtros.semana_consumo && !filtros.semana_abastecimento) {
         toast.error('Selecione ao menos um filtro para buscar');
         return;
       }
@@ -340,12 +314,12 @@ export const useAjusteNecessidadesOrchestrator = () => {
               // Para NEC ou NEC NUTRI, manter ajuste_nutricionista
               valorFinal = nec.ajuste_nutricionista || nec.ajuste || 0;
             }
-          } else if (activeTab === 'coordenacao') {
+          } else if (activeTab === 'logistica') {
+            // Para logística, considerar ajuste_coordenacao primeiro
+            valorFinal = nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
+          } else {
             // Para coordenação, considerar ajuste_conf_nutri primeiro (último valor da nutri)
             valorFinal = nec.ajuste_conf_nutri || nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
-          } else if (activeTab === 'logistica') {
-            // Para logística, considerar ajuste_logistica primeiro
-            valorFinal = nec.ajuste_logistica || nec.ajuste_coordenacao || nec.ajuste_nutricionista || nec.ajuste || 0;
           }
         }
 
@@ -416,8 +390,18 @@ export const useAjusteNecessidadesOrchestrator = () => {
           return;
         }
         resultado = await liberarCoordenacao(dadosParaLiberar);
-      } else if (activeTab === 'coordenacao') {
-        // Coordenação: NEC COORD -> CONF NUTRI; CONF COORD -> CONF
+      } else if (activeTab === 'logistica') {
+        // Logística: NEC LOG -> CONF NUTRI
+        if (!necessidadeAtual?.necessidade_id) {
+          toast.error('Nenhuma necessidade selecionada');
+          return;
+        }
+        resultado = await enviarParaNutricionista({
+          necessidade_id: necessidadeAtual.necessidade_id,
+          escola_id: filtros.escola_id
+        });
+      } else {
+        // Coordenação: NEC COORD -> NEC LOG; CONF COORD -> CONF
         const status = necessidades[0]?.status;
         if (!filtros.escola_id) {
           toast.error('Selecione uma escola para liberar na coordenação');
@@ -428,25 +412,10 @@ export const useAjusteNecessidadesOrchestrator = () => {
           return;
         }
         if (status === 'NEC COORD') {
-          resultado = await confirmarNutri(dadosParaLiberar);
+          // NEC COORD vai para NEC LOG (não mais para CONF NUTRI)
+          resultado = await liberarParaLogistica([necessidadeAtual.necessidade_id]);
         } else if (status === 'CONF COORD') {
           resultado = await confirmarFinal([necessidadeAtual.necessidade_id]);
-        } else {
-          // Fallback legacy
-          resultado = await liberarParaLogistica([necessidadeAtual.necessidade_id]);
-        }
-      } else if (activeTab === 'logistica') {
-        // Logística: NEC LOG -> CONF NUTRI; CONF NUTRI -> CONF
-        const status = necessidades[0]?.status;
-        if (!filtros.escola_id) {
-          toast.error('Selecione uma escola para liberar na logística');
-          return;
-        }
-        if (status === 'CONF NUTRI') {
-          resultado = await liberarParaNutriConfirma([necessidadeAtual.necessidade_id]);
-        } else {
-          // Fallback para NEC LOG
-          resultado = await liberarParaNutriConfirma([necessidadeAtual.necessidade_id]);
         }
       }
       
@@ -454,25 +423,22 @@ export const useAjusteNecessidadesOrchestrator = () => {
         let mensagem;
         if (activeTab === 'nutricionista') {
           mensagem = 'Necessidades liberadas para coordenação (NEC COORD)!';
-        } else if (activeTab === 'coordenacao') {
+        } else if (activeTab === 'logistica') {
+          mensagem = 'Enviado para Confirmação Nutri (CONF NUTRI)!';
+        } else {
           const status = necessidades[0]?.status;
           mensagem = status === 'NEC COORD'
-            ? 'Enviado para Nutri (CONF NUTRI)!'
+            ? 'Enviado para Logística (NEC LOG)!'
             : (status === 'CONF COORD' ? 'Necessidades confirmadas (CONF)!' : 'Necessidades liberadas!');
-        } else if (activeTab === 'logistica') {
-          const status = necessidades[0]?.status;
-          mensagem = status === 'CONF NUTRI'
-            ? 'Necessidades confirmadas (CONF)!'
-            : 'Liberado para Nutri (CONF NUTRI)!';
         }
         toast.success(mensagem);
         handleCarregarNecessidades();
       }
     } catch (error) {
-      console.error('Erro ao liberar para coordenação:', error);
-      toast.error('Erro ao liberar para coordenação');
+      console.error('Erro ao liberar:', error);
+      toast.error('Erro ao liberar');
     }
-  }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, confirmarNutri, confirmarFinal, liberarParaLogistica, liberarParaNutriConfirma, handleCarregarNecessidades, necessidades]);
+  }, [activeTab, filtros, necessidadeAtual, liberarCoordenacao, confirmarFinal, liberarParaLogistica, enviarParaNutricionista, handleCarregarNecessidades, necessidades]);
 
   const handleAbrirModalProdutoExtra = useCallback(async () => {
     if (activeTab === 'coordenacao' || activeTab === 'logistica') {
@@ -498,14 +464,11 @@ export const useAjusteNecessidadesOrchestrator = () => {
     }
 
     try {
-      let buscarProdutos;
-      if (activeTab === 'nutricionista') {
-        buscarProdutos = buscarProdutosParaModalNutricionista;
-      } else if (activeTab === 'coordenacao') {
-        buscarProdutos = buscarProdutosParaModalCoordenacao;
-      } else if (activeTab === 'logistica') {
-        buscarProdutos = buscarProdutosParaModalLogistica;
-      }
+      const buscarProdutos = activeTab === 'nutricionista' 
+        ? buscarProdutosParaModalNutricionista
+        : activeTab === 'coordenacao'
+        ? buscarProdutosParaModalCoordenacao
+        : buscarProdutosParaModalLogistica;
 
       const produtos = await buscarProdutos({
         grupo: filtros.grupo,
@@ -541,14 +504,11 @@ export const useAjusteNecessidadesOrchestrator = () => {
       let sucessos = 0;
       let erros = 0;
 
-      let incluirProduto;
-      if (activeTab === 'nutricionista') {
-        incluirProduto = incluirProdutoExtraNutricionista;
-      } else if (activeTab === 'coordenacao') {
-        incluirProduto = incluirProdutoExtraCoordenacao;
-      } else if (activeTab === 'logistica') {
-        incluirProduto = incluirProdutoExtraLogistica;
-      }
+      const incluirProduto = activeTab === 'nutricionista'
+        ? incluirProdutoExtraNutricionista
+        : activeTab === 'coordenacao'
+        ? incluirProdutoExtraCoordenacao
+        : incluirProdutoExtraLogistica;
 
       for (const produto of produtosAIncluir) {
         try {
@@ -559,6 +519,8 @@ export const useAjusteNecessidadesOrchestrator = () => {
               consumo_de: filtros.consumo_de,
               consumo_ate: filtros.consumo_ate
             },
+            semana_consumo: filtros.semana_consumo,
+            semana_abastecimento: filtros.semana_abastecimento,
             produto_id: produto.produto_id,
             quantidade: produto.quantidade || 0  // Incluir quantidade se existir
           };
@@ -616,32 +578,25 @@ export const useAjusteNecessidadesOrchestrator = () => {
       exportarXLSXNutricionista(filtros);
     } else if (activeTab === 'coordenacao') {
       exportarXLSXCoordenacao(filtros);
-    } else if (activeTab === 'logistica') {
-      exportarXLSXLogistica(filtros);
     }
-  }, [activeTab, filtros, exportarXLSXNutricionista, exportarXLSXCoordenacao, exportarXLSXLogistica]);
+  }, [activeTab, filtros, exportarXLSXNutricionista, exportarXLSXCoordenacao]);
 
   const handleExportarPDF = useCallback(() => {
     if (activeTab === 'nutricionista') {
       exportarPDFNutricionista(filtros);
     } else if (activeTab === 'coordenacao') {
       exportarPDFCoordenacao(filtros);
-    } else if (activeTab === 'logistica') {
-      exportarPDFLogistica(filtros);
     }
-  }, [activeTab, filtros, exportarPDFNutricionista, exportarPDFCoordenacao, exportarPDFLogistica]);
+  }, [activeTab, filtros, exportarPDFNutricionista, exportarPDFCoordenacao]);
 
   const handleSearchProduto = useCallback(async (search) => {
     setSearchProduto(search);
     try {
-      let buscarProdutos;
-      if (activeTab === 'nutricionista') {
-        buscarProdutos = buscarProdutosParaModalNutricionista;
-      } else if (activeTab === 'coordenacao') {
-        buscarProdutos = buscarProdutosParaModalCoordenacao;
-      } else if (activeTab === 'logistica') {
-        buscarProdutos = buscarProdutosParaModalLogistica;
-      }
+      const buscarProdutos = activeTab === 'nutricionista' 
+        ? buscarProdutosParaModalNutricionista
+        : activeTab === 'coordenacao'
+        ? buscarProdutosParaModalCoordenacao
+        : buscarProdutosParaModalLogistica;
 
       const produtos = await buscarProdutos({
         grupo: filtros.grupo,
@@ -685,7 +640,7 @@ export const useAjusteNecessidadesOrchestrator = () => {
       // Dados
       escolas,
       grupos,
-      nutricionistas: nutricionistasUnificados,
+      nutricionistas,
       opcoesSemanasAbastecimento,
       opcoesSemanasConsumo,
       statusAtual: necessidades.length > 0 ? necessidades[0].status : 'NEC',

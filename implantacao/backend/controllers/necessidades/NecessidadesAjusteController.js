@@ -367,10 +367,9 @@ const incluirProdutoExtra = async (req, res) => {
         observacoes,
         necessidade_id,
         ajuste_nutricionista,
-        ajuste_logistica,
         ajuste_conf_nutri,
         ajuste_conf_coord
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `, [
       escolaData.usuario_email,
       escolaData.usuario_id,
@@ -390,7 +389,6 @@ const incluirProdutoExtra = async (req, res) => {
       'Produto extra incluído pela nutricionista',
       escolaData.necessidade_id, // Usar o mesmo necessidade_id
       ajuste_nutricionista,
-      null, // ajuste_logistica null
       ajuste_conf_nutri,
       null // ajuste_conf_coord inicialmente null
     ]);
@@ -434,17 +432,13 @@ const liberarCoordenacao = async (req, res) => {
 
   // Atualizar status conforme fluxo:
   // - De NEC/NEC NUTRI -> NEC COORD
-  // - De CONF NUTRI -> CONF COORD (copiando ajuste_conf_nutri para ajuste_conf_coord)
+  // - De CONF NUTRI -> CONF COORD
   let query = `
       UPDATE necessidades 
       SET status = CASE 
           WHEN status IN ('NEC', 'NEC NUTRI') THEN 'NEC COORD'
           WHEN status = 'CONF NUTRI' THEN 'CONF COORD'
           ELSE status
-        END,
-        ajuste_conf_coord = CASE 
-          WHEN status = 'CONF NUTRI' THEN ajuste_conf_nutri
-          ELSE ajuste_conf_coord
         END,
         data_atualizacao = CURRENT_TIMESTAMP
       WHERE escola_id = ? 

@@ -11,26 +11,13 @@ const AjusteTabelaLogistica = ({
 }) => {
   // Função para calcular quantidade anterior baseado no status
   const getQuantidadeAnterior = (necessidade) => {
-    // Para CONF NUTRI, mostrar ajuste_coordenacao
-    if (necessidade.status === 'CONF NUTRI') {
-      return necessidade.ajuste_coordenacao ?? 0;
-    }
-    // Para NEC LOG, mostrar ajuste_nutricionista
-    if (necessidade.status === 'NEC LOG') {
-      return necessidade.ajuste_nutricionista ?? 0;
-    }
-    // Para outros status, não há anterior
-    return 0;
+    // Para NEC LOG, mostrar ajuste_coordenacao
+    return necessidade.ajuste_coordenacao ?? 0;
   };
 
   // Função para calcular quantidade atual baseado no status
   const getQuantidadeAtual = (necessidade) => {
-    if (necessidade.status === 'CONF NUTRI') {
-      return necessidade.ajuste_conf_nutri ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste_logistica ?? necessidade.ajuste ?? 0;
-    }
-    if (necessidade.status === 'NEC LOG') {
-      return necessidade.ajuste_logistica ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste ?? 0;
-    }
+    // Para NEC LOG, mostrar ajuste_logistica
     return necessidade.ajuste_logistica ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0;
   };
 
@@ -82,13 +69,13 @@ const AjusteTabelaLogistica = ({
           {necessidades.map((necessidade) => (
             <tr key={necessidade.id} className="hover:bg-gray-50">
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                {necessidade.escola_id || 'N/A'}
-              </td>
-              <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900 text-center">
-                {necessidade.escola}
+                {necessidade.escola_id}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                {necessidade.produto_id || 'N/A'}
+                {necessidade.escola}
+              </td>
+              <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
+                {necessidade.codigo_teknisa}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs font-medium text-gray-900 text-center">
                 {necessidade.produto}
@@ -97,7 +84,7 @@ const AjusteTabelaLogistica = ({
                 {necessidade.produto_unidade}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
-                {getQuantidadeAtual(necessidade)}
+                {necessidade.ajuste_logistica ?? necessidade.ajuste_coordenacao ?? necessidade.ajuste_nutricionista ?? necessidade.ajuste ?? 0}
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-500 text-center">
                 {getQuantidadeAnterior(necessidade)}
@@ -114,7 +101,7 @@ const AjusteTabelaLogistica = ({
                   min="0"
                   step="0.001"
                   className="w-20 text-center text-xs py-1"
-                  disabled={necessidade.status === 'CONF' || !canEdit}
+                  disabled={!canEdit}
                 />
               </td>
               <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center font-semibold">
@@ -124,13 +111,14 @@ const AjusteTabelaLogistica = ({
                   </span>
                 )}
               </td>
-              <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
+              <td className="px-4 py-2 whitespace-nowrap text-xs text-center">
                 <button
-                  onClick={() => onExcluirNecessidade(necessidade)}
-                  className="text-red-600 hover:text-red-800 transition-colors"
+                  onClick={() => onExcluirNecessidade(necessidade.id)}
+                  className="text-red-600 hover:text-red-800"
                   title="Excluir produto"
+                  disabled={!canEdit}
                 >
-                  <FaTrash className="h-4 w-4" />
+                  <FaTrash />
                 </button>
               </td>
             </tr>
