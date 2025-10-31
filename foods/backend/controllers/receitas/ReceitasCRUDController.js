@@ -126,8 +126,8 @@ class ReceitasCRUDController {
         textoExtraido,
         ingredientesJson,
         dados.origem || 'pdf',
-        dados.tipo || null,
-        dados.status || 'ativo',
+        dados.tipo || 'receita',
+        dados.status || 'rascunho',
         dados.observacoes || null,
         dados.criado_por || null
       ];
